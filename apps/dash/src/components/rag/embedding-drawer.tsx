@@ -35,7 +35,7 @@ type ResourceStatus = RouterOutputs["rag"]["resource:status"];
 
 export interface EmbeddingResource {
   locale: Locale;
-  /** `feed_translation.id` — what the resource layer indexes, not the feed id. */
+  /** `feed_translation.id`; the resource layer indexes this, not the feed id. */
   sourceId: number;
 }
 
@@ -205,13 +205,7 @@ const ResourceSection = ({
   );
 };
 
-/**
- * Per-locale embedding state for one feed, and the trigger for recomputing it.
- *
- * Everything here runs in the browser against `apps/service`: the trigger needs the
- * workflow runtime, and `run:get` needs it to reconcile, neither of which exists in the
- * dashboard's own process.
- */
+/** Client-side against `apps/service`: the trigger and `run:get` need the workflow runtime, which dash does not have. */
 export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [feedRunId, setFeedRunId] = useState<string | null>(null);
@@ -269,17 +263,13 @@ export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
 
   const first = statuses[0]?.data;
   // reading this drawer at all requires the same authority as triggering (adminGuard),
-  // so a loaded status is the permission signal — there is nothing extra to ask for
+  // so a loaded status is the permission signal; there is nothing extra to ask for
   const canTrigger = !!first;
   const isFeedBusy = feedRun.isActive || indexFeed.isPending;
 
   return (
     <>
-      {/*
-       * Deliberately not colour-coded by embedding state: the adjacent `MetaChip` already
-       * carries that signal, and the statuses this component loads only arrive after the
-       * drawer opens, so a second indicator here could only ever be wrong on first paint.
-       */}
+      {/* Not colour-coded by embedding state: MetaChip already carries that, and statuses only load after the drawer opens. */}
       <Tooltip delay={500}>
         <Tooltip.Trigger>
           <Button

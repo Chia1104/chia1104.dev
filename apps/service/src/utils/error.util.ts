@@ -3,10 +3,7 @@ import type { z } from "zod";
 import { fromZodError, toErrorResponse } from "@chia/service-kit/errors";
 
 /**
- * Renders a Zod validation failure as an HTTP error body.
- *
- * Delegates to `fromZodError` + `toErrorResponse` so validation errors have the same
- * shape `AppError` produces everywhere else, including on the oRPC side.
+ * Same error shape as `AppError` on oRPC.
  *
  * @TODO Handle `invalid_union` by flattening the union's member issues.
  */

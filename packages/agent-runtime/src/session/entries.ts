@@ -5,9 +5,9 @@ import type { Usage } from "@earendil-works/pi-ai";
  * The persisted session tree, owned here rather than imported from Pi.
  *
  * Discriminants and payload fields match Pi's own entry union, so rows in `agent.session_entry`
- * read back unchanged and Pi's context projection accepts these entries structurally. `label` is
- * the one entry Pi no longer models as a tree node; it stays one here because that is where the
- * rows already live and a navigation label is a tree event.
+ * read back unchanged and Pi's context projection accepts these entries structurally. `label`
+ * is the one entry Pi no longer models as a tree node; it stays one here because that is where
+ * the rows already live and a navigation label is a tree event.
  */
 
 export interface SessionEntryBase {
@@ -15,8 +15,9 @@ export interface SessionEntryBase {
   parentId: string | null;
   /**
    * Storage-assigned on append, strictly increasing within a session: the order entries were
-   * persisted in, across every branch. The tree order is `parentId`; `seq` is the cursor —
-   * "everything persisted before this point" is `seq <= n`, whichever branch is active.
+   * persisted in, across every branch.
+   * The tree order is `parentId`; `seq` is the cursor. "Everything persisted before this point"
+   * is `seq <= n`, whichever branch is active.
    */
   seq: number;
   /** Unix ms. */
@@ -104,8 +105,8 @@ const CONTEXT_ENTRY_TYPES: ReadonlySet<string> = new Set<ContextEntry["type"]>([
 ]);
 
 /**
- * Labels annotate the tree, and rows of retired types (`session_info`, `leaf`) written by earlier
- * Pi releases are skipped rather than failing the whole session.
+ * Labels annotate the tree, and rows of retired types (`session_info`, `leaf`) written by
+ * earlier Pi releases are skipped rather than failing the whole session.
  */
 export const isContextEntry = (entry: SessionEntry): entry is ContextEntry =>
   CONTEXT_ENTRY_TYPES.has(entry.type);
@@ -129,9 +130,9 @@ export interface SessionStats {
 }
 
 /**
- * Aggregated from provider-reported assistant, compaction and branch-summary usage. Summed as
- * per-call figures rather than reading the last message, so a compacted session still reports
- * everything it actually processed and cost.
+ * Aggregated from provider-reported assistant, compaction and branch-summary usage.
+ * Summed as per-call figures rather than reading the last message, so a compacted session still
+ * reports everything it actually processed and cost.
  */
 export const computeSessionStats = (
   entries: readonly SessionEntry[]

@@ -4,9 +4,7 @@ export const urlSchema = z.compile(z.union([z.url(), z.instanceof(URL)]));
 
 interface IsUrlOptions<TStrict extends boolean = false> {
   allowedProtocols?: string[];
-  /**
-   * force check is URL instance
-   */
+  /** Requires a `URL` instance, not a string. */
   strict?: TStrict;
 }
 

@@ -43,53 +43,25 @@ import {
 import { decryptAgentCredentials } from "../services/agent-credentials";
 
 /**
- * One agent turn, as a durable step.
- *
- * The engine **must** live here rather than in the workflow function: `"use workflow"` code runs in
- * a sandboxed VM with no Node built-ins and no native `fetch`, and the engine needs `pg` (drizzle)
- * plus outbound HTTP. The workflow function only orchestrates and passes plain data across the
- * boundary.
+ * The engine lives in this step, not the workflow: `"use workflow"` has no Node built-ins
+ * and no native `fetch`; the engine needs `pg` and outbound HTTP.
  */
 
-// ============================================
-// Streaming
-// ============================================
-
-/**
- * Token-level deltas go to their own namespace.
- *
- * Every `write()` is a durable write, and a single turn produces thousands of deltas. Keeping them
- * off the default stream means a reconnecting client can replay the *coarse* transcript cheaply and
- * opt into the typing animation only if it wants it.
- */
-/** Flush window for batching deltas, in milliseconds. */
 const DELTA_FLUSH_MS = 80;
-
-// ============================================
-// Step contract
-// ============================================
 
 export interface AgentTurnRequest {
   sessionId: string;
-  /**
-   * The `agent.run` row this run owns, written by `prompt` before the workflow was started. Every
-   * marker write goes to this row and no other, so a step of a run that was cancelled and
-   * replaced cannot reach the run that replaced it.
-   */
+  /** Marker writes go here only; a cancelled run must not reach its successor. */
   runId: string;
-  /** Verified at the transport boundary before the run was started. */
+  /** Verified at the transport boundary before the run started. */
   userId: string;
-  /** The run's abort controller; the turn subscribes to it for the harness's `AbortSignal`. */
+  /** Subscribed for the harness `AbortSignal`. */
   abortController: AgentAbortControllerRef;
   text: string;
   template?: { name: string; args?: string[] };
-  /** Set when this turn relays an operator's decision on a gated call; see `AgentTurnMessage`. */
   decision?: OperatorDecision;
   preAuthorizeToolNames?: string[];
-  /**
-   * The operator's own provider keys, still encrypted — see `services/agent-credentials.ts`.
-   * Absent means the turn runs on the house gateway account.
-   */
+  /** Encrypted operator keys; omitted means the house gateway. */
   credentials?: EncryptedAgentCredentials;
 }
 
@@ -107,29 +79,16 @@ export interface AgentTurnOutcome {
 
 type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
 
-// ============================================
-// Title
-// ============================================
-
 /** Bounds both the model call and how long `run:end` is held back for the title to land. */
 const SESSION_TITLE_TIMEOUT_MS = 8_000;
 
-/** The turn that names a session: the first operator prompt of one that has no title yet. */
 const needsTitle = (row: AgentSessionRow, request: AgentTurnRequest) =>
   row.title === null && request.decision === undefined;
 
 /**
- * Names the session from its first prompt, alongside the turn.
- *
- * Started before the turn and awaited before its `run:end` is written, so the client's turn-end
- * refresh already sees the title. The write is conditional on the title still being unset, so an
- * operator who renames the session mid-turn keeps their name. Never throws: a title is cosmetic,
- * and a provider failure falls back to the prompt's first line rather than leaving the session
- * untitled.
- *
- * The model and prompt are the `session.title` task's — the house gateway's cheap model unless
- * the operator pinned another. Never the session's own, which may be BYOK or expensive; a title
- * is worth neither.
+ * Names the session from its first prompt, started before the turn and awaited before `run:end`.
+ * Write is a no-op if the title is already set. Never throws. Uses the `session.title` task,
+ * not the session model (may be BYOK or expensive).
  */
 const titleSession = async (
   db: DB,
@@ -165,10 +124,6 @@ const titleSession = async (
   }
 };
 
-// ============================================
-// Step
-// ============================================
-
 export const runAgentTurnStep = async (
   request: AgentTurnRequest
 ): Promise<AgentTurnOutcome> => {
@@ -191,8 +146,7 @@ export const runAgentTurnStep = async (
     throw new FatalError(`No agent kind registered as "${row.kind}".`);
   }
 
-  // Recorded before the first event of this turn is written. The previous turn flushed its writer
-  // before returning, so the tail is the last index it wrote.
+  // Before this turn's first event. The previous turn flushed, so the tail is the last index it wrote.
   const { workflowRunId } = getWorkflowMetadata();
   const run = getRun(workflowRunId);
   const [seqBefore, coarseTail, deltaTail] = await Promise.all([
@@ -237,11 +191,8 @@ export const runAgentTurnStep = async (
 };
 
 /**
- * Resolves what every kind's turn needs — the kind state, the opened session tree, the caller's
- * credential-bearing models and the approved call ids — then hands the turn to the kind.
- *
- * The runtime is imported here rather than at module scope: this step is registered at boot for
- * every process that hosts the workflow, and the runtime carries the provider stack.
+ * Runtime is imported here, not at module scope: this step is registered at boot, and the
+ * runtime carries the provider stack.
  */
 async function runKindTurn(
   definition: AgentKindDefinition<unknown, object>,
@@ -281,12 +232,9 @@ async function runKindTurn(
   );
 
   /**
-   * Built here, per turn, because it closes over the operator's own keys.
-   *
-   * A `Models` carrying BYOK credentials cannot be a process-wide singleton — it belongs to whoever
-   * sent this message. Providers with no credential are simply not registered, so choosing an
-   * OpenAI model without an OpenAI key fails as "unknown model" rather than quietly billing the
-   * house gateway account.
+   * Per turn: closes over this operator's keys. Not a process singleton.
+   * Providers without a credential are unregistered, so a missing key fails as "unknown model"
+   * instead of billing the house gateway.
    */
   const models = createAgentModels(
     decryptAgentCredentials(request.credentials)
@@ -352,41 +300,24 @@ async function runKindTurn(
 }
 
 /**
- * No retries.
- *
- * A turn is not replayable: by the time it fails it may already have written to the draft buffer,
- * appended to the session tree, or (with `autoApprove`) committed to the database. Re-running it
- * would duplicate those effects. pi already retries the *provider* request internally, which is
- * where transient failures actually live, so a step-level retry buys nothing and risks a lot.
- *
- * The failure surfaces as `run_failed` plus an `error` event; the operator re-prompts, and pi
- * rebuilds context from whatever the partial turn persisted.
+ * A turn is not replayable: it may already have written the draft, session tree, or DB.
+ * pi retries the provider request internally.
  */
 runAgentTurnStep.maxRetries = 0;
-
-// ============================================
-// Event writing
-// ============================================
 
 interface EventWriter {
   push: (event: AgentWireEvent) => void;
   /**
-   * Awaits every pending write. Deliberately does **not** close the streams: a session's run
-   * executes many turns, and closing after the first would leave the rest with nowhere to write.
-   * `closeAgentStreamsStep` closes them once, when the session's run ends.
+   * Awaits pending writes. Does not close the streams: a run has many turns.
+   * `closeAgentStreamsStep` closes them when the run ends.
    */
   flush: () => Promise<void>;
 }
 
 /**
- * Buffers wire events and writes them to the run's durable streams.
- *
- * Coarse events go to the default stream one at a time (they are few and each one matters for
- * replay). Deltas are batched into arrays on a separate namespace — thousands of individual durable
- * writes per turn would dominate the turn's cost.
- *
- * `holdEnd` delays the write of `run:end` — the turn's last coarse event, and the client's cue to
- * refresh — until it settles, so work that must be visible at turn end (the session title) is.
+ * Coarse events go to the default stream one at a time. Deltas are batched on a separate
+ * namespace: thousands of durable writes would dominate the turn's cost.
+ * `holdEnd` delays `run:end` until it settles (session title).
  */
 const createEventWriter = (holdEnd?: Promise<unknown>): EventWriter => {
   const coarse = getWritable<AgentWireEvent>().getWriter();
@@ -413,8 +344,7 @@ const createEventWriter = (holdEnd?: Promise<unknown>): EventWriter => {
         if (Date.now() - lastFlush >= DELTA_FLUSH_MS) flushDeltas();
         return;
       }
-      // A coarse event marks a boundary, so anything buffered before it must land first to keep
-      // the two streams consistent with each other.
+      // Coarse events are a stream boundary; flush buffered deltas first.
       flushDeltas();
       inFlight.push(
         event.type === "run:end" && holdEnd
@@ -431,10 +361,7 @@ const createEventWriter = (holdEnd?: Promise<unknown>): EventWriter => {
   };
 };
 
-/**
- * Closes the session's streams. Called once when the session's workflow run is ending, so clients
- * tailing the stream see a clean end instead of hanging.
- */
+/** Closes streams once the session run is ending, so tailing clients see a clean end. */
 export const closeAgentStreamsStep = async (): Promise<void> => {
   "use step";
 
@@ -446,10 +373,7 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
   await Promise.allSettled([coarse.close(), deltas.close()]);
 };
 
-/**
- * Marks the durable run inactive once its orchestration loop ends — `failed` when a step threw
- * out of it — and closes its abort controller so it does not sit parked until its TTL.
- */
+/** Marks the run inactive and closes its abort controller so it does not sit parked until TTL. */
 export const completeAgentRunStep = async (
   runId: string,
   abortController: AgentAbortControllerRef,

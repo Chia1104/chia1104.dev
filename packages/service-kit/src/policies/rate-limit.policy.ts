@@ -19,10 +19,8 @@ export interface RateLimitPolicyOptions {
    */
   prefix?: string;
   /**
-   * Derives the counter key from the context. Defaults to the client IP.
-   *
-   * Returns the whole identifier including its own namespace (`ip-…`, `user-…`), so a
-   * budget keyed by session can never collide with one keyed by address.
+   * Counter key from the context. Defaults to the client IP.
+   * Return the whole identifier (`ip-…`, `user-…`) so budgets cannot collide.
    */
   keyGenerator?: (context: {
     clientIP: string;
@@ -45,13 +43,7 @@ const draft6Headers = (
   "RateLimit-Reset": String(Math.max(resetSeconds, 0)),
 });
 
-/**
- * Fixed-window rate limiter backed by the shared Keyv store.
- *
- * Implemented directly instead of wrapping `hono-rate-limiter` so the same budget can
- * be enforced on an oRPC procedure — the previous setup could only rate limit whole
- * Hono route prefixes, which left every RPC procedure sharing one coarse counter.
- */
+/** Fixed-window rate limiter on the shared Keyv store. */
 export const rateLimitPolicy = (options: RateLimitPolicyOptions): Policy => {
   const {
     windowMs,

@@ -24,9 +24,6 @@ export type ContentType = InferEnum<typeof contentType>;
 export const locale = pgEnum("locale", ["en", "zh-TW"]);
 export type Locale = InferEnum<typeof locale>;
 
-/**
- * 邀請狀態
- */
 export const invitationStatus = pgEnum("invitation_status", [
   "pending",
   "accepted",
@@ -36,8 +33,5 @@ export const invitationStatus = pgEnum("invitation_status", [
 ]);
 export type InvitationStatus = InferEnum<typeof invitationStatus>;
 
-/**
- * 組織成員角色
- */
 export const memberRole = pgEnum("member_role", ["owner", "admin", "member"]);
 export type MemberRole = InferEnum<typeof memberRole>;

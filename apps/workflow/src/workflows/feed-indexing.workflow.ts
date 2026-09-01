@@ -19,11 +19,8 @@ const settledStatus = (result: PromiseSettledResult<unknown>): BranchStatus =>
   result.status === "fulfilled" ? "ok" : `failed: ${String(result.reason)}`;
 
 /**
- * Entry point after a feed changes.
- *
- * Runs per translation: reading time, plus chunk + vector indexing through the
- * resource pipeline. Must also run on publish-state changes — visibility is
- * mirrored onto the chunks so BM25 can filter on it.
+ * After a feed changes. Per translation: reading time, plus chunk + vector indexing.
+ * Must also run on publish-state changes: visibility is mirrored onto the chunks for BM25.
  */
 export const feedIndexingWorkflow = async (request: Request) => {
   "use workflow";
@@ -59,10 +56,9 @@ export const feedIndexingWorkflow = async (request: Request) => {
     })
   );
 
-  // a branch that exhausted its retries leaves the translation unindexed until
-  // the next feed change, so it has to be loud rather than a `success: false`
-  // nobody reads — `feedHooks.onFeedChanged` starts the run without
-  // inspecting the result
+  // A branch that exhausted its retries leaves the translation unindexed until the next
+  // feed change. `feedHooks.onFeedChanged` starts the run without inspecting the result,
+  // so failures have to be logged.
   const failures = translations.filter(
     (translation) =>
       translation.readingTime !== "ok" || translation.index !== "ok"

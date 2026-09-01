@@ -17,12 +17,7 @@ import { IndexKeyLine, RunStatusChip } from "./rag-shared";
 import { useIndexRun } from "./use-index-run";
 import type { IndexRun } from "./use-index-run";
 
-/**
- * Every action on this page is confirmed, including `prune`.
- *
- * Prune deletes rows, and the only way back is paying for the embeddings again, so it
- * belongs behind the same gate as the two reindexes rather than firing on one press.
- */
+/** Every action is confirmed, including `prune`. Deleted vectors can only come back by paying for embeddings again. */
 type MaintenanceAction = "top-up" | "full" | "prune";
 
 const ACTION_COPY = {
@@ -58,7 +53,7 @@ const settledMessage = (run: IndexRun): string => {
   return run.error ?? "Reindex failed";
 };
 
-/** The numbers plan §8 requires on screen before a bulk action may be confirmed. */
+/** Preview counts must be on screen before confirm. */
 const ConfirmActionModal = ({
   action,
   isPending,
@@ -76,7 +71,7 @@ const ConfirmActionModal = ({
 
   const copy = action ? ACTION_COPY[action] : null;
 
-  // exactly the rows `embeddings:prune` deletes — everything off the current key
+  // rows `embeddings:prune` deletes: everything off the current key
   const leftoverVectors = data
     ? data.byIndexKey
         .filter(

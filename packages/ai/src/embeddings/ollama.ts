@@ -5,9 +5,9 @@ import { EMBEDDING_MAX_TOKENS, OLLAMA_EMBEDDING_MAX_TOKENS } from "./utils.ts";
 import type { EmbeddingTask, OllamaEmbeddingModel } from "./utils.ts";
 
 /**
- * Asymmetric models need task-specific prefixes, otherwise retrieval quality
- * degrades significantly. See https://huggingface.co/nomic-ai/nomic-embed-text-v1.5
- * and https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1.
+ * Asymmetric models need task-specific prefixes or retrieval degrades.
+ * See https://huggingface.co/nomic-ai/nomic-embed-text-v1.5 and
+ * https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1.
  */
 const withTaskPrefix = (
   input: string,
@@ -27,9 +27,9 @@ const withTaskPrefix = (
 };
 
 /**
- * The prefix is prepended *after* the guard, so its cost has to come out of the
- * budget or the prefixed input overshoots the model's limit. The longest prefix
- * above is well under this.
+ * Prefix is prepended after the guard, so its cost comes out of the budget
+ * or the prefixed input overshoots the model limit. Longest prefix above is
+ * well under this.
  */
 const TASK_PREFIX_TOKEN_RESERVE = 32;
 
@@ -42,12 +42,12 @@ const inputBudget = (model: OllamaEmbeddingModel): number =>
   );
 
 /**
- * cl100k_base is not these models' tokenizer, so the count is approximate —
- * but it errs on the side of truncating more, which is the safe direction.
+ * cl100k_base is not these models' tokenizer, so the count is approximate
+ * and errs toward truncating more.
  *
  * No `dimensions` is requested: only `nomic-embed-text` would honour it, and
- * the width the caller must get is the model's native one — see
- * `OLLAMA_EMBEDDING_DIMENSIONS`.
+ * the caller must get the model's native width (see
+ * `OLLAMA_EMBEDDING_DIMENSIONS`).
  */
 export const ollamaEmbedding = async (
   input: string,
@@ -68,7 +68,7 @@ export const ollamaEmbedding = async (
   return embedding;
 };
 
-/** Batch variant — one Ollama call for a document and all of its chunks. */
+/** One Ollama call for a document and all of its chunks. */
 export const ollamaEmbeddings = async (
   inputs: string[],
   model: OllamaEmbeddingModel,

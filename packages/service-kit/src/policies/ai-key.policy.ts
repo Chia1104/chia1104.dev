@@ -9,14 +9,13 @@ export const AI_AUTH_TOKEN = "AI_AUTH_TOKEN";
 
 export interface AiKeyPolicyOptions {
   /**
-   * Cookie the encoded provider key is stored in. Resolved by the caller, because the
-   * provider can come from the request body (Hono) or the validated input (oRPC) —
-   * request-shaped data never reaches a policy directly.
+   * Cookie holding the encoded provider key. Resolved by the caller: request
+   * data never reaches a policy directly.
    */
   cookieName?: string;
   /**
-   * Decodes and verifies the cookie value. Injected so this package needs no
-   * dependency on `@chia/ai`; wire it with `verifyApiKey` from `@chia/ai/utils`.
+   * Decodes and verifies the cookie. Injected so this package does not depend
+   * on `@chia/ai`; wire with `verifyApiKey` from `@chia/ai/utils`.
    */
   verify: (encoded: string) => { apiKey: string } | Promise<{ apiKey: string }>;
 }

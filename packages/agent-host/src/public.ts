@@ -21,11 +21,8 @@ import type { AgentKindDefinition } from "./kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "./tasks";
 
 /**
- * The **public** agent: the reading assistant visitors talk to on the site.
- *
- * The domain — prompt, policy, budget, model allowlist — is `@chia/agent-public`; its tools
- * are `@chia/agent-content`'s. This binds it to the host: a `public`-visibility content port
- * and nothing else. It keeps no row beside `agent.session`: a public session is its transcript.
+ * Binds `@chia/agent-public` to the host: a `public`-visibility content port and nothing else.
+ * It keeps no row beside `agent.session`: a public session is its transcript.
  */
 
 /** No extension row; the loaded state is an empty object so the session stays visible. */
@@ -53,9 +50,8 @@ export const createPublicAgentKind = (
       "Answers visitors' questions about the published posts, on the public site.",
 
     /**
-     * Anyone with a user row: a guest minted by `signIn.anonymous()` or a signed-in visitor.
-     * Every lower tier is metered by the shared weekly allowance and the running-turn cap;
-     * only `Root` is not.
+     * Anyone with a user row. Lower tiers are metered by the shared weekly allowance and the
+     * running-turn cap; only `Root` is not.
      */
     minTier: CallerTier.Root,
     defaults: PUBLIC_SESSION_DEFAULTS,

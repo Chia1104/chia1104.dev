@@ -7,9 +7,9 @@ import dayjs from "@chia/utils/day";
 export interface FeedIndexingSnapshot {
   type: "post" | "note";
   slug: string;
-  /** `published && !deleted` — the single flag most branches care about */
+  /** `published && !deleted`. The flag most branches care about. */
   enabled: boolean;
-  /** kept separate because the BM25 table stores both as filterable columns */
+  /** BM25 stores both as filterable columns. */
   published: boolean;
   deleted: boolean;
   createdAt: string;
@@ -22,16 +22,11 @@ export interface FeedIndexingSnapshot {
     summary: string | null;
     excerpt: string | null;
     content: string | null;
-    /** tag names in this locale — part of the document card */
     tags: string[];
   }[];
 }
 
-/**
- * Loads the feed snapshot every indexing branch (embeddings, reading time,
- * BM25) is built from. Runs as a step so the workflow replays the same
- * snapshot on retries.
- */
+/** Snapshot every indexing branch is built from. A step so retries replay the same snapshot. */
 export const loadFeedForIndexingStep = async (
   feedID: number
 ): Promise<FeedIndexingSnapshot | null> => {
@@ -43,8 +38,8 @@ export const loadFeedForIndexingStep = async (
     return null;
   }
 
-  // tag names are stored per locale; fall back to every name when a locale has
-  // no tag translations so the card is not silently missing its tags
+  // Tag names are stored per locale; fall back to every name when a locale has
+  // no tag translations so the card is not silently missing its tags.
   const tagNamesByLocale = new Map<string, string[]>();
   for (const tag of feed.tags) {
     const names = tagNamesByLocale.get(tag.locale) ?? [];

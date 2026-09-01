@@ -6,7 +6,7 @@ import { env } from "../env";
 
 /**
  * `apps/workflow` has one control route at its root and is only reachable over the private
- * network, so there is a single internal endpoint and no version prefix.
+ * network, so the endpoint has no version prefix.
  */
 const resolveControlUrl = (): string => {
   const url = withServiceEndpoint("/", Service.Workflow, {
@@ -21,7 +21,7 @@ const resolveControlUrl = (): string => {
   return url;
 };
 
-/** Every queue mutation this process issues, and the run state it reconciles against. */
+/** The only client this process uses for queue mutations and run reconciliation. */
 export const workflowControl = createWorkflowControlClient({
   url: resolveControlUrl(),
   token: env.INTERNAL_WORKFLOW_SERVICE_TOKEN,

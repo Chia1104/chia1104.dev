@@ -9,11 +9,7 @@ import { env as internalEnv } from "./env.ts";
 import { relations } from "./schemas/relations.ts";
 import { storableCodecs } from "./storable.ts";
 
-/**
- * The query surface repositories take. The driver's database *and* its transactions satisfy it,
- * so work that must run inside a transaction (see `withAgentSessionLock`) reuses the same
- * repositories on `tx`; nothing here reaches for the driver client.
- */
+/** Query surface for repositories. The driver and its transactions both satisfy it, so `withAgentSessionLock` can reuse them on `tx`. */
 export type DB = PgAsyncDatabase<NodePgQueryResultHKT, typeof relations>;
 
 const connections = new Map<string, Promise<DB>>();
@@ -34,9 +30,7 @@ export async function getConnection(
     withCache = true,
     cacheOptions = { strategy: "explicit", ttlMs: 60_000 },
   } = options ?? {};
-  // Keyed by URL *and* cache config: a `withCache: false` caller (workflow steps that
-  // must never read stale rows) must not silently receive whichever connection was
-  // created first.
+  // Cache config is part of the key so `withCache: false` never reuses a cached connection.
   const connectionKey = withCache
     ? `${url}#cache:${cacheOptions.strategy ?? "explicit"}:${cacheOptions.ttlMs ?? 60_000}`
     : `${url}#nocache`;

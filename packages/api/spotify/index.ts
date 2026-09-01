@@ -104,12 +104,6 @@ export const refreshSpotifyAccessToken = (refreshToken: string) => {
   });
 };
 
-/**
- * @description get favorite playlist from spotify
- * @param req { revalidate }
- * @default revalidate one request per one hour
- * @returns PlayList
- */
 export const getPlayList = async (req?: {
   playlistId?: string;
   revalidate?: number;
@@ -142,12 +136,6 @@ export const getPlayList = async (req?: {
   return result.json<PlayList>();
 };
 
-/**
- * @description get user current playing from spotify
- * @param req { revalidate }
- * @default revalidate one request per one minutes
- * @returns CurrentPlaying | null
- */
 export const getNowPlaying = async (req: {
   accessToken: string;
   revalidate?: number;

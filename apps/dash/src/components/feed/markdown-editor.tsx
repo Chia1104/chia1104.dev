@@ -54,21 +54,17 @@ export const MarkdownEditor = ({
   );
 
   const editorRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null);
-  // Tracks the last completion text we returned. If the text before cursor
-  // ends with this value on the next trigger, the user just committed the
-  // suggestion — skip the API call to avoid an immediate re-trigger.
+  // Last completion we returned. If the text before the cursor ends with it, the user just
+  // committed the suggestion; skip the API call to avoid an immediate re-trigger.
   const lastCompletionRef = useRef("");
 
   const handleMount: OnMount = useCallback(
     (editor, monaco) => {
-      // Local flag — updated by the content-change listener below.
-      // Using a closure variable instead of a ref keeps things self-contained
-      // and avoids extra state leaking out of this callback.
+      // Closure flag (not a ref) updated by the content-change listener below.
       let lastChangeWasDeletion = false;
 
       editor.onDidChangeModelContent((e) => {
-        // A "deletion" is any change that only removes text (no new text inserted).
-        // This covers Backspace, Delete, Ctrl+Backspace, selection delete, and cut.
+        // A deletion is any change that only removes text.
         lastChangeWasDeletion =
           e.changes.length > 0 &&
           e.changes.every((c) => c.rangeLength > 0 && c.text === "");
@@ -90,11 +86,8 @@ export const MarkdownEditor = ({
               endColumn: position.column,
             });
 
-            // Guard: deletion detected — don't suggest while user is removing text.
             if (lastChangeWasDeletion) return { items: [] };
 
-            // Guard: cursor text ends with the last completion → user just
-            // committed it. Skip once and clear the guard.
             if (
               lastCompletionRef.current &&
               textBeforeCursor.trimEnd().endsWith(lastCompletionRef.current)

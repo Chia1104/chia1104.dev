@@ -17,10 +17,6 @@ import { callerGuard, tieredRateLimitGuard } from "../guards/caller.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { contractOS } from "../utils";
 
-// ============================================
-// Playback
-// ============================================
-
 export const getSpotifyPlaylistRoute = contractOS.spotify.playlist
   .use(callerGuard({ minTier: CallerTier.ApiKey }))
   .use(tieredRateLimitGuard({ prefix: "rate-limiter:spotify" }))
@@ -34,8 +30,7 @@ export const getSpotifyNowPlayingRoute = contractOS.spotify.playing
     try {
       return await getSpotifyNowPlayingService(opts.context.db);
     } catch (error) {
-      // No connected account and no fallback refresh token — the feature is simply
-      // unconfigured, which is a 503 rather than a crash.
+      // Unconfigured (no account, no fallback refresh token) is 503, not a crash.
       if (error instanceof SpotifyCredentialUnavailableError) {
         throw opts.errors.SERVICE_UNAVAILABLE();
       }
@@ -43,14 +38,7 @@ export const getSpotifyNowPlayingRoute = contractOS.spotify.playing
     }
   });
 
-// ============================================
-// Account management (admin)
-// ============================================
-
-/**
- * Authenticated + role ∈ {Admin, Root}, but **not** pinned to the single configured
- * admin id — any admin may manage the connected Spotify accounts.
- */
+/** Any admin/root may manage connected Spotify accounts; not pinned to the configured admin id. */
 const spotifyManageGuard = adminGuard({ pinToAdminId: false });
 
 export const getSpotifyAccountsRoute = contractOS.spotify.accounts

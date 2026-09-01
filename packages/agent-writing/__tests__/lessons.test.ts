@@ -10,7 +10,6 @@ import {
   wholeBranch,
 } from "../src/memory/lessons.ts";
 
-/** The fields a fixture supplies; messages are partial, the helpers read only role and content. */
 interface EntryBody {
   type: SessionEntry["type"];
   message?: object;

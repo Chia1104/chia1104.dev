@@ -6,21 +6,11 @@ import { locale } from "@chia/db/schema/enums";
 
 import { withMetaSchema } from "./shared";
 
-/**
- * Shared agent transport contract.
- *
- * Kind-specific fields stay optional; the runtime selected by `agent.session.kind` owns
- * their validation.
- */
-
-// ============================================
-// Shared shapes
-// ============================================
+/** Kind-specific fields stay optional; the runtime selected by `agent.session.kind` owns their validation. */
 
 /**
- * Refuses a turn, decision or summary for a caller whose weekly quota is spent. Not an oRPC
- * common code, so the status travels with the declaration; `resetAt` is when the week turns
- * over, so a client can say when to come back rather than just that it cannot continue.
+ * Quota refusal is not an oRPC common code, so the status travels here. `resetAt` is when the
+ * week turns over.
  */
 export const agentQuotaExceededSchema = z.object({
   limitMicros: z.number(),
@@ -44,9 +34,8 @@ export const turnCapError = {
 } as const;
 
 /**
- * Where the caller stands against the usage quota: what a client shows as a meter before the
- * wall, and what tells it when the wall moves. `exempt` is the operator, whose `limitMicros`
- * and `maxRunningTurns` are `null`; spend and running turns are still reported for them.
+ * `exempt` is the operator: `limitMicros` and `maxRunningTurns` are `null`, but spend and
+ * running turns are still reported.
  */
 export const agentUsageStandingSchema = z.object({
   exempt: z.boolean(),
@@ -73,19 +62,15 @@ export const thinkingLevelSchema = z.enum([
 ]);
 
 /**
- * Tiers are per-kind policy, so the contract carries the string rather than a union. `@chia/agent-runtime`
- * deliberately keeps `ToolTier` open for the same reason — narrowing lives in each kind's package.
+ * Tiers are per-kind policy, so the contract carries a string rather than a union. Narrowing
+ * lives in each kind's package.
  */
 const toolTierSchema = z.string();
 
 /**
- * Model identity: the `(providerId, modelId)` pair, always together.
- *
- * One nested object rather than two sibling optionals, so "a model id with no provider" is not a
- * state a caller can express. The same model carries different ids under different providers
- * (`anthropic/claude-haiku-4.5` through a gateway is `claude-haiku-4-5` natively), and inferring the
- * missing half would silently decide whose account pays. Whether the pair actually *exists* is
- * per-kind policy, checked by the runtime — see `agentSessionGuard`.
+ * `(providerId, modelId)` together so a caller cannot send a model id with no provider.
+ * Inferring the missing half would silently decide whose account pays. Existence is
+ * per-kind policy.
  */
 export const agentModelRefSchema = z.object({
   providerId: z.string().min(1),
@@ -100,7 +85,6 @@ export const agentSessionSummarySchema = z.object({
   thinkingLevel: thinkingLevelSchema.nullable().optional(),
   /** Writing-agent extension retained for the current dashboard. Other kinds omit it. */
   targetFeedId: z.number().nullable().optional(),
-  /** The session this one was forked from, when it was. */
   forkedFromSessionId: z.string().nullable().optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
@@ -150,8 +134,8 @@ export const agentSessionDetailSchema = z.object({
   /** Writing-agent state. Other kinds expose their own state contract. */
   draft: agentDraftSchema.optional(),
   /**
-   * The session's live durable run, or `null` when none is alive. `running` means a turn step is
-   * executing right now; `waiting` means the run is parked on its message or approval hook.
+   * Live durable run, or `null`. `running` is a turn executing; `waiting` is parked on a
+   * message or approval hook.
    */
   run: z
     .object({
@@ -160,14 +144,13 @@ export const agentSessionDetailSchema = z.object({
     })
     .nullable(),
   /**
-   * The transcript replayed as wire events, so the client folds it with the exact same reducer it
-   * uses for the live stream. While a turn is running it stops before that turn; `chat` with
-   * `{ type: "attach" }` replays the running turn from its start and tails it live.
+   * Transcript as wire events so the client uses the same reducer as the live stream. While a
+   * turn runs it stops before that turn; `chat` `{ type: "attach" }` replays from its start.
    */
   events: z.array(agentWireEventSchema),
   /**
-   * Every approval row of the session. The transcript never replays approval events, so the client
-   * re-applies these: a pending row restores the prompt, a decided row closes its card.
+   * Every approval row. The transcript never replays approval events, so the client re-applies
+   * these.
    */
   approvals: z.array(
     z.object({
@@ -183,8 +166,8 @@ export const agentSessionDetailSchema = z.object({
     /** Estimated tokens the next provider request will carry on the active branch. */
     contextTokens: z.number().int().nonnegative(),
     /**
-     * Whether `compact` would condense anything. A compaction keeps the newest part of the branch
-     * whole, so a short conversation has nothing to summarise and `compact` refuses it.
+     * Whether `compact` would condense anything. A short conversation has nothing to summarise
+     * and `compact` refuses it.
      */
     compactable: z.boolean(),
     /** Every token processed by provider and compaction calls across the session. */
@@ -193,18 +176,10 @@ export const agentSessionDetailSchema = z.object({
   }),
 });
 
-// ============================================
-// Usage
-// ============================================
-
 /** The caller's own standing. Any session-bearing tier, guests included; nothing kind-specific. */
 export const getAgentUsageContract = oc
   .errors({ UNAUTHORIZED: {}, SERVICE_UNAVAILABLE: {} })
   .output(agentUsageStandingSchema);
-
-// ============================================
-// Sessions
-// ============================================
 
 export const listAgentSessionsContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
@@ -275,19 +250,10 @@ export const updateAgentSessionSettingsContract = oc
   )
   .output(agentSessionDetailSchema);
 
-// ============================================
-// Turns
-// ============================================
-
 /**
- * The turn transport: one prompt or approval decision in, that turn's wire events out.
- *
- * The request is scoped to one turn, while the runtime below it keeps using one durable,
- * multi-turn workflow: the message is enqueued durably first and this request then tails the
- * run's stream from that point, so a dropped connection loses the view, never the turn — the
- * transcript is replayed from the server-owned session on the next `get`. Only the newest
- * prompt or approval decision crosses this boundary; the server owns conversation history.
- * The stream carries the same `AgentWireEvent`s `get` replays, so one client reducer folds both.
+ * One prompt or approval in; that turn's wire events out. The message is enqueued durably
+ * first, then this request tails the stream — a dropped connection loses the view, never
+ * the turn.
  */
 export const chatAgentContract = oc
   .errors({
@@ -323,8 +289,8 @@ export const chatAgentContract = oc
           comment: z.string().max(1000).optional(),
         }),
         /**
-         * Rejoin the turn that is running right now, replayed from its start. Enqueues nothing;
-         * NOT_FOUND when no turn is running.
+         * Rejoin the running turn from its start. Enqueues nothing; NOT_FOUND when no turn is
+         * running.
          */
         z.object({ type: z.literal("attach") }),
       ]),
@@ -368,17 +334,9 @@ export const approveAgentToolContract = oc
     })
   );
 
-// ============================================
-// Session maintenance
-// ============================================
-
 /**
- * Summarises the older part of the active branch into a compaction entry, the new leaf. Returns
- * the whole detail rebuilt, as `navigate` does: the leaf, the context estimate and the transcript
- * (which now carries a `session:compacted` notice) all changed. `CONFLICT` while a turn is
- * running, while an approval is undecided, or when there is nothing to condense
- * (`stats.compactable` is `false`). `TIMEOUT` when the summary outran the service's own
- * deadline — the conversation is then unchanged.
+ * Summarises the older part of the active branch. `CONFLICT` while a turn runs, an approval
+ * is undecided, or `stats.compactable` is false. `TIMEOUT` leaves the conversation unchanged.
  */
 export const compactAgentSessionContract = oc
   .errors({
@@ -400,14 +358,8 @@ export const compactAgentSessionContract = oc
   .output(agentSessionDetailSchema);
 
 /**
- * Rewinds the session in place to an earlier message so the agent can take another run at it.
- *
- * `entryId` is a message id from the transcript (wire ids are entry ids). Returns the whole
- * detail rebuilt: changing the active branch invalidates every view the client held, and the
- * client folds a detail the same way it folds `get`. `CONFLICT` while a turn is running or an
- * approval is undecided — a decision relayed onto a different branch would answer a call that
- * is no longer there. `TIMEOUT` when a requested summary outran the service's own deadline —
- * the leaf has not moved.
+ * Rewinds in place to `entryId` (a transcript message id). `CONFLICT` while a turn runs or
+ * an approval is undecided. `TIMEOUT` leaves the leaf unmoved.
  */
 export const navigateAgentSessionContract = oc
   .errors({
@@ -432,12 +384,8 @@ export const navigateAgentSessionContract = oc
   .output(agentSessionDetailSchema);
 
 /**
- * Branches the session into a new one, leaving this one as it is.
- *
- * With `entryId`, the copy is the branch below it — `before` a user message (the default) stops
- * at its parent so that message can be re-asked, `at` includes the target; without it, the whole
- * tree. The kind's state (the writing draft) is copied as it stands now, not as it was at the
- * target. Returns the new session's detail; the list carries `forkedFromSessionId`.
+ * Copies into a new session. With `entryId`, `before` a user message stops at its parent;
+ * `at` includes the target. Kind state is copied as it stands now.
  */
 export const forkAgentSessionContract = oc
   .errors({
@@ -459,10 +407,6 @@ export const forkAgentSessionContract = oc
   )
   .output(agentSessionDetailSchema);
 
-// ============================================
-// Capabilities
-// ============================================
-
 export const agentModelInfoSchema = z.object({
   providerId: z.string(),
   modelId: z.string(),
@@ -471,9 +415,8 @@ export const agentModelInfoSchema = z.object({
   supportsReasoning: z.boolean(),
   supportsImageInput: z.boolean(),
   /**
-   * True when the provider runs on a caller-supplied key the caller has not registered yet.
-   * Such models are still listed — the picker offers them and prompts for a key, rather than
-   * hiding an option the operator could have had.
+   * True when the provider needs a caller key that is not registered yet. Still listed so
+   * the picker can prompt for a key.
    */
   requiresApiKey: z.boolean(),
 });

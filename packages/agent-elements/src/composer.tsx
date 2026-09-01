@@ -49,22 +49,15 @@ import { SlashMenu } from "./slash-menu.tsx";
 import type { ComposerSeed } from "./store.ts";
 import type { AgentCapabilities } from "./types.ts";
 
-/** Tallest the input grows before it scrolls, in px — about eight lines. */
+/** Tallest the input grows before it scrolls, in px (~eight lines). */
 const MAX_INPUT_HEIGHT = 200;
 
 export interface ComposerProps {
   className?: string;
-  /** Overrides the placeholder while the composer accepts input. */
   placeholder?: string;
-  /**
-   * Controls on the toolbar's left, beside the send button. Defaults to the model picker; pass
-   * `null` for none.
-   */
+  /** Left of send. Defaults to the model picker; pass `null` for none. */
   toolbar?: ReactNode;
-  /**
-   * Stacked above the input and tucked under its top edge: the context the next prompt acts on
-   * (drafts, attachments, pending items). Compose from `ComposerAttachment` rows.
-   */
+  /** Stacked above the input. Compose from `ComposerAttachment` rows. */
   attachments?: ReactNode;
   /** Client-only commands that act on the composer UI instead of starting an agent turn. */
   localCommands?: readonly ComposerLocalCommand[];
@@ -79,18 +72,14 @@ export interface ComposerLocalCommand {
 export interface ComposerAttachmentProps {
   icon: ReactNode;
   label: ReactNode;
-  /** Trailing detail beside the label, e.g. a locale or status chip. */
   meta?: ReactNode;
   /** An explicit control at the row's end; separate from the row press so the two never compete. */
   action?: ReactNode;
-  /** Makes the whole row a button. */
   onPress?: () => void;
-  /** Adds a trailing dismiss button. */
   onDismiss?: () => void;
   className?: string;
 }
 
-/** One row in the composer's attachment stack. */
 export const ComposerAttachment = ({
   action,
   className,
@@ -142,7 +131,7 @@ export const ComposerAttachment = ({
   );
 };
 
-/** Every command the composer can resolve, with host-local commands shadowing server ones. */
+/** Host-local commands shadow server ones. */
 const useSlashMenuItems = (
   localCommands: readonly ComposerLocalCommand[],
   capabilities: AgentCapabilities | undefined
@@ -181,7 +170,6 @@ const useSlashMenuItems = (
     return { items, commandNames };
   }, [capabilities, localCommands]);
 
-/** Keeps `fn` callable through one stable identity so memoized children skip re-renders. */
 const useStableCallback = <Args extends unknown[], Result>(
   fn: (...args: Args) => Result
 ) => {
@@ -284,12 +272,8 @@ const ComposerToolbar = memo(
 ComposerToolbar.displayName = "ComposerToolbar";
 
 /**
- * The input on top, a toolbar below: model picker (or whatever the host puts there) on the left,
- * send/stop on the right. The input grows with its content up to a cap, then scrolls.
- *
- * A rewound prompt handed back through the store (`composerSeed`) is not fed into a running
- * editor: the editor is keyed on the seed's id, so each hand-off mounts a fresh one whose initial
- * draft is that text. Nothing has to notice a change, and the draft stays the editor's own state.
+ * Remounted via `key={seed?.id}` so a composer seed is a fresh editor, not a patch into a
+ * running draft.
  */
 export const Composer = (props: ComposerProps) => {
   const seed = useAgentSession((state) => state.composerSeed);
@@ -365,9 +349,9 @@ const ComposerEditor = ({
   const menuOpen =
     canPrompt && slashToken !== null && dismissedSlashKey !== slashKey;
 
-  // One pass per draft commit: grow the input with its content up to a cap (the rest scrolls), then
-  // restore focus and the caret if an edit asked for it. Keyed on the draft object rather than the
-  // text so a replacement that lands on identical text still restores focus.
+  // Grow the input up to a cap, then restore focus and the caret if an edit asked for it. Keyed
+  // on the draft object rather than the text so a replacement that lands on identical text still
+  // restores focus.
   useLayoutEffect(() => {
     const element = inputRef.current;
     if (!element) return;

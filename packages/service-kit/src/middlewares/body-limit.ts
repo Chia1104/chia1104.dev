@@ -6,14 +6,12 @@ import type { ServiceHonoEnv } from "../hono";
 /**
  * Caps the request body at `maxSize` bytes.
  *
- * Not `hono/body-limit`: for a chunked body it rebuilds the request as
- * `new Request(c.req.raw, { body })`. Under Nitro's node server `c.req.raw` is srvx's lazy
- * `Request`, whose constructor unwraps the original by materialising it from its own —
- * by then consumed — body stream, and the RPC handler that reads the rebuilt request
- * throws. Building from the URL sidesteps that unwrap.
+ * Not `hono/body-limit`: for a chunked body it rebuilds as
+ * `new Request(c.req.raw, { body })`. Under Nitro, `c.req.raw` is srvx's lazy
+ * Request whose constructor unwraps from an already-consumed body stream, and
+ * the RPC handler then throws. Building from the URL sidesteps that.
  *
- * A declared `content-length` is trusted: the HTTP parser enforces that framing, so a
- * client cannot send more than it declared.
+ * A declared `content-length` is trusted: the HTTP parser enforces that framing.
  */
 export const bodyLimit = (maxSize: number) =>
   createMiddleware<ServiceHonoEnv>(async (c, next) => {

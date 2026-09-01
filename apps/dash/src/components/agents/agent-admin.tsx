@@ -14,11 +14,7 @@ import { KindCard } from "./kind-card";
 import { QuotaCard } from "./quota-card";
 import { TaskCard } from "./task-card";
 
-/**
- * The agent workspace. Every call is a client-side oRPC call behind `adminGuard()`. Cards
- * are keyed on their row's `updatedAt`, so a save remounts the card with the server's view
- * of the override instead of reconciling it against a form in progress.
- */
+/** Client-side oRPC behind `adminGuard()`. Cards remount on `updatedAt` so a save replaces the form instead of reconciling it. */
 export const AgentAdmin = () => {
   const kinds = useQuery(orpc.agent.admin.kinds.list.queryOptions());
   const tasks = useQuery(orpc.agent.admin.tasks.list.queryOptions());

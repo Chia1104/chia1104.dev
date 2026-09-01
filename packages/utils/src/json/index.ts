@@ -29,7 +29,7 @@ export const asString = <TValue>(value: TValue) =>
 export const asNumber = <TValue>(value: TValue) =>
   numberSchema.safeParse(value).data;
 
-/** JSON serialization with recursively sorted object keys. */
+/** Recursively sorts object keys so equal values stringify identically. */
 export const stableStringify = (value: JsonValue): string => {
   if (Array.isArray(value)) {
     return `[${value.map(stableStringify).join(",")}]`;

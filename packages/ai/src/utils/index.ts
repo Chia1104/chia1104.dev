@@ -8,9 +8,9 @@ import GithubSlugger from "github-slugger";
 import * as z from "zod";
 
 /**
- * This module is imported by the API-key guards, so it must stay free of provider SDKs.
- * `createModel` lives in `./model` for that reason, and the auth-token schema is declared here
- * rather than pulled from `./types` — that module reaches `ai` for `modelMessageSchema`.
+ * Imported by the API-key guards, so it must stay free of provider SDKs.
+ * `createModel` lives in `./model`; the auth-token schema is declared here
+ * rather than pulled from `./types`, which reaches `ai` for `modelMessageSchema`.
  */
 
 export const slugger = new GithubSlugger();

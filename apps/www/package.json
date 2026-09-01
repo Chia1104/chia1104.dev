@@ -21,6 +21,7 @@
     "lint:fix": "oxlint --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "type:check": "tsc --noEmit",
+    "test": "vitest --run",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
     "format:docs": "prettier --write \"**/*.{md,mdx}\"",
     "docs:check": "prettier --check \"**/*.{md,mdx}\"",
@@ -87,6 +88,7 @@
   },
   "devDependencies": {
     "@chia/tailwind": "workspace:*",
+    "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@tailwindcss/postcss": "catalog:tailwindcss",
     "@testing-library/jest-dom": "catalog:testing-library",
@@ -103,6 +105,7 @@
     "postcss": "catalog:tailwindcss",
     "tailwind-scrollbar": "catalog:tailwindcss",
     "tailwindcss": "catalog:tailwindcss",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
   }
 }

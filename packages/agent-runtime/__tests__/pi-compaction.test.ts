@@ -10,8 +10,9 @@ import type { SessionEntry } from "../src/session/entries.ts";
 import { estimateBranchContextTokens } from "../src/session/usage.ts";
 
 /**
- * The threshold is pi's: compact once context exceeds `contextWindow - reserveTokens`, where the
- * default reserve is 16,384. These tests pick a 100k window so the boundary sits at ~83,616.
+ * The threshold is pi's: compact once context exceeds `contextWindow - reserveTokens`, where
+ * the default reserve is 16,384. These tests pick a 100k window so the boundary sits at
+ * ~83,616.
  */
 const CONTEXT_WINDOW = 100_000;
 
@@ -163,10 +164,10 @@ describe("shouldCompactBranch", () => {
   });
 
   /**
-   * The workflow-retry hazard: `runAgentTurnStep` is a durable step, so a retry can re-run a turn
+   * Workflow-retry hazard: `runAgentTurnStep` is a durable step, so a retry can re-run a turn
    * whose compaction already landed. The branch it sees starts at the compaction entry, and the
-   * assistant usage after it reflects the *post*-compaction context — so the threshold says no and
-   * the second compaction never happens. No extra bookkeeping needed.
+   * assistant usage after it reflects the post-compaction context, so the threshold says no and
+   * the second compaction never happens.
    */
   it("does not compact again right after a compaction", () => {
     const branch = [

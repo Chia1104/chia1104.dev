@@ -1,15 +1,10 @@
 import type { Skill } from "@earendil-works/pi-agent-core";
 
 /**
- * Skills, in pi's first-class sense. The system prompt carries only name and description
- * (`formatSkillsIndex` in `system.ts`); the model loads `content` on demand through the
- * `read_skill` tool, which is the only read path — pi's default convention of reading the skill
- * file from disk has no tool to back it here.
- *
- * They live inline rather than as `SKILL.md` files on disk because this package is consumed
- * source-only (no build step) and is loaded inside a server bundle — a runtime `fs.readFile`
- * relative to `import.meta.url` would break under nitro's tracing. `filePath` is therefore a
- * stable synthetic id, which is all pi uses it for here.
+ * Skills are inline, not `SKILL.md` files: this package is consumed source-only inside a server
+ * bundle, and a runtime `fs.readFile` relative to `import.meta.url` would break under nitro's
+ * tracing. `filePath` is a synthetic id. The system prompt lists name and description;
+ * `read_skill` is the only load path.
  */
 
 const skill = (name: string, description: string, content: string): Skill => ({

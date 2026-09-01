@@ -1,4 +1,4 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 
 import { Locale } from "@chia/db/types";
@@ -6,15 +6,12 @@ import { Locale } from "@chia/db/types";
 import { useSearchFeeds } from "@/hooks/use-search-feeds";
 import { orpc } from "@/libs/orpc/client";
 
-import { createTestQueryClient } from "../utils";
+import { withQueryClient } from "../utils";
 
 const { mockQueryFn, mockQueryOptions } = vi.hoisted(() => {
   const queryFn = vi.fn();
   return {
     mockQueryFn: queryFn,
-    // Stands in for oRPC's tanstack-query util: it returns the `queryKey` / `queryFn`
-    // pair that react-query consumes, so the hook is exercised through the real
-    // react-query machinery.
     mockQueryOptions: vi.fn(
       ({ input }: { input: { keyword: string; locale: string } }) => ({
         queryKey: ["feeds", "search", input],
@@ -42,18 +39,14 @@ describe("useSearchFeeds", () => {
     vi.useRealTimers();
   });
 
-  it("should debounce query changes for 300 milliseconds", async () => {
+  it("debounces query changes for 300 milliseconds", async () => {
     vi.useFakeTimers();
-    const queryClient = createTestQueryClient();
+    const { wrapper } = withQueryClient();
     const { result, rerender } = renderHook(
       ({ value }) => useSearchFeeds(value, Locale.zhTW),
       {
         initialProps: { value: "first" },
-        wrapper: ({ children }) => (
-          <QueryClientProvider client={queryClient}>
-            {children}
-          </QueryClientProvider>
-        ),
+        wrapper,
       }
     );
 
@@ -71,30 +64,22 @@ describe("useSearchFeeds", () => {
     expect(result.current.debouncedKeyword).toBe("second");
   });
 
-  it("should not request a one-character query", () => {
-    const queryClient = createTestQueryClient();
+  it("does not request a one-character query", () => {
+    const { wrapper } = withQueryClient();
 
     const { result } = renderHook(() => useSearchFeeds("x", Locale.zhTW), {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
-      ),
+      wrapper,
     });
 
     expect(result.current.canSearch).toBe(false);
     expect(mockQueryFn).not.toHaveBeenCalled();
   });
 
-  it("should search through the oRPC query options", async () => {
-    const queryClient = createTestQueryClient();
+  it("searches through the oRPC query options", async () => {
+    const { wrapper } = withQueryClient();
 
     renderHook(() => useSearchFeeds("React", Locale.En), {
-      wrapper: ({ children }) => (
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
-      ),
+      wrapper,
     });
 
     await waitFor(() => {

@@ -17,12 +17,8 @@ export const link = new RPCLink({
     version: "LEGACY",
   }),
   headers: {
+    /** Server-only: Cloudflare bypass plus `CH_API_KEY`. Browser `client.ts` must never get the key. */
     [X_CF_BYPASS_TOKEN]: env.CF_BYPASS_TOKEN ?? "",
-    /**
-     * Lifts every call from this client to the API-key tier: `feeds.*` serves the browser
-     * too, and the key is what buys the larger page size the sitemap needs plus access to
-     * drafts when a procedure is asked for them.
-     */
     "x-ch-api-key": env.CH_API_KEY ?? "",
   },
 });

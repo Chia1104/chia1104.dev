@@ -1,32 +1,25 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { getAgentSessions } from "@chia/db/repos/agent";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
+import * as dbMocks from "@chia/test/mocks/db-feeds";
 
-import { app } from "../src/server";
-
-import * as dbMocks from "./__mocks__/db.mock";
-import { setCallerTier } from "./__mocks__/guards.mock";
-
-/**
- * Who may reach an agent kind is the kind's `minTier`, enforced by the agent guards rather than
- * by a role pinned on the routes. The writing kind admits only the configured admin, so these
- * assert that a lower tier is refused at the guard — before any session lookup or model load.
- */
+import { setCallerTier } from "./helpers/guards";
+import { rpc as rpcOf } from "./helpers/rpc";
 
 /**
- * The public kind is open to every session-bearing tier, so a kind-less `list` now reaches the
- * repository for it; stub that one read so the test stays about access, not rows.
+ * Kind `minTier` is enforced at the guard, before session lookup or model load.
+ * Writing admits only the configured admin.
  */
+
+/** Stub the list read so a kind-less `list` stays about access, not rows. */
 vi.mock("@chia/db/repos/agent", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@chia/db/repos/agent")>()),
   getAgentSessions: vi.fn().mockResolvedValue([]),
 }));
 
 const rpc = (procedure: string, input?: Record<string, unknown>) =>
-  app.request(`/api/v1/rpc/agent/${procedure}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ json: input }),
-  });
+  rpcOf(`agent/${procedure}`, input);
 
 describe("agent kind access", () => {
   beforeEach(() => {
@@ -62,7 +55,7 @@ describe("agent kind access", () => {
   it("admits a guest to the agent surface but not to the writing kind", async () => {
     setCallerTier(CallerTier.Guest);
 
-    // A guest has a user to own sessions, so the floor lets them in: an empty list, not 401.
+    // Guests own sessions, so list is 200 with an empty list.
     const list = await rpc("sessions/list");
     expect(list.status).toBe(200);
 
@@ -73,18 +66,16 @@ describe("agent kind access", () => {
   it.each([
     ["guest", CallerTier.Guest],
     ["signed-in", CallerTier.Session],
-  ] as const)("admits a %s caller to the public kind", async (_label, tier) => {
-    setCallerTier(tier);
+  ] as const)(
+    "refuses a %s caller on the public kind",
+    async (_label, tier) => {
+      setCallerTier(tier);
 
-    const res = await rpc("capabilities/list", { kind: "public" });
+      const res = await rpc("capabilities/list", { kind: "public" });
 
-    expect(res.status).toBe(200);
-    const { json } = await res.json();
-    expect(json.tools.length).toBeGreaterThan(0);
-    expect(
-      json.tools.every((tool: { tier: string }) => tool.tier === "read")
-    ).toBe(true);
-  });
+      expect(res.status).toBe(403);
+    }
+  );
 
   it("refuses the usage standing to a caller with no user to stand for", async () => {
     setCallerTier(CallerTier.ApiKey);
@@ -112,10 +103,8 @@ describe("agent kind access", () => {
     await expect(res.json()).resolves.toEqual({
       json: { items: [], nextCursor: null },
     });
-    // A signed-in visitor may use the public kind and nothing else, so that is the only read.
-    expect(
-      vi.mocked(getAgentSessions).mock.calls.map(([, input]) => input)
-    ).toEqual([expect.objectContaining({ kind: "public" })]);
+    // A signed-in visitor may use neither kind, so the repository is never read.
+    expect(vi.mocked(getAgentSessions)).not.toHaveBeenCalled();
   });
 
   it("admits the configured admin", async () => {

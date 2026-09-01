@@ -8,12 +8,8 @@ import { TOOL_NAMES, labelOf } from "./registry.ts";
 import { Type, defineTool, textResult } from "./schema.ts";
 
 /**
- * The only path from the skills index in the system prompt to a skill's full text.
- *
- * Pi's own skill convention assumes a file-reading tool, which this agent does not have; without
- * this tool the index advertises rules the model can never load. Going through a tool rather than
- * inlining every skill also leaves a visible record in the thread of which rules were consulted
- * before a body was written.
+ * The only path from the skills index to a skill's full text. Pi's file-reading convention
+ * has no tool here; going through a tool also records which rules were loaded.
  */
 export const readSkillTool = defineTool({
   name: TOOL_NAMES.readSkill,

@@ -49,13 +49,7 @@ export const linkPreviewRoute = contractOS.toolings["link-preview"]
       throw opts.errors.INTERNAL_SERVER_ERROR();
     }
 
-    /**
-     * A parser, not a DOM.
-     *
-     * This used to build a whole `JSDOM` window. Importing jsdom costs ~110MB RSS that is never
-     * released — measured against a plain bun runtime — and the four `querySelector` calls below
-     * are the entire use for it. `node-html-parser` answers the same selectors for a couple of MB.
-     */
+    /** `node-html-parser` instead of jsdom: importing jsdom costs ~110MB RSS that is never released. */
     const document = parseHTML(html);
 
     const preview: LinkPreview = {

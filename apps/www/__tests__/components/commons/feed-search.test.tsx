@@ -1,5 +1,6 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Command, CommandList } from "@chia/ui/cmd";
 
@@ -16,7 +17,7 @@ vi.mock("@/hooks/use-search-feeds", () => ({
   useSearchFeeds: vi.fn(),
 }));
 
-vi.mock("@/libs/i18n/routing", () => ({
+vi.mock("@/libs/i18n/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
   }),
@@ -46,7 +47,7 @@ describe("FeedSearch", () => {
     vi.clearAllMocks();
   });
 
-  it("should render a loading status while searching", () => {
+  it("renders a loading status while searching", () => {
     mockSearchResult(
       /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
         debouncedKeyword: "test",
@@ -61,7 +62,7 @@ describe("FeedSearch", () => {
     expect(screen.getByText("search-loading")).toBeInTheDocument();
   });
 
-  it("should render an error message when search fails", () => {
+  it("renders an error message when search fails", () => {
     mockSearchResult(
       /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
         debouncedKeyword: "test",
@@ -77,7 +78,7 @@ describe("FeedSearch", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("search-error");
   });
 
-  it("should render an empty state when no feed matches", () => {
+  it("renders an empty state when no feed matches", () => {
     mockSearchResult(
       /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
         debouncedKeyword: "test",
@@ -94,7 +95,7 @@ describe("FeedSearch", () => {
     expect(screen.getByText("no-results")).toBeInTheDocument();
   });
 
-  it("should navigate to the selected localized feed", async () => {
+  it("navigates to the selected localized feed", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
     mockSearchResult(

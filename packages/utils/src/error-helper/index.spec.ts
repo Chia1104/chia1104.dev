@@ -1,13 +1,14 @@
+import { describe, expect, it } from "vitest";
 import { ParsedJSONError } from "./";
 import { tryCatch } from "./";
 
 describe("ParsedJSONError", () => {
-  it("should throw a ParsedJSONError", () => {
+  it("is a ParsedJSONError", () => {
     const error = new ParsedJSONError("{'123': '456'}");
     expect(error).toBeInstanceOf(ParsedJSONError);
   });
 
-  it("should throw a ParsedJSONError when parsing invalid JSON", async () => {
+  it("wraps invalid JSON in a ParsedJSONError", async () => {
     const parser = (input: string) => {
       try {
         JSON.parse(input);

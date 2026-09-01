@@ -11,13 +11,8 @@ import {
 import { withMetaSchema } from "./shared";
 
 /**
- * Agent memory management contract.
- *
- * RPC-only, like the RAG contract: every consumer is the dashboard's browser client.
- *
- * Every procedure — reads included — is admin-only at the route layer: a memory is the
- * agent's unpublished research and, for a lesson, a standing instruction to it. See
- * `../routes/memory.route.ts`.
+ * RPC-only and admin-only. A memory is unpublished research; an active lesson is a
+ * standing instruction. See `../routes/memory.route.ts`.
  */
 
 export const memoryKindSchema = z.enum(AGENT_MEMORY_KIND);
@@ -59,10 +54,6 @@ const writeErrors = {
 
 const memoryIdSchema = z.object({ id: z.number().int().positive() });
 
-// ============================================
-// Reads
-// ============================================
-
 export const listMemoriesContract = oc
   .errors(readErrors)
   .input(
@@ -88,10 +79,6 @@ export const getMemoryContract = oc
   .input(memoryIdSchema)
   .output(z.object({ memory: memoryDetailSchema }));
 
-// ============================================
-// Writes
-// ============================================
-
 /** Every write re-indexes; the route hands the hook to `memories/write.ts`. */
 export const updateMemoryContract = oc
   .errors(writeErrors)
@@ -112,10 +99,7 @@ export const removeMemoryContract = oc
   .input(memoryIdSchema)
   .output(memoryIdSchema);
 
-/**
- * `pending → active`. Semantically an `update`, kept separate so the audit trail of "who let
- * this instruction into every future prompt" is one procedure.
- */
+/** `pending → active`. Kept separate so the audit trail of who approved a lesson is one procedure. */
 export const approveLessonContract = oc
   .errors(writeErrors)
   .input(memoryIdSchema)

@@ -8,9 +8,8 @@ import type { ToolTier } from "@chia/agent-runtime/types";
 import type { PublicToolTier } from "../types.ts";
 
 /**
- * Tool identity for the public kind: the shared content read tools, every one of them `read`.
- * Kept apart from the tool objects so the policy classifies a call without constructing the
- * tools, which need a port, which needs a database.
+ * Tool identity for the public kind. Kept apart from the tool objects so the policy classifies
+ * a call without constructing the tools, which need a port and a database.
  */
 
 export const TOOL_NAMES = CONTENT_TOOL_NAMES;
@@ -34,8 +33,7 @@ export const labelOf = (toolName: string): string =>
 
 /**
  * Unknown names are `read` too: this kind has no tier that changes anything, so there is no
- * more restrictive tier to fall back to, and a tool the kind does not recognise cannot be in
- * its tool set in the first place.
+ * more restrictive fallback.
  */
 export const tierOf = (toolName: string): ToolTier =>
   isToolName(toolName) ? TOOL_TIER_BY_NAME[toolName] : "read";

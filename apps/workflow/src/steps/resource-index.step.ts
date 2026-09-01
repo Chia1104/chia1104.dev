@@ -12,7 +12,6 @@ import {
   saveChunkEmbeddings,
 } from "@chia/db/repos/resources/chunk";
 
-/** Chunks embedded per provider call. */
 const EMBED_BATCH_SIZE = 32;
 
 export interface ResourceIndexRequest {
@@ -20,12 +19,7 @@ export interface ResourceIndexRequest {
   sourceId: number;
 }
 
-/**
- * Rebuilds a resource's chunks.
- *
- * Chunks whose text is unchanged keep their vectors; only new or edited ones
- * are rewritten, which is what makes a one-section edit cost one embedding.
- */
+/** Unchanged text keeps its vectors; only new or edited chunks are rewritten. */
 export const syncResourceChunksStep = async (request: ResourceIndexRequest) => {
   "use step";
 
@@ -49,15 +43,8 @@ export const syncResourceChunksStep = async (request: ResourceIndexRequest) => {
 };
 
 /**
- * Embeds whatever chunks lack a vector for the current model and index version.
- *
- * Re-queries instead of paging through one snapshot: `listChunksNeedingEmbedding`
- * only returns chunks with no vector, so every persisted batch shrinks the
- * backlog and the loop terminates. Paging a single fixed-size read would report
- * `embedded` for a resource whose tail was never embedded.
- *
- * A provider 4xx other than 408/429 is permanent, so it becomes `FatalError`
- * rather than burning the step's retries.
+ * Re-queries the backlog rather than paging one snapshot, so the loop terminates.
+ * Provider 4xx other than 408/429 is `FatalError`.
  */
 export const embedPendingChunksStep = async (request: ResourceIndexRequest) => {
   "use step";
@@ -117,8 +104,7 @@ export const embedPendingChunksStep = async (request: ResourceIndexRequest) => {
         embedding: vectors[index]!,
       })),
     });
-    // the next query re-reads the backlog, so a batch that persisted nothing
-    // would spin forever
+    // The next query re-reads the backlog, so a batch that persisted nothing would spin forever.
     if (savedCount === 0) {
       throw new FatalError(
         `Persisted no embeddings for ${batch.length} pending chunks of ${request.sourceType}:${request.sourceId}`
@@ -156,11 +142,8 @@ export type ResourceIndexResult =
     };
 
 /**
- * Chunk + embed one resource.
- *
- * Composition rather than a workflow of its own so callers that already run
- * inside a workflow — the feed pipeline, for instance — reuse it without
- * nesting runs.
+ * Chunk + embed one resource. Composition, not a nested workflow, so callers already inside
+ * a workflow can reuse it.
  */
 export const indexResource = async (
   request: ResourceIndexRequest

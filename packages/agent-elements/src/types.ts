@@ -4,8 +4,7 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { agentContracts, routerContract } from "@chia/api/orpc/contracts";
 
 /**
- * The transport every element talks through: the `agent` branch of the contract-typed oRPC client.
- * Each app hands in its own client (cookie session, API key, …); this package never builds one.
+ * The `agent` branch of the host's contract-typed oRPC client. This package never builds one.
  */
 export type AgentClient = ContractRouterClient<typeof routerContract>["agent"];
 
@@ -13,8 +12,7 @@ type SessionProcedures = AgentClient["sessions"];
 type CapabilityProcedures = AgentClient["capabilities"];
 
 /**
- * The procedures the session store and elements call, as plain signatures so a host passes
- * `client.agent` and a test passes a stub. Inputs are the contract's; outputs are the plain
+ * Plain signatures so a host passes `client.agent` and a test passes a stub. Outputs are the
  * shapes the store consumes (an event iterable, not oRPC's iterator class).
  */
 export interface AgentSessionClient {

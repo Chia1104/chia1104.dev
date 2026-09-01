@@ -3,11 +3,6 @@ import { mergeDefined } from "@chia/utils/object";
 
 import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
 
-/**
- * Pure draft-buffer operations, shared by every {@link DraftStore} implementation and
- * directly unit-testable. Nothing here touches IO.
- */
-
 export const emptyDraft = (): FeedDraft => ({
   feedMeta: {},
   translations: {},
@@ -39,10 +34,6 @@ export const setContent = (
   content: string
 ): FeedDraft => patchTranslation(draft, locale, { content });
 
-// ============================================
-// String editing
-// ============================================
-
 export class EditNotAppliedError extends Error {
   constructor(
     message: string,
@@ -59,10 +50,8 @@ export interface EditResult {
 }
 
 /**
- * `oldString` → `newString` replacement with the same safety rules as pi's built-in edit
- * tool: a non-unique match without `replaceAll` is an **error**, not a first-match
- * replacement. Silently editing the wrong occurrence is far worse for the model than an
- * error it can react to by supplying more surrounding context.
+ * `oldString` → `newString` replacement. A non-unique match without `replaceAll` is an error,
+ * not a first-match replacement.
  */
 export const applyEdit = (
   content: string,
@@ -111,15 +100,8 @@ const countOccurrences = (haystack: string, needle: string): number => {
   return count;
 };
 
-// ============================================
-// Rendering for the model
-// ============================================
-
 /**
- * Renders the body with 1-based line numbers.
- *
- * Line numbers are not decoration: without them the model cannot describe *where* it wants
- * to change something, and its `oldString` guesses get much worse on long posts.
+ * Renders the body with 1-based line numbers so the model can locate `oldString`.
  */
 export const withLineNumbers = (content: string): string => {
   const lines = content.split("\n");

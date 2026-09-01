@@ -15,10 +15,8 @@ import type {
   TimelineGroupData,
 } from "./types";
 
-// Constants
 const DEFAULT_GROUP_TEMPLATE = "YYYY";
 
-// Helper function to get group name from data
 const getGroupName = (
   data: TimelineItemData,
   template: string,
@@ -39,7 +37,6 @@ const sortTimelineData = (
   );
 };
 
-// Group timeline data by year/template
 const groupTimelineData = (
   data: TimelineItemData[],
   groupTemplate: string,
@@ -72,13 +69,11 @@ const Timeline: FC<TimelineProps> = ({
   className,
   ...restProps
 }) => {
-  // Sort data if enabled (without mutating original array)
   const sortedData = useMemo(
     () => (enableSort ? sortTimelineData(data, tz) : data),
     [data, enableSort, tz]
   );
 
-  // Group data by template
   const groupedData = useMemo(
     () => groupTimelineData(sortedData, groupTemplate, tz),
     [sortedData, groupTemplate, tz]

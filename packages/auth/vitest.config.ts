@@ -1,13 +1,7 @@
-import { defineConfig } from "vitest/config";
+import { nodeConfig } from "@chia/test/config";
 
-export default defineConfig({
+export default nodeConfig({
   test: {
-    globals: true,
-    include: [
-      "src/**/*.{spec,test}.{ts,tsx}",
-      "__tests__/**/*.{spec,test}.{ts,tsx}",
-    ],
-    exclude: ["**/node_modules/**"],
     env: {
       DATABASE_URL: "postgres://postgres:password@localhost:5432/auth",
       GOOGLE_CLIENT_ID: "google-client-id",

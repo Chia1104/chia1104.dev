@@ -1,9 +1,11 @@
 import type {
+  ContentReadPort,
   PostListItem,
   PostSearchHit,
   PostSnapshot,
   TagItem,
 } from "@chia/agent-content/types";
+import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 
 import type { ContentPort, WebPort } from "../src/ports.ts";
 import type {
@@ -14,7 +16,6 @@ import type {
   WebSearchResult,
 } from "../src/types.ts";
 
-/** Scriptable {@link ContentPort} for tests. */
 export interface FakeContentPortOptions {
   searchHits?: PostSearchHit[];
   posts?: PostSnapshot[];
@@ -30,24 +31,18 @@ export interface FakeContentPort extends ContentPort {
 export const createFakeContentPort = (
   options: FakeContentPortOptions = {}
 ): FakeContentPort => {
+  const read =
+    /* SAFETY: This fixture implements the ContentReadPort methods these tests exercise. */ createFakeContentReadPort(
+      options
+    ) as ContentReadPort;
   const commits: CommitDraftInput[] = [];
   const publishes: { feedId: number; published: boolean }[] = [];
   let nextFeedId = 100;
 
   return {
+    ...read,
     commits,
     publishes,
-    searchPosts: () => Promise.resolve(options.searchHits ?? []),
-    getPost: (input) =>
-      Promise.resolve(
-        (options.posts ?? []).find((post) =>
-          input.slug !== undefined
-            ? post.slug === input.slug
-            : post.feedId === input.feedId
-        ) ?? null
-      ),
-    listPosts: () => Promise.resolve(options.list ?? []),
-    listTags: () => Promise.resolve(options.tags ?? []),
     commitDraft: (input) => {
       commits.push(input);
       const feedId = input.feedId ?? nextFeedId++;
@@ -68,7 +63,6 @@ export const createFakeContentPort = (
   };
 };
 
-/** Scriptable {@link WebPort} for tests. */
 export interface FakeWebPortOptions {
   pages?: Record<string, FetchedPage>;
   results?: WebSearchResult[];
@@ -76,9 +70,7 @@ export interface FakeWebPortOptions {
 
 export interface FakeWebPort extends WebPort {
   readonly searches: WebSearchInput[];
-  /** The signal each call received, search and fetch alike, in call order. */
   readonly signals: (AbortSignal | undefined)[];
-  /** What every `search` returns; mutable so a test can script it after construction. */
   readonly results: WebSearchResult[];
 }
 

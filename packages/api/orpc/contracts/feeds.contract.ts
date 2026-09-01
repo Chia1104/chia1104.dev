@@ -20,24 +20,12 @@ import {
 
 import { withMetaSchema } from "./shared";
 
-/**
- * One feed surface for every audience.
- *
- * The reads used to exist three times over — once for the browser, once for `apps/www`'s
- * API-key-authenticated RSC calls, and once for a dash session — because each audience
- * needed a different slice of the same table. They are now single procedures whose scope
- * widens with `context.caller.tier`; see `feeds/access.ts` for the rule and
- * `__tests__/feeds-access.test.ts` for the cases that pin it down.
- */
+/** One feed surface; scope widens with `context.caller.tier`. See `feeds/access.ts`. */
 
 const dateFields = {
   createdAt: z.number().optional(),
   updatedAt: z.number().optional(),
 };
-
-// ============================================
-// Input Schemas
-// ============================================
 
 export const createFeedSchema = insertFeedSchema
   .omit({ userId: true, createdAt: true, updatedAt: true })
@@ -100,13 +88,7 @@ export const restoreFeedSchema = z.object({
  */
 const flexibleBoolean = z.union([z.boolean(), z.stringbool()]);
 
-/**
- * Requests to widen the visible set beyond the public one.
- *
- * These are *requests*, never assertions: `resolveFeedVisibility` clamps each one away
- * for callers below the required tier rather than rejecting the call, so a browser that
- * sends `includeUnpublished` receives the published set instead of a 403.
- */
+/** `resolveFeedVisibility` clamps each flag for callers below the required tier rather than rejecting, so a browser that sends `includeUnpublished` receives the published set instead of a 403. */
 const feedVisibilityFields = {
   /** Include drafts. Requires the project API key or a session. */
   includeUnpublished: flexibleBoolean.optional().default(false),
@@ -118,12 +100,7 @@ const localeQueryFields = {
   locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
 };
 
-/**
- * Input for the feed list.
- *
- * `userId` is deliberately absent: this is a single-author site, so the author is derived
- * from the caller's tier rather than accepted from the request.
- */
+/** `userId` is absent: this is a single-author site, so the author is derived from the caller's tier. */
 export const feedsInfiniteSchema = z.object({
   /**
    * Clamped per tier by `resolveFeedLimit` — an anonymous caller cannot walk the whole
@@ -147,9 +124,8 @@ export const getFeedBySlugSchema = z.object({
 });
 
 /**
- * No locale default, unlike the other reads: this backs the dash edit view, which needs
- * every translation — the form edits all of them and the embedding drawer indexes each
- * one. Defaulting to `zh-TW` filtered the rest out.
+ * No locale default: the dash edit view needs every translation. Defaulting to `zh-TW`
+ * filtered the rest out.
  */
 export const getFeedByIdSchema = z.object({
   feedId: z.coerce.number().int(),
@@ -157,16 +133,9 @@ export const getFeedByIdSchema = z.object({
   ...feedVisibilityFields,
 });
 
-// ============================================
-// Output Schemas
-// ============================================
-
 /**
- * What a translation looks like on the wire.
- *
- * `published`/`deleted` mirror `feed` and stay server-side; a client reads them
- * from the feed. The body columns are optional because list queries skip them
- * unless `withContent` was set.
+ * `published`/`deleted` stay on the feed. Body columns are optional because list
+ * queries skip them unless `withContent` was set.
  */
 const translationOutputSchema = feedTranslationSchema
   .omit({
@@ -212,11 +181,6 @@ export const feedWithTranslationsSchema = feedSchema.extend({
     .optional(),
 });
 
-/**
- * Identical to {@link feedWithTranslationsSchema} — it used to differ only by
- * carrying no content, which is now expressed by the body columns being
- * optional on the shared translation shape.
- */
 export const feedListSchema = feedWithTranslationsSchema;
 
 export const relatedFeedItemSchema = z.object({
@@ -230,10 +194,6 @@ export const relatedFeedItemSchema = z.object({
   createdAt: z.union([z.string(), z.date()]),
   similarity: z.number().optional(),
 });
-
-// ============================================
-// Reads
-// ============================================
 
 const READ_ERRORS = {
   UNAUTHORIZED: {},
@@ -269,14 +229,8 @@ export const getRelatedFeedsContract = oc
   )
   .output(z.object({ items: z.array(relatedFeedItemSchema) }));
 
-// ============================================
-// Search
-//
-// Two procedures rather than one: they answer different questions and, unlike the reads
-// above, cannot share an output. `search` backs a search box and returns display items;
-// `search:advanced` is an operator tool that returns whichever shape the requested
-// retrieval mode produced.
-// ============================================
+// Two procedures: `search` returns display items; `search:advanced` returns whichever
+// shape the retrieval mode produced.
 
 export const searchFeedsContract = oc
   .errors({
@@ -313,10 +267,6 @@ export const searchFeedsAdvancedContract = oc
     })
   )
   .output(z.custom<SearchFeedsServiceResult>());
-
-// ============================================
-// Writes
-// ============================================
 
 const WRITE_ERRORS = {
   UNAUTHORIZED: {},

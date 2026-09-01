@@ -13,20 +13,10 @@ import { isResourceType, resourceTypes } from "../../resources/registry";
 import { withMetaSchema } from "./shared";
 
 /**
- * RAG management contract.
- *
- * RPC-only, like the agent contract: every consumer is the dashboard's browser client.
- *
- * Every output carries the index key it was computed under, because "embedded" is only
- * ever true relative to a `(model, index_version)` pair.
- *
- * Every procedure — reads included — is admin-only at the route layer; see
- * `../routes/rag.route.ts` for why a session alone cannot be enough here.
+ * RPC-only; every consumer is the dashboard's browser client. Every output carries the
+ * index key it was computed under: "embedded" is only ever true relative to a
+ * `(model, index_version)` pair. Every procedure is admin-only at the route layer.
  */
-
-// ============================================
-// Shared shapes
-// ============================================
 
 /** The `(model, index_version)` pair the response was computed against. */
 const indexKeyFields = {
@@ -101,8 +91,6 @@ const embeddingKeyCountSchema = z.object({
 });
 
 /**
- * External run id of the run currently holding this target, or `null`.
- *
  * The id alone, never a status: these procedures do not reconcile against the workflow
  * runtime, so a status read here could be a stale `running`. The dashboard hands the id
  * to `rag["run:get"]`, which does reconcile.
@@ -144,7 +132,6 @@ const runHandleSchema = z.object({
   reused: z.boolean(),
 });
 
-/** Errors every trigger procedure can answer with. */
 const triggerErrors = {
   UNAUTHORIZED: {},
   FORBIDDEN: {},
@@ -154,10 +141,6 @@ const triggerErrors = {
   },
   INTERNAL_SERVER_ERROR: {},
 } as const;
-
-// ============================================
-// Reads
-// ============================================
 
 export const getRagOverviewContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, INTERNAL_SERVER_ERROR: {} })
@@ -290,10 +273,6 @@ export const previewReindexAllContract = oc
       byIndexKey: z.array(embeddingKeyCountSchema),
     })
   );
-
-// ============================================
-// Triggers
-// ============================================
 
 export const indexResourceContract = oc
   .errors(triggerErrors)

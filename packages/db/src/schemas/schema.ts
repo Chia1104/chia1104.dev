@@ -1,14 +1,11 @@
-// Table creator
 export { pgTable } from "./table.ts";
 
-// Common utilities
 export {
   timestamps,
   optionalTimestamps,
   softDelete,
 } from "../libs/common.schema.ts";
 
-// Enums
 export {
   roles,
   feedType,
@@ -24,10 +21,8 @@ export {
   type MemberRole,
 } from "./enums.ts";
 
-// Users
 export { user, type User } from "./user.schema.ts";
 
-// Auth
 export {
   session,
   account,
@@ -39,7 +34,6 @@ export {
   type Passkey,
 } from "./auth.schema.ts";
 
-// Organization
 export {
   organization,
   member,
@@ -51,13 +45,10 @@ export {
   type Project,
 } from "./organization.schema.ts";
 
-// API Key
 export { apikey, type ApiKey } from "./apikey.schema.ts";
 
-// Spotify
 export { spotifyCredential, type SpotifyCredential } from "./spotify.schema.ts";
 
-// Contents
 export {
   tags,
   tagTranslations,
@@ -73,7 +64,6 @@ export {
   type TagTranslation,
 } from "./contents.schema.ts";
 
-// Resources (chunks + vectors)
 export {
   resourceChunks,
   resourceEmbeddings,
@@ -91,7 +81,6 @@ export {
   type ResourceIndexRunStatus,
 } from "./resources.schema.ts";
 
-// Agent
 export {
   agentSessions,
   agentRuns,
@@ -126,7 +115,6 @@ export {
   type AgentUsageSource,
 } from "./agent.schema.ts";
 
-// Relations
 export {
   relations,
   userRelations,

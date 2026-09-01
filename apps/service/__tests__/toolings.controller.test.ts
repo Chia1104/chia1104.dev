@@ -1,23 +1,17 @@
-import { app } from "../src/server";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import * as guardMocks from "./__mocks__/guards.mock";
+import * as guardMocks from "./helpers/guards";
+import { rpc } from "./helpers/rpc";
 
-const linkPreview = (body: BodyInit) =>
-  app.request("/api/v1/rpc/toolings/link-preview", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body,
-  });
+const linkPreview = (input: unknown) => rpc("toolings/link-preview", input);
 
 describe("toolings.link-preview", () => {
   beforeEach(() => {
     guardMocks.resetAllGuardMocks();
   });
 
-  it("should return link preview data", async () => {
-    const res = await linkPreview(
-      JSON.stringify({ json: { href: "https://github.com" } })
-    );
+  it("returns link preview data", async () => {
+    const res = await linkPreview({ href: "https://github.com" });
 
     expect([200, 500, 504]).toContain(res.status);
     if (res.ok) {
@@ -26,22 +20,25 @@ describe("toolings.link-preview", () => {
     }
   }, 30000);
 
-  it("should reject invalid URL", async () => {
-    const res = await linkPreview(
-      JSON.stringify({ json: { href: "not-a-valid-url" } })
-    );
+  it("rejects an invalid URL", async () => {
+    const res = await linkPreview({ href: "not-a-valid-url" });
 
     expect(res.status).toBe(400);
   }, 15000);
 
-  it("should reject missing href parameter", async () => {
-    const res = await linkPreview(JSON.stringify({ json: {} }));
+  it("rejects a missing href", async () => {
+    const res = await linkPreview({});
 
     expect(res.status).toBe(400);
   }, 15000);
 
-  it("should handle malformed JSON", async () => {
-    const res = await linkPreview("invalid-json");
+  it("rejects malformed JSON", async () => {
+    const { app } = await import("../src/server");
+    const res = await app.request("/api/v1/rpc/toolings/link-preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "invalid-json",
+    });
 
     expect(res.status).toBe(400);
   }, 15000);

@@ -36,12 +36,7 @@ type TaskAdmin = RouterOutputs["agent"]["admin"]["tasks"]["list"][number];
 
 const SESSION_MODEL_LABEL = "the session's own model";
 
-/**
- * Prompt and parameters are edited as their *effective* values — the textarea shows the
- * prompt the model will actually see — and written as an override only where they differ
- * from the code, so "restore default" is just the default text back in the box. `null` on a
- * parameter means the box is empty, which also reads as "use the default".
- */
+/** Edited as effective values; the write is an override only where they differ from the code default. */
 const taskFormSchema = z.object({
   model: modelRefSchema.nullable(),
   prompt: z.string().max(TASK_PROMPT_MAX_CHARS),

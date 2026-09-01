@@ -1,9 +1,8 @@
 import * as z from "zod";
 
 /**
- * The public kind's operator configuration — what the dashboard may change about this agent
- * without a deploy. Preferences only: the turn budget and the model allowlist are the cost
- * boundary and stay in code.
+ * Operator preferences the dashboard may change without a deploy. The turn budget and the
+ * model allowlist are the cost boundary and stay in code.
  */
 
 /** Room for a persona and a page of house rules; the prompt is cached per session. */

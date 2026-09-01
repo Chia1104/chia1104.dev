@@ -25,20 +25,12 @@ import type {
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 /**
- * Operator-triggered index runs.
- *
- * What this adds over starting the workflow: every operator-triggered run gets a
- * `resource_index_run` row, so the dashboard can poll it, attribute it, and be handed the
- * in-flight run instead of starting a second one. The automatic feed-event path
- * (`FeedHooks.onFeedChanged`) stays unrecorded — a fire-and-forget side effect with no
- * operator to attribute and nobody waiting.
- *
- * Takes the request's `db` and `workflow` client rather than opening its own: the rows are
- * read through the request connection like every other route, and the World is only ever
- * reached through `apps/workflow`.
+ * Operator-triggered index runs. Each gets a `resource_index_run` row so the dashboard
+ * can poll it and be handed the in-flight run instead of starting a second one. The
+ * automatic feed-event path stays unrecorded. Takes the request's `db` and `workflow`
+ * rather than opening its own.
  */
 
-/** Per-call context, taken from the request that triggered the run. */
 export interface IndexRunCaller {
   /** Configured admin, already verified by `adminGuard`. */
   adminId: string;
@@ -47,7 +39,6 @@ export interface IndexRunCaller {
 }
 
 export interface IndexRunHandle {
-  /** Workflow run id. */
   runId: string;
   /** `resource_index_run.id`. */
   recordId: number;
@@ -85,7 +76,6 @@ export const currentIndexKey = (): ResourceIndexKey => ({
 const isActive = (status: ResourceIndexRunStatus): boolean =>
   RESOURCE_INDEX_RUN_ACTIVE_STATUSES.includes(status);
 
-/** The statuses that may be written as a run's final state. */
 const TERMINAL_STATUSES: ResourceIndexRunTerminalStatus[] = [
   RESOURCE_INDEX_RUN_STATUS.Completed,
   RESOURCE_INDEX_RUN_STATUS.Failed,
@@ -93,13 +83,10 @@ const TERMINAL_STATUSES: ResourceIndexRunTerminalStatus[] = [
 ];
 
 /**
- * How long a row may have no run in the World before it counts as dead.
- *
- * `start()` can return before the run is recorded: when the creation event fails but the
- * queue already accepted the run, the SDK sets `resilientStart` and the runtime re-creates
- * the record asynchronously. `exists` is false for that window even though the run is about
- * to execute, so finalizing immediately would both report a failure that did not happen and
- * free the target for a second run over the same chunks.
+ * How long a row may have no run in the World before it counts as dead. `start()` can
+ * return before the run is recorded (`resilientStart`); `exists` is false for that window
+ * even though the run is about to execute, so finalizing immediately would report a
+ * failure that did not happen and free the target for a second run.
  */
 const MISSING_RUN_GRACE_MS = 60_000;
 
@@ -141,12 +128,9 @@ const finalize = async (
   row;
 
 /**
- * Brings a stored row in line with the workflow run it tracks.
- *
- * Not optional (plan §4.1): the active partial unique indexes only cover pending/running
- * rows, so a run whose process died without finalizing blocks its target for good, and the
- * operator only sees a Postgres constraint error on the next press. Every path that can
- * return an active row goes through here first.
+ * Brings a stored row in line with the workflow run it tracks. The active partial unique
+ * indexes only cover pending/running rows, so a run whose process died without finalizing
+ * blocks its target; every path that can return an active row goes through here first.
  */
 export const reconcileIndexRun = async (
   db: DB,
@@ -176,12 +160,10 @@ export const reconcileIndexRun = async (
     }
 
     /**
-     * Anything outside the known terminal statuses is left alone rather than written through.
-     *
-     * The column is plain `text`, so an unmapped value would persist, read as inactive to
-     * `isActive`, fall outside the active partial unique indexes, and free the target for a
-     * second run — while the first one is still going. Holding the row is the safe default:
-     * a genuinely finished run is picked up on the next poll.
+     * Anything outside the known terminal statuses is left alone. The column is plain
+     * `text`, so an unmapped value would persist, read as inactive, fall outside the
+     * active partial unique indexes, and free the target for a second run while the
+     * first is still going.
      */
     if (
       !TERMINAL_STATUSES.includes(
@@ -196,7 +178,7 @@ export const reconcileIndexRun = async (
     }
 
     /**
-     * The single-resource and single-feed workflows do not write the record themselves —
+     * Single-resource and single-feed workflows do not write the record themselves —
      * they are shared with the feed-event path, which has no record — so this is where
      * their result lands.
      */
@@ -215,17 +197,10 @@ export const reconcileIndexRun = async (
 };
 
 /**
- * Takes the target, then starts the run.
- *
- * The order is forced: `claim` needs an `external_run_id` and only starting the run mints
- * one. So an active row is reconciled first and handed back when it is genuinely in flight
- * (plan §4.1 — a repeated press joins the run rather than erroring), and otherwise the run
- * starts and the insert follows.
- *
- * That insert is what arbitrates concurrent triggers: both reach it, the partial unique
- * index lets exactly one through, and the loser cancels the run it just started. A failed
- * cancel is survivable — the loser's run resolves its record by its own run id, finds the
- * winner's row instead, and dies at `resolveReindexRunStep` rather than embedding twice.
+ * Takes the target, then starts the run. `claim` needs an `external_run_id` and only
+ * starting the run mints one. An active row is reconciled first and handed back when
+ * genuinely in flight. Concurrent triggers: both reach the insert, the partial unique
+ * index lets exactly one through, and the loser cancels the run it just started.
  */
 export const triggerIndexRun = async (
   db: DB,

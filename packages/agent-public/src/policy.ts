@@ -4,8 +4,8 @@ import { labelOf, tierOf } from "./tools/registry.ts";
 import { summarizeToolResult } from "./tools/summarize.ts";
 
 /**
- * The public agent's {@link AgentPolicy}. Nothing here changes state, so nothing needs
- * approval and there is no state scope for the client to refetch.
+ * Nothing here changes state, so nothing needs approval and there is no state scope for the
+ * client to refetch.
  */
 export const publicPolicy: AgentPolicy = {
   tierOf,
@@ -15,10 +15,8 @@ export const publicPolicy: AgentPolicy = {
 };
 
 /**
- * What one public turn may spend. A question is answered by a search and one or two reads;
- * the soft limit leaves room for a follow-up search when the first misses, and the hard limit
- * ends a model that keeps browsing. The wall-clock is the visitor's patience, not the
- * model's: a public chat that takes minutes is abandoned before it answers.
+ * Soft cap leaves room for a follow-up search; hard cap ends a model that keeps browsing.
+ * Wall-clock is the visitor's patience: a public chat that takes minutes is abandoned.
  */
 export const publicTurnBudget: AgentTurnBudget = {
   maxToolCalls: 6,

@@ -16,9 +16,7 @@ export interface AdminPolicyOptions {
    */
   roles?: Role[];
   /**
-   * Also require the session user to *be* the configured admin. This is the stricter
-   * form the old oRPC `adminGuard` used; `spotifyManageGuard` deliberately did not,
-   * which is why the two used to be separate middlewares.
+   * Also require the session user to be the configured admin.
    * @default true
    */
   pinToAdminId?: boolean;

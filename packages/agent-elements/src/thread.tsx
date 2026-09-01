@@ -544,7 +544,6 @@ const ThreadViewport = ({
 
 export interface ThreadProps {
   renderers?: ToolRenderers;
-  /** Shown instead of the transcript while it is empty. */
   empty?: ReactNode;
   className?: string;
 }

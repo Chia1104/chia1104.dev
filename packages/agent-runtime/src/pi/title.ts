@@ -4,11 +4,9 @@ import type { Api, Model, Models } from "@earendil-works/pi-ai";
 import type { AgentModelUsage } from "../types.ts";
 
 /**
- * Session titles.
- *
- * A title is a short, human-scannable handle for a session, condensed from the operator's first
- * prompt. It is cosmetic: nothing in the runtime reads it back, so every path here returns `null`
- * rather than throwing and the caller decides what to show instead.
+ * A short handle condensed from the operator's first prompt.
+ * Cosmetic: nothing in the runtime reads it back, so every path here returns `null` rather than
+ * throwing.
  */
 
 /** Generous enough for a CJK sentence fragment, short enough to fit a tab. */
@@ -19,7 +17,8 @@ const PROMPT_EXCERPT_LENGTH = 2000;
 
 /**
  * The message is data, not an instruction: a prompt that itself asks for a list of titles would
- * otherwise be answered rather than summarised, and its first line would become the session name.
+ * otherwise be answered rather than summarised, and its first line would become the session
+ * name.
  */
 export const SESSION_TITLE_SYSTEM_PROMPT = [
   "You name chat sessions. The user turn contains, inside <message> tags, the first message",
@@ -68,7 +67,7 @@ export const normalizeSessionTitle = (raw: string): string | null => {
   return stripped.length > 0 ? clip(stripped, SESSION_TITLE_MAX_LENGTH) : null;
 };
 
-/** The first line of the prompt, trimmed to a title; what a session shows when no model could be asked. */
+/** The first line of the prompt, trimmed to a title. What a session shows when no model could be asked. */
 export const fallbackSessionTitle = (text: string): string | null =>
   normalizeSessionTitle(text);
 
@@ -76,7 +75,6 @@ export interface GenerateSessionTitleOptions {
   /** Only the one-shot call is needed; the turn's credential-bearing `Models` satisfies this. */
   models: Pick<Models, "completeSimple">;
   model: Model<Api>;
-  /** The operator's first prompt. */
   text: string;
   /** Replaces {@link SESSION_TITLE_SYSTEM_PROMPT}; the operator's override, when they made one. */
   systemPrompt?: string;
@@ -88,9 +86,9 @@ export interface GenerateSessionTitleOptions {
 }
 
 /**
- * Asks `model` for a title. Resolves `null` on any provider failure, an empty reply, or abort —
- * the caller falls back to {@link fallbackSessionTitle} — because a title is never worth failing
- * the turn it rides alongside.
+ * Asks `model` for a title. Resolves `null` on any provider failure, an empty reply, or abort
+ * (the caller falls back to {@link fallbackSessionTitle}) because a title is never worth
+ * failing the turn it rides alongside.
  */
 export const generateSessionTitle = async ({
   models,

@@ -7,10 +7,7 @@ import type { routerContract } from "@chia/api/orpc/contracts";
 import { withServiceEndpoint } from "@chia/utils/config";
 import { Service } from "@chia/utils/schema";
 
-/**
- * The one oRPC client in the dashboard. Every procedure call is made from the browser
- * with the session cookie; there is no server-side or in-process path.
- */
+/** The dashboard's only oRPC client. Every call is from the browser with the session cookie; there is no server-side or in-process path. */
 export const link = new RPCLink({
   url: withServiceEndpoint("/rpc", Service.LegacyService, {
     isInternal: false,

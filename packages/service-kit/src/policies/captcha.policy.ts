@@ -10,16 +10,11 @@ export const CaptchaErrorCode = {
 } as const;
 
 export interface CaptchaPolicyOptions {
-  /**
-   * The caller-supplied token. Resolved by the procedure from its validated input, since
-   * a policy only ever sees the service context.
-   */
+  /** Caller-supplied token, resolved by the procedure from validated input. */
   token: string | undefined;
   /**
-   * Performs the provider round trip. Injected rather than imported so `service-kit`
-   * stays free of a dependency on `@chia/api`, which depends on this package.
-   *
-   * Wire it with `captchaSiteverifyWithCredentials` from `@chia/api/captcha`.
+   * Provider round trip. Injected so this package does not depend on `@chia/api`.
+   * Wire with `captchaSiteverifyWithCredentials` from `@chia/api/captcha`.
    */
   verify: (credentials: {
     token: string;
@@ -27,10 +22,7 @@ export interface CaptchaPolicyOptions {
   }) => Promise<{ success: boolean }>;
 }
 
-/**
- * Verifies a captcha token against the provider, attributing the attempt to the caller's
- * IP.
- */
+/** Verifies a captcha token, attributed to the caller's IP. */
 export const captchaPolicy = (options: CaptchaPolicyOptions): Policy => {
   return async (context) => {
     if (!options.token) {

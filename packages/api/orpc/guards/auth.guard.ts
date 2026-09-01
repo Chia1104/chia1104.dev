@@ -3,10 +3,7 @@ import { sessionPolicy } from "@chia/service-kit/policies/session.policy";
 
 import { baseOS } from "../utils";
 
-/**
- * Thin binding around the shared `sessionPolicy` — the Hono side uses the very same
- * policy through `toHonoMiddleware`.
- */
+/** Binding around `sessionPolicy`; the Hono side uses the same policy through `toHonoMiddleware`. */
 export const authGuard = baseOS
   .errors({
     UNAUTHORIZED: {},
@@ -24,9 +21,7 @@ export interface SessionGuardInput {
 }
 
 /**
- * Like {@link authGuard}, but the "is root required" decision depends on the request's
- * input — the shape the Hono `verifyAuth(predicate)` helper had.
- *
+ * Like {@link authGuard}, but whether root is required depends on the request input.
  * A session is required either way; `rootOnly` only raises the bar.
  *
  * @example

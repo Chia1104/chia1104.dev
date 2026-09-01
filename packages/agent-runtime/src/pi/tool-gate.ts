@@ -8,15 +8,13 @@ import type {
 /**
  * Tier-based permission gate, composed into Pi's `beforeToolCall` hook.
  *
- * Pi's hook contract is "return `{ block: true, reason }` to refuse", and the refusal comes back to
- * the model as an error tool result. That is deliberately used as the approval handshake rather than
+ * Pi's hook contract is "return `{ block: true, reason }` to refuse", and the refusal comes
+ * back to the model as an error tool result. Used as the approval handshake rather than
  * blocking the harness on a promise: a turn parked on an in-memory deferred cannot survive a
- * deploy, whereas a *refused* tool call leaves the session tree consistent and resumable — the
+ * deploy, whereas a refused tool call leaves the session tree consistent and resumable. The
  * operator approves, and the next turn re-issues the call with the approval on record.
  *
- * Classification is **injected** via {@link AgentPolicy}. It used to be a module-level lookup table
- * of the writing agent's tool names, which meant a second agent kind's tools all fell through to the
- * most restrictive tier and were silently blocked forever.
+ * Classification is injected via {@link AgentPolicy}.
  */
 
 export interface ApprovalRequest {
@@ -36,14 +34,14 @@ export interface PiToolCallGateOptions {
    */
   approvedToolCallIds?: ReadonlySet<string>;
   /**
-   * Tool names pre-authorised for this turn only — the "run and commit" affordance, which lets the
-   * common path avoid burning a turn on the refusal handshake.
+   * Tool names pre-authorised for this turn only. The "run and commit" affordance, so the
+   * common path avoids burning a turn on the refusal handshake.
    */
   preAuthorizedToolNames?: ReadonlySet<string>;
   /**
    * Called the moment a call is refused, before the model has even seen the refusal. Lets the
-   * host announce the request while the turn is still streaming; persistence still waits for the
-   * turn to finish, so a turn that fails afterwards leaves no durable request behind.
+   * host announce the request while the turn is still streaming; persistence still waits for
+   * the turn to finish, so a turn that fails afterwards leaves no durable request behind.
    */
   onRequest?: (request: ApprovalRequest) => void;
 }

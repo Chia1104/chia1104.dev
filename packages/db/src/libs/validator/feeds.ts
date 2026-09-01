@@ -13,10 +13,6 @@ import {
   baseInfiniteSchema as baseInfiniteSchemaShared,
 } from "./shared";
 
-// ============================================
-// Infinite Query Schema
-// ============================================
-
 export const baseInfiniteSchema = baseInfiniteSchemaShared.extend({
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.UpdatedAt),
   type: z.enum(FeedType).optional(),
@@ -33,10 +29,6 @@ export const infiniteSchema = baseInfiniteSchema.optional().default({
 });
 
 export type InfiniteDTO = z.infer<typeof infiniteSchema>;
-
-// ============================================
-// Feed Schema
-// ============================================
 
 const internalDateFields = {
   createdAt: dateSchema.optional(),
@@ -62,14 +54,7 @@ export const updateFeedSchema = createUpdateSchema(feeds)
 export type InsertFeedDTO = z.infer<typeof insertFeedSchema>;
 export type UpdateFeedDTO = z.infer<typeof updateFeedSchema>;
 
-// ============================================
-// Feed Translation Schema
-// ============================================
-
-/**
- * `published`/`deleted` mirror `feed` and are written by the indexing workflow,
- * not by callers.
- */
+/** `published`/`deleted` mirror `feed`; written by the indexing workflow, not callers. */
 const internalTranslationColumns = {
   id: true,
   feedId: true,
@@ -94,15 +79,7 @@ export type UpdateFeedTranslationDTO = z.infer<
   typeof updateFeedTranslationSchema
 >;
 
-// ============================================
-// Content Schema
-// ============================================
-
-/**
- * The body lives on `feed_translation` now, so these are a projection of that
- * table rather than their own. Kept as a separate schema because callers still
- * write the body independently of the metadata.
- */
+/** Body columns on `feed_translation`; a separate schema because callers write the body independently of metadata. */
 const contentColumns = {
   content: true,
   source: true,
@@ -117,10 +94,6 @@ export const updateContentSchema =
 
 export type InsertContentDTO = z.infer<typeof insertContentSchema>;
 export type UpdateContentDTO = z.infer<typeof updateContentSchema>;
-
-// ============================================
-// Select Schema (for output validation)
-// ============================================
 
 export const feedSchema = createSelectSchema(feeds).extend(internalDateFields);
 

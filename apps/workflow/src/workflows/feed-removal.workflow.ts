@@ -10,11 +10,8 @@ const requestSchema = z.object({
 });
 
 /**
- * Drops a feed's translations from the index after a soft delete.
- *
- * A hard delete cascades from `feed_translation`; a soft delete leaves the rows,
- * so without this the chunks stay searchable. Runs as a workflow so a failure
- * retries rather than silently leaving deleted content findable.
+ * Soft delete leaves the rows, so chunks stay searchable without this.
+ * A workflow so a failure retries rather than leaving deleted content findable.
  */
 export const removeFeedFromSearchIndexWorkflow = async (
   request: z.input<typeof requestSchema>

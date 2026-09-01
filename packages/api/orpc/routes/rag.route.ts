@@ -30,19 +30,9 @@ import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { contractOS } from "../utils";
 
 /**
- * RAG management routes.
- *
- * Reads go straight to the stats repository; runs are started, cancelled and reconciled
- * through `context.workflow`, the `apps/workflow` client every router process carries.
- *
- * **Every route is `adminGuard()`, reads included.** A session alone is not enough:
- * `resource_chunk` holds the body text of every indexed resource with no ownership column
- * to filter on, and the stats queries deliberately include unpublished and soft-deleted
- * rows because that is what an operator needs to see. Gating reads on `authGuard` would
- * therefore let anyone who can sign up — magic link and OAuth are both open — page and
- * full-text search the whole corpus, drafts included. `adminGuard()` also pins to the
- * configured admin id, which is the right scope: the public site serves that one author's
- * feeds, so the corpus is theirs.
+ * Reads go to the stats repository; runs go through `context.workflow`. Every route is
+ * `adminGuard()`, reads included: `resource_chunk` holds body text with no ownership
+ * column, stats include unpublished and soft-deleted rows, and sign-up is open.
  */
 
 const callerOf = (opts: {
@@ -51,10 +41,6 @@ const callerOf = (opts: {
   adminId: opts.context.adminId,
   userId: opts.context.session.user.id,
 });
-
-// ============================================
-// Reads
-// ============================================
 
 export const getRagOverviewRoute = contractOS.rag.overview
   .use(adminGuard())
@@ -191,10 +177,6 @@ export const previewReindexAllRoute = contractOS.rag["reindex:all:preview"]
       byIndexKey,
     };
   });
-
-// ============================================
-// Triggers
-// ============================================
 
 export const indexResourceRoute = contractOS.rag["resource:index"]
   .use(adminGuard())

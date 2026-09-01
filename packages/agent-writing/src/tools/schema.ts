@@ -10,5 +10,5 @@ export {
   truncate,
 } from "@chia/agent-runtime/tools";
 
-/** Pins the writing context so `execute` keeps its argument types — see `toolDefiner`. */
+/** Pins the writing context so `execute` keeps its argument types. */
 export const defineTool = toolDefiner<WritingToolContext>();

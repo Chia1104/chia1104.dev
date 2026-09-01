@@ -13,18 +13,10 @@ import { normalizeAsciiSlug } from "@chia/utils/slug";
 import type { FeedHooks } from "../orpc/utils";
 
 /**
- * Feed writes, shared by the oRPC procedures (a request, with `adminGuard`
- * supplying `adminId`) and the writing agent's durable turn (a workflow step,
- * no request at all). Each caller authorises in its own way before calling in;
- * authorisation belongs at the transport boundary.
- *
- * `hooks` is a required argument, not an optional one: a write that skips
- * `onFeedChanged` leaves the feed unindexed, and that is the main hazard of
- * reaching for the repository layer directly. A caller with no indexer passes
- * `{}` and says so.
- *
- * Errors are `AppError`, which every transport adapter already renders
- * (`toORPCError`).
+ * Shared by oRPC (a request, with `adminGuard` supplying `adminId`) and the writing
+ * agent's durable turn (a workflow step, no request). Authorisation belongs at the
+ * transport boundary. `hooks` is required: a write that skips `onFeedChanged` leaves
+ * the feed unindexed. A caller with no indexer passes `{}`.
  */
 
 export interface FeedContentInput {
@@ -43,7 +35,6 @@ export interface CreateFeedTranslationInput {
   content?: FeedContentInput;
 }
 
-/** On update every field is optional, since a patch may touch only one of them. */
 export type UpdateFeedTranslationInput = Partial<CreateFeedTranslationInput>;
 
 /**

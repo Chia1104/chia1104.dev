@@ -3,9 +3,8 @@ import type { ComponentType, SVGProps } from "react";
 import { cn } from "@chia/ui/utils/cn.util";
 
 /**
- * Brand marks for the providers and model vendors the pickers show. Paths are the monochrome
- * marks from `@lobehub/icons-static-svg` (MIT), inlined so they follow `currentColor` and need
- * no asset pipeline in the host.
+ * Monochrome marks from `@lobehub/icons-static-svg` (MIT), inlined so they follow `currentColor`
+ * and need no asset pipeline in the host.
  */
 
 export type ProviderIcon = ComponentType<SVGProps<SVGSVGElement>>;
@@ -82,8 +81,7 @@ export const providerLabelOf = (id: string): string | undefined =>
   lookup(defaultProviderLabels, id);
 
 /**
- * Who made the model: the provider, unless the model id names a vendor the way gateway ids do
- * (`anthropic/claude-sonnet-5`), in which case that vendor's mark is the truthful one.
+ * Provider, unless the model id names a vendor the way gateway ids do (`anthropic/claude-sonnet-5`).
  */
 export const vendorOf = (model: { providerId: string; modelId: string }) => {
   const slash = model.modelId.indexOf("/");
@@ -96,7 +94,7 @@ export interface ProviderMarkProps {
   className?: string;
 }
 
-/** The provider's mark, or its initial in a disc when no icon is registered for it. */
+/** The provider's mark, or its initial in a disc when no icon is registered. */
 export const ProviderMark = ({ className, icons, id }: ProviderMarkProps) => {
   const Icon = icons?.[id] ?? lookup(defaultProviderIcons, id);
   if (Icon) return <Icon className={cn("size-4 shrink-0", className)} />;

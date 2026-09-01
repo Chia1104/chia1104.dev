@@ -4,9 +4,8 @@ import type { Api, Model, Models } from "@earendil-works/pi-ai";
 import type { AgentModelUsage } from "../types.ts";
 
 /**
- * One-shot text completion for side jobs — a session title, a lesson extraction — that ride
- * alongside real work and must never fail it. Every failure path resolves `null`: provider
- * error, abort, an empty reply. The caller decides what "nothing" means.
+ * One-shot text completion for side jobs that must never fail the work they ride alongside.
+ * Every failure path resolves `null`: provider error, abort, empty reply.
  */
 
 export interface CompleteTextOptions {
@@ -14,7 +13,6 @@ export interface CompleteTextOptions {
   models: Pick<Models, "completeSimple">;
   model: Model<Api>;
   systemPrompt: string;
-  /** The user turn. */
   text: string;
   maxTokens?: number;
   temperature?: number;

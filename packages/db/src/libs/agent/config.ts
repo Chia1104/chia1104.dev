@@ -16,18 +16,7 @@ import type {
   AgentTaskParams,
 } from "../../schemas/schema.ts";
 
-/**
- * Operator configuration rows for agent kinds and tasks.
- *
- * Both tables are keyed by a registry name the host owns, and both are patched with the same
- * rule as `updateAgentSession`: a key that is absent is left alone, `null` clears it. A patch
- * against a row that does not exist inserts it, so the caller never has to know whether the
- * operator has touched this kind or task before.
- */
-
-// ============================================
-// Kinds
-// ============================================
+/** Absent keys are left alone, `null` clears; a missing row is inserted. */
 
 export interface UpsertAgentKindConfigDTO {
   providerId?: string | null;
@@ -64,10 +53,6 @@ export const upsertAgentKindConfig = async (
   if (!row) throw new Error(`Kind config for "${kind}" was not written.`);
   return row;
 };
-
-// ============================================
-// Tasks
-// ============================================
 
 export interface UpsertAgentTaskConfigDTO {
   providerId?: string | null;
@@ -110,10 +95,6 @@ export const deleteAgentTaskConfig = async (
 ): Promise<void> => {
   await db.delete(agentTaskConfigs).where(eq(agentTaskConfigs.taskId, taskId));
 };
-
-// ============================================
-// Quota
-// ============================================
 
 export interface UpsertAgentQuotaConfigDTO {
   weeklyLimitMicros?: number | null;

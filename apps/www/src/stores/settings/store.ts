@@ -6,7 +6,6 @@ import { persist } from "zustand/middleware";
 import type { Theme } from "@chia/ui/theme";
 
 export interface ThemeColors {
-  // Shadcn UI Core
   background: string;
   foreground: string;
   card: string;
@@ -26,14 +25,12 @@ export interface ThemeColors {
   input: string;
   ring: string;
 
-  // Shadcn UI Charts
   chart1: string;
   chart2: string;
   chart3: string;
   chart4: string;
   chart5: string;
 
-  // Shadcn UI Sidebar
   sidebar: string;
   sidebarForeground: string;
   sidebarPrimary: string;
@@ -43,7 +40,6 @@ export interface ThemeColors {
   sidebarBorder: string;
   sidebarRing: string;
 
-  // HeroUI Semantic
   danger: string;
   dangerForeground: string;
   default: string;

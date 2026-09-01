@@ -17,13 +17,8 @@ import {
 } from "./schema.ts";
 
 /**
- * Tier 2 — the staging buffer.
- *
- * Every one of these is `executionMode: "sequential"`. They mutate shared state, and pi's
- * default is parallel execution: two concurrent `edit_draft_content` calls against the same
- * locale would interleave read-modify-write and silently lose one edit.
- *
- * None of them touch published data, so none require approval.
+ * Staging-buffer tools. Sequential: they mutate shared state, and pi's default is parallel, so
+ * two concurrent edits of the same locale would lose one write. None touch published data.
  */
 
 /** SEO description cap enforced by the site's metadata layer. */
@@ -200,8 +195,7 @@ export const patchDraftMetaTool = defineTool({
       );
     }
 
-    // Echo the merged per-locale fields so the model can confirm the patch from this result
-    // instead of spending a `read_draft` round-trip on it.
+    // Echo the merged per-locale fields so the model can confirm the patch from this result.
     const readback: MetaReadback = {
       feedMeta: draft.feedMeta,
       locales: Object.keys(draft.translations),
@@ -289,8 +283,6 @@ export const editDraftContentTool = defineTool({
       );
     }
 
-    // applyEdit throws EditNotAppliedError on miss/ambiguity — pi turns a thrown error into
-    // an error tool result, which is exactly the signal the model needs.
     const result = applyEdit(
       current,
       params.oldString,
@@ -324,5 +316,4 @@ export const draftTools: WritingTool[] = [
   editDraftContentTool,
 ];
 
-/** Re-exported so `commit.tool.ts` can reuse the same default. */
 export const DEFAULT_CONTENT_TYPE = ContentType.Mdx;

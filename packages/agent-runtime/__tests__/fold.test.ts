@@ -55,7 +55,7 @@ describe("approval fold", () => {
       request,
       refusal,
     ]);
-    // Announced and visible, but the row is not persisted yet — the card must stay locked.
+    // Announced and visible, but the row is not persisted yet: the card must stay locked.
     expect(tool.status).toBe("awaiting_approval");
     expect(view.runStatus).toBe("running");
   });

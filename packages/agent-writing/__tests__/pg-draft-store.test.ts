@@ -7,8 +7,6 @@ import type { JsonObject } from "@chia/utils/json";
 /**
  * Fakes the repo layer with the same persistence semantics as the real tables: `meta` jsonb is
  * replaced wholesale on upsert, `content` is a column that an `undefined` leaves untouched.
- * The bug this guards against lived entirely above that layer — a store-level merge that let
- * an omitted field overwrite a stored one.
  */
 interface FakeSession {
   feedMeta: JsonObject;

@@ -6,17 +6,7 @@ import { sessionPolicy } from "@chia/service-kit/policies/session.policy";
 
 type AuthContext = HonoContext;
 
-/**
- * Requires an authenticated session, optionally `Role.Root`.
- *
- * The check itself is the shared `sessionPolicy` — the oRPC side binds the exact same
- * policy in `packages/api/orpc/guards/auth.guard.ts`. Only the "is root required for
- * *this* request" decision stays here, because it reads the raw request (see
- * `feeds.route.ts`, where it depends on the `model` query param) and a policy never
- * sees a `Request`.
- *
- * The resolved session lands on `c.var.session`.
- */
+/** `rootOnly` can read the raw request; `sessionPolicy` never sees a `Request`. */
 export const verifyAuth = (
   rootOnly?: boolean | ((c: Context<AuthContext>) => boolean | Promise<boolean>)
 ) =>

@@ -51,7 +51,7 @@ const THINKING_LEVELS = [
   "max",
 ] as const;
 
-/** The form is the override: `null` on a field means "whatever the code says". */
+/** Null on a field means the code default. */
 const kindFormSchema = z.object({
   model: modelRefSchema.nullable(),
   thinkingLevel: z.enum(THINKING_LEVELS).nullable(),
@@ -68,7 +68,7 @@ const formValuesOf = (kind: KindAdmin): KindFormValues => ({
   config: configFormValueOf(kind.config.schema, kind.config.override),
 });
 
-/** `CallerTier` values, as the contract carries them. */
+/** Maps contract `CallerTier` values. */
 const audienceOf = (minTier: number): string => {
   switch (minTier) {
     case 0:
@@ -86,12 +86,7 @@ const audienceOf = (minTier: number): string => {
   }
 };
 
-/**
- * One agent kind: what a new session starts with, and the kind's own configuration. The
- * form edits the *override* — every field has a "default" state that means "whatever the
- * code says" — and is remounted by its parent after a save, so it never has to reconcile a
- * refetch with an edit in progress.
- */
+/** Edits the override. Parent remounts after save so a refetch never collides with an in-progress edit. */
 export const KindCard = ({ kind }: { kind: KindAdmin }) => {
   const invalidate = useInvalidateAgentAdmin();
   const form = useForm<KindFormValues>({

@@ -38,11 +38,9 @@ const cursorOf = (
 export const agentStreamCursor = cursorOf;
 
 /**
- * Captures and claims the next turn before its workflow hook is resumed.
- *
- * Reading both tails and writing the marker are one operation so callers cannot resume a hook with
- * a cursor they forgot to claim. A turn already running keeps its marker: the queued turn follows
- * it in durable stream order and the step replaces the marker when that turn begins.
+ * Captures and claims the next turn before its workflow hook is resumed. Reading both
+ * tails and writing the marker are one operation so callers cannot resume a hook with a
+ * cursor they forgot to claim.
  */
 export const claimNextAgentTurn = async (
   runs: AgentRunHost,
@@ -73,10 +71,7 @@ export const claimNextAgentTurn = async (
   return cursorOf(runId, position);
 };
 
-/**
- * `createHook()` registers after the workflow starts, so a just-started run may not be resumable
- * yet. This turns that startup race into a retryable response.
- */
+/** `createHook()` registers after the workflow starts; this turns that startup race into a retryable response. */
 export const isAgentHookReady = async (
   runs: AgentRunHost,
   token: string
@@ -137,8 +132,8 @@ interface AgentRunStreamOptions {
 }
 
 /**
- * Tails the durable coarse stream and, when requested, merges its batched delta namespace in arrival
- * order. Both readers are cancelled when the consumer disconnects.
+ * Tails the durable coarse stream and, when requested, merges its batched delta namespace
+ * in arrival order. Both readers are cancelled when the consumer disconnects.
  */
 export async function* streamAgentRunEvents({
   runs,

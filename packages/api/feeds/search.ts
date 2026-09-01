@@ -43,7 +43,6 @@ interface SearchFeedsServiceParams {
   limit?: number;
 }
 
-/** Feed-scoped view of resource search. */
 export async function searchFeedsService({
   db,
   keyword,
@@ -86,12 +85,7 @@ export async function searchFeedsService({
   };
 }
 
-/**
- * Public-site keyword search.
- *
- * Summaries come from the feed tables so the response keeps the shape the
- * public site renders.
- */
+/** Summaries come from the feed tables so the response keeps the shape the public site renders. */
 export async function searchPublicFeedsService({
   db,
   keyword,
@@ -159,10 +153,6 @@ const resolveFeedRefs = async (
     ])
   );
 };
-
-// ============================================
-// Related feeds
-// ============================================
 
 type RelatedFeedItems = Awaited<ReturnType<typeof getRelatedFeeds>>;
 

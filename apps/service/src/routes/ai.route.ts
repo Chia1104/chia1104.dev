@@ -33,12 +33,8 @@ import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 import { errorResponse } from "../utils/error.util";
 
 /**
- * The provider SDKs and the gateway client are reached through these rather than imported:
- * `server.ts` mounts every route into one Hono app, so a static import here loads all three
- * provider SDKs at boot for a process that may only ever serve content routes.
- *
- * `ai` itself stays a static import — `baseRequestSchema` needs `modelMessageSchema` to build
- * the `/generate` validator, which is evaluated when the route is defined.
+ * Dynamic import so provider SDKs are not loaded at boot. `ai` stays static because
+ * `baseRequestSchema` needs `modelMessageSchema` when the route is defined.
  */
 const getCreateModel = async () =>
   (await import("@chia/ai/utils/model")).createModel;
@@ -75,8 +71,7 @@ const api = new Hono<HonoContext>()
       }
       const name = providerCookieName(c.req.valid("json").provider);
       if (!name) {
-        // Previously an omitted provider silently wrote the key to a nameless cookie
-        // nothing ever read back.
+        // An omitted provider has no cookie name; writing it would go nowhere.
         return c.json(errorGenerator(400), 400);
       }
       setCookie(

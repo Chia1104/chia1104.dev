@@ -159,6 +159,7 @@
     "zustand": "catalog:ui"
   },
   "devDependencies": {
+    "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/react": "catalog:react-is",
     "tailwindcss": "catalog:tailwindcss",

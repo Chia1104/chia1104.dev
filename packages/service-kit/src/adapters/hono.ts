@@ -13,23 +13,16 @@ interface MutableContext {
 }
 
 /**
- * Runs a {@link Policy} against a live Hono context.
+ * Runs a {@link Policy} on a Hono context. Returns a `Response` on deny; on pass,
+ * writes `patch` via `c.set` and `headers` onto the response.
  *
- * Returns a `Response` when the policy denies the request, and `undefined` when it
- * passes — having written the policy's `patch` onto the context with `c.set` and its
- * `headers` onto the response.
- *
- * Use this directly when the policy's options depend on the request (e.g. the AI guard
- * reads the provider out of the JSON body); use {@link toHonoMiddleware} otherwise.
+ * Use when policy options depend on the request; otherwise {@link toHonoMiddleware}.
  */
 export const applyPolicy = async <TEnv extends Env, TPatch extends object>(
   c: Context<TEnv>,
   policy: Policy<TPatch, ServiceContext>
 ): Promise<Response | undefined> => {
-  // Every service app declares `Variables` as (a superset of) `ServiceContext`; Hono's
-  // `Context` is invariant in its env, so the cast is what keeps this callable from a
-  // route whose context has been widened by an upstream middleware.
-  // Every service Hono env includes ServiceContext, but Context remains invariant in TEnv.
+  // Context is invariant in TEnv; every service env's Variables is a superset of ServiceContext.
   // @ts-expect-error The runtime Variables contract is a superset of ServiceContext.
   const serviceContext: ServiceContext = c.var;
   const result = await policy(serviceContext);
@@ -60,10 +53,7 @@ export const applyPolicy = async <TEnv extends Env, TPatch extends object>(
   return undefined;
 };
 
-/**
- * Lifts a {@link Policy} into Hono middleware. The patch is readable downstream as
- * `c.var.<key>`.
- */
+/** Hono middleware for a {@link Policy}. Patch is `c.var.<key>` downstream. */
 export const toHonoMiddleware = <TPatch extends object>(
   policy: Policy<TPatch, ServiceContext>
 ) =>

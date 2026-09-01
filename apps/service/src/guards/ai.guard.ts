@@ -35,13 +35,7 @@ export const providerCookieName = (provider?: Provider) => {
   }
 };
 
-/**
- * Resolves the caller's provider API key from cookies into `c.var.AI_AUTH_TOKEN`.
- *
- * Which provider to look for is request-shaped — it can come from the JSON body — so it
- * is resolved here and handed to the shared `aiKeyPolicy` as an option. The policy
- * itself only ever reads the service context.
- */
+/** Provider may come from the JSON body, so it is resolved here and passed into `aiKeyPolicy`. */
 export const ai = (
   provider?: Provider,
   enabled: (c: Context<AiContext>) => Promise<boolean> | boolean = () => true

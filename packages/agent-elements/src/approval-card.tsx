@@ -20,7 +20,6 @@ import { agentQueryKeys } from "./queries.ts";
 import { jsonOf } from "./tool-call.tsx";
 import type { AgentSessionDetail } from "./types.ts";
 
-/** A tool item is rendered as an approval once a decision was asked of the operator. */
 export const isApprovalItem = (tool: ToolCallView): boolean =>
   tool.status === "awaiting_approval" || tool.approval !== undefined;
 
@@ -29,13 +28,6 @@ export interface ApprovalCardProps {
   className?: string;
 }
 
-/**
- * The approval handshake, in place in the transcript. The buttons unlock when the turn has handed
- * back and lock again the moment one is pressed — deciding starts the follow-up turn through the
- * store. A note travels with the decision as
- * its comment; "always allow" adds the tool's tier to the session's auto-approve list first, so
- * the same tier never asks again this session.
- */
 export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
   const labels = useAgentLabels();
   const approve = useAgentSession((state) => state.approve);

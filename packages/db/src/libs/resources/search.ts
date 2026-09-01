@@ -16,15 +16,8 @@ const RRF_K = 60;
 const RESOURCE_SCORE_TOP_N = 3;
 
 /**
- * Weight multiplier per rank inside a resource's top-N (1, ¼, ¹⁄₁₆).
- *
- * A plain sum broke on RRF scores, which are nearly flat (rank 1 ≈ 0.016,
- * rank 30 ≈ 0.011): three mediocre chunks of a long article out-summed the
- * single top-ranked chunk of a short one, so one-section articles lost to
- * length. The decay keeps the best chunk dominant while additional relevant
- * chunks still add — breadth is rewarded, piling up is not. 0.25 measured
- * better than 0.5 on the hybrid path, which is what the API and the agent
- * actually serve; see `toolings/scripts/rag-eval`.
+ * Weight per rank inside a resource's top-N (1, ¼, ¹⁄₁₆).
+ * A plain sum lets three mediocre RRF scores of a long article beat one top chunk of a short one; 0.25 measured better than 0.5 on the hybrid path (`toolings/scripts/rag-eval`).
  */
 const RESOURCE_SCORE_DECAY = 0.25;
 
@@ -35,11 +28,7 @@ export interface ChunkHit {
   kind: ResourceChunkKind;
   chunkIndex: number;
   headingPath: string | null;
-  /**
-   * The chunk's stored text. Hybrid and semantic hits have no highlighted
-   * snippet (ParadeDB rejects `pdb.snippet()` beside a window function), so
-   * this is what shows why a chunk matched.
-   */
+  /** Stored text. Hybrid and semantic hits have no snippet: ParadeDB rejects `pdb.snippet()` beside a window function. */
   content: string;
   /** `<b>`-highlighted fragment, when the lexical path produced one */
   snippet: string | null;
@@ -99,10 +88,7 @@ const chunkColumns = {
 };
 
 /**
- * Lexical-only chunk search.
- *
- * `ORDER BY` must reference `pdb.score(key_field)` directly; a select alias
- * stops ParadeDB pushing the top-K into the index.
+ * Lexical chunk search. `ORDER BY` must reference `pdb.score(key_field)` directly; a select alias stops ParadeDB pushing top-K into the index.
  */
 export const searchChunksLexical = withDTO(
   async (
@@ -133,7 +119,6 @@ export const searchChunksLexical = withDTO(
   }
 );
 
-/** Dense-only chunk search for one model. */
 export const searchChunksSemantic = withDTO(
   async (
     db,
@@ -170,11 +155,7 @@ export const searchChunksSemantic = withDTO(
 );
 
 /**
- * Hybrid chunk search in one statement, fused on rank (RRF).
- *
- * No `pdb.snippet()` in the fused query: ParadeDB rejects a snippet alongside a
- * window function. Use `searchChunksLexical` when the highlighted fragment
- * matters.
+ * Hybrid chunk search, fused on rank (RRF). No `pdb.snippet()`: ParadeDB rejects a snippet beside a window function.
  */
 export const searchChunksHybrid = withDTO(
   async (
@@ -269,14 +250,7 @@ export const searchChunksHybrid = withDTO(
 
 /**
  * Collapses chunk hits into one hit per resource.
- *
- * Scored on the decayed sum of a resource's top-N chunk scores
- * (`RESOURCE_SCORE_DECAY`): a resource that is relevant throughout should
- * outrank one with a single coincidentally-worded passage — under a mean a
- * second relevant chunk could only drag the score down, so breadth was never
- * rewarded — but the best chunk stays dominant so a short focused article
- * still beats a long tangential one. Comparable only within one result set,
- * like the chunk scores it sums.
+ * Score is the decayed sum of the resource's top-N chunk scores; comparable only within one result set.
  */
 export const aggregateChunkHits = (
   hits: ChunkHit[],
@@ -313,12 +287,7 @@ export const aggregateChunkHits = (
     .slice(0, limit);
 };
 
-/**
- * Resources most similar to a given one, compared on their card vectors.
- *
- * Cards describe the resource as a whole, so this stays a topic-level
- * comparison; section chunks would match on incidental overlap.
- */
+/** Resources most similar by card vector. Section chunks would match on incidental overlap. */
 export const findSimilarResources = withDTO(
   async (
     db,

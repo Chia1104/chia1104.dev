@@ -37,7 +37,6 @@ export const FileDetailPanel = ({
 }: FileDetailPanelProps) => {
   return (
     <div className="border-border flex flex-col gap-4 border-t pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-4">
-      {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <FileTypeIcon path={selectedPath} />
@@ -58,7 +57,6 @@ export const FileDetailPanel = ({
         </Button>
       </div>
 
-      {/* Metadata chips */}
       <div className="flex flex-wrap gap-2">
         <Chip size="sm" variant="soft" className="line-clamp-1 max-w-20">
           {getFileExtension(fileName)}
@@ -70,7 +68,6 @@ export const FileDetailPanel = ({
         )}
       </div>
 
-      {/* URL row */}
       <Chip className="max-w-fit">
         <Chip.Label className="line-clamp-1 text-xs">{fileUrl}</Chip.Label>
         <CopyButton
@@ -84,7 +81,6 @@ export const FileDetailPanel = ({
         />
       </Chip>
 
-      {/* Image preview */}
       {isFileType(selectedPath, "image") && (
         <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-lg border">
           <Image.Root>
@@ -104,7 +100,6 @@ export const FileDetailPanel = ({
         </div>
       )}
 
-      {/* Video preview */}
       {isFileType(selectedPath, "video") && (
         <VideoPlayer src={fileUrl} className="aspect-video w-full max-w-xl" />
       )}

@@ -19,38 +19,21 @@ import { env } from "./env";
 import { s3Client } from "./s3.client";
 
 interface GlobalOptions {
-  /**
-   * The prefix to use for the keys.
-   */
   prefix?: string;
-  /**
-   * The bucket to use for the files.
-   */
   bucket?: string;
   /**
-   * Whether to use ACL for the files.
    * @default false
-   * @description If true, the files will be public readable ("public-read").
+   * If true, files are public readable (`public-read`).
    */
   useACL?: boolean;
 }
 
-/**
- * The S3 service.
- * @param client - The client to use for the S3 service.
- * @param options - The options to use for the S3 service.
- */
 export class S3Service {
   constructor(
     private readonly client: S3Client = s3Client,
     private readonly options: GlobalOptions = {}
   ) {}
 
-  /**
-   * Get the key for the file.
-   * @param key - The key to get the full key for.
-   * @returns The full key.
-   */
   private getKey(key: string): string {
     return `${this.options.prefix ?? ""}${key}`;
   }
@@ -70,13 +53,6 @@ export class S3Service {
         : undefined;
   }
 
-  /**
-   * Create a signed URL for the file.
-   * Used for uploading the file.
-   * @param key - The key to create the pre-signed URL for.
-   * @param bucket - The bucket to use for the file.
-   * @returns The signed URL for uploading the file.
-   */
   public async createSignedUrlForUpload(
     key: string,
     content: {
@@ -109,13 +85,6 @@ export class S3Service {
     };
   }
 
-  /**
-   * Create a signed URL for the file.
-   * Used for previewing the file.
-   * @param key - The key to create the pre-signed URL for.
-   * @param bucket - The bucket to use for the file.
-   * @returns The signed URL for previewing the file.
-   */
   public async createSignedUrlForPreview(
     key: string,
     options?: {
@@ -134,12 +103,6 @@ export class S3Service {
     );
   }
 
-  /**
-   * Delete the file.
-   * @param key - The key to delete the file for.
-   * @param bucket - The bucket to use for the file.
-   * @returns The result of the delete operation.
-   */
   public async deleteFile(key: string, bucket?: string) {
     return await this.client.send(
       new DeleteObjectCommand({
@@ -149,12 +112,6 @@ export class S3Service {
     );
   }
 
-  /**
-   * Delete the files.
-   * @param keys - The keys to delete the files for.
-   * @param bucket - The bucket to use for the files.
-   * @returns The result of the delete operation.
-   */
   public async deleteFiles(keys: string[], bucket?: string) {
     return await this.client.send(
       new DeleteObjectsCommand({
@@ -166,12 +123,6 @@ export class S3Service {
     );
   }
 
-  /**
-   * Get the content of the file.
-   * @param key - The key to get the content for.
-   * @param bucket - The bucket to use for the file.
-   * @returns The content of the file.
-   */
   public async getFileContent(key: string, bucket?: string): Promise<string> {
     const response = await this.client.send(
       new GetObjectCommand({
@@ -187,12 +138,6 @@ export class S3Service {
     return response.Body.transformToString();
   }
 
-  /**
-   * Get the byte array of the file.
-   * @param key - The key to get the byte array for.
-   * @param bucket - The bucket to use for the file.
-   * @returns The byte array of the file.
-   */
   public async getFileByteArray(
     key: string,
     bucket?: string

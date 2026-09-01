@@ -68,11 +68,6 @@ const TranslationBody = ({
   </div>
 );
 
-/**
- * The writing draft as composer attachments — feed metadata plus one row per locale — each
- * opening a drawer with the full content. Slides in from the right on desktop, up from the
- * bottom on phones.
- */
 export const DraftAttachments = ({ draft }: { draft: AgentDraft }) => {
   const [selection, setSelection] = useState<Selection | null>(null);
   const isMobile = useIsMobile("(max-width: 767px)");

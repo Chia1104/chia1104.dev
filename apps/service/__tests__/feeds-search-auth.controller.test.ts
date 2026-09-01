@@ -2,24 +2,22 @@ const { mockGetSession } = vi.hoisted(() => ({
   mockGetSession: vi.fn(),
 }));
 
-// Deliberately NOT using the pass-through guard mocks — this test exists because the
-// session requirement on the model-selectable search was once dropped in a migration.
-// It asserts the requirement is still there.
+// Uses real `getSession` so the session requirement actually runs.
 vi.mock("@chia/auth/server", () => ({
   createAuth: () => ({ api: { getSession: mockGetSession } }),
 }));
 
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { app } from "../src/server";
 
-import * as dbMocks from "./__mocks__/db.mock";
+import * as dbMocks from "@chia/test/mocks/db-feeds";
 
 const session = (role: string) => ({
   session: { id: "s1", userId: "u1" },
   user: { id: "u1", role },
 });
 
-// The colon in the procedure key is percent-encoded because this URL is hand-built; an
-// oRPC client encodes it for you.
+// Hand-built URL percent-encodes the procedure colon (`%3A`).
 const search = (input: Record<string, unknown>) =>
   app.request("/api/v1/rpc/feeds/search%3Aadvanced", {
     method: "POST",
@@ -49,10 +47,7 @@ describe("feeds.search:advanced authentication", () => {
     expect(res.status).toBe(200);
   });
 
-  /**
-   * Omitting `model` is not the lexical path: the contract defaults it to `hybrid`, which
-   * embeds the query. The guard must therefore still demand root.
-   */
+  /** Omitted `model` defaults to `hybrid`, which embeds; the guard still requires root. */
   it("requires Role.Root when the model is omitted", async () => {
     mockGetSession.mockResolvedValue(session("admin"));
 

@@ -19,11 +19,8 @@ const runs = schema.resourceIndexRuns;
 const MAX_LIST_LIMIT = 100;
 
 /**
- * Clamps on both sides, because only the oRPC contract validates the input today.
- *
- * A bare `Math.min` lets `0` through — which yields `LIMIT 1`, an empty page and a
- * non-null `nextCursor`, so a paging caller never terminates — and lets negatives and
- * fractions reach Postgres as an invalid `LIMIT`.
+ * Clamps both sides; only the oRPC contract validates input today.
+ * A bare `Math.min` lets `0` through (`LIMIT 1`, empty page, non-null `nextCursor` that never terminates) and lets negatives reach Postgres.
  */
 const listLimit = (limit: number | undefined, fallback: number): number =>
   Math.min(
@@ -55,10 +52,7 @@ const identifierFilter = (identifier: ResourceIndexRunIdentifier) =>
 
 /**
  * Matches the row a target owns.
- *
- * The `isNull` branches are not defensive padding: a partial unique index never
- * conflicts on a NULL key, so a target that arrives without one has to look for
- * a NULL row or it would miss the run it just failed to insert.
+ * The `isNull` branches are required: a partial unique index never conflicts on a NULL key, so a target without one must look for a NULL row.
  */
 const targetFilter = (target: ResourceIndexRunTarget) => {
   switch (target.scope) {
@@ -91,12 +85,8 @@ const activeFilter = (target: ResourceIndexRunTarget) =>
   );
 
 /**
- * Takes the target, or hands back the run already holding it.
- *
- * `onConflictDoNothing` without a target covers all three active partial unique
- * indexes at once, so a second press of the same button becomes `reused: true`
- * instead of a constraint error. A conflict with no active row left means the
- * other run finalized in between, so the insert gets one more attempt.
+ * Takes the target, or returns the run already holding it.
+ * `onConflictDoNothing` without a target covers all three active partial unique indexes; a conflict with no active row left retries once.
  */
 export const claimResourceIndexRun = withDTO(
   async (
@@ -232,7 +222,7 @@ export const markResourceIndexRunStarted = withDTO(
   }
 );
 
-/** Releases the target: the partial unique indexes stop covering the row here. */
+/** Releases the target. The partial unique indexes stop covering the row here. */
 export const finalizeResourceIndexRun = withDTO(
   async (
     db,

@@ -62,3 +62,16 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before changi
 `agent-elements` owns live client state in one zustand store per session and server state in TanStack Query. Hosts provide the oRPC client, `QueryClient`, localized labels and kind-specific renderers. Host Tailwind sources must include this package and Streamdown's distributed JavaScript.
 
 Every locale must carry the same keys; agent label tests enforce this. `meta` is authored in Pkl and generated as `meta.json`.
+
+## Testing
+
+`@chia/test` must not depend on other `@chia/*` packages.
+
+- `@chia/test/config` — `nodeConfig` / `domConfig`. App configs add `setupFiles`. DOM Testing Library tests must `cleanup()` in setup.
+- `@chia/test/env` — `stubTestEnv()`.
+- `@chia/test/session`, `@chia/test/context` — `sessionOf`, `contextOf`, `serviceContextOf`.
+- `@chia/test/orpc` — `session` fixture; extend `context` in the consumer. Import `vi` from `vitest`.
+- `@chia/test/mocks/*` — `vi.mock` wiring stays in the consumer.
+- `@chia/test/fixtures/content-read-port` — read-port fake.
+
+Local helpers only when they add behavior. Import `{ describe, expect, it, vi }` from `vitest`. Titles are behavior sentences, not `should ...`.

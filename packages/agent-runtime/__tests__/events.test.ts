@@ -8,8 +8,8 @@ import { entriesToWireEvents } from "../src/wire/replay.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 /**
- * The fold is shared by the live stream and the replayed transcript, so its invariants matter more
- * than usual: any divergence shows up as a UI that renders differently after a refresh.
+ * The fold is shared by the live stream and the replayed transcript, so any divergence shows up
+ * as a UI that renders differently after a refresh.
  */
 
 const presentation = {
@@ -42,8 +42,8 @@ describe("foldEvents", () => {
         toolCallId: "c1",
         toolName: "send_email",
         label: "Send email",
-        // A tier this package has never heard of. `ToolTier` is a string precisely so a second
-        // agent kind does not have to widen a union here.
+        // A tier this package has never heard of. `ToolTier` is a string so a second agent kind
+        // does not have to widen a union here.
         tier: "send",
         args: {},
       },
@@ -54,8 +54,8 @@ describe("foldEvents", () => {
   });
 
   it("keeps a gated call pending across the refusal that the gate produces", () => {
-    // The gate refuses, and pi turns that refusal into an *error* tool result. That error is the
-    // mechanism working, not a failure — so the approval prompt must survive it.
+    // The gate refuses, and pi turns that refusal into an error tool result. That error is the
+    // mechanism working, not a failure, so the approval prompt must survive it.
     const events: AgentWireEvent[] = [
       {
         type: "tool:start",
@@ -136,7 +136,7 @@ describe("foldEvents", () => {
         .join("");
 
     expect(textOf(withDeltas)).toBe("Hello");
-    // Replay omits deltas entirely — the coarse stream alone must produce the same view.
+    // Replay omits deltas entirely; the coarse stream alone must produce the same view.
     expect(textOf(withDeltas.filter((e) => e.type !== "assistant:delta"))).toBe(
       "Hello"
     );

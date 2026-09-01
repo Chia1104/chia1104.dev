@@ -43,19 +43,16 @@ export interface AgentServiceHost {
 
 export interface CreateAgentFactoryOptions extends AgentServiceHost {
   /**
-   * The kinds this process serves, keyed by stable id in presentation order — the one place a
-   * kind is registered. Each entry carries the eager tier floor and the dynamic import that
-   * keeps the domain package off the non-agent boot path.
+   * The kinds this process serves, keyed by stable id in presentation order. Each entry
+   * carries the eager tier floor and a dynamic import that keeps the domain package off
+   * the non-agent boot path.
    */
   kinds: Readonly<Record<string, AgentKindEntry>>;
 }
 
 /**
- * Typed construction environment for every agent-facing oRPC component.
- *
- * Like Hono's factory helper, the host-specific environment is declared once and the factory
- * creates correctly wired components from it. Definitions and services are not stored in a Map;
- * dynamic import caching is sufficient, while each resolve gets a fresh stateless service object.
+ * Host-specific environment declared once; each resolve gets a fresh stateless service.
+ * Definitions are not stored in a Map; dynamic import caching is sufficient.
  */
 export interface AgentFactory {
   readonly kinds: readonly string[];

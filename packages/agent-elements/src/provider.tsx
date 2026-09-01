@@ -56,14 +56,14 @@ export interface AgentSessionProviderProps extends AgentProviderCallbacks {
   client: AgentSessionClient;
   sessionId: string;
   kind?: string;
-  /** The catalog for the host's locale (`@chia/i18n/agent-elements/<locale>.json`), or overrides. */
+  /** Host locale catalog (`@chia/i18n/agent-elements/<locale>.json`), or overrides. */
   labels?: Partial<AgentLabels>;
   children: ReactNode;
 }
 
 /**
- * One store per mounted session, over the host's `QueryClient`. Remount with `key={sessionId}` to
- * switch sessions — the store hydrates on mount and cancels its stream on unmount.
+ * One store per mounted session. Remount with `key={sessionId}` to switch; hydrates on mount and
+ * cancels the stream on unmount.
  */
 export const AgentSessionProvider = ({
   children,
@@ -131,16 +131,10 @@ const useContextValue = (): AgentSessionContextValue => {
 export const useAgentSessionStore = (): AgentSessionStoreApi =>
   useContextValue().store;
 
-/** Live state: the folded transcript, connection and stream actions. */
 export const useAgentSession = <T,>(
   selector: (state: AgentSessionStore) => T
 ): T => useStore(useAgentSessionStore(), selector);
 
-// ============================================
-// Server state (TanStack Query)
-// ============================================
-
-/** The session detail as the store last fetched it — settings, run, stats and kind state. */
 export const useSessionDetail = () => {
   const { client, kind, sessionId } = useContextValue();
   return useQuery(sessionDetailQuery(client, { sessionId, kind }));
@@ -172,7 +166,7 @@ export interface UpdateSettingsInput {
   autoApprove?: string[];
 }
 
-/** Persists session settings; the returned detail replaces the cached one. */
+/** Persists settings; the returned detail replaces the cached one. */
 export const useUpdateSettings = () => {
   const { client, kind, sessionId, store } = useContextValue();
   const queryClient = useQueryClient();
@@ -190,16 +184,13 @@ export const useUpdateSettings = () => {
 };
 
 export interface NavigateSessionInput {
-  /** A message id from the transcript — wire ids are entry ids. */
+  /** Transcript message id; wire ids are entry ids. */
   entryId: string;
   /** Keep a summary of the branch left behind, so the model still knows it happened. */
   summarize?: boolean;
 }
 
-/**
- * Rewinds the session in place. The server answers with the rebuilt detail, which replaces both
- * the cached detail and the store's view: the old branch is gone, so nothing of the old view holds.
- */
+/** Replaces both the cached detail and the store view; the old branch is gone. */
 export const useNavigateSession = () => {
   const { client, kind, sessionId, store } = useContextValue();
   const queryClient = useQueryClient();
@@ -222,10 +213,7 @@ export interface CompactSessionInput {
   customInstructions?: string;
 }
 
-/**
- * Compacts the active branch. Like a rewind, the server answers with the rebuilt detail — the
- * leaf, the context estimate and the transcript changed — which replaces the cache and the view.
- */
+/** Replaces the cached detail and the store view with the compacted branch. */
 export const useCompactSession = () => {
   const { client, kind, sessionId, store } = useContextValue();
   const queryClient = useQueryClient();
@@ -252,8 +240,8 @@ export interface ForkSessionInput {
 }
 
 /**
- * Branches the session into a new one; this session is untouched. The new detail is cached under
- * its own id and handed to the host's `onForked`, which decides whether to switch to it.
+ * Branches into a new session; this one is untouched. The new detail is cached under its own id
+ * and handed to the host's `onForked`, which decides whether to switch to it.
  */
 export const useForkSession = () => {
   const { callbacks, client, kind, sessionId, store } = useContextValue();
@@ -273,7 +261,7 @@ export const useForkSession = () => {
   });
 };
 
-/** Stops the running turn server-side, then resyncs the store from the server. */
+/** After abort, resyncs the store from the server. */
 export const useAbortSession = () => {
   const { client, kind, sessionId, store } = useContextValue();
   return useMutation({
@@ -283,10 +271,6 @@ export const useAbortSession = () => {
     onError: (error) => store.getState().reportFailure(error.message),
   });
 };
-
-// ============================================
-// Derived
-// ============================================
 
 export const useAgentStatus = () => {
   const detail = useSessionDetail().data;

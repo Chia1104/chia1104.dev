@@ -4,7 +4,6 @@ import type { mockEmail } from "./data";
 import { mockFeeds } from "./data";
 
 export const handlers = [
-  // Mock feeds API
   http.get("*/api/v1/admin/public/feeds", ({ request }) => {
     const url = new URL(request.url);
     const type = url.searchParams.get("type");
@@ -21,7 +20,6 @@ export const handlers = [
     });
   }),
 
-  // Mock single feed API
   http.get("*/api/v1/admin/public/feeds/:slug", ({ params }) => {
     const { slug } = params;
     const feed = mockFeeds.find((f) => f.slug === slug);
@@ -33,12 +31,10 @@ export const handlers = [
     return HttpResponse.json({ data: feed });
   }),
 
-  // Mock email send API
   http.post("*/api/v1/email/send", async ({ request }) => {
     const body =
       /* SAFETY: This fixture implements the typeof mockEmail members exercised by this case. */ (await request.json()) as typeof mockEmail;
 
-    // 驗證必要欄位
     if (!body.email || !body.title || !body.message) {
       return HttpResponse.json(
         {
@@ -55,7 +51,6 @@ export const handlers = [
     });
   }),
 
-  // Mock Spotify current playing API
   http.get("*/api/v1/spotify/current-playing", () => {
     return HttpResponse.json({
       isPlaying: true,

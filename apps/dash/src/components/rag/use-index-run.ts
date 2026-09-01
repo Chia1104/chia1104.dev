@@ -20,13 +20,8 @@ export const isTerminalRunStatus = (
 const POLL_INTERVAL_MS = 2000;
 
 /**
- * Follows one index run until it stops moving.
- *
- * `runId` may come from a trigger's response or from a read route that reported a run
- * already in flight, so a freshly opened drawer joins an existing run instead of showing
- * nothing. `run:get` is the only route that reconciles against the workflow runtime,
- * which is why the status shown here can be trusted and the one on `activeRunId`'s
- * source cannot.
+ * Follows one index run until it stops. `run:get` is the only route that reconciles against
+ * the workflow runtime, so this status is trusted over `activeRunId` from a read route.
  */
 export const useIndexRun = ({
   runId,
@@ -59,13 +54,7 @@ export const useIndexRun = ({
     run,
     isLoading: query.isLoading,
     error: query.error,
-    /**
-     * A failed poll counts as not active.
-     *
-     * Without the `isError` term there is no status to read, so a run whose lookup keeps
-     * failing — the port unregistered, the record gone — would leave every trigger
-     * disabled for as long as the page stays open, with nothing on screen saying why.
-     */
+    /** A failed poll counts as not active, otherwise a missing run would leave every trigger disabled. */
     isActive: !!runId && !query.isError && !isTerminalRunStatus(run?.status),
   };
 };

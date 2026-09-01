@@ -18,11 +18,7 @@ export const adminGuard = (options: AdminPolicyOptions = {}) =>
       next({ context: await runPolicy(adminPolicy(options), context) })
     );
 
-/**
- * @TODO: Implement this function.
- * @param ac - The access control list to check against.
- * @returns A middleware function that checks if the user has the required access control list.
- */
+/** @TODO */
 export const adminGuardWithAC = (_ac: string[]) =>
   baseOS
     .errors({

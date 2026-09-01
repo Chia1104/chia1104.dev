@@ -4,11 +4,6 @@ import type { DB } from "../../client.ts";
 import { agentUsageLedger } from "../../schemas/schema.ts";
 import type { AgentUsageSource } from "../../schemas/schema.ts";
 
-/**
- * The usage ledger: one row per provider call made for a user. Reads for quotas and the
- * dashboard attach here beside the write.
- */
-
 export interface InsertAgentUsageDTO {
   userId: string;
   sessionId?: string | null;
@@ -49,11 +44,7 @@ export const insertAgentUsage = async (db: DB, input: InsertAgentUsageDTO) => {
   return row;
 };
 
-/**
- * One user's spend over `[from, to)`, in micro-dollars. `providerIds` narrows it to the bills
- * that count — a quota on house spend passes the gateway alone, so a call the user's own key
- * paid for is recorded but not charged against them.
- */
+/** One user's spend over `[from, to)`, in micro-dollars. `providerIds` selects which bills count (house gateway vs the user's own key). */
 export const sumAgentUsageCost = async (
   db: DB,
   options: {

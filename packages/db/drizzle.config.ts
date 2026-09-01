@@ -43,10 +43,7 @@ const dbEnv = (
   }
 };
 
-/**
- * `tablesFilter` matches bare table names in every schema, so the unprefixed `agent` tables must be
- * listed alongside the `chia_*` glob that keeps drizzle-kit off extension-owned tables.
- */
+/** `tablesFilter` matches bare names across schemas, so unprefixed `agent` tables must be listed beside the `chia_*` glob. */
 const agentTables = Object.values(agent)
   .filter((value) => is(value, PgTable))
   .map((table) => getTableName(table));

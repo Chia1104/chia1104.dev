@@ -1,7 +1,9 @@
-import { app } from "../src/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import * as dbMocks from "./__mocks__/db.mock";
-import * as guardMocks from "./__mocks__/guards.mock";
+import * as dbMocks from "@chia/test/mocks/db-feeds";
+
+import * as guardMocks from "./helpers/guards";
+import { rpc } from "./helpers/rpc";
 
 const { mockSearchPublicFeedsService } = vi.hoisted(() => ({
   mockSearchPublicFeedsService: vi.fn(),
@@ -16,14 +18,9 @@ vi.mock("@chia/api/feeds/search", async (importOriginal) => {
   };
 });
 
-const search = (input: unknown) =>
-  app.request("/api/v1/rpc/feeds/search", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ json: input }),
-  });
+const search = (input: unknown) => rpc("feeds/search", input);
 
-describe("Feeds Controller", () => {
+describe("feeds.search", () => {
   beforeEach(() => {
     dbMocks.resetAllDbMocks();
     guardMocks.resetAllGuardMocks();
@@ -31,8 +28,7 @@ describe("Feeds Controller", () => {
     mockSearchPublicFeedsService.mockResolvedValue([]);
   });
 
-  describe("feeds.search", () => {
-    it("should return public search results", async () => {
+  it("returns public search results", async () => {
       mockSearchPublicFeedsService.mockResolvedValue([
         {
           feedId: 1,
@@ -67,11 +63,10 @@ describe("Feeds Controller", () => {
       );
     });
 
-    it("should reject a query shorter than two characters", async () => {
+    it("rejects a query shorter than two characters", async () => {
       const res = await search({ keyword: "x", locale: "zh-TW" });
 
       expect(res.status).toBe(400);
       expect(mockSearchPublicFeedsService).not.toHaveBeenCalled();
     });
-  });
 });

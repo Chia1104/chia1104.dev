@@ -9,12 +9,8 @@ export interface CaptchaGuardInput {
 }
 
 /**
- * Verifies the caller's captcha token, which the procedure maps in from its validated
- * input via `.use(captchaGuard, (input) => ({ token: input.captchaToken }))`.
- *
- * The verifier is injected into the policy because `@chia/service-kit` cannot depend on
- * `@chia/api` — that would be a cycle. Here we are inside `@chia/api`, so the wiring is
- * a local import.
+ * Verifies the captcha token mapped in via `.use(captchaGuard, (input) => ({ token: input.captchaToken }))`.
+ * The verifier is injected because `@chia/service-kit` cannot depend on `@chia/api`.
  */
 export const captchaGuard = baseOS
   .errors({

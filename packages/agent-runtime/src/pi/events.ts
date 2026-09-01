@@ -4,14 +4,11 @@ import type { AgentEventPresentation } from "../types.ts";
 import { clipDetails } from "../wire/clip.ts";
 import type { AgentWireEvent } from "../wire/schema.ts";
 
-// ============================================
-// pi event → wire event
-// ============================================
-
 /**
  * pi's assistant messages carry no id, so the mapper asks the turn for the entry id it will
  * persist the message under and accumulates text/thinking to emit a single terminal
- * `assistant:end` with that same id — the replayed transcript then names the message identically.
+ * `assistant:end` with that same id. The replayed transcript then names the message
+ * identically.
  */
 export interface PiWireEventMapperOptions extends AgentEventPresentation {
   /** The entry id the turn has reserved for the message that just started. */

@@ -1,3 +1,4 @@
+import { describe, it } from "vitest";
 import { isOllamaEnabled } from "../src/ollama/utils";
 
 describe("test ollama", () => {

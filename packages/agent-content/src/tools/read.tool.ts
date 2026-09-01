@@ -14,20 +14,16 @@ import type { ContentTool, ContentToolContext } from "../types.ts";
 import { CONTENT_TOOL_NAMES, CONTENT_TOOL_LABEL_BY_NAME } from "./registry.ts";
 
 /**
- * Read-only grounding tools over the blog.
- *
- * All `executionMode: "parallel"`: they have no side effects, and the model routinely wants
- * several at once when orienting itself. Descriptions state what each tool returns; *when* to
- * reach for one is the kind's system prompt's job, because a writer and a reader use the same
- * tool for different reasons.
+ * Read-only content tools. All `executionMode: "parallel"`: they have no side effects.
+ * Descriptions state what each tool returns; when to reach for one is the kind's system
+ * prompt.
  */
 
 const defineTool = toolDefiner<ContentToolContext>();
 
 /**
  * Token budget for one `get_post` call, shared across the post's locales. Tokens rather than
- * characters: the same character count is ~3x the tokens in Chinese as in English, so a
- * character cap silently means different things.
+ * characters: the same character count is ~3x the tokens in Chinese as in English.
  */
 const POST_BODY_TOKEN_BUDGET = 12_000;
 
@@ -123,9 +119,7 @@ export const getPostTool = defineTool({
 
     /**
      * One token budget shared by every locale of the post, rather than a per-locale character
-     * cap. A 3-locale zh-TW post could otherwise be "within the limit" three times over and
-     * still blow the context window, since Chinese costs far more tokens per character than the
-     * character count suggests.
+     * cap. A 3-locale zh-TW post could otherwise be "within the limit" three times over.
      */
     const context_ = await buildDocumentContext(
       post.translations.map((translation) => ({
@@ -208,7 +202,6 @@ export const listTagsTool = defineTool({
   },
 });
 
-/** In the order a model should meet them: find, read, browse, classify. */
 export const contentReadTools: ContentTool[] = [
   searchPostsTool,
   getPostTool,

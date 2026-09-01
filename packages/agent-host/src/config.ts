@@ -9,11 +9,9 @@ import type { AgentKindConfig } from "@chia/db/schema";
 import type { AgentKindDefinition } from "./kind";
 
 /**
- * A kind's effective configuration: the operator's `agent.kind_config` row over the definition.
- *
- * Read wherever the code's value used to be read — session creation for the defaults, the turn
- * step for the kind config — so a change in the dashboard reaches the next session or turn
- * without a deploy, and nothing is cached in the process.
+ * A kind's effective configuration: the operator's `agent.kind_config` row over the
+ * definition. Not cached in the process, so a dashboard change reaches the next session or
+ * turn.
  */
 
 export interface EffectiveKindConfig<TConfig> {

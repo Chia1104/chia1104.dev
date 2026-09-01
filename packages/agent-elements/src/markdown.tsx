@@ -25,10 +25,6 @@ const codeText = (children: React.ReactNode): string =>
     )
     .join("");
 
-/**
- * Fenced code as streamed by the model. Highlighting is incremental (see {@link HighlightedCode});
- * the frame is a plain Card so a host can restyle it without touching the tokenizer.
- */
 const CodeBlock: Components["code"] = ({ children, className }) => {
   const labels = useAgentLabels();
   const language = /language-(\S+)/.exec(className ?? "")?.[1] ?? "text";
@@ -53,12 +49,10 @@ const CodeBlock: Components["code"] = ({ children, className }) => {
 };
 
 /**
- * Streamdown's defaults are styled with shadcn tokens (`bg-muted`, `text-muted-foreground`…).
- * HeroUI defines `muted` as a text colour, so those defaults come out as mid-grey slabs in both
- * schemes. Tables and emphasis come from the blog's shared elements so assistant prose reads like
- * an article; the rest restates the affected elements in HeroUI tokens. Everything not listed
- * (headings, lists) keeps Streamdown's rendering. A host can layer its own on top through
- * `components`.
+ * Streamdown defaults use shadcn tokens (`bg-muted`, `text-muted-foreground`); HeroUI's `muted`
+ * is a text colour, so those defaults render as grey slabs. Tables and emphasis come from the
+ * blog elements; the rest is restated in HeroUI tokens. Unlisted elements keep Streamdown's
+ * rendering. Hosts layer overrides through `components`.
  */
 export const markdownComponents: Components = {
   ...markdownElements,
@@ -85,10 +79,6 @@ export const markdownComponents: Components = {
   ),
 };
 
-/**
- * The confirmation Streamdown shows before following a link the model wrote. Its own modal is
- * English and shadcn-styled; this one reads the catalog and HeroUI.
- */
 const LinkSafetyDialog = ({
   isOpen,
   onClose,
@@ -157,22 +147,16 @@ const renderLinkSafety = (props: LinkSafetyModalProps) => (
 
 export interface MarkdownProps {
   text: string;
-  /** Still arriving: incomplete blocks are repaired and a caret follows the text. */
+  /** Incomplete blocks are repaired and a caret follows the text. */
   streaming?: boolean;
-  /** Element overrides layered over {@link markdownComponents}. */
   components?: Components;
   className?: string;
 }
 
 /**
- * Assistant text as markdown, tolerant of the half-finished syntax a stream produces. The CJK
- * plugin keeps emphasis and strikethrough working across Chinese punctuation. Links the model
- * wrote are confirmed before opening.
- *
- * The copy-button and link-confirmation strings come from the labels context — the parts
- * Streamdown instantiates itself (the fenced-code element, the link modal) receive its props,
- * not ours, so context is the only way through. Needs no session: with no provider around it
- * the `en-US` catalog applies, so it renders on a dashboard page as well as in a thread.
+ * CJK plugin keeps emphasis and strikethrough working across Chinese punctuation. Streamdown
+ * instantiates the fenced-code element and link modal itself, so copy and confirmation strings
+ * come from labels context. Needs no session; without a provider the `en-US` catalog applies.
  */
 export const Markdown = ({
   className,

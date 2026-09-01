@@ -17,15 +17,10 @@ import type {
 import type { CallerContext } from "./caller.guard";
 
 /**
- * Agent guards. Both run after `callerGuard()`, whose resolved `caller` they consume, and both
- * hand the same `agent` context downstream so every handler reads one shape.
- *
- * Which tier may use a kind is the kind's own policy (the factory's registered `minTier`), so
- * neither guard hard-codes a role: the writing kind pins to the configured admin, a public kind
- * admits any session-bearing visitor, and the routes are shared between them.
+ * Both run after `callerGuard()`. Which tier may use a kind is that kind's registered
+ * `minTier`; neither guard hard-codes a role.
  */
 
-/** What the guards hand downstream. */
 export interface AgentSessionContext {
   agent: {
     caller: AgentServiceCaller;
@@ -37,9 +32,8 @@ export interface AgentSessionContext {
 const agentOS = os.$context<CallerContext>();
 
 /**
- * Whether `caller` may use a kind with this registered floor. Written once because the two guards
- * and the kind-less list route each need the same answer — and each asks it *before* the kind's
- * definition (and the domain package behind it) is loaded.
+ * Asked before the kind's definition is loaded. Used by both guards and the kind-less list
+ * route.
  */
 export const canUseAgentKind = (
   caller: AgentServiceCaller,
@@ -47,10 +41,8 @@ export const canUseAgentKind = (
 ): boolean => caller.tier >= minTier;
 
 /**
- * The subset of a route's input this guard reads.
- *
- * Declared narrowly on purpose: oRPC checks the middleware's parameter against each procedure's
- * input, so anything wider would refuse to compose with routes that do not carry it.
+ * Declared narrowly: oRPC checks the middleware's parameter against each procedure's input,
+ * so anything wider would refuse to compose with routes that do not carry it.
  */
 interface AgentSessionInput {
   sessionId: string;
@@ -59,16 +51,8 @@ interface AgentSessionInput {
 }
 
 /**
- * Resolves a session-scoped agent request once, for every route that needs it.
- *
- * Every session route used to repeat the same steps inline — load the row, check it is not
- * deleted, check the caller owns it, then look up the runtime for its `kind`. Twelve copies of an
- * authorization check is twelve chances for one of them to drift, and the drift would be silent:
- * a missing ownership check reads exactly like a working route.
- *
- * The kind comes from the **stored session**, never from the request, so a client cannot drive a
- * session through another kind's tools by supplying a different kind. An explicit `kind` in
- * the input is only ever a cross-check.
+ * Kind comes from the stored session, never the request. An explicit `kind` in the input is
+ * only a cross-check.
  */
 export const agentSessionGuard = () =>
   agentOS
@@ -81,12 +65,8 @@ export const agentSessionGuard = () =>
         input.sessionId
       );
       /**
-       * One `NOT_FOUND` for "absent", "deleted" and "someone else's".
-       *
-       * Distinguishing them would let a caller probe which session ids exist, and there is nothing
-       * the legitimate operator can do differently in any of the three cases anyway. Ownership is
-       * checked before tier for the same reason: a lower-tier caller learns nothing about sessions
-       * of a kind it cannot use.
+       * One `NOT_FOUND` for absent, deleted and someone else's, so a caller cannot probe
+       * which session ids exist. Ownership is checked before tier for the same reason.
        */
       if (!row || row.deletedAt !== null || row.userId !== caller.userId) {
         throw errors.NOT_FOUND();
@@ -110,10 +90,7 @@ export const agentSessionGuard = () =>
       });
     });
 
-/**
- * Resolves a request that names its kind explicitly because it has **no** session to read it
- * from — creation, and the capability listings.
- */
+/** Resolves a request that names its kind because it has no session to read it from. */
 export const agentKindGuard = () =>
   agentOS
     .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, BAD_REQUEST: {} })
@@ -142,13 +119,8 @@ export const agentKindGuard = () =>
     );
 
 /**
- * The caller every agent route needs: a resolved tier plus a session user to own things.
- *
- * `callerGuard()` alone admits anonymous and API-key callers, and both are legitimate on other
- * routes; here they have no user to own a session, so they are refused before any lookup. A
- * guest does have one — that is what the guest row is for — so `Guest` is the floor; which
- * kinds a guest may then use is each kind's `minTier`. Exported for the routes (`list`,
- * `usage.me`) that have no kind to resolve through a guard.
+ * `callerGuard()` admits anonymous and API-key callers; they have no user to own a session.
+ * Guest is the floor. Exported for `list` and `usage.me`, which have no kind to resolve.
  */
 export const agentCallerOf = (
   context: CallerContext,

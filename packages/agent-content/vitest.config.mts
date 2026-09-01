@@ -1,8 +1,3 @@
-import { defineConfig } from "vitest/config";
+import { nodeConfig } from "@chia/test/config";
 
-export default defineConfig({
-  test: {
-    include: ["__tests__/**/*.test.ts"],
-    environment: "node",
-  },
-});
+export default nodeConfig();

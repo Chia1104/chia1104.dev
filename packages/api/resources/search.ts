@@ -34,7 +34,6 @@ const embedQuery = async (query: string): Promise<number[]> => {
   return embedding ?? [];
 };
 
-/** Attaches each resource's summary via its adapter, grouped by source type. */
 const hydrate = async (
   db: DB,
   hits: ResourceHit[]

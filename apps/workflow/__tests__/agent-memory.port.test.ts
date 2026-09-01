@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DB } from "@chia/db/client";
 
 import { createAgentMemoryPort } from "../src/services/agent-memory.port";
@@ -35,7 +36,7 @@ vi.mock("../src/services/agent-memory-indexing.service", () => hooks);
 /**
  * The two flags a caller must set together to see a memory: every memory chunk is indexed
  * `published: false`, so a search that forgets either `includeUnpublished` or the source
- * type gets nothing — and a public search can never get a memory by accident.
+ * type gets nothing, and a public search can never get a memory by accident.
  */
 
 const SESSION_ID = "session-1";
@@ -102,7 +103,7 @@ describe("createAgentMemoryPort", () => {
         limit: 5,
       })
     );
-    // result order is the search order, and the snippet is bounded
+    // Result order is the search order, and the snippet is bounded.
     expect(hits.map((hit) => hit.id)).toEqual([2, 1]);
     expect(hits[0]?.snippet).toHaveLength(501);
     expect(hits[0]?.headingPath).toBe("Setup > Install");

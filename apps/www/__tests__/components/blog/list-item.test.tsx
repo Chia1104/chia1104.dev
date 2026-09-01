@@ -1,5 +1,5 @@
 import { screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { NavigationMenu } from "@chia/ui/navigation-menu";
 
@@ -30,7 +30,7 @@ describe("ListItem Component", () => {
       </NavigationMenu>
     );
 
-    const link = screen.getByRole("link");
+    const link = screen.getByRole("link", { name: /測試標題/ });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute("href", "/test-link");
   });

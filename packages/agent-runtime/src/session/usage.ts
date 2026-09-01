@@ -9,12 +9,9 @@ import type { SessionEntry } from "./entries.ts";
 import { contextEntries } from "./entries.ts";
 
 /**
- * Estimates the tokens the next provider request will carry for an active session branch.
- *
- * Provider usage is authoritative once an assistant has answered on the current compaction
- * horizon. Immediately after compaction, retained assistant messages still carry their old,
- * pre-compaction usage; in that one state the rebuilt summary and retained tail are estimated
- * from their content instead.
+ * Tokens the next provider request will carry on the active branch.
+ * After compaction, retained assistant usage is stale; estimate the rebuilt
+ * summary and tail from content instead.
  */
 export const estimateBranchContextTokens = (
   entries: readonly SessionEntry[]

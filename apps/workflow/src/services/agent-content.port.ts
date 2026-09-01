@@ -15,21 +15,11 @@ import {
 import { feedHooks } from "./feed-indexing.service";
 
 /**
- * {@link ContentPort} implementation: the author-visibility read port plus the writes only the
- * writing agent performs.
- *
- * Writes go through `createFeedService`/`updateFeedService` rather than their own queries, so
- * the agent is subject to the same slug normalization as a human using the dashboard. Post-write
- * indexing is passed in explicitly: this runs in a workflow step with no request context to
- * carry it.
- *
- * Takes a `DB` rather than a `ServiceContext`, because it is constructed inside a
- * workflow step where no request exists. Authorisation happened at the transport boundary before
- * the run was started — the writing kind admits only the configured admin — so `adminId` is that
- * configured author, never tool input.
+ * Author-visibility reads plus writing-agent writes, via `createFeedService`/`updateFeedService`
+ * so slug normalization matches the dashboard. Indexing is passed in: a workflow step has no
+ * request context. `adminId` is the configured author, never tool input.
  */
 
-/** Shape the feed write services expect for one locale. */
 interface TranslationPayload {
   title: string;
   excerpt: string | null;
@@ -40,12 +30,9 @@ interface TranslationPayload {
 
 export interface CreateContentPortOptions {
   db: DB;
-  /** The configured author the writing agent acts as; its kind admits no one else. */
+  /** Configured author; the writing kind admits no one else. */
   adminId: string;
-  /**
-   * Called after every successful `commitDraft`. The turn reads it once the turn has ended —
-   * the transcript is only complete then — to decide whether to start a reflection run.
-   */
+  /** After a successful `commitDraft`. The turn reads it once the turn has ended. */
   onCommitted?: () => void;
 }
 
@@ -64,8 +51,8 @@ export const createAgentContentPort = (
     ...read,
 
     async commitDraft(input: CommitDraftInput): Promise<CommitDraftResult> {
-      // Built with an explicit loop rather than `Object.entries().map()`: the draft's translation
-      // map is a `Partial<Record<Locale, …>>`, and entries-then-fromEntries loses the key type.
+      // Explicit loop: the draft's translation map is a `Partial<Record<Locale, …>>`,
+      // and entries-then-fromEntries loses the key type.
       const translations: Record<string, TranslationPayload> = {};
       for (const locale of /* SAFETY: The producer contract guarantees this value satisfies Locale[]. */ Object.keys(
         input.translations
@@ -100,7 +87,7 @@ export const createAgentContentPort = (
             contentType: input.feedMeta.contentType ?? ContentTypeEnum.Mdx,
             defaultLocale: input.feedMeta.defaultLocale,
             mainImage: input.feedMeta.mainImage ?? undefined,
-            // Never published on commit — publishing is separately approved.
+            // Never published on commit. Publishing is separately approved.
             published: false,
             translations,
           },

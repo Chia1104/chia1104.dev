@@ -18,15 +18,15 @@ import { Markdown } from "./markdown.tsx";
 import type { OrbState } from "./orb-state.ts";
 import { formatMessageTime, formatMessageTimeFull } from "./time.ts";
 
-/** Ten lines of the bubble's `leading-6`; a pasted document folds behind a toggle. */
+/** Ten lines of the bubble's `leading-6`. */
 const USER_MESSAGE_MAX_HEIGHT = 240;
 
 // Nothing to subscribe to: mounted-ness never changes after the first client render.
 const subscribeNever = () => () => undefined;
 
 /**
- * True only after hydration. Times are formatted in the browser's locale and zone, which SSR
- * cannot know, so they render client-side only — the server HTML and first client render agree.
+ * True only after hydration. Times use the browser's locale and zone, which SSR cannot know,
+ * so they render client-side only. The server HTML and first client render agree.
  */
 const useMounted = () =>
   useSyncExternalStore(
@@ -35,10 +35,6 @@ const useMounted = () =>
     () => false
   );
 
-/**
- * Time, copy and the host's actions under a message. Revealed on hover or keyboard focus so the
- * thread stays quiet; the time alone is always legible.
- */
 const MessageMeta = ({
   actions,
   align,
@@ -92,7 +88,6 @@ export const UserMessage = ({
 }: {
   text: string;
   at?: number;
-  /** Rendered beside copy, e.g. `MessageActions`. */
   actions?: ReactNode;
   className?: string;
 }) => (
@@ -194,10 +189,7 @@ export const AssistantThinking = ({
   );
 };
 
-/**
- * Thinking is shown open while it streams and collapsed once text starts — the model's own text
- * is the answer, the thinking is context. Time and copy appear once the message is complete.
- */
+/** Thinking stays open while it streams and collapses once text starts. */
 export const AssistantMessage = ({
   actions,
   className,
@@ -205,7 +197,6 @@ export const AssistantMessage = ({
   showThinking = true,
 }: {
   message: TextMessageView;
-  /** Rendered beside copy once the message is complete, e.g. `MessageActions`. */
   actions?: ReactNode;
   className?: string;
   showThinking?: boolean;

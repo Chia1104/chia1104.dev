@@ -11,27 +11,16 @@ import { sessionPolicy } from "./session.policy";
 import type { Policy } from "./types";
 import { allow, deny } from "./types";
 
-/**
- * How much the caller has proven about itself, ordered so tiers can be compared.
- *
- * Unlike every other policy in this directory — which answer a yes/no question — this
- * scale exists so one procedure can serve every audience of a resource and widen what it
- * returns as the caller proves more. The alternative, which this replaces, was a separate
- * procedure per audience reading the same table.
- */
+/** How much the caller has proven, ordered so tiers can be compared. */
 export const CallerTier = {
   Anonymous: 0,
-  /**
-   * Holds a session cookie for a guest user — the row `anonymous()` mints for a visitor who
-   * never signed in. An identity to own things with, and nothing more proven than that: below
-   * an API key, which a trusted deployment holds and which may read drafts.
-   */
+  /** Session cookie for a guest minted by `anonymous()`. Below ApiKey. */
   Guest: 1,
-  /** Holds a valid `X-CH-API-KEY` for the configured project — a trusted deployment. */
+  /** Valid `X-CH-API-KEY` for the configured project. */
   ApiKey: 2,
-  /** Holds a valid session cookie for a signed-in person. */
+  /** Valid session cookie for a signed-in person. */
   Session: 3,
-  /** Session belonging to the single configured admin — what `adminPolicy()` required. */
+  /** Session of the configured admin. */
   Root: 4,
 } as const;
 
@@ -45,10 +34,7 @@ export interface Caller {
 }
 
 export interface CallerPolicyOptions {
-  /**
-   * Reject anything below this tier. Left at `Anonymous`, the policy never denies and
-   * only reports what it found.
-   */
+  /** Reject anything below this tier. At `Anonymous`, never denies. */
   minTier?: CallerTier;
   /** Project the `X-CH-API-KEY` must belong to. */
   projectId?: number;
@@ -58,13 +44,7 @@ export interface CallerPolicyOptions {
 /** Both spellings of the better-auth session cookie (`__Secure-` prefixed under TLS). */
 const SESSION_COOKIE_MARKER = "session_token";
 
-/**
- * Whether it is worth asking better-auth for a session.
- *
- * Public procedures are reachable by browsers carrying unrelated cookies, and this policy
- * runs on every one of them; without this check each anonymous page view would pay a
- * session lookup to learn nothing.
- */
+/** Skip the session lookup when there is no cookie and no preset. */
 const hasSessionCredential = (headers: Headers, preset?: Session | null) =>
   preset !== undefined ||
   (headers.get("Cookie")?.includes(SESSION_COOKIE_MARKER) ?? false);
@@ -77,13 +57,7 @@ const tierForSession = (session: Session, adminId: string): CallerTier => {
     : CallerTier.Session;
 };
 
-/**
- * Resolves the caller's tier without deciding what it may see — that is the caller's job,
- * because "more data" means something different per resource.
- *
- * Credentials are evaluated independently and the highest tier wins, so an admin browsing
- * dash is not demoted by a stray API key header.
- */
+/** Resolves the caller's tier. Credentials are independent and the highest wins. */
 export const callerPolicy = (
   options: CallerPolicyOptions = {}
 ): Policy<{ caller: Caller }> => {
@@ -95,9 +69,7 @@ export const callerPolicy = (
 
     if (context.headers.get(X_CH_API_KEY)) {
       /**
-       * A present-but-invalid key is a hard failure rather than a silent demotion to
-       * anonymous: only a misconfigured deployment sends one, and degrading it would turn
-       * a rotated secret into a subtly wrong response instead of an error.
+       * A present-but-invalid key is a hard failure, not a silent demotion to anonymous.
        */
       const result = await apiKeyPolicy({
         permissions: options.permissions,

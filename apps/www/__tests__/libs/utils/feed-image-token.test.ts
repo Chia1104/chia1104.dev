@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from "vitest";
 import {
   createFeedImageToken,
   verifyFeedImageToken,
@@ -16,13 +17,13 @@ const payload = {
 };
 
 describe("feed image token", () => {
-  it("should verify a token generated for the same route", () => {
+  it("verifies a token generated for the same route", () => {
     const token = createFeedImageToken(payload);
 
     expect(verifyFeedImageToken(payload, token)).toBe(true);
   });
 
-  it("should reject tokens copied to a different route", () => {
+  it("rejects tokens copied to a different route", () => {
     const token = createFeedImageToken(payload);
 
     expect(
@@ -30,7 +31,7 @@ describe("feed image token", () => {
     ).toBe(false);
   });
 
-  it("should reject malformed tokens", () => {
+  it("rejects malformed tokens", () => {
     expect(verifyFeedImageToken(payload, "invalid-token")).toBe(false);
   });
 });

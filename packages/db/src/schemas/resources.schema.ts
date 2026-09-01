@@ -28,10 +28,8 @@ const { paradedbIndex, paradedbField } = indexing;
 const { icu, simple } = tokenizer;
 
 /**
- * `@paradedb/drizzle-paradedb` resolves its own `drizzle-orm` instance, whose
- * `PgColumn`/`SQLWrapper` are not assignable to this package's. The casts derive
- * their target from the helpers so they follow whichever instance the package
- * resolves.
+ * `@paradedb/drizzle-paradedb` resolves a separate `drizzle-orm` whose column types are not assignable here.
+ * Casts derive their target from the helpers so they follow whichever instance the package resolves.
  */
 type ParadedbIndexArgs = Parameters<ReturnType<typeof paradedbIndex>["on"]>;
 const pdbKeyField = <TColumn>(column: TColumn) =>
@@ -53,7 +51,6 @@ const CHUNK_SOURCE_COLUMNS = [
 export const RESOURCE_CHUNK_KIND = {
   /** One per resource: title + summary + tags + outline. Bounded in size. */
   Card: "card",
-  /** A section of the body. */
   Section: "section",
 } as const;
 
@@ -61,16 +58,8 @@ export type ResourceChunkKind =
   (typeof RESOURCE_CHUNK_KIND)[keyof typeof RESOURCE_CHUNK_KIND];
 
 /**
- * Retrievable unit of any resource.
- *
- * `source_type` / `source_id` are generated from the nullable foreign keys, so
- * callers never need to know how many key columns exist. A new resource type
- * means: one nullable FK, one more branch in each generated expression, and one
- * more entry in the CHECK.
- *
- * `locale` / `published` / `deleted` are mirrored from the source because
- * ParadeDB only pushes a predicate into the BM25 index when it is a column of
- * the indexed table. The indexing workflow is the only writer.
+ * Retrievable unit of any resource. `source_type` / `source_id` are generated from the nullable FKs so callers never pick a key column.
+ * `locale` / `published` / `deleted` are mirrored because ParadeDB only pushes a BM25 predicate when it is a column of the indexed table.
  */
 export const resourceChunks = pgTable(
   "resource_chunk",
@@ -105,7 +94,7 @@ export const resourceChunks = pgTable(
     /** 0-based within `kind`; always 0 for a card. */
     chunkIndex: integer("chunk_index").notNull().default(0),
     content: text("content").notNull(),
-    /** e.g. `"HNSW > ef_search"` — used to build citation anchors. */
+    /** Citation path, e.g. `"HNSW > ef_search"`. */
     headingPath: text("heading_path"),
     tokenCount: integer("token_count"),
     metadata: jsonb("metadata"),
@@ -133,12 +122,8 @@ export const resourceChunks = pgTable(
     index("resource_chunk_feed_translation_id_idx").on(table.feedTranslationId),
     index("resource_chunk_agent_memory_id_idx").on(table.agentMemoryId),
     /**
-     * `icu` segments Traditional Chinese and keeps identifiers such as
-     * `ef_search` whole. It does not split on `.` between alphanumerics, so
-     * `hnsw.ef_search` indexes as one token — the `body_sub` alias (`simple`,
-     * splits on every non-alphanumeric) exists so a phrase query can still
-     * reach the sub-identifier. Query Chinese against the `icu` field only:
-     * `simple` emits a CJK run as a single token.
+     * `icu` segments Traditional Chinese and keeps identifiers such as `ef_search` whole.
+     * `body_sub` (`simple`) splits dotted paths so a phrase query can reach the sub-identifier; query Chinese against `icu` only.
      */
     paradedbIndex("resource_chunk_bm25_idx").on(
       pdbKeyField(table.id),
@@ -155,16 +140,7 @@ export const resourceChunks = pgTable(
 
 /**
  * Vectors for a chunk, one row per model.
- *
- * Split from the chunk so re-embedding does not rewrite the text, and so
- * "which chunks need embedding" is a left join on
- * `(chunk_id, model, index_version)`.
- *
- * pgvector fixes the dimension per column, and this is the only one. A model
- * with a different native width is rejected at startup by
- * `resolveEmbeddingProvider`; adopting one means changing this column and
- * reindexing, not adding a second column — the two-column setup this replaced
- * cost a dimension branch in every read and write and was never queried.
+ * Split so re-embedding does not rewrite the text. pgvector fixes the dimension per column; a different native width means changing this column and reindexing.
  */
 export const resourceEmbeddings = pgTable(
   "resource_embedding",
@@ -226,18 +202,8 @@ export interface ResourceIndexRunProgress {
 }
 
 /**
- * One indexing trigger and its outcome.
- *
- * The three partial unique indexes turn a repeated trigger into a conflict, so
- * the caller can be handed the in-flight run instead of starting a second one.
- * They only constrain active rows, so a finalized run never blocks the next
- * trigger — a run that dies without finalizing does, which is why every read of
- * an active run reconciles it against the workflow runtime first.
- *
- * `feed_id` is `ON DELETE SET NULL` because "a reindex ran for this feed" stays
- * meaningful after the feed is hard-deleted. `source_id` has no foreign key:
- * `resource_chunk.source_id` is a generated column, not a referencable key, so
- * orphans are read through `scope` instead.
+ * One indexing trigger. Partial unique indexes on active rows turn a repeated trigger into a conflict; a run that dies without finalizing still occupies the target.
+ * `feed_id` is ON DELETE SET NULL; `source_id` has no FK because `resource_chunk.source_id` is generated.
  */
 export const resourceIndexRuns = pgTable(
   "resource_index_run",

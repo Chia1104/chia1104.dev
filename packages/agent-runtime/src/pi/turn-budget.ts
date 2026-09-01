@@ -7,14 +7,13 @@ import type {
 } from "../types.ts";
 
 /**
- * Per-turn tool-call budget, composed into the same Pi `beforeToolCall` hook as the approval gate.
+ * Per-turn tool-call budget, composed into the same Pi `beforeToolCall` hook as the approval
+ * gate.
  *
  * Pi's loop is `while (true)` over "the assistant message still carries tool calls"; it has no
- * step limit of its own, so a model that keeps re-issuing a call would run until the operator
- * aborts. This is the only place a runaway turn can be stopped from inside, and it works in two
- * registers: a *refusal* (a tool error the model reads, the same channel the approval gate uses
- * to talk to it) and, when the model keeps going through the refusals, an *exhaustion* the host
- * turns into an abort.
+ * step limit of its own. This is the only place a runaway turn can be stopped from inside. Two
+ * registers: a refusal (a tool error the model reads) and, when the model keeps going through
+ * the refusals, an exhaustion the host turns into an abort.
  *
  * The budget must run before the gate: a call the budget refuses must never raise an approval.
  */

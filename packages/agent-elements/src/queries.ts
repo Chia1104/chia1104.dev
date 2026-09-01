@@ -3,9 +3,8 @@ import { queryOptions } from "@tanstack/react-query";
 import type { AgentSessionClient, AgentSessionDetail } from "./types.ts";
 
 /**
- * Server state, as TanStack Query options. The session store reads and refreshes the detail
- * through the same options (`fetchQuery` / `invalidateQueries`), so the cache is the one copy
- * both the store and the elements see; only the live turn stream lives outside it.
+ * The session store reads and refreshes detail through these options, so the cache is the one
+ * copy both the store and the elements see. Only the live turn stream lives outside it.
  */
 
 export interface AgentSessionScope {
@@ -23,9 +22,8 @@ export const agentQueryKeys = {
 };
 
 /**
- * `staleTime: Infinity` — the store decides when the detail is refetched (turn end, state
- * change, resync); observers only subscribe. Otherwise a window focus mid-turn would refetch a
- * transcript cut at the running turn.
+ * `staleTime: Infinity`: the store decides when the detail is refetched. Otherwise a window
+ * focus mid-turn would refetch a transcript cut at the running turn.
  */
 export const sessionDetailQuery = (
   client: AgentSessionClient,

@@ -1,11 +1,8 @@
 import type { ServiceContext } from "./context";
 
 /**
- * Hono env for a service app. `Variables` is {@link ServiceContext} itself, which is
- * what lets the oRPC handler be mounted with `context: { ...c.var }`.
- *
- * `TVariables` is only widened by middleware that adds request-scoped values (e.g.
- * the AI guard's decoded token).
+ * Hono env for a service app. `Variables` is {@link ServiceContext}, so the oRPC
+ * handler mounts with `context: { ...c.var }`.
  */
 // oxlint-disable-next-line typescript/consistent-type-definitions
 export type ServiceHonoEnv<

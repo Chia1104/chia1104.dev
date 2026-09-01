@@ -37,7 +37,6 @@ const GlobalError = withError(
   },
   {
     onError(error) {
-      // Sentry.captureException(error);
       console.error(error);
     },
   }

@@ -6,13 +6,8 @@ import type { Locale } from "@chia/db/types";
 import type { FeedDraft, MemorySummary } from "../types.ts";
 
 /**
- * Prompt assembly, split by how often the text changes.
- *
- * `buildSystemPrompt` is stable for a session — rules, skills index and approval posture — so the
- * provider's cached prefix (system prompt, tool schemas, transcript) survives from turn to turn.
- * `buildTurnContext` is the volatile block: draft state, the clock and what the session has saved
- * to memory, refreshed on every provider request through Pi's `context` hook and never persisted,
- * so it is always current and never accumulates in the transcript.
+ * Prompt assembly split by churn: `buildSystemPrompt` is the cached prefix for a session;
+ * `buildTurnContext` is volatile turn state, refreshed per provider request and never persisted.
  */
 
 export interface SystemPromptInput {
@@ -20,33 +15,29 @@ export interface SystemPromptInput {
   /** Tiers the operator pre-approved. Changes what the model should expect to be blocked. */
   autoApprove: readonly ToolTier[];
   /**
-   * The operator's standing instructions from the kind's configuration. Part of the stable
-   * prompt, not the volatile block: they change when the operator edits them, not per turn,
-   * and a change is meant to reach every session from its next turn on.
+   * Kind-config instructions. Stable prompt, not volatile: they change when the operator
+   * edits them.
    */
   instructions?: string;
 }
 
 export interface TurnContextInput {
   draft: FeedDraft;
-  /** Set when the session is editing an existing post. */
   targetFeedId?: number;
   defaultLocale: Locale;
   now: Date;
   /** What this session has already saved, so the model neither repeats itself nor forgets the ids. */
   sessionMemories?: readonly MemorySummary[];
   /**
-   * Active lessons, title only. Always on rather than searched for: a preference the model has
+   * Active lessons, title only. Always on rather than searched: a preference the model has
    * to remember to look up is not a preference it follows.
    */
   lessons?: readonly MemorySummary[];
 }
 
 /**
- * A memory is one line in the volatile block. A `source` is shown by where it is, never by
- * its title: the title is the fetched page's own `<title>`, attacker-controlled text that
- * would otherwise be restated on every provider request. The URL is structural — validated
- * http(s), fragment stripped — so its host and path identify the page safely.
+ * A `source` is shown by URL, never title: the title is the fetched page's `<title>`,
+ * attacker-controlled text that would otherwise be restated on every provider request.
  */
 const MEMORY_TITLE_MAX_CHARS = 120;
 
@@ -138,11 +129,8 @@ export const buildSystemPrompt = (input: SystemPromptInput): string => {
 };
 
 /**
- * Concrete current state.
- *
- * Without it the model re-reads the draft at the start of every turn just to orient itself,
- * which wastes a tool round-trip on something cheap to inline. The clock is there because the
- * model otherwise has no anchor for "today", "latest" or a publish date.
+ * Inline draft state and clock so the model does not spend a tool round-trip to orient, and
+ * has an anchor for "today".
  */
 export const buildTurnContext = (input: TurnContextInput): string => {
   // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
@@ -209,9 +197,8 @@ export const buildTurnContext = (input: TurnContextInput): string => {
 };
 
 /**
- * Pi's own `formatSkillsForSystemPrompt` tells the model to read a skill *file* at its
- * `filePath`, which presumes a file-reading tool. This agent loads skills through `read_skill`
- * instead, so the index has to name that path or the model is left guessing at URLs.
+ * Pi's `formatSkillsForSystemPrompt` tells the model to read a skill file at `filePath`.
+ * This agent loads skills through `read_skill`, so the index has to name that path.
  */
 const formatSkillsIndex = (skills: readonly Skill[]): string => {
   const lines = [

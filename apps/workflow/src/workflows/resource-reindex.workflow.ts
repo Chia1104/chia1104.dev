@@ -26,15 +26,8 @@ export interface ResourceReindexResult {
 }
 
 /**
- * Reindexes every resource, one at a time.
- *
- * Flat and **serial** rather than one run per resource: `embedPendingChunksStep` sends 32
- * chunks per provider call, so running N resources at once hits the embedding rate limit
- * together — the retries then make it slower than the sequence, with an unpredictable cost
- * peak. A run per resource would also turn progress into an aggregate of N runs.
- *
- * `indexResource` is a plain composition of steps, not a workflow, so iterating it here
- * produces no nested runs.
+ * `embedPendingChunksStep` sends 32 chunks per call, so N resources at once hit the
+ * rate limit together. `indexResource` is a composition of steps, not a nested workflow.
  */
 export const resourceReindexWorkflow = async (
   request: Request
@@ -53,14 +46,14 @@ export const resourceReindexWorkflow = async (
   for (const target of targets) {
     try {
       // `onlyMissing` tops up vectors without rewriting chunks, so no `content_hash`
-      // changes and the bill is bounded by the current backlog
+      // changes and the bill is bounded by the current backlog.
       if (onlyMissing) {
         await embedPendingChunksStep(target);
       } else {
         await indexResource(target);
       }
     } catch (error) {
-      // one resource that exhausted its retries must not strand the rest of the corpus
+      // One resource that exhausted its retries must not strand the rest of the corpus.
       failed.push(target.sourceId);
       console.error("Resource reindex failed for one resource", {
         ...target,

@@ -26,7 +26,6 @@ import type {
   TimelineGroupListProps,
 } from "./types";
 
-// Constants
 const ANIMATION_CONFIG = {
   whileInView: {
     opacity: 1,
@@ -44,7 +43,6 @@ const TITLE_CLASSNAME = "text-lg font-bold";
 const SUBTITLE_CLASSNAME = "text-sm text-gray-500";
 const MORE_TEXT = "MORE";
 
-// Year Component
 interface TimelineYearProps {
   year: string | number | dayjs.Dayjs;
   className?: string;
@@ -62,7 +60,6 @@ export const TimelineYear: FC<TimelineYearProps> = memo(
   }
 );
 
-// Item Link Component
 interface TimelineItemLinkProps {
   id: number;
   href: string;
@@ -92,7 +89,6 @@ const TimelineItemLink: FC<TimelineItemLinkProps> = memo(
   }
 );
 
-// Item Content Component
 interface TimelineItemContentProps {
   id: number;
   content: React.ReactNode;
@@ -122,7 +118,6 @@ const TimelineItemContent: FC<TimelineItemContentProps> = memo(
   }
 );
 
-// Timeline Item Component
 export const TimelineItem: FC<TimelineItemProps> = memo(
   ({ data, className, refTarget, isLastItem, ...props }) => {
     const {
@@ -179,7 +174,6 @@ export const TimelineItem: FC<TimelineItemProps> = memo(
   }
 );
 
-// Timeline List Component
 export const TimelineList: FC<TimelineListProps> = memo(
   ({ year, data, className, isLastGroup, refTarget, ...props }) => {
     const lastIndex = data.length - 1;
@@ -206,7 +200,6 @@ export const TimelineList: FC<TimelineListProps> = memo(
   }
 );
 
-// Loading Skeletons Component
 export const TimelineLoadingSkeletons: FC = memo(() => (
   <div className="relative flex animate-pulse flex-col gap-5 p-5">
     <span className="c-bg-secondary absolute -top-10 left-0 h-14 w-1/4 rounded" />
@@ -219,7 +212,6 @@ export const TimelineLoadingSkeletons: FC = memo(() => (
   </div>
 ));
 
-// Group List Component
 export const TimelineGroupList: FC<TimelineGroupListProps> = memo(
   ({ data, onEndReached, asyncDataStatus }) => {
     const { ref } = useInfiniteScroll<HTMLDivElement>({

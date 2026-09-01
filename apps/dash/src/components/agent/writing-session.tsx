@@ -14,10 +14,7 @@ import { Thread } from "@chia/agent-elements/thread";
 
 import { DraftAttachments } from "./draft-attachments";
 
-/**
- * Providers in the order offered: the gateway leads because it is the house account and needs no
- * setup; the bring-your-own-key providers follow.
- */
+/** Gateway first: house account, no setup. BYOK providers follow. */
 const PROVIDER_ORDER = ["vercel-ai-gateway", "openai", "anthropic"];
 
 const TOOL_RENDERERS = {
@@ -32,7 +29,6 @@ const SUGGESTIONS = [
   "Review the current draft and tighten the writing.",
 ];
 
-/** The writing agent's session view: the shared chat elements with the draft riding on the composer. */
 export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
   const draft = useSessionDetail().data?.draft;
   const [modelPickerOpen, setModelPickerOpen] = useState(false);

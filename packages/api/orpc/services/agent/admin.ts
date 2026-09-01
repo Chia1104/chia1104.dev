@@ -50,13 +50,8 @@ import type {
 import type { AgentModelInfo } from "../../contracts/agent.contract";
 
 /**
- * The operator's view over every registered kind and task, and the writes behind the
- * dashboard's agent workspace.
- *
- * Every write is checked against the definition it overrides before it lands: a kind's model
- * through the kind's own allowlist, a task's model against the house catalogue, a kind's config
- * through its schema, a prompt or parameters only where the task exposes them. A row can
- * therefore only ever re-point what the code already allows.
+ * Every write is checked against the definition it overrides before it lands, so a row
+ * can only re-point what the code already allows.
  */
 
 /** Per-call context. Admin-only by the route, so the caller is always the configured admin. */
@@ -137,10 +132,6 @@ const taskOrNotFound = (taskId: string): AgentTaskDefinition => {
 
 const badRequest = (message: string) =>
   new AppError("BAD_REQUEST", { message });
-
-// ============================================
-// Views
-// ============================================
 
 const kindView = (
   definition: LoadedKind,
@@ -249,10 +240,6 @@ const quotaView = (row: AgentQuotaConfig | undefined): AgentQuotaAdmin => {
   };
 };
 
-// ============================================
-// Validation
-// ============================================
-
 /** A model the operator chose is checked by the kind: policy and catalogue membership at once. */
 const assertKindModel = (definition: LoadedKind, ref: AgentModelRef): void => {
   try {
@@ -300,10 +287,6 @@ const assertTaskModel = (ref: AgentModelRef): void => {
       : error;
   }
 };
-
-// ============================================
-// Service
-// ============================================
 
 export const createAgentAdminService = (
   source: AgentDefinitionSource

@@ -30,7 +30,6 @@ const ErrorContent = () => {
 
 const ErrorPage = withError(ErrorContent, {
   onError(error) {
-    // captureException(error);
     console.error(error);
   },
 });

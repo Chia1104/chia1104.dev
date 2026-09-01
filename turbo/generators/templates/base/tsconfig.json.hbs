@@ -1,5 +1,9 @@
 {
-  "extends": ["tsconfig/base.json"],
-  "include": ["**/*.ts", "**/*.mts", "__tests__"],
-  "exclude": ["dist", "build", "node_modules"]
+  "extends": "@chiastack/tsconfig/base.json",
+  "include": ["."],
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "types": ["node"],
+    "allowImportingTsExtensions": true
+  }
 }

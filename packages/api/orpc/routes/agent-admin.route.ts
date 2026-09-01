@@ -6,11 +6,8 @@ import type { AgentAdminCaller } from "../services/agent/admin";
 import { contractOS } from "../utils";
 
 /**
- * Agent configuration routes — the dashboard's agent workspace.
- *
- * **Every route is `adminGuard()`, reads included.** A task's prompt is an instruction to the
- * model and a kind's defaults decide what every new session runs on; neither is for anyone
- * but the configured author.
+ * Every route is `adminGuard()`, reads included. A task's prompt is an instruction to the
+ * model; a kind's defaults decide what every new session runs on.
  */
 
 const callerOf = (opts: {

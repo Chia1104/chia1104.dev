@@ -2,9 +2,8 @@ import { assertAgentKind } from "@chia/agent-host/kind";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 
 /**
- * Execution-side factory. Which tier may use a kind is decided in `apps/service` before a run
- * starts; here a kind is only looked up by the string on its session row. Dynamic imports cache
- * their modules; no definition Map is needed.
+ * Lookup by the kind string on the session row. Which tier may use a kind is decided in
+ * `apps/service` before a run starts. Dynamic imports cache their modules.
  */
 export const agentFactory = {
   async load(

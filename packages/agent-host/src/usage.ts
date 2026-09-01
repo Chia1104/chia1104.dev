@@ -4,9 +4,8 @@ import { insertAgentUsage } from "@chia/db/repos/agent/usage";
 import type { AgentUsageSource } from "@chia/db/schema";
 
 /**
- * The write side of the usage ledger: every provider call made for a user lands here, whoever
- * paid for it — the house gateway or a key the user brought. The ledger records; whether the
- * spend is within a quota is decided where a turn is accepted, and by the tier's own policy.
+ * Write side of the usage ledger: every provider call made for a user lands here, whoever
+ * paid. Whether the spend is within a quota is decided where a turn is accepted.
  */
 
 const MICROS_PER_USD = 1_000_000;
@@ -26,7 +25,6 @@ export const costToMicros = (usd: number): number => {
 export const microsToUsd = (micros: number): number => micros / MICROS_PER_USD;
 
 export interface RecordAgentUsageInput extends AgentModelUsage {
-  /** The user the call was made for — the session's owner, not who paid. */
   userId: string;
   sessionId?: string | null;
   runId?: string | null;
@@ -36,12 +34,9 @@ export interface RecordAgentUsageInput extends AgentModelUsage {
 }
 
 /**
- * Lands one provider call in the ledger.
- *
- * Never throws: the row is written after the work it accounts for has already happened, so a
- * failed write cannot undo anything and must not fail the turn or side job it rides beside. The
- * loss is bounded to that one call and falls in the user's favour. A call the provider did not
- * bill — a failed request, a stubbed reply — is not a row.
+ * Lands one provider call in the ledger. Never throws: the row is written after the work it
+ * accounts for has already happened, so a failed write must not fail the turn. A call the
+ * provider did not bill is not a row.
  */
 export const recordAgentUsage = async (
   db: DB,

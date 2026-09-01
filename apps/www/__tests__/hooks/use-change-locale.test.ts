@@ -1,15 +1,14 @@
 import { renderHook } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// 使用 vi.hoisted 確保 mock 函數在正確的時機創建
+// vi.hoisted so the mock exists before `vi.mock`.
 const { mockPush, mockRefresh, mockPathname } = vi.hoisted(() => ({
   mockPush: vi.fn(),
   mockRefresh: vi.fn(),
   mockPathname: "/test-path",
 }));
 
-// Mock the routing module
-vi.mock("@/libs/i18n/routing", () => ({
+vi.mock("@/libs/i18n/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
     refresh: mockRefresh,

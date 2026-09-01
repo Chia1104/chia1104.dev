@@ -32,9 +32,8 @@ const formatCompactTokens = (value: number) => {
 };
 
 /**
- * Current active-branch context pressure and lifetime provider throughput, with the manual
- * compaction — the server refuses it mid-turn and when nothing would condense, so the button
- * is disabled on the same two readings.
+ * The server refuses compaction mid-turn and when nothing would condense; the button is
+ * disabled on the same two readings.
  */
 export const ContextUsage = () => {
   const labels = useAgentLabels();

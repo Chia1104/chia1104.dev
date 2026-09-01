@@ -4,18 +4,11 @@ import type { DB } from "@chia/db/client";
 import type { Keyv } from "@chia/kv/types";
 
 /**
- * The single per-request context shared by every transport.
+ * Per-request context shared by every transport. Keep free of Request/Response and
+ * of domain ports.
  *
- * Hono exposes it as `c.var` (see the `Variables` global in each service app) and
- * oRPC extends it as its handler context, so mounting the RPC handler is a spread
- * of `c.var` rather than a hand-written field-by-field mapping.
- *
- * Keep this free of transport concerns (no `Request`, no `Response`) and free of
- * domain ports — those are registered per app, not carried per request.
- *
- * Declared as a type alias rather than an interface on purpose: Hono's `Env`
- * constraint requires `Variables` to satisfy `Record<string, unknown>`, and only type
- * aliases get an implicit index signature.
+ * A type alias (not an interface) so `Variables` gets an implicit index signature
+ * for Hono's `Env` constraint.
  */
 // oxlint-disable-next-line typescript/consistent-type-definitions
 export type ServiceContext = {
@@ -24,17 +17,11 @@ export type ServiceContext = {
   db: DB;
   kv: Keyv;
   auth?: Auth;
-  /**
-   * Pre-resolved session. A caller that already holds one (an in-process router
-   * client, a test context) sets it so guards skip the `getSession` round trip.
-   */
+  /** Pre-resolved session; guards skip `getSession` when set. */
   session?: Session | null;
 };
 
-/**
- * Header-based counterpart to `getClientIP` from `@chia/utils/server`, for callers
- * that hold a `Headers` rather than a whole `Request` (oRPC contexts, RSC).
- */
+/** Client IP from headers, for callers that hold `Headers` rather than a `Request`. */
 export const resolveClientIP = (headers: Headers): string =>
   headers.get("CF-Connecting-IP") ??
   headers.get("X-Forwarded-For")?.split(",")[0] ??

@@ -69,7 +69,7 @@ export type ContentContextProps = BaseProps &
 
 export interface GetContentPropsArgs {
   contentType: ContentType;
-  /** the raw body; the wrapper object it used to take was never read */
+  /** Raw body. The wrapper object it used to take was never read. */
   content: string | null | undefined;
 }
 

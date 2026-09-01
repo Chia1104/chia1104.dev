@@ -9,22 +9,19 @@ import { tryLoadTokenizer } from "./tokenizer.ts";
 import { estimateEmbeddingTokens } from "./utils.ts";
 
 /**
- * Chunkless context assembly: retrieval returns *documents*, and this decides
- * how much of each document actually reaches the model.
+ * Decides how much of each retrieved document reaches the model.
  *
- * The budget is per request, not per document. Character-based truncation
- * cannot express that — 24k characters is ~6k tokens of English but ~16k of
- * Chinese, so the same limit means wildly different things depending on the
- * post, and N posts each "within the limit" can still blow the window.
+ * Budget is per request, not per document. Character truncation cannot
+ * express that: 24k characters is ~6k tokens of English but ~16k of Chinese.
  *
- * Losing chunk rows also means losing their `heading_path`, which is what
- * citations anchor to. Anchors are recomputed here at read time instead.
+ * Losing chunk rows also loses their `heading_path`, so anchors are
+ * recomputed here at read time.
  */
 
-/** Total tokens all documents in one request may occupy. */
+/** Shared across all documents in one request. */
 export const DEFAULT_CONTEXT_TOKEN_BUDGET = 24_000;
 
-/** A single document may not take more than this share of the budget. */
+/** Cap so one document cannot starve the rest. */
 const MAX_SHARE_PER_DOCUMENT = 0.6;
 
 export type ContextDetail = "full" | "sections" | "outline";
@@ -36,8 +33,8 @@ export interface DocumentContextInput {
   summary?: string | null;
   content: string;
   /**
-   * Heading paths the retriever matched, most relevant first. Used to pick
-   * which sections survive when the whole document does not fit.
+   * Retriever matches, most relevant first. Picks which sections survive
+   * when the whole document does not fit.
    */
   matchedHeadingPaths?: (string | null)[];
 }
@@ -46,7 +43,7 @@ export interface HeadingAnchor {
   /** `"HNSW > ef_search"` */
   path: string;
   title: string;
-  /** `#hnsw-ef_search`-style fragment for deep links */
+  /** `#hnsw-ef_search` fragment for deep links */
   anchor: string;
 }
 
@@ -54,11 +51,10 @@ export interface DocumentContext {
   slug: string;
   locale: string;
   title: string;
-  /** how much of the document survived the budget */
   detail: ContextDetail;
   text: string;
   tokenCount: number;
-  /** anchors for every heading kept in `text`, for citations */
+  /** Anchors for headings kept in `text`, for citations */
   anchors: HeadingAnchor[];
 }
 
@@ -66,17 +62,16 @@ export interface BuildContextResult {
   documents: DocumentContext[];
   totalTokens: number;
   budget: number;
-  /** documents dropped entirely because the budget ran out */
   droppedSlugs: string[];
 }
 
 /**
- * Anchors for a document's headings, matching the ids the site generates.
+ * Anchors matching the ids the site generates.
  *
- * Always slug the *whole* document, then narrow: `GithubSlugger` disambiguates
- * repeated titles with `-1`, so slugging a subset of the headings would emit
- * `#setup` for one the page renders as `#setup-1`. A fresh instance per
- * document, since the rendered page starts from scratch too.
+ * Slug the whole document, then narrow: `GithubSlugger` disambiguates
+ * repeated titles with `-1`, so slugging a subset would emit `#setup` for a
+ * heading the page renders as `#setup-1`. Fresh instance per document; the
+ * rendered page starts from scratch too.
  */
 export const buildHeadingAnchors = async (
   content: string,
@@ -115,8 +110,8 @@ const truncateTokens = (
 };
 
 /**
- * Sections whose heading path was matched by the retriever, in match order,
- * then the rest — so degrading keeps the parts the query actually hit.
+ * Matched sections first, then the rest, so degrading keeps what the query
+ * hit.
  */
 const buildSectionsView = async (
   input: DocumentContextInput,
@@ -141,7 +136,7 @@ const buildSectionsView = async (
   const keptPaths = new Set<string>();
   let used = 0;
   for (const section of ordered) {
-    // the leaf title, not the path: this heading is re-slugged downstream and
+    // Leaf title, not the path: this heading is re-slugged downstream and
     // `## HNSW > ef_search` would anchor to `#hnsw--ef_search`
     const title = section.headingPath?.split(" > ").at(-1);
     const block = `${title ? `## ${title}\n` : ""}${section.text}`;
@@ -159,7 +154,7 @@ const buildSectionsView = async (
   return { text: parts.join("\n\n"), keptPaths };
 };
 
-/** Cheapest representation: what the post is about and how it is organised. */
+/** Summary plus heading outline; cheapest view that still identifies the post. */
 const buildOutlineView = async (input: DocumentContextInput): Promise<string> =>
   [
     input.summary?.trim() ? input.summary.trim() : null,
@@ -169,13 +164,11 @@ const buildOutlineView = async (input: DocumentContextInput): Promise<string> =>
     .join("\n\n");
 
 /**
- * Fits documents into a shared token budget, degrading each one in place
- * rather than cutting it off mid-sentence:
+ * Fits documents into a shared token budget, degrading in place:
+ * full → matched sections → summary + outline.
  *
- *   full → matched sections (+ as much of the rest as fits) → summary + outline
- *
- * Documents are processed in the order given (i.e. retrieval order), so when
- * the budget runs out it is the least relevant documents that lose detail.
+ * Processed in the given (retrieval) order, so the least relevant documents
+ * lose detail first.
  */
 export const buildDocumentContext = async (
   inputs: DocumentContextInput[],
@@ -194,7 +187,7 @@ export const buildDocumentContext = async (
       droppedSlugs.push(input.slug);
       continue;
     }
-    // no single document may starve the ones after it
+    // No single document may starve the ones after it
     const allowance = Math.min(
       remaining,
       Math.max(1, Math.floor(budget * MAX_SHARE_PER_DOCUMENT))
@@ -202,9 +195,8 @@ export const buildDocumentContext = async (
 
     const sections = await buildSectionsView(input, allowance, encoding);
     const outlineView = await buildOutlineView(input);
-    // anchors always come from the untouched document, so their slugs match the
-    // rendered page whichever view survives; `keepPaths` narrows them to what
-    // the view actually contains
+    // Anchors come from the untouched document so slugs match the rendered
+    // page; `keepPaths` narrows them to what the view contains
     const candidates: {
       detail: ContextDetail;
       text: string;
@@ -242,8 +234,7 @@ export const buildDocumentContext = async (
       }
     }
 
-    // even the outline does not fit — hard-truncate it rather than drop the
-    // document, so the model at least knows the post exists
+    // Outline still over budget: hard-truncate rather than drop the document
     if (!chosen) {
       const text = truncateTokens(
         outlineView || input.title,

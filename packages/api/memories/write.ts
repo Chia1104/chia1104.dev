@@ -14,18 +14,15 @@ import type { MemoryHooks } from "../orpc/utils";
 import { AGENT_MEMORY_SOURCE_TYPE } from "../resources/agent-memory.resource";
 
 /**
- * Memory writes, shared by the oRPC procedures (a request, behind `adminGuard`) and the
- * writing agent's turn (a workflow step, no request at all). Authorisation happened at the
- * transport boundary before either caller reached here.
- *
- * `hooks` is a required argument for the same reason as in `feeds/write.ts`: a write that
- * skips `onMemoryChanged` leaves the memory unindexed — or, for a removal, still indexed —
- * and that is the main hazard of reaching for the repository directly.
+ * Shared by oRPC (a request, behind `adminGuard`) and the writing agent's turn (a
+ * workflow step, no request). Authorisation happened at the transport boundary.
+ * `hooks` is required: a write that skips `onMemoryChanged` leaves the memory
+ * unindexed — or, for a removal, still indexed.
  */
 
 /**
- * A `source` holds the whole fetched page, bounded (`SOURCE_MAX_CHARS` in the fetch tool); a
- * fact written by the tool is capped at 4k. The dashboard edits within the same bound.
+ * A `source` holds the whole fetched page, bounded (`SOURCE_MAX_CHARS` in the fetch tool);
+ * a fact written by the tool is capped at 4k. The dashboard edits within the same bound.
  */
 export const MEMORY_CONTENT_MAX_CHARS = 64_000;
 export const MEMORY_TITLE_MAX_CHARS = 200;
@@ -111,11 +108,10 @@ export interface RecordSourceMemoryServiceInput {
 }
 
 /**
- * The `fetch_url` trail: one row per page, rewritten when the page changed. The index run is
- * scheduled when the text changed, and also whenever the index is older than the row: the
- * row lands before the hook runs, so a hook that failed once — on a first visit or after a
- * change — would otherwise leave stale or missing chunks until the text happened to change
- * again.
+ * The `fetch_url` trail: one row per page, rewritten when the page changed. The index run
+ * is scheduled when the text changed, and also whenever the index is older than the row:
+ * the row lands before the hook runs, so a hook that failed once would otherwise leave
+ * stale or missing chunks until the text happened to change again.
  */
 export const recordSourceMemoryService = async (
   db: DB,

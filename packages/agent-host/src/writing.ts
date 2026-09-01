@@ -34,12 +34,8 @@ import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "./tasks";
 
 /**
- * The **writing** agent: the dashboard's blog authoring assistant.
- *
- * The domain — tools, prompts, policy, model allowlist, draft staging — is `@chia/agent-writing`.
- * This binds it to the host: the author-visibility content port, the Firecrawl web port, the
- * Postgres draft store and the memory port, plus the `agent.writing_session` row that pins a
- * session to a target post.
+ * Binds `@chia/agent-writing` to the host: author-visibility content port, Firecrawl web port,
+ * Postgres draft store, memory port, and the `agent.writing_session` row.
  */
 
 type WritingAgentKind = AgentKindDefinition<WritingAgentSession, WritingConfig>;
@@ -56,7 +52,6 @@ interface WritingExecutionHost {
     sessionId: string;
   }): MemoryPort;
   createWebPort(): WebPort;
-  /** Resolves to the consolidation run id. */
   startMemoryConsolidation(sessionId: string): Promise<string>;
 }
 
@@ -81,9 +76,9 @@ export const createWritingAgentKind = (
       "Researches, drafts and revises blog posts with the author inside the dashboard.",
 
     /**
-     * The configured admin only. These tools write to and publish the blog, so a logged-in visitor
-     * must not reach them; `Root` also makes `caller.adminId` and `caller.userId` the same person,
-     * which is what lets the content port act as the author.
+     * The configured admin only. These tools write to and publish the blog; `Root` also
+     * makes `caller.adminId` and `caller.userId` the same person, which is what lets the
+     * content port act as the author.
      */
     minTier: CallerTier.Root,
     defaults: WRITING_SESSION_DEFAULTS,
@@ -129,8 +124,7 @@ export const createWritingAgentKind = (
           targetFeedId: input.targetFeedId,
         });
 
-        // Opening a session against an existing post seeds the buffer, so the agent edits the real
-        // content instead of guessing at it.
+        // Opening a session against an existing post seeds the buffer.
         if (input.targetFeedId !== undefined) {
           const post = await host.getPostForSeed({
             db,
@@ -174,11 +168,6 @@ export const createWritingAgentKind = (
 
     ...(execution && {
       async runTurn(context) {
-        /**
-         * The writing agent acts as the configured author. The kind's `minTier` is `Root`, which pins
-         * session ownership to that same id, so this states whose posts the port touches rather than
-         * performing a second authorization check.
-         */
         let committed = false;
         const content = execution.createContentPort({
           db: context.db,
@@ -227,12 +216,7 @@ export const createWritingAgentKind = (
           onUsage: context.onUsage,
         });
 
-        /**
-         * A committed post is the natural end of a writing task, and the moment the transcript
-         * holds the whole revision history — but only once the turn has ended: `runPiTurn` appends
-         * every entry before it resolves, whereas inside `commitDraft` the commit's own result and
-         * the closing summary are still to come. Fire-and-forget; the run reports for itself.
-         */
+        // After the turn ends: `runPiTurn` appends every entry before it resolves.
         if (turn.status === "done" && committed) {
           try {
             await execution.startMemoryConsolidation(context.row.id);

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/test",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./config": {
+      "types": "./src/config.ts",
+      "default": "./src/config.ts"
+    },
+    "./env": {
+      "types": "./src/env.ts",
+      "default": "./src/env.ts"
+    },
+    "./session": {
+      "types": "./src/session.ts",
+      "default": "./src/session.ts"
+    },
+    "./context": {
+      "types": "./src/context.ts",
+      "default": "./src/context.ts"
+    },
+    "./orpc": {
+      "types": "./src/orpc.ts",
+      "default": "./src/orpc.ts"
+    },
+    "./mocks/db-feeds": {
+      "types": "./src/mocks/db-feeds.ts",
+      "default": "./src/mocks/db-feeds.ts"
+    },
+    "./mocks/workflow": {
+      "types": "./src/mocks/workflow.ts",
+      "default": "./src/mocks/workflow.ts"
+    },
+    "./mocks/kv": {
+      "types": "./src/mocks/kv.ts",
+      "default": "./src/mocks/kv.ts"
+    },
+    "./fixtures/content-read-port": {
+      "types": "./src/fixtures/content-read-port.ts",
+      "default": "./src/fixtures/content-read-port.ts"
+    }
+  },
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "type:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "vitest": "catalog:testing-library"
+  },
+  "devDependencies": {
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

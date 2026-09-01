@@ -21,20 +21,17 @@ import type {
 export const AGENT_MEMORY_SOURCE_TYPE = "agent_memory";
 
 /**
- * Whether a memory owns chunks: live and `active`. A pending lesson is unreviewed, and the
- * index is agent context — `search_memory` would surface it — so it stays out until the
- * operator approves it, which re-indexes. Shared by `buildChunks` and `hydrate`: the two must
- * agree, or a hit indexed under one rule is dropped by the other and the caller silently
- * sees one result fewer.
+ * Whether a memory owns chunks: live and `active`. A pending lesson is unreviewed, and
+ * the index is agent context, so it stays out until the operator approves it. Shared by
+ * `buildChunks` and `hydrate`: the two must agree or a hit is silently dropped.
  */
 const isIndexable = (row: AgentMemory): boolean =>
   row.deletedAt === null && row.status === AGENT_MEMORY_STATUS.Active;
 
 /**
- * The card is what the memory *is*: kind, where it came from, and — for a page — the
- * document card a post gets, title plus heading outline, whose size follows the page's
- * structure rather than its length. A fact or lesson is a few sentences with no structure
- * to outline, so its card is just its identity and the sections carry the text.
+ * The card is what the memory is: kind, source, and — for a page — title plus heading
+ * outline. A fact or lesson has no structure to outline, so its card is identity and the
+ * sections carry the text.
  */
 const buildCard = async (row: AgentMemory): Promise<string> => {
   const identity = [
@@ -76,8 +73,8 @@ const buildChunkSet = async (row: AgentMemory): Promise<ResourceChunkSet> => {
 
   return {
     // Never published: the public search path filters on `published = true`, so a memory
-    // can only be read by a caller that asks for unpublished rows *and* names this type.
-    // Cross-lingual by nature (sources in English, posts in Chinese), so no locale.
+    // can only be read by a caller that asks for unpublished rows and names this type.
+    // Cross-lingual (sources in English, posts in Chinese), so no locale.
     visibility: { locale: null, published: false, deleted: false },
     chunks,
   };

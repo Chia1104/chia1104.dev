@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AgentModelUsage } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
@@ -6,9 +6,8 @@ import type { DB } from "@chia/db/client";
 type Usage = AgentModelUsage["usage"];
 
 /**
- * The ledger's write side is the one place usage numbers are shaped for storage. Pinned: the
- * float-to-micros conversion, that an unbilled call is not a row, and that a failed write is
- * logged and swallowed rather than surfaced into the turn it rides beside.
+ * The ledger write is where usage is shaped for storage: float-to-micros, no row
+ * for an unbilled call, failed writes logged and swallowed.
  */
 
 const { repo } = vi.hoisted(() => ({

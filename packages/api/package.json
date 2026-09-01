@@ -198,6 +198,7 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "type:check": "tsc --noEmit",
+    "test": "vitest --run",
     "clean": "git clean -xdf .turbo node_modules dist .cache"
   },
   "dependencies": {
@@ -231,7 +232,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
   }
 }

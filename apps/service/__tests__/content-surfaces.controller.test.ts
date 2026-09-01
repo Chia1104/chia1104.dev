@@ -1,24 +1,14 @@
+import { beforeEach, describe, expect, it } from "vitest";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
-import { app } from "../src/server";
-
-import * as dbMocks from "./__mocks__/db.mock";
-import * as guardMocks from "./__mocks__/guards.mock";
+import * as dbMocks from "@chia/test/mocks/db-feeds";
+import * as guardMocks from "./helpers/guards";
+import { rpc as rpcOf } from "./helpers/rpc";
 
 const rpc = (procedure: string, input: unknown = {}) =>
-  app.request(`/api/v1/rpc/feeds/${procedure}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ json: input }),
-  });
+  rpcOf(`feeds/${procedure}`, input);
 
-/**
- * `feeds.list` replaced three procedures — one per audience — that each hard-coded the
- * slice they were allowed to return. The scope is now derived from the caller's tier, so
- * these cases stand in for the structure that used to make a leak impossible: they assert
- * the *repository* is called with the clamped scope, not merely that the response looks
- * right.
- */
+/** Assert the repository is called with the clamped scope, not only that the response looks right. */
 describe("feeds reads scale with the caller's tier", () => {
   beforeEach(() => {
     guardMocks.resetAllGuardMocks();
@@ -68,9 +58,8 @@ describe("feeds reads scale with the caller's tier", () => {
     });
 
     /**
-     * The detail reads and `related` are reachable only from `apps/www`'s server-side
-     * client, which always sends the project API key, so they sit above the anonymous
-     * floor rather than relying on scope clamping alone.
+     * Detail and `related` require the project API key (`apps/www` server client);
+     * anonymous cannot reach them.
      */
     it.each(["details-by-slug", "details-by-id", "related"])(
       "cannot reach %s at all",

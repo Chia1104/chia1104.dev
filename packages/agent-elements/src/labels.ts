@@ -1,15 +1,13 @@
 import enUS from "@chia/i18n/agent-elements/en-US.json";
 
 /**
- * Every user-visible string, shaped by the `en-US` catalog in `@chia/i18n/agent-elements`. A
- * host passes the catalog for its locale (or any partial override) into the store; the elements
- * read it from there, so both apps localise the same way.
+ * User-visible strings, shaped by `@chia/i18n/agent-elements`. The host passes its locale
+ * catalog (or a partial override).
  */
 export type AgentLabels = typeof enUS;
 
 export const defaultAgentLabels: AgentLabels = enUS;
 
-/** Fills `{name}` placeholders in a catalog template. */
 export const fill = (
   template: string,
   params: Readonly<Record<string, string>>

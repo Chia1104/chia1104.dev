@@ -1,3 +1,4 @@
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import http from "node:http";
 
 import { Hono } from "hono";
@@ -7,9 +8,8 @@ import { isAppError, toErrorResponse } from "../src/errors";
 import { bodyLimit } from "../src/middlewares/body-limit";
 
 /**
- * Runs through srvx, not `app.request()`: the failure this middleware exists to avoid
- * only reproduces with srvx's lazy `Request`, which is what Nitro's node server hands
- * Hono in production.
+ * Runs through srvx, not `app.request()`: the failure only reproduces with srvx's
+ * lazy Request, which is what Nitro's node server hands Hono.
  */
 const MAX = 64;
 let server: ReturnType<typeof serve>;

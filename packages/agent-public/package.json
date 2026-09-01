@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "@chia/agent-writing": "workspace:*",
+    "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
     "typescript": "catalog:",

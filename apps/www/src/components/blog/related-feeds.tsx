@@ -84,20 +84,6 @@ export async function RelatedFeeds({ locale, slug }: RelatedFeedsProps) {
                     slug={feed.slug}
                     token={token}
                   />
-                  {/* <div
-                    aria-hidden="true"
-                    className="absolute inset-0 z-1 bg-linear-to-t from-white/90 via-white/35 to-transparent transition-colors duration-300  dark:from-black/90 dark:via-black/35"
-                  />
-                  <Card.Header className="relative z-2 mt-auto w-full gap-1 p-4 ">
-                    <Card.Title className="text-foreground-900 dark:text-foreground-50 line-clamp-2 text-base drop-shadow-sm">
-                      {feed.title}
-                    </Card.Title>
-                    {(feed.description ?? feed.excerpt) ? (
-                      <Card.Description className="text-foreground-700 dark:text-foreground-300 line-clamp-2 text-sm">
-                        {feed.description ?? feed.excerpt}
-                      </Card.Description>
-                    ) : null}
-                  </Card.Header> */}
                 </Card>
               </Link>
             </li>

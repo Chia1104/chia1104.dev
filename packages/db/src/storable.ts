@@ -3,13 +3,7 @@ import * as z from "zod";
 
 import type { JsonValue } from "@chia/utils/json";
 
-/**
- * Two things a JavaScript string can hold that Postgres cannot store: NUL (`\0`), which `text`
- * rejects as an invalid byte and `jsonb` as an unsupported escape, and a lone UTF-16 surrogate,
- * which `jsonb` rejects as an unpaired escape. Model output and extracted documents produce both,
- * and neither has a storable spelling to preserve, so NUL is dropped and a lone surrogate becomes
- * U+FFFD.
- */
+/** Postgres `text`/`jsonb` reject NUL and unpaired UTF-16 surrogates. NUL is dropped; a lone surrogate becomes U+FFFD. */
 const UNSTORABLE =
   /\0|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
 
@@ -37,7 +31,7 @@ export const toStorableJson = (value: JsonValue): JsonValue => {
 
 type Codec = NonNullable<typeof nodePgCodecs.jsonb>;
 
-/** `base` with its parameters scrubbed before whatever it already did to them. */
+/** Scrubs parameters before `base`'s own normalizers. */
 const scrubbing = ({
   normalizeParam = (value: JsonValue) => value,
   normalizeParamArray = (value: JsonValue) => value,
@@ -49,12 +43,7 @@ const scrubbing = ({
     normalizeParamArray(toStorableJson(value), dimensions),
 });
 
-/**
- * The node-postgres codecs with every text- and JSON-typed parameter scrubbed as it leaves
- * Drizzle. This is the one seam every write crosses — repositories, Better Auth's adapter, the
- * RAG indexer — so no caller has to know which strings Postgres refuses. Values bound to a raw
- * `sql` fragment without a column are not typed and pass through untouched.
- */
+/** Scrubs every text and JSON parameter as it leaves Drizzle. Untyped values in a raw `sql` fragment pass through. */
 export const storableCodecs: typeof nodePgCodecs = {
   ...nodePgCodecs,
   char: scrubbing(nodePgCodecs.char),

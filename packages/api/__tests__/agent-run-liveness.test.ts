@@ -1,17 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import * as workflowMocks from "./__mocks__/workflow.mock";
+import { createFakeRuns, getRun, resetWorkflowMocks } from "@chia/test/mocks/workflow";
 
-const runs = {
-  get: workflowMocks.getRun,
-  hasHook: async (token: string) =>
-    Boolean(await workflowMocks.getHookByToken(token)),
-};
+const runs = createFakeRuns();
 
 /**
- * A turn marker is only "running" while the World run that would execute it is alive. Pinned:
- * a marker on a dead run is closed as failed and its controller released; a marker on a live
- * run and a young unbound lease are left alone; an old unbound lease is dead.
+ * A turn marker is only "running" while the World run that would execute it is alive.
+ * A marker on a dead run is closed as failed; a marker on a live run and a young unbound
+ * lease are left alone; an old unbound lease is dead.
  */
 
 const repo = vi.hoisted(() => ({
@@ -56,7 +52,7 @@ const row = (overrides: {
 
 /** `getRun` for a set of live workflow run ids; every other id does not exist. */
 const liveRuns = (ids: string[]) =>
-  workflowMocks.getRun.mockImplementation((id: string) => ({
+  getRun.mockImplementation((id: string) => ({
     exists: Promise.resolve(ids.includes(id)),
     status: Promise.resolve("running"),
   }));
@@ -64,7 +60,7 @@ const liveRuns = (ids: string[]) =>
 describe("reconcileRunningAgentTurns", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    workflowMocks.resetWorkflowMocks();
+    resetWorkflowMocks();
     repo.completeAgentRun.mockResolvedValue(undefined);
     abort.signalAgentAbort.mockResolvedValue(true);
   });
