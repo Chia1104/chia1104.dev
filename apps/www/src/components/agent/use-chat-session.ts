@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { X_CAPTCHA_RESPONSE } from "@chia/api/captcha";
+import { X_CAPTCHA_RESPONSE } from "@chia/api/captcha/constants";
 import { authClient } from "@chia/auth/client";
 
 export interface ChatUser {

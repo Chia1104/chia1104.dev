@@ -19,13 +19,12 @@ import {
 import type { FormProps } from "@heroui/react";
 import { toast } from "sonner";
 
-import { X_CAPTCHA_RESPONSE } from "@chia/api/captcha";
+import { X_CAPTCHA_RESPONSE } from "@chia/api/captcha/constants";
+import { env as captchaEnv } from "@chia/api/captcha/env.client";
 import { authClient } from "@chia/auth/client";
 import { Provider } from "@chia/auth/types";
 import SubmitForm from "@chia/ui/submit-form";
 import useTheme from "@chia/ui/utils/use-theme";
-
-import { env } from "@/env";
 
 const Captcha = dynamic(
   () => import("@chia/ui/captcha").then((module) => module.Captcha),
@@ -111,8 +110,8 @@ export function LoginForm(props: FormProps) {
             key={attempt}
             className="self-center"
             onToken={setCaptchaToken}
-            provider={env.NEXT_PUBLIC_CAPTCHA_PROVIDER}
-            siteKey={env.NEXT_PUBLIC_CAPTCHA_SITE_KEY}
+            provider={captchaEnv.NEXT_PUBLIC_CAPTCHA_PROVIDER}
+            siteKey={captchaEnv.NEXT_PUBLIC_CAPTCHA_SITE_KEY}
             theme={isDarkMode ? "dark" : "light"}
           />
           <SubmitForm type="submit" fullWidth isDisabled={!captchaToken}>

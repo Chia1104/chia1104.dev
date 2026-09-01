@@ -1,9 +1,7 @@
 import { createMiddleware } from "hono/factory";
 
-import {
-  X_CAPTCHA_RESPONSE,
-  captchaSiteverifyWithCredentials,
-} from "@chia/api/captcha";
+import { captchaSiteverifyWithCredentials } from "@chia/api/captcha";
+import { X_CAPTCHA_RESPONSE } from "@chia/api/captcha/constants";
 import { applyPolicy } from "@chia/service-kit/adapters/hono";
 import { captchaPolicy } from "@chia/service-kit/policies/captcha.policy";
 

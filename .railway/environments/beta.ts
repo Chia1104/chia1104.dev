@@ -1,4 +1,4 @@
-import { github, preserve, service } from "railway/iac";
+import { github, preserve, ref, service } from "railway/iac";
 
 import {
   dashboardWatchPatterns,
@@ -72,7 +72,12 @@ export const createBetaResources = () => {
     },
     replicas: { [region]: 1 },
     deploy: { sleepApplication: true },
-    env: createDashboardEnv(),
+    env: {
+      ...createDashboardEnv(),
+      // The login form's widget must be the provider `service` verifies against.
+      NEXT_PUBLIC_CAPTCHA_PROVIDER: ref(api, "NEXT_PUBLIC_CAPTCHA_PROVIDER"),
+      NEXT_PUBLIC_CAPTCHA_SITE_KEY: preserve(),
+    },
   });
 
   return [

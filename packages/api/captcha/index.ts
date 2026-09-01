@@ -1,6 +1,8 @@
 import { setSearchParams } from "@chia/utils/request";
 import { getClientIP } from "@chia/utils/server";
 
+import { ErrorCode, X_CAPTCHA_RESPONSE } from "./constants";
+import type { ErrorCode as CaptchaErrorCode } from "./constants";
 import { env } from "./env";
 
 export interface CapthcaResponse {
@@ -10,23 +12,13 @@ export interface CapthcaResponse {
   "error-codes": string[];
 }
 
-export const X_CAPTCHA_RESPONSE = "x-captcha-response";
-
-export const ErrorCode = {
-  CaptchaRequired: "CAPTCHA_REQUIRED",
-  CaptchaProviderNotSupported: "CAPTCHA_PROVIDER_NOT_SUPPORTED",
-  CaptchaFailed: "CAPTCHA_FAILED",
-} as const;
-
-export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
-
 interface Options {
-  onError?: (code: ErrorCode) => void;
+  onError?: (code: CaptchaErrorCode) => void;
 }
 
 export class CaptchaError extends Error {
-  code: ErrorCode;
-  constructor(code: ErrorCode) {
+  code: CaptchaErrorCode;
+  constructor(code: CaptchaErrorCode) {
     super("Captcha Error");
     this.code = code;
   }
