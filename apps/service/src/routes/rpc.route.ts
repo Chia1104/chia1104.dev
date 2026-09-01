@@ -1,3 +1,4 @@
+import { COMMON_ERROR_STATUS_MAP } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
@@ -26,6 +27,8 @@ const isUntimedProcedure = (path: string): boolean =>
 
 /** Built once per process; holds no per-request state. */
 const handler = new RPCHandler(router, {
+  // QUOTA_EXCEEDED is the only AppError code outside oRPC's common codes.
+  errorStatusMap: { ...COMMON_ERROR_STATUS_MAP, QUOTA_EXCEEDED: 402 },
   interceptors: [
     (options) => withErrorReporting(options.context, () => options.next()),
   ],

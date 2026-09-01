@@ -5,7 +5,7 @@ import { contractOS } from "../utils";
 
 export const sendContactEmailRoute = contractOS.email.send
   .use(rateLimitGuard({ prefix: "rate-limiter:email" }))
-  .use(captchaGuard, (input) => ({ token: input.captchaToken }))
+  .use(captchaGuard.adaptInput((input) => ({ token: input.captchaToken })))
   .handler(async (opts) => {
     await sendContactEmail({
       email: opts.input.email,

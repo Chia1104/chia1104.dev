@@ -29,7 +29,7 @@ vi.mock("next/navigation", () => navigation);
 vi.mock("next/navigation.js", () => navigation);
 
 vi.mock("next-intl", async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal<typeof import("next-intl")>();
   return {
     ...actual,
     useTranslations: () => (key: string) => key,

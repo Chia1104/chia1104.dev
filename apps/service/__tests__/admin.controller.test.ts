@@ -1,12 +1,11 @@
+import { safe } from "@orpc/client";
 import { beforeEach, describe, expect, it } from "vitest";
+
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
-
 import * as dbMocks from "@chia/test/mocks/db-feeds";
-import * as guardMocks from "./helpers/guards";
-import { rpc as rpcOf } from "./helpers/rpc";
 
-const rpc = (procedure: string, input: unknown = {}) =>
-  rpcOf(`feeds/${encodeURIComponent(procedure)}`, input);
+import * as guardMocks from "./helpers/guards";
+import { client, errorCode } from "./helpers/rpc";
 
 /** Upserts use the project API key; deletes need the operator session. */
 describe("feeds writes require the right tier", () => {
@@ -21,13 +20,12 @@ describe("feeds writes require the right tier", () => {
     it("upserts a translation and reindexes its feed", async () => {
       dbMocks.upsertFeedTranslation.mockResolvedValue({ id: 9, feedId: 1 });
 
-      const res = await rpc("translation:upsert", {
+      await client.feeds["translation:upsert"]({
         feedId: 1,
         locale: "zh-TW",
         title: "Title",
       });
 
-      expect(res.status).toBe(200);
       expect(dbMocks.upsertFeedTranslation).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ feedId: 1, locale: "zh-TW" })
@@ -35,12 +33,11 @@ describe("feeds writes require the right tier", () => {
     });
 
     it("upserts a translation body", async () => {
-      const res = await rpc("content:upsert", {
+      await client.feeds["content:upsert"]({
         feedTranslationId: 9,
         content: "# hello",
       });
 
-      expect(res.status).toBe(200);
       expect(dbMocks.upsertContent).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ feedTranslationId: 9 })
@@ -48,9 +45,8 @@ describe("feeds writes require the right tier", () => {
     });
 
     it("may update a feed", async () => {
-      const res = await rpc("update", { feedId: 1, published: true });
+      await client.feeds.update({ feedId: 1, published: true });
 
-      expect(res.status).toBe(200);
       expect(dbMocks.updateFeed).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ feedId: 1, published: true })
@@ -60,18 +56,20 @@ describe("feeds writes require the right tier", () => {
     it("reports a content:upsert against an unknown translation as NOT_FOUND", async () => {
       dbMocks.upsertContent.mockResolvedValue(undefined);
 
-      const res = await rpc("content:upsert", {
-        feedTranslationId: 999,
-        content: "# hello",
-      });
+      const { error } = await safe(
+        client.feeds["content:upsert"]({
+          feedTranslationId: 999,
+          content: "# hello",
+        })
+      );
 
-      expect(res.status).toBe(404);
+      expect(errorCode(error)).toBe("NOT_FOUND");
     });
 
     it("may not delete a feed", async () => {
-      const res = await rpc("delete", { feedId: 1 });
+      const { error } = await safe(client.feeds.delete({ feedId: 1 }));
 
-      expect(res.status).toBe(403);
+      expect(errorCode(error)).toBe("FORBIDDEN");
     });
   });
 
@@ -80,14 +78,29 @@ describe("feeds writes require the right tier", () => {
 
     // Input validation runs before the guard, so each case sends schema-valid input.
     it.each([
-      ["translation:upsert", { feedId: 1, locale: "zh-TW", title: "Title" }],
-      ["content:upsert", { feedTranslationId: 9, content: "# hello" }],
-      ["update", { feedId: 1 }],
-      ["delete", { feedId: 1 }],
-    ])("rejects %s outright", async (procedure, input) => {
-      const res = await rpc(procedure, input);
+      [
+        "translation:upsert",
+        () =>
+          client.feeds["translation:upsert"]({
+            feedId: 1,
+            locale: "zh-TW",
+            title: "Title",
+          }),
+      ],
+      [
+        "content:upsert",
+        () =>
+          client.feeds["content:upsert"]({
+            feedTranslationId: 9,
+            content: "# hello",
+          }),
+      ],
+      ["update", () => client.feeds.update({ feedId: 1 })],
+      ["delete", () => client.feeds.delete({ feedId: 1 })],
+    ])("rejects %s outright", async (_procedure, call) => {
+      const { error } = await safe(call());
 
-      expect(res.status).toBe(401);
+      expect(errorCode(error)).toBe("UNAUTHORIZED");
     });
   });
 
@@ -95,9 +108,8 @@ describe("feeds writes require the right tier", () => {
     beforeEach(() => guardMocks.setCallerTier(CallerTier.Root));
 
     it("soft-deletes a feed and drops its chunks", async () => {
-      const res = await rpc("delete", { feedId: 1 });
+      await client.feeds.delete({ feedId: 1 });
 
-      expect(res.status).toBe(200);
       expect(dbMocks.softDeleteFeed).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ feedId: 1 })
@@ -122,11 +134,12 @@ describe("feeds writes require the right tier", () => {
       },
     ]);
 
-    const res = await rpc("related", { slug: "test-feed", locale: "zh-TW" });
+    const data = await client.feeds.related({
+      slug: "test-feed",
+      locale: "zh-TW",
+    });
 
-    expect(res.status).toBe(200);
-    const body = (await res.json()) as { json: { items: unknown[] } };
-    expect(body.json.items).toHaveLength(1);
+    expect(data.items).toHaveLength(1);
     expect(dbMocks.getRelatedFeeds).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({

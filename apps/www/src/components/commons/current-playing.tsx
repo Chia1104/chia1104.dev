@@ -11,7 +11,7 @@ import {
   useTransition,
 } from "react";
 
-import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
+import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
 import {
@@ -44,10 +44,9 @@ interface Props extends ExtendsProps {
   children?:
     | ReactNode
     | ((result: UseQueryResult<CurrentPlayingResponse, Error>) => ReactNode);
-  queryOptions?: Omit<
-    UseQueryOptions<CurrentPlayingResponse, Error>,
-    "queryKey" | "queryFn"
-  >;
+  queryOptions?: Parameters<
+    typeof orpc.spotify.playing.queryOptions<CurrentPlayingResponse>
+  >[0];
 }
 
 const ProgressContext = createContext<
@@ -367,12 +366,13 @@ export const CurrentPlaying = ({
   hoverCardContentClassName,
   experimental,
 }: Props) => {
-  const result = useQuery({
-    ...orpc.spotify.playing.queryOptions(),
-    refetchInterval: (ctx) => calculateRefetchInterval(ctx.state.data),
-    refetchOnWindowFocus: "always",
-    ...queryOptions,
-  });
+  const result = useQuery(
+    orpc.spotify.playing.queryOptions({
+      ...queryOptions,
+      refetchInterval: (ctx) => calculateRefetchInterval(ctx.state.data),
+      refetchOnWindowFocus: "always",
+    })
+  );
 
   if (children) {
     return <>{children instanceof Function ? children(result) : children}</>;

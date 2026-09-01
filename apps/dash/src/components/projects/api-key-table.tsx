@@ -113,13 +113,8 @@ const CreateForm = (props: { projectId?: number; onSuccess?: () => void }) => {
       onSuccess: async (data) => {
         if (data) {
           toast.success("API Key created successfully");
-          queryClient.invalidateQueries(
-            orpc.apikey.list.queryOptions({
-              input: {
-                projectId: props.projectId,
-              },
-            })
-          );
+          /** Partial-matching key: refreshes both the global `list` and the project-scoped `project-list` tables. */
+          queryClient.invalidateQueries({ queryKey: orpc.apikey.key() });
           props.onSuccess?.();
         }
       },
@@ -173,13 +168,7 @@ const CreateAction = (props: { projectId?: number }) => {
   const queryClient = useQueryClient();
 
   const handleSuccess = () => {
-    queryClient.invalidateQueries(
-      orpc.apikey.list.queryOptions({
-        input: {
-          projectId: props.projectId,
-        },
-      })
-    );
+    queryClient.invalidateQueries({ queryKey: orpc.apikey.key() });
   };
 
   return (

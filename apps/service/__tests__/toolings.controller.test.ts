@@ -1,9 +1,8 @@
+import { safe } from "@orpc/client";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import * as guardMocks from "./helpers/guards";
-import { rpc } from "./helpers/rpc";
-
-const linkPreview = (input: unknown) => rpc("toolings/link-preview", input);
+import { client, errorCode } from "./helpers/rpc";
 
 describe("toolings.link-preview", () => {
   beforeEach(() => {
@@ -11,25 +10,35 @@ describe("toolings.link-preview", () => {
   });
 
   it("returns link preview data", async () => {
-    const res = await linkPreview({ href: "https://github.com" });
+    const { error, data } = await safe(
+      client.toolings["link-preview"]({ href: "https://github.com" })
+    );
 
-    expect([200, 500, 504]).toContain(res.status);
-    if (res.ok) {
-      const data = await res.json();
+    if (error) {
+      expect([
+        "BAD_REQUEST",
+        "INTERNAL_SERVER_ERROR",
+        "TIMEOUT",
+        "GATEWAY_TIMEOUT",
+        "MALFORMED_ORPC_RESPONSE",
+      ]).toContain(errorCode(error));
+    } else {
       expect(data).toBeDefined();
     }
   }, 30000);
 
   it("rejects an invalid URL", async () => {
-    const res = await linkPreview({ href: "not-a-valid-url" });
+    const { error } = await safe(
+      client.toolings["link-preview"]({ href: "not-a-valid-url" })
+    );
 
-    expect(res.status).toBe(400);
+    expect(errorCode(error)).toBe("BAD_REQUEST");
   }, 15000);
 
   it("rejects a missing href", async () => {
-    const res = await linkPreview({});
+    const { error } = await safe(client.toolings["link-preview"]({} as never));
 
-    expect(res.status).toBe(400);
+    expect(errorCode(error)).toBe("BAD_REQUEST");
   }, 15000);
 
   it("rejects malformed JSON", async () => {

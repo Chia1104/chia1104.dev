@@ -1,12 +1,11 @@
+import { safe } from "@orpc/client";
 import { beforeEach, describe, expect, it } from "vitest";
+
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
-
 import * as dbMocks from "@chia/test/mocks/db-feeds";
-import * as guardMocks from "./helpers/guards";
-import { rpc as rpcOf } from "./helpers/rpc";
 
-const rpc = (procedure: string, input: unknown = {}) =>
-  rpcOf(`feeds/${procedure}`, input);
+import * as guardMocks from "./helpers/guards";
+import { client, errorCode } from "./helpers/rpc";
 
 /** Assert the repository is called with the clamped scope, not only that the response looks right. */
 describe("feeds reads scale with the caller's tier", () => {
@@ -19,9 +18,8 @@ describe("feeds reads scale with the caller's tier", () => {
     beforeEach(() => guardMocks.setCallerTier(CallerTier.Anonymous));
 
     it("lists only the admin's published feeds", async () => {
-      const res = await rpc("list", { limit: 10, type: "all" });
+      await client.feeds.list({ limit: 10, type: "all" });
 
-      expect(res.status).toBe(200);
       expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
@@ -33,7 +31,7 @@ describe("feeds reads scale with the caller's tier", () => {
     });
 
     it("ignores a request for drafts and deleted feeds", async () => {
-      await rpc("list", {
+      await client.feeds.list({
         limit: 10,
         includeUnpublished: true,
         includeDeleted: true,
@@ -49,7 +47,7 @@ describe("feeds reads scale with the caller's tier", () => {
     });
 
     it("clamps an oversized page down to the anonymous cap", async () => {
-      await rpc("list", { limit: 1000 });
+      await client.feeds.list({ limit: 1000 });
 
       expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
         expect.anything(),
@@ -61,21 +59,25 @@ describe("feeds reads scale with the caller's tier", () => {
      * Detail and `related` require the project API key (`apps/www` server client);
      * anonymous cannot reach them.
      */
-    it.each(["details-by-slug", "details-by-id", "related"])(
-      "cannot reach %s at all",
-      async (procedure) => {
-        const res = await rpc(procedure, { slug: "test-feed-1", feedId: 1 });
+    it.each<[string, () => Promise<unknown>]>([
+      [
+        "details-by-slug",
+        () => client.feeds["details-by-slug"]({ slug: "test-feed-1" }),
+      ],
+      ["details-by-id", () => client.feeds["details-by-id"]({ feedId: 1 })],
+      ["related", () => client.feeds.related({ slug: "test-feed-1" })],
+    ])("cannot reach %s at all", async (_procedure, call) => {
+      const { error } = await safe(call());
 
-        expect(res.status).toBe(401);
-      }
-    );
+      expect(errorCode(error)).toBe("UNAUTHORIZED");
+    });
   });
 
   describe("API key", () => {
     beforeEach(() => guardMocks.setCallerTier(CallerTier.ApiKey));
 
     it("still defaults to published feeds", async () => {
-      await rpc("list", { limit: 10 });
+      await client.feeds.list({ limit: 10 });
 
       expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
         expect.anything(),
@@ -84,7 +86,7 @@ describe("feeds reads scale with the caller's tier", () => {
     });
 
     it("drops the published filter when it asks for drafts", async () => {
-      await rpc("list", { limit: 10, includeUnpublished: true });
+      await client.feeds.list({ limit: 10, includeUnpublished: true });
 
       expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
         expect.anything(),
@@ -93,7 +95,7 @@ describe("feeds reads scale with the caller's tier", () => {
     });
 
     it("does not gain access to deleted feeds", async () => {
-      await rpc("list", { limit: 10, includeDeleted: true });
+      await client.feeds.list({ limit: 10, includeDeleted: true });
 
       expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
         expect.anything(),
@@ -102,7 +104,7 @@ describe("feeds reads scale with the caller's tier", () => {
     });
 
     it("may ask for the page size the sitemap needs", async () => {
-      await rpc("list", { limit: 1000 });
+      await client.feeds.list({ limit: 1000 });
 
       expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
         expect.anything(),
@@ -111,7 +113,7 @@ describe("feeds reads scale with the caller's tier", () => {
     });
 
     it("scopes details-by-slug to the admin's published feeds", async () => {
-      await rpc("details-by-slug", { slug: "test-feed-1" });
+      await client.feeds["details-by-slug"]({ slug: "test-feed-1" });
 
       expect(dbMocks.getFeedBySlug).toHaveBeenCalledWith(
         expect.anything(),
@@ -125,9 +127,11 @@ describe("feeds reads scale with the caller's tier", () => {
 
     // `details-by-id` backs the dash edit view only, so a key is not enough.
     it("cannot reach details-by-id", async () => {
-      const res = await rpc("details-by-id", { feedId: 1 });
+      const { error } = await safe(
+        client.feeds["details-by-id"]({ feedId: 1 })
+      );
 
-      expect(res.status).toBe(403);
+      expect(errorCode(error)).toBe("FORBIDDEN");
     });
   });
 
@@ -135,7 +139,7 @@ describe("feeds reads scale with the caller's tier", () => {
     beforeEach(() => guardMocks.setCallerTier(CallerTier.Root));
 
     it("sees its own drafts and deleted feeds when it asks", async () => {
-      await rpc("list", {
+      await client.feeds.list({
         limit: 10,
         includeUnpublished: true,
         includeDeleted: true,
@@ -155,7 +159,7 @@ describe("feeds reads scale with the caller's tier", () => {
   it("serves the dash edit view its draft, deleted feed", async () => {
     guardMocks.setCallerTier(CallerTier.Session);
 
-    await rpc("details-by-id", {
+    await client.feeds["details-by-id"]({
       feedId: 1,
       includeUnpublished: true,
       includeDeleted: true,
@@ -175,8 +179,6 @@ describe("feeds reads scale with the caller's tier", () => {
     guardMocks.setCallerTier(CallerTier.ApiKey);
     dbMocks.getRelatedFeeds.mockResolvedValue([]);
 
-    const related = await rpc("related", { slug: "test-feed", limit: 3 });
-
-    expect(related.status).toBe(200);
+    await client.feeds.related({ slug: "test-feed", limit: 3 });
   });
 });

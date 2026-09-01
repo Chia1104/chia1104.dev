@@ -135,7 +135,9 @@ export const searchFeedsAdvancedRoute = contractOS.feeds["search:advanced"]
    * Authenticated for every mode; root-only for modes that embed the query. Those spend
    * the server's embedding credentials; `bm25` does not.
    */
-  .use(sessionGuard, (input) => ({ rootOnly: input.model !== "bm25" }))
+  .use(
+    sessionGuard.adaptInput((input) => ({ rootOnly: input.model !== "bm25" }))
+  )
   .handler(async (opts) => {
     const { keyword, model, locale } = opts.input;
 
