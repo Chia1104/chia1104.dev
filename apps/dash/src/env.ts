@@ -1,6 +1,7 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import * as z from "zod";
 
+import { env as captchaEnv } from "@chia/api/captcha/env.client";
 import { env as s3Env } from "@chia/api/s3/env";
 import { env as serviceEnv } from "@chia/api/services/env";
 import { adminEnv } from "@chia/auth/env";
@@ -50,5 +51,5 @@ export const env = createEnv({
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
 
-  extends: [adminEnv, serviceEnv, s3Env],
+  extends: [adminEnv, serviceEnv, s3Env, captchaEnv],
 });

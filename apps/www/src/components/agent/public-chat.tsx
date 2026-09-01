@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button, Spinner } from "@heroui/react";
 import { ORPCError } from "@orpc/client";
@@ -12,6 +12,7 @@ import { EmptyState } from "@chia/agent-elements/empty-state";
 import { AgentSessionProvider } from "@chia/agent-elements/provider";
 import { agentQueryKeys } from "@chia/agent-elements/queries";
 import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
+import { SessionModelPicker } from "@chia/agent-elements/session-model-picker";
 import { SessionTabs } from "@chia/agent-elements/session-tabs";
 import { Thread } from "@chia/agent-elements/thread";
 import enUS from "@chia/i18n/agent-elements/en-US.json";
@@ -21,11 +22,17 @@ import { client, orpc } from "@/libs/orpc/client";
 import { Locale } from "@/libs/utils/i18n";
 import { useSettingsStore } from "@/stores/settings/store";
 
+import { AccountMenu } from "./account-menu";
+import { ApiKeyDialog } from "./api-key-dialog";
 import { ComingSoon } from "./coming-soon";
+import { HumanCheck } from "./human-check";
+import { PUBLIC_AGENT_KIND } from "./kind";
 import { UsageMeter } from "./usage-meter";
-import { useGuestSession } from "./use-guest-session";
+import { useChatSession } from "./use-chat-session";
+import type { ChatUser } from "./use-chat-session";
 
-const PUBLIC_AGENT_KIND = "public";
+/** House first: no setup. BYOK providers follow once the visitor registers a key. */
+const PROVIDER_ORDER = ["vercel-ai-gateway", "openai", "anthropic"];
 
 const agentLabelsOf = (locale: string) => (locale === Locale.EN ? enUS : zhTW);
 
@@ -41,14 +48,14 @@ const Centered = ({ children }: { children: React.ReactNode }) => (
 
 export const PublicChat = () => {
   const t = useTranslations("chbot");
-  const guest = useGuestSession();
+  const session = useChatSession();
 
-  if (guest.isError) {
+  if (session.isError) {
     return (
       <Centered>
         <p className="text-muted text-sm">{t("loadFailed")}</p>
         <Button
-          onPress={() => void guest.refetch()}
+          onPress={() => void session.refetch()}
           size="sm"
           variant="secondary">
           {t("retry")}
@@ -57,7 +64,7 @@ export const PublicChat = () => {
     );
   }
 
-  if (!guest.data) {
+  if (session.data === undefined) {
     return (
       <Centered>
         <Spinner aria-label={t("signingIn")} size="sm" />
@@ -65,10 +72,14 @@ export const PublicChat = () => {
     );
   }
 
-  return <PublicChatSessions />;
+  if (session.data === null) {
+    return <HumanCheck />;
+  }
+
+  return <PublicChatSessions user={session.data} />;
 };
 
-const PublicChatSessions = () => {
+const PublicChatSessions = ({ user }: { user: ChatUser }) => {
   const t = useTranslations("chbot");
   const locale = useLocale();
   const labels = agentLabelsOf(locale);
@@ -168,6 +179,18 @@ const PublicChatSessions = () => {
     })
   );
 
+  const [modelPickerOpen, setModelPickerOpen] = useState(false);
+  const localCommands = useMemo(
+    () => [
+      {
+        name: "model",
+        description: labels.switchModel,
+        onSelect: () => setModelPickerOpen(true),
+      },
+    ],
+    [labels.switchModel]
+  );
+
   const suggestions = [
     t("suggestions.latest"),
     t("suggestions.topics"),
@@ -210,6 +233,7 @@ const PublicChatSessions = () => {
           sessions={sessions}
           visible={2}
         />
+        <AccountMenu user={user} />
       </div>
       {selectedSessionId ? (
         <AgentSessionProvider
@@ -234,7 +258,21 @@ const PublicChatSessions = () => {
             }
             renderers={contentToolRenderers}
           />
-          <Composer placeholder={t("placeholder")} toolbar={<UsageMeter />} />
+          <Composer
+            localCommands={localCommands}
+            placeholder={t("placeholder")}
+            toolbar={
+              <>
+                <SessionModelPicker
+                  isOpen={modelPickerOpen}
+                  onOpenChange={setModelPickerOpen}
+                  providerOrder={PROVIDER_ORDER}
+                />
+                <ApiKeyDialog />
+                <UsageMeter />
+              </>
+            }
+          />
         </AgentSessionProvider>
       ) : failed ? (
         <Centered>

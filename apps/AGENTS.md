@@ -23,7 +23,7 @@ The frontends import only the contract type from `@chia/api/orpc/contracts` and 
 
 - `src/libs/orpc/client.rsc.ts` is server-only and sends `CH_API_KEY` plus the Cloudflare bypass token.
 - `src/libs/orpc/client.ts` runs in the browser with the session cookie and may call only public procedures and the visitor's own agent sessions. Never expose an API key to it.
-- The public agent chat is `src/components/agent/`: a drawer on every page whose content loads on first open, a guest session from better-auth's anonymous plugin, and `@chia/agent-elements` with the content renderers only.
+- The public agent chat is `src/components/agent/`: a drawer on every page whose content loads on first open, a guest session from better-auth's anonymous plugin, and `@chia/agent-elements` with the content renderers only. A first visit passes the captcha before a guest session is minted; sign-in (GitHub, Google) and bring-your-own-key live in the drawer, and `?chat` on any page reopens it after an OAuth round trip. `@chia/ui/captcha` is the one challenge widget; `src/components/commons/captcha.tsx` binds it to the site's provider.
 - Content uses `@chia/contents`; localization uses `next-intl` with `packages/i18n/www`.
 
 ## `dash`
@@ -37,10 +37,10 @@ All oRPC calls run in the browser through `src/libs/orpc/client.ts` with the Bet
 `src/server.ts` mounts Hono on Nitro; `src/bootstrap.ts` applies `@chia/service-kit/bootstrap`. Its `/api/v1` surface is:
 
 ```text
-/auth      Better Auth
+/auth      Better Auth; guest, social and magic-link sign-in require `x-captcha-response`
 /rpc       oRPC
 /health
-/ai        Vercel AI SDK streaming routes
+/ai        Vercel AI SDK streaming routes; `key:signed` also admits guests
 /spotify   OAuth callback
 ```
 

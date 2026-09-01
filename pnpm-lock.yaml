@@ -2451,6 +2451,9 @@ importers:
       '@heroui/react':
         specifier: catalog:heroui-v3
         version: 3.2.4(@react-aria/i18n@3.13.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@react-aria/ssr@3.10.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@react-aria/utils@3.34.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@react-spectrum/provider@3.11.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-aria-components@1.20.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-aria@3.51.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.3.3)
+      '@marsidev/react-turnstile':
+        specifier: catalog:ui
+        version: 1.6.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@radix-ui/react-accordion':
         specifier: catalog:radix-ui
         version: 1.2.20(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -2535,6 +2538,9 @@ importers:
       react-email:
         specifier: catalog:email
         version: 6.9.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(supports-color@10.2.2)
+      react-google-recaptcha:
+        specifier: catalog:ui
+        version: 3.1.0(react@19.2.8)
       react-medium-image-zoom:
         specifier: catalog:ui
         version: 5.4.9(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -2569,6 +2575,9 @@ importers:
       '@types/react-dom':
         specifier: catalog:react-is
         version: 19.2.5(@types/react@19.2.18)
+      '@types/react-google-recaptcha':
+        specifier: catalog:ui
+        version: 2.1.9
       tailwindcss:
         specifier: catalog:tailwindcss
         version: 4.3.3

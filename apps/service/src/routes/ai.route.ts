@@ -47,10 +47,14 @@ const api = new Hono<HonoContext>()
       prefix: "rate-limiter:ai",
     })
   )
-  .use(verifyAuth())
   .use(timeout(env.TIMEOUT_MS))
+  /**
+   * Registered before the signed-in gate so a guest on the public site can bring their own
+   * key; the cookie is theirs and every other route still requires a person.
+   */
   .post(
     "/key:signed",
+    verifyAuth({ allowAnonymous: true }),
     zValidator(
       "json",
       z.object({
@@ -87,6 +91,7 @@ const api = new Hono<HonoContext>()
       return c.json({ message: "API key saved successfully" });
     }
   )
+  .use(verifyAuth())
   .post(
     "/generate",
     zValidator(
@@ -124,7 +129,7 @@ const api = new Hono<HonoContext>()
   })
   .post(
     "/content/meta",
-    verifyAuth(true),
+    verifyAuth({ rootOnly: true }),
     zValidator(
       "json",
       z.union([
@@ -198,7 +203,7 @@ const api = new Hono<HonoContext>()
   )
   .post(
     "/content/generate",
-    verifyAuth(true),
+    verifyAuth({ rootOnly: true }),
     zValidator("json", generateContentInput, (result, c) => {
       if (!result.success) {
         return c.json(errorResponse(result.error), 400);
@@ -217,7 +222,7 @@ const api = new Hono<HonoContext>()
   )
   .post(
     "/content/complete",
-    verifyAuth(true),
+    verifyAuth({ rootOnly: true }),
     zValidator("json", generateContentCompleteInput, (result, c) => {
       if (!result.success) {
         return c.json(errorResponse(result.error), 400);

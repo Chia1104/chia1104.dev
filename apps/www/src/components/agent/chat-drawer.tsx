@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Drawer, Spinner } from "@heroui/react";
 import { useTranslations } from "next-intl";
@@ -32,6 +32,13 @@ export const ChatDrawer = () => {
   const isMobile = useMediaQuery("(max-width: 640px)", {
     initializeWithValue: false,
   });
+
+  // Sign-in sends the visitor back with `?chat`; read from `window` so the layout stays static.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("chat")) {
+      setOpen(true);
+    }
+  }, []);
 
   if (!aiEnabled) {
     return null;

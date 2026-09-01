@@ -210,6 +210,31 @@
         "language": "Reply in whatever language you write in"
       },
       "note": "Check back soon."
+    },
+    "account": {
+      "signIn": "Sign in",
+      "signInTitle": "Keep your conversations",
+      "signInDescription": "Sign in to find these conversations on any device. What you have used this week carries over. Complete the check, then pick a provider.",
+      "github": "Continue with GitHub",
+      "google": "Continue with Google",
+      "account": "Account",
+      "signOut": "Sign out"
+    },
+    "apiKey": {
+      "open": "Use your own API key",
+      "title": "Use your own API key",
+      "description": "The key is encrypted into a cookie on this browser and sent only to that provider. Calls with your own key do not count against the free allowance.",
+      "provider": "Provider",
+      "label": "API key",
+      "save": "Save key",
+      "saved": "Key saved. Pick one of that provider's models.",
+      "failed": "The key could not be saved."
+    },
+    "humanCheck": {
+      "title": "One quick check",
+      "description": "Confirm you're human and the assistant is yours for the week.",
+      "starting": "Starting your session…",
+      "failed": "That didn't go through. Try the check again."
     }
   },
   "settings": {

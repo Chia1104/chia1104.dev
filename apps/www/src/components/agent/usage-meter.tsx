@@ -25,16 +25,18 @@ export const UsageMeter = () => {
     hour: "numeric",
     minute: "numeric",
   });
+  const label = `${t("usage", { percent })} · ${t("usageReset", { time: reset })}`;
 
   return (
     <div
-      aria-label={t("usage", { percent })}
+      aria-label={label}
       aria-valuemax={100}
       aria-valuemin={0}
       aria-valuenow={percent}
-      className="text-muted flex min-w-0 items-center gap-2 text-[11px]"
-      role="meter">
-      <span className="bg-surface-secondary h-1.5 w-16 shrink-0 overflow-hidden rounded-full">
+      className="text-muted flex min-w-0 items-center gap-1.5 text-[11px]"
+      role="meter"
+      title={label}>
+      <span className="bg-surface-secondary h-1.5 w-12 shrink-0 overflow-hidden rounded-full">
         <span
           className={cn(
             "block h-full rounded-full",
@@ -43,8 +45,9 @@ export const UsageMeter = () => {
           style={{ width: `${percent}%` }}
         />
       </span>
-      <span className="truncate">
-        {t("usage", { percent })} · {t("usageReset", { time: reset })}
+      <span className="tabular-nums">{percent}%</span>
+      <span className="hidden truncate sm:inline">
+        · {t("usageReset", { time: reset })}
       </span>
     </div>
   );

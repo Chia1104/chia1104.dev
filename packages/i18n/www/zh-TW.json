@@ -210,6 +210,31 @@
         "language": "用你提問的語言回覆"
       },
       "note": "敬請期待。"
+    },
+    "account": {
+      "signIn": "登入",
+      "signInTitle": "保留你的對話",
+      "signInDescription": "登入後可以在任何裝置找到這些對話，本週已使用的額度也會一併帶過去。完成驗證後選擇登入方式。",
+      "github": "使用 GitHub 繼續",
+      "google": "使用 Google 繼續",
+      "account": "帳號",
+      "signOut": "登出"
+    },
+    "apiKey": {
+      "open": "使用自己的 API key",
+      "title": "使用自己的 API key",
+      "description": "金鑰會加密存放在這個瀏覽器的 cookie，只會送給該供應商。用自己的金鑰不會計入免費額度。",
+      "provider": "供應商",
+      "label": "API key",
+      "save": "儲存金鑰",
+      "saved": "已儲存，接著在模型選單挑選該供應商的模型。",
+      "failed": "金鑰無法儲存。"
+    },
+    "humanCheck": {
+      "title": "先做個小驗證",
+      "description": "確認你不是機器人，接下來一週助理就是你的了。",
+      "starting": "正在建立你的工作階段…",
+      "failed": "驗證沒有通過，請再試一次。"
     }
   },
   "settings": {
