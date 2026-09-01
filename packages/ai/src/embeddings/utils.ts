@@ -16,7 +16,7 @@ export const EMBEDDING_DIMENSIONS = 1536;
  * a way that requires re-embedding. Folded into `index_key` together with the
  * provider id, so stale rows re-embed in place.
  */
-export const EMBEDDING_INDEX_VERSION = "2026-08-16.3";
+export const EMBEDDING_INDEX_VERSION = "2026-09-01.1";
 
 /**
  * Asymmetric embedding task type. Models like nomic-embed-text require

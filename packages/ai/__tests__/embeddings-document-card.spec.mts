@@ -71,6 +71,12 @@ describe("buildHeadingOutline", () => {
   it("returns empty for content without headings", async () => {
     expect(await buildHeadingOutline("just a paragraph")).toBe("");
   });
+
+  it("keeps tag-shaped heading text escaped", async () => {
+    expect(await buildHeadingOutline("# \\<script>alert(1)\\</script>")).toBe(
+      "- \\<script>alert(1)\\</script>"
+    );
+  });
 });
 
 describe("buildEmbeddingInput (document card)", () => {
@@ -201,6 +207,19 @@ describe("chunkMarkdown", () => {
 
   it("returns nothing for empty content", async () => {
     expect(await chunkMarkdown({ content: "   ", encoding })).toEqual([]);
+  });
+
+  it("keeps heading prefixes canonical when display text resembles HTML", async () => {
+    const chunks = await chunkMarkdown({
+      content:
+        "# \\<script>alert(1)\\</script>\n\nThis body contains enough words to exceed the minimum chunk threshold safely.",
+      encoding,
+    });
+
+    expect(chunks).not.toHaveLength(0);
+    expect(chunks[0]?.headingPath).toBe("<script>alert(1)</script>");
+    expect(chunks[0]?.content).toContain("\\<script>alert(1)\\</script>");
+    expect(chunks[0]?.content.startsWith("<script>")).toBe(false);
   });
 
   it("does not pack across top-level groups, so an edit cannot cascade", async () => {

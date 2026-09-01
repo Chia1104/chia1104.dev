@@ -34,6 +34,8 @@ catalog:
   client-only: ^0.0.1
   dayjs: ^1.11.23
   graphql-request: ^7.4.0
+  hast-util-from-html: ^2.0.3
+  hast-util-to-text: ^4.0.2
   ky: ^2.1.0
   lodash: ^4.18.1
   "@types/mdast": ^4.0.4
@@ -41,6 +43,7 @@ catalog:
   remark-gfm: ^4.0.1
   remark-mdx: ^3.1.1
   remark-parse: ^11.0.0
+  remark-stringify: ^11.0.0
   unified: ^11.0.5
   unist-util-visit: ^5.1.0
   server-only: ^0.0.1

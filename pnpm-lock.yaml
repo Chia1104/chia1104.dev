@@ -207,6 +207,12 @@ catalogs:
     graphql-request:
       specifier: ^7.4.0
       version: 7.4.0
+    hast-util-from-html:
+      specifier: ^2.0.3
+      version: 2.0.3
+    hast-util-to-text:
+      specifier: ^4.0.2
+      version: 4.0.2
     ky:
       specifier: ^2.1.0
       version: 2.1.0
@@ -226,6 +232,9 @@ catalogs:
       specifier: ^3.1.1
       version: 3.1.1
     remark-parse:
+      specifier: ^11.0.0
+      version: 11.0.0
+    remark-stringify:
       specifier: ^11.0.0
       version: 11.0.0
     server-only:
@@ -1591,6 +1600,12 @@ importers:
       github-slugger:
         specifier: ^2.0.0
         version: 2.0.0
+      hast-util-from-html:
+        specifier: 'catalog:'
+        version: 2.0.3
+      hast-util-to-text:
+        specifier: 'catalog:'
+        version: 4.0.2
       js-tiktoken:
         specifier: ^1.0.21
         version: 1.0.21
@@ -1615,6 +1630,9 @@ importers:
       remark-parse:
         specifier: 'catalog:'
         version: 11.0.0(supports-color@10.2.2)
+      remark-stringify:
+        specifier: 'catalog:'
+        version: 11.0.0
       unified:
         specifier: 'catalog:'
         version: 11.0.5
