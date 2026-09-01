@@ -1,0 +1,10 @@
+{
+  "extends": "@chiastack/tsconfig/react.json",
+  "include": ["."],
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "types": ["node"],
+    "lib": ["ES2024", "dom"],
+    "allowImportingTsExtensions": true
+  }
+}

@@ -1,14 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import { createFakeRuns, getRun, resetWorkflowMocks } from "@chia/test/mocks/workflow";
 
-import * as workflowMocks from "./__mocks__/workflow.mock";
-
-const runs = {
-  get: workflowMocks.getRun,
-  hasHook: async (token: string) =>
-    Boolean(await workflowMocks.getHookByToken(token)),
-};
+const runs = createFakeRuns();
 
 const repo = vi.hoisted(() => ({
   completeAgentRun: vi.fn(),
@@ -34,7 +29,7 @@ const collect = async (events: AsyncIterable<AgentWireEvent>) => {
 describe("agent run control", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    workflowMocks.resetWorkflowMocks();
+    resetWorkflowMocks();
   });
 
   it("claims both durable stream tails as one cursor and marker", async () => {
@@ -44,7 +39,7 @@ describe("agent run control", () => {
         options?.namespace ? 6 : 3
       )
     );
-    workflowMocks.getRun.mockReturnValue({ getReadable });
+    getRun.mockReturnValue({ getReadable });
     repo.getAgentSessionLastSeq.mockResolvedValue(42);
     repo.patchAgentRunMetadata.mockResolvedValue(undefined);
 
@@ -105,7 +100,7 @@ describe("agent run control", () => {
     const getReadable = vi.fn((options?: { namespace?: string }) =>
       options?.namespace ? deltas : coarse
     );
-    workflowMocks.getRun.mockReturnValue({ getReadable });
+    getRun.mockReturnValue({ getReadable });
 
     const { streamAgentRunEvents } =
       await import("../orpc/services/agent/run-control");
@@ -173,7 +168,7 @@ describe("agent run control", () => {
         cancel: cancelled,
       })
     );
-    workflowMocks.getRun.mockReturnValue({
+    getRun.mockReturnValue({
       getReadable: vi.fn(() => readable),
     });
 

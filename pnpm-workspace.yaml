@@ -153,7 +153,6 @@ catalogs:
     "@vitejs/plugin-react-swc": 4.3.3
     "@vitest/coverage-v8": 4.1.11
     "@vitest/ui": 4.1.11
-    jest-extended: 7.0.0
     vitest: 4.1.11
   ui:
     border-beam: 1.3.0

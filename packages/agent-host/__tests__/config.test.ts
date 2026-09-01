@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from "vitest";
 import * as z from "zod";
 
 import type { AgentKindConfig } from "@chia/db/schema";

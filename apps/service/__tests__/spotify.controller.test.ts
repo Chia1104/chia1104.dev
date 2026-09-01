@@ -26,11 +26,12 @@ vi.mock("@chia/api/spotify/playback", () => ({
   getSpotifyPlaylistService: mocks.getSpotifyPlaylistService,
 }));
 
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import { app } from "../src/server";
 
-import * as guardMocks from "./__mocks__/guards.mock";
+import * as guardMocks from "./helpers/guards";
 
 const playlist = (playlistId: string) =>
   app.request("/api/v1/rpc/spotify/playlist", {
@@ -83,14 +84,14 @@ describe("Spotify Controller", () => {
   describe("spotify.playlist", () => {
     beforeEach(() => guardMocks.setCallerTier(CallerTier.ApiKey));
 
-    it("should return response from default playlist", async () => {
+    it("returns the default playlist", async () => {
       const res = await playlist("default");
 
       expect(res.status).toBe(200);
       expect(mocks.getSpotifyPlaylistService).toHaveBeenCalledWith("default");
     });
 
-    it("should handle playlist ID parameter", async () => {
+    it("forwards the playlist ID", async () => {
       const res = await playlist("test-id");
 
       expect(res.status).toBe(200);

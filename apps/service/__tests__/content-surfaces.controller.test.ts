@@ -1,16 +1,12 @@
+import { beforeEach, describe, expect, it } from "vitest";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
-import { app } from "../src/server";
-
-import * as dbMocks from "./__mocks__/db.mock";
-import * as guardMocks from "./__mocks__/guards.mock";
+import * as dbMocks from "@chia/test/mocks/db-feeds";
+import * as guardMocks from "./helpers/guards";
+import { rpc as rpcOf } from "./helpers/rpc";
 
 const rpc = (procedure: string, input: unknown = {}) =>
-  app.request(`/api/v1/rpc/feeds/${procedure}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ json: input }),
-  });
+  rpcOf(`feeds/${procedure}`, input);
 
 /** Assert the repository is called with the clamped scope, not only that the response looks right. */
 describe("feeds reads scale with the caller's tier", () => {

@@ -4,6 +4,7 @@ import type {
   PostSnapshot,
   TagItem,
 } from "@chia/agent-content/types";
+import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 
 import type { ContentPort, WebPort } from "../src/ports.ts";
 import type {
@@ -29,24 +30,15 @@ export interface FakeContentPort extends ContentPort {
 export const createFakeContentPort = (
   options: FakeContentPortOptions = {}
 ): FakeContentPort => {
+  const read = createFakeContentReadPort(options);
   const commits: CommitDraftInput[] = [];
   const publishes: { feedId: number; published: boolean }[] = [];
   let nextFeedId = 100;
 
   return {
+    ...read,
     commits,
     publishes,
-    searchPosts: () => Promise.resolve(options.searchHits ?? []),
-    getPost: (input) =>
-      Promise.resolve(
-        (options.posts ?? []).find((post) =>
-          input.slug !== undefined
-            ? post.slug === input.slug
-            : post.feedId === input.feedId
-        ) ?? null
-      ),
-    listPosts: () => Promise.resolve(options.list ?? []),
-    listTags: () => Promise.resolve(options.tags ?? []),
     commitDraft: (input) => {
       commits.push(input);
       const feedId = input.feedId ?? nextFeedId++;

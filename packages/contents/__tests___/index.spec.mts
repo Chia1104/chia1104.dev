@@ -1,7 +1,8 @@
+import { describe, expect, it } from "vitest";
 import { name } from "../src";
 
 describe("mdx test", () => {
-  it("should return mdx", () => {
+  it("returns mdx", () => {
     expect(name).toEqual("mdx");
   });
 });

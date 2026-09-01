@@ -1,13 +1,3 @@
-import { defineConfig } from "vitest/config";
+import { domConfig } from "@chia/test/config";
 
-export default defineConfig({
-  test: {
-    globals: true,
-    include: [
-      "src/**/*.{spec,test}.{ts,tsx}",
-      "__tests__/**/*.{spec,test}.{ts,tsx}",
-    ],
-    exclude: ["**/node_modules/**"],
-    environment: "happy-dom",
-  },
-});
+export default domConfig();

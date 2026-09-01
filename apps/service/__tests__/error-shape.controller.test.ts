@@ -1,6 +1,7 @@
+import { beforeEach, describe, expect, it } from "vitest";
 import { app } from "../src/server";
 
-import * as guardMocks from "./__mocks__/guards.mock";
+import * as guardMocks from "./helpers/guards";
 
 const invalidInput = { href: "not-a-url" };
 

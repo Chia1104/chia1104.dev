@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 /**
  * `apps/dash` imports the oRPC router for its in-process RSC client and has no Resend

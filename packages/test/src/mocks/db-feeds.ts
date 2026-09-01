@@ -1,6 +1,6 @@
+import { vi } from "vitest";
 import type { Mock } from "vitest";
 
-/** Fixtures match repository output; oRPC procedures validate against the contract. */
 const mockTranslation = (locale: "en" | "zh-TW", title: string) => ({
   id: 1,
   feedId: 1,
@@ -20,7 +20,8 @@ const mockFeed = (
   id: number,
   slug: string,
   locale: "en" | "zh-TW",
-  title: string
+  title: string,
+  userId = "test-admin-id"
 ) => ({
   id,
   slug,
@@ -28,7 +29,7 @@ const mockFeed = (
   contentType: "mdx" as const,
   published: true,
   defaultLocale: locale,
-  userId: "test-admin-id",
+  userId,
   mainImage: null,
   createdAt: new Date("2024-01-01").toISOString(),
   updatedAt: new Date("2024-01-01").toISOString(),
@@ -41,7 +42,6 @@ export const mockFeeds = [
   mockFeed(2, "test-feed-2", "zh-TW", "Test Feed 2"),
 ];
 
-/** `{ items, nextCursor }`, the shape `queryInfiniteFeeds` returns. */
 export const mockFeedsResponse = {
   items: mockFeeds,
   nextCursor: null,
@@ -72,12 +72,27 @@ export const updateFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 export const softDeleteFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 export const deleteFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 export const restoreFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
-
 export const getRelatedFeeds: Mock = vi.fn().mockResolvedValue([]);
-
 export const searchResources: Mock = vi
   .fn()
   .mockResolvedValue({ mode: "hybrid", items: [] });
+
+export const feedRepoMocks = {
+  getInfiniteFeedsByUserId,
+  getInfiniteFeeds,
+  getFeedBySlug,
+  getFeedById,
+  getFeedForIndexing,
+  getPublicFeedSummariesByIds,
+  getFeedIdByTranslationId,
+  getFeedRefsByTranslationIds,
+  upsertFeedTranslation,
+  upsertContent,
+  updateFeed,
+  softDeleteFeed,
+  deleteFeed,
+  restoreFeed,
+};
 
 export const resetAllDbMocks = () => {
   getInfiniteFeedsByUserId.mockClear();

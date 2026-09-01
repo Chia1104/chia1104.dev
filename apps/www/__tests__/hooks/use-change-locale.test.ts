@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // vi.hoisted so the mock exists before `vi.mock`.
 const { mockPush, mockRefresh, mockPathname } = vi.hoisted(() => ({
@@ -8,7 +8,7 @@ const { mockPush, mockRefresh, mockPathname } = vi.hoisted(() => ({
   mockPathname: "/test-path",
 }));
 
-vi.mock("@/libs/i18n/routing", () => ({
+vi.mock("@/libs/i18n/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
     refresh: mockRefresh,

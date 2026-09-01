@@ -4,18 +4,20 @@
   "type": "module",
   "version": "0.0.0",
   "private": true,
-  "types": "./index.ts",
-  "main": "./index.ts",
+  "exports": {},
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "type:check": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest --passWithNoTests"
+    "test": "vitest --run",
+    "test:watch": "vitest"
   },
   "dependencies": {},
   "devDependencies": {
-    "tsconfig": "0.0.0"
+    "@chia/test": "workspace:*",
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
   }
 }

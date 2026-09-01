@@ -1,119 +1,16 @@
-const { kvStore } = vi.hoisted(() => ({
-  kvStore: new Map<string, unknown>(),
-}));
+import { vi } from "vitest";
 
-vi.mock("@chia/kv/redis", () => {
-  const kv = {
-    get: vi.fn((key: string) => kvStore.get(key)),
-    set: vi.fn((key: string, value: unknown) => {
-      kvStore.set(key, value);
-      return true;
-    }),
-    delete: vi.fn((key: string) => kvStore.delete(key)),
-  };
-  return { getRedisKv: () => kv };
-});
+import { stubTestEnv } from "@chia/test/env";
 
-vi.mock("../src/guards/rate-limiter.guard", async () => {
-  const mocks = await import("./__mocks__/guards.mock");
-  return {
-    rateLimiterGuard: mocks.rateLimiterGuard,
-  };
-});
-
-vi.mock("../src/guards/auth.guard", async () => {
-  const mocks = await import("./__mocks__/guards.mock");
-  return {
-    verifyAuth: mocks.verifyAuth,
-  };
-});
-
-vi.mock("../src/guards/ai.guard", async () => {
-  const mocks = await import("./__mocks__/guards.mock");
-  return {
-    ai: mocks.ai,
-    AI_AUTH_TOKEN: mocks.AI_AUTH_TOKEN,
-  };
-});
-
-vi.mock("@chia/api/orpc/guards/rate-limit.guard", async () => {
-  const mocks = await import("./__mocks__/guards.mock");
-  return { rateLimitGuard: mocks.orpcRateLimitGuard };
-});
-
-vi.mock("@chia/api/orpc/guards/caller.guard", async () => {
-  const mocks = await import("./__mocks__/guards.mock");
-  return {
-    callerGuard: mocks.orpcCallerGuard,
-    tieredRateLimitGuard: mocks.orpcTieredRateLimitGuard,
-  };
-});
-
-vi.mock("@chia/api/orpc/guards/captcha.guard", async () => {
-  const mocks = await import("./__mocks__/guards.mock");
-  return { captchaGuard: mocks.orpcCaptchaGuard };
-});
-
-vi.mock("@chia/api/orpc/guards/ai-key.guard", async () => {
-  const mocks = await import("./__mocks__/guards.mock");
-  return { aiKeyGuard: mocks.orpcAiKeyGuard };
-});
-
-// `workflow/api` builds a World on first use, which opens LISTEN with no database here.
-vi.mock("workflow/api", async () => {
-  const mocks = await import("./__mocks__/workflow.mock");
-  return { getRun: mocks.getRun, getHookByToken: mocks.getHookByToken };
-});
-
-vi.mock("../src/services/feed-indexing.service", () => ({
-  feedHooks: {
-    onFeedChanged: vi.fn().mockResolvedValue(undefined),
-    onFeedRemoved: vi.fn().mockResolvedValue(undefined),
-  },
-}));
-
-vi.mock("@chia/db/repos/feeds", async () => {
-  const mocks = await import("./__mocks__/db.mock");
-  return {
-    getInfiniteFeedsByUserId: mocks.getInfiniteFeedsByUserId,
-    getInfiniteFeeds: mocks.getInfiniteFeeds,
-    getFeedBySlug: mocks.getFeedBySlug,
-    getFeedById: mocks.getFeedById,
-    getFeedForIndexing: mocks.getFeedForIndexing,
-    getPublicFeedSummariesByIds: mocks.getPublicFeedSummariesByIds,
-    getFeedRefsByTranslationIds: mocks.getFeedRefsByTranslationIds,
-    getFeedIdByTranslationId: mocks.getFeedIdByTranslationId,
-    upsertFeedTranslation: mocks.upsertFeedTranslation,
-    upsertContent: mocks.upsertContent,
-    updateFeed: mocks.updateFeed,
-    softDeleteFeed: mocks.softDeleteFeed,
-    deleteFeed: mocks.deleteFeed,
-    restoreFeed: mocks.restoreFeed,
-  };
-});
-
-vi.mock("@chia/db/repos/feeds/search", async () => {
-  const mocks = await import("./__mocks__/db.mock");
-  return { getRelatedFeeds: mocks.getRelatedFeeds };
-});
-
-vi.mock("@chia/api/resources/search", async () => {
-  const mocks = await import("./__mocks__/db.mock");
-  return { searchResources: mocks.searchResources };
-});
-
-export const mockEnv = {
-  NODE_ENV: "test",
+stubTestEnv({
   SKIP_ENV_VALIDATION: "false",
   CORS_ALLOWED_ORIGIN: "http://localhost:3000",
   RESEND_API_KEY: "test-resend-api-key",
   FIRECRAWL_API_KEY: "test-firecrawl-api-key",
-  // Database env
   DATABASE_URL: "postgres://postgres:password@localhost:5432/test",
   DATABASE_URL_REPLICA_1: undefined,
   BETA_DATABASE_URL: "postgres://postgres:password@localhost:5432/test",
   LOCAL_DATABASE_URL: "postgres://postgres:password@localhost:5432/test",
-  // Auth env
   GOOGLE_CLIENT_ID: "test-google-client-id",
   GOOGLE_CLIENT_SECRET: "test-google-client-secret",
   GITHUB_CLIENT_ID: "test-github-client-id",
@@ -126,7 +23,6 @@ export const mockEnv = {
   ADMIN_ID: process.env.ADMIN_ID ?? "test-admin-id",
   BETA_ADMIN_ID: process.env.BETA_ADMIN_ID ?? "test-beta-admin-id",
   LOCAL_ADMIN_ID: process.env.LOCAL_ADMIN_ID ?? "test-local-admin-id",
-  // Spotify env
   SPOTIFY_CLIENT_ID: "test-spotify-client-id",
   SPOTIFY_CLIENT_SECRET: "test-spotify-client-secret",
   SPOTIFY_FAVORITE_PLAYLIST_ID: "test-spotify-favorite-playlist-id",
@@ -139,82 +35,94 @@ export const mockEnv = {
   NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID:
     process.env.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID ??
     "test-spotify-favorite-playlist-id",
-  // S3 env
   S3_ACCESS_KEY_ID: "test-s3-access-key-id",
   S3_SECRET_ACCESS_KEY: "test-s3-secret-access-key",
   S3_REGION: "us-east-1",
   S3_BUCKET_NAME: "test-bucket",
   S3_ENDPOINT: undefined,
-  // Captcha env
   NEXT_PUBLIC_CAPTCHA_PROVIDER: "google-recaptcha",
   CAPTCHA_SECRET_KEY: "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe",
-  // KV/Cache env
   CACHE_PROVIDER: "auto",
   CACHE_URI: "redis://localhost:6379",
   WORKFLOW_TARGET_WORLD: "@workflow/world-postgres",
   WORKFLOW_POSTGRES_URL: "postgres://postgres:password@localhost:5432/test",
   INTERNAL_WORKFLOW_SERVICE_ENDPOINT: "http://workflow.test",
   INTERNAL_WORKFLOW_SERVICE_TOKEN: "w".repeat(32),
-};
+});
 
-vi.stubEnv("NODE_ENV", mockEnv.NODE_ENV);
-vi.stubEnv("SKIP_ENV_VALIDATION", mockEnv.SKIP_ENV_VALIDATION);
-vi.stubEnv("CORS_ALLOWED_ORIGIN", mockEnv.CORS_ALLOWED_ORIGIN);
-vi.stubEnv("RESEND_API_KEY", mockEnv.RESEND_API_KEY);
-vi.stubEnv("FIRECRAWL_API_KEY", mockEnv.FIRECRAWL_API_KEY);
-vi.stubEnv("DATABASE_URL", mockEnv.DATABASE_URL);
-vi.stubEnv("DATABASE_URL_REPLICA_1", mockEnv.DATABASE_URL_REPLICA_1);
-vi.stubEnv("BETA_DATABASE_URL", mockEnv.BETA_DATABASE_URL);
-vi.stubEnv("LOCAL_DATABASE_URL", mockEnv.LOCAL_DATABASE_URL);
-vi.stubEnv("GOOGLE_CLIENT_ID", mockEnv.GOOGLE_CLIENT_ID);
-vi.stubEnv("GOOGLE_CLIENT_SECRET", mockEnv.GOOGLE_CLIENT_SECRET);
-vi.stubEnv("GITHUB_CLIENT_ID", mockEnv.GITHUB_CLIENT_ID);
-vi.stubEnv("GITHUB_CLIENT_SECRET", mockEnv.GITHUB_CLIENT_SECRET);
-vi.stubEnv("AUTH_SECRET", mockEnv.AUTH_SECRET);
-vi.stubEnv("AUTH_URL", mockEnv.AUTH_URL);
-vi.stubEnv("AUTH_BASE_PATH", mockEnv.AUTH_BASE_PATH);
-vi.stubEnv("CF_BYPASS_TOKEN", mockEnv.CF_BYPASS_TOKEN);
-vi.stubEnv("CH_API_KEY", mockEnv.CH_API_KEY);
-vi.stubEnv("ADMIN_ID", mockEnv.ADMIN_ID);
-vi.stubEnv("BETA_ADMIN_ID", mockEnv.BETA_ADMIN_ID);
-vi.stubEnv("LOCAL_ADMIN_ID", mockEnv.LOCAL_ADMIN_ID);
-vi.stubEnv("SPOTIFY_CLIENT_ID", mockEnv.SPOTIFY_CLIENT_ID);
-vi.stubEnv("SPOTIFY_CLIENT_SECRET", mockEnv.SPOTIFY_CLIENT_SECRET);
-vi.stubEnv(
-  "SPOTIFY_FAVORITE_PLAYLIST_ID",
-  mockEnv.SPOTIFY_FAVORITE_PLAYLIST_ID
-);
-vi.stubEnv("SPOTIFY_REFRESH_TOKEN", mockEnv.SPOTIFY_REFRESH_TOKEN);
-vi.stubEnv("SPOTIFY_REDIRECT_URI", mockEnv.SPOTIFY_REDIRECT_URI);
-vi.stubEnv(
-  "SPOTIFY_TOKEN_ENCRYPTION_KEY",
-  mockEnv.SPOTIFY_TOKEN_ENCRYPTION_KEY
-);
-vi.stubEnv("SPOTIFY_NOW_PLAYING_URL", mockEnv.SPOTIFY_NOW_PLAYING_URL);
-vi.stubEnv("SPOTIFY_TOKEN_URL", mockEnv.SPOTIFY_TOKEN_URL);
-vi.stubEnv(
-  "NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID",
-  mockEnv.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID
-);
-vi.stubEnv("S3_ACCESS_KEY_ID", mockEnv.S3_ACCESS_KEY_ID);
-vi.stubEnv("S3_SECRET_ACCESS_KEY", mockEnv.S3_SECRET_ACCESS_KEY);
-vi.stubEnv("S3_REGION", mockEnv.S3_REGION);
-vi.stubEnv("S3_BUCKET_NAME", mockEnv.S3_BUCKET_NAME);
-vi.stubEnv("S3_ENDPOINT", mockEnv.S3_ENDPOINT);
-vi.stubEnv(
-  "NEXT_PUBLIC_CAPTCHA_PROVIDER",
-  mockEnv.NEXT_PUBLIC_CAPTCHA_PROVIDER
-);
-vi.stubEnv("CAPTCHA_SECRET_KEY", mockEnv.CAPTCHA_SECRET_KEY);
-vi.stubEnv("CACHE_PROVIDER", mockEnv.CACHE_PROVIDER);
-vi.stubEnv("CACHE_URI", mockEnv.CACHE_URI);
-vi.stubEnv("WORKFLOW_TARGET_WORLD", mockEnv.WORKFLOW_TARGET_WORLD);
-vi.stubEnv("WORKFLOW_POSTGRES_URL", mockEnv.WORKFLOW_POSTGRES_URL);
-vi.stubEnv(
-  "INTERNAL_WORKFLOW_SERVICE_ENDPOINT",
-  mockEnv.INTERNAL_WORKFLOW_SERVICE_ENDPOINT
-);
-vi.stubEnv(
-  "INTERNAL_WORKFLOW_SERVICE_TOKEN",
-  mockEnv.INTERNAL_WORKFLOW_SERVICE_TOKEN
-);
+vi.mock("@chia/kv/redis", async () => {
+  const { getRedisKv } = await import("@chia/test/mocks/kv");
+  return { getRedisKv };
+});
+
+vi.mock("../src/guards/rate-limiter.guard", async () => {
+  const mocks = await import("./helpers/guards");
+  return {
+    rateLimiterGuard: mocks.rateLimiterGuard,
+  };
+});
+
+vi.mock("../src/guards/auth.guard", async () => {
+  const mocks = await import("./helpers/guards");
+  return {
+    verifyAuth: mocks.verifyAuth,
+  };
+});
+
+vi.mock("../src/guards/ai.guard", async () => {
+  const mocks = await import("./helpers/guards");
+  return {
+    ai: mocks.ai,
+    AI_AUTH_TOKEN: mocks.AI_AUTH_TOKEN,
+  };
+});
+
+vi.mock("@chia/api/orpc/guards/rate-limit.guard", async () => {
+  const mocks = await import("./helpers/guards");
+  return { rateLimitGuard: mocks.orpcRateLimitGuard };
+});
+
+vi.mock("@chia/api/orpc/guards/caller.guard", async () => {
+  const mocks = await import("./helpers/guards");
+  return {
+    callerGuard: mocks.orpcCallerGuard,
+    tieredRateLimitGuard: mocks.orpcTieredRateLimitGuard,
+  };
+});
+
+vi.mock("@chia/api/orpc/guards/captcha.guard", async () => {
+  const mocks = await import("./helpers/guards");
+  return { captchaGuard: mocks.orpcCaptchaGuard };
+});
+
+vi.mock("@chia/api/orpc/guards/ai-key.guard", async () => {
+  const mocks = await import("./helpers/guards");
+  return { aiKeyGuard: mocks.orpcAiKeyGuard };
+});
+
+vi.mock("workflow/api", async () => {
+  const { getHookByToken, getRun } = await import("@chia/test/mocks/workflow");
+  return { getRun, getHookByToken };
+});
+
+vi.mock("../src/services/feed-indexing.service", () => ({
+  feedHooks: {
+    onFeedChanged: vi.fn().mockResolvedValue(undefined),
+    onFeedRemoved: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock("@chia/db/repos/feeds", async () => {
+  const { feedRepoMocks } = await import("@chia/test/mocks/db-feeds");
+  return feedRepoMocks;
+});
+
+vi.mock("@chia/db/repos/feeds/search", async () => {
+  const { getRelatedFeeds } = await import("@chia/test/mocks/db-feeds");
+  return { getRelatedFeeds };
+});
+
+vi.mock("@chia/api/resources/search", async () => {
+  const { searchResources } = await import("@chia/test/mocks/db-feeds");
+  return { searchResources };
+});

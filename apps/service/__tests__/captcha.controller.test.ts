@@ -15,6 +15,7 @@ vi.mock("@chia/api/email", () => ({
   sendContactEmail: mockSendContactEmail,
 }));
 
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { app } from "../src/server";
 
 const send = (captchaToken?: string) =>

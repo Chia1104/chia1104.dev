@@ -1,6 +1,5 @@
+import { vi } from "vitest";
 import type { Mock } from "vitest";
-
-/** Real `workflow/api` opens a World LISTEN on first use; with no database that becomes an unhandled rejection. */
 
 const emptyReadable = () =>
   Object.assign(new ReadableStream<never>({ start: (c) => c.close() }), {
@@ -16,6 +15,11 @@ export const getRun: Mock = vi.fn(() => ({
 }));
 
 export const getHookByToken: Mock = vi.fn(async () => null);
+
+export const createFakeRuns = () => ({
+  get: getRun,
+  hasHook: async (token: string) => Boolean(await getHookByToken(token)),
+});
 
 export const resetWorkflowMocks = () => {
   getRun.mockClear();

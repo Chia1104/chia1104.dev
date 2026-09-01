@@ -70,7 +70,8 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "type:check": "tsc --noEmit"
+    "type:check": "tsc --noEmit",
+    "test": "vitest --run"
   },
   "dependencies": {
     "@t3-oss/env-core": "catalog:",
@@ -82,8 +83,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/express": "^5.0.6",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
   }
 }

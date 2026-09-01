@@ -74,7 +74,8 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "type:check": "tsc --noEmit"
+    "type:check": "tsc --noEmit",
+    "test": "vitest --run"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "catalog:ai",
@@ -102,9 +103,11 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/mdast": "catalog:",
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
   }
 }

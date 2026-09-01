@@ -1,35 +1,21 @@
 import { call } from "@orpc/server";
-import { vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, vi } from "vitest";
 
-import type { Session } from "@chia/auth/types";
 import { AppError } from "@chia/service-kit/errors";
+import { stubTestEnv } from "@chia/test/env";
+import {
+  ADMIN_ID,
+  contextOf,
+  describe,
+  expect,
+  it as orpcIt,
+  sessionOf,
+} from "@chia/test/orpc";
 
 import type { AgentKindAdmin } from "../orpc/contracts/agent-admin.contract";
 import type * as adminRouteModule from "../orpc/routes/agent-admin.route";
 import type { AgentFactory } from "../orpc/services/agent.factory";
 import type { AgentAdminService } from "../orpc/services/agent/admin";
-import type { BaseOSContext } from "../orpc/utils";
-
-const ADMIN_ID = "admin-user";
-
-const sessionOf = (id: string, role: string): Session =>
-  /* SAFETY: This fixture implements the Session members exercised by this case. */ ({
-    session: { id: "s1", userId: id },
-    user: { id, role },
-  }) as Session;
-
-const contextOf = (
-  session: Session | null,
-  extra: Partial<BaseOSContext> = {}
-): BaseOSContext =>
-  /* SAFETY: This fixture implements the BaseOSContext members exercised by this case. */ ({
-    headers: new Headers(),
-    clientIP: "127.0.0.1",
-    config: { rateLimit: { windowMs: 60_000, limit: 100 } },
-    db: {},
-    session,
-    ...extra,
-  }) as BaseOSContext;
 
 const kind: AgentKindAdmin = {
   kind: "writing",
@@ -74,19 +60,20 @@ const factory = {
   createUsage: vi.fn(() => Promise.reject(new Error("unused"))),
 } satisfies AgentFactory;
 
-const admin = (extra?: Partial<BaseOSContext>) =>
-  contextOf(sessionOf(ADMIN_ID, "admin"), { agentFactory: factory, ...extra });
-const member = () =>
-  contextOf(sessionOf("someone-else", "user"), { agentFactory: factory });
+const it = orpcIt.extend("context", ({ session }) =>
+  contextOf(session, { agentFactory: factory })
+);
 
 type AdminRoutes = typeof adminRouteModule;
 let routes: AdminRoutes;
 
 describe("agent admin routes", () => {
   beforeAll(async () => {
-    vi.stubEnv("SKIP_ENV_VALIDATION", "true");
-    vi.stubEnv("ENV", "test");
-    vi.stubEnv("LOCAL_ADMIN_ID", ADMIN_ID);
+    stubTestEnv({
+      SKIP_ENV_VALIDATION: "true",
+      ENV: "test",
+      LOCAL_ADMIN_ID: ADMIN_ID,
+    });
     routes = await import("../orpc/routes/agent-admin.route");
   });
 
@@ -102,67 +89,75 @@ describe("agent admin routes", () => {
     service.listTaskModels.mockResolvedValue([]);
   });
 
-  it("refuses every route to a signed-in non-admin", async () => {
-    await expect(
-      call(routes.listAgentKindsAdminRoute, undefined, { context: member() })
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    await expect(
-      call(
-        routes.updateAgentKindAdminRoute,
-        { kind: "writing", config: {} },
-        { context: member() }
-      )
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    await expect(
-      call(routes.listAgentTasksAdminRoute, undefined, { context: member() })
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    await expect(
-      call(
-        routes.updateAgentTaskAdminRoute,
-        { id: "session.title", model: null },
-        { context: member() }
-      )
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    await expect(
-      call(routes.listAgentTaskModelsAdminRoute, undefined, {
-        context: member(),
-      })
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    await expect(
-      call(routes.getAgentQuotaAdminRoute, undefined, { context: member() })
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    await expect(
-      call(
-        routes.updateAgentQuotaAdminRoute,
-        { weeklyLimitUsd: 0 },
-        { context: member() }
-      )
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    expect(service.listKinds).not.toHaveBeenCalled();
-    expect(service.updateKind).not.toHaveBeenCalled();
-    expect(service.updateQuota).not.toHaveBeenCalled();
+  describe("signed-in non-admin", () => {
+    it.override("session", () => sessionOf("someone-else", "user"));
+
+    it("refuses every route", async ({ context }) => {
+      await expect(
+        call(routes.listAgentKindsAdminRoute, undefined, { context })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(
+        call(
+          routes.updateAgentKindAdminRoute,
+          { kind: "writing", config: {} },
+          { context }
+        )
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(
+        call(routes.listAgentTasksAdminRoute, undefined, { context })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(
+        call(
+          routes.updateAgentTaskAdminRoute,
+          { id: "session.title", model: null },
+          { context }
+        )
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(
+        call(routes.listAgentTaskModelsAdminRoute, undefined, { context })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(
+        call(routes.getAgentQuotaAdminRoute, undefined, { context })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(
+        call(
+          routes.updateAgentQuotaAdminRoute,
+          { weeklyLimitUsd: 0 },
+          { context }
+        )
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      expect(service.listKinds).not.toHaveBeenCalled();
+      expect(service.updateKind).not.toHaveBeenCalled();
+      expect(service.updateQuota).not.toHaveBeenCalled();
+    });
   });
 
-  it("rejects a negative quota before the port sees it", async () => {
+  it("rejects a negative quota before the port sees it", async ({
+    context,
+  }) => {
     await expect(
       call(
         routes.updateAgentQuotaAdminRoute,
         { weeklyLimitUsd: -1 },
-        { context: admin() }
+        { context }
       )
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(service.updateQuota).not.toHaveBeenCalled();
   });
 
-  it("answers SERVICE_UNAVAILABLE when the process has no agent factory", async () => {
+  it("answers SERVICE_UNAVAILABLE when the process has no agent factory", async ({
+    session,
+  }) => {
     await expect(
       call(routes.listAgentKindsAdminRoute, undefined, {
-        context: admin({ agentFactory: undefined }),
+        context: contextOf(session, { agentFactory: undefined }),
       })
     ).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
   });
 
-  it("hands the admin's write to the port with the db and the input as given", async () => {
+  it("hands the admin's write to the port with the db and the input as given", async ({
+    context,
+  }) => {
     const result = await call(
       routes.updateAgentKindAdminRoute,
       {
@@ -171,7 +166,7 @@ describe("agent admin routes", () => {
         thinkingLevel: null,
         config: { instructions: "Short intros." },
       },
-      { context: admin() }
+      { context }
     );
     expect(result).toEqual(kind);
     expect(service.updateKind).toHaveBeenCalledWith(
@@ -185,18 +180,22 @@ describe("agent admin routes", () => {
     );
   });
 
-  it("rejects an override outside the contract before the port sees it", async () => {
+  it("rejects an override outside the contract before the port sees it", async ({
+    context,
+  }) => {
     await expect(
       call(
         routes.updateAgentTaskAdminRoute,
         { id: "session.title", params: { temperature: 3 } },
-        { context: admin() }
+        { context }
       )
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(service.updateTask).not.toHaveBeenCalled();
   });
 
-  it("converts the port's AppError into the matching oRPC code", async () => {
+  it("converts the port's AppError into the matching oRPC code", async ({
+    context,
+  }) => {
     service.updateTask.mockRejectedValue(
       new AppError("NOT_FOUND", {
         message: 'Agent task "nope" is not registered.',
@@ -206,7 +205,7 @@ describe("agent admin routes", () => {
       call(
         routes.updateAgentTaskAdminRoute,
         { id: "nope", model: null },
-        { context: admin() }
+        { context }
       )
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });

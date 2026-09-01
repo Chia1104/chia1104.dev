@@ -1,20 +1,16 @@
-import { app } from "../src/server";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import * as guardMocks from "./__mocks__/guards.mock";
+import * as guardMocks from "./helpers/guards";
+import { rpc } from "./helpers/rpc";
 
-const send = (body: Record<string, unknown>) =>
-  app.request("/api/v1/rpc/email/send", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ json: body }),
-  });
+const send = (body: Record<string, unknown>) => rpc("email/send", body);
 
 describe("email.send", () => {
   beforeEach(() => {
     guardMocks.resetAllGuardMocks();
   });
 
-  it("should reject invalid email format", async () => {
+  it("rejects an invalid email format", async () => {
     const res = await send({
       email: "not-an-email",
       title: "Test Title",
@@ -24,7 +20,7 @@ describe("email.send", () => {
     expect(res.status).toBe(400);
   }, 15000);
 
-  it("should reject short title", async () => {
+  it("rejects a short title", async () => {
     const res = await send({
       email: "test@example.com",
       title: "Hi",
@@ -34,7 +30,7 @@ describe("email.send", () => {
     expect(res.status).toBe(400);
   }, 15000);
 
-  it("should reject short message", async () => {
+  it("rejects a short message", async () => {
     const res = await send({
       email: "test@example.com",
       title: "Test Title",
@@ -44,14 +40,14 @@ describe("email.send", () => {
     expect(res.status).toBe(400);
   }, 15000);
 
-  it("should reject missing required fields", async () => {
+  it("rejects missing required fields", async () => {
     const res = await send({ email: "test@example.com" });
 
     expect(res.status).toBe(400);
   }, 15000);
 
   it(
-    "should send email with valid data",
+    "sends the email with valid data",
     {
       skip: true,
     },

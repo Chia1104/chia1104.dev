@@ -1,25 +1,20 @@
-import { vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import type { ServiceContext } from "../src/context";
+import { sessionOf } from "@chia/test/session";
+import { serviceContextOf } from "@chia/test/context";
+
 import { captchaPolicy } from "../src/policies/captcha.policy";
 import { rateLimitPolicy } from "../src/policies/rate-limit.policy";
 import { sessionPolicy } from "../src/policies/session.policy";
 
 const session = (role: string, isAnonymous = false) => ({
-  session: { id: "s1", userId: "u1" },
+  ...sessionOf("u1", role),
   user: { id: "u1", role, isAnonymous },
 });
 
-const makeContext = (overrides: Partial<ServiceContext> = {}): ServiceContext =>
-  /* SAFETY: This fixture implements the ServiceContext members exercised by policy tests. */ ({
-    headers: new Headers(),
-    clientIP: "1.2.3.4",
-    db: {},
-    kv: undefined,
-    ...overrides,
-  }) as ServiceContext;
+const makeContext = serviceContextOf;
 
-const withSession = (value: ReturnType<typeof session>): ServiceContext =>
+const withSession = (value: ReturnType<typeof session>) =>
   makeContext({
     session:
       /* SAFETY: This fixture implements the Session members the policies read. */ value as never,

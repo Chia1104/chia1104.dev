@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -12,7 +13,7 @@ vi.mock("@/components/commons/feed-search", () => ({
 }));
 
 describe("FeedSearchDialog", () => {
-  it("should open from the blog navigation and render search results", async () => {
+  it("opens from the blog navigation and renders search results", async () => {
     const user = userEvent.setup();
 
     renderWithProviders(<FeedSearchDialog locale="en-US" />);

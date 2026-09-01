@@ -42,27 +42,3 @@ export const mockContact = {
   ...mockEmail,
 };
 
-export const mockSpotifyTrack = {
-  id: "track-123",
-  name: "Test Song",
-  artists: [{ name: "Test Artist" }],
-  album: {
-    name: "Test Album",
-    images: [{ url: "https://example.com/image.jpg" }],
-  },
-  external_urls: {
-    spotify: "https://open.spotify.com/track/123",
-  },
-};
-
-export const mockGitHubRepo = {
-  id: 123456,
-  name: "test-repo",
-  full_name: "chia1104/test-repo",
-  description: "A test repository",
-  html_url: "https://github.com/chia1104/test-repo",
-  stargazers_count: 100,
-  forks_count: 50,
-  language: "TypeScript",
-  topics: ["react", "nextjs"],
-};

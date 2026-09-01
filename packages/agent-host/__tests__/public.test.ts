@@ -20,9 +20,9 @@ const port: ContentReadPort = {
 describe("createPublicAgentKind", () => {
   const kind = createPublicAgentKind();
 
-  it("admits guests and offers only read tools, no commands and no skills", () => {
+  it("is root-only and offers only read tools, no commands and no skills", () => {
     expect(kind.kind).toBe(PUBLIC_AGENT_KIND);
-    expect(kind.minTier).toBe(CallerTier.Guest);
+    expect(kind.minTier).toBe(CallerTier.Root);
 
     const capabilities = kind.capabilities();
     expect(capabilities.tools.map((tool) => tool.name)).toEqual([

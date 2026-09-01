@@ -7,9 +7,10 @@ vi.mock("@chia/auth/server", () => ({
   createAuth: () => ({ api: { getSession: mockGetSession } }),
 }));
 
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { app } from "../src/server";
 
-import * as dbMocks from "./__mocks__/db.mock";
+import * as dbMocks from "@chia/test/mocks/db-feeds";
 
 const session = (role: string) => ({
   session: { id: "s1", userId: "u1" },

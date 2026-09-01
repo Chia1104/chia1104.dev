@@ -36,6 +36,7 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "type:check": "tsc --noEmit",
+    "test": "vitest --run",
     "auth-schema:generate": "SKIP_ENV_VALIDATION=1 pnpm dlx @better-auth/cli generate --config scripts/auth-cli.ts"
   },
   "dependencies": {
@@ -54,8 +55,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "drizzle-kit": "catalog:drizzle",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
   }
 }

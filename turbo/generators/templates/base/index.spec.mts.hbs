@@ -1,7 +1,9 @@
+import { describe, expect, it } from "vitest";
+
 import { name } from "../src";
 
-describe("{{ name }} test", () => {
-  it("should return {{ name }}", () => {
+describe("{{ name }}", () => {
+  it("returns the package name", () => {
     expect(name).toEqual("{{ name }}");
   });
 });

@@ -1,7 +1,15 @@
 import { call } from "@orpc/server";
-import { vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, vi } from "vitest";
 
-import type { Session } from "@chia/auth/types";
+import { stubTestEnv } from "@chia/test/env";
+import {
+  ADMIN_ID,
+  contextOf,
+  describe,
+  expect,
+  it as orpcIt,
+  sessionOf,
+} from "@chia/test/orpc";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type * as ragRouteModule from "../orpc/routes/rag.route";
@@ -60,30 +68,14 @@ vi.mock("@chia/db/repos/resources/index-run", () => ({
   finalizeResourceIndexRun: repo.finalizeResourceIndexRun,
 }));
 
-const ADMIN_ID = "admin-user";
-
 const workflowClient: Partial<WorkflowControlClient> = workflow;
 
-const sessionOf = (id: string, role: string): Session =>
-  /* SAFETY: This fixture implements the Session members exercised by this case. */ ({
-    session: { id: "s1", userId: id },
-    user: { id, role },
-  }) as Session;
-
-/**
- * Context with a pre-resolved session so the guards run their real policies without a
- * better-auth round trip. `kv` is absent, which makes `rateLimitGuard` fail open.
- */
-const contextOf = (session: Session | null): BaseOSContext =>
-  /* SAFETY: This fixture implements the BaseOSContext members exercised by this case. */ ({
-    /* SAFETY: This fixture provides only the BaseOSContext fields exercised by these routes. */
-    headers: new Headers(),
-    clientIP: "127.0.0.1",
-    config: { rateLimit: { windowMs: 60_000, limit: 100 } },
-    db: {},
-    workflow: workflowClient,
-    session,
-  }) as BaseOSContext;
+const it = orpcIt.extend("context", ({ session }) =>
+  contextOf(session, {
+    /* SAFETY: This fixture implements the client member these routes exercise. */
+    workflow: workflowClient as BaseOSContext["workflow"],
+  })
+);
 
 const RUN_ROW = {
   id: 11,
@@ -104,20 +96,17 @@ const RUN_ROW = {
   createdAt: new Date("2026-08-01T00:00:00Z"),
 };
 
-const admin = () => contextOf(sessionOf(ADMIN_ID, "admin"));
-const member = () => contextOf(sessionOf("someone-else", "user"));
-
-// imported dynamically in `beforeAll`, after the env stubs `getAdminId` reads
 type RagRoutes = typeof ragRouteModule;
 let routes: RagRoutes;
 
 describe("rag routes", () => {
   beforeAll(async () => {
-    vi.stubEnv("SKIP_ENV_VALIDATION", "true");
-    // `getAdminId` reads a per-environment variable; `ENV` pins which one.
-    vi.stubEnv("ENV", "test");
-    vi.stubEnv("LOCAL_ADMIN_ID", ADMIN_ID);
-    vi.stubEnv("EMBEDDING_PROVIDER", "openai");
+    stubTestEnv({
+      SKIP_ENV_VALIDATION: "true",
+      ENV: "test",
+      LOCAL_ADMIN_ID: ADMIN_ID,
+      EMBEDDING_PROVIDER: "openai",
+    });
 
     routes = await import("../orpc/routes/rag.route");
   });
@@ -155,7 +144,9 @@ describe("rag routes", () => {
   });
 
   describe("runs go through the workflow client", () => {
-    it("starts the run, then records it as the operator's", async () => {
+    it("starts the run, then records it as the operator's", async ({
+      context,
+    }) => {
       workflow.startResourceIndex.mockResolvedValue("wrun_1");
       repo.claimResourceIndexRun.mockResolvedValue({
         run: RUN_ROW,
@@ -166,7 +157,7 @@ describe("rag routes", () => {
       const handle = await call(
         routes.indexResourceRoute,
         { sourceType: "feed_translation", sourceId: 1 },
-        { context: admin() }
+        { context }
       );
 
       expect(handle).toMatchObject({
@@ -187,7 +178,9 @@ describe("rag routes", () => {
       );
     });
 
-    it("hands back an in-flight run instead of starting a second one", async () => {
+    it("hands back an in-flight run instead of starting a second one", async ({
+      context,
+    }) => {
       repo.getActiveResourceIndexRun.mockResolvedValue(RUN_ROW);
       workflow.getRun.mockResolvedValue({
         type: "run",
@@ -198,14 +191,16 @@ describe("rag routes", () => {
       const handle = await call(
         routes.indexResourceRoute,
         { sourceType: "feed_translation", sourceId: 1 },
-        { context: admin() }
+        { context }
       );
 
       expect(handle).toMatchObject({ runId: "wrun_1", reused: true });
       expect(workflow.startResourceIndex).not.toHaveBeenCalled();
     });
 
-    it("finalizes a listed row whose run has completed", async () => {
+    it("finalizes a listed row whose run has completed", async ({
+      context,
+    }) => {
       repo.listResourceIndexRuns.mockResolvedValue({
         items: [RUN_ROW],
         nextCursor: null,
@@ -222,11 +217,7 @@ describe("rag routes", () => {
         result: { chunks: 3 },
       });
 
-      const page = await call(
-        routes.listIndexRunsRoute,
-        {},
-        { context: admin() }
-      );
+      const page = await call(routes.listIndexRunsRoute, {}, { context });
 
       expect(repo.finalizeResourceIndexRun).toHaveBeenCalledWith(
         expect.anything(),
@@ -242,9 +233,11 @@ describe("rag routes", () => {
       });
     });
 
-    it("still serves the reads, which never touch the client", async () => {
+    it("still serves the reads, which never touch the client", async ({
+      context,
+    }) => {
       const overview = await call(routes.getRagOverviewRoute, undefined, {
-        context: admin(),
+        context,
       });
 
       expect(overview.counts).toEqual({
@@ -260,9 +253,11 @@ describe("rag routes", () => {
   });
 
   describe("reindex:all:preview", () => {
-    it("answers the confirmation numbers from the database, port or no port", async () => {
+    it("answers the confirmation numbers from the database, port or no port", async ({
+      context,
+    }) => {
       const preview = await call(routes.previewReindexAllRoute, undefined, {
-        context: admin(),
+        context,
       });
 
       expect(preview.targets).toBe(42);
@@ -272,14 +267,18 @@ describe("rag routes", () => {
   });
 
   describe("authorization", () => {
-    it("rejects a non-admin trigger with FORBIDDEN", async () => {
-      await expect(
-        call(
-          routes.indexResourceRoute,
-          { sourceType: "feed_translation", sourceId: 1 },
-          { context: member() }
-        )
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    describe("signed-in non-admin", () => {
+      it.override("session", () => sessionOf("someone-else", "user"));
+
+      it("rejects a trigger with FORBIDDEN", async ({ context }) => {
+        await expect(
+          call(
+            routes.indexResourceRoute,
+            { sourceType: "feed_translation", sourceId: 1 },
+            { context }
+          )
+        ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      });
     });
 
     it("rejects an anonymous trigger with UNAUTHORIZED", async () => {
@@ -287,17 +286,24 @@ describe("rag routes", () => {
         call(
           routes.indexResourceRoute,
           { sourceType: "feed_translation", sourceId: 1 },
-          { context: contextOf(null) }
+          {
+            context: contextOf(null, {
+              /* SAFETY: This fixture implements the client member these routes exercise. */
+              workflow: workflowClient as BaseOSContext["workflow"],
+            }),
+          }
         )
       ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     });
 
-    it("rejects an unregistered source type at the boundary", async () => {
+    it("rejects an unregistered source type at the boundary", async ({
+      context,
+    }) => {
       await expect(
         call(
           routes.indexResourceRoute,
           { sourceType: "not_a_resource", sourceId: 1 },
-          { context: admin() }
+          { context }
         )
       ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     });
@@ -309,45 +315,49 @@ describe("rag routes", () => {
    * whole corpus to anyone.
    */
   describe("reads are admin-only, not merely signed-in", () => {
-    it("rejects a signed-in non-admin on overview", async () => {
-      await expect(
-        call(routes.getRagOverviewRoute, undefined, { context: member() })
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    describe("signed-in non-admin", () => {
+      it.override("session", () => sessionOf("someone-else", "user"));
+
+      it("rejects overview", async ({ context }) => {
+        await expect(
+          call(routes.getRagOverviewRoute, undefined, { context })
+        ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      });
+
+      it("rejects reindex:all:preview", async ({ context }) => {
+        await expect(
+          call(routes.previewReindexAllRoute, undefined, { context })
+        ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      });
+
+      it("rejects chunks:list", async ({ context }) => {
+        await expect(
+          call(routes.listRagChunksRoute, {}, { context })
+        ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      });
+
+      it("rejects chunk:get", async ({ context }) => {
+        await expect(
+          call(routes.getRagChunkRoute, { chunkId: 1 }, { context })
+        ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      });
+
+      it("rejects resource:status", async ({ context }) => {
+        await expect(
+          call(
+            routes.getResourceIndexStatusRoute,
+            { sourceType: "feed_translation", sourceId: 1 },
+            { context }
+          )
+        ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      });
     });
 
-    it("rejects a signed-in non-admin on reindex:all:preview", async () => {
-      await expect(
-        call(routes.previewReindexAllRoute, undefined, { context: member() })
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    });
-
-    it("rejects a signed-in non-admin on chunks:list", async () => {
-      await expect(
-        call(routes.listRagChunksRoute, {}, { context: member() })
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    });
-
-    it("rejects a signed-in non-admin on chunk:get", async () => {
-      await expect(
-        call(routes.getRagChunkRoute, { chunkId: 1 }, { context: member() })
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    });
-
-    it("rejects a signed-in non-admin on resource:status", async () => {
-      await expect(
-        call(
-          routes.getResourceIndexStatusRoute,
-          { sourceType: "feed_translation", sourceId: 1 },
-          { context: member() }
-        )
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    });
-
-    it("still serves the configured admin", async () => {
+    it("still serves the configured admin", async ({ context }) => {
       const status = await call(
         routes.getResourceIndexStatusRoute,
         { sourceType: "feed_translation", sourceId: 1 },
-        { context: admin() }
+        { context }
       );
 
       expect(status.counts.total).toBe(0);

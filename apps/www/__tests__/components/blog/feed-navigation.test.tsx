@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { FeedType } from "@chia/db/types";
 import { NavigationMenu } from "@chia/ui/navigation-menu";
@@ -16,7 +16,7 @@ const { mockPush } = vi.hoisted(() => ({
   mockPush: vi.fn(),
 }));
 
-vi.mock("@/libs/i18n/routing", () => ({
+vi.mock("@/libs/i18n/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
   }),

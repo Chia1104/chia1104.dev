@@ -10,6 +10,7 @@
     "start": "bun run --bun .output/server/index.mjs",
     "node:preview": "node --env-file=.env .output/server/index.mjs",
     "type:check": "tsc --noEmit",
+    "test": "vitest --run",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "clean": "git clean -xdf .output node_modules .cache .turbo"
@@ -56,6 +57,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/lodash": "catalog:",
     "@types/node": "catalog:",
@@ -63,6 +65,7 @@
     "@types/react-dom": "catalog:react-is",
     "bun-types": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
   }
 }

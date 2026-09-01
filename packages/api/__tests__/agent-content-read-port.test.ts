@@ -1,15 +1,16 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DB } from "@chia/db/client";
 
 import { createContentReadPort } from "../agents/content-read.port";
 
-import * as dbMocks from "./__mocks__/agent-content-db.mock";
+import * as dbMocks from "@chia/test/mocks/db-feeds";
 
 const searchFeedsService = vi.hoisted(() =>
   vi.fn(async () => ({ mode: "hybrid", items: [] }))
 );
 vi.mock("../feeds/search", () => ({ searchFeedsService }));
 vi.mock("@chia/db/repos/feeds", async () => {
-  const mocks = await import("./__mocks__/agent-content-db.mock");
+  const mocks = await import("@chia/test/mocks/db-feeds");
   return {
     getFeedById: mocks.getFeedById,
     getFeedBySlug: mocks.getFeedBySlug,
@@ -29,7 +30,7 @@ const db = {} as DB;
 
 describe("createContentReadPort visibility", () => {
   beforeEach(() => {
-    dbMocks.resetAgentContentDbMocks();
+    dbMocks.resetAllDbMocks();
     searchFeedsService.mockClear();
   });
 

@@ -62,3 +62,16 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before changi
 `agent-elements` owns live client state in one zustand store per session and server state in TanStack Query. Hosts provide the oRPC client, `QueryClient`, localized labels and kind-specific renderers. Host Tailwind sources must include this package and Streamdown's distributed JavaScript.
 
 Every locale must carry the same keys; agent label tests enforce this. `meta` is authored in Pkl and generated as `meta.json`.
+
+## Testing
+
+Shared Vitest helpers live in `@chia/test`. Import a named module, never a root barrel.
+
+- `@chia/test/config` — `nodeConfig` / `domConfig` presets (`globals: false`, `clearMocks: true`). App configs only add `setupFiles`, aliases and plugins. DOM apps that use Testing Library must `cleanup()` in setup; `globals: false` disables its auto-cleanup.
+- `@chia/test/env` — `stubTestEnv()` for `SKIP_ENV_VALIDATION` and `NODE_ENV`.
+- `@chia/test/session` and `@chia/test/context` — `sessionOf`, `contextOf`, `serviceContextOf`.
+- `@chia/test/orpc` — those factories plus an extended `it` with `session` / `context` fixtures. Import `vi` from `vitest`; `vi.hoisted` does not work through this re-export.
+- `@chia/test/mocks/*` — feed repo, workflow World, and in-memory KV `vi.fn`s. `vi.mock` wiring stays in the consuming project's `setup.ts` or test file.
+- `@chia/test/fixtures/content-read-port` — `ContentReadPort` fake. Writing's write-side port stays in `packages/agent-writing/__tests__/fixtures.ts`.
+
+Keep app-specific helpers next to the app: service guards and RPC `app.request` wrappers, www MSW and `renderWithProviders`. Setup files mock only what every test in that project needs. Import `{ describe, expect, it, vi }` from `vitest`. Titles are behavior sentences, not `should ...`.

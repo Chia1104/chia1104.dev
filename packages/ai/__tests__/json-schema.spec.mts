@@ -1,3 +1,4 @@
+import { describe, it } from "vitest";
 import { zodResponseFormat } from "openai/helpers/zod";
 import * as z from "zod";
 

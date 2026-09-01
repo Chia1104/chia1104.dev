@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { StreamingHighlight } from "../src/code-block.tsx";
 import { loadLanguage, resolveLanguage } from "../src/highlighter.ts";
 

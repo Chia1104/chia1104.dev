@@ -1,13 +1,11 @@
-import { defineConfig } from "vitest/config";
+import { nodeConfig } from "@chia/test/config";
 
-export default defineConfig({
+export default nodeConfig({
   test: {
-    globals: true,
     include: [
-      "src/**/*.{spec,test}.{ts,tsx}",
-      "__tests__/**/*.{spec,test}.{ts,tsx}",
-      "spotify/**/*.{spec,test}.{ts,tsx}",
+      "src/**/*.{test,spec}.{ts,tsx,mts}",
+      "__tests__/**/*.{test,spec}.{ts,tsx,mts}",
+      "spotify/**/*.{test,spec}.{ts,tsx}",
     ],
-    exclude: ["**/node_modules/**"],
   },
 });

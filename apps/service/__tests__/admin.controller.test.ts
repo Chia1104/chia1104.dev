@@ -1,16 +1,12 @@
+import { beforeEach, describe, expect, it } from "vitest";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
-import { app } from "../src/server";
-
-import * as dbMocks from "./__mocks__/db.mock";
-import * as guardMocks from "./__mocks__/guards.mock";
+import * as dbMocks from "@chia/test/mocks/db-feeds";
+import * as guardMocks from "./helpers/guards";
+import { rpc as rpcOf } from "./helpers/rpc";
 
 const rpc = (procedure: string, input: unknown = {}) =>
-  app.request(`/api/v1/rpc/feeds/${encodeURIComponent(procedure)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ json: input }),
-  });
+  rpcOf(`feeds/${encodeURIComponent(procedure)}`, input);
 
 /** Upserts use the project API key; deletes need the operator session. */
 describe("feeds writes require the right tier", () => {

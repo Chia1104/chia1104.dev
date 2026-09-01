@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from "vitest";
 import { createWorkflowControlClient } from "../src/client";
 describe("workflow control client", () => {
   it("sends authenticated commands to the workflow service", async () => {
