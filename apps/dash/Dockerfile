@@ -11,7 +11,7 @@ WORKDIR /app
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    npm install -g pnpm@next-11 turbo
+    npm install -g pnpm@12.1.0 turbo@2.10.12
 
 FROM base AS builder
 
@@ -39,7 +39,7 @@ ENV TURBO_TEAM=${TURBO_TEAM} \
     INTERNAL_SERVICE_ENDPOINT=${INTERNAL_SERVICE_ENDPOINT} \
     SKIP_ENV_VALIDATION=1
 
-RUN pnpm i
+RUN pnpm install --frozen-lockfile
 RUN pnpm turbo run build --filter=dash...
 
 FROM base AS runner

@@ -6,8 +6,12 @@ on:
     paths:
       - "apps/www/**"
       - "packages/**"
-      - ".github/workflows/www-docker.yml"
+      - "apps/www/Dockerfile"
+      - ".github/workflows/www-docker-ci.yml"
       - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
 
 permissions:
   contents: read
@@ -58,7 +62,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: Dockerfile.www
+          file: apps/www/Dockerfile
           push: false
           load: false
           tags: ${{ env.DOCKERHUB_USERNAME }}/chia1104-www:${{ env.GIT_HASH }}

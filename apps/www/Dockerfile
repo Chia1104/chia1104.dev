@@ -11,7 +11,7 @@ WORKDIR /app
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    npm install -g pnpm@next-11 turbo
+    npm install -g pnpm@12.1.0 turbo@2.10.12
 
 FROM base AS builder
 
@@ -63,7 +63,7 @@ ENV TURBO_TEAM=${TURBO_TEAM} \
     CF_BYPASS_TOKEN=${CF_BYPASS_TOKEN} \
     CH_API_KEY=${CH_API_KEY}
 
-RUN pnpm i
+RUN pnpm install --frozen-lockfile
 RUN pnpm turbo run build --filter=www...
 
 FROM base AS runner

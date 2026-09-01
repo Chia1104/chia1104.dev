@@ -1,6 +1,10 @@
 node_modules
 .turbo
 .vercel
+.git
+.github
+.codebase-memory
+.railway
 .vscode
 .idea
 **/*/node_modules
@@ -29,21 +33,14 @@ node_modules
 **/*/.env.production
 .env.global
 
-**/*/.turbo
-
 **/*/dist
 **/*/.dist
 
 **/*/.output
-
-**/*/vscode
-**/*/.vscode
-**/*/.idea
 
 tests
 **/*/*.md
 
 **/*/.force-redeploy
 
-**/*/.turbo
 **/*/.cache

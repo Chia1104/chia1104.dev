@@ -5,10 +5,13 @@ on:
     types: [opened, labeled, unlabeled, synchronize]
     paths:
       - "apps/service/**"
-      - "packages/db/**"
-      - "packages/utils/**"
+      - "packages/**"
+      - "apps/service/Dockerfile"
       - ".github/workflows/service-docker-ci.yml"
       - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
 
 permissions:
   contents: read
@@ -60,7 +63,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: Dockerfile.node-service
+          file: apps/service/Dockerfile
           push: false
           load: false
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104-service:${{ env.GIT_HASH }}

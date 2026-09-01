@@ -173,16 +173,16 @@ db-generate:
 # ── Docker ────────────────────────────────────────────────────────────────────
 
 docker-build-www:
-	@docker build -f Dockerfile.www -t chia1104-www .
+	@docker build -f apps/www/Dockerfile -t chia1104-www .
 
 docker-build-dash:
-	@docker build -f Dockerfile.dash -t chia1104-dash .
+	@docker build -f apps/dash/Dockerfile -t chia1104-dash .
 
 docker-build-service:
-	@docker build -f Dockerfile.service -t chia1104-service .
+	@docker build -f apps/service/Dockerfile -t chia1104-service .
 
 docker-build-workflow:
-	@docker build -f Dockerfile.workflow -t chia1104-workflow .
+	@docker build -f apps/workflow/Dockerfile -t chia1104-workflow .
 
 docker-build: docker-build-www docker-build-dash docker-build-service docker-build-workflow
 

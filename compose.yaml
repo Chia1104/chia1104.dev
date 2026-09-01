@@ -1,0 +1,113 @@
+services:
+  postgres:
+    image: paradedb/paradedb:pg18
+    ports:
+      - "5434:5432"
+    volumes:
+      - chia-paradedb:/var/lib/postgresql/data/paradedb
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      PGDATA: /var/lib/postgresql/data/paradedb
+      DEBUG: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - chia-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  workflow:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: apps/workflow/Dockerfile
+      args:
+        TURBO_TEAM: ${TURBO_TEAM:-}
+        TURBO_TOKEN: ${TURBO_TOKEN:-}
+    ports:
+      - "3008:8080"
+    env_file:
+      - .env.global
+      - apps/workflow/.env
+    environment:
+      PORT: 8080
+      LOCAL_DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
+      WORKFLOW_POSTGRES_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
+      WORKFLOW_REDIS_URI: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  service:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: apps/service/Dockerfile
+      args:
+        TURBO_TEAM: ${TURBO_TEAM:-}
+        TURBO_TOKEN: ${TURBO_TOKEN:-}
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.global
+      - apps/service/.env
+    environment:
+      PORT: 8080
+      LOCAL_DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
+      WORKFLOW_POSTGRES_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
+      REDIS_URI: redis://redis:6379
+      WORKFLOW_REDIS_URI: redis://redis:6379
+      INTERNAL_AUTH_SERVICE_ENDPOINT: http://host.docker.internal:4001/auth
+      INTERNAL_WORKFLOW_SERVICE_ENDPOINT: http://workflow:8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      workflow:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "fetch('http://127.0.0.1:8080/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  chia-paradedb:
+  chia-redis:
