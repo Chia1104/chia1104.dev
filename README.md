@@ -3,68 +3,108 @@
 [![www deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/Production%20%E2%80%93%20chia1104?style=flat-square&logo=vercel&label=www)](https://chia1104.dev)
 [![License: MIT](https://img.shields.io/github/license/chia1104/chia1104.dev?style=flat-square)](LICENSE)
 
-The source of [chia1104.dev](https://chia1104.dev): a personal site, the dashboard that manages its content, and the backend service behind both, in one pnpm + Turborepo monorepo. It is also where new stack ideas get tried for real, so the dependencies run ahead of stable.
+The source of [chia1104.dev](https://chia1104.dev): a personal site, its admin dashboard and the services behind them. It is a pnpm + Turborepo monorepo where new stack and architecture ideas are tried in production.
 
-## What is in here
+## Architecture
 
-| App            | Stack                           | Role                                                          |
-| -------------- | ------------------------------- | ------------------------------------------------------------- |
-| `apps/www`     | Next.js 16, React 19, port 3000 | Public site: profile, blog, projects, contact                 |
-| `apps/dash`    | Next.js 16, port 3001           | Admin dashboard: content, assets, RAG index, writing agent    |
-| `apps/service` | Hono on Nitro, port 3005        | The only backend: auth, database, durable workflows, AI/agent |
+| App             | Stack and deployment              | Responsibility                                                   |
+| --------------- | --------------------------------- | ---------------------------------------------------------------- |
+| `apps/www`      | Next.js 16 on Vercel, port 3000   | Public profile, blog, projects, search and reading agent         |
+| `apps/dash`     | Next.js 16 on Railway, port 3001  | Content administration, assets, writing agent and RAG operations |
+| `apps/service`  | Hono on Nitro, Railway, port 3005 | Auth, database access, oRPC and AI HTTP routes                   |
+| `apps/workflow` | Hono on Nitro, Railway, port 3008 | Durable workflows, indexing jobs and agent turns; one replica    |
 
-The frontends talk to `service` through a contract-first [oRPC](https://orpc.dev) client; the contract, handlers and guards live in `packages/api`. Auth is [Better Auth](https://better-auth.com), data is Postgres through Drizzle, sessions and caches are in Redis, and long-running work (indexing, agent turns) runs on the [Vercel Workflow SDK](https://github.com/vercel/workflow). Content is MDX rendered with Fumadocs; search is BM25 plus embeddings over ParadeDB.
+Both frontends call `service` through a contract-first [oRPC](https://orpc.dev) client. `service` sends durable work to `workflow` through `@chia/workflow-control`; both read the same PostgreSQL-backed Workflow World.
 
+The main infrastructure is [Better Auth](https://better-auth.com), Postgres with Drizzle, Redis through Keyv, the [Vercel Workflow SDK](https://github.com/vercel/workflow), and ParadeDB for BM25 plus vector retrieval. Content is authored as MDX and rendered with Fumadocs.
+
+## Back-office AI features
+
+### Writing agent
+
+The dashboard includes a multi-session writing workspace. The agent can read existing posts, search and fetch web sources, keep long-term memory, prepare locale-specific drafts and commit approved changes to live content. Sessions support streaming, abort, compaction, rewind and forks; commit-tier tools pass through the approval policy before writing live content.
+
+The administration pages also provide:
+
+- Agent-kind defaults and instructions.
+- Model, prompt and parameter overrides for title, compaction, branch-summary and lesson-extraction tasks.
+- Weekly house-spend and concurrent-turn limits for visitors.
+- Memory review for fetched sources, saved facts and learned writing preferences, including approval of pending lessons and manual session consolidation.
+
+The public site has a separate read-only agent with published-content access and a smaller model and tool budget.
+
+See [Agent architecture](docs/agent-architecture.md) or the [中文版本](docs/agent-architecture.zh.md).
+
+### RAG management
+
+The RAG dashboard manages the shared chunk and embedding index used by search and agent memory:
+
+- Overview of the active model and index version, embedding coverage, stale or missing vectors, and breakdowns by source, locale, chunk kind and visibility.
+- Chunk explorer with content, embedding-state, kind and locale filters, plus per-chunk details.
+- Index-run history with target, progress, failures and duration.
+- Maintenance actions to embed missing chunks, run a full reindex and prune stale vectors.
+
+See [RAG architecture](docs/rag-architecture.md) or the [中文版本](docs/rag-architecture.zh.md).
+
+## Repository layout
+
+```text
+apps/          deployable applications and scheduled functions
+packages/      source-exported @chia/* packages
+tests/         Playwright end-to-end tests
+docs/          current agent, RAG and workflow architecture
+toolings/      shared configuration, scripts and generators
+infra/railway/ Railway service configuration
+legacy/        reference-only code; never imported
 ```
-apps/          www, dash, service, gateway (Caddy/Nginx), functions/pg-dump-cron
-packages/      @chia/* — api, db, service-kit, auth, kv, ai, agent-runtime, agent-writing,
-               contents, ui, editor, themes, tailwind, shaders, i18n, meta, utils
-tests/www-e2e  Playwright
-docs/          architecture notes for the agent and RAG subsystems
-infra/railway/ per-service Railway config
-```
 
-For how the pieces fit together see [`AGENTS.md`](AGENTS.md), [`apps/AGENTS.md`](apps/AGENTS.md) and [`packages/AGENTS.md`](packages/AGENTS.md).
+Development rules and package boundaries live in [`AGENTS.md`](AGENTS.md), [`apps/AGENTS.md`](apps/AGENTS.md) and [`packages/AGENTS.md`](packages/AGENTS.md).
 
 ## Getting started
 
-Requirements: Node >= 22, pnpm 11 (the version is pinned in `package.json`), Docker for the local Postgres and Redis.
+Requirements: Node.js 22 or newer, pnpm 12.1.0 and Docker. Pkl 0.25.2 or newer is needed only when regenerating site metadata.
 
 ```bash
 git clone https://github.com/chia1104/chia1104.dev.git
 cd chia1104.dev
-make init          # pnpm install + copies the three .env.example files
-pnpm db:up         # Postgres + Redis in Docker
+make init
+pnpm db:up
 pnpm db:migrate
-pnpm db:seed       # optional
+pnpm db:seed # optional
 ```
 
-Then fill in the `.env` files under `apps/www`, `apps/dash` and `apps/service`.
+`make init` installs dependencies and copies `.env.example` to `.env` for `www`, `dash`, `service` and `workflow`. Fill in the required values before starting the apps.
 
 ## Commands
 
 ```bash
-pnpm dev:www          # www + service      pnpm dev:dash / dev:service / dev (all)
-pnpm build:www        # build:dash / build:service / build
-pnpm test             # vitest             pnpm test:watch / test:ui / test:e2e
-pnpm lint             # oxlint             pnpm lint:fix
-pnpm format           # oxfmt
+pnpm dev:www          # www + service + workflow
+pnpm dev:dash         # dash + service + workflow
+pnpm dev:service      # service + workflow
+pnpm dev              # all workspaces
+
+pnpm build            # build all workspaces
+pnpm build:www        # or build:dash, build:service, build:workflow
+pnpm lint
+pnpm format
 pnpm type:check
-pnpm db:generate / db:migrate / db:push / db:studio
+pnpm test
+pnpm test:e2e
+
+pnpm db:generate
+pnpm db:migrate
+pnpm db:push
+pnpm db:studio
 ```
 
-`make help` lists the same targets.
+`make help` lists equivalent setup, development, validation, database and Docker targets.
 
 ## Deployment
 
-`www` deploys to Vercel from `apps/www`. `dash` and `service` deploy to Railway from `Dockerfile.dash` and `Dockerfile.node-service`; the per-service settings are in `infra/railway/`. Local containers:
+`www` deploys to Vercel. `dash`, `service` and the single-replica `workflow` deploy to Railway; their settings live in `infra/railway/`. Run `make docker-build` to build all local images or use the per-app Docker targets listed by `make help`.
 
-```bash
-docker build -f Dockerfile.www -t chia1104-www .
-docker build -f Dockerfile.dash -t chia1104-dash .
-docker build -f Dockerfile.node-service -t chia1104-service .
-```
+The workflow runner must remain single-replica until it has cross-process replay and step claims. See [Workflow deployment](docs/workflow-deployment.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

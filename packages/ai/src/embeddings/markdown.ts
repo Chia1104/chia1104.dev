@@ -7,9 +7,8 @@
  *
  * Parser, not regexes: the corpus is MDX, and the regex predecessor missed
  * multi-line JSX opening tags, left `{expressions}` in chunk text, and failed
- * to condense fences carrying a meta string (```ts title="x"). Everything here
- * works on node positions over the original source, so the surviving text is
- * the author's text, not a re-serialization.
+ * to condense fences carrying a meta string (```ts title="x"). The transformed
+ * tree is serialized as canonical markdown so escaping and fences remain valid.
  *
  * The parser stack is imported dynamically per call: these helpers sit under
  * `utils.ts`, whose constants are on the boot path of every process that
@@ -23,17 +22,34 @@ const MAX_CODE_BLOCK_LINES = 24;
 const CODE_BLOCK_HEAD_LINES = 12;
 
 const loadParser = async () => {
-  const [{ unified }, parse, gfm, mdx, { toString: mdastToString }] =
-    await Promise.all([
-      import("unified"),
-      import("remark-parse"),
-      import("remark-gfm"),
-      import("remark-mdx"),
-      import("mdast-util-to-string"),
-    ]);
+  const [
+    { unified },
+    parse,
+    gfm,
+    mdx,
+    stringify,
+    { fromHtml },
+    { toText: hastToText },
+    { toString: mdastToString },
+  ] = await Promise.all([
+    import("unified"),
+    import("remark-parse"),
+    import("remark-gfm"),
+    import("remark-mdx"),
+    import("remark-stringify"),
+    import("hast-util-from-html"),
+    import("hast-util-to-text"),
+    import("mdast-util-to-string"),
+  ]);
+
   return {
     mdx: unified().use(parse.default).use(gfm.default).use(mdx.default),
-    md: unified().use(parse.default).use(gfm.default),
+    md: unified()
+      .use(parse.default)
+      .use(gfm.default)
+      .use(stringify.default, { bullet: "-", fences: true }),
+    htmlToText: (value: string) =>
+      hastToText(fromHtml(value, { fragment: true })),
     toString: mdastToString,
   };
 };
@@ -58,104 +74,83 @@ const parseDocument = (parser: Parser, source: string): Root => {
   }
 };
 
-interface SourceEdit {
+interface SourceSpan {
   start: number;
   end: number;
-  replacement: string;
 }
 
 const spanOf = (node: {
   position?: { start: { offset?: number }; end: { offset?: number } };
-}): { start: number; end: number } | null => {
+}): SourceSpan | null => {
   const start = node.position?.start.offset;
   const end = node.position?.end.offset;
   return start === undefined || end === undefined ? null : { start, end };
 };
 
-const condenseCodeBlock = (node: Code): string => {
+const condenseCode = (node: Code): string => {
   const lines = node.value.replace(/\s+$/, "").split("\n");
-  const kept =
+  return (
     lines.length <= MAX_CODE_BLOCK_LINES
       ? lines
-      : [...lines.slice(0, CODE_BLOCK_HEAD_LINES), "…"];
-  return ["```" + (node.lang ?? ""), ...kept, "```"].join("\n");
+      : [...lines.slice(0, CODE_BLOCK_HEAD_LINES), "…"]
+  ).join("\n");
 };
 
-/**
- * Collects the source edits that turn MDX into plain markdown, walking the
- * tree recursively. JSX elements and links lose only their tag/wrapper spans,
- * so edits inside their children stay disjoint and everything can be applied
- * in one back-to-front pass.
- */
-const collectCleanEdits = (nodes: RootContent[], edits: SourceEdit[]): void => {
-  for (const node of nodes) {
-    const span = spanOf(node);
-    if (!span) {
-      continue;
-    }
+const serializeMarkdownText = (parser: Parser, value: string): string =>
+  parser.md
+    .stringify({
+      type: "root",
+      children: [{ type: "paragraph", children: [{ type: "text", value }] }],
+    })
+    .trim();
 
+/**
+ * Converts MDX-specific and destination-bearing nodes to ordinary mdast.
+ * The markdown-only serializer is the final safety boundary: any MDX node
+ * missed here fails serialization instead of being emitted as executable MDX.
+ */
+const cleanNodes = (nodes: RootContent[], parser: Parser): RootContent[] =>
+  nodes.flatMap((node): RootContent[] => {
     switch (node.type) {
       case "mdxjsEsm":
       case "mdxFlowExpression":
       case "mdxTextExpression":
-        edits.push({ ...span, replacement: "" });
-        continue;
+      case "definition":
+        return [];
       case "mdxJsxFlowElement":
-      case "mdxJsxTextElement": {
-        const first = node.children[0] && spanOf(node.children[0]);
-        const last =
-          node.children[node.children.length - 1] &&
-          spanOf(node.children[node.children.length - 1]!);
-        if (first && last) {
-          edits.push({ start: span.start, end: first.start, replacement: "" });
-          edits.push({ start: last.end, end: span.end, replacement: "" });
-          collectCleanEdits(node.children, edits);
-        } else {
-          // no children (or none with a position) — drop the element whole
-          edits.push({ ...span, replacement: "" });
-        }
-        continue;
-      }
-      case "code":
-        // always rebuilt: normalizes the fence and drops the meta string
-        // (```ts title="…"), which is markup noise to BM25 and the embedding
-        edits.push({ ...span, replacement: condenseCodeBlock(node) });
-        continue;
+      case "mdxJsxTextElement":
+      case "link":
+      case "linkReference":
+        return cleanNodes(
+          /* SAFETY: mdast parent children are valid RootContent nodes at runtime. */ node.children as RootContent[],
+          parser
+        );
       case "image":
       case "imageReference":
-        edits.push({ ...span, replacement: node.alt ?? "" });
-        continue;
-      case "link": {
-        const first = node.children[0] && spanOf(node.children[0]);
-        const last =
-          node.children[node.children.length - 1] &&
-          spanOf(node.children[node.children.length - 1]!);
-        if (first && last) {
-          edits.push({ start: span.start, end: first.start, replacement: "" });
-          edits.push({ start: last.end, end: span.end, replacement: "" });
-          collectCleanEdits(node.children, edits);
-        } else {
-          edits.push({ ...span, replacement: "" });
-        }
-        continue;
-      }
+        return node.alt ? [{ type: "text", value: node.alt }] : [];
+      case "code":
+        return [
+          { ...node, meta: null, value: condenseCode(node) } satisfies Code,
+        ];
       case "html": {
-        // raw HTML only appears on the plain-markdown fallback path; keep the
-        // inner text, drop the tags
-        const text = node.value.replace(/<\/?[A-Za-z][^>]*>/g, "");
-        edits.push({ ...span, replacement: text });
-        continue;
+        const value = parser.htmlToText(node.value);
+        return value ? [{ type: "text", value }] : [];
       }
       default:
         if ("children" in node) {
-          collectCleanEdits(
-            /* SAFETY: The producer contract guarantees this value satisfies RootContent[]. */ node.children as RootContent[],
-            edits
-          );
+          /* SAFETY: mdast parent children are valid RootContent nodes at runtime. */
+          const children = cleanNodes(node.children as RootContent[], parser);
+          /* SAFETY: Replacing children preserves the registered mdast parent shape. */
+          return [
+            {
+              ...node,
+              children,
+            } as RootContent,
+          ];
         }
+        return [node];
     }
-  }
-};
+  });
 
 /**
  * MDX cleanup that keeps document structure (headings, lists, code fences)
@@ -168,28 +163,15 @@ export const cleanMdxKeepStructure = async (
 ): Promise<string> => {
   const parser = await loadParser();
   const tree = parseDocument(parser, source);
+  tree.children = cleanNodes(tree.children, parser);
 
-  const edits: SourceEdit[] = [];
-  collectCleanEdits(tree.children, edits);
-  edits.sort((a, b) => b.start - a.start);
-
-  let cleaned = source;
-  let lastAppliedStart = Number.POSITIVE_INFINITY;
-  for (const edit of edits) {
-    // edits are disjoint by construction; skip rather than corrupt if not
-    if (edit.end > lastAppliedStart) {
-      continue;
-    }
-    cleaned =
-      cleaned.slice(0, edit.start) + edit.replacement + cleaned.slice(edit.end);
-    lastAppliedStart = edit.start;
-  }
-
-  return cleaned.replace(/\n{3,}/g, "\n\n").trim();
+  return parser.md.stringify(tree).trim();
 };
 
 export interface MarkdownSection {
   headingPath: string | null;
+  /** heading path escaped for safe interpolation into canonical markdown */
+  headingMarkdownPath: string | null;
   /** level of the section's own heading; null for preamble text */
   level: number | null;
   text: string;
@@ -251,8 +233,8 @@ export const extractHeadings = async (
 
 /**
  * Splits markdown into sections at top-level heading boundaries, tracking the
- * heading path. Expects cleaned input (`cleanMdxKeepStructure`); sections are
- * verbatim slices of it, so chunk text stays the author's text.
+ * heading path. Expects canonical input from `cleanMdxKeepStructure`; sections
+ * are verbatim slices of that normalized markdown.
  */
 export const splitByHeadings = async (
   content: string
@@ -270,8 +252,12 @@ export const splitByHeadings = async (
     }
     const text = content.slice(range.start, range.end).trim();
     if (text) {
+      const headingPath = stack.map((entry) => entry.title).join(" > ") || null;
       sections.push({
-        headingPath: stack.map((entry) => entry.title).join(" > ") || null,
+        headingPath,
+        headingMarkdownPath: headingPath
+          ? serializeMarkdownText(parser, headingPath)
+          : null,
         level: stack[stack.length - 1]?.level ?? null,
         text,
       });
@@ -332,11 +318,13 @@ export const buildHeadingOutline = async (
   // indent relative to the shallowest kept level so an article that starts at
   // H2 is not indented for no reason
   const baseLevel = Math.min(...headings.map((heading) => heading.level));
+  const parser = await loadParser();
 
   return headings
     .slice(0, maxHeadings)
     .map(
-      (heading) => `${"  ".repeat(heading.level - baseLevel)}- ${heading.title}`
+      (heading) =>
+        `${"  ".repeat(heading.level - baseLevel)}- ${serializeMarkdownText(parser, heading.title)}`
     )
     .join("\n");
 };

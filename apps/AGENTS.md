@@ -1,86 +1,66 @@
 # Apps
 
-| App             | Stack                                       | Port | Runs on | Role                                                                    |
-| --------------- | ------------------------------------------- | ---- | ------- | ----------------------------------------------------------------------- |
-| `apps/www`      | Next.js 16 (App Router, React 19)           | 3000 | Vercel  | Public site — profile, blog, projects, contact                          |
-| `apps/dash`     | Next.js 16                                  | 3001 | Railway | Admin dashboard — feeds/content, assets, RAG, agent, API keys, projects |
-| `apps/service`  | Hono on Nitro (node-server preset, Node 26) | 3005 | Railway | The API backend. Owns auth, DB, the oRPC surface, AI routes             |
-| `apps/workflow` | Hono on Nitro (node-server preset, Node 26) | 3008 | Railway | The workflow runner — durable workflows, steps, the agent turn executor |
+| App        | Port | Deployment           | Responsibility                                         |
+| ---------- | ---- | -------------------- | ------------------------------------------------------ |
+| `www`      | 3000 | Vercel               | Public profile, blog, projects and contact             |
+| `dash`     | 3001 | Railway              | Admin UI for content, assets, RAG, agents and settings |
+| `service`  | 3005 | Railway              | Auth, database access, oRPC and AI HTTP routes         |
+| `workflow` | 3008 | Railway, one replica | Durable workflows, steps and agent turns               |
 
-`apps/functions/pg-dump-cron` is a Bun script on a schedule that dumps Postgres to S3, with its own Dockerfile. `apps/ai` and `apps/auth` are env-only placeholders for a future split of `service` — nothing runs there.
+`apps/functions/pg-dump-cron` is the scheduled Postgres-to-S3 backup job.
 
-## The deployment split
+## Network boundary
 
-`www` runs on **Vercel**; `dash`, `service` and `workflow` run on **Railway**. A Vercel deployment cannot reach Railway's private network, and that asymmetry decides how each frontend talks to `service`.
+Vercel cannot reach Railway's private network. Resolve endpoints with `withServiceEndpoint(path, service, options)` from `@chia/utils/config`:
 
-`withServiceEndpoint(path, Service.X, { isInternal, version })` from `@chia/utils/config` resolves `INTERNAL_*_ENDPOINT` on a server runtime and `NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT` in the browser.
+- Server runtimes use the internal endpoint when available.
+- Browsers use `NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT`.
+- `service` reaches `workflow` over Railway's private network.
 
-Both frontends import only the **contract type** from `@chia/api/orpc/contracts` and get an end-to-end typed client — they call `service` directly, with no tRPC and no Next.js API-route proxy layer. The only Next route handlers that exist are `/api/v1/health` in each app.
+The frontends import only the contract type from `@chia/api/orpc/contracts` and call `service` directly. Do not add tRPC, a Next.js API proxy or cross-app imports.
 
-## `apps/www`
+## `www`
 
-Public Next.js site. Two oRPC clients, because of the split above:
+- `src/libs/orpc/client.rsc.ts` is server-only and sends `CH_API_KEY` plus the Cloudflare bypass token.
+- `src/libs/orpc/client.ts` runs in the browser and may call only public procedures. Never expose an API key to it.
+- Content uses `@chia/contents`; localization uses `next-intl` with `packages/i18n/www`.
 
-- `src/libs/orpc/client.rsc.ts` — server-only. Hits `service` over the public network and sends `x-ch-api-key` (`CH_API_KEY`) plus the Cloudflare bypass token.
-- `src/libs/orpc/client.ts` — browser. **No API key ever reaches the browser**; it may only call public procedures. If the browser needs something, expose it as a public procedure rather than leaking the key.
+## `dash`
 
-Content is MDX rendered through `@chia/contents` (Fumadocs); i18n through `next-intl` with messages in `packages/i18n/www`.
+All oRPC calls run in the browser through `src/libs/orpc/client.ts` with the Better Auth session cookie. Keep pages as thin server shells or client pages, and fetch data in client components through oRPC query and mutation options.
 
-## `apps/dash`
+`dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns such as the current-organization cookie.
 
-Admin dashboard, on one oRPC client: `src/libs/orpc/client.ts`, an `RPCLink` with `credentials: "include"`. **Every procedure call is made from the browser** with the session cookie. Pages are thin server shells (`server-only` + `force-dynamic`) or `"use client"` pages, and data fetching lives in client components via `orpc.*.queryOptions` / `mutationOptions`. There is no server-side or in-process oRPC path, so `dash` holds no DB, KV or auth-server context of its own and needs no `DATABASE_URL`.
+## `service`
 
-Under `src/`: `components` (feature UI — feed, rag, agent composed from `@chia/agent-elements` plus the writing draft preview, agents — the `/agents` workspace of kind and task overrides, react-hook-form over the `agent.admin.*` contract — memory, projects, assets, settings), `containers` (client containers that fetch and mount a view), `store` (zustand — draft/edit state, organization), `resources` (typed wrappers over the non-oRPC `/ai` routes), `server` (`next-safe-action` actions — today only the `currentOrg` cookie; no oRPC there).
+`src/server.ts` mounts Hono on Nitro; `src/bootstrap.ts` applies `@chia/service-kit/bootstrap`. Its `/api/v1` surface is:
 
-Auth is a Better Auth session; the client comes from `@chia/auth/client`.
-
-## `apps/service`
-
-The API backend. Hono mounted on Nitro; `src/server.ts` composes the app, `src/bootstrap.ts` applies the shared middleware from `@chia/service-kit/bootstrap`.
-
-It runs no workflows. Every workflow start, hook resume and cancel is a command sent to
-`apps/workflow` through `repos/workflow-control.repo.ts` (`@chia/workflow-control/contract`); run
-state and durable streams are read straight from the shared World storage. See
-[`docs/workflow-deployment.md`](../docs/workflow-deployment.md).
-
-**Surface** (all under `/api/v1`):
-
-```
-/auth      Better Auth handler
-/rpc       oRPC RPC handler — the main surface
+```text
+/auth      Better Auth
+/rpc       oRPC
 /health
-/ai        Vercel AI SDK routes (streaming generation, provider-key cookies)
-/spotify   OAuth callback only; the reads are oRPC procedures
+/ai        Vercel AI SDK streaming routes
+/spotify   OAuth callback
 ```
 
-**Layout** (`src/`):
+Keep these boundaries under `src/`:
 
-- `routes/*.route.ts` — one Hono sub-app per surface above. `rpc.route.ts` mounts the oRPC router with the request timeout, coarse rate limit and the context below.
-- `factories/` — what this process builds once at boot. `orpc.factory.ts` is `createORPCContext(c)`, **the one place the oRPC context is built**: it spreads the Hono `c.var` (`ServiceContext`) and adds env-derived `config`, lifecycle `hooks`, `workflow` and `agentFactory`. See "Context injection" in [`packages/AGENTS.md`](../packages/AGENTS.md).
-- `agents/` — host bindings only. `factory.ts` registers each kind's binding — an eager `minTier` the guards read before anything loads, plus the dynamic import of `writing.ts` / `public.ts` — and supplies credential handling to `createAgentFactory()` from `@chia/api`; session, turn, stream, maintenance, usage and admin business logic lives in `packages/api/orpc/services/agent/`. A new kind adds sibling bindings here and in `apps/workflow/src/agents/`: a binding entry here, a switch branch there.
-- `guards/` — Hono middleware bound from the shared policies via `toHonoMiddleware` (`verifyAuth`, `rateLimiterGuard`, `ai`).
-- `services/` — `*.service.ts`, the host-side implementations of the ports `packages/api` declares and the orchestration behind them; they decide _when_ something happens and delegate storage and remote access to `repos/`:
-  - `feed-indexing.service.ts` (`feedHooks`), `agent-memory-indexing.service.ts` (`memoryHooks`) — the lifecycle hooks, which start runs through `workflowControl`
-  - `agent-credentials.service.ts` (cookie → encrypted BYOK credentials at the HTTP boundary, decryption at the last moment), `spotify.service.ts`
-- `repos/` — `*.repo.ts`, this app's remote access, one file per thing accessed. `workflow-control.repo.ts` is the env-bound `@chia/workflow-control/client` instance: the private endpoint resolved by `withServiceEndpoint` plus the shared bearer token. It goes on the oRPC context as `workflow`, so the routes in `packages/api` start, cancel and reconcile runs themselves with `context.db` and `context.workflow`. Pure table access stays in `@chia/db/repos`.
+- `routes/` mounts HTTP surfaces.
+- `factories/orpc.factory.ts` is the only place that builds the oRPC context.
+- `agents/` contains host bindings and dynamic agent-kind loaders; business logic belongs in `packages/api`.
+- `guards/` binds shared policies to Hono.
+- `services/` orchestrates host-side ports; `repos/` owns remote access. Table access belongs in `@chia/db/repos`.
 
-**Boot path is a memory budget.** The process loads what the router reaches at module scope. Heavy dependencies (`@ai-sdk/*`, `resend`, `@aws-sdk/client-s3`, the agent runtime) are reached through dynamic imports at first use; keep it that way when adding a route.
+`service` never executes workflows. Starts, resumes and cancellations go through the context's `@chia/workflow-control` client; run state and streams use shared World storage. See [`docs/workflow-deployment.md`](../docs/workflow-deployment.md).
 
-Deployed via `Dockerfile.service` / `Dockerfile.node-service` (`turbo prune --scope=service`); `infra/railway/service.json` holds the Railway config.
+Keep heavy dependencies behind dynamic imports so route imports do not inflate the boot path.
 
-## `apps/workflow`
+## `workflow`
 
-The workflow runner, and the only process that executes durable workflows. Hono on Nitro with the `workflow/nitro` module; `src/server.ts` exposes only `/health` and the authenticated control route at `/`; `service` resolves it with `withServiceEndpoint("/", Service.Workflow, { isInternal: true })` over the private network. Single replica by design — [`docs/workflow-deployment.md`](../docs/workflow-deployment.md) explains why and what it would take to change.
+This is the only durable-workflow executor. It exposes `/health` and the authenticated workflow-control route. Keep it at one replica unless the design in [`docs/workflow-deployment.md`](../docs/workflow-deployment.md) is changed.
 
-**Layout** (`src/`):
-
-- `workflow-control.route.ts` — validates a `WorkflowControlCommand` and the bearer token; `services/workflow-control.ts` executes it in-process (`start`, hook `resume`, `cancel`) and is also what steps call when they start another run.
-- `workflows/` and `steps/` — durable workflows (Vercel Workflow SDK, `"use workflow"` / `"use step"`): feed indexing, feed removal, resource index/reindex, memory consolidation, the agent abort controller and the agent session driver. Workflow functions run in a sandbox with no Node built-ins; anything real happens in a step. Keep file names and exported function names stable: the SDK derives the workflow id from `./src/workflows/<file>//<export>` and existing durable runs resume by that id.
-- `agents/` — `factory.ts` dynamically selects `writing.ts` or `public.ts` without a registry/cache. The writing kind binds its execution ports (content, web, memory, credentials and consolidation); the public kind binds only a public-visibility `ContentReadPort`.
-- `plugins/start-workflow-world.ts` — starts the SDK's singleton World (`getWorld().start()`), which brings up the Graphile runner and re-enqueues open runs, and calls `world.close()` on the Nitro `close` hook.
-
-Shared pieces live in packages, never imported across apps: `@chia/agent-host` (kind contract, tasks, config, `ContentReadPort`, the writing and public kind factories) and `@chia/workflow-control` (command contract and the agent hook schemas/tokens both processes need).
-
-**The step bundle and third-party packages.** `workflow/nitro` bundles `src/steps` with esbuild into one ESM file. A bare import it can resolve from `apps/workflow` itself stays a bare import and Node loads the package; one it cannot — a package reached only through a `@chia/*` dependency — is inlined, and the relative `require()` calls inside an inlined CommonJS package are rewritten to paths that ESM cannot `require` (`Dynamic require of "…" is not supported`). The production build survives because Nitro's rolldown pass re-bundles the file; `nitro dev` loads it from disk and does not. So a CommonJS package that step code reaches (today `ai`, whose `@ai-sdk/gateway` loads `@vercel/oidc`) is declared here as a direct dependency as well, the way `apps/service` declares it.
-
-Deployed via `Dockerfile.workflow` (Node 26 alpine, `turbo prune --scope=workflow-service`); `infra/railway/workflow.json` holds the Railway config with `numReplicas: 1`.
+- `workflow-control.route.ts` validates commands and authentication; `services/workflow-control.ts` executes start, resume and cancel operations.
+- `workflows/` contains durable orchestration; `steps/` contains side effects. Workflow functions cannot use Node built-ins.
+- Keep workflow filenames and exported function names stable because existing runs resume by the SDK-derived ID.
+- `agents/` supplies execution-time host bindings. Shared contracts and behavior belong in `@chia/agent-host` and `@chia/workflow-control`, never another app.
+- Packages reached by step code may need to be direct `apps/workflow` dependencies. Otherwise esbuild can inline CommonJS dependencies into invalid ESM during `nitro dev`.
