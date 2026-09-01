@@ -12,13 +12,8 @@ import {
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 
 /**
- * Procedures the shared request timeout must not apply to: `chat`, whose response *is* a live
- * event stream, and the maintenance operations that carry a model call — compact and rewind —
- * which the kind service bounds with its own deadline. The timeout here only drops the response
- * with a 504 while the work, and the session lock it holds, run on.
- *
- * Matched against the oRPC procedure path (`/agent/sessions/chat`), which is what appears after
- * the `/api/v1/rpc` mount prefix.
+ * Chat streams and compact/navigate hold a session lock past TIMEOUT_MS; applying it here
+ * 504s the response while the work continues. Paths are after `/api/v1/rpc`.
  */
 const UNTIMED_PROCEDURE_PATHS = [
   "/agent/sessions/chat",
@@ -29,7 +24,7 @@ const UNTIMED_PROCEDURE_PATHS = [
 const isUntimedProcedure = (path: string): boolean =>
   UNTIMED_PROCEDURE_PATHS.some((candidate) => path.endsWith(candidate));
 
-/** Built once per process — the handler holds no per-request state. */
+/** Built once per process; holds no per-request state. */
 const handler = new RPCHandler(router, {
   interceptors: [
     (options) => withErrorReporting(options.context, () => options.next()),

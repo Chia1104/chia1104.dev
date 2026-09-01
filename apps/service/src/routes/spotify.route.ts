@@ -8,12 +8,7 @@ import { spotifyOAuthCallbackSchema } from "@chia/api/spotify/validator";
 import { env } from "../env";
 import { getSpotifyDashboardRedirect } from "../services/spotify.service";
 
-/**
- * Only the OAuth callback stays on Hono: it answers a browser navigation with a 302, so
- * it is HTTP-shaped rather than an application procedure. The playlist and now-playing
- * reads live on the oRPC router as `spotify.playlist` / `spotify.playing` and kept their
- * previous URLs.
- */
+/** Browser OAuth callback; the response is a 302. */
 const api = new Hono<HonoContext>().use(timeout(env.TIMEOUT_MS)).get(
   "/oauth/callback",
   zValidator("query", spotifyOAuthCallbackSchema, (result, c) => {

@@ -19,14 +19,9 @@ import type { JsonObject, JsonValue } from "@chia/utils/json";
 import { asNumber, asString } from "@chia/utils/json";
 
 /**
- * A kind's `config` as form fields, rendered from the JSON Schema the kind's zod schema
- * produces. Covers the field shapes a preference can reasonably take — text, number,
- * boolean, a fixed choice — and says so for anything else rather than rendering a wrong
- * control.
- *
- * The form value is the *override* with every schema property present, "unset" spelled as
- * `""` for text and `null` otherwise, so react-hook-form's dirty check compares like with
- * like; {@link configOverrideOf} folds those back out before the write.
+ * Kind `config` as form fields from the JSON Schema. Unset is `""` for text and `null`
+ * otherwise so dirty-checking compares like with like; {@link configOverrideOf} drops those
+ * before the write.
  */
 
 /** The slice of JSON Schema this form reads; anything else in the document is ignored. */
@@ -48,7 +43,6 @@ const objectSchema = z.compile(
 
 type Property = z.infer<typeof propertySchema>;
 
-/** One form field's value; see the module note. */
 export const configFieldValueSchema = z.compile(
   z.union([z.string(), z.number(), z.boolean(), z.null()])
 );
@@ -56,7 +50,7 @@ export const configFieldValueSchema = z.compile(
 export type ConfigFieldValue = z.infer<typeof configFieldValueSchema>;
 export type ConfigFormValue = Record<string, ConfigFieldValue>;
 
-/** Text a kind may reasonably want a paragraph of gets a textarea; a short string an input. */
+/** Above this maxLength, the field is a textarea. */
 const LONG_TEXT_THRESHOLD = 200;
 
 const propertiesOf = (schema: JsonObject): [string, Property][] =>
@@ -70,7 +64,7 @@ const typeOf = (property: Property): string | undefined =>
 const isText = (property: Property) =>
   property.enum !== undefined || typeOf(property) === "string";
 
-/** The form's starting value for a kind: the override row spread over every schema property. */
+/** Override spread over every schema property. */
 export const configFormValueOf = (
   schema: JsonObject,
   override: JsonObject
@@ -84,7 +78,7 @@ export const configFormValueOf = (
     })
   );
 
-/** The override to write: unset fields dropped, so the code default applies to them. */
+/** Drops unset fields so the code default applies. */
 export const configOverrideOf = (value: ConfigFormValue): JsonObject =>
   Object.fromEntries(
     Object.entries(value).filter(
@@ -109,7 +103,7 @@ const describe = (property: Property, fallback: JsonValue | undefined) => {
 
 export interface ConfigFieldsProps<TValues extends FieldValues> {
   control: Control<TValues>;
-  /** The form field the config object lives under, e.g. `"config"`. */
+  /** Form path the config object lives under. */
   name: string;
   schema: JsonObject;
   defaults: JsonObject;

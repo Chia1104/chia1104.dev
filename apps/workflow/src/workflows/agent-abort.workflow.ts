@@ -10,23 +10,17 @@ import {
 import { writeAgentAbortStep } from "../steps/agent-abort.step";
 
 /**
- * A durable abort controller for one agent session run.
+ * Durable abort controller for one session run. Cancelling a run only stops rescheduling;
+ * a stop has to reach the executing step through this run's stream.
  *
- * Nothing in the workflow SDK signals a step already executing — cancelling a run only stops it
- * from being scheduled again — so a stop has to reach the turn step through something the step
- * can listen to. This run is that something: it parks on `agentAbortHook`, and when resumed writes
- * one message to its own durable stream. A turn step subscribes to that stream and hands the
- * resulting `AbortSignal` to the harness; the abort request resumes the hook. It is started by
- * `prompt` before the session run, and its `{ id, runId }` travel in the session run's request, so
- * every turn subscribes to the one controller by run id and the abort resumes it by token — no
- * lookup that could race into a second controller. Delivery is the SDK's own stream, so it works
- * from any process: no registry, no timer, no second channel.
+ * Parks on `agentAbortHook`; on resume writes one message. The turn step subscribes and
+ * hands the `AbortSignal` to the harness. Started by `prompt` before the session run;
+ * `{ id, runId }` travel in the session request so there is one controller, no lookup race.
  *
- * The TTL is a safety net for runs that never close their controller (a failed session run). An
- * expired controller writes `expired: true`, which readers ignore, and the next turn starts a fresh
- * one; it never aborts a turn on its own.
+ * TTL is a safety net for runs that never close their controller. Expired writes
+ * `expired: true`, which readers ignore; it never aborts a turn.
  *
- * Runs in the workflow sandbox: only plain data and durable primitives.
+ * Runs in the workflow sandbox: no Node built-ins.
  */
 
 export const agentAbortRequestSchema = z.object({

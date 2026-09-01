@@ -16,11 +16,7 @@ import type {
 
 import { postJson, postTextStream } from "@/libs/service/fetcher";
 
-/**
- * The AI endpoints stay on Hono (streaming responses, `Set-Cookie`), so these are plain
- * fetch calls. Types come from `@chia/ai`'s own schemas rather than `hc<AppRPC>` so they
- * survive the AI routes moving to their own service.
- */
+/** AI endpoints stay on Hono (streaming, `Set-Cookie`), so these are plain fetch calls typed from `@chia/ai`. */
 
 export interface SignAIKeyResponse {
   message: string;

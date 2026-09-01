@@ -8,10 +8,8 @@ import { vi } from "vitest";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
 /**
- * The cards are react-hook-form forms over the admin contract. Pinned here: a card starts
- * clean with Save disabled, an edit makes it dirty, and submit writes exactly the override
- * the edit means — a prompt equal to the default is `null`, a parameter equal to the default
- * is dropped, an emptied config field is absent.
+ * Cards start clean. Submit writes exactly the override: a prompt equal to the default is
+ * `null`, a matching parameter is dropped, an emptied config field is absent.
  */
 
 const { client } = vi.hoisted(() => ({

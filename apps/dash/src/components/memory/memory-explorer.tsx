@@ -35,11 +35,7 @@ import { Markdown } from "@chia/agent-elements/markdown";
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 
-/**
- * Memory management. Every call is a client-side oRPC call behind `adminGuard()`; the page
- * decides nothing about authority. The pending-lessons card sits above the list because a
- * pending lesson is the one row whose review actually gates agent behaviour.
- */
+/** Client-side oRPC behind `adminGuard()`. Pending lessons sit above the list because their review gates agent behaviour. */
 
 type Query = RouterInputs["memory"]["list"];
 type MemoryKind = NonNullable<Query["kind"]>;
@@ -116,14 +112,7 @@ const useInvalidateMemory = () => {
   );
 };
 
-// ============================================
-// Pending lessons
-// ============================================
-
-/**
- * The review gate (§3.6 of the plan): a lesson lands `pending` and reaches a prompt only
- * once someone has read it here and approved it.
- */
+/** A lesson stays `pending` until approved here; only then it reaches a prompt. */
 const PendingLessons = () => {
   const invalidate = useInvalidateMemory();
   const { data, isLoading } = useQuery(
@@ -215,11 +204,7 @@ const PendingLessons = () => {
   );
 };
 
-// ============================================
-// Consolidate
-// ============================================
-
-/** Runs the reflection for a session that never committed — the second trigger in plan §7.1. */
+/** Reflection for a session that never committed. */
 const ConsolidateSession = () => {
   const [sessionId, setSessionId] = useState("");
   const consolidate = useMutation(
@@ -258,10 +243,6 @@ const ConsolidateSession = () => {
     </div>
   );
 };
-
-// ============================================
-// Detail drawer
-// ============================================
 
 const DeleteConfirm = ({
   isOpen,
@@ -552,10 +533,6 @@ const MemoryDetailDrawer = ({
     </Drawer.Backdrop>
   );
 };
-
-// ============================================
-// Explorer
-// ============================================
 
 export const MemoryExplorer = () => {
   const [params, setParams] = useQueryStates(

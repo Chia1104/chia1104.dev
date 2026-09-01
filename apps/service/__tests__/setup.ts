@@ -14,7 +14,6 @@ vi.mock("@chia/kv/redis", () => {
   return { getRedisKv: () => kv };
 });
 
-// Mock guards
 vi.mock("../src/guards/rate-limiter.guard", async () => {
   const mocks = await import("./__mocks__/guards.mock");
   return {
@@ -37,7 +36,6 @@ vi.mock("../src/guards/ai.guard", async () => {
   };
 });
 
-// Mock oRPC guards — the routes migrated off Hono are guarded by these instead.
 vi.mock("@chia/api/orpc/guards/rate-limit.guard", async () => {
   const mocks = await import("./__mocks__/guards.mock");
   return { rateLimitGuard: mocks.orpcRateLimitGuard };
@@ -61,8 +59,7 @@ vi.mock("@chia/api/orpc/guards/ai-key.guard", async () => {
   return { aiKeyGuard: mocks.orpcAiKeyGuard };
 });
 
-// The feed hooks start durable workflows, which have no runtime here.
-// `workflow/api` would build a real World; the agent service only reads runs and hooks through it.
+// `workflow/api` builds a World on first use, which opens LISTEN with no database here.
 vi.mock("workflow/api", async () => {
   const mocks = await import("./__mocks__/workflow.mock");
   return { getRun: mocks.getRun, getHookByToken: mocks.getHookByToken };
@@ -75,7 +72,6 @@ vi.mock("../src/services/feed-indexing.service", () => ({
   },
 }));
 
-// Mock database repos
 vi.mock("@chia/db/repos/feeds", async () => {
   const mocks = await import("./__mocks__/db.mock");
   return {
@@ -155,7 +151,6 @@ export const mockEnv = {
   // KV/Cache env
   CACHE_PROVIDER: "auto",
   CACHE_URI: "redis://localhost:6379",
-  // Workflow world (reads) and the apps/workflow control endpoint (writes)
   WORKFLOW_TARGET_WORLD: "@workflow/world-postgres",
   WORKFLOW_POSTGRES_URL: "postgres://postgres:password@localhost:5432/test",
   INTERNAL_WORKFLOW_SERVICE_ENDPOINT: "http://workflow.test",

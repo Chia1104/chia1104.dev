@@ -7,15 +7,7 @@ import type { routerContract } from "@chia/api/orpc/contracts";
 import { withServiceEndpoint } from "@chia/utils/config";
 import { Service } from "@chia/utils/schema";
 
-/**
- * Browser-side client — talks to the service directly.
- *
- * It may only call the service's **public** procedures. The project API key authenticates
- * one deployment to another (www on Vercel → service on Railway) and must never reach a
- * browser, so anything the browser needs is exposed as a public procedure instead.
- *
- * Server-side callers use `client.rsc.ts`, which does carry the key.
- */
+/** Browser client: public procedures only. Never attach `CH_API_KEY`. */
 export const link = new RPCLink({
   url: withServiceEndpoint("/rpc", Service.LegacyService, {
     isInternal: false,

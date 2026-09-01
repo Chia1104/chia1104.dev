@@ -19,18 +19,13 @@ import type { ResourceIndexRunProgress } from "@chia/db/schema";
 import type { ResourceIndexRequest } from "./resource-index.step";
 
 /**
- * Bookkeeping steps for the bulk reindex run.
- *
- * Kept out of `resource-index.step.ts` because that file is also on the feed-event path,
- * which starts workflows nobody triggered and therefore has no `resource_index_run` row.
+ * Kept out of `resource-index.step.ts`: that file is also on the feed-event path, which has
+ * no `resource_index_run` row.
  */
 
 /**
- * Every resource a full reindex walks: feed translations, then agent memories.
- *
  * Every registered type must enumerate itself here. A type left out survives the index
- * version bump that follows only until `pruneEmbeddings` runs, and its search then degrades
- * to lexical-only without an error anywhere.
+ * version bump until `pruneEmbeddings`, then search degrades to lexical-only with no error.
  */
 export const listReindexTargetsStep = async (): Promise<
   ResourceIndexRequest[]
@@ -56,13 +51,9 @@ export const listReindexTargetsStep = async (): Promise<
 };
 
 /**
- * Finds the run's own `resource_index_run` row, keyed on the runtime run id.
- *
- * Retries rather than failing on a miss: the trigger claims the row immediately after
- * `start()`, so the first attempt can arrive before that insert commits.
- *
- * A run that lost the claim race never resolves here — the row carries the winner's
- * external id — so it dies at this step instead of embedding the same corpus twice.
+ * Keyed on the runtime run id. Retries on a miss: the trigger claims the row after `start()`,
+ * so the first attempt can arrive before that insert commits. A run that lost the claim race
+ * never resolves here, so it dies at this step instead of embedding the corpus twice.
  */
 export const resolveReindexRunStep = async (): Promise<number> => {
   "use step";
@@ -97,11 +88,8 @@ export const recordReindexProgressStep = async (request: {
 };
 
 /**
- * Closes the run out, releasing the target its active partial unique index holds.
- *
- * The terminal status is derived here rather than passed in: a resource that exhausted
- * its retries leaves the run `failed` with the ids in `result`, never a row that reads as
- * still running.
+ * Releases the target the active partial unique index holds. Terminal status is derived here:
+ * exhausted retries leave the run `failed` with ids in `result`, never still-running.
  */
 export const finalizeReindexRunStep = async (request: {
   recordId: number;

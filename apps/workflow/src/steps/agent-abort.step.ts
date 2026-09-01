@@ -3,7 +3,7 @@ import { getWritable } from "workflow";
 
 import type { AgentAbortMessage } from "@chia/agent-host/execution";
 
-/** Writes the abort message and closes the controller's stream, so every reader wakes and ends. */
+/** Writes the abort message and closes the stream so every reader wakes. */
 export const writeAgentAbortStep = async (
   message: AgentAbortMessage
 ): Promise<void> => {

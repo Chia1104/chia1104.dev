@@ -52,12 +52,7 @@ export const StateDot = ({
   );
 };
 
-/**
- * Coverage of the current index key.
- *
- * `stale` counts against coverage rather than for it: a vector computed under an older
- * key is not reachable by any query the server issues today.
- */
+/** Coverage of the current index key. `stale` counts against it: an older-key vector is not reachable by queries today. */
 export const CoverageBar = ({
   counts,
   className,

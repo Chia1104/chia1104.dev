@@ -8,18 +8,8 @@ import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-hoo
 import { env } from "../env";
 
 /**
- * Bring-your-own-key plumbing for agent turns.
- *
- * Two halves, deliberately kept apart:
- *
- * - {@link readEncryptedAgentCredentials} runs at the HTTP boundary and only *moves* ciphertext out
- *   of the cookie. It never decrypts, because what it produces is handed to the workflow, and
- *   everything crossing that boundary is journaled durably.
- * - {@link decryptAgentCredentials} runs inside the turn step, at the last possible moment.
- *
- * The cookies are the same ones `/ai/key:signed` writes for the Vercel AI SDK routes
- * (`apps/service/src/routes/ai.route.ts`), so an operator who has already registered a key for
- * those gets it here for free.
+ * Ciphertext crosses the workflow boundary (it is journaled); decrypt only inside the turn.
+ * Cookies are the same ones `/ai/key:signed` writes.
  */
 
 const COOKIE_BY_PROVIDER = {
@@ -27,14 +17,7 @@ const COOKIE_BY_PROVIDER = {
   anthropic: ANTHROPIC_API_KEY,
 } as const;
 
-/**
- * Lifts whatever provider keys the caller has registered out of their cookies.
- *
- * Deliberately **not** `aiKeyPolicy`: that policy denies the request when a key is missing, which is
- * right for the AI SDK routes where the key *is* the auth. Here bring-your-own-key is optional —
- * a session on the house gateway account needs none — so a missing cookie is a normal state, not a
- * rejection. Returns undefined when there is nothing at all to carry.
- */
+/** A missing cookie returns undefined; house-gateway sessions need no key. */
 export const readEncryptedAgentCredentials = (
   headers: Headers
 ): EncryptedAgentCredentials | undefined => {
@@ -52,12 +35,8 @@ export const readEncryptedAgentCredentials = (
 };
 
 /**
- * Decrypts the ciphertext carried across the workflow boundary.
- *
- * A key that fails to decrypt is almost always one encrypted under a rotated `AI_AUTH_PUBLIC_KEY`,
- * so it is reported as something the operator can fix rather than as an internal error. Silently
- * dropping it would be worse: the turn would fall through to "provider not registered" and the
- * operator would be told their model does not exist.
+ * A decrypt failure is usually a rotated `AI_AUTH_PUBLIC_KEY`; report it instead of dropping,
+ * or the turn looks like an unregistered provider.
  */
 export const decryptAgentCredentials = (
   encrypted: EncryptedAgentCredentials | undefined

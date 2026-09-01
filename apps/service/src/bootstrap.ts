@@ -7,10 +7,6 @@ import { getCORSAllowedOrigin } from "./utils/cors.util";
 
 const corsOrigin = getCORSAllowedOrigin();
 
-/**
- * Applies the shared service middleware with this app's env. The middleware itself
- * lives in `@chia/service-kit` so every service app boots identically.
- */
 const bootstrap = <
   TSchema extends Schema,
   TApp extends Hono<HonoContext, TSchema>,

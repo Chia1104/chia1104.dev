@@ -7,15 +7,11 @@ import * as dbMocks from "./__mocks__/db.mock";
 import { setCallerTier } from "./__mocks__/guards.mock";
 
 /**
- * Who may reach an agent kind is the kind's `minTier`, enforced by the agent guards rather than
- * by a role pinned on the routes. The writing kind admits only the configured admin, so these
- * assert that a lower tier is refused at the guard — before any session lookup or model load.
+ * Kind `minTier` is enforced at the guard, before session lookup or model load.
+ * Writing admits only the configured admin.
  */
 
-/**
- * The public kind is open to every session-bearing tier, so a kind-less `list` now reaches the
- * repository for it; stub that one read so the test stays about access, not rows.
- */
+/** Stub the list read so a kind-less `list` stays about access, not rows. */
 vi.mock("@chia/db/repos/agent", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@chia/db/repos/agent")>()),
   getAgentSessions: vi.fn().mockResolvedValue([]),
@@ -62,7 +58,7 @@ describe("agent kind access", () => {
   it("admits a guest to the agent surface but not to the writing kind", async () => {
     setCallerTier(CallerTier.Guest);
 
-    // A guest has a user to own sessions, so the floor lets them in: an empty list, not 401.
+    // Guests own sessions, so list is 200 with an empty list.
     const list = await rpc("sessions/list");
     expect(list.status).toBe(200);
 
@@ -112,7 +108,7 @@ describe("agent kind access", () => {
     await expect(res.json()).resolves.toEqual({
       json: { items: [], nextCursor: null },
     });
-    // A signed-in visitor may use the public kind and nothing else, so that is the only read.
+    // A signed-in visitor may use public only, so that is the only repository read.
     expect(
       vi.mocked(getAgentSessions).mock.calls.map(([, input]) => input)
     ).toEqual([expect.objectContaining({ kind: "public" })]);

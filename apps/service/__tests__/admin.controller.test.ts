@@ -12,10 +12,7 @@ const rpc = (procedure: string, input: unknown = {}) =>
     body: JSON.stringify({ json: input }),
   });
 
-/**
- * The feed writes are split across two tiers: the content pipeline drives the upserts with
- * the project API key, while destructive operations need the operator's own session.
- */
+/** Upserts use the project API key; deletes need the operator session. */
 describe("feeds writes require the right tier", () => {
   beforeEach(() => {
     guardMocks.resetAllGuardMocks();
@@ -114,8 +111,7 @@ describe("feeds writes require the right tier", () => {
 
   it("validates the related-feeds output against the contract", async () => {
     guardMocks.setCallerTier(CallerTier.ApiKey);
-    // Faithful to what `getRelatedFeeds` selects — the procedure validates its output,
-    // so a partial row is not accepted.
+    // Procedure validates output, so the fixture must be the full `getRelatedFeeds` shape.
     dbMocks.getRelatedFeeds.mockResolvedValue([
       {
         id: 2,

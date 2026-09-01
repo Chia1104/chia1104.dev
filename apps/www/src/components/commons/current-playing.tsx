@@ -89,14 +89,12 @@ const useProgressTracking = (
 ) => {
   const [, setProgress] = useProgressContext();
 
-  // 同步初始進度
   useEffect(() => {
     if (!isFetching && isSuccess && isPlaying) {
       setProgress(progressMs);
     }
   }, [isPlaying, isFetching, isSuccess, progressMs, setProgress]);
 
-  // 更新進度條
   useEffect(() => {
     if (!isPlaying) return;
 

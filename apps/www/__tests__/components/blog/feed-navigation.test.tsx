@@ -11,12 +11,11 @@ import type { RouterOutputs } from "@/libs/orpc/types";
 
 import { renderWithProviders } from "../../utils";
 
-// 使用 vi.hoisted 確保 mock 函數在正確的時機創建
+// vi.hoisted so the mock exists before `vi.mock`.
 const { mockPush } = vi.hoisted(() => ({
   mockPush: vi.fn(),
 }));
 
-// Mock the router
 vi.mock("@/libs/i18n/routing", () => ({
   useRouter: () => ({
     push: mockPush,
@@ -28,8 +27,7 @@ import FeedNavigation from "@/components/blog/feed-navigation";
 type FeedsList = RouterOutputs["feeds"]["list"];
 
 /**
- * React.use 會讀取 promise.status / promise.value；
- * 預先標記為 fulfilled，避免測試中不必要的 Suspense。
+ * Pre-mark fulfilled so `React.use` skips Suspense.
  */
 const createFeedsPromise = (
   items: FeedsList["items"] = []
@@ -145,7 +143,6 @@ describe("FeedNavigation Component", () => {
   it("應該在沒有 feeds 時顯示無內容訊息", async () => {
     await renderFeedNavigation(FeedType.Post, createFeedsPromise([]));
 
-    // 需要點擊觸發器才能看到內容
     const trigger = screen.getByRole("button");
     expect(trigger).toBeInTheDocument();
   });
@@ -153,8 +150,6 @@ describe("FeedNavigation Component", () => {
   it("應該渲染 feeds 列表", async () => {
     await renderFeedNavigation(FeedType.Post, createFeedsPromise(mockFeeds));
 
-    // Feeds 會在 NavigationMenuContent 中渲染
-    // 由於導航菜單的特性，內容可能需要互動才會顯示
     const trigger = screen.getByRole("button");
     expect(trigger).toBeInTheDocument();
   });
@@ -189,7 +184,6 @@ describe("FeedNavigation Component", () => {
   it("應該為 Post 類型的第一個項目使用特殊樣式", async () => {
     await renderFeedNavigation(FeedType.Post, createFeedsPromise(mockFeeds));
 
-    // 觸發器應該存在
     const trigger = screen.getByRole("button");
     expect(trigger).toBeInTheDocument();
   });

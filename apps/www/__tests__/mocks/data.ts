@@ -1,8 +1,5 @@
 import type { FeedType, Locale } from "@chia/db/types";
 
-/**
- * Mock Feed 資料
- */
 export const mockFeed = {
   id: "test-feed-1",
   slug: "test-post-slug",
@@ -34,9 +31,6 @@ export const mockFeeds = [
   },
 ];
 
-/**
- * Mock Email 資料
- */
 export const mockEmail = {
   email: "test@example.com",
   title: "測試郵件標題",
@@ -44,16 +38,10 @@ export const mockEmail = {
   captchaToken: "test-captcha-token",
 };
 
-/**
- * Mock Contact 表單資料
- */
 export const mockContact = {
   ...mockEmail,
 };
 
-/**
- * Mock Spotify 資料
- */
 export const mockSpotifyTrack = {
   id: "track-123",
   name: "Test Song",
@@ -67,9 +55,6 @@ export const mockSpotifyTrack = {
   },
 };
 
-/**
- * Mock GitHub Repository 資料
- */
 export const mockGitHubRepo = {
   id: 123456,
   name: "test-repo",

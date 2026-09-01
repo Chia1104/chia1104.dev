@@ -20,9 +20,7 @@ vi.mock("../src/services/spotify.service", () => ({
     `http://localhost:3001/settings/spotify?spotify=${status}`,
 }));
 
-// The playback reads live in `@chia/api/spotify/playback`, behind the oRPC procedures.
-// `playing` is public; `playlist` sits behind the project API key, because only
-// `apps/www`'s server-side client reads it.
+// `playlist` requires the project API key; only `apps/www`'s server client reads it.
 vi.mock("@chia/api/spotify/playback", () => ({
   getSpotifyNowPlayingService: mocks.getSpotifyNowPlayingService,
   getSpotifyPlaylistService: mocks.getSpotifyPlaylistService,

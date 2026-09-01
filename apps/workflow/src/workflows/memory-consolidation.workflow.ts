@@ -9,9 +9,8 @@ export const memoryConsolidationRequestSchema = z.object({
 });
 
 /**
- * Reflection over one writing session, started after a turn that committed a post or by
- * hand from the dashboard. One step; runs as a workflow so it survives the process that
- * started it and leaves a run the dashboard can look up.
+ * One step, as a workflow so it survives the process that started it and leaves a run
+ * the dashboard can look up.
  */
 export const memoryConsolidationWorkflow = async (
   request: z.input<typeof memoryConsolidationRequestSchema>

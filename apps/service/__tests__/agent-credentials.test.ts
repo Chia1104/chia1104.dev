@@ -3,11 +3,8 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { encodeApiKey, generateKeys } from "@chia/ai/utils";
 
 /**
- * The bring-your-own-key round trip.
- *
- * Worth pinning on its own because both halves fail quietly. A cookie that is read but never
- * decrypted leaves the turn on the house account; a decrypt failure that is swallowed surfaces
- * downstream as "unknown model", which sends the operator looking in entirely the wrong place.
+ * Both halves fail quietly. Unread decrypt leaves the house account; a swallowed decrypt
+ * looks like "unknown model".
  */
 
 const { keys } = vi.hoisted(() => ({ keys: { public: "", private: "" } }));
@@ -50,10 +47,7 @@ describe("readEncryptedAgentCredentials", () => {
     expect(credentials).toEqual({ openai, anthropic });
   });
 
-  /**
-   * Bring-your-own-key is optional here — a session on the house gateway account needs none — so a
-   * request with no cookies is a normal state rather than a rejection.
-   */
+  /** BYOK is optional; a house-gateway session needs no cookies. */
   it("returns undefined when the caller registered nothing", () => {
     expect(readEncryptedAgentCredentials(new Headers())).toBeUndefined();
   });
@@ -94,10 +88,7 @@ describe("decryptAgentCredentials", () => {
     expect(decryptAgentCredentials(undefined)).toEqual({});
   });
 
-  /**
-   * Almost always a key encrypted under a rotated keypair. Reported as something the operator can
-   * fix, rather than dropped — dropping it would surface as the model not existing.
-   */
+  /** Usually a rotated keypair; dropping it would look like the model does not exist. */
   it("reports an undecryptable key against its provider", () => {
     expect(() =>
       decryptAgentCredentials({ openai: "not-actually-ciphertext" })

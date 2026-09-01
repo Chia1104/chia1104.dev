@@ -24,11 +24,7 @@ import { OverriddenChip, formatDate, useInvalidateAgentAdmin } from "./shared";
 
 type QuotaAdmin = RouterOutputs["agent"]["admin"]["quota"]["get"];
 
-/**
- * Edited as effective values and written as an override only where they differ from the code
- * default, the way the task card treats its parameters — so typing the default back in
- * restores it.
- */
+/** Writes null for any field that still matches the code default. */
 const quotaFormSchema = z.object({
   weeklyLimitUsd: z.number().min(0).max(10_000),
   resetTimeZone: z.string().min(1).max(100),

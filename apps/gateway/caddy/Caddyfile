@@ -1,21 +1,18 @@
 {
-    admin off # theres no need for the admin api in railway's environment
-	persist_config off # storage isn't persistent anyway
-	auto_https off # railway handles https for us, this could in some cases cause issues if left enabled
-	# runtime logs
+    admin off # Railway has no use for the admin API
+	persist_config off # Railway storage is not persistent
+	auto_https off # Railway already terminates HTTPS
 	log {
-		format json # set runtime log format to json mode 
+		format json
 	}
-	# server options
 	servers {
-		trusted_proxies static private_ranges # trust railway's proxy
+		trusted_proxies static private_ranges # Railway's proxy
 	}
 }
 
 :{$PORT} {
-    # access logs
 	log {
-		format json # set access log format to json mode
+		format json
 	}
     
     request_body {

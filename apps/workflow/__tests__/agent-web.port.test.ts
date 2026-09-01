@@ -23,10 +23,9 @@ import { SdkError } from "firecrawl";
 import { createAgentWebPort } from "../src/services/agent-web.port";
 
 /**
- * The port is the only place Firecrawl's request and response shapes are known. These pin the
- * mapping the tools rely on: recency → `tbs`, no `scrapeOptions` on search (cost), hits reduced
- * to `{ url, title, description }` whichever shape the SDK returns, and a scrape reduced to
- * `{ url, title, text }`.
+ * The port is the only place Firecrawl's request and response shapes are known. These pin
+ * recency → `tbs`, no `scrapeOptions` on search (cost), hits reduced to `{ url, title, description }`,
+ * and a scrape reduced to `{ url, title, text }`.
  */
 
 describe("createAgentWebPort.search", () => {

@@ -12,9 +12,7 @@ const { mockQueryFn, mockQueryOptions } = vi.hoisted(() => {
   const queryFn = vi.fn();
   return {
     mockQueryFn: queryFn,
-    // Stands in for oRPC's tanstack-query util: it returns the `queryKey` / `queryFn`
-    // pair that react-query consumes, so the hook is exercised through the real
-    // react-query machinery.
+    // Fake oRPC queryOptions so the hook still runs through react-query.
     mockQueryOptions: vi.fn(
       ({ input }: { input: { keyword: string; locale: string } }) => ({
         queryKey: ["feeds", "search", input],

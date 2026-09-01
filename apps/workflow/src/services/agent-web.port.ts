@@ -13,11 +13,8 @@ import { untilAborted } from "@chia/utils/request/abort";
 import { env } from "../env";
 
 /**
- * {@link WebPort} implementation on Firecrawl: `search` for discovery, `scrape` to read a page.
- *
- * Search returns snippets only — no `scrapeOptions` — so a call costs a fixed two credits per
- * ten results and the model reads a page only when it decides to via `fetch_url`, which is one
- * scrape per page (plus per-page cost for PDFs).
+ * Search returns snippets only (no `scrapeOptions`): two credits per ten results.
+ * The model reads a page via `fetch_url`.
  */
 
 const REQUEST_TIMEOUT_MS = 30_000;
@@ -38,10 +35,7 @@ const toModelError = (operation: string, error: SdkError): Error =>
     `${operation} failed${error.status ? ` (HTTP ${error.status})` : ""}.`
   );
 
-/**
- * A `web` hit is `SearchResultWeb` unless scraping was requested, in which case it is a
- * `Document`. This port never scrapes on search, but the SDK type is the union.
- */
+/** A `web` hit is `SearchResultWeb` unless scraping was requested (`Document`). This port never scrapes on search. */
 const toSearchResult = (
   hit: SearchResultWeb | Document
 ): WebSearchResult | undefined => {

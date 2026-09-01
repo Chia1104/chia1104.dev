@@ -3,8 +3,7 @@ const { mockVerify, mockSendContactEmail } = vi.hoisted(() => ({
   mockSendContactEmail: vi.fn(),
 }));
 
-// Deliberately NOT mocking `@chia/api/orpc/guards/captcha.guard` — this test is about the
-// guard actually running. Only the provider round trip and the delivery are stubbed.
+// The captcha guard must run; only the provider round trip and delivery are stubbed.
 vi.unmock("@chia/api/orpc/guards/captcha.guard");
 
 vi.mock("@chia/api/captcha", () => ({

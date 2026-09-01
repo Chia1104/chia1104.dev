@@ -4,12 +4,8 @@ import { Service } from "@chia/utils/schema";
 import { HonoRPCError } from "./error";
 
 /**
- * Minimal typed fetch wrapper for the endpoints that stay on Hono — the AI routes, which
- * stream their responses and set cookies and so are not application procedures.
- *
- * Deliberately not `hc<AppRPC>`: that binds the caller's types to the whole server's
- * route composition, so the types break the moment those routes move to their own
- * service. The request/response types here come from `@chia/ai`'s own schemas instead.
+ * Typed fetch for Hono endpoints that stay off oRPC (AI routes stream and set cookies).
+ * Not `hc<AppRPC>`: that binds types to the whole server's route tree. Request/response types come from `@chia/ai`.
  */
 const endpoint = (path: string) =>
   withServiceEndpoint(path, Service.LegacyService, {

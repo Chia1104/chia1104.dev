@@ -157,16 +157,6 @@ const useLinkPreview = (
   });
 };
 
-/**
- * PreviewLink 元件 - 提供連結預覽功能的懸浮卡片
- *
- * @example
- * ```tsx
- * <PreviewLink href="https://example.com">
- *   查看連結
- * </PreviewLink>
- * ```
- */
 const PreviewLink = ({
   queryOptions,
   previewContent,

@@ -45,7 +45,6 @@ const AppPlugins = () => {
   const cursorEnabled = useSettingsStore((s) => s.cursorEnabled);
   return (
     <>
-      {/* <ThemeVarsSync /> */}
       <Toaster />
       {cursorEnabled && (
         <Cursor

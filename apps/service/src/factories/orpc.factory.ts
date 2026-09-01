@@ -8,7 +8,7 @@ import { workflowControl } from "../repos/workflow-control.repo";
 import { memoryHooks } from "../services/agent-memory-indexing.service";
 import { feedHooks } from "../services/feed-indexing.service";
 
-/** The values the guards read from this app's env. Built once; the same on every request. */
+/** Guard config from env; built once and reused on every request. */
 const config: ORPCConfig = {
   rateLimit: {
     windowMs: env.RATELIMIT_WINDOW_MS,
@@ -18,10 +18,6 @@ const config: ORPCConfig = {
   aiAuthPrivateKey: env.AI_AUTH_PRIVATE_KEY,
 };
 
-/**
- * Wraps a handler invocation with the error reporting the oRPC handler applies to every
- * procedure.
- */
 export const withErrorReporting = async <T>(
   context: Pick<BaseOSContext, "hooks">,
   next: () => Promise<T>
@@ -35,15 +31,7 @@ export const withErrorReporting = async <T>(
   }
 };
 
-/**
- * Builds the oRPC handler context from a Hono context.
- *
- * `BaseOSContext` extends `ServiceContext`, which is exactly the Hono `Variables` —
- * hence the spread rather than a field-by-field mapping. Everything after the spread is
- * what this process supplies on top: its env-derived config, the client for `apps/workflow`
- * (the routes start and reconcile runs with it directly), the indexing hooks the write
- * paths fire, and the host-bound agent factory.
- */
+/** Spreads Hono `Variables` because they are `ServiceContext`; then adds this process's bindings. */
 export const createORPCContext = (c: Context<HonoContext>): BaseOSContext => ({
   ...c.var,
   config,

@@ -5,7 +5,7 @@ import type { Locale } from "next-intl";
 import { NextIntlClientProvider } from "next-intl";
 
 /**
- * 測試用的 QueryClient 配置，關閉重試和快取以加快測試速度
+ * QueryClient with retry and gcTime off so tests don't wait.
  */
 export const createTestQueryClient = () =>
   new QueryClient({
@@ -20,9 +20,6 @@ export const createTestQueryClient = () =>
     },
   });
 
-/**
- * 提供 QueryClient 和 NextIntl 的測試渲染函數
- */
 export const renderWithProviders = (
   ui: React.ReactElement,
   {
@@ -48,15 +45,9 @@ export const renderWithProviders = (
   };
 };
 
-/**
- * 測試用的延遲函數
- */
 export const delay = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-/**
- * 等待直到條件為真
- */
 export const waitUntil = async (
   condition: () => boolean,
   timeout = 3000,

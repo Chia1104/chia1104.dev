@@ -147,7 +147,6 @@ describe("Contact Form Integration", () => {
       };
 
       const result = contactSchema.safeParse(data);
-      // Email 驗證應該處理合理長度
       expect(result.success).toBeDefined();
     });
   });
@@ -159,8 +158,8 @@ describe("Contact Form Integration", () => {
         title: "測試標題",
         message: "測試訊息內容",
         captchaToken: "token",
-        admin: true, // 額外欄位
-        userId: 123, // 額外欄位
+        admin: true,
+        userId: 123,
       };
 
       const result = contactSchema.safeParse(dataWithExtraFields);
@@ -178,7 +177,6 @@ describe("Contact Form Integration", () => {
           captchaToken: "token",
         };
 
-        // 移除一個必要欄位
         delete data[
           /* SAFETY: This fixture implements the keyof typeof data members exercised by this case. */ field as keyof typeof data
         ];

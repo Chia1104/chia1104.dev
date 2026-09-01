@@ -1,13 +1,6 @@
 import type { Mock } from "vitest";
 
-/**
- * Stand-ins for the `workflow/api` reads the service host adapter makes.
- *
- * The real module builds the SDK World on first use, and the Postgres World opens a
- * `LISTEN` connection the moment it is created — with no database behind the tests that
- * surfaces as an unhandled rejection. Nothing here touches a World: a run never exists, a
- * hook is never registered, and a stream is empty.
- */
+/** Real `workflow/api` opens a World LISTEN on first use; with no database that becomes an unhandled rejection. */
 
 const emptyReadable = () =>
   Object.assign(new ReadableStream<never>({ start: (c) => c.close() }), {

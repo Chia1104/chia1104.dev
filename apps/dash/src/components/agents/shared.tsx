@@ -12,11 +12,6 @@ import { providerLabelOf } from "@chia/agent-elements/provider-icons";
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
-/**
- * Pieces both the kind and the task cards share: the model select with its "code default"
- * row, the override chip, and the invalidation every write ends with.
- */
-
 export type AgentModelInfo =
   RouterOutputs["agent"]["admin"]["tasks"]["models"][number];
 /** Mirrors the contract's `agentModelRefSchema`; the form schemas compose it. */
@@ -50,11 +45,7 @@ export interface ModelSelectProps {
 /** Providers the house account serves first; the rest follow alphabetically. */
 const PROVIDER_ORDER = ["vercel-ai-gateway", "anthropic", "openai"];
 
-/**
- * The agent elements' model picker with a "Default" row on top: a pair, or `null` for the
- * code default. Models a caller-supplied key would be needed for are listed but disabled, so
- * the operator sees the option exists and why it is not available.
- */
+/** "Default" is `null` (code default). Models that need a caller key are listed but disabled. */
 export const ModelSelect = ({
   defaultLabel,
   isDisabled,

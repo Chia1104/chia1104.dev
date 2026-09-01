@@ -84,8 +84,7 @@ export const ContactForm = ({
         if (error instanceof Error) {
           onError?.(error);
         }
-        // The captcha code travels in the error payload's issues, which is the shape
-        // `AppError` serialises to on both the REST and RPC surfaces.
+        // Captcha codes live in AppError `issues` on both REST and RPC.
         if (error instanceof ORPCError) {
           const issues =
             /* SAFETY: The producer contract guarantees this value satisfies the asserted interface. */ error.data as

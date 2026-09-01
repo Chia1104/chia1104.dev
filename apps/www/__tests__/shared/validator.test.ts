@@ -97,7 +97,7 @@ describe("Validator", () => {
         title: "Test Title",
         message: "This is a test message",
         captchaToken: "test-token-123",
-        extraField: "should not be here", // 額外欄位
+        extraField: "should not be here",
       };
 
       expect(() => contactSchema.parse(invalidContact)).toThrow();

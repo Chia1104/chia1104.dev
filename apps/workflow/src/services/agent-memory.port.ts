@@ -25,15 +25,9 @@ import { AppError } from "@chia/service-kit/errors";
 import { memoryHooks } from "./agent-memory-indexing.service";
 
 /**
- * {@link MemoryPort} implementation.
- *
- * Writes go through `memories/write.ts` so the index run is never skipped; search goes
- * through `searchResources` with the memory type named and unpublished rows requested —
- * the two flags a caller must set together to see a memory at all, since every memory
- * chunk is indexed `published: false`.
- *
- * Takes a `DB` and the session id rather than a request: it is built inside the turn step,
- * and the session is the provenance every write records.
+ * Writes go through `memories/write.ts` so the index run is never skipped. Search uses
+ * `searchResources` with the memory type and unpublished rows, both required, since memory
+ * chunks are indexed `published: false`. Built with a `DB` and session id (provenance), not a request.
  */
 
 /** A chunk is up to ~512 tokens; a hit only needs enough to orient. */
@@ -53,7 +47,7 @@ const summaryOf = (row: AgentMemory): MemorySummary => ({
 
 export interface CreateAgentMemoryPortOptions {
   db: DB;
-  /** Recorded on every write as where the memory came from. */
+  /** Provenance on every write. */
   sessionId: string;
 }
 
@@ -114,7 +108,7 @@ export const createAgentMemoryPort = (
       });
       if (items.length === 0) return [];
 
-      // the adapter's summary carries title and URL only; kind lives on the row
+      // The adapter's summary carries title and URL only; kind lives on the row.
       const rows = await getAgentMemories(
         db,
         items.map((item) => item.sourceId)

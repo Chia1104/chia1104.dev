@@ -35,7 +35,6 @@ interface NormalisedHit {
 const stripHighlight = (value: string | null | undefined) =>
   value?.replaceAll(/<\/?b>/g, "") ?? "";
 
-/** All modes return the same row shape, so this is one mapping. */
 const normaliseHits = (
   result: ReturnType<typeof useSearchFeeds>["data"]
 ): NormalisedHit[] =>
@@ -53,9 +52,8 @@ const SearchForm = ({ isOpen, onOpenChange }: SearchFormProps) => {
   const [model, setModel] = useState<"hybrid" | "bm25" | "semantic">("hybrid");
 
   /**
-   * `hybrid` is the default: a document-level vector alone under-recalls exact
-   * terms (package names, CLI flags, error messages), which is what BM25 is
-   * there to catch. The other two isolate one half for comparison.
+   * `hybrid` is the default: a document-level vector alone under-recalls exact terms
+   * (package names, CLI flags, error messages), which is what BM25 catches.
    */
   const supportedModels = ["hybrid", "bm25", "semantic"] as const;
 

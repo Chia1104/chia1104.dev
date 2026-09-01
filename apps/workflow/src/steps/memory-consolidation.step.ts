@@ -18,24 +18,16 @@ const EXISTING_LESSONS_MAX = 100;
 
 export interface MemoryConsolidationResult {
   status: "extracted" | "nothing" | "unavailable";
-  /** Ids of the pending lessons written. */
   created: number[];
 }
 
 /**
- * Reads one session's transcript and writes what the operator taught the agent as
- * `pending` lessons.
- *
- * Reads only: no session lock, no `Agent`. The branch is walked from the raw entries so
- * compaction cannot hide the operator's earlier corrections, and only their messages and
- * the assistant's prose reach the model — never a tool result.
- *
- * A model failure is "nothing", not an error: a lesson is a gain, and a step that retried
- * until it produced one would eventually insert the same lessons twice.
- *
- * The runtime is imported at first use rather than at module scope, as in `agent-turn.step.ts`:
- * this step is registered at boot for every process that hosts the workflow, and the runtime
- * carries the provider stack.
+ * Writes what the operator taught this session as `pending` lessons.
+ * Walks raw entries so compaction cannot hide earlier corrections; only operator messages
+ * and assistant prose reach the model.
+ * A model failure is `nothing`, not an error: retrying would insert the same lessons twice.
+ * Runtime is imported at first use: this step is registered at boot and the runtime carries
+ * the provider stack.
  */
 export const consolidateSessionMemoryStep = async (request: {
   sessionId: string;
@@ -72,10 +64,8 @@ export const consolidateSessionMemoryStep = async (request: {
   ]);
 
   /**
-   * The `writing.lessons` task: the house gateway's cheap model unless the operator pinned
-   * another — never the session's own, which may be BYOK, and a reflection is not the
-   * operator's bill. Resolved before the transcript is read so an unavailable model costs
-   * nothing.
+   * `writing.lessons` task: house cheap model, never the session's (may be BYOK).
+   * Resolved before the transcript so an unavailable model costs nothing.
    */
   let task: Awaited<ReturnType<typeof resolveAgentTask>>;
   try {
@@ -148,7 +138,6 @@ export const consolidateSessionMemoryStep = async (request: {
 };
 
 /**
- * A retry after a partial write would insert the same lessons again, and a model failure is
- * already a normal `nothing`; there is no failure left that a retry would fix.
+ * A retry after a partial write would insert the same lessons again.
  */
 consolidateSessionMemoryStep.maxRetries = 0;

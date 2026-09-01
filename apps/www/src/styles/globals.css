@@ -94,7 +94,7 @@ body {
 }
 
 .recaptcha-style > * {
-  /*remove borders*/
+  /* Clip reCAPTCHA iframe borders. */
   margin: -2px -2px -10px;
 }
 

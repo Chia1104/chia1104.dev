@@ -17,7 +17,6 @@ import EditView from "./edit-view";
 
 type Feed = NonNullable<RouterOutputs["feeds"]["details-by-id"]>;
 
-/** Maps the wire shape onto what the form edits. */
 const toDefaultValues = (feed: Feed) => ({
   type: feed.type,
   slug: feed.slug,
@@ -36,7 +35,7 @@ const toDefaultValues = (feed: Feed) => ({
         excerpt: translation.excerpt ?? null,
         summary: translation.summary ?? null,
         readTime: translation.readTime ?? null,
-        // the body is flat on the translation now; the form still groups it
+        // the body is flat on the translation; the form still groups it
         content: {
           content: translation.content ?? null,
           source: translation.source ?? null,
@@ -53,12 +52,7 @@ const toDefaultValues = (feed: Feed) => ({
   ),
 });
 
-/**
- * Loads a feed for editing and mounts the form once it is here.
- *
- * The edit view is reached for drafts and for feeds in the trash — it renders both
- * states — so it opts out of the published, non-deleted default.
- */
+/** Reached for drafts and trash too, so it opts out of the published, non-deleted default. */
 export const EditFeed = ({ feedId }: { feedId: number }) => {
   const { data: feed, isLoading } = useQuery(
     orpc.feeds["details-by-id"].queryOptions({

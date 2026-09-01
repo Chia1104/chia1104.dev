@@ -11,10 +11,6 @@ import routes from "@/shared/routes";
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 
-// export async function generateSitemaps() {
-//   return [{ id: 0 }]
-// }
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getBaseUrl({
     isServer: true,
