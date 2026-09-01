@@ -197,7 +197,20 @@
     "loadFailed": "The assistant could not start.",
     "retry": "Try again",
     "usage": "{percent}% of this week's free allowance used",
-    "usageReset": "resets {time}"
+    "usageReset": "resets {time}",
+    "comingSoon": {
+      "badge": "Coming soon",
+      "title": "The blog assistant is almost ready",
+      "description": "Here is what it will do for you.",
+      "features": {
+        "search": "Search the published posts by topic or exact phrase",
+        "read": "Read a post before answering and link you to the section",
+        "profile": "Answer questions about my experience and the projects I have worked on",
+        "feedback": "Take your questions or corrections on a post and pass them on to me",
+        "language": "Reply in whatever language you write in"
+      },
+      "note": "Check back soon."
+    }
   },
   "settings": {
     "title": "Settings",

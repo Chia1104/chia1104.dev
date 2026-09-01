@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { Button, Spinner } from "@heroui/react";
+import { ORPCError } from "@orpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -20,12 +21,17 @@ import { client, orpc } from "@/libs/orpc/client";
 import { Locale } from "@/libs/utils/i18n";
 import { useSettingsStore } from "@/stores/settings/store";
 
+import { ComingSoon } from "./coming-soon";
 import { UsageMeter } from "./usage-meter";
 import { useGuestSession } from "./use-guest-session";
 
 const PUBLIC_AGENT_KIND = "public";
 
 const agentLabelsOf = (locale: string) => (locale === Locale.EN ? enUS : zhTW);
+
+/** A signed-in visitor the kind's `minTier` still refuses: the public agent is not open yet. */
+const isGated = (error: Error | null): boolean =>
+  error instanceof ORPCError && error.code === "FORBIDDEN";
 
 const Centered = ({ children }: { children: React.ReactNode }) => (
   <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
@@ -173,6 +179,10 @@ const PublicChatSessions = () => {
     if (sessionsQuery.isError) void sessionsQuery.refetch();
     else createMutation.mutate({ kind: PUBLIC_AGENT_KIND });
   };
+
+  if (isGated(sessionsQuery.error) || isGated(createMutation.error)) {
+    return <ComingSoon />;
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

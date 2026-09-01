@@ -197,7 +197,20 @@
     "loadFailed": "助理無法啟動。",
     "retry": "再試一次",
     "usage": "本週免費額度已使用 {percent}%",
-    "usageReset": "{time} 重置"
+    "usageReset": "{time} 重置",
+    "comingSoon": {
+      "badge": "即將開放",
+      "title": "部落格助理快準備好了",
+      "description": "以下是它將能為你做的事。",
+      "features": {
+        "search": "依主題或關鍵字搜尋已發佈的文章",
+        "read": "先讀過文章再回答，並附上段落連結",
+        "profile": "回答關於我的經歷與參與過的專案",
+        "feedback": "把你對文章的疑問或修正建議轉達給我",
+        "language": "用你提問的語言回覆"
+      },
+      "note": "敬請期待。"
+    }
   },
   "settings": {
     "title": "設定",
