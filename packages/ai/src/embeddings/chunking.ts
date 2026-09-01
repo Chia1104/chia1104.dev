@@ -125,8 +125,10 @@ const splitOversized = (
  * headings are precisely the words a body rarely repeats. The full ancestor
  * path rather than the leaf, so "參數" arrives as "HNSW 調校 > 參數".
  */
-const withHeadingPrefix = (headingPath: string | null, text: string): string =>
-  headingPath ? `${headingPath}\n\n${text}` : text;
+const withHeadingPrefix = (
+  headingMarkdownPath: string | null,
+  text: string
+): string => (headingMarkdownPath ? `${headingMarkdownPath}\n\n${text}` : text);
 
 /**
  * Headings at or above this level start a new pack group.
@@ -196,14 +198,14 @@ export const chunkMarkdown = async (params: {
       flush();
     }
 
-    const text = withHeadingPrefix(section.headingPath, section.text);
+    const text = withHeadingPrefix(section.headingMarkdownPath, section.text);
     const sectionTokens = countEmbeddingTokens(text, encoding);
 
     if (sectionTokens > targetTokens) {
       flush();
       // every piece repeats the prefix — each becomes its own chunk and must
       // carry the heading context itself — so the split budget pays for it
-      const prefixTokens = section.headingPath
+      const prefixTokens = section.headingMarkdownPath
         ? sectionTokens - countEmbeddingTokens(section.text, encoding)
         : 0;
       for (const piece of splitOversized(
@@ -213,7 +215,7 @@ export const chunkMarkdown = async (params: {
       )) {
         buffer.push({
           headingPath: section.headingPath,
-          text: withHeadingPrefix(section.headingPath, piece),
+          text: withHeadingPrefix(section.headingMarkdownPath, piece),
         });
         flush();
       }

@@ -1,4 +1,4 @@
-import { stripMdx } from "../src/embeddings/markdown";
+import { cleanMdxKeepStructure, stripMdx } from "../src/embeddings/markdown";
 
 const CONTENT = `
 # Heading 1 - Foo
@@ -49,5 +49,115 @@ describe("stripMdx", () => {
     );
     // fenced code must not reach the topic vector
     expect(result).not.toContain("console.log");
+  });
+});
+
+describe("cleanMdxKeepStructure", () => {
+  it("does not expose HTML tags assembled by cleanup", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    try {
+      await expect(
+        cleanMdxKeepStructure("<scr<script>ipt>alert(1)</scr</script>ipt>")
+      ).resolves.toBe("\\<script>alert(1)\\</script>");
+      await expect(
+        cleanMdxKeepStructure(
+          "<scr[ip](https://example.com)t>alert(1)</scr[ip](https://example.com)t>"
+        )
+      ).resolves.toBe("\\<script>alert(1)\\</script>");
+      await expect(
+        cleanMdxKeepStructure("![<script>](https://example.com/image.png)")
+      ).resolves.toBe("\\<script>");
+      await expect(
+        cleanMdxKeepStructure(
+          "<!-- comment -->\n\n<div>alpha<br>beta</div>\n\n<broken<"
+        )
+      ).resolves.toBe("alpha\nbeta\\<broken<");
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("keeps literal HTML examples inside code", async () => {
+    const source = [
+      "`<script>inline example</script>`",
+      "",
+      "```html",
+      "<script>block example</script>",
+      "```",
+      "",
+      "````md",
+      "before",
+      "```",
+      "<script>nested fence example</script>",
+      "````",
+    ].join("\n");
+
+    await expect(cleanMdxKeepStructure(source)).resolves.toBe(source);
+  });
+
+  it("bounds long code blocks and removes fence metadata", async () => {
+    const source = [
+      '```ts title="ignored"',
+      ...Array.from({ length: 30 }, (_, index) => `line ${index}`),
+      "```",
+    ].join("\n");
+
+    await expect(cleanMdxKeepStructure(source)).resolves.toBe(
+      [
+        "```ts",
+        ...Array.from({ length: 12 }, (_, index) => `line ${index}`),
+        "…",
+        "```",
+      ].join("\n")
+    );
+  });
+
+  it("normalizes MDX and GFM to canonical markdown", async () => {
+    const source = [
+      'import Banner from "./banner"',
+      "",
+      "# Heading",
+      "",
+      "<Banner>",
+      "Hello {name} **world**",
+      "</Banner>",
+      "",
+      "- [x] done",
+      "- [ ] pending",
+      "",
+      "[link label][docs]",
+      "",
+      "![image alt](https://example.com/image.png)",
+      "",
+      "~~deleted~~",
+      "",
+      "| A | B |",
+      "| - | - |",
+      "| x | y |",
+      "",
+      "[docs]: https://example.com/docs",
+    ].join("\n");
+
+    await expect(cleanMdxKeepStructure(source)).resolves.toBe(
+      [
+        "# Heading",
+        "",
+        "Hello  **world**",
+        "",
+        "- [x] done",
+        "- [ ] pending",
+        "",
+        "link label",
+        "",
+        "image alt",
+        "",
+        "~~deleted~~",
+        "",
+        "| A | B |",
+        "| - | - |",
+        "| x | y |",
+      ].join("\n")
+    );
   });
 });

@@ -156,12 +156,15 @@ kind + index 相同        → 改寫 row，刪除舊向量
 ```text
 MDX
   → 清除 import/export、expression 與 JSX 外殼，保留文字結構和受限 code block
+  → 序列化成 canonical GFM；raw HTML 轉成可見文字，tag-shaped text 會被 escape
   → 依 top-level heading 切 section 並追蹤 heading path
   → 將 heading path 寫入每個 chunk 的 content 第一行
   → 在同一 H1/H2 group 內打包小段落
   → 依段落、句末標點，再依 token budget 切分超長內容
   → 移除少於 8 token 的成品
 ```
+
+Normalization 刻意保留語義而非原始 bytes：list marker、emphasis、空白與 code fence 都可能被重寫。Citation 繼續使用純文字 heading path；任何重新插入 chunk Markdown 的 heading text 則會另外序列化，避免成為 raw HTML。
 
 H1/H2 是穩定的 group 邊界。打包不能跨 group，否則文件前方的編輯會改變後續所有 chunk 組成與 hash。
 

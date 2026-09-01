@@ -156,12 +156,15 @@ The implementation lives in `packages/ai/src/embeddings/chunking.ts`. The sectio
 ```text
 MDX
   → remove imports, exports, expressions and JSX wrappers; keep text structure and bounded code blocks
+  → serialize canonical GFM; convert raw HTML to visible text and escape tag-shaped text
   → split on top-level headings while tracking heading paths
   → write the heading path into the first line of each chunk's content
   → pack small sections within the same H1/H2 group
   → split oversized content by paragraph, sentence boundary, then token budget
   → discard results under 8 tokens
 ```
+
+Normalization is intentionally semantic rather than byte-preserving: list markers, emphasis, whitespace and code fences may be rewritten. Plain heading paths remain available for citations, while any heading text interpolated back into chunk Markdown is serialized separately so it cannot become raw HTML.
 
 H1 and H2 headings are stable group boundaries. Packing cannot cross a group; otherwise an edit near the start of a document would change the composition and hash of every later chunk.
 

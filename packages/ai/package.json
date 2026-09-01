@@ -86,6 +86,8 @@
     "@google/genai": "catalog:ai",
     "ai": "catalog:ai",
     "github-slugger": "^2.0.0",
+    "hast-util-from-html": "catalog:",
+    "hast-util-to-text": "catalog:",
     "js-tiktoken": "^1.0.21",
     "mdast-util-to-string": "catalog:",
     "next": "catalog:next",
@@ -94,6 +96,7 @@
     "remark-gfm": "catalog:",
     "remark-mdx": "catalog:",
     "remark-parse": "catalog:",
+    "remark-stringify": "catalog:",
     "unified": "catalog:",
     "unist-util-visit": "catalog:",
     "zod": "catalog:"
