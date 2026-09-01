@@ -1,473 +1,221 @@
-# Agent Architecture & Turn Flow
+# Agent architecture and turn flow
 
 > Status: as-built
-> Last updated: 2026-08-30
+>
+> Last updated: 2026-09-01
+>
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
-> Related: [docs/rag-architecture.md](./rag-architecture.md)
+>
+> Related: [RAG architecture](./rag-architecture.md), [workflow deployment](./workflow-deployment.md)
 
-The agent stack is Pi-first. Pi's `Agent` is the execution engine — the provider loop, tool
-execution, hooks and model APIs — and `@chia/agent-runtime` owns everything durable around it: the
-session tree, its projection into the model's context, compaction, navigation and forks. There is
-no engine-neutral contract or adapter layer. Two agent kinds ship: `writing`, the dashboard's
-blog authoring assistant, and `public`, the reading assistant visitors talk to on the site.
+This document starts with the system boundaries, then follows one turn through durability, approvals, streaming and maintenance.
 
-## 1. Layers
+## 1. System overview
 
-| Layer        | Package / app                               | Owns                                                                                                                      |
-| ------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Pi execution | `@chia/agent-runtime`                       | Pi turn lifecycle, session persistence, models/providers, approval hook, bounded wire events and client transport mapping |
-| Shared tools | `@chia/agent-content`                       | Read-only content tools every reading kind composes, their `ContentReadPort`, names, labels and summaries                 |
-| Domain       | `@chia/agent-writing`                       | Writing tools, prompts, skills, model allowlist, policy, draft staging and domain ports                                   |
-| Domain       | `@chia/agent-public`                        | The public reader: prompt, policy, turn budget and cheap model allowlist over the shared content tools                    |
-| Host         | `apps/service`, `packages/api`, `apps/dash` | DB/KV/credentials, durable workflow and streams, oRPC service port, auth and UI                                           |
+The stack is Pi-first. Pi's `Agent` runs provider and tool loops; `@chia/agent-runtime` adds the durable session tree, context projection, compaction, navigation and client event contract. There is no engine-neutral adapter.
+
+Two agent kinds ship:
+
+- `writing`: the dashboard's authoring agent, restricted to the configured operator.
+- `public`: the public site's reading agent, available to guest sessions.
 
 ```mermaid
 flowchart TB
-    dash["apps/dash<br/>agent workspace"] --> api["packages/api<br/>oRPC contracts · AgentKindService"]
-    api --> service["apps/service<br/>durable workflow · host wiring"]
-    service --> writing["@chia/agent-writing<br/>runWritingTurn · tools · prompts · policy"]
-    service --> public["@chia/agent-public<br/>runPublicTurn · prompt · policy · budget"]
-    writing --> content["@chia/agent-content<br/>search_posts · get_post · list_posts · list_tags"]
-    public --> content
-    writing --> runtime["@chia/agent-runtime<br/>runPiTurn · session · events · models"]
-    public --> runtime
-    content --> runtime
-    runtime --> pi["Pi Agent"]
-    runtime --> pg[("Postgres agent schema")]
+    UI[apps/dash or apps/www] --> API[packages/api<br/>oRPC agent service]
+    API --> SVC[apps/service<br/>auth, session API, host bindings]
+    SVC --> WF[apps/workflow<br/>durable turn executor]
+    WF --> KIND[agent-writing or agent-public]
+    KIND --> CONTENT[agent-content<br/>shared read tools]
+    KIND --> RUNTIME[agent-runtime<br/>Pi lifecycle, session, wire events]
+    RUNTIME --> PI[Pi Agent]
+    RUNTIME --> PG[(Postgres agent schema)]
 ```
 
-`@chia/agent-runtime` is deliberately modular, but those modules are not provider-neutral
-facades. Names such as `runPiTurn`, `createPiWireEventMapper` and `createPiToolCallGate` state the
-real dependency directly. The stable boundary is the bounded `AgentWireEvent` contract sent to
-clients, not an interchangeable engine API.
+| Layer                       | Owner                                           | Responsibility                                               |
+| --------------------------- | ----------------------------------------------- | ------------------------------------------------------------ |
+| Transport and orchestration | `packages/api`, `apps/service`, `apps/workflow` | Auth, oRPC, workflow control, streams and host ports         |
+| Execution                   | `@chia/agent-runtime`                           | Pi lifecycle, persistence, approvals, models and wire events |
+| Shared content              | `@chia/agent-content`                           | Read-only blog tools and `ContentReadPort`                   |
+| Domain                      | `@chia/agent-writing`, `@chia/agent-public`     | Prompts, tools, policy, model allowlist and domain ports     |
+| Client                      | `@chia/agent-elements`                          | Session store, queries and shared chat UI                    |
 
-## 2. Agent kind and host service
+The stable client boundary is `AgentWireEvent`, not an interchangeable model engine. Pi-specific names and types remain explicit inside the runtime.
 
-`agent.session.kind` is a domain discriminator (`writing`, `public`), not a harness discriminator. It
-selects:
+## 2. Agent kinds and host boundaries
 
-- the `AgentKindDefinition` registered in each process's `agents/factory.ts` — a binding map in
-  service, an explicit switch in workflow; service uses it to create the oRPC kind service, and
-  workflow uses its execution-bound sibling;
-- the kind-specific extension row, such as `agent.writing_session`, behind `definition.state`.
+`agent.session.kind` is the persisted domain discriminator. Session requests resolve it from the database; client input may only confirm it. A caller cannot run an existing session through another kind's tools.
 
-Session-scoped requests resolve kind from the persisted session. Client input can only cross-check
-it, so a caller cannot drive a writing session through another kind's tools.
+Each host provides an `AgentKindDefinition`:
 
-`packages/api/orpc/services/agent.factory.ts` defines the typed construction environment, following
-Hono's factory shape: the host declares its per-kind bindings (`AgentKindEntry` — an eager `minTier`
-and a dynamic definition loader) and credential handling once; the factory creates stateless kind,
-admin and usage services from them. No service delegate or definition cache is kept — dynamic
-imports already cache the modules. `BaseOSContext` carries this single `agentFactory`, alongside DB
-and workflow control.
+- `apps/service/src/agents/` binds API-time capabilities, state and credentials.
+- `apps/workflow/src/agents/` binds execution-time ports and `runTurn`.
+- `packages/api/orpc/services/agent/` owns generic session, run, approval, maintenance, usage and admin behavior.
 
-The generic service and its business logic live in `packages/api/orpc/services/agent/`: session rows,
-durable runs, prompt/attach/stream, abort, approvals, compaction, rewind, usage and operator
-configuration. `apps/service` supplies only host bindings. The turn step resolves its execution-bound
-definition through `apps/workflow/src/agents/factory.ts`. A kind is one file in
-`apps/service/src/agents/` (`writing.ts`, `public.ts`) that binds its domain package to the host's ports and
-supplies only what differs: `minTier`, `label`/`description`, defaults, replay policy, the model
-allowlist (`assert`/`list`/`resolve`), its operator `config` schema, capabilities, its 1:1
-`state` row (`create`/`load`/`summary`/`detail`) and `runTurn`. Compaction and rewind are not
-the kind's: the generic service runs Pi's own operations with a model the compaction task
-resolves (§8). The binding restates `minTier` eagerly (the loader asserts the two agree), so the
-guards refuse a caller below the floor before the definition — and the domain package and provider
-SDKs behind it — is ever loaded; dynamic imports keep all of that off the non-agent boot path.
+The oRPC context receives an `agentFactory` built from eager `minTier` values and dynamic definition loaders. Guards can reject callers before loading a domain package or provider SDK. Dynamic imports provide module caching; the factory keeps no definition registry or service cache.
 
-`AgentKindService` is the shape every kind shares and never grows for one kind. A procedure only
-one kind has gets its own contract namespace (`agent.<kind>.*`), its own port interface in
-`packages/api`, and its implementation beside that kind's definition — it does not go on the
-shared port or through the generic delegate. Today there is none: the writing draft rides on the
-session detail (`state.detail`), which is all the dashboard reads.
+`AgentKindService` contains only behavior shared by every kind. A future kind-specific procedure gets its own `agent.<kind>.*` contract and port rather than widening the generic service.
 
-### Who may use a kind
+### Access model
 
-Access is a property of the kind, not of the routes. Every agent route runs `callerGuard()`, which
-only resolves the caller's `CallerTier`; the agent guards (`agentKindGuard` for creation and
-capability listings, `agentSessionGuard` for session-scoped requests) then compare that tier with
-the kind's registered `minTier`. Any tier below `Guest` is refused first — a session row has
-an owner, so an anonymous or API-key caller has no one to be. `list` with no kind returns only the
-kinds the caller may use.
+Every agent route resolves a `CallerTier`. Kind and session guards compare that tier with the persisted kind's `minTier` and verify ownership.
 
-The service receives an `AgentServiceCaller`: the resolved `Caller` (tier, session, configured
-`adminId`) plus `userId`. Nothing agent-generic carries an admin identity — the writing kind sets
-`minTier: Root`, which is what makes its caller _be_ the configured author, and reads
-`getAdminId()` itself where its content port needs it. The public kind sets `minTier: Guest`
-and never sees an admin id: its content port is built for the configured author's _published_
-posts, which is whose blog it is, not who is asking.
+| Kind      | Minimum tier | Content visibility                               | Mutable domain state |
+| --------- | ------------ | ------------------------------------------------ | -------------------- |
+| `writing` | `Root`       | Configured author's drafts and published content | Drafts and memory    |
+| `public`  | `Guest`      | Configured author's published content only       | None                 |
 
-### The public kind
+The generic layer does not carry an admin identity. The writing binding reads the configured author when its content port needs it; the public binding never receives that identity or a write-capable port.
 
-`@chia/agent-public` is the reading assistant on the public site, bound in
-`packages/agent-host/src/public.ts`. It is the writing kind with everything that costs or
-changes anything taken away:
+The public kind has only the shared content-read tools, no approval tier, web access, memory or draft. House usage is restricted to a small cheap-model allowlist; native BYOK providers may remain open because the visitor pays for them. Its per-turn budget limits tool calls, repeats and duration.
 
-- **Tools** are exactly `@chia/agent-content`'s four read tools over a `public`-visibility port
-  (§10). One tier, `read`; nothing needs approval; no `WebPort`, no memory, no draft.
-- **Models**: the gateway side is a closed list of cheap ids (`HOUSE_PUBLIC_MODEL_IDS` —
-  `claude-haiku-4.5`, `gpt-5-mini`, `gpt-5-nano`), not a vendor prefix, because the point is
-  to keep a visitor off the vendor's flagship. Native OpenAI and Anthropic are open: a visitor
-  who registered their own key pays for the call, and the quota does not count it (§3).
-- **Budget** (`publicTurnBudget`): 6 tool calls soft, 10 hard, 2 repeats, two minutes. The
-  quota (§3) bounds the week; this bounds the turn the quota may overrun by.
-- **State**: none. `state.load` answers `{}` so the session stays visible; a public session is
-  its transcript. Forks copy nothing.
-- **Config**: `instructions`, like writing — a persona and house rules, appended to the stable
-  system prompt.
+## 3. Durable state and session tree
 
-The turn step and the generic service need nothing kind-specific: the quota and running-turn
-cap apply because the caller is below `Root`, the title task runs on its house model, and
-compaction follows the session's own cheap model.
+The transcript is a tree. `agent.session_entry.parentId` links a branch and `agent.session.leafEntryId` selects the active leaf. `seq` records persistence order across all branches and is safe because each session has one writer at a time.
 
-### Guests
-
-A visitor who has not signed in can still own sessions: better-auth's `anonymous()` plugin
-(`@chia/auth/server`) mints a real user row, marked `user.isAnonymous`, when the client calls
-`signIn.anonymous()`. `callerPolicy` grades that session as `CallerTier.Guest` — above
-`Anonymous` because there is someone to own things and meter, below `ApiKey` because nothing
-else is proven. `sessionPolicy` alone still refuses a guest, so every `authGuard` route means a
-signed-in person as before; only `callerPolicy` opts in (`allowAnonymous`). When a guest later
-signs in, the plugin's `onLinkAccount` runs `transferAgentOwnership` before the guest row is
-deleted: their sessions, approvals and ledger rows move to the account, so signing in never
-resets a quota.
-
-`agent.usage.me` (`agentUsageStandingSchema`) is the caller's own standing for any
-session-bearing tier: allowance, spend, the current week, running turns and the cap — `null`
-limits for the operator — through the usage service created by `agentFactory`, which delegates to
-`readAgentUsageStanding` in `@chia/agent-host/quota`.
-
-## 3. Policy, sessions and data
-
-### Tool policy
-
-`AgentPolicy` supplies `tierOf`, `labelOf`, `requiresApproval`, `changesState`, `summarize` and an
-optional state scope. Tiers remain strings because each domain owns its own vocabulary. Writing
-uses:
-
-| Tier     | Meaning                          | Approval | `state:changed` |
-| -------- | -------------------------------- | -------- | --------------- |
-| `read`   | Reads and outbound fetches       | no       | no              |
-| `draft`  | Reversible staging-buffer writes | no       | yes             |
-| `commit` | Writes live feed/content data    | yes      | yes             |
-
-Unknown writing tools fall back to the most restrictive tier.
-
-### Session tree and tables
-
-The transcript is a tree. `agent.session_entry.parentId` points to the previous entry on a branch,
-and `agent.session.leafEntryId` selects the active leaf. `PgSessionStorage` implements the
-runtime's `SessionTree` contract (`packages/agent-runtime/src/session/tree.ts`) over these tables,
-enabling rewind and alternate branches; `InMemorySessionTree` is the same contract for tests.
+`PgSessionStorage` implements the runtime's `SessionTree`; tests use `InMemorySessionTree`. Pi session entries are stored as opaque JSON, and retired entry types are ignored rather than migrated. Kind-specific state uses extension tables instead of nullable columns on the shared session row.
 
 ```text
-agent.session                  generic settings, kind and active leaf
-agent.session_entry            session-tree nodes (`SessionEntry`); `seq` is persistence order, all branches
-agent.run                      durable execution metadata; one active run per session
-agent.tool_approval            durable approval request and audit trail
-agent.writing_session          writing-specific 1:1 state
-agent.writing_draft            per-locale staging buffer
-agent.memory                   long-term memory across sessions (§10); indexed into `resource_chunk`
-agent.kind_config              operator overrides of a kind's defaults and config (§13)
-agent.task_config              operator overrides of a task's model, prompt and parameters (§13)
-agent.usage_ledger             one row per provider call made for a user; survives the session
-agent.quota_config             operator override of the weekly allowance and its zone (§3, §13)
+agent.session            kind, settings and active leaf
+agent.session_entry      transcript tree nodes
+agent.run                durable run and turn marker
+agent.tool_approval      approval state and audit trail
+agent.writing_session    writing-specific state
+agent.writing_draft      locale-specific staging buffer
+agent.memory             cross-session memory
+agent.kind_config        operator kind overrides
+agent.task_config        operator task overrides
+agent.usage_ledger       provider-call cost ledger
+agent.quota_config       quota and running-turn limits
 ```
 
-Entry payloads are opaque JSON. The `SessionEntry` union in `session/entries.ts` mirrors Pi's
-entry shapes, so Pi's own context projection reads them directly (`buildBranchContext` in
-`session/context.ts`) and rows of retired entry types are ignored rather than migrated. Two orders
-live on the tree: `parentId` is the conversation, `seq` is the order entries were persisted in
-across every branch. `appendEntry` returns the entry with the `seq` it landed on, and "everything
-persisted before this point" is `seq <= n` whichever branch is active — which is what the turn
-marker (§6) records. `seq` is a table-wide serial taken at insert, sound only because a session
-has one writer at a time: one active run, and acceptance and maintenance serialised on the
-session lock (§8). The
-projection is a pure function of the branch: a turn's provider request is the previous projection
-plus the entries it appended, which is what keeps the provider's cached prefix valid from turn to
-turn. Kind-specific state uses extension tables instead of widening the shared session table.
+Server-side conversational state is durable. The client derives its view from server detail and wire events:
 
-### Usage ledger
-
-Every provider call made on a user's behalf lands one row in `agent.usage_ledger`: the turn's
-replies, auto and manual compaction, branch summaries, the session title and lesson extraction —
-whoever paid for it. `provider_id` says whose bill it was (the house gateway, or a BYOK key), so a
-quota that only counts house spend is a filter, not a second ledger. The row carries pi's own
-`usage` (input, output, cache read/write, reasoning) and its `cost.total` as integer
-micro-dollars: metering is by cost, never by raw tokens, because a cached read costs a tenth of
-an uncached one and a long conversation re-sends its whole transcript every turn.
-
-The numbers are not read back from `session_entry`, although every assistant message carries
-them there: entries cascade with their session, so a user who deleted a session would erase what
-they spent; the payload is opaque and indexed per session, not per user and period; and a side
-job has no entry at all. The ledger row keeps `session_id` as `set null` and is attributed to
-the session's owner, which is also who an anonymous visitor becomes once they have a user row.
-
-The runtime reports, the host writes. `runPiTurn`, `compactSession` and `navigatePiSession`
-take an `AgentUsageListener` (`@chia/agent-runtime/types`) and call it with the model that
-answered, its usage and the entry id — after that entry has landed, so a row never precedes
-what it accounts for; `completeText` and `generateSessionTitle` report what they were billed
-whatever they replied, since an aborted stream is still charged. Every host path binds the
-listener to `recordAgentUsage` (`@chia/agent-host/usage`): the turn step (turn, its
-auto-compaction, the title), the generic service's maintenance operations (manual compaction,
-branch summary — on the session lock's transaction) and the lesson step. The write is never on
-the critical path: a call the provider did not bill is not a row, and a failed insert is logged
-and dropped, bounding the loss to one call in the user's favour.
-
-### Usage quota
-
-The quota is a property of the caller's tier, read from the ledger. `Root` — the operator, who
-pays the bill — is never limited; every other tier draws on one shared weekly allowance of
-**house** spend: `sumAgentUsageCost` over the week, filtered to the gateway provider, so a
-BYOK call is recorded but is the user's own bill. `@chia/agent-host/quota` owns it:
-`AGENT_QUOTA_DEFAULTS` is $0.30 a week in the server's own zone; the operator's
-`agent.quota_config` row overrides either from the dashboard (`agent.admin.quota.*`, §13);
-`weekPeriod` is Monday 00:00 to Monday 00:00 in that zone, using zoned calendar boundaries so a DST week
-is 167 or 169 hours rather than a wrong day; and `assertWithinAgentQuota` throws
-`QUOTA_EXCEEDED` (402, `{ limitMicros, usedMicros, resetAt, timeZone }`) once the week's spend
-has reached the limit.
-
-It is checked where a model call is accepted and nowhere else: `prompt` and `approve` (a
-decision starts a relay turn), `compact` once the branch has something to condense (a no-op
-answers `CONFLICT` without needing quota), and `navigate` with `summarize` — each under the
-session lock, before anything is queued or persisted, so a refused approval stays pending for
-when the week turns over. The limit is soft: a call is accepted while anything remains, so the
-last one may overrun by at most one turn, which the kind's turn budget bounds. A limit of `0`
-closes the agent to every limited tier.
-
-Beside the allowance, a **running-turn cap** (`maxRunningTurns`, default 3, same row) bounds
-what one limited caller can put on the single-replica runner at once: `prompt` and `approve`
-count the user's active runs whose turn marker is `running` (`countRunningAgentTurns`) and
-refuse with `TOO_MANY_REQUESTS` (`{ runningTurns, maxRunningTurns }`) at the cap. The count
-is taken under the user's own advisory lock (`lockAgentUser`, always after the session lock,
-on the same transaction), so two prompts on two sessions cannot both pass on the same reading.
-A message queued behind a turn already running on its session adds no running turn.
-
-The marker alone is not truth: a process that dies under a step never clears it. Every reader
-therefore asks the World whether the run is alive (`runStateOf` in
-`packages/api/orpc/services/agent/run-liveness.ts`), and before the cap is counted —
-and before `usage.me` reports — `reconcileRunningAgentTurns` closes the user's marked rows
-whose run is gone (`failed`, controller released). The workflow itself closes its row in a
-`finally` (`completeAgentRunStep` with `failed` when a step threw), so a stale row can only
-be one the World has not yet given up on.
-
-### Session title
-
-`agent.session.title` is the operator's handle for a session: `null` until named, then either
-the operator's own name (`settings:update`) or one condensed from their first prompt. The turn
-step names an untitled session alongside its first operator turn (`titleSession` in
-`apps/workflow/src/steps/agent-turn.step.ts`): `generateSessionTitle` in
-`@chia/agent-runtime/pi/title` asks the `session.title` task's model (§13) — the house
-gateway's cheap model unless the operator pinned another, never the session's own, which may be
-BYOK — and falls back to the prompt's first line when the model fails, so a title always lands. Two invariants: the write is `setAgentSessionTitleIfUnset` (`WHERE title IS NULL`),
-so a rename made while the first turn runs wins over the generated title; and the turn's `run:end`
-is held back until the title settles (bounded by `SESSION_TITLE_TIMEOUT_MS`), so the client's
-turn-end refresh of the session list already sees it. Operator-decision relay turns never title.
+| State                                   | Storage                       |
+| --------------------------------------- | ----------------------------- |
+| Transcript and branches                 | Postgres session tree         |
+| Draft and memory                        | Postgres domain tables        |
+| Approvals and run metadata              | Postgres agent tables         |
+| Message inbox, pauses and event streams | Workflow backend              |
+| Client request state                    | TanStack Query                |
+| Client live turn state                  | One zustand store per session |
 
 ## 4. One turn
 
 ```mermaid
 sequenceDiagram
-    participant UI as apps/dash
-    participant RPC as oRPC
-    participant SVC as createAgentKindService(writing)
+    participant UI as Client
+    participant API as oRPC agent service
+    participant SVC as apps/service
     participant WF as agentSessionWorkflow
     participant STEP as runAgentTurnStep
-    participant WR as runWritingTurn
-    participant PI as runPiTurn / Agent
+    participant RT as runPiTurn
     participant PG as Postgres
 
-    UI->>RPC: agent.sessions.chat (prompt)
-    RPC->>SVC: prompt(caller, input)
-    alt active durable run
+    UI->>API: prompt
+    API->>SVC: validate caller, session and quota
+    alt active workflow
         SVC->>WF: resume message hook
-    else no active run
-        SVC->>WF: start workflow
+    else no active workflow
         SVC->>PG: create agent.run
+        SVC->>WF: start workflow
     end
-    SVC-->>RPC: runId + stream cursor
-    RPC->>SVC: stream(caller, cursor)
-    WF->>STEP: execute turn step
-    STEP->>WR: runWritingTurn(options)
-    WR->>PI: runPiTurn(concrete Pi inputs)
-    PI->>PI: new Agent(...).prompt(...)
-    PI-->>UI: bounded durable AgentWireEvent stream
-    PI->>PG: session entries and domain writes
-    STEP-->>WF: done / aborted / error / awaiting_approval
+    SVC-->>UI: run id and stream cursor
+    WF->>STEP: execute queued turn
+    STEP->>RT: kind.runTurn
+    RT->>PG: append session entries
+    RT-->>UI: durable AgentWireEvents
+    STEP-->>WF: done, aborted, error or awaiting approval
 ```
 
-### Enqueue and durable driver
+### Durable driver
 
-The oRPC route resolves the caller's tier, then the session guard checks ownership and the kind's
-`minTier`. The host service persists a message into the live workflow's event log through its
-reusable message hook, or starts a new run. The workflow registers that inbox with `getConflict()` before its first turn, so
-messages submitted during a running turn wait durably and become later turns after the current turn
-and any approval handshake finish. Enqueue is refused while approval is undecided, while a new
-workflow has not registered its hook yet, or when the text is the reserved `/end` sentinel.
+Each session workflow owns one deterministic `agentMessageHook`. `getConflict()` registers it before the first turn and prevents two active workflows from owning the same session inbox. Resumed hook payloads are durable workflow events consumed in order.
 
-One durable workflow run drives up to 200 turns. The workflow itself runs in a sandboxed VM; DB,
-provider, timers and network work stay inside steps, and only plain data crosses the boundary. This
-allows turns, approval waits and stream replay to survive process restarts.
+A message submitted during a running turn waits for the current turn and approval handshake to finish. Enqueue is refused while approval is undecided, while a new workflow has not registered its hook, or for the reserved `/end` sentinel.
 
-`runAgentTurnStep` has `maxRetries = 0`. A whole turn is not replay-safe after it may have appended
-session entries or performed approved writes. Provider retry belongs inside Pi. A failed turn emits
-an error, keeps its partial transcript, and is retried only by a new operator message.
+One workflow may drive up to 200 turns. Workflow functions handle orchestration only; database, provider, timer and network operations stay inside steps. `runAgentTurnStep` has `maxRetries = 0` because a turn may already have appended entries or performed an approved side effect. Provider retries stay inside Pi; retrying a failed turn requires a new user message.
 
-The session API lives in `apps/service`; the workflow, its steps and the turn executor live in
-`apps/workflow`. Starts, hook resumes and cancellations cross the authenticated `WorkflowControl`
-contract to the single workflow process; run-state and durable-stream reads use the shared World
-storage directly. `apps/workflow` stays single-replica because the installed Postgres World adapter
-only deduplicates delivery in process. See `docs/workflow-deployment.md`.
+Starts, hook resumes and cancellations cross the authenticated `WorkflowControl` contract from `service` to the single workflow process. Status and stream reads use the shared World storage. See [workflow deployment](./workflow-deployment.md).
 
-### Concrete execution path
+### Runtime lifecycle
 
-There is one production path:
+The production path is:
 
 ```text
-runAgentTurnStep → runWritingTurn → runPiTurn → new Agent
+runAgentTurnStep → kind.runTurn → runPiTurn → new Agent
 ```
 
-`runWritingTurn` creates the writing tool context, resolves a model from the caller's credential-
-bearing `Models`, and supplies tools, templates, the stable system prompt, the volatile turn
-context and the writing policy.
+`runPiTurn`:
 
-`runPiTurn` owns the complete lifecycle:
+1. Projects the active branch into model messages and resolves the caller-scoped model.
+2. Installs the turn budget, approval gate, volatile context, state-change hook, abort signal and event mapper.
+3. Persists each completed user, assistant and tool-result message before emitting its wire event.
+4. Runs Pi and classifies provider, host, abort and budget failures.
+5. Persists approval requests atomically after a successful provider turn.
+6. Auto-compacts only successful turns with no pending approval.
+7. Emits terminal events and flushes the durable writer.
 
-1. read the leaf and its branch, project the branch into messages (`buildBranchContext`), clamp
-   the thinking level to the resolved model, bind the tool context, and construct one `Agent` for
-   the turn — its stream function is the caller's own `Models`, never a process-wide default;
-2. install `beforeToolCall` composing the turn budget and the approval gate (budget first — a call
-   the budget refuses must never raise an approval), `transformContext` appending the volatile
-   block, `afterToolCall` for state-change notices, the host abort signal, the turn deadline, and
-   Pi-to-wire event mapping;
-3. subscribe once: every `message_end` — user prompt, assistant reply, tool result — is appended to
-   the tree under the turn's cursor _before_ its wire event is emitted, so a client never sees a
-   message the tree lost;
-4. emit `run:start` and the user event, then `prompt` with the operator's text or the expanded
-   template;
-5. read the last assistant message: `stopReason: "error"` is a classified provider failure,
-   `"aborted"` ends the turn as aborted; a thrown error, or a host failure a hook recorded, is
-   `internal`;
-6. after a successful provider turn, atomically persist all approval snapshots and then emit their
-   `approval:request` events;
-7. auto-compact only after a successful turn with no pending approvals (`compactSessionIfNeeded`),
-   announcing `session:compacted`;
-8. emit the terminal error/end events, unsubscribe, then flush the durable writer.
-
-### Turn budget
-
-Pi's loop has no step limit: it runs while the assistant message carries tool calls, so a model
-that re-issues the same call would run until the operator aborts. Every kind therefore passes an
-`AgentTurnBudget` (`writingTurnBudget` in `@chia/agent-writing/policy`) and `createPiTurnBudget`
-(`packages/agent-runtime/src/pi/turn-budget.ts`) enforces it in `beforeToolCall`, ahead of the
-approval gate:
-
-| Limit              | Crossing it                                                                                                                                                                       |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `maxRepeats`       | the same tool with identical arguments that many times in a row — refused with a tool error telling the model the result will not change                                          |
-| `maxToolCalls`     | every further call refused with a tool error asking the model to answer from what it has                                                                                          |
-| `hardMaxToolCalls` | the model called through the refusals — the run is aborted and the turn ends `error{budget_exhausted}`                                                                            |
-| `maxDurationMs`    | wall-clock for the model's generation — same abort and error; cleared once the reply resolves, so the host work after it (approval persistence, compaction) is never failed by it |
-
-Refusals speak to the model through the tool result, the channel the approval gate already uses,
-so a model that complies finishes the turn normally. The two aborts go through the same host-failure
-path as a failed volatile-context read: the failure is recorded, the run aborted, and the turn
-ends as that error rather than as `aborted`. Per-user and per-session quotas are not here — they
-belong at enqueue time, in the kind service, reading the usage ledger (§3).
+Host hook failures are recorded as internal errors and abort the turn. The model must never continue without required host state such as volatile context.
 
 ### Prompt layering
 
-The system prompt is stable for a session — rules, skills index, approval posture — because it
-heads every provider request and a changed prefix invalidates the cached system prompt, tool
-schemas and transcript behind it. Everything that changes turn to turn (draft state, the clock,
-the memories this session has saved) is the **volatile context**: appended as the last user message of each provider request through
-Pi's `context` hook, never persisted, so it is always current and never accumulates in the
-transcript. Anything the model must see fresh belongs there, not in the system prompt.
+The system prompt contains stable rules, skill indexes and approval posture. Turn-specific data such as the clock, draft state and saved memories enters through Pi's context hook as a final volatile user message. It is recomputed for every provider request and never persisted.
 
-### Abort
+This keeps the provider's cached prefix stable and prevents changing context from accumulating in the transcript.
 
-Nothing in the workflow SDK reaches a step already executing — cancelling the run only stops it
-from being scheduled again — so a stop travels through a second, tiny durable run: the session
-run's **abort controller** (`apps/workflow/src/workflows/agent-abort.workflow.ts`). `prompt` starts
-it before the session run and passes its `{ id, runId }` in the session run's request (and into
-`agent.run.metadata`); it parks on `agentAbortHook` and, when resumed, writes one message to its
-own stream. Each turn step subscribes to that stream by run id — no lookup, so there is exactly one
-controller per session run — hands the resulting `AbortSignal` to `runPiTurn`, and releases the
-subscription when the turn ends. `abort` resumes the hook first, then cancels the session run and
-marks the `agent.run` row `cancelled`; `completeAgentRunStep` resumes it too, so a finished run does
-not leave a controller parked until its TTL. Firing the signal aborts the run at once, mid-generation included: Pi cancels the
-in-flight provider stream, the partial reply is persisted as `aborted`, and the turn ends with
-`run:end{aborted}`; no approvals are persisted and no compaction runs. A tool already executing
-only receives the signal — Pi waits for it to return — so `abort` tails the turn's own durable
-stream from the marker's `streamIndex` until `run:end` (bounded by `ABORT_SETTLE_TIMEOUT_MS`)
-before cancelling the run: the client rebuilds the transcript the moment `abort` returns, and
-every entry is appended before its wire event, so `run:end` means the stopped turn has landed
-whole. Delivery is the SDK's own
-durable stream, so it works from any process — no registry, no timer, no second channel. The next
-prompt starts a fresh session run over the persisted transcript. An expired controller (TTL) never
-aborts a turn; readers ignore `expired` and the next turn starts a new one.
+### Turn budget
 
-### Host failures inside Pi hooks
+Every kind supplies an `AgentTurnBudget` because Pi continues while the model emits tool calls.
 
-Pi folds a hook that throws into its own error surface — an error tool result for
-`beforeToolCall`, an assistant message with `stopReason: "error"` for `transformContext` — which
-would be classified like a provider failure. The hooks `runPiTurn` installs therefore catch their
-own errors, record them as a host failure and abort the run; the turn then fails as `internal`. A
-volatile-context read that fails ends the turn this way rather than letting the model act without
-seeing the current state.
+| Limit              | Result when crossed                                                   |
+| ------------------ | --------------------------------------------------------------------- |
+| `maxRepeats`       | Return a tool error for repeated identical calls.                     |
+| `maxToolCalls`     | Refuse later tools and ask the model to answer from existing results. |
+| `hardMaxToolCalls` | Abort with `budget_exhausted`.                                        |
+| `maxDurationMs`    | Abort provider generation when the deadline expires.                  |
 
-## 5. Approval handshake
+Budget checks run before approval checks, so a refused call cannot create an approval request.
 
-Pi's tool hook blocks a gated call with a tool error. That refusal is intentional: the turn ends in
-a consistent state instead of waiting on an in-memory promise that would be lost on deploy.
+## 5. Approval and abort
+
+### Durable approval handshake
+
+Approval never waits on an in-memory promise. A gated call ends the current turn and resumes through the workflow later.
 
 ```mermaid
 sequenceDiagram
     participant M as Model
-    participant G as createPiToolCallGate
-    participant R as runPiTurn
+    participant G as Tool gate
+    participant DB as Approval table
     participant WF as Workflow
-    participant OP as Operator
-    participant DB as agent.tool_approval
+    participant U as Operator
 
-    M->>G: commit tool call
-    G-->>R: emit approval:request at once
-    G-->>M: blocked; stop and await approval
-    R->>DB: atomically persist collected requests at turn end
-    R-->>WF: run:end{awaiting_approval}
-    WF->>WF: park on approval hook
-    OP->>DB: persist decision
-    OP->>WF: resume hook
-    WF->>R: relay turn (text from formatOperatorDecision, plus the decision)
-    R-->>OP: approval:resolved, then user{origin: operator-decision}
-    M->>G: re-issued call
-    G-->>M: allowed when pre-authorized
+    M->>G: gated tool call
+    G-->>M: blocked tool result
+    G->>DB: persist request at successful turn end
+    WF->>WF: wait on approval hook
+    U->>DB: persist decision
+    U->>WF: resume hook
+    WF->>M: operator-decision relay turn
+    M->>G: reissue call
+    G-->>M: allow pre-authorized tool
 ```
 
-A call is allowed when its tier needs no approval, its tier is session-auto-approved, its call id
-was durably approved, or its tool name is pre-authorized for this turn. The decision is stored
-before the workflow is resumed. Rejections also receive a follow-up turn so the agent can
-acknowledge the operator's comment.
+A call is allowed when its tier needs no approval, the session auto-approves that tier, the call ID was approved, or the tool is pre-authorized for the relay turn. Decisions are written before the hook resumes. Rejections also create a relay turn so the model can respond to the operator's comment.
 
-`approval:request` is announced the moment the gate refuses, so the client swaps the tool card for
-the approval card while the model is still writing its hand-back. Persistence still waits for the
-provider turn to succeed and writes the whole batch atomically, so a provider or persistence failure
-returns an `error` turn with no undecided approval rows and the workflow never waits for a hook it
-cannot resume. The client keeps the card locked until `run:end{awaiting_approval}` (or a reloaded
-pending row) — a decision sent before the row exists would have nothing to land on — and retracts
-announced-but-unpersisted cards on any other `run:end`.
+Requests are persisted as one batch only after the provider turn succeeds. A failed turn leaves no undecided rows and never parks the workflow on an unresolvable hook. Relay messages are marked as operator decisions so clients render them as notices rather than user-authored prompts.
 
-The relay turn is a real user message to the model — that is what makes it act — but the operator
-did not type it. `AgentTurnMessage.decision` marks it: the turn emits `approval:resolved` before
-`user`, and the `user` event carries `origin: "operator-decision"` so the client renders a notice
-rather than a user bubble. Replay cannot see the marker, so the text itself is recognisable
-(`wire/operator-decision.ts`), and the session detail lists every approval row — pending rows
-restore the prompt on reload, decided rows close their card the way the live stream did.
+The live stream may announce a request before persistence so the UI can render it promptly, but the card remains locked until `run:end{awaiting_approval}` or a reloaded pending row confirms it. Any other terminal state retracts the tentative request.
 
-## 6. Wire events and streaming
+### Abort path
 
-`packages/agent-runtime/src/pi/events.ts` is the live narrowing point. Raw Pi events may carry full
-model
-objects, repeated partial snapshots and unbounded details; clients receive only:
+Cancelling a workflow run does not interrupt a step already executing. Each session run therefore has a small durable abort-controller workflow parked on a hook. The turn step subscribes to its stream and passes the resulting `AbortSignal` to Pi and host ports.
+
+Abort resumes the controller, waits for the turn's `run:end` within a deadline, then cancels the session workflow and marks its run row. Partial assistant output is persisted as aborted; approvals and compaction do not run. A later prompt starts a new workflow over the existing transcript.
+
+## 6. Events, streaming and reconnect
+
+Clients receive a bounded event contract:
 
 ```text
 run:start · user · assistant:start · assistant:delta · assistant:end
@@ -476,380 +224,148 @@ approval:request · approval:resolved
 session:compacted · session:rewound · state:changed · error · run:end
 ```
 
-- A message's `messageId` is its session-entry id, live and replayed alike. `runPiTurn`
-  reserves the id when a message starts (the operator's prompt up front, before Pi has started
-  it) and appends the entry under that id, and `createPiWireEventMapper` asks the turn for it
-  — so the client can hand any message id back as a rewind or fork target, and a transcript
-  rebuilt after a reload names the same messages identically.
-- `entriesToWireEvents` rebuilds history from persisted Pi entries. A persisted assistant
-  message with `stopReason: "error"` replays as the same `error` event the live turn emitted;
-  a `branch_summary` entry replays as `session:rewound`, so a rewind that kept a summary stays
-  visible where it happened.
-- The transcript is the leaf's whole ancestry (`walkTranscript`), through every compaction: a
-  compaction condensed what the model is sent, not what was said, so the messages behind it
-  stay on screen and the `session:compacted` notice sits where it happened. Only the model's
-  context — `buildBranchContext`, `stats.contextTokens`, `stats.compactable` — reads the
-  branch (`walkBranch`), which stops at the newest compaction.
-- A tool call is only ever `running` between its `tool:start` and `tool:end`, and both sides
-  guarantee the end arrives. Pi persists a call's result right after the assistant message that
-  issued it, so replay closes any call whose result is not the next thing on the branch — a turn
-  stopped mid-execution, a process that died, a fork cut at the assistant message — with
-  `tool:end{aborted}`, and skips the calls of a message that ended `error` or `aborted`, which
-  Pi never executed and the live turn never showed. `run:end` closes whatever the live turn left
-  running the same way. `aborted` is its own status, not `isError`: the tool did not fail, it
-  never finished.
-- `error` carries only a `kind` (`auth · quota · rate_limited · context_overflow · budget_exhausted ·
-provider · internal`): the client picks a headline from it, and the provider's or host's own text
-  — with whatever threw — goes to the server log (`Agent turn failed`), never to the wire.
-- `tool:end.details` is clipped by `clipDetails` before it reaches the wire — long strings, arrays,
-  wide objects and deep nesting are shortened in place, shape preserved — because every coarse
-  event is a durable write that is replayed to every reconnecting client. The model reads the
-  tool's `content`, never this copy.
-- `applyEvent` / `foldEvents` give live and replayed events one client rendering path.
-- `agent.sessions.chat` is the only turn transport: it enqueues the prompt or approval decision
-  through the kind service, then tails the run's durable stream from the returned cursor and emits
-  the wire events as-is, ending at that turn's `run:end`. History arrives through
-  `agent.sessions.get` as the same wire events, so the client folds both with one reducer.
-- `@chia/agent-elements` is that client: a zustand store per session (`createAgentSessionStore`)
-  that folds live turns with `applyEvent` and owns prompt/approval streaming, over the host's
-  TanStack `QueryClient` for everything request/response (session detail, models, settings,
-  abort — `./queries`), plus the HeroUI elements (thread, composer, approval card, model picker,
-  session tabs, message actions) both frontends compose. It takes the contract-typed
-  `client.agent` and nothing app-specific.
+Key invariants:
 
-Each run has a coarse durable event stream and a separately batched delta namespace. A coarse event
-flushes queued deltas first. Readers race both streams so deltas remain interleaved with their
-coarse events. Streams close only when the durable run ends, not after each turn — so the two
-streams keep growing across turns, and each is indexed on its own. A turn's cursor therefore holds
-an index into both (`streamIndex`, `deltaStreamIndex` on the turn marker), captured as one past
-each tail when the turn is accepted; tailing the deltas from anywhere earlier would re-append
-text to messages the client already holds from the transcript.
+- `messageId` is the persisted session-entry ID in both live and replayed events.
+- History and live turns fold through the same `applyEvent` reducer.
+- Compaction changes model context, not visible history; transcript replay still walks the full leaf ancestry.
+- Every started tool receives a terminal event. Replay closes interrupted calls as aborted.
+- Wire errors expose only a classified kind; provider and host details stay in server logs.
+- `tool:end.details` is clipped before durable storage; the model reads the original tool content.
+
+Each run has a coarse event stream and a batched delta stream. Coarse events flush pending deltas first. A turn cursor records both stream positions so reconnecting does not append old deltas to a transcript already loaded from Postgres.
 
 ### Rejoining a running turn
 
-The chat is server-authoritative: on mount the session store hydrates from `agent.sessions.get`
-and, when `run.status` is `running`, rejoins the turn through `agent.sessions.chat` with
-`{ type: "attach" }`. A stream that ends with `run:end` only refreshes the session detail (the
-view it built is kept, and the marker below may lag the terminal event by a moment, so that read
-is retried briefly); a stream that breaks earlier rebuilds from `get` and re-attaches with backoff. The turn step maintains `agent.run.metadata.turn`
-— the newest entry `seq` before the turn (`seqBefore`), the first coarse stream index it writes,
-and `running`, set before the handler and cleared in its `finally`. The workflow SDK cannot supply that last bit: a
-run parked on its message hook is `running` to the SDK just like one executing a step, so
-`run.status`, `attach` and the compact/rewind guard all read the marker instead. `get` replays only
-entries with `seq <= seqBefore` while a turn is running, and `attach` tails the stream from that
-index; both key off the same marker, so a reload mid-turn shows every message exactly once and
-finishes the turn in place. A seq rather than the pre-turn leaf id: after a rewind the leaf is
-not the newest entry, and a cut by seq needs no guess about which branch the marker sits on. `prompt` and `approve` write the marker themselves when they
-accept a turn — on a fresh run as part of its lease (§8), on a parked run before waking the hook —
-so a turn counts as running from the moment it is accepted; the step rewrites the same values
-when it starts. A message queued behind a turn that is already running is the one case marked
-only when its own step begins.
+The server is authoritative. On mount, the client loads `agent.sessions.get`; if the session reports an active turn, it attaches through `agent.sessions.chat`.
 
-## 7. Durable message inbox
+`agent.run.metadata.turn` stores:
 
-Each session workflow creates one deterministic, reusable `agentMessageHook`. Before the first Pi
-step, the workflow awaits `getConflict()`. That registers the hook in the workflow backend and
-prevents two active runs from owning the same session inbox.
+- `seqBefore`: the newest persisted entry before the turn.
+- The first coarse and delta stream positions for the turn.
+- A `running` marker.
 
-When an active run receives a prompt, the service resumes this hook directly. Every payload becomes
-a durable `hook_received` event, so no Postgres pending table, Redis Pub/Sub, process-local queue or
-timer polling is needed. The workflow consumes one event at a time in event-log order and invokes
-`runAgentTurnStep` for it.
+While running, `get` replays only entries through `seqBefore` and `attach` supplies later events. This split prevents duplicates during refresh. The marker is maintained by acceptance and the turn step because the Workflow SDK reports hook-waiting and step-running workflows with the same status.
 
-The Pi agent still lives entirely inside one opaque step, so a queued message does not interrupt
-the turn currently generating. It becomes a normal new turn after the current turn and any approval
-handshake finish. This is the deliberate product semantic that lets the workflow event log be the
-only message queue.
+## 7. Compaction, navigation and forks
 
-## 8. Compaction and navigation
+Maintenance operates on the session tree without constructing an `Agent`.
 
-Maintenance operates on the session tree directly; no `Agent` is built:
+| Operation | Behavior                                                                                                                   |
+| --------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Compact   | Appends Pi's summary and retained tail as the new leaf. No-op branches are rejected without a model call.                  |
+| Navigate  | Moves the active leaf in place and may summarize the abandoned branch.                                                     |
+| Fork      | Copies a branch into a new session and preserves the source session. Kind state is copied through `definition.state.fork`. |
 
-- `compactPiSession` runs Pi's `prepareCompaction` and `compact` over the branch and appends the
-  compaction entry — summary, retained tail, usage — as the new leaf. It answers `null` without
-  calling the model when there is nothing to condense: Pi keeps the newest `keepRecentTokens`
-  whole, so a branch that fits inside that tail would be billed a summary and come out larger.
-  `canCompactBranch` is the same test on its own; the session detail reports it as
-  `stats.compactable`, and the service refuses a manual `compact` with `CONFLICT` when it is
-  false. A manual `compact` returns the whole detail rebuilt, as `navigate` does, since the
-  leaf, the context estimate and the transcript all changed;
-- `navigatePiSession` moves the leaf (to a user message's parent when the target is a user
-  message, so it can be re-asked), summarises the entries left behind into a `branch_summary`
-  under the new leaf with Pi's `generateBranchSummary` when asked, and records a label without
-  moving the leaf onto it;
-- forks (`PgSessionRepo.fork`) copy into a new session row: the whole tree with the source's leaf when
-  no target is given; otherwise the branch below the target, from the newest compaction down —
-  `at` includes the target, `before` (a user message only) stops at its parent so it can be re-asked.
-  The row records its lineage (`forkedFromSessionId`, `forkedFromEntryId`), which the session
-  list carries so the tabs can show where a branch came from;
-- the generic service calls both directly, with the model the `session.compaction` or
-  `session.branch-summary` task resolves (§13): by default the session's own, through the kind's
-  `models.resolve` and the caller's credential-bearing collection, or a house model the operator
-  pinned — in which case the session's model, and any BYOK key it needs, is never touched.
+Navigate, fork and manual compaction are refused while a turn runs or approval is pending. They serialize with prompt and approval acceptance through one per-session Postgres advisory lock. A new `agent.run` row is created before the workflow starts, so maintenance sees the lease immediately.
 
-No tools, prompts, approvals or subscriptions are constructed for maintenance.
+Maintenance model calls have their own deadline and run inside the lock transaction. Timeout cancels the model call and rolls back all changes. Queries inside the transaction remain sequential because they share one connection.
 
-The two operations answer two different questions. **Navigate** (`agent.sessions.navigate`) is a
-rewind in place: one session, the leaf moves, and the branch left behind stays in the tree but
-out of view — the client shows one active branch and nothing else. **Fork**
-(`agent.sessions.fork`) keeps both: the copy lands in a new session, the source is untouched,
-and the operator moves between them through the session tabs. The generic service implements
-both: navigation through `navigatePiSession`, forking through `repo.fork` plus
-`definition.state.fork`, which copies the kind's state row and — for writing — the draft, with
-the same compensation as `createSession` when it fails.
+Kind state is not versioned with transcript entries. Rewinding keeps the current writing draft; forking copies the draft as it exists at fork time, not as it existed at the target entry.
 
-Both are refused (`CONFLICT`) while a turn is running and while an approval is undecided: the
-run is parked on the approval hook, and the relay turn its decision would start lands on
-whatever branch is active then, answering a call that is no longer on it. Manual compaction
-shares the guard. The guard is only as good as its ordering, so accepting a turn (`prompt`,
-`approve`) and maintenance serialize on a per-session Postgres advisory lock
-(`withAgentSessionLock`), and a fresh run's `agent.run` row is written **before** its workflow
-is started — the row's own id stands in for the workflow run id until `start` returns and the
-two are bound (`bindAgentRunExternalId`), and an unbound row older than a minute is treated as
-dead. Maintenance that takes the lock after a prompt therefore already sees a running turn, and a
-prompt that arrives during maintenance waits for its writes to land. Everything under the lock
-runs on the lock's own connection (the transaction's `tx`), so an operation never waits for a
-second pool connection while holding one. Marker writes and run completion address the row by
-its own id, carried into the workflow as `runId`: a step of a run that was cancelled and
-replaced can never reach the run that replaced it. Navigation returns the whole
-session detail, not just events, because
-changing the active branch invalidates every view the client held and the client folds a
-detail the same way it folds `get`.
+Automatic compaction runs only after a successful turn without pending approvals. A compaction failure does not fail the completed turn.
 
-Both carry one model call — the summary — inside the request, so the RPC route exempts them
-from the shared request timeout (`rpc.route.ts`, as it does the chat stream) and the service
-bounds them itself: `MAINTENANCE_DEADLINE_MS` goes to Pi as the summary's signal, and when it
-fires the summary is cancelled, nothing is appended, the transaction rolls back and the caller
-gets `TIMEOUT`. The shared timeout would only have dropped the response with a 504 while the
-work, and the session lock, ran on. Everything under the lock also queries one at a time: the
-transaction is a single connection, and pg queues — and deprecates — a second query on a busy
-client.
+## 8. Identity, models and usage
 
-Kind state is not versioned against the transcript. A rewind leaves the writing draft as the
-abandoned branch last left it, and a fork copies the draft as it stands now, not as it was at
-the target; the dialogs say so, and the seam for a per-entry snapshot is `AgentKindState`.
+### Guest identity
 
-At a successful turn boundary, `compactSessionIfNeeded` uses Pi's context-token estimation and
-threshold against the session model's window, and summarises with the same compaction-task model
-(`RunPiTurnOptions.compactionModel`) as a manual compaction would. Failed turns and turns
-awaiting approval are never auto-compacted. Compaction failure is non-fatal and can be retried
-at the next clean boundary.
+Better Auth's anonymous plugin creates a real user row for a guest. That row can own sessions, approvals and usage. When the guest signs in, `transferAgentOwnership` moves those records before the anonymous row is removed, so authentication does not reset quota.
 
-## 9. Models and credentials
+Routes using the normal session guard still require a signed-in account. Agent routes opt into guest callers through `callerPolicy`.
 
-`Models` is created per caller/turn. BYOK providers are registered only when that caller supplied a
-key, preventing Pi from falling back to unrelated ambient provider keys. The selected model is
-resolved from the same credential-bearing collection the turn binds the `Agent`'s stream function
-to — never `setDefaultStreamFn`, which is process-wide.
+### Models and credentials
 
-The writing package owns its model allowlist. The gateway, OpenAI and Anthropic catalogues come
-from Pi; the domain decides which `(providerId, modelId)` pairs it permits.
+`Models` is created per caller and turn. BYOK providers are registered only when that caller supplies a key. The selected model and Pi stream function use the same credential-bearing collection; process-wide default model functions are forbidden.
 
-## 10. Writing domain and durable state
+Each domain owns its model allowlist. One-shot tasks may use the session model or a pinned house model, but never borrow unrelated ambient credentials.
 
-The writing agent reads content through `ContentPort` — `@chia/agent-content`'s `ContentReadPort`
-plus the writes — reaches the web through `WebPort` (`web_search` for discovery, `fetch_url` to
-read a page), remembers across sessions through `MemoryPort`, stages drafts through `DraftStore`,
-and only commit-tier tools promote staged data to live feed/content tables. Tool order encourages
-the model to read, draft and then commit. Destructive deletion and image upload are not available
-agent tools.
+### Usage ledger and quota
 
-`WebPort` is host-implemented on Firecrawl (`apps/workflow/src/services/agent-web.port.ts`,
-`FIRECRAWL_API_KEY`). Search returns snippets only — no per-result scrape — so a call has a
-fixed cost; `fetch_url` is one scrape per page, main content as markdown, and is how the model
-reads a source it chose. There is no direct outbound fetch in the agent path. Both tools hand
-the turn's abort signal to the port; the Firecrawl SDK cannot cancel a request, so the port
-settles with the signal's reason at once and lets the request run out its timeout in the
-background — a stopped turn ends as soon as the signal fires instead of when the page arrives.
+Every billed provider call creates one `agent.usage_ledger` row, including turns, compaction, branch summaries, titles and lesson extraction. Cost is stored in integer micro-dollars with the provider ID, so house spend and BYOK spend remain one ledger with different filters. Ledger rows survive session deletion.
 
-### Memory
+Usage recording is best-effort and outside the response critical path. A failed ledger insert is logged and loses at most one call in the user's favor.
 
-`agent.memory` is the one table that outlives a session. Three kinds with three lifecycles:
-a `source` is a page `fetch_url` read (URL, title, the page text up to 64k characters), a
-`fact` is a distilled, cited
-claim the model chose to keep with `save_memory`, and a `lesson` is a writing preference
-extracted from the operator's feedback. `MemoryPort` (`@chia/agent-writing/ports`) is
-implemented entirely by the host (`apps/workflow/src/services/agent-memory.port.ts`): writes go
-through `packages/api/memories/write.ts`, which takes the index hook as a required argument the
-way `feeds/write.ts` does, and every write that changes a row schedules
-`indexResourceWorkflow` for the `agent_memory` resource type (`docs/rag-architecture.md`
-§2.4) — a `source` revisit whose text is unchanged schedules nothing unless the index is older
-than the row (`isResourceIndexedSince`), which is how a hook that once failed, on a first
-visit or after a change, gets a second chance. Only live, `active`
-memories are indexed: a pending lesson is unreviewed and the index is agent context.
-`save_memory` sits in the `draft` tier — reversible, invisible to the blog — and only ever
-writes a `fact`.
+`Root` is unlimited. Other tiers share a weekly house-spend allowance and a running-turn cap. Quota is checked under the session lock before accepting any model call; prompt and approval acceptance also take a per-user advisory lock before counting active turns across sessions.
 
-`fetch_url` records every page it reads as a `source` — URL, title, and the whole page text
-(bounded at 64k characters) — through the same port, keyed on the URL so a revisit refreshes
-rather than duplicates. A whole page rather than an excerpt because the RAG pipeline is built
-for documents: sections with heading paths for search, an outline card for "what is this page
-about", and `get_memory` degrading a long page the way `get_post` does. The
-trail is written after the fetch and can never fail it: the model's result is identical with
-or without it. The volatile context (§4) lists what the current session has saved, one
-bounded line per memory with its id, so the model neither saves twice nor forgets it can
-`get_memory` what it already has — a `source` by its host and path, never by its title, which
-is the fetched page's own and would otherwise be restated on every request.
+The limit is soft: a call may start while allowance remains and exceed it by at most that turn's bounded cost. Before reading usage or enforcing the running cap, the service reconciles stale turn markers against the Workflow World.
 
-A `fact` or `source` reaches the model through tools, never through the system prompt:
-`search_memory` is resource search scoped to `sourceTypes: ["agent_memory"]` with
-`includeUnpublished: true`, the two flags that must be set together because every memory chunk
-is indexed `published: false`, and `get_memory` reads one row. A retrieval is therefore a
-visible tool call with a visible cost. The port's two list methods exist for the volatile
-context, which holds nothing but ports.
+## 9. Writing domain and memory
 
-A `lesson` is the one kind that is always on: the volatile context carries the titles of the
-twenty most recently touched **active** lessons under `# Learned preferences`, because a
-preference the model has to remember to look up is not a preference it follows. Lessons are
-written by `memoryConsolidationWorkflow` (`apps/workflow/src/workflows/memory-consolidation.workflow.ts`),
-started by the writing kind's `runTurn` after a turn that executed `commit_draft` ended `done`
-— only then does the transcript hold the whole revision history — or by hand from the
-dashboard (`memory.consolidate`). Its one step reads the session's raw entries through
-`parentId`, past any compaction, keeps only the operator's messages and the assistant's prose
-(never a tool result, so nothing a fetched page said can become a lesson), and asks the `writing.lessons` task's model (§13) — the house gateway's cheap model unless the operator pinned another — for at most three new lessons as JSON, with the task's prompt. Every lesson lands `pending` and
-is injected nowhere until the operator approves it in the dashboard: no text that no human has
-read can sit in every future prompt. The extraction helpers are pure and live in
-`@chia/agent-writing/memory/lessons`; the step is `maxRetries = 0`, since a model failure is
-already "no lessons" and a retry after a partial write would duplicate them.
+The writing kind composes host-owned ports:
 
-The dashboard's memory page (`apps/dash/src/app/(workspace)/memory/`) is client-only oRPC
-behind `adminGuard()` on every `memory.*` procedure, reads included: a memory is unpublished
-research, and an active lesson is a standing instruction. Every write goes through
-`memories/write.ts`, so editing, archiving or deleting re-indexes.
+| Port          | Responsibility                                |
+| ------------- | --------------------------------------------- |
+| `ContentPort` | Read author content and commit staged drafts. |
+| `WebPort`     | Search and fetch through Firecrawl.           |
+| `MemoryPort`  | Persist and retrieve cross-session memory.    |
+| `DraftStore`  | Stage locale-specific changes before commit.  |
+
+Only commit-tier tools write live feed data and require approval. Draft and memory writes are reversible. Destructive deletion and image upload are not agent tools.
+
+Web search returns snippets; `fetch_url` performs one page scrape and records the page through `MemoryPort`. Host ports receive the turn abort signal. There is no direct outbound fetch in the domain package.
+
+### Memory lifecycle
+
+`agent.memory` stores:
+
+| Kind     | Meaning                                      | Activation                      |
+| -------- | -------------------------------------------- | ------------------------------- |
+| `source` | A page read by `fetch_url`, keyed by URL     | Active immediately              |
+| `fact`   | A cited conclusion saved by the model        | Active immediately              |
+| `lesson` | A writing preference extracted from feedback | Pending until operator approval |
+
+Every memory write goes through `packages/api/memories/write.ts` and schedules RAG indexing when needed. Only live, active memory is indexed. See [RAG architecture](./rag-architecture.md#6-agent-memory-resource).
+
+Facts and sources reach the model only through visible `search_memory` and `get_memory` tool calls. The volatile context lists bounded identifiers for memories saved in the current session. Active lesson titles are always included because they are standing preferences.
+
+`memoryConsolidationWorkflow` runs after a successful `commit_draft` turn or by dashboard request. It reads operator messages and assistant prose, excludes tool results, and produces at most three pending lessons. Unreviewed model output never becomes a standing prompt instruction.
 
 ### Content visibility
 
-The read tools cannot widen what they see: visibility is fixed when the host builds the port
-(`packages/api/agents/content-read.port.ts`). An `author` port sees the configured author's
-drafts; a `public` port scopes every detail read to `published: true` and answers a request for
-drafts with nothing rather than overriding the filter. Search needs no branch — the chunk index is
-published-only for every caller. The writing agent's port is `author`; the public kind's is
-`public` (`apps/workflow/src/agents/public.ts`) and it never gets a `WebPort`.
+Visibility is fixed when the host constructs `ContentReadPort`:
 
-`buildSystemPrompt` is the stable system prompt; `buildTurnContext` is the volatile block with the
-draft state and current time (see §4). Skills and prompt templates live under
-`packages/agent-writing/src/prompts/`. The system prompt carries only the skills _index_ (name
-and description); the model loads a skill's full text with the `read_skill` tool (tier `read`).
-That tool is the only read path — Pi's own convention of reading `SKILL.md` from disk has no file
-tool behind it here — and it leaves a tool call in the thread, so the operator can see which rules
-were consulted.
+- `author` can read the configured author's drafts and published content.
+- `public` can read only published content and cannot widen that filter.
 
-The draft store's merge policy (`undefined` leaves a field alone, `null` clears it) is applied once
-in `draft/operations.ts` through `@chia/utils/object`'s `mergeDefined`; both `PgDraftStore` and
-`InMemoryDraftStore` go through it, so the store the tests run against cannot diverge from the one
-production uses.
+The public kind receives the public port and never receives `WebPort` or write capabilities.
 
-There is no in-process conversational state. The process-level kind-to-service map contains only
-implementations; all mutable state is durable:
+## 10. Operator configuration
 
-| State                                   | Home                                           |
-| --------------------------------------- | ---------------------------------------------- |
-| Transcript                              | `agent.session_entry`                          |
-| Draft                                   | `agent.writing_session`, `agent.writing_draft` |
-| Memory                                  | `agent.memory`, indexed into `resource_chunk`  |
-| Approval decisions                      | `agent.tool_approval`                          |
-| Run metadata                            | `agent.run`                                    |
-| Message inbox, pauses and event streams | workflow backend                               |
+Three override sources are stored separately:
 
-## 11. Adding another agent kind
+| Source                | Row                  | Controls                                                |
+| --------------------- | -------------------- | ------------------------------------------------------- |
+| Agent kind definition | `agent.kind_config`  | New-session defaults and kind-specific preferences      |
+| `AGENT_TASKS`         | `agent.task_config`  | Model, prompt and exposed parameters for one-shot tasks |
+| Quota defaults        | `agent.quota_config` | Weekly allowance, time zone and running-turn cap        |
 
-Another domain kind uses the same concrete Pi runtime:
+Kind defaults are copied when a session is created; later edits do not mutate existing sessions. Kind `config` is loaded every turn, so preference changes apply on the next turn. Safety boundaries such as tool tiers, approval requirements, turn budgets and model allowlists remain in code.
 
-1. add `@chia/agent-<kind>` with tools, prompts, skills, policy, model allowlist and domain ports —
-   composing `contentReadTools` from `@chia/agent-content` when it reads the blog, with the tool
-   context extending `ContentToolContext`;
-2. add its extension table when it needs kind-specific persisted state;
-3. add its `AgentKindDefinition` in `apps/service/src/agents/` — including the `minTier` it admits,
-   its `label`/`description` and operator `config` schema — then add its binding (`minTier` +
-   loader) to the service factory; add the execution-bound sibling and switch branch to the
-   workflow factory;
-4. have its `runTurn` call the new domain's `run<Kind>Turn`, and add any task definition of its own
-   to `AGENT_TASKS` (§13);
-5. reuse `runPiTurn`, wire events, approval semantics and durable stream plumbing.
+Tasks cover title generation, compaction, branch summaries and lesson extraction. A task may default to the session model or a house model. Operator-pinned task models always use the house catalogue.
 
-Do not add an engine adapter, engine factory, capability plugin system or provider-neutral handle
-until a concrete second execution foundation requires a different seam.
+Admin writes are validated against their code definition before persistence. API views return `default`, `override` and `effective` values so the dashboard does not reimplement resolution rules.
 
-## 12. Reference
+## 11. Adding an agent kind
 
-| Concern                      | File                                                                                                                 |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                                              |
-| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                                         |
-| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                                       |
-| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                                            |
-| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                                            |
-| Abort controller             | `apps/workflow/src/workflows/agent-abort.workflow.ts`, `packages/api/orpc/services/agent/abort.ts`                  |
-| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                                                   |
-| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                                                   |
-| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                                            |
-| Models/providers             | `packages/agent-runtime/src/models.ts`                                                                               |
-| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                                                   |
-| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                                      |
-| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                                             |
-| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                                                |
-| Content read tools / port    | `packages/agent-content/src/`, `packages/api/agents/content-read.port.ts`                               |
-| Memory tools / port          | `packages/agent-writing/src/tools/memory.tool.ts`, `apps/workflow/src/services/agent-memory.port.ts`                 |
-| Memory writes / indexing     | `packages/api/memories/write.ts`, `apps/service/src/services/agent-memory-indexing.service.ts`                       |
-| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                                              |
-| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                                                 |
-| Public composition           | `packages/agent-public/src/runtime.ts`, `src/models.ts`, `src/policy.ts`, `src/prompts/system.ts`                    |
-| Agent factory / service      | `packages/api/orpc/services/agent.factory.ts`, `services/agent/`, `packages/agent-host/src/kind.ts`                  |
-| Writing kind binding         | `packages/agent-host/src/writing.ts`, `apps/service/src/agents/writing.ts`, `apps/workflow/src/agents/writing.ts`    |
-| Public kind binding          | `packages/agent-host/src/public.ts`, `apps/service/src/agents/public.ts`, `apps/workflow/src/agents/public.ts`       |
-| Task definitions / resolution | `packages/agent-host/src/tasks.ts`                                                                                  |
-| Operator configuration       | `packages/agent-host/src/config.ts`, `packages/api/orpc/services/agent/admin.ts`, `packages/db/src/libs/agent/config.ts` |
-| Admin contract / service     | `packages/api/orpc/contracts/agent-admin.contract.ts`, `packages/api/orpc/services/agent/admin.ts`                  |
-| Durable workflow / step      | `apps/workflow/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`                              |
-| Durable message inbox        | `packages/workflow-control/src/agent.hooks.ts`                                                                       |
-| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                                             |
-| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                                            |
-| Client store and elements    | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                                                  |
-| Dashboard UI                 | `apps/dash/src/components/agent/`, `components/agents/` (kind and task configuration)                                |
+1. Add `@chia/agent-<kind>` with prompts, tools, policy, model allowlist and domain ports. Compose `@chia/agent-content` when it reads the blog.
+2. Add an extension table only when the kind has persisted state.
+3. Add service and workflow bindings with matching `minTier` values and dynamic loaders.
+4. Implement `runTurn` through the domain's `run<Kind>Turn`; register any one-shot tasks in `AGENT_TASKS`.
+5. Reuse `runPiTurn`, wire events, approvals, session storage and durable workflow plumbing.
 
-## 13. Kinds, tasks and operator configuration
+Do not add an engine adapter, capability plugin system or provider-neutral handle until a second execution engine creates a concrete requirement.
 
-Two code-defined sources are overridable by the operator from the dashboard's agent workspace
-(`agent.admin.*`, admin-only):
+## 12. Reference map
 
-| Source        | Where                                      | One entry is                                                                                  | Row                 |
-| ------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- | ------------------- |
-| agent factory | `apps/service/src/agents/factory.ts`       | a conversational agent — tools, ports, policy, state row, `runTurn`                           | `agent.kind_config` |
-| `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`         | a one-shot model call beside a session — title, compaction, branch summary, lesson extraction | `agent.task_config` |
-
-A third row, not a registry: `agent.quota_config` holds the operator's override of the weekly
-allowance, its zone and the running-turn cap (`agent.admin.quota.*`, the workspace's "Usage
-quota" card); the code default is `AGENT_QUOTA_DEFAULTS` in `packages/agent-host/src/quota.ts`
-(§3).
-
-A **task** is a model slot plus, where the call exposes them, a system prompt and sampling
-parameters. How a task runs differs (`completeSimple`, Pi's `compact()`, `generateBranchSummary`)
-and stays with the caller; what the operator chooses about it is the same, and `resolveAgentTask`
-is the one place the definition and the row meet. A definition's `defaultModel` is either a
-house gateway ref or `"session"` — the task runs on the model of the session it serves. A pinned
-model is always a house gateway model, resolved on a credential-free collection: a side job is
-never the operator's own bill, and lesson extraction runs in a workflow that carries no caller
-credentials at all. A pinned model the catalogue no longer carries falls back to the default with
-a warning, so a pi-ai upgrade degrades the task rather than the turn it rides beside. A task
-whose default is `"session"` receives the session's model as a thunk and only resolves it when it
-follows it, so a BYOK session's compaction can be pinned to a house model and run without the
-key.
-
-A **kind's** row holds the defaults a new session is created with (`providerId`/`modelId` as a
-pair, `thinkingLevel`, `autoApprove`) and a `config` object the kind's own zod schema shapes
-(`AgentKindDefinition.config`). Defaults are copied onto the session row at creation, so a
-change never touches an existing session; `config` is read by the turn step on every turn
-(`loadKindConfig`), so an edit reaches the next turn of every session. The schema is sent to the
-dashboard as JSON Schema, so a new field is a schema change, not a contract change. Preferences
-only: tool tiers, the approval policy, the turn budget and the model allowlist are safety
-boundaries and stay in code. Both kinds' config is `instructions` — appended to the system prompt
-under "Operator instructions", part of the stable prefix, so a change invalidates the provider's
-cached prefix once and is then cached again.
-
-Every admin write is validated against the definition it overrides before it lands: a kind's
-model through the kind's `models.assert`, its `autoApprove` against the tiers its tools use, its
-`config` through its schema; a task's model against the house catalogue, and a prompt or
-parameters only where the task exposes them. A row can therefore only re-point what the code
-already allows. Every view carries `code`/`default`, `override` and `effective` so the dashboard
-can show a value, say whether it is overridden and offer to reset it without restating the
-resolution rule.
+| Concern                               | Location                                                                                              |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Pi turn, approval, budget, compaction | `packages/agent-runtime/src/pi/`                                                                      |
+| Session tree and Postgres storage     | `packages/agent-runtime/src/session/`                                                                 |
+| Wire schema, replay and fold          | `packages/agent-runtime/src/wire/`                                                                    |
+| Shared content tools                  | `packages/agent-content/src/`                                                                         |
+| Writing and public domains            | `packages/agent-writing/src/`, `packages/agent-public/src/`                                           |
+| Kind bindings and tasks               | `packages/agent-host/src/`, `apps/service/src/agents/`, `apps/workflow/src/agents/`                   |
+| Generic oRPC agent service            | `packages/api/orpc/services/agent/`                                                                   |
+| Workflow and turn step                | `apps/workflow/src/workflows/agent-session.workflow.ts`, `apps/workflow/src/steps/agent-turn.step.ts` |
+| Database schema                       | `packages/db/src/schemas/agent.schema.ts`                                                             |
+| Shared client                         | `packages/agent-elements/src/`                                                                        |
