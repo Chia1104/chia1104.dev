@@ -90,6 +90,7 @@
     "nx": "^23.1.2",
     "oxfmt": "catalog:oxc",
     "oxlint": "catalog:oxc",
+    "railway": "catalog:",
     "tsx": "^4.23.13",
     "turbo": "2.10.12",
     "typescript": "catalog:",
