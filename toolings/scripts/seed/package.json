@@ -14,7 +14,7 @@
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "@faker-js/faker": "^10.4.0",
+    "@faker-js/faker": "catalog:testing-library",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   }
