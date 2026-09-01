@@ -53,7 +53,11 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    localPatterns: [{ pathname: "/*/*/og" }, { pathname: "/*/*/*/og" }],
+    localPatterns: [
+      { pathname: "/assets/**" },
+      { pathname: "/*/*/og" },
+      { pathname: "/*/*/*/og" },
+    ],
     remotePatterns: [
       {
         protocol: "https",
