@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
-    "start-server-and-test": "^3.0.2",
+    "start-server-and-test": "catalog:testing-library",
     "typescript": "catalog:",
     "www": "workspace:*"
   }

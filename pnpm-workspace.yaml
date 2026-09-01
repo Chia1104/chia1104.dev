@@ -21,43 +21,22 @@ allowBuilds:
   sharp: true
   sqlite3: false
 
+# Shared primitives used across apps and packages.
 catalog:
-  "@t3-oss/env-core": ^0.13.11
-  "@t3-oss/env-nextjs": ^0.13.11
-  "@types/lodash": ^4.17.25
+  "@types/express": ^5.0.6
   "@types/node": 26.4.0
-  "@workflow-worlds/redis": ^0.2.2
-  "@workflow/world-postgres": 4.3.5
-  nitro: 3.0.260610-beta
-  railway: 3.11.0
   better-all: 0.0.9
   bun-types: ^1.4.0
   client-only: ^0.0.1
   dayjs: ^1.11.23
   graphql-request: ^7.4.0
-  hast-util-from-html: ^2.0.3
-  hast-util-to-text: ^4.0.2
   ky: ^2.1.0
-  lodash: ^4.18.1
-  "@types/mdast": ^4.0.4
-  mdast-util-to-string: ^4.0.0
-  remark-gfm: ^4.0.1
-  remark-mdx: ^3.1.1
-  remark-parse: ^11.0.0
-  remark-stringify: ^11.0.0
-  unified: ^11.0.5
-  unist-util-visit: ^5.1.0
   server-only: ^0.0.1
   superjson: 2.2.6
-  tsdown: 0.22.14
   typescript: 7.0.2
-  workflow: 4.8.5
   zod: 4.5.4
 
 catalogs:
-  streamdown:
-    "@streamdown/cjk": 1.0.3
-    streamdown: 2.6.0
   agent:
     "@earendil-works/pi-agent-core": 0.84.3
     "@earendil-works/pi-ai": 0.84.3
@@ -72,8 +51,12 @@ catalogs:
     "@google/genai": 2.19.0
     ai: 7.0.85
     firecrawl: 4.37.0
+    js-tiktoken: ^1.0.21
     ollama: 0.6.3
     openai: 7.8.0
+  aws:
+    "@aws-sdk/client-s3": ^3.1121.0
+    "@aws-sdk/s3-request-presigner": ^3.1121.0
   better-auth:
     "@better-auth/api-key": 1.7.2
     "@better-auth/passkey": 1.7.2
@@ -84,13 +67,28 @@ catalogs:
     "@chiastack/ui": 1.2.2
   drizzle:
     "@paradedb/drizzle-paradedb": 0.5.0
+    "@types/pg": ^8.23.1
     drizzle-kit: 1.0.0-rc.4
     drizzle-orm: 1.0.0-rc.4
+    pg: ^8.23.0
+  email:
+    "@react-email/ui": ^6.9.3
+    react-email: ^6.9.3
+    resend: ^6.25.0
+  env:
+    "@t3-oss/env-core": ^0.13.11
+    "@t3-oss/env-nextjs": ^0.13.11
+  forms:
+    "@hookform/resolvers": ^5.9.1
+    react-hook-form: ^7.87.0
   fumadocs:
     "@fumadocs/mdx-remote": 1.5.1
+    "@mdx-js/react": ^3.1.1
+    "@types/mdx": ^2.0.14
     fumadocs-core: 16.15.4
     fumadocs-mdx: 15.4.0
     fumadocs-ui: 16.15.4
+    mermaid: ^11.17.2
   heroui-v3:
     "@heroui/react": 3.2.4
     "@heroui/styles": 3.2.4
@@ -100,10 +98,24 @@ catalogs:
     "@hono/zod-validator": 0.9.0
     hono: 4.13.5
     srvx: 0.12.7
-    hono-rate-limiter: 0.5.3
+  kv:
+    "@keyv/postgres": ^2.2.3
+    "@keyv/redis": ^5.1.6
+    "@keyv/test-suite": ^2.1.2
+    "@keyv/valkey": ^1.0.11
+    "@upstash/ratelimit": 2.0.8
+    "@upstash/redis": 1.38.3
+    keyv: ^5.6.0
+  monaco:
+    "@monaco-editor/react": ^4.7.0
+    monaco-editor: ^0.56.0
   next:
     "@next/third-parties": 16.3.3
     next: 16.3.3
+    next-intl: ^4.14.1
+    next-safe-action: 8.6.1
+    sharp: 0.35.4
+    takumi-js: ^2.13.2
   orpc:
     "@orpc/client": 2.0.0-beta.32
     "@orpc/contract": 2.0.0-beta.32
@@ -137,25 +149,66 @@ catalogs:
     babel-plugin-react-compiler: 1.0.0
     react: ^19.2.8
     react-dom: ^19.2.8
+  sentry:
+    "@sentry/nextjs": ^10.72.0
+  streamdown:
+    "@streamdown/cjk": 1.0.3
+    streamdown: 2.6.0
   tailwindcss:
+    "@egoist/tailwindcss-icons": ^1.9.2
+    "@iconify/json": ^2.2.522
     "@tailwindcss/postcss": 4.3.3
+    "@tailwindcss/typography": ^0.5.20
     postcss: 8.5.26
     tailwind-scrollbar: ^4.0.2
     tailwindcss: 4.3.3
+    tw-animate-css: ^1.4.0
   tanstack:
     "@tanstack/react-pacer": 0.23.0
     "@tanstack/react-query": 5.102.8
     "@tanstack/react-query-devtools": 5.102.8
     "@tanstack/react-virtual": 3.14.10
   testing-library:
+    "@faker-js/faker": ^10.4.0
+    "@playwright/test": ^1.62.1
     "@testing-library/jest-dom": 7.0.1
     "@testing-library/react": 16.3.3
     "@testing-library/user-event": 14.6.6
     "@vitejs/plugin-react-swc": 4.3.3
     "@vitest/coverage-v8": 4.1.11
     "@vitest/ui": 4.1.11
+    happy-dom: ^20.12.0
+    msw: ^2.15.0
+    start-server-and-test: ^3.0.2
     vitest: 4.1.11
+  three:
+    "@react-three/drei": ^10.7.8
+    "@react-three/fiber": ^9.7.0
+    "@types/three": ^0.185.4
+    leva: ^0.10.1
+    maath: ^0.10.8
+    r3f-perf: ^7.2.3
+    shaders: ^3.1.463
+    three: ^0.185.1
+  tooling:
+    "@manypkg/cli": ^0.25.1
+    "@total-typescript/ts-reset": 0.6.1
+    "@turbo/gen": ^2.10.12
+    cross-env: 10.1.0
+    eslint-plugin-turbo: ^2.10.12
+    husky: ^9.1.7
+    lint-staged: ^17.4.1
+    nx: ^23.1.2
+    railway: 3.11.0
+    tsdown: 0.22.14
+    tsx: ^4.23.13
+    turbo: 2.10.12
   ui:
+    "@iconify/react": ^6.0.2
+    "@internationalized/date": ^3.12.3
+    "@marsidev/react-turnstile": ^1.6.1
+    "@shikijs/stream": ^4.4.3
+    "@types/react-google-recaptcha": ^2.1.9
     border-beam: 1.3.0
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
@@ -167,16 +220,41 @@ catalogs:
     motion: ^13.1.1
     next-themes: ^0.4.6
     nuqs: ^2.10.1
+    react-activity-calendar: ^3.2.1
+    react-google-recaptcha: ^3.1.0
     react-medium-image-zoom: ^5.4.9
     schema-dts: 2.0.0
     shiki: ^4.4.3
-    "@shikijs/stream": ^4.4.3
     sonner: 2.0.8
     tailwind-merge: ^3.6.0
     thinking-orbs: 0.3.1
     usehooks-ts: ^3.1.1
     vaul: ^1.1.2
     zustand: 5.0.15
+  unified:
+    "@types/mdast": ^4.0.4
+    github-slugger: ^2.0.0
+    hast-util-from-html: ^2.0.3
+    hast-util-to-text: ^4.0.2
+    mdast-util-to-string: ^4.0.0
+    node-html-parser: ^9.0.2
+    reading-time-estimator: ^2.13.0
+    rehype-katex: ^7.0.1
+    remark-gfm: ^4.0.1
+    remark-math: ^6.0.0
+    remark-mdx: ^3.1.1
+    remark-parse: ^11.0.0
+    remark-stringify: ^11.0.0
+    unified: ^11.0.5
+    unist-util-visit: ^5.1.0
+  vercel:
+    "@vercel/analytics": 2.0.1
+    "@vercel/speed-insights": ^2.0.0
+  workflow:
+    "@workflow-worlds/redis": ^0.2.2
+    "@workflow/world-postgres": 4.3.5
+    nitro: 3.0.260610-beta
+    workflow: 4.8.5
 
 linkWorkspacePackages: true
 

@@ -1,13 +1,15 @@
-import * as dotenv from "dotenv";
+import { existsSync } from "node:fs";
+
 import type { Config } from "drizzle-kit";
 import { getTableName, is } from "drizzle-orm";
 import { PgTable } from "drizzle-orm/pg-core";
 
 import * as agent from "./src/schemas/agent.schema.ts";
 
-dotenv.config({
-  path: "../../.env.global",
-});
+const envFile = new URL("../../.env.global", import.meta.url);
+if (existsSync(envFile)) {
+  process.loadEnvFile(envFile);
+}
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");

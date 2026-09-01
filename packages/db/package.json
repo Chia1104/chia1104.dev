@@ -125,16 +125,16 @@
     "@chia/kv": "workspace:*",
     "@chia/utils": "workspace:*",
     "@paradedb/drizzle-paradedb": "catalog:drizzle",
-    "@t3-oss/env-core": "catalog:",
+    "@t3-oss/env-core": "catalog:env",
     "drizzle-orm": "catalog:drizzle",
-    "pg": "^8.23.0",
+    "pg": "catalog:drizzle",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
-    "@types/pg": "^8.23.1",
+    "@types/pg": "catalog:drizzle",
     "drizzle-kit": "catalog:drizzle",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
