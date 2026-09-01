@@ -1,23 +1,31 @@
-import type {
-  ContentReadPort,
-  PostListItem,
-  PostSearchHit,
-  PostSnapshot,
-  TagItem,
-} from "@chia/agent-content/types";
-
-export interface FakeContentReadPortOptions {
-  searchHits?: PostSearchHit[];
-  posts?: PostSnapshot[];
-  list?: PostListItem[];
-  tags?: TagItem[];
+export interface FakeContentReadPortOptions<
+  THit = never,
+  TPost extends { slug: string; feedId: number } = {
+    slug: string;
+    feedId: number;
+  },
+  TList = never,
+  TTag = never,
+> {
+  searchHits?: THit[];
+  posts?: TPost[];
+  list?: TList[];
+  tags?: TTag[];
 }
 
-export const createFakeContentReadPort = (
-  options: FakeContentReadPortOptions = {}
-): ContentReadPort => ({
+export const createFakeContentReadPort = <
+  THit = never,
+  TPost extends { slug: string; feedId: number } = {
+    slug: string;
+    feedId: number;
+  },
+  TList = never,
+  TTag = never,
+>(
+  options: FakeContentReadPortOptions<THit, TPost, TList, TTag> = {}
+) => ({
   searchPosts: () => Promise.resolve(options.searchHits ?? []),
-  getPost: (input) =>
+  getPost: (input: { slug?: string; feedId?: number }) =>
     Promise.resolve(
       (options.posts ?? []).find((post) =>
         input.slug !== undefined

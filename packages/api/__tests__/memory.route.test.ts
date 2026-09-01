@@ -10,13 +10,14 @@ import {
   contextOf,
   describe,
   expect,
-  it,
+  it as orpcIt,
   sessionOf,
 } from "@chia/test/orpc";
 import { omitUndefined } from "@chia/utils/object";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type * as memoryRouteModule from "../orpc/routes/memory.route";
+import type { BaseOSContext } from "../orpc/utils";
 
 const { repo } = vi.hoisted(() => ({
   repo: {
@@ -28,6 +29,10 @@ const { repo } = vi.hoisted(() => ({
 }));
 
 vi.mock("@chia/db/repos/agent/memory", () => repo);
+
+const it = orpcIt.extend("context", ({ session }) =>
+  contextOf<BaseOSContext>(session)
+);
 
 const row = (overrides: Partial<AgentMemory> = {}): AgentMemory => ({
   id: 7,
@@ -116,7 +121,9 @@ describe("memory routes", () => {
     session,
   }) => {
     const onMemoryChanged = vi.fn(async () => undefined);
-    const context = contextOf(session, { hooks: { onMemoryChanged } });
+    const context = contextOf<BaseOSContext>(session, {
+      hooks: { onMemoryChanged },
+    });
 
     await call(routes.updateMemoryRoute, { id: 7, title: "x" }, { context });
     await call(routes.removeMemoryRoute, { id: 7 }, { context });
@@ -151,7 +158,7 @@ describe("memory routes", () => {
       routes.consolidateMemoryRoute,
       { sessionId: "session-1" },
       {
-        context: contextOf(session, {
+        context: contextOf<BaseOSContext>(session, {
           /* SAFETY: This fixture implements the client member this route exercises. */
           workflow: workflow as WorkflowControlClient,
         }),

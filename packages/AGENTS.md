@@ -65,13 +65,13 @@ Every locale must carry the same keys; agent label tests enforce this. `meta` is
 
 ## Testing
 
-Shared Vitest helpers live in `@chia/test`. Import a named module, never a root barrel.
+`@chia/test` must not depend on other `@chia/*` packages.
 
-- `@chia/test/config` — `nodeConfig` / `domConfig` presets (`globals: false`, `clearMocks: true`). App configs only add `setupFiles`, aliases and plugins. DOM apps that use Testing Library must `cleanup()` in setup; `globals: false` disables its auto-cleanup.
-- `@chia/test/env` — `stubTestEnv()` for `SKIP_ENV_VALIDATION` and `NODE_ENV`.
-- `@chia/test/session` and `@chia/test/context` — `sessionOf`, `contextOf`, `serviceContextOf`.
-- `@chia/test/orpc` — those factories plus an extended `it` with `session` / `context` fixtures. Import `vi` from `vitest`; `vi.hoisted` does not work through this re-export.
-- `@chia/test/mocks/*` — feed repo, workflow World, and in-memory KV `vi.fn`s. `vi.mock` wiring stays in the consuming project's `setup.ts` or test file.
-- `@chia/test/fixtures/content-read-port` — `ContentReadPort` fake. Writing's write-side port stays in `packages/agent-writing/__tests__/fixtures.ts`.
+- `@chia/test/config` — `nodeConfig` / `domConfig`. App configs add `setupFiles`. DOM Testing Library tests must `cleanup()` in setup.
+- `@chia/test/env` — `stubTestEnv()`.
+- `@chia/test/session`, `@chia/test/context` — `sessionOf`, `contextOf`, `serviceContextOf`.
+- `@chia/test/orpc` — `session` fixture; extend `context` in the consumer. Import `vi` from `vitest`.
+- `@chia/test/mocks/*` — `vi.mock` wiring stays in the consumer.
+- `@chia/test/fixtures/content-read-port` — read-port fake.
 
-Keep app-specific helpers next to the app: service guards and RPC `app.request` wrappers, www MSW and `renderWithProviders`. Setup files mock only what every test in that project needs. Import `{ describe, expect, it, vi }` from `vitest`. Titles are behavior sentences, not `should ...`.
+Local helpers only when they add behavior. Import `{ describe, expect, it, vi }` from `vitest`. Titles are behavior sentences, not `should ...`.

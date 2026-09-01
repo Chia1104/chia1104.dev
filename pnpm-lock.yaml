@@ -2215,18 +2215,6 @@ importers:
 
   packages/test:
     dependencies:
-      '@chia/agent-content':
-        specifier: workspace:*
-        version: link:../agent-content
-      '@chia/api':
-        specifier: workspace:*
-        version: link:../api
-      '@chia/auth':
-        specifier: workspace:*
-        version: link:../auth
-      '@chia/service-kit':
-        specifier: workspace:*
-        version: link:../service-kit
       vitest:
         specifier: catalog:testing-library
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(happy-dom@20.12.0)(msw@2.15.0(@types/node@26.4.0)(typescript@7.0.2))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))

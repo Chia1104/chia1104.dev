@@ -1,9 +1,12 @@
-import type { Session } from "@chia/auth/types";
-
 export const ADMIN_ID = "admin-user";
 
-export const sessionOf = (id: string, role: string): Session =>
-  /* SAFETY: This fixture implements the Session members exercised by route and policy tests. */ ({
-    session: { id: "s1", userId: id },
-    user: { id, role },
-  }) as Session;
+/** Structural session fixture. Consumers assign it to their `Session` type. */
+export interface TestSession {
+  session: { id: string; userId: string };
+  user: { id: string; role: string; isAnonymous?: boolean };
+}
+
+export const sessionOf = (id: string, role: string): TestSession => ({
+  session: { id: "s1", userId: id },
+  user: { id, role },
+});

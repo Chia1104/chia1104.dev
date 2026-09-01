@@ -49,10 +49,6 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
-    "@chia/agent-content": "workspace:*",
-    "@chia/api": "workspace:*",
-    "@chia/auth": "workspace:*",
-    "@chia/service-kit": "workspace:*",
     "vitest": "catalog:testing-library"
   },
   "devDependencies": {

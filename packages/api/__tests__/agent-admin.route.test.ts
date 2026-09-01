@@ -16,6 +16,7 @@ import type { AgentKindAdmin } from "../orpc/contracts/agent-admin.contract";
 import type * as adminRouteModule from "../orpc/routes/agent-admin.route";
 import type { AgentFactory } from "../orpc/services/agent.factory";
 import type { AgentAdminService } from "../orpc/services/agent/admin";
+import type { BaseOSContext } from "../orpc/utils";
 
 const kind: AgentKindAdmin = {
   kind: "writing",
@@ -61,7 +62,7 @@ const factory = {
 } satisfies AgentFactory;
 
 const it = orpcIt.extend("context", ({ session }) =>
-  contextOf(session, { agentFactory: factory })
+  contextOf<BaseOSContext>(session, { agentFactory: factory })
 );
 
 type AdminRoutes = typeof adminRouteModule;
@@ -150,7 +151,9 @@ describe("agent admin routes", () => {
   }) => {
     await expect(
       call(routes.listAgentKindsAdminRoute, undefined, {
-        context: contextOf(session, { agentFactory: undefined }),
+        context: contextOf<BaseOSContext>(session, {
+          agentFactory: undefined,
+        }),
       })
     ).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
   });

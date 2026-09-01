@@ -7,6 +7,7 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it } from "vitest";
 
+import type { ContentReadPort } from "@chia/agent-content/types";
 import { UnknownAgentModelError } from "@chia/agent-runtime/models";
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
@@ -17,12 +18,11 @@ import type {
 } from "@chia/agent-runtime/types";
 import { foldEvents } from "@chia/agent-runtime/wire/fold";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 
 import { publicTurnBudget } from "../src/policy.ts";
 import { runPublicTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
-
-import { createFakeContentPort } from "./fixtures.ts";
 
 const SESSION_ID = "session-1";
 
@@ -46,35 +46,38 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
   models.setProvider(faux.provider);
 
   const session = new InMemorySessionTree(SESSION_ID);
-  const content = createFakeContentPort({
-    searchHits: [
+  const content =
+    /* SAFETY: This fixture implements the ContentReadPort methods these tests exercise. */ createFakeContentReadPort(
       {
-        slug: "existing-post",
-        locale: "en",
-        title: "An existing post",
-        snippet: "…",
-      },
-    ],
-    posts: [
-      {
-        feedId: 1,
-        slug: "existing-post",
-        type: "post",
-        contentType: "mdx",
-        published: true,
-        defaultLocale: "en",
-        translations: [
+        searchHits: [
           {
+            slug: "existing-post",
             locale: "en",
             title: "An existing post",
-            content: "## Existing section\n\nExisting body.",
+            snippet: "…",
           },
         ],
-        tagSlugs: ["typescript"],
-      },
-    ],
-    tags: [{ slug: "typescript", names: { en: "TypeScript" } }],
-  });
+        posts: [
+          {
+            feedId: 1,
+            slug: "existing-post",
+            type: "post",
+            contentType: "mdx",
+            published: true,
+            defaultLocale: "en",
+            translations: [
+              {
+                locale: "en",
+                title: "An existing post",
+                content: "## Existing section\n\nExisting body.",
+              },
+            ],
+            tagSlugs: ["typescript"],
+          },
+        ],
+        tags: [{ slug: "typescript", names: { en: "TypeScript" } }],
+      }
+    ) as ContentReadPort;
   const events: AgentWireEvent[] = [];
   const sessionSettings: AgentSessionSettings = {
     providerId,

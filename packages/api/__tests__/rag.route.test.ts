@@ -71,7 +71,7 @@ vi.mock("@chia/db/repos/resources/index-run", () => ({
 const workflowClient: Partial<WorkflowControlClient> = workflow;
 
 const it = orpcIt.extend("context", ({ session }) =>
-  contextOf(session, {
+  contextOf<BaseOSContext>(session, {
     /* SAFETY: This fixture implements the client member these routes exercise. */
     workflow: workflowClient as BaseOSContext["workflow"],
   })
@@ -287,7 +287,7 @@ describe("rag routes", () => {
           routes.indexResourceRoute,
           { sourceType: "feed_translation", sourceId: 1 },
           {
-            context: contextOf(null, {
+            context: contextOf<BaseOSContext>(null, {
               /* SAFETY: This fixture implements the client member these routes exercise. */
               workflow: workflowClient as BaseOSContext["workflow"],
             }),

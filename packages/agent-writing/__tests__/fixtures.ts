@@ -1,4 +1,5 @@
 import type {
+  ContentReadPort,
   PostListItem,
   PostSearchHit,
   PostSnapshot,
@@ -30,7 +31,10 @@ export interface FakeContentPort extends ContentPort {
 export const createFakeContentPort = (
   options: FakeContentPortOptions = {}
 ): FakeContentPort => {
-  const read = createFakeContentReadPort(options);
+  const read =
+    /* SAFETY: This fixture implements the ContentReadPort methods these tests exercise. */ createFakeContentReadPort(
+      options
+    ) as ContentReadPort;
   const commits: CommitDraftInput[] = [];
   const publishes: { feedId: number; published: boolean }[] = [];
   let nextFeedId = 100;

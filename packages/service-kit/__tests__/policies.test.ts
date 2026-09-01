@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import { sessionOf } from "@chia/test/session";
 import { serviceContextOf } from "@chia/test/context";
+import { sessionOf } from "@chia/test/session";
 
+import type { ServiceContext } from "../src/context";
 import { captchaPolicy } from "../src/policies/captcha.policy";
 import { rateLimitPolicy } from "../src/policies/rate-limit.policy";
 import { sessionPolicy } from "../src/policies/session.policy";
@@ -12,7 +13,8 @@ const session = (role: string, isAnonymous = false) => ({
   user: { id: "u1", role, isAnonymous },
 });
 
-const makeContext = serviceContextOf;
+const makeContext = (overrides?: Partial<ServiceContext>) =>
+  serviceContextOf<ServiceContext>(overrides);
 
 const withSession = (value: ReturnType<typeof session>) =>
   makeContext({
