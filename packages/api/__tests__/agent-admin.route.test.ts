@@ -10,10 +10,6 @@ import type { AgentFactory } from "../orpc/services/agent.factory";
 import type { AgentAdminService } from "../orpc/services/agent/admin";
 import type { BaseOSContext } from "../orpc/utils";
 
-/**
- * The routes are admin-only, then resolve their service through the request's factory.
- */
-
 const ADMIN_ID = "admin-user";
 
 const sessionOf = (id: string, role: string): Session =>

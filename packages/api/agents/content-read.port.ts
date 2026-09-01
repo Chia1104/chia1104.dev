@@ -20,16 +20,10 @@ import type { ContentType, Locale } from "@chia/db/types";
 import { searchFeedsService } from "../feeds/search";
 
 /**
- * {@link ContentReadPort} implementation.
- *
- * Reuses `searchFeedsService` and `@chia/db/repos/feeds` rather than issuing its own queries, so
- * an agent reads exactly what the site and dashboard read. Takes a `DB` rather than a
- * `ServiceContext` because it is constructed inside a workflow step where no request exists.
- *
- * **Visibility is fixed at construction.** `author` sees the configured author's drafts as well;
- * `public` sees only published posts, and its `listPosts` cannot be talked into drafts — asking for
- * them returns nothing rather than widening the view. Search follows the same scope: draft
- * chunks are indexed alongside published ones, and only the author view asks for them.
+ * Reuses `searchFeedsService` and `@chia/db/repos/feeds` so an agent reads exactly what
+ * the site reads. Takes a `DB` because it is constructed inside a workflow step where no
+ * request exists. Visibility is fixed at construction: `public` never lists drafts even
+ * when asked.
  */
 
 export type ContentVisibility = "author" | "public";
@@ -68,9 +62,8 @@ export const createContentReadPort = (
       const result = await searchFeedsService({
         db,
         keyword: input.keyword,
-        // `keyword` is in-database BM25; `semantic` fuses dense and lexical,
-        // because a single document vector alone under-recalls exact terms
-        // (package names, CLI flags, error messages)
+        // `keyword` is in-database BM25; `semantic` fuses dense and lexical because a
+        // document vector alone under-recalls exact terms (package names, CLI flags).
         model: input.mode === "keyword" ? "bm25" : "hybrid",
         locale: input.locale,
         includeUnpublished: publishedScope === undefined,
@@ -83,10 +76,8 @@ export const createContentReadPort = (
           /* SAFETY: The producer contract guarantees this value satisfies Locale. */ (item
             .summary.locale ?? "zh-TW") as Locale,
         title: item.summary.title,
-        // hybrid hits carry no highlighted snippet (ParadeDB cannot combine
-        // one with the fused query), so fall back to the matched chunk's own
-        // text before the generic description — the agent needs to see *why*
-        // a post matched, not just that it did
+        // hybrid hits carry no highlighted snippet (ParadeDB cannot combine one with the
+        // fused query), so fall back to the matched chunk's text.
         snippet:
           stripHighlight(item.bestChunk.snippet) ||
           truncateSnippet(item.bestChunk.content) ||
@@ -119,8 +110,8 @@ export const createContentReadPort = (
     },
 
     async listPosts(input: ListPostsInput): Promise<PostListItem[]> {
-      // A public view has no drafts to list. Answer without a query so the reader learns the
-      // truth ("none") rather than a filter being silently overridden.
+      // A public view has no drafts. Answer without a query so the reader learns "none"
+      // rather than a filter being silently overridden.
       if (publishedScope === true && input.published === false) return [];
 
       const published = input.published ?? publishedScope;
@@ -157,11 +148,8 @@ export const createContentReadPort = (
     },
 
     /**
-     * Read straight from the tag tables.
-     *
-     * There is no tag repository yet because nothing in the app writes tags — the dashboard only
-     * ever joins them onto a feed. A read-only projection is enough for an agent to name existing
-     * tags instead of inventing near-duplicates.
+     * Read from the tag tables. There is no tag repository yet because nothing in the app
+     * writes tags; a read-only projection is enough for an agent to name existing tags.
      */
     async listTags(): Promise<TagItem[]> {
       const rows = await db.query.tags.findMany({

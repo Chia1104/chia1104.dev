@@ -14,7 +14,7 @@ import { ThinkingSlider } from "./thinking-slider.tsx";
 import type { AgentModel, AgentModelRef, AgentThinkingLevel } from "./types.ts";
 
 /**
- * A model is identified by its `(providerId, modelId)` pair — the same model carries different
+ * A model is identified by its `(providerId, modelId)` pair. The same model carries different
  * ids under different providers, so neither half alone is a key.
  */
 const keyOf = (model: AgentModelRef) => `${model.providerId} ${model.modelId}`;
@@ -23,20 +23,19 @@ const keyOf = (model: AgentModelRef) => `${model.providerId} ${model.modelId}`;
 const FALLBACK_KEY = "";
 
 export interface ModelPickerProps {
-  /** The catalogue offered, grouped by provider in the popover. */
   models: readonly AgentModel[] | undefined;
   /** The selected pair, or `null` when {@link ModelPickerProps.fallback} is what applies. */
   value: AgentModelRef | null;
   /** `null` only when the fallback row was chosen. */
   onChange: (model: AgentModelRef | null) => void;
   /**
-   * A row above the catalogue standing for "no choice" — a code default, an inherited
-   * setting. Choosing it yields `null`; its label is what the trigger shows for `null`.
+   * A row above the catalogue for "no choice" (a code default, an inherited setting). Choosing
+   * it yields `null`; its label is what the trigger shows for `null`.
    */
   fallback?: { label: string };
   /**
-   * The thinking level to show under the catalogue; the slider is omitted when this is not
-   * given, or when the selected model has no reasoning to configure.
+   * Omitted (and the slider hidden) when unset or the selected model has no reasoning to
+   * configure.
    */
   thinkingLevel?: AgentThinkingLevel;
   /** The thumb moved; the value to show while it is being dragged. */
@@ -46,11 +45,8 @@ export interface ModelPickerProps {
   isDisabled?: boolean;
   /** A choice is being persisted; the trigger shows it and refuses another until it lands. */
   isPending?: boolean;
-  /** The trigger fills its container and shows the whole model name, as a form field would. */
   fullWidth?: boolean;
-  /** Display names per provider or vendor id, on top of the built-in ones. */
   providerLabels?: Readonly<Record<string, string>>;
-  /** Marks per provider or vendor id, on top of the built-in ones. */
   providerIcons?: Readonly<Record<string, ProviderIcon>>;
   /** Providers in the order offered; the rest follow alphabetically. */
   providerOrder?: readonly string[];
@@ -60,12 +56,7 @@ export interface ModelPickerProps {
   className?: string;
 }
 
-/**
- * One popover: a rail of provider marks, a searchable model list for the active provider, and
- * the thinking slider. Controlled throughout — it shows `value` and reports a choice — so the
- * same element serves a session's own settings (`SessionModelPicker`) and a form that decides
- * what to do with the choice itself. Needs only the labels context.
- */
+/** Controlled. Needs only the labels context. */
 export const ModelPicker = ({
   className,
   fallback,

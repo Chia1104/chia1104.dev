@@ -12,11 +12,9 @@ import { createAgentSessionOperations } from "./session";
 import { createAgentTurnOperations } from "./turn";
 
 /**
- * Builds the transport-facing service shared by every registered agent kind.
- *
- * Session persistence and projection, durable turn control, and tree maintenance are separate
- * operation groups. This module composes them with the kind's model policy and capabilities; it
- * owns no mutable process state.
+ * Session persistence, durable turn control, and tree maintenance are separate operation
+ * groups. This module composes them with the kind's model policy; it owns no mutable process
+ * state.
  */
 export const createAgentKindService = <TState, TConfig extends object>(
   definition: AgentKindDefinition<TState, TConfig>,

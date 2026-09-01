@@ -1,9 +1,8 @@
 import * as z from "zod";
 
 /**
- * The writing kind's operator configuration — what the dashboard may change about this agent
- * without a deploy. Only preferences belong here. Tool tiers, the approval policy, the turn
- * budget and the model allowlist are safety boundaries and stay in code.
+ * Operator preferences the dashboard may change without a deploy. Tool tiers, approval, turn
+ * budget and the model allowlist stay in code.
  */
 
 /** Long enough for a page of house rules; the prompt is cached per session, so size is cheap. */

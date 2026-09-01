@@ -2,10 +2,6 @@ import type { AgentErrorKind, ToolTier } from "../types.ts";
 
 import type { AgentWireEvent } from "./schema.ts";
 
-// ============================================
-// Fold: wire events → view model
-// ============================================
-
 export interface ToolCallView {
   kind: "tool";
   toolCallId: string;
@@ -35,7 +31,6 @@ export interface NoticeView {
   variant: "compacted" | "rewound" | "error" | "decision";
   /** Unset on `error` notices, which show only the headline their `code` selects. */
   text?: string;
-  /** Set on `error` notices. */
   code?: AgentErrorKind;
 }
 
@@ -58,8 +53,8 @@ export const emptyViewState = (): AgentViewState => ({
 });
 
 /**
- * Pure reducer. Applying the same events in the same order always yields the same state,
- * which is what lets the replayed transcript and the live stream share a renderer.
+ * Pure reducer. Applying the same events in the same order always yields the same state, so the
+ * replayed transcript and the live stream share a renderer.
  */
 export const applyEvent = (
   state: AgentViewState,
@@ -167,7 +162,7 @@ export const applyEvent = (
 
       /**
        * A gated call still produces a `tool:end`: the permission gate refuses it, and pi turns
-       * the refusal into an error tool result. That result is the gate working, not a failure —
+       * the refusal into an error tool result. That result is the gate working, not a failure,
        * so a call already parked on `awaiting_approval` keeps that status and stays in
        * `pendingApprovals`, otherwise the approval prompt would vanish the instant it appeared.
        */
@@ -227,8 +222,8 @@ export const applyEvent = (
       if (index === -1) items.push(view);
       else items[index] = view;
       // The request is announced while the turn is still running and before it is persisted;
-      // only `run:end{awaiting_approval}` (or a reloaded pending row) makes it decidable, so the
-      // run status is left to that event and the card stays locked until then.
+      // only `run:end{awaiting_approval}` (or a reloaded pending row) makes it decidable, so
+      // the run status is left to that event and the card stays locked until then.
       return {
         ...state,
         items,
@@ -243,7 +238,7 @@ export const applyEvent = (
         const existing = items[index] as ToolCallView;
         items[index] = {
           ...existing,
-          // The gated call itself never ran — a decision closes the card, and the re-issued call
+          // The gated call itself never ran. A decision closes the card, and the re-issued call
           // arrives as its own tool item. Leave `awaiting_approval` or a later `tool:end` would
           // read as the gate still holding it.
           status:
@@ -296,10 +291,10 @@ export const applyEvent = (
       if (event.reason === "awaiting_approval") {
         return { ...state, items, runStatus: "awaiting_approval" };
       }
-      // `approval:request` is announced as soon as the gate refuses, before the turn has proven it
-      // can persist the request. A turn that then ends any other way has nothing for the operator
-      // to decide — drop the prompts rather than leave cards nobody can act on. A call still
-      // running has no `tool:end` coming either: the turn is over, so it was stopped.
+      // `approval:request` is announced as soon as the gate refuses, before the turn has proven
+      // it can persist the request. A turn that then ends any other way has nothing for the
+      // operator to decide: drop the prompts rather than leave cards nobody can act on. A call
+      // still running has no `tool:end` coming either; the turn is over, so it was stopped.
       return {
         ...state,
         items: items.map((item) =>

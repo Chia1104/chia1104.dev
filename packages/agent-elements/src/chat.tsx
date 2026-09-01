@@ -14,7 +14,6 @@ import { useAgentStatus } from "./provider.tsx";
 import { Thread } from "./thread.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
 
-/** The session's status as a chip, for a host header. */
 export const StatusChip = ({ className }: { className?: string }) => {
   const labels = useAgentLabels();
   const status = useAgentStatus();
@@ -39,7 +38,6 @@ export const StatusChip = ({ className }: { className?: string }) => {
 };
 
 export interface AgentChatProps {
-  /** Rendered above the thread — session tabs, model picker, status. */
   header?: ReactNode;
   renderers?: ToolRenderers;
   empty?: EmptyStateProps;
@@ -47,10 +45,7 @@ export interface AgentChatProps {
   className?: string;
 }
 
-/**
- * Thread over composer, inside an `AgentSessionProvider`. Kind-specific panels (a draft preview,
- * a template menu) sit beside or above this in the host; the elements stay kind-agnostic.
- */
+/** Kind-specific panels sit beside or above this in the host. */
 export const AgentChat = ({
   className,
   composerPlaceholder,

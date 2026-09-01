@@ -9,9 +9,9 @@ const runs = {
 };
 
 /**
- * A turn marker is only "running" while the World run that would execute it is alive. Pinned:
- * a marker on a dead run is closed as failed and its controller released; a marker on a live
- * run and a young unbound lease are left alone; an old unbound lease is dead.
+ * A turn marker is only "running" while the World run that would execute it is alive.
+ * A marker on a dead run is closed as failed; a marker on a live run and a young unbound
+ * lease are left alone; an old unbound lease is dead.
  */
 
 const repo = vi.hoisted(() => ({

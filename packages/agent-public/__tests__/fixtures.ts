@@ -6,7 +6,6 @@ import type {
   TagItem,
 } from "@chia/agent-content/types";
 
-/** Scriptable {@link ContentReadPort} for tests. */
 export interface FakeContentPortOptions {
   searchHits?: PostSearchHit[];
   posts?: PostSnapshot[];

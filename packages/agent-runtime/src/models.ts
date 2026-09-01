@@ -12,23 +12,19 @@ import { openaiProvider } from "@earendil-works/pi-ai/providers/openai";
 import { vercelAIGatewayProvider } from "@earendil-works/pi-ai/providers/vercel-ai-gateway";
 
 /**
- * Pi model layer.
- *
  * Three providers, two credential stories:
  *
- * - `vercel-ai-gateway` — the house account. pi-ai's own provider talks Anthropic's native messages
- *   API against `https://ai-gateway.vercel.sh` and resolves `AI_GATEWAY_API_KEY` from the ambient
- *   environment, which is the same gateway and env var the rest of the repo already uses. Its
- *   catalogue is not Anthropic-only: the gateway translates protocols server-side, so `openai/*`
- *   models are served over the very same `anthropic-messages` API.
- * - `openai` / `anthropic` — bring-your-own-key. The caller's key arrives per request, so these are
- *   registered *only* when a credential is supplied. A registration-time decision rather than a
- *   resolve-time check, because pi-ai's auth resolution falls back to ambient env vars when nothing
- *   is stored — and `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` do exist in the service environment for
- *   unrelated features. Registering them unconditionally would silently bill the house account for
- *   what is meant to be the operator's own key.
+ * - `vercel-ai-gateway`: the house account. pi-ai talks Anthropic's native messages API against
+ *   `https://ai-gateway.vercel.sh` and resolves `AI_GATEWAY_API_KEY` from the ambient
+ *   environment. Catalogue is not Anthropic-only: the gateway translates protocols server-side,
+ *   so `openai/*` models are served over the same `anthropic-messages` API.
+ * - `openai` / `anthropic`: bring-your-own-key. Registered only when a credential is supplied.
+ *   A registration-time decision rather than a resolve-time check: pi-ai's auth resolution falls
+ *   back to ambient env vars when nothing is stored, and `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`
+ *   exist in the service environment for unrelated features. Registering them unconditionally
+ *   would silently bill the house account.
  *
- * Consequently `Models` is **per-credential-set**, not process-wide. See {@link createAgentModels}.
+ * `Models` is per-credential-set, not process-wide. See {@link createAgentModels}.
  */
 
 export const AGENT_PROVIDERS = {
@@ -37,7 +33,7 @@ export const AGENT_PROVIDERS = {
   anthropic: "anthropic",
 } as const;
 
-/** Providers whose key the caller supplies. The gateway is deliberately absent. */
+/** Providers whose key the caller supplies. The gateway is absent. */
 export const BYOK_PROVIDER_IDS = [
   AGENT_PROVIDERS.openai,
   AGENT_PROVIDERS.anthropic,
@@ -54,16 +50,15 @@ export const isByokProviderId = (
 
 /**
  * Decrypted, request-scoped provider keys.
- *
- * Plaintext: the ciphertext form is a transport concern and is decrypted at the last possible
- * moment — see `apps/service/src/steps/agent-turn.step.ts`.
+ * Ciphertext is a transport concern; decrypted at the last possible moment. See
+ * `apps/service/src/steps/agent-turn.step.ts`.
  */
 export type AgentCredentials = Partial<Record<ByokProviderId, string>>;
 
 /** A resolved Pi model, as hosts that do not depend on pi-ai directly name it. */
 export type AgentModel = Model<Api>;
 
-/** Identifies a model. Both halves are required — see {@link resolveModel}. */
+/** Identifies a model. Both halves are required. See {@link resolveModel}. */
 export interface AgentModelRef {
   providerId: string;
   modelId: string;
@@ -74,10 +69,9 @@ export type AgentModelPredicate = (ref: AgentModelRef) => boolean;
 
 /**
  * Read-only {@link CredentialStore} over a fixed set of keys.
- *
- * pi-ai's own `InMemoryCredentialStore` would work, but seeding it means awaiting `modify()` per
- * provider, which would make model construction async for no gain. Nothing here is ever written:
- * login and logout are meaningless for credentials that arrived with the request and die with it.
+ * pi-ai's `InMemoryCredentialStore` requires awaiting `modify()` per provider, which would make
+ * construction async.
+ * Nothing here is written: credentials arrived with the request and die with it.
  */
 const fixedCredentialStore = (
   credentials: AgentCredentials
@@ -114,16 +108,15 @@ const fixedCredentialStore = (
 };
 
 /**
- * Model catalogues are static per pi-ai release and identical across callers, so the store that
- * backs them is shared process-wide even though `Models` instances are not.
+ * Catalogues are static per pi-ai release and identical across callers, so this store is
+ * process-wide even though `Models` instances are not.
  */
 const modelsStore = new InMemoryModelsStore();
 
 /**
  * Builds the `Models` an agent turn executes against.
- *
- * Called **per turn**, because the BYOK credentials it closes over are per request. Provider
- * construction is cheap — these three ship static catalogues and perform no I/O at registration.
+ * Called per turn: BYOK credentials are per request. Provider construction is cheap; static
+ * catalogues, no I/O at registration.
  */
 export const createAgentModels = (
   credentials: AgentCredentials = {}
@@ -140,10 +133,8 @@ export const createAgentModels = (
 
 /**
  * Every provider registered, no credentials.
- *
- * For the model picker only: catalogue metadata (name, context window, cost) is a property of the
- * model, not of who is paying for it, so the picker can describe a provider the caller has not
- * authenticated yet — that is exactly what lets the UI say "needs an API key" instead of hiding it.
+ * Catalogue metadata is a property of the model, not of who is paying, so the picker can
+ * describe a provider the caller has not authenticated yet.
  * Never use this to execute a turn; it would resolve BYOK providers against ambient env keys.
  */
 export const createAgentCatalog = (): Models => {
@@ -164,16 +155,14 @@ export class UnknownAgentModelError extends Error {
 }
 
 /**
- * Resolves a `(providerId, modelId)` pair against a predicate **owned by the agent kind**.
+ * Resolves a `(providerId, modelId)` pair against a predicate owned by the agent kind.
  *
- * The pair is the identity, never the model id alone: the same model carries different ids under
- * different providers — `anthropic/claude-haiku-4.5` through the gateway is `claude-haiku-4-5`
- * natively. Matching on the id alone would resolve a session to the wrong provider, or to nothing.
+ * The pair is the identity, never the model id alone: the same model carries different ids
+ * under different providers. `anthropic/claude-haiku-4.5` through the gateway is
+ * `claude-haiku-4-5` natively.
  *
- * The predicate is a parameter rather than a constant because which models an agent may use is
- * policy: a long-horizon authoring agent with write access wants a different set than a public Q&A
- * agent. Pairs outside it are rejected even when the provider would serve them, because the pair
- * arrives from a client-supplied setting.
+ * The predicate is policy: which models an agent may use. Pairs outside it are rejected even
+ * when the provider would serve them, because the pair arrives from a client-supplied setting.
  */
 export const resolveModel = (
   ref: AgentModelRef,
@@ -210,11 +199,8 @@ export interface ListModelsOptions {
 }
 
 /**
- * Model picker payload.
- *
- * Enumerates each provider's catalogue and filters it through the kind's policy, rather than
- * looking up a hand-written list of ids. The metadata is pi-ai's own, so a model's context window
- * and modality stay correct across pi-ai upgrades without anyone editing a constant.
+ * Enumerates each provider's catalogue and filters it through the kind's policy.
+ * Metadata is pi-ai's own, so context window and modality stay correct across pi-ai upgrades.
  */
 export const listModels = (
   isAllowed: AgentModelPredicate,

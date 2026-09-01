@@ -42,8 +42,8 @@ export class StreamingHighlight {
 }
 
 /**
- * Tokens for `code` in `language`, kept up to date as the text streams in. `null` until the
- * grammar has loaded so the caller can show the raw text meanwhile.
+ * Tokens for `code` in `language`. `null` until the grammar has loaded so the caller can show
+ * the raw text meanwhile.
  */
 export const useStreamingTokens = (code: string, language: string) => {
   const [grammar, setGrammar] = useState<{
@@ -91,7 +91,7 @@ export interface HighlightedCodeProps {
   className?: string;
 }
 
-/** The highlighted `<pre>`; the host wraps it in whatever frame it wants. */
+/** The highlighted `<pre>`; the host wraps it. */
 export const HighlightedCode = ({
   className,
   code,

@@ -4,14 +4,8 @@ import { labelOf, tierOf } from "./tools/registry.ts";
 import { summarizeToolResult } from "./tools/summarize.ts";
 
 /**
- * The writing agent's {@link AgentPolicy}.
- *
- * This is what `@chia/agent-runtime` consumes instead of reaching into a module-level table of *this*
- * package's tool names — which is what previously made the gate unusable by a second agent kind.
- *
- * `tierOf` falls back to the most restrictive tier for an unknown name. Within this kind that is a
- * safe default (a tool it does not recognise should not run unsupervised); the point of injecting
- * the policy is that another kind gets to choose its own fallback rather than inheriting `commit`.
+ * Unknown names fall back to the most restrictive tier so an unrecognized tool cannot run
+ * unsupervised.
  */
 export const writingPolicy: AgentPolicy = {
   tierOf,
@@ -23,9 +17,8 @@ export const writingPolicy: AgentPolicy = {
 };
 
 /**
- * What one writing turn may spend. A research-heavy turn (search, read several posts, fetch a
- * few sources, stage a draft, revise it) lands around twenty calls, so the soft limit leaves
- * headroom for that while still ending a turn that only re-issues the same search.
+ * Soft cap leaves headroom for a research-heavy turn; hard cap ends a loop that only re-issues
+ * the same search.
  */
 export const writingTurnBudget: AgentTurnBudget = {
   maxToolCalls: 40,

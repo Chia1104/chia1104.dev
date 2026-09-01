@@ -16,15 +16,9 @@ export const useFormRules = () => {
 
   const patterns = useMemo(
     () => ({
-      /**
-       * 電子郵件
-       */
       email: z.email({
         error: "Email is invalid",
       }),
-      /**
-       * 必填字串
-       */
       required: z
         .string({
           error: messages.primitive.invalid_type_error,
@@ -32,9 +26,6 @@ export const useFormRules = () => {
         .min(1, {
           error: messages.primitive.required_error,
         }),
-      /**
-       * URL 格式
-       */
       url: z.union([
         z
           .url({
@@ -51,21 +42,12 @@ export const useFormRules = () => {
             error: "URL must start with https://",
           }),
       ]),
-      /**
-       * dayjs 實例
-       */
       dayjs: z.custom<dayjs.Dayjs>((value) => dayjs.isDayjs(value), {
         error: messages.primitive.invalid_type_error,
       }),
-      /**
-       * 時間戳
-       */
       timeStamps: z.number({
         error: messages.primitive.invalid_type_error,
       }),
-      /**
-       * 數字字串
-       */
       numericString: z
         .string({
           error: messages.primitive.invalid_type_error,
@@ -88,9 +70,6 @@ export const useFormRules = () => {
         .positive({
           error: "Must be greater than 0",
         }),
-      /**
-       * 整數
-       */
       intNumber: z
         .number({
           error: "Must be an integer",
@@ -120,21 +99,12 @@ export const useFormRules = () => {
       text: z.string({
         error: messages.primitive.invalid_type_error,
       }),
-      /**
-       * 布林值
-       */
       boolean: z.boolean({
         error: messages.primitive.invalid_type_error,
       }),
-      /**
-       * 大整數
-       */
       bigint: z.bigint({
         error: messages.primitive.invalid_type_error,
       }),
-      /**
-       * 圖片
-       */
       image: z
         .file({
           error: "File is required",
@@ -151,9 +121,6 @@ export const useFormRules = () => {
             error: "File must be an image",
           }
         ),
-      /**
-       * PDF
-       */
       pdf: z
         .file({
           error: "File is required",
@@ -167,9 +134,6 @@ export const useFormRules = () => {
         .mime(["application/pdf"], {
           error: "File must be a PDF",
         }),
-      /**
-       * 影片
-       */
       video: z
         .file({
           error: "File is required",

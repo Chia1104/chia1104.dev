@@ -17,13 +17,11 @@ export const CHBot = (props: Props) => {
   const ref = useRef<HTMLDivElement>(null);
   const { className, delay = 0.2, enableEffect = false } = props;
 
-  // 水平線變體
   const horizontalVariant = {
     hidden: { width: 0, x: 20, opacity: 0 },
     visible: { width: 8, x: 16, opacity: 1, transition: { duration: 0.3 } },
   };
 
-  // 垂直線變體
   const leftLineVariant = {
     hidden: { height: 0, y: 23, x: 15, width: 0, opacity: 0 },
     visible: {
@@ -79,7 +77,6 @@ export const CHBot = (props: Props) => {
         fill="none"
         xmlns="http://www.w3.org/2000/svg">
         <title>Active Logo</title>
-        {/* 外部暈眩光效果 */}
         <motion.circle
           cx="20"
           cy="20"
@@ -97,7 +94,6 @@ export const CHBot = (props: Props) => {
           fill={`url(#${id}-outerGlowGradient)`}
         />
 
-        {/* 主要圓形 */}
         <circle
           cx="20"
           cy="20"
@@ -106,7 +102,6 @@ export const CHBot = (props: Props) => {
           filter={`url(#${id}-glowEffect)`}
         />
 
-        {/* 增強發光效果球體 */}
         <motion.circle
           cx="20"
           cy="20"
@@ -124,7 +119,6 @@ export const CHBot = (props: Props) => {
           }}
         />
 
-        {/* 藍色漸變光效 */}
         <motion.circle
           cx="20"
           cy="20"
@@ -142,7 +136,6 @@ export const CHBot = (props: Props) => {
           }}
         />
 
-        {/* 高光效果 */}
         <motion.circle
           cx="20"
           cy="20"
@@ -161,7 +154,6 @@ export const CHBot = (props: Props) => {
           }}
         />
 
-        {/* 球體效果 - 青藍色調 */}
         <motion.circle
           cx="20"
           cy="20"
@@ -180,7 +172,6 @@ export const CHBot = (props: Props) => {
           }}
         />
 
-        {/* 球體效果 - 上方高光 */}
         <motion.circle
           cx="20"
           cy="20"
@@ -207,7 +198,6 @@ export const CHBot = (props: Props) => {
           />
         </motion.circle>
 
-        {/* 球體效果 - 底部白色光暈 */}
         <motion.circle
           cx="20"
           cy="20"
@@ -226,7 +216,6 @@ export const CHBot = (props: Props) => {
           }}
         />
 
-        {/* 水平矩形 - 較短的橫線 */}
         {enableEffect && (
           <motion.rect
             variants={horizontalVariant}
@@ -239,7 +228,6 @@ export const CHBot = (props: Props) => {
           />
         )}
 
-        {/* 左側豎線 */}
         {enableEffect && (
           <motion.rect
             variants={leftLineVariant}
@@ -250,7 +238,6 @@ export const CHBot = (props: Props) => {
           />
         )}
 
-        {/* 右側豎線 */}
         {enableEffect && (
           <motion.rect
             variants={rightLineVariant}
@@ -262,7 +249,6 @@ export const CHBot = (props: Props) => {
         )}
 
         <defs>
-          {/* 底色漸變 */}
           <linearGradient
             id={`${id}-baseGradient`}
             x1="20"
@@ -274,7 +260,6 @@ export const CHBot = (props: Props) => {
             <stop offset="1" stopColor="#0A0F14" />
           </linearGradient>
 
-          {/* 藍色放射漸變 */}
           <radialGradient
             id={`${id}-blueGradient`}
             cx="0.5"
@@ -285,7 +270,6 @@ export const CHBot = (props: Props) => {
             <stop offset="1" stopColor="#C084FC" />
           </radialGradient>
 
-          {/* 高光效果 */}
           <radialGradient
             id={`${id}-highlightGradient`}
             cx="0.75"
@@ -296,7 +280,6 @@ export const CHBot = (props: Props) => {
             <stop offset="0.86" stopColor="#FFFFFF" stopOpacity="0" />
           </radialGradient>
 
-          {/* 藍色球體漸變 */}
           <radialGradient
             id={`${id}-blueBallGradient`}
             cx="0.5"
@@ -307,7 +290,6 @@ export const CHBot = (props: Props) => {
             <stop offset="1" stopColor="#C084FC" />
           </radialGradient>
 
-          {/* 上方高光漸變 */}
           <radialGradient
             id={`${id}-topHighlightGradient`}
             cx="0.5"
@@ -319,7 +301,6 @@ export const CHBot = (props: Props) => {
             <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
           </radialGradient>
 
-          {/* 底部光暈漸變 */}
           <radialGradient
             id={`${id}-bottomGlowGradient`}
             cx="0.288"
@@ -330,7 +311,6 @@ export const CHBot = (props: Props) => {
             <stop offset="0.859" stopColor="#FFFFFF" stopOpacity="0" />
           </radialGradient>
 
-          {/* 黑線漸變 */}
           <linearGradient
             id={`${id}-lineGradient`}
             x1="0"
@@ -342,7 +322,6 @@ export const CHBot = (props: Props) => {
             <stop offset="1" stopColor="#362442" />
           </linearGradient>
 
-          {/* 外發光效果 */}
           <filter
             id={`${id}-glowEffect`}
             x="-6"
@@ -384,7 +363,6 @@ export const CHBot = (props: Props) => {
             />
           </filter>
 
-          {/* 增強發光效果 */}
           <filter
             id={`${id}-enhancedGlowEffect`}
             x="-8"
@@ -426,7 +404,6 @@ export const CHBot = (props: Props) => {
             />
           </filter>
 
-          {/* 外部暈眩光漸變 */}
           <radialGradient
             id={`${id}-outerGlowGradient`}
             cx="0.5"

@@ -11,7 +11,7 @@ import { useAgentSession, useCanPrompt } from "./provider.tsx";
 export interface EmptyStateProps {
   title?: string;
   description?: string;
-  /** Prompts offered as one-click starters; each sends as-is. */
+  /** One-click starters; each sends as-is. */
   suggestions?: readonly string[];
   className?: string;
 }

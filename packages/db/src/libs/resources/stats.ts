@@ -16,11 +16,8 @@ const PREVIEW_LENGTH = 200;
 const MAX_LIST_LIMIT = 100;
 
 /**
- * Clamps on both sides, because only the oRPC contract validates the input today.
- *
- * A bare `Math.min` lets `0` through — which yields `LIMIT 1`, an empty page and a
- * non-null `nextCursor`, so a paging caller never terminates — and lets negatives and
- * fractions reach Postgres as an invalid `LIMIT`.
+ * Clamps both sides; only the oRPC contract validates input today.
+ * A bare `Math.min` lets `0` through (`LIMIT 1`, empty page, non-null `nextCursor` that never terminates) and lets negatives reach Postgres.
  */
 const listLimit = (limit: number | undefined, fallback: number): number =>
   Math.min(
@@ -101,9 +98,7 @@ const hasAnyVector = sql`exists (
 )`;
 
 /**
- * `stale` is "embedded under some other key", which is why it needs the second
- * existence test: without it a bumped `index_version` reads as `missing` and the
- * leftover vectors never surface for pruning.
+ * `stale` is embedded under some other key. Without the second existence test, a bumped `index_version` reads as `missing` and leftover vectors never surface.
  */
 const stateColumn = (key: ResourceIndexKey) => sql<ChunkEmbeddingState>`case
   when ${hasCurrentVector(key)} then 'current'
@@ -150,7 +145,6 @@ const EMPTY_COUNTS: ResourceIndexCounts = {
   missing: 0,
 };
 
-/** Moves the aggregate columns of a grouped row into a nested `counts`. */
 const groupCounts = <T extends ResourceIndexCounts>(
   row: T
 ): Omit<T, keyof ResourceIndexCounts> & { counts: ResourceIndexCounts } => {
@@ -167,7 +161,6 @@ const tally = (
   missing: rows.filter((row) => row.state === "missing").length,
 });
 
-/** Per-chunk embedding state for one resource, ordered as the drawer lists it. */
 export const getResourceIndexStatus = withDTO(
   async (
     db,
@@ -186,7 +179,6 @@ export const getResourceIndexStatus = withDTO(
   }
 );
 
-/** Counts for several resources in one statement — one feed's locales at once. */
 export const countResourceIndexStatus = withDTO(
   async (
     db,
@@ -260,12 +252,7 @@ export const getRagOverview = withDTO(
   }
 );
 
-/**
- * Explorer page, keyed on a descending `id` cursor.
- *
- * `query` is a substring filter rather than BM25: paging on `id` and ordering on
- * relevance cannot both hold, and the explorer needs a stable cursor.
- */
+/** Explorer list, descending `id` cursor. `query` is a substring filter; paging on `id` cannot also order by BM25. */
 export const listChunks = withDTO(
   async (
     db,
@@ -346,7 +333,7 @@ export const getChunkDetail = withDTO(
   }
 );
 
-/** Vectors per `(model, index_version)`, which is how leftover keys show up. */
+/** Vectors per `(model, index_version)`; leftover keys show up here. */
 export const getEmbeddingKeyDistribution = withDTO(
   async (
     db,

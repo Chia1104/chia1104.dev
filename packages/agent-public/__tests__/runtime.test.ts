@@ -24,11 +24,6 @@ import { TOOL_NAMES } from "../src/tools/registry.ts";
 
 import { createFakeContentPort } from "./fixtures.ts";
 
-/**
- * End-to-end against pi-ai's `faux` provider: the real `Agent`, the real content tools and the
- * real budget, with scripted assistant messages — no network, no database.
- */
-
 const SESSION_ID = "session-1";
 
 interface Fixture {

@@ -161,12 +161,10 @@ function switchServiceVersion(version: ServiceVersion, url: string) {
 }
 
 /**
- * @deprecated Use`withServiceEndpoint` instead
- * the url of the service endpoint (including the protocol)
+ * @deprecated Use `withServiceEndpoint` instead
  * @param env
  * @param options {proxyEndpoint, version, isInternal}
  * @default version = "v1"
- * if you are use `v1` version, the url path will be `/api/v1` (e.g. `https://example.com/api/v1`)
  */
 export const getServiceEndPoint = (
   env?: string,
@@ -246,20 +244,11 @@ export const AUTH_EMAIL = "no-reply@notify.chia1104.dev";
 interface WithServiceEndpointOptions {
   /**
    * @default false
-   * @description Whether the service is internal, used to get the internal service endpoint
-   * @example
-   * - true: Get the service endpoint from the internal service endpoint
-   * - false: Get the service endpoint from the proxy endpoint
    */
   isInternal?: boolean;
   /**
    * @default "NO_PREFIX"
-   * @description The version of the service endpoint, used to get the service with prefix
-   * @example
-   * - "v1": `/api/v1`
-   * - "auth": `/auth`
-   * - "NO_PREFIX": `/`
-   * - "LEGACY": `/api/v1`
+   * `"v1"` / `"LEGACY"` → `/api/v1`; `"auth"` → `/auth`; `"NO_PREFIX"` → `/`.
    */
   version?: ServiceVersion;
 }

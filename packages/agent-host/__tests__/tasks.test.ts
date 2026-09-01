@@ -4,8 +4,8 @@ import type { DB } from "@chia/db/client";
 import type { AgentTaskConfig } from "@chia/db/schema";
 
 /**
- * `resolveAgentTask` is where a task definition and the operator's row meet. Pinned here: the
- * row wins where it speaks, the definition where it does not, a fixed model is resolved on the
+ * `resolveAgentTask` is where a task definition and the operator's row meet. Pinned: the row
+ * wins where it speaks, the definition where it does not, a fixed model is resolved on the
  * house collection, a `"session"` default only touches the session when it follows it, and a
  * stale pin degrades to the default instead of failing the caller.
  */

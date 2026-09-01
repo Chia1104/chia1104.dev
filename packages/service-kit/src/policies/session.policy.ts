@@ -7,22 +7,18 @@ import type { Policy } from "./types";
 import { allow, deny } from "./types";
 
 export interface SessionPolicyOptions {
-  /**
-   * Additionally require `Role.Root`. Replaces the old `verifyAuth(rootOnly)` flag.
-   */
+  /** Also require `Role.Root`. */
   rootOnly?: boolean;
   /**
-   * Admit a guest — the user row better-auth's `anonymous()` plugin mints for a visitor who
-   * never signed in. Off by default: a guest holds a session cookie like anyone else, and
-   * every route that asks for "a signed-in user" means a person, not a browser tab.
-   * `callerPolicy` is the one caller that turns this on, to grade the guest as its own tier.
+   * Admit a guest user from better-auth's `anonymous()` plugin. Off by default:
+   * a guest holds a session cookie, but "signed in" means a person.
    */
   allowAnonymous?: boolean;
 }
 
 /**
- * Requires an authenticated session. Reuses `context.session` when an in-process
- * caller already resolved it, otherwise asks better-auth.
+ * Requires an authenticated session. Reuses `context.session` when already
+ * resolved, otherwise asks better-auth.
  */
 export const sessionPolicy = (
   options: SessionPolicyOptions = {}

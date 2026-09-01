@@ -18,31 +18,16 @@ import type { AgentKindService } from "../services/agent.service";
 import { contractOS } from "../utils";
 
 /**
- * Agent routes.
- *
- * Thin by design: creation/capability requests resolve by an explicit kind, while session-scoped
- * requests resolve from the persisted session. A client cannot drive a session through another
- * kind's tools by supplying a different kind.
- *
- * `callerGuard()` only resolves the tier; who may use a kind is that kind's `minTier`, enforced by
- * `agentKindGuard()` / `agentSessionGuard()`. The writing kind pins to the configured admin because
- * its tools write to and publish the blog; a public kind admits any session-bearing visitor. The
- * routes stay shared because the guards, not the routes, know the difference.
- *
- * `agentSessionGuard()` owns session resolution and ownership for every session-scoped route, so
- * the handlers below are left with only their own work — see the guard for why that is not merely
- * tidier.
+ * Creation and capability requests resolve by an explicit kind; session-scoped requests resolve
+ * from the stored session, so a client cannot drive a session through another kind's tools.
+ * Who may use a kind is that kind's `minTier`, not `callerGuard()`.
  */
 
 const resolveCaller = callerGuard();
 
-// ============================================
-// Sessions
-// ============================================
-
 /**
- * The one route whose kind is optional, so it resolves access inline: an explicit kind the caller
- * may not use is refused, an omitted kind lists whichever kinds the caller may use.
+ * Kind is optional here: an explicit kind the caller may not use is refused; an omitted kind
+ * lists whichever kinds the caller may use.
  */
 export const listAgentSessionsRoute = contractOS.agent.sessions.list
   .use(resolveCaller)
@@ -119,13 +104,9 @@ export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
     return detail;
   });
 
-// ============================================
-// Turns
-// ============================================
-
 /**
- * The durable stream stays open for the run's whole life; a chat request is scoped to one turn, so
- * it ends at that turn's `run:end` — which `runPiTurn` always emits, after any `error`.
+ * The durable stream stays open for the run's whole life; a chat request ends at that turn's
+ * `run:end`, which `runPiTurn` always emits after any `error`.
  */
 const oneTurn = async function* (
   events: AsyncIterable<AgentWireEvent>
@@ -142,8 +123,6 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
 
-    // The service refuses a turn with an `AppError` — quota spent, approval outstanding — which
-    // `withORPCErrors` turns into the code the contract declares.
     const { action } = opts.input;
     let cursor;
     if (action.type === "prompt") {
@@ -218,14 +197,6 @@ export const approveAgentToolRoute = contractOS.agent.sessions.approve
     };
   });
 
-// ============================================
-// Session maintenance
-// ============================================
-
-/**
- * Maintenance mutates the tree, so the service refuses it with an `AppError` while a turn runs or
- * an approval is undecided; `withORPCErrors` turns that into the `CONFLICT` these contracts declare.
- */
 export const compactAgentSessionRoute = contractOS.agent.sessions.compact
   .use(resolveCaller)
   .use(agentSessionGuard())
@@ -260,10 +231,6 @@ export const forkAgentSessionRoute = contractOS.agent.sessions.fork
     return detail;
   });
 
-// ============================================
-// Usage
-// ============================================
-
 /** No kind to resolve: the standing is the caller's own, so only the caller floor applies. */
 export const getAgentUsageRoute = contractOS.agent.usage.me
   .use(resolveCaller)
@@ -272,10 +239,6 @@ export const getAgentUsageRoute = contractOS.agent.usage.me
     const usage = await requireAgentFactory(opts.context).createUsage();
     return await usage.standing(caller);
   });
-
-// ============================================
-// Capabilities
-// ============================================
 
 export const listAgentModelsRoute = contractOS.agent.models.list
   .use(resolveCaller)

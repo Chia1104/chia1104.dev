@@ -24,7 +24,6 @@ const { repo, workflow } = vi.hoisted(() => ({
     countFeedTranslations: vi.fn(),
     countAgentMemories: vi.fn(),
   },
-  // Typed per member so the fixture below stays assignable to the client it stands in for.
   workflow: {
     startResourceIndex: vi.fn<WorkflowControlClient["startResourceIndex"]>(),
     startFeedIndex: vi.fn<WorkflowControlClient["startFeedIndex"]>(),
@@ -63,10 +62,8 @@ vi.mock("@chia/db/repos/resources/index-run", () => ({
 
 const ADMIN_ID = "admin-user";
 
-/** The mocks seen as the client they stand in for, which is what the context carries. */
 const workflowClient: Partial<WorkflowControlClient> = workflow;
 
-/** Minimal session, shaped as `adminPolicy` reads it. */
 const sessionOf = (id: string, role: string): Session =>
   /* SAFETY: This fixture implements the Session members exercised by this case. */ ({
     session: { id: "s1", userId: id },
@@ -74,10 +71,8 @@ const sessionOf = (id: string, role: string): Session =>
   }) as Session;
 
 /**
- * Context with a pre-resolved session, the form an in-process caller supplies, so the
- * guards run their real policies without a better-auth round trip. `kv` is absent, which
- * makes `rateLimitGuard` fail open — the budget is not what these tests are about. The
- * workflow client is the stub above, so a trigger is observable without a runner.
+ * Context with a pre-resolved session so the guards run their real policies without a
+ * better-auth round trip. `kv` is absent, which makes `rateLimitGuard` fail open.
  */
 const contextOf = (session: Session | null): BaseOSContext =>
   /* SAFETY: This fixture implements the BaseOSContext members exercised by this case. */ ({
@@ -309,9 +304,9 @@ describe("rag routes", () => {
   });
 
   /**
-   * `resource_chunk` stores the body text of every indexed resource and carries no
-   * ownership column, and these queries deliberately include unpublished and deleted rows.
-   * Sign-up is open, so a session-only guard would hand the whole corpus to anyone.
+   * `resource_chunk` stores body text with no ownership column, and these queries include
+   * unpublished and deleted rows. Sign-up is open, so a session-only guard would hand the
+   * whole corpus to anyone.
    */
   describe("reads are admin-only, not merely signed-in", () => {
     it("rejects a signed-in non-admin on overview", async () => {

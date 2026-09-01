@@ -18,9 +18,6 @@ import type {
   WebSearchResult,
 } from "./types.ts";
 
-/**
- * Re-exported so consumers can import a port and every type in its signature from one place.
- */
 export type {
   CommitDraftInput,
   CommitDraftResult,
@@ -42,25 +39,8 @@ export type {
 } from "./types.ts";
 
 /**
- * Ports this package needs from the host app.
- *
- * The split is deliberate: this package owns the writing agent's *domain* logic (tool contracts,
- * prompt assembly, draft semantics) and stays free of transport, auth and storage concerns.
- * `apps/service` implements these against the repo's existing repositories and feed services — see
- * `apps/service/src/services/agent-content.port.ts`.
- *
- * Shared Pi execution and workflow messaging live outside this package.
- */
-
-// ============================================
-// Content port
-// ============================================
-
-/**
  * The shared read port plus what only the writing agent may do: write the author's posts.
- *
- * Carries no author id: the host builds this port *for* the configured author, so the tools have
- * nothing to restate. Authorization happened before the turn started.
+ * Carries no author id: the host builds this port for the configured author.
  */
 export interface ContentPort extends ContentReadPort {
   commitDraft(input: CommitDraftInput): Promise<CommitDraftResult>;
@@ -70,14 +50,9 @@ export interface ContentPort extends ContentReadPort {
   }): Promise<{ feedId: number; published: boolean }>;
 }
 
-// ============================================
-// Web port
-// ============================================
-
 /**
- * Outbound web access: search-engine discovery and page fetch. Both cost money and are an SSRF
- * surface, so only the operator's own authoring session gets this port; a public kind never
- * builds one.
+ * Outbound web: search and page fetch. Both cost money and are an SSRF surface, so only the
+ * author's session gets this port.
  */
 export interface WebPort {
   search(
@@ -87,14 +62,7 @@ export interface WebPort {
   fetchPage(url: string, signal?: AbortSignal): Promise<FetchedPage>;
 }
 
-// ============================================
-// Draft store
-// ============================================
-
-/**
- * Staging buffer for one writing session. Backed by `agent.writing_draft` +
- * `agent.writing_session.feedMeta`.
- */
+/** Staging buffer for one writing session. */
 export interface DraftStore {
   get(sessionId: string): Promise<FeedDraft>;
   patchFeedMeta(sessionId: string, patch: DraftFeedMeta): Promise<FeedDraft>;
@@ -113,24 +81,14 @@ export interface DraftStore {
   seedFromPost(sessionId: string, post: PostSnapshot): Promise<FeedDraft>;
 }
 
-// ============================================
-// Memory port
-// ============================================
-
 /**
- * Long-term memory, shared across sessions and indexed into the site's RAG pipeline.
- *
- * Implemented entirely by the host: `save` schedules an index run and `search` goes through
- * the resource search service, neither of which this package depends on. The two list
- * methods exist for the volatile context, which only ever holds a port — what the model must
- * see on every request has to be reachable from here.
+ * Long-term memory, shared across sessions. Host implements `save`/`search` against RAG.
+ * `list*` exist for the volatile context, which only holds a port.
  */
 export interface MemoryPort {
   save(input: SaveMemoryInput, signal?: AbortSignal): Promise<SavedMemory>;
   search(input: MemorySearchInput, signal?: AbortSignal): Promise<MemoryHit[]>;
   get(id: number, signal?: AbortSignal): Promise<MemoryDetail | null>;
-  /** What this session has written so far, oldest first. */
   listBySession(sessionId: string): Promise<MemorySummary[]>;
-  /** Active lessons, most recently touched first. */
   listActiveLessons(limit: number): Promise<MemorySummary[]>;
 }

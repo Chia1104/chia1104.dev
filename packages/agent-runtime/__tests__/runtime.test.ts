@@ -22,9 +22,10 @@ import { formatOperatorDecision } from "../src/wire/operator-decision.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 /**
- * `runPiTurn` against the real `Agent`, scripted through pi-ai's faux provider, over an in-memory
- * session tree. What these pin is the host's side of the turn: hook composition, persistence
- * order, abort semantics, approval and compaction gating, and the wire lifecycle.
+ * `runPiTurn` against the real `Agent`, scripted through pi-ai's faux provider, over an
+ * in-memory session tree.
+ * Pins the host's side of the turn: hook composition, persistence order, abort semantics,
+ * approval and compaction gating, and the wire lifecycle.
  */
 
 interface TestContext {
@@ -96,8 +97,9 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * A branch already at the compaction threshold: ~100k tokens on a 100k window. The oversized
- * message sits behind one older turn: Pi keeps the newest ~20k tokens whole, so that turn is what
- * a compaction has to summarise — an oversized message alone would be the whole retained tail.
+ * message sits behind one older turn: Pi keeps the newest ~20k tokens whole, so that turn is
+ * what a compaction has to summarise. An oversized message alone would be the whole retained
+ * tail.
  */
 const seedOversizedBranch = async (session: InMemorySessionTree) => {
   await session.appendEntry({
@@ -237,8 +239,9 @@ describe("runPiTurn", () => {
       "toolResult",
       "assistant",
     ]);
-    // Each assistant:end saw its own entry already in the tree; Pi announces a tool's end before
-    // it emits the tool-result message, so that one lands with the next assistant message.
+    // Each assistant:end saw its own entry already in the tree; Pi announces a tool's end
+    // before it emits the tool-result message, so that one lands with the next assistant
+    // message.
     expect(seenAtEvent).toEqual([2, 2, 4]);
     expect(fixture.types()).toEqual([
       "run:start",
@@ -268,7 +271,7 @@ describe("runPiTurn", () => {
         ? [event.messageId]
         : []
     );
-    // user, assistant, (toolResult has no wire id), assistant — live ids are entry ids, so the
+    // user, assistant, (toolResult has no wire id), assistant. Live ids are entry ids, so the
     // replayed transcript names the same messages identically and any of them can be a target.
     expect(wireIds).toEqual([branch[0]?.id, branch[1]?.id, branch[3]?.id]);
     const startIds = fixture.events.flatMap((event) =>
@@ -476,7 +479,8 @@ describe("runPiTurn", () => {
   });
 
   it("stops mid-generation the moment the host signal fires and persists the partial reply", async () => {
-    // ~50 tokens at 25 tokens/s: a couple of seconds of streaming, aborted after the first delta.
+    // ~50 tokens at 25 tokens/s: a couple of seconds of streaming, aborted after the first
+    // delta.
     const fixture = build({ tokensPerSecond: 25 });
     const text = Array.from(
       { length: 40 },
@@ -516,7 +520,8 @@ describe("runPiTurn", () => {
     const fixture = build();
     const controller = new AbortController();
     const getBranch = fixture.session.getBranch.bind(fixture.session);
-    // The abort lands while the turn is still reading the tree, before any run exists to cancel.
+    // The abort lands while the turn is still reading the tree, before any run exists to
+    // cancel.
     fixture.session.getBranch = async (fromId) => {
       controller.abort();
       return getBranch(fromId);
@@ -607,7 +612,8 @@ describe("runPiTurn", () => {
       true,
     ]);
     expect(JSON.stringify(toolResults[3]?.content)).toMatch(/budget/i);
-    // The fourth call was a gated `publish`; the budget refused it first, so no approval exists.
+    // The fourth call was a gated `publish`; the budget refused it first, so no approval
+    // exists.
     expect(fixture.persistApprovals).not.toHaveBeenCalled();
     expect(result.status).toBe("done");
   });
@@ -898,8 +904,9 @@ describe("runPiTurn", () => {
       },
     });
 
-    // The faux provider estimates usage from the text it streams, so the figures are whatever the
-    // tree persisted for that reply — the report must be exactly those, under that entry's id.
+    // The faux provider estimates usage from the text it streams, so the figures are whatever
+    // the tree persisted for that reply. The report must be exactly those, under that entry's
+    // id.
     const branch = await fixture.branch();
     expect(reports).toEqual([
       {

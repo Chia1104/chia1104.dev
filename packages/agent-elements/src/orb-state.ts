@@ -33,7 +33,7 @@ export const orbStateOfTool = (tool: ToolCallView): OrbState =>
       lookup<OrbState>(BY_TIER, tool.tier) ??
       "working");
 
-/** What the agent is doing right now at the tail of a reply, or null when nothing is live. */
+/** `null` when nothing at the tail is live. */
 export const orbStateOf = (
   items: readonly AgentViewItem[]
 ): OrbState | null => {

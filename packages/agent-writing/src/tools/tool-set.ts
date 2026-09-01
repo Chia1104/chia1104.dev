@@ -7,10 +7,7 @@ import { retrievalTools } from "./retrieval.tool.ts";
 import { skillTools } from "./skill.tool.ts";
 
 /**
- * The writing agent's full tool set.
- *
- * Ordering is intentional — it is the order pi lists tools to the model, which nudges the
- * natural workflow: load the rules, ground yourself (posts, web, memory), draft, then commit.
+ * Full tool set. Order is the order pi lists tools to the model.
  */
 export const createWritingTools = (): WritingTool[] => [
   ...skillTools,
@@ -21,8 +18,7 @@ export const createWritingTools = (): WritingTool[] => [
 ];
 
 /**
- * Names of everything except tier 3, for sessions that should be unable to write at all
- * (e.g. a read-only review session).
+ * Everything except commit-tier tools, for a session that must not write the blog.
  */
 export const readOnlyToolNames = (): string[] =>
   [...skillTools, ...retrievalTools, ...memoryTools, ...draftTools].map(

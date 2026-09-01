@@ -19,14 +19,12 @@ const makeContext = (overrides: Partial<ServiceContext> = {}): ServiceContext =>
     ...overrides,
   }) as ServiceContext;
 
-/** A context carrying a resolved session, cast once so each case reads as the fixture it is. */
 const withSession = (value: ReturnType<typeof session>): ServiceContext =>
   makeContext({
     session:
       /* SAFETY: This fixture implements the Session members the policies read. */ value as never,
   });
 
-/** Minimal in-memory Keyv stand-in — only `get`/`set` are exercised. */
 const makeKv = () => {
   const store = new Map<string, object>();
   return {

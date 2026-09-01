@@ -23,11 +23,9 @@ export interface ResourceChunkSet {
 }
 
 /**
- * Everything a resource type must supply to be indexed and searched.
- *
- * Adding a type means implementing this and registering it; the indexing
- * workflow and the search path stay unchanged. The source's own shape does not
- * appear here on purpose — it would force the registry to be generic.
+ * Adding a type means implementing this and registering it; indexing and search stay
+ * unchanged. The source's own shape does not appear here — it would force the registry
+ * to be generic.
  */
 export interface ChunkableResource {
   readonly sourceType: string;

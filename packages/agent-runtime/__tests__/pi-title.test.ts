@@ -10,9 +10,9 @@ import {
 } from "../src/pi/title.ts";
 
 /**
- * The title generator's contract is "a short line or nothing, never a throw". The model is the
- * unreliable half, so it is stubbed: what is pinned here is the shaping of its reply and that
- * every failure mode collapses to `null` for the caller's fallback.
+ * The title generator's contract is "a short line or nothing, never a throw". The model is
+ * stubbed: what is pinned is the shaping of its reply and that every failure mode collapses to
+ * `null` for the caller's fallback.
  */
 
 const reply = (

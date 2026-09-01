@@ -4,10 +4,8 @@ import { rateLimitPolicy } from "@chia/service-kit/policies/rate-limit.policy";
 import { baseOS } from "../utils";
 
 /**
- * Per-procedure rate limiting.
- *
- * The `/rpc` and REST mounts already apply a coarse transport-level budget; this narrows
- * it for a single procedure, which the previous Hono-only limiter could not express.
+ * Per-procedure rate limiting. The `/rpc` and REST mounts already apply a coarse
+ * transport-level budget; this narrows it for a single procedure.
  */
 export const rateLimitGuard = (options: {
   prefix: string;

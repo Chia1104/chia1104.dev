@@ -18,9 +18,9 @@ vi.mock("@chia/db/repos/feeds", async () => {
 });
 
 /**
- * Visibility is fixed when the port is built and cannot be widened by a tool call. These pin
- * the property a public agent's safety rests on: a `public` port never asks the repository for
- * an unpublished post, and never lists drafts even when asked to.
+ * Visibility is fixed when the port is built and cannot be widened by a tool call. A
+ * `public` port never asks the repository for an unpublished post, and never lists drafts
+ * even when asked to.
  */
 
 const AUTHOR = "author-1";

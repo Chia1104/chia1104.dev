@@ -315,10 +315,8 @@ const TreeNodeComponent = ({
                 "group h-auto w-full justify-start gap-1 rounded-md px-2 py-1.5 text-sm transition-all duration-150 data-[level=0]:ml-0 data-[level=1]:ml-1 data-[level=2]:ml-2 data-[level=3]:ml-3"
               )}
               onPress={handleSelect}>
-              {/* Expand/Collapse indicator */}
               <Disclosure.Indicator className="mr-1 size-3.5 shrink-0" />
 
-              {/* Folder icon */}
               <span className="shrink-0">
                 {isExpanded ? (
                   <FolderOpen className="size-4 text-amber-500" />
@@ -327,10 +325,8 @@ const TreeNodeComponent = ({
                 )}
               </span>
 
-              {/* Folder name */}
               <span className="truncate font-medium">{node.name}</span>
 
-              {/* Item count badge */}
               <Chip
                 size="sm"
                 variant="soft"
@@ -360,7 +356,6 @@ const TreeNodeComponent = ({
     );
   }
 
-  // File node
   return (
     <Button
       data-level={level}
@@ -427,7 +422,6 @@ const Breadcrumb = ({ path, onNavigate }: BreadcrumbProps) => {
   );
 };
 
-// Main FileTree component
 interface FileTreeProps {
   objects: R2ObjectItem[];
   selectedPath?: string | null;

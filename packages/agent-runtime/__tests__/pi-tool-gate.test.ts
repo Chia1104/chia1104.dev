@@ -4,9 +4,8 @@ import { createPiToolCallGate } from "../src/pi/tool-gate.ts";
 import type { AgentPolicy, ToolCallRequest } from "../src/types.ts";
 
 /**
- * The gate is the seam that used to be a module-level table of the writing agent's tool names.
- * These tests pin the injected behaviour, because the failure mode of getting it wrong is silent:
- * an unrecognised tool is simply never allowed to run.
+ * Pins the injected policy: the failure mode of getting it wrong is silent. An unrecognised
+ * tool is simply never allowed to run.
  */
 
 const policy = (overrides: Partial<AgentPolicy> = {}): AgentPolicy => ({
@@ -43,7 +42,8 @@ describe("createPiToolCallGate", () => {
     const result = gate.handle(call("write_thing"));
 
     expect(result?.block).toBe(true);
-    // The reason is fed straight back to the model, so it must tell it to stop rather than retry.
+    // The reason is fed straight back to the model, so it must tell it to stop rather than
+    // retry.
     expect(result?.reason).toMatch(/do not retry/i);
     expect(gate.requests).toEqual([
       {
@@ -86,8 +86,7 @@ describe("createPiToolCallGate", () => {
   });
 
   it("uses the injected policy rather than any built-in tool table", () => {
-    // A kind that gates nothing at all: every tool runs unsupervised. Impossible to express when
-    // classification was a module-level singleton keyed on the writing agent's tool names.
+    // A kind that gates nothing at all: every tool runs unsupervised.
     const gate = createPiToolCallGate({
       policy: policy({ requiresApproval: () => false }),
       autoApprove: [],

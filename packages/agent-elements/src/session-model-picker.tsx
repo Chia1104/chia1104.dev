@@ -23,9 +23,8 @@ export type SessionModelPickerProps = Pick<
 >;
 
 /**
- * The picker bound to the mounted session: it shows the session's settings and persists every
- * choice straight away. The thinking level is held locally while its write is in flight so the
- * slider does not snap back before the detail refreshes.
+ * Bound to the mounted session. Thinking level is held locally while its write is in flight
+ * so the slider does not snap back before the detail refreshes.
  */
 export const SessionModelPicker = (props: SessionModelPickerProps) => {
   const settings = useSessionDetail().data?.settings;

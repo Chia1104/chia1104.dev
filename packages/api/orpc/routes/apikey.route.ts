@@ -21,8 +21,6 @@ export const createAPIKeyRoute = contractOS.apikey.create
         body: {
           name: opts.input.name,
           userId: opts.context.session?.user.id,
-
-          // rateLimitEnabled: false,
         },
         headers: opts.context.headers,
       })

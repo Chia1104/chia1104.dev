@@ -5,14 +5,8 @@ import { asJsonArray, asNumber, asString } from "@chia/utils/json";
 import { TOOL_NAMES } from "./registry.ts";
 
 /**
- * Condenses a tool result into one transcript line.
- *
- * This is what keeps the wire events small: a `get_post` result can be tens of kilobytes, but
- * the transcript only needs "Read post `some-slug`". The full payload stays in `details` for
- * the tool card to expand.
- *
- * `result` is `unknown` because it arrives from pi as `any` — every branch narrows defensively
- * rather than trusting the shape.
+ * One transcript line per tool result. The full payload stays in `details`. `result` is
+ * `unknown` because it arrives from pi as `any`.
  */
 export const summarizeToolResult = <TResult>(
   toolName: string,

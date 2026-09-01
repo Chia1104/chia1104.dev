@@ -56,29 +56,19 @@ export interface ExistingChunkRow {
 }
 
 export interface ChunkReplacementPlan {
-  /** same kind, index and hash — only the mirrored visibility is refreshed */
+  /** Same kind, index and hash; only mirrored visibility is refreshed. */
   unchanged: number[];
-  /** same content at a new position — the row moves and its vectors survive */
+  /** Same content at a new position; the row moves and its vectors survive. */
   moved: { id: number; chunk: ResourceChunkInput }[];
-  /** new content at an existing position — rewritten in place, vectors dropped */
+  /** New content at an existing position; rewritten in place, vectors dropped. */
   rewritten: { id: number; chunk: ResourceChunkInput }[];
   inserted: ResourceChunkInput[];
   removed: number[];
 }
 
 /**
- * Matches incoming chunks to existing rows by *content*, not position.
- *
- * Identity used to be `(kind, chunk_index)`: inserting one paragraph shifted
- * every later chunk's index, so each compared against the wrong predecessor
- * and the whole tail re-embedded. Matching by hash first means an edit costs
- * what actually changed — shifted chunks are recognised as moves and keep
- * their vectors.
- *
- * Matching order: exact `(kind, index, hash)` first (stable rows), then
- * `(kind, hash)` in document order (moves), then `(kind, index)` (in-place
- * rewrites), and whatever remains is an insert or a removal. Duplicate hashes
- * are claimed row-by-row, so repeated content cannot double-match.
+ * Matches incoming chunks to existing rows by content, not position, so a shifted paragraph keeps its vectors.
+ * Duplicate hashes are claimed row-by-row.
  */
 export const planChunkReplacement = (
   existing: ExistingChunkRow[],
@@ -148,12 +138,7 @@ export const planChunkReplacement = (
 
 /**
  * Replaces a resource's chunks in one transaction, per `planChunkReplacement`.
- *
- * Moves land in two phases because of the unique `(source, kind, chunk_index)`
- * index: a moved row's target position may still be held by another row that
- * has not moved yet, so every moved row first parks on a negative index (real
- * indexes are ≥ 0, and final indexes are unique, so `-(index + 1)` cannot
- * collide) and takes its final position after inserts.
+ * Moves land in two phases because of the unique `(source, kind, chunk_index)` index: each moved row first parks on `-(index + 1)` (real indexes are ≥ 0) then takes its final position after inserts.
  */
 export const replaceResourceChunks = withDTO(
   async (
@@ -219,7 +204,7 @@ export const replaceResourceChunks = withDTO(
             contentHash: rewrite.chunk.contentHash,
           })
           .where(eq(chunks.id, rewrite.id));
-        // content changed — the stored vector no longer describes it
+        // Content changed; the stored vector no longer describes it.
         await trx.delete(embeddings).where(eq(embeddings.chunkId, rewrite.id));
       }
 
@@ -255,11 +240,7 @@ export const replaceResourceChunks = withDTO(
 
 /**
  * Whether the index reflects a source row last written at `since`.
- *
- * `replaceResourceChunks` touches every surviving chunk's `updated_at` on each run, moved
- * and unchanged ones included, so one chunk written after the row is proof the run landed
- * — and no such chunk, whether the resource was never indexed or its run failed after a
- * content change, means the index is behind.
+ * `replaceResourceChunks` touches every surviving chunk's `updated_at`, so one chunk written after the row is proof the run landed.
  */
 export const isResourceIndexedSince = withDTO(
   async (db, dto: { ref: ResourceRef; since: Date }): Promise<boolean> => {
@@ -284,9 +265,7 @@ export const deleteResourceChunks = withDTO(
 
 /**
  * Chunks with no vector for this model and index version.
- *
- * Scoped to one resource when `ref` is given, otherwise a backlog query for a
- * full reindex.
+ * Scoped to one resource when `ref` is given, otherwise a backlog query for a full reindex.
  */
 export const listChunksNeedingEmbedding = withDTO(
   async (

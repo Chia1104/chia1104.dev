@@ -1,24 +1,18 @@
 /**
- * MDX/Markdown structure helpers, built on the remark parser (mdast).
+ * MDX/Markdown structure helpers on the remark parser.
  *
- * Kept separate from `chunking.ts` so the concerns stay apart: this module is
- * about document structure (the document card in `utils.ts`, citation anchors
- * at read time), `chunking.ts` is about turning that structure into vectors.
+ * Separate from `chunking.ts`: this is document structure (document card,
+ * citation anchors); chunking turns that structure into vectors.
  *
- * Parser, not regexes: the corpus is MDX, and the regex predecessor missed
- * multi-line JSX opening tags, left `{expressions}` in chunk text, and failed
- * to condense fences carrying a meta string (```ts title="x"). The transformed
- * tree is serialized as canonical markdown so escaping and fences remain valid.
- *
- * The parser stack is imported dynamically per call: these helpers sit under
+ * Parser stack is imported dynamically per call: these helpers sit under
  * `utils.ts`, whose constants are on the boot path of every process that
  * touches embeddings, and micromark + acorn have no business in a boot.
  */
 import type { Code, Heading, Root, RootContent } from "mdast";
 
-/** Code blocks up to this many lines are kept verbatim in chunks. */
+/** Fences this short stay verbatim in chunks. */
 const MAX_CODE_BLOCK_LINES = 24;
-/** Longer code blocks keep their head — identifiers, imports, comments live there. */
+/** Head kept when a fence exceeds `MAX_CODE_BLOCK_LINES`. */
 const CODE_BLOCK_HEAD_LINES = 12;
 
 const loadParser = async () => {
@@ -57,10 +51,8 @@ const loadParser = async () => {
 type Parser = Awaited<ReturnType<typeof loadParser>>;
 
 /**
- * Parses as MDX, falling back to plain markdown when the source is not valid
- * MDX (a stray `<` or an unclosed tag throws in remark-mdx). The fallback
- * keeps indexing alive for a malformed post — JSX degrades to text — instead
- * of failing the whole run.
+ * Parses as MDX; falls back to markdown when remark-mdx throws (stray `<`
+ * or an unclosed tag). Indexing continues; JSX degrades to text.
  */
 const parseDocument = (parser: Parser, source: string): Root => {
   try {
@@ -106,8 +98,8 @@ const serializeMarkdownText = (parser: Parser, value: string): string =>
 
 /**
  * Converts MDX-specific and destination-bearing nodes to ordinary mdast.
- * The markdown-only serializer is the final safety boundary: any MDX node
- * missed here fails serialization instead of being emitted as executable MDX.
+ * The markdown-only serializer is the safety boundary: a missed MDX node
+ * fails serialization instead of emitting executable MDX.
  */
 const cleanNodes = (nodes: RootContent[], parser: Parser): RootContent[] =>
   nodes.flatMap((node): RootContent[] => {
@@ -153,10 +145,9 @@ const cleanNodes = (nodes: RootContent[], parser: Parser): RootContent[] =>
   });
 
 /**
- * MDX cleanup that keeps document structure (headings, lists, code fences)
- * so the splitter can respect boundaries. Unlike `stripMdx` (topic-level
- * document vectors), this keeps code content — function names, CLI commands,
- * and error messages are exactly what technical queries search for.
+ * Cleans MDX while keeping headings, lists, and code fences so the splitter
+ * can respect boundaries. Unlike `stripMdx`, keeps code content (function
+ * names, CLI commands, error messages).
  */
 export const cleanMdxKeepStructure = async (
   source: string
@@ -170,7 +161,7 @@ export const cleanMdxKeepStructure = async (
 
 export interface MarkdownSection {
   headingPath: string | null;
-  /** heading path escaped for safe interpolation into canonical markdown */
+  /** heading path escaped for interpolation into canonical markdown */
   headingMarkdownPath: string | null;
   /** level of the section's own heading; null for preamble text */
   level: number | null;
@@ -179,9 +170,9 @@ export interface MarkdownSection {
 
 export interface MarkdownHeading {
   level: number;
-  /** plain text, markers stripped — what the rendered page slugs */
+  /** Plain text with markers stripped; what the rendered page slugs */
   title: string;
-  /** `"HNSW > ef_search"` — ancestors joined with the heading itself */
+  /** `"HNSW > ef_search"`: ancestors joined with the heading itself */
   path: string;
 }
 
@@ -203,7 +194,6 @@ const walkHeadings = (
   }
 };
 
-/** Every heading in document order, each with its ancestor path. */
 export const extractHeadings = async (
   content: string
 ): Promise<MarkdownHeading[]> => {
@@ -232,9 +222,8 @@ export const extractHeadings = async (
 };
 
 /**
- * Splits markdown into sections at top-level heading boundaries, tracking the
- * heading path. Expects canonical input from `cleanMdxKeepStructure`; sections
- * are verbatim slices of that normalized markdown.
+ * Splits at top-level heading boundaries. Expects canonical input from
+ * `cleanMdxKeepStructure`; sections are verbatim slices of that markdown.
  */
 export const splitByHeadings = async (
   content: string
@@ -288,18 +277,15 @@ export const splitByHeadings = async (
 };
 
 export interface HeadingOutlineOptions {
-  /** deepest heading level to include; H4+ is usually noise in a document card */
+  /** Deepest heading to include; H4+ is noise in a document card */
   maxDepth?: number;
-  /** hard cap so a pathological document cannot blow the card's size */
+  /** Cap so a pathological document cannot blow the card's size */
   maxHeadings?: number;
 }
 
 /**
- * Renders the heading tree as an indented list for the document card.
- *
- * This is what makes the card's length a function of document *structure*
- * rather than document *length* — a 20k-token article and a 2k-token article
- * with the same outline produce the same size input.
+ * Heading tree as an indented list for the document card. Card length is a
+ * function of document structure, not document length.
  */
 export const buildHeadingOutline = async (
   content: string,
@@ -315,8 +301,8 @@ export const buildHeadingOutline = async (
     return "";
   }
 
-  // indent relative to the shallowest kept level so an article that starts at
-  // H2 is not indented for no reason
+  // Indent relative to the shallowest kept level so an H2-first article is
+  // not indented for no reason
   const baseLevel = Math.min(...headings.map((heading) => heading.level));
   const parser = await loadParser();
 
@@ -364,9 +350,8 @@ const collectPlainText = (
 };
 
 /**
- * Flattens MDX/Markdown to plain prose for the document card's body fallback:
- * no code blocks, no markup, no expressions — the topic vector should capture
- * what the post is about, not how it is marked up.
+ * Flattens to plain prose for the document card's body fallback: no code
+ * blocks, markup, or expressions.
  */
 export const stripMdx = async (source: string): Promise<string> => {
   const parser = await loadParser();

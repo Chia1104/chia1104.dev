@@ -9,8 +9,8 @@ import { routerContract } from "./router.contract";
 import type { AgentFactory } from "./services/agent.factory";
 
 /**
- * Values the guards need that only the hosting app knows (env-driven budgets, project
- * ids, key material). Carried on the context so `packages/api` parses no env of its own.
+ * Values the guards need that only the hosting app knows. Carried on the context so
+ * `packages/api` parses no env of its own.
  */
 export interface ORPCConfig {
   rateLimit: {
@@ -25,9 +25,8 @@ export interface ORPCConfig {
 }
 
 /**
- * Feed lifecycle hooks. Fired by the content write paths; the host that owns search
- * indexing supplies them. Absent means the process has no indexer — the write still
- * happens, nothing is scheduled.
+ * Feed lifecycle hooks. Fired by content write paths; the host that owns search indexing
+ * supplies them. Absent means the write still happens, nothing is scheduled.
  */
 export interface FeedHooks {
   onFeedChanged?: (feedID: number) => Promise<void>;
@@ -35,27 +34,23 @@ export interface FeedHooks {
 }
 
 /**
- * Agent memory lifecycle hook, fired by `memories/write.ts` after every write. One hook
- * covers create, update and removal: the index run reads the row and clears the chunks of
- * a memory that is gone or archived, so the writer never has to say which it was.
+ * Fired by `memories/write.ts` after every write. One hook covers create, update and
+ * removal: the index run reads the row and clears chunks of a memory that is gone or
+ * archived.
  */
 export interface MemoryHooks {
   onMemoryChanged?: (memoryId: number) => Promise<void>;
 }
 
 /**
- * oRPC handler context: {@link ServiceContext} plus what the hosting process supplies.
- *
- * `config` and `workflow` are required — every process that runs the router has a
- * rate-limit budget to name and a workflow service to send runs to. The agent factory is optional
- * because tests and non-agent hosts may omit it; an agent route then answers
+ * {@link ServiceContext} plus what the hosting process supplies. `config` and `workflow`
+ * are required. The agent factory is optional; an agent route then answers
  * `SERVICE_UNAVAILABLE`.
  */
 export interface BaseOSContext extends ServiceContext {
   config: ORPCConfig;
   /**
-   * The `apps/workflow` client. Routes start runs, cancel them and read their state with it
-   * directly — the World itself lives behind that service, never in this package.
+   * The `apps/workflow` client. The World lives behind that service, never in this package.
    */
   workflow: WorkflowControlClient;
   hooks?: FeedHooks &

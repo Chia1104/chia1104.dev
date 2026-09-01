@@ -76,9 +76,6 @@ export const FumadocsComponents =
     ),
   } as MDXComponents;
 
-/**
- * V1 MDX Components
- */
 export const V1MDXComponents: MDXComponents = {
   ImageWrapper: (props: any) => (
     <div className="relative w-full overflow-hidden rounded-lg">

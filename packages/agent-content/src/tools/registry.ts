@@ -1,8 +1,6 @@
 /**
- * Single source of truth for the content read tools' identity: name → UI label.
- *
- * Kept apart from the tool objects so a kind's policy and event mapping can classify a call
- * without constructing the tools — which need a port, which needs a database.
+ * Content-read tool identity (name → UI label). Kept apart from the tool objects so a kind's
+ * policy can classify a call without constructing tools, which need a port and a database.
  */
 
 export const CONTENT_TOOL_NAMES = {

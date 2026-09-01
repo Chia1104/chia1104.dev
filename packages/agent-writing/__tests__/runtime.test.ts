@@ -27,14 +27,6 @@ import { TOOL_NAMES } from "../src/tools/registry.ts";
 import { createFakeContentPort, createFakeWebPort } from "./fixtures.ts";
 import type { FakeContentPort, FakeWebPort } from "./fixtures.ts";
 
-/**
- * End-to-end runtime tests against pi-ai's `faux` provider.
- *
- * These exercise the real `Agent`, the real tools and the real permission gate with
- * scripted assistant messages, so the tool loop, the tier-3 refusal handshake and the event
- * mapping are all covered offline — no network, no database.
- */
-
 const SESSION_ID = "session-1";
 
 interface Fixture {
@@ -59,10 +51,6 @@ const build = async (
   settings: Partial<AgentSessionSettings> = {},
   fauxOptions: { tokensPerSecond?: number } = {}
 ): Promise<Fixture> => {
-  /**
-   * The faux provider stands in for whichever provider the settings name, so a turn can be driven
-   * through a non-gateway provider without a second scripting harness.
-   */
   const providerId = settings.providerId ?? "vercel-ai-gateway";
   const modelId = settings.modelId ?? "anthropic/claude-sonnet-5";
   const faux = fauxProvider({
@@ -266,12 +254,6 @@ describe("runWritingTurn", () => {
     });
   });
 
-  /**
-   * `settings.providerId` was persisted but never read: model resolution hard-coded the gateway, so
-   * a session pointing at any other provider silently ran on the gateway anyway. This pins that it
-   * is now load-bearing — the turn only completes if the engine resolved against the *named*
-   * provider, since that is the only one the faux collection registers.
-   */
   it("runs a turn against the provider the settings name", async () => {
     const native = await build({
       providerId: "openai",
@@ -307,8 +289,7 @@ describe("runWritingTurn", () => {
     expect(draft.translations.en?.content).toBe("## Hello\n\nSome body text.");
     expect(fixture.content.commits).toHaveLength(0);
 
-    // A draft mutation must announce itself so the client refetches. The event is generic
-    // (`state:changed`) with the writing policy's scope attached.
+    // A draft mutation must announce itself so the client refetches.
     expect(fixture.events.some((e) => e.type === "state:changed")).toBe(true);
   });
 

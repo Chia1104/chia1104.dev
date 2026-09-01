@@ -13,9 +13,8 @@ interface StoredMemory extends MemoryDetail {
 }
 
 /**
- * In-memory {@link MemoryPort}. For tests and for driving the engine against pi-ai's `faux`
- * provider without a database. Search is a case-insensitive substring match over title and
- * content — the shape of the real port, not its ranking.
+ * In-memory {@link MemoryPort} for tests and the faux provider. Search is a case-insensitive
+ * substring match over title and content: the shape of the real port, not its ranking.
  */
 export class InMemoryMemoryPort implements MemoryPort {
   private readonly rows = new Map<number, StoredMemory>();
@@ -23,7 +22,6 @@ export class InMemoryMemoryPort implements MemoryPort {
 
   constructor(private readonly sessionId: string | null = null) {}
 
-  /** Every stored row, for assertions. */
   get all(): StoredMemory[] {
     return [...this.rows.values()];
   }

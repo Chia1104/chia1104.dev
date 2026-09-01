@@ -4,12 +4,9 @@ import { isContextOverflow } from "@earendil-works/pi-ai";
 import type { AgentErrorKind, AgentTurnError } from "../types.ts";
 
 /**
- * Turns Pi's failure surface into one {@link AgentTurnError}.
- *
- * Pi reports provider failures two ways: a thrown harness/hook error, or a resolved assistant
- * message with `stopReason: "error"` and the provider's text in `errorMessage` (already
- * post-retry). Both end up here so the wire carries one vocabulary. Order matters: a quota
- * message from OpenAI is a 429 too, so quota is tested before rate limiting.
+ * Maps Pi's failure surface onto one {@link AgentTurnError}.
+ * Pi reports a thrown harness error, or an assistant message with `stopReason: "error"`.
+ * Quota is tested before rate limiting: an OpenAI quota message is a 429 too.
  */
 
 const QUOTA =

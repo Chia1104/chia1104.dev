@@ -20,8 +20,6 @@ export class EmailDeliveryError extends Error {
 }
 
 /**
- * Sends the contact-form email.
- *
  * `resend` and the React template are imported lazily so that merely importing this
  * module — which the oRPC router does — does not pull them into the bundle.
  */

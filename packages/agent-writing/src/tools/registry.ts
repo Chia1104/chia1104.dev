@@ -5,29 +5,22 @@ import {
 import type { ToolTier } from "@chia/agent-runtime/types";
 
 /**
- * Single source of truth for tool identity: name → tier and name → UI label.
- *
- * Kept in its own module (rather than derived from the tool objects) so `policy.ts` and
- * `summarize.ts` can classify a tool call without constructing the tools — which need ports,
- * which need a database. The shared content read tools bring their own names and labels; this
- * module only assigns them a tier.
+ * Tool identity (name → tier/label), kept apart from tool objects so policy can classify a
+ * call without constructing tools, which need a port and a database.
  */
 
 export const TOOL_NAMES = {
-  // read
   readSkill: "read_skill",
   ...CONTENT_TOOL_NAMES,
   webSearch: "web_search",
   fetchUrl: "fetch_url",
   searchMemory: "search_memory",
   getMemory: "get_memory",
-  // draft
   saveMemory: "save_memory",
   readDraft: "read_draft",
   patchDraftMeta: "patch_draft_meta",
   writeDraftContent: "write_draft_content",
   editDraftContent: "edit_draft_content",
-  // commit
   commitDraft: "commit_draft",
   setPublished: "set_published",
 } as const;

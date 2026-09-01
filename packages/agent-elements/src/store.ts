@@ -27,29 +27,26 @@ export interface ComposerSeed {
 }
 
 /**
- * The live side of a session: the folded transcript and the turn stream feeding it. Everything
- * the server owns and answers on request (detail, models, settings) lives in the query cache
- * (`./queries.ts`); the store reads the detail through that cache and refreshes it there.
+ * Live transcript and turn stream. Server-owned detail, models and settings live in the query
+ * cache (`./queries.ts`); the store reads and refreshes them there.
  */
 export interface AgentSessionState {
   sessionId: string;
   kind: string | undefined;
-  /** The catalog every element renders from; the host supplies its locale's. */
+  /** Host-supplied catalog for the mounted locale. */
   labels: AgentLabels;
   view: AgentViewState;
   connection: AgentConnection;
   /** Prompt already sent, shown until the stream echoes it back as a `user` event. */
   pendingPrompt: string | null;
   /**
-   * Text handed to the composer to take over — a rewound prompt given back for editing. An
-   * event, not state: `id` grows with every hand-off, and the composer keys its editor on it, so
-   * each hand-off is a fresh editor whose initial draft is this text — the same text handed over
-   * twice starts twice.
+   * Event, not state: `id` grows with every hand-off so the composer remounts via `key`.
+   * The same text handed over twice starts twice.
    */
   composerSeed: ComposerSeed | null;
   /**
-   * A transport or request failure. Agent-side failures arrive as `error` wire events and live in
-   * the transcript instead.
+   * Transport or request failure. Agent-side failures arrive as `error` wire events in the
+   * transcript.
    */
   failure: string | null;
 }
@@ -57,22 +54,17 @@ export interface AgentSessionState {
 export interface AgentSessionActions {
   /** Loads the server-owned transcript and rejoins a turn that is still running. */
   hydrate: () => Promise<void>;
-  /**
-   * Replaces the view with a detail the server rebuilt — after a rewind, when the active branch
-   * changed and nothing the view held is still true.
-   */
+  /** Replaces the view after a rewind; the old branch is gone. */
   replaceDetail: (detail: AgentSessionDetail) => void;
   seedComposer: (text: string) => void;
   /** Rejects when the request itself fails; stream failures land in `failure`. */
   prompt: (text: string) => Promise<void>;
-  /** Runs a server-advertised slash command through its prompt template. */
   command: (name: string, args: string[], text?: string) => Promise<void>;
   approve: (
     toolCallId: string,
     approved: boolean,
     comment?: string
   ) => Promise<void>;
-  /** Swaps or partially overrides the catalog — e.g. when the host's locale changes. */
   setLabels: (labels: Partial<AgentLabels> | undefined) => void;
   /** Surfaces a failure from outside the stream (a mutation) in the same place. */
   reportFailure: (message: string) => void;
@@ -84,9 +76,9 @@ export interface AgentSessionActions {
 export type AgentSessionStore = AgentSessionState & AgentSessionActions;
 
 export interface AgentSessionCallbacks {
-  /** A tool changed durable state the host renders (e.g. the writing draft) — refetch it. */
+  /** Durable host-rendered state changed (e.g. the writing draft); refetch it. */
   onStateChanged?: (event: { scope?: string; revision: number }) => void;
-  /** A turn's stream ended, for any reason, and the store has re-synced with the server. */
+  /** Fired after the store re-syncs with the server, whether the turn finished or failed. */
   onTurnEnd?: () => void;
 }
 
@@ -98,7 +90,7 @@ export interface AgentSessionStoreOptions extends AgentSessionCallbacks {
   labels?: Partial<AgentLabels>;
 }
 
-/** Shortest gap between two view commits while deltas stream — roughly two frames. */
+/** Shortest gap between view commits while deltas stream (~two frames). */
 export const VIEW_FLUSH_MS = 32;
 
 const messageOf = (cause: unknown): string =>
@@ -166,7 +158,6 @@ export const createAgentSessionStore = ({
     const detailQuery = sessionDetailQuery(client, scoped);
     const detailKey = agentQueryKeys.session(scoped);
 
-    /** A fresh detail, written to the cache on the way through. */
     const fetchDetail = () =>
       queryClient.fetchQuery({ ...detailQuery, staleTime: 0 });
 
@@ -174,11 +165,11 @@ export const createAgentSessionStore = ({
       new Promise<void>((resolve) => setTimeout(resolve, ms));
 
     /**
-     * Re-syncs the detail after a turn ended with `run:end`, keeping the view the stream built.
+     * Re-syncs the detail after `run:end`, keeping the view the stream built.
      *
      * The step clears its running marker only after the terminal event is flushed, so a `get`
      * issued straight away can still report the finished turn as running; that is retried briefly.
-     * If the run genuinely stays running, a queued message started another turn — rejoin it.
+     * If the run genuinely stays running, a queued message started another turn: rejoin it.
      */
     const settle = async (mine: number) => {
       for (let attempt = 0; attempt < 5; attempt++) {
@@ -197,18 +188,18 @@ export const createAgentSessionStore = ({
       await get().hydrate();
     };
 
-    // Streams that broke before `run:end` since the last clean turn end; backs off and bounds
-    // the reconnect — events arriving do not reset it, only a turn that actually finishes does.
+    // Streams that broke before `run:end` since the last clean turn end. Events arriving do not
+    // reset it; only a turn that actually finishes does.
     let reconnects = 0;
     const MAX_RECONNECTS = 6;
 
     /**
-     * Runs one turn stream. Rejects only when `start` (the request) fails, so the caller can react
-     * — for example put the prompt back into the composer. Everything after that is a state
-     * change: events fold into the view, and a mid-stream failure lands in `failure`.
+     * Rejects only when `start` (the request) fails, so the caller can put the prompt back.
+     * Everything after that is a state change: events fold into the view, and a mid-stream
+     * failure lands in `failure`.
      *
-     * When the stream is cancelled by this store (dispose, a newer hydrate or run), the canceller
-     * owns what happens next; `run` only re-syncs streams that ended on their own.
+     * When this store cancels the stream (dispose, a newer hydrate or run), the canceller owns
+     * what happens next; `run` only re-syncs streams that ended on their own.
      */
     const run = async (
       start: (signal: AbortSignal) => Promise<AsyncIterable<AgentWireEvent>>
@@ -436,15 +427,11 @@ export const createAgentSessionStore = ({
 
 export type AgentSessionStoreApi = ReturnType<typeof createAgentSessionStore>;
 
-// ============================================
-// Derived status (store + cached detail)
-// ============================================
-
 export type AgentStatus = "awaiting_approval" | "error" | "idle" | "running";
 
 type RunInfo = Pick<AgentSessionDetail, "run"> | undefined;
 
-/** What the session is doing right now, from the live connection first and the server second. */
+/** Live connection first, server run second. */
 export const statusOf = (
   state: AgentSessionState,
   detail: RunInfo
@@ -455,7 +442,7 @@ export const statusOf = (
   return state.view.runStatus === "error" ? "error" : "idle";
 };
 
-/** A turn is executing (here or elsewhere) — the composer offers Stop instead of Send. */
+/** True while a turn is running here or elsewhere. */
 export const isBusy = (state: AgentSessionState, detail: RunInfo): boolean =>
   state.connection === "streaming" || detail?.run?.status === "running";
 

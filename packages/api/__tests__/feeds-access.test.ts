@@ -19,11 +19,7 @@ const caller = (tier: CallerTier, userId?: string): Caller => ({
   session: userId ? session(userId) : undefined,
 });
 
-/**
- * The published/deleted filters used to be structural — each audience had its own
- * procedure whose input schema had no way to spell "show me drafts". Merging them makes
- * the rule a runtime decision, so these cases are what keeps it honest.
- */
+/** Merging audiences made visibility a runtime clamp; these cases pin who may see drafts and deleted rows. */
 describe("resolveFeedVisibility", () => {
   it("pins an anonymous caller to the admin's published feeds", () => {
     expect(resolveFeedVisibility(caller(CallerTier.Anonymous))).toEqual({

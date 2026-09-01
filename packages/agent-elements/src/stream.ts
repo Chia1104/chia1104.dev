@@ -1,8 +1,6 @@
 /**
- * Drains an event iterator into `onEvent` until it ends or `signal` aborts.
- *
- * Aborting closes the iterator through `return()`, which is what cancels the underlying oRPC
- * event stream; without it a superseded or unmounted turn would keep the connection open.
+ * Aborting closes the iterator through `return()`, which cancels the underlying oRPC event
+ * stream; without it a superseded or unmounted turn would keep the connection open.
  */
 export const consumeStream = async <T>(
   iterable: AsyncIterable<T>,

@@ -5,10 +5,7 @@ import { CONTENT_TOOL_NAMES } from "./registry.ts";
 
 /**
  * One transcript line for a content read tool's result, or `undefined` for a tool that is not
- * one of ours — so a kind's summarizer can try this first and fall through to its own tools.
- *
- * Errors are not handled here: how an error reads is the same for every tool, so the kind's
- * summarizer does that once before dispatching.
+ * one of these. Errors are handled by the kind's summarizer before dispatch.
  */
 export const summarizeContentToolResult = <TResult>(
   toolName: string,

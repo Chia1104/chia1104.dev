@@ -30,7 +30,6 @@ const levelAt = (index: number): AgentThinkingLevel =>
   THINKING_LEVELS[Math.max(0, Math.min(THINKING_LEVELS.length - 1, index))] ??
   "off";
 
-/** Thinking effort as one horizontal track with a stop per level. */
 export const ThinkingSlider = ({
   className,
   isDisabled,

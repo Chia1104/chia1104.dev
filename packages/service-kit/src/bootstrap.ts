@@ -17,18 +17,12 @@ import { bodyLimit } from "./middlewares/body-limit";
 import type { MaintenanceOptions } from "./middlewares/maintenance";
 import { maintenance } from "./middlewares/maintenance";
 
-/**
- * Parses a comma-separated origin list into the shape Hono's `cors` expects.
- */
 export const parseAllowedOrigins = (value?: string): string[] | string => {
   if (!value) return "*";
   return value.split(",").map((item) => item.trim());
 };
 
-/**
- * Populates {@link ServiceContext} on every request. Shared by every service app so a
- * new app does not re-implement db/kv/auth wiring.
- */
+/** Attaches db, kv and auth to every request. */
 export const createServiceFactory = () =>
   createFactory<ServiceHonoEnv>({
     initApp: (app) => {
@@ -72,20 +66,13 @@ export interface BootstrapOptions {
    */
   logger?: boolean;
   /**
-   * Request body cap in bytes. Every surface parses JSON bodies, so an unbounded body is
-   * an unbounded allocation.
+   * Request body cap in bytes.
    * @default 5 MB
    */
   maxBodySize?: number;
 }
 
-/**
- * Applies the middleware every service app shares: logging, Sentry, the global error
- * handler, the body-size cap, CORS and maintenance mode.
- *
- * The error handler is the single place HTTP error bodies are produced, so an
- * {@link AppError} thrown anywhere yields the same body the oRPC adapter produces.
- */
+/** Shared middleware: logging, Sentry, errors, body cap, CORS, maintenance. */
 export const bootstrap = <
   TEnv extends Env,
   TSchema extends Schema,

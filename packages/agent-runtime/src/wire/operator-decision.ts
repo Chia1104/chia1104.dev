@@ -1,8 +1,9 @@
 /**
  * The message a session's workflow sends the model after the operator decides on a gated tool
- * call. It is a real user turn in the transcript — that is what makes the model act on it — but
- * it is not something the operator typed, so the client renders it as a notice. The live turn
- * knows its origin structurally; a replayed transcript only has the text, hence the fixed prefix.
+ * call.
+ * It is a real user turn in the transcript (that is what makes the model act on it) but it is
+ * not something the operator typed, so the client renders it as a notice. The live turn knows
+ * its origin structurally; a replayed transcript only has the text, hence the fixed prefix.
  */
 
 export interface OperatorDecision {

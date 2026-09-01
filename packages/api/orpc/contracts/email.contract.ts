@@ -13,7 +13,7 @@ export const sendContactEmailContract = oc
       title: z.string().min(4, "Title must be at least 4 characters long"),
       message: z.string().min(5, "Message must be at least 5 characters long"),
       /**
-       * Part of the input rather than a header so callers can use the plain
+       * Part of the input rather than a header so callers can use
        * `orpc.email.send.mutationOptions()` without threading a per-call client context.
        */
       captchaToken: z.string().min(1),

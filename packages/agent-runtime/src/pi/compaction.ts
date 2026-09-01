@@ -21,10 +21,10 @@ import { estimateBranchContextTokens } from "../session/usage.ts";
 import type { AgentCompactionResult, AgentUsageListener } from "../types.ts";
 
 /**
- * The window the compaction threshold is measured against when the summariser is not the
- * session's model: the smaller of the two. The session model's window is what the branch
- * fills; the summariser must still be able to read the whole branch it condenses, so a
- * smaller summariser brings compaction forward rather than being handed more than it can take.
+ * Window the compaction threshold is measured against when the summariser is not the session's
+ * model: the smaller of the two.
+ * The session model's window is what the branch fills; the summariser must still be able to
+ * read the whole branch it condenses, so a smaller summariser brings compaction forward.
  */
 export const compactionContextWindow = (
   model: Pick<Model<Api>, "contextWindow">,
@@ -43,14 +43,14 @@ export const shouldCompactBranch = (
 
 /**
  * Pi keeps the newest `keepRecentTokens` of the branch whole and summarises only what lies
- * before them, so a branch that fits inside that tail has nothing to condense: compacting it
- * would still bill a summary call and leave the context larger (summary plus tail), not smaller.
+ * before them, so a branch that fits inside that tail has nothing to condense.
+ * Compacting it would still bill a summary call and leave the context larger (summary plus
+ * tail), not smaller.
  */
 const hasCompactionWork = (prepared: CompactionPreparation): boolean =>
   prepared.messagesToSummarize.length > 0 ||
   prepared.turnPrefixMessages.length > 0;
 
-/** Whether compacting the active branch would condense anything. */
 export const canCompactBranch = (entries: readonly SessionEntry[]): boolean => {
   const prepared = prepareCompaction(
     contextEntries(entries),
@@ -132,8 +132,9 @@ const compactBranch = async (
 
 /**
  * Summarises the active branch with Pi's compaction and appends the compaction entry as the new
- * leaf. `null` when there is nothing to condense: the branch is empty, already ends in a
- * compaction, or fits inside the tail Pi keeps whole.
+ * leaf.
+ * `null` when there is nothing to condense: the branch is empty, already ends in a compaction,
+ * or fits inside the tail Pi keeps whole.
  */
 export const compactSession = async (
   options: CompactSessionOptions

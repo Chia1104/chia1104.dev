@@ -2,14 +2,11 @@ import type { JsonObject } from "@chia/utils/json";
 import type { ErrorResponse } from "@chia/utils/request";
 import { errorGenerator } from "@chia/utils/server";
 
-/**
- * Error codes usable across transports. Names match oRPC's common error codes so a
- * policy failure maps onto `errors[code]()` without translation.
- */
+/** Status codes matching oRPC common error codes. */
 export const APP_ERROR_STATUS = {
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
-  /** The caller's usage quota is spent; not an oRPC common code, so contracts declare its status. */
+  /** Not an oRPC common code; contracts must declare its status. */
   QUOTA_EXCEEDED: 402,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
@@ -36,16 +33,12 @@ export interface AppErrorOptions {
   issues?: AppErrorIssue[];
   /** Extra response headers, e.g. `Retry-After` on 429/503. */
   headers?: Record<string, string>;
-  /** Structured detail a client acts on, e.g. when a quota resets; travels beside `issues`. */
+  /** Structured detail a client acts on; travels beside `issues`. */
   data?: JsonObject;
   cause?: unknown;
 }
 
-/**
- * The one error type policies and handlers throw. Each transport adapter converts it
- * into its own wire representation, so a given failure produces the same body over
- * REST and RPC.
- */
+/** Domain error; adapters convert it to the transport's wire shape. */
 export class AppError extends Error {
   readonly code: AppErrorCode;
   readonly status: number;
@@ -67,17 +60,9 @@ export class AppError extends Error {
 export const isAppError = (cause: unknown): cause is AppError =>
   cause instanceof AppError;
 
-/**
- * Canonical HTTP body for an `AppError`. Delegates to `errorGenerator` so the shape
- * stays compatible with the frontend HTTP error contract.
- */
 export const toErrorResponse = (error: AppError): ErrorResponse =>
   errorGenerator(error.status, error.issues);
 
-/**
- * Maps HTTP status codes back onto an `AppErrorCode`, for wrapping errors thrown by
- * third-party clients (`ky`'s `HTTPError`, better-auth's `APIError`, …).
- */
 export const appErrorCodeFromStatus = (status: number): AppErrorCode => {
   const match = Object.entries(APP_ERROR_STATUS).find(
     ([, value]) => value === status
@@ -96,10 +81,6 @@ interface ZodLikeError {
   }[];
 }
 
-/**
- * Converts a Zod error into an `AppError`, preserving the `field`/`message` pairs the
- * existing `errorResponse` helper produced.
- */
 export const fromZodError = (
   error: ZodLikeError,
   code: AppErrorCode = "BAD_REQUEST"

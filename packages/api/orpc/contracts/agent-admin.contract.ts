@@ -8,20 +8,15 @@ import {
 } from "./agent.contract";
 
 /**
- * Operator configuration of agent kinds and tasks — the dashboard's agent workspace.
- *
- * RPC-only and admin-only, like the memory contract. Every view carries `code`/`default`,
- * `override` and `effective`, so the client never restates the resolution rule.
+ * Operator configuration of agent kinds and tasks. RPC-only and admin-only. Every view
+ * carries `code`/`default`, `override` and `effective`, so the client never restates the
+ * resolution rule.
  */
 
 const errors = { UNAUTHORIZED: {}, FORBIDDEN: {}, SERVICE_UNAVAILABLE: {} };
 const writeErrors = { ...errors, NOT_FOUND: {}, BAD_REQUEST: {} } as const;
 
 const jsonObjectSchema = z.record(z.string(), z.json());
-
-// ============================================
-// Kinds
-// ============================================
 
 const sessionDefaultsSchema = z.object({
   providerId: z.string(),
@@ -77,10 +72,6 @@ export const updateAgentKindAdminContract = oc
     })
   )
   .output(agentKindAdminSchema);
-
-// ============================================
-// Tasks
-// ============================================
 
 /** `"session"`: the task runs on the model of the session it serves. */
 const taskModelDefaultSchema = z.union([
@@ -151,12 +142,8 @@ export const listAgentTaskModelsAdminContract = oc
   .errors(errors)
   .output(z.array(agentModelInfoSchema));
 
-// ============================================
-// Quota
-// ============================================
-
 /**
- * The weekly house-spend limit for every caller below `Root`, and the zone its week is counted
+ * Weekly house-spend limit for every caller below `Root`, and the zone its week is counted
  * in. Dollars on the wire; the row and the ledger keep micro-dollars.
  */
 export const agentQuotaAdminSchema = z.object({

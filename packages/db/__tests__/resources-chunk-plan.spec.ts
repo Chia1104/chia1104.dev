@@ -46,8 +46,7 @@ describe("planChunkReplacement", () => {
   });
 
   it("recognises an inserted paragraph as one insert plus moves, not a tail rewrite", () => {
-    // a new section appears at index 1; every later section shifts by one —
-    // under (kind, index) identity the whole tail would have re-embedded
+    // A new section at index 1 shifts later sections. Under (kind, index) identity the whole tail would have re-embedded.
     const existing = [
       row("section", 0, "a"),
       row("section", 1, "b"),

@@ -6,10 +6,7 @@ import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
 
 import { emptyDraft, patchFeedMeta, patchTranslation } from "./operations.ts";
 
-/**
- * In-memory {@link DraftStore}. For tests and for driving the engine against pi-ai's
- * `faux` provider without a database.
- */
+/** In-memory {@link DraftStore} for tests and the faux provider. */
 export class InMemoryDraftStore implements DraftStore {
   private readonly drafts = new Map<string, FeedDraft>();
 

@@ -1,12 +1,9 @@
 import type { Mock } from "vitest";
 
 /**
- * Stand-ins for the durable-run host used by the agent service.
- *
  * The real module builds the SDK World on first use, and the Postgres World opens a
- * `LISTEN` connection the moment it is created — with no database behind the tests that
- * surfaces as an unhandled rejection. Nothing here touches a World: a run never exists, a
- * hook is never registered, and a stream is empty.
+ * `LISTEN` connection the moment it is created. With no database behind the tests that
+ * surfaces as an unhandled rejection. Nothing here touches a World.
  */
 
 const emptyReadable = () =>

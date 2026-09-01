@@ -1,8 +1,8 @@
 /**
  * The wire contract and its client-side view model (`./fold.ts`), with no runtime dependency on
- * Pi or any provider SDK — these are the modules browsers and SSR bundles import. `./replay.ts`
- * is deliberately not among them: rebuilding events from persisted Pi entries classifies
- * provider errors and so needs pi-ai.
+ * Pi or any provider SDK. These are the modules browsers and SSR bundles import. `./replay.ts`
+ * is not among them: rebuilding events from persisted Pi entries classifies provider errors and
+ * so needs pi-ai.
  */
 
 import * as z from "zod";
@@ -35,7 +35,7 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     at: z.number().optional(),
     /**
      * Set when the turn was synthesised by the session's workflow rather than typed by the
-     * operator — today only the relayed approval decision. Clients render these as notices.
+     * operator. Today only the relayed approval decision. Clients render these as notices.
      */
     origin: z.enum(["operator-decision"]).optional(),
   }),
@@ -76,8 +76,9 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     isError: z.boolean(),
     /**
      * The call never produced a result: the turn was stopped, the process died, or a fork cut
-     * the branch between the call and its result. Distinct from `isError`, which is the tool
-     * itself failing — the model sees an empty result for these, so the client says "stopped".
+     * the branch between the call and its result.
+     * Distinct from `isError`, which is the tool itself failing. The model sees an empty result
+     * for these, so the client says "stopped".
      */
     aborted: z.literal(true).optional(),
     summary: z.string(),
@@ -104,7 +105,7 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
   }),
   /**
    * A rewind that summarised the branch it left behind. Replayed from the `branch_summary`
-   * entry, so a rewind without a summary leaves no notice — there is nothing durable to show.
+   * entry, so a rewind without a summary leaves no notice: there is nothing durable to show.
    */
   z.object({
     type: z.literal("session:rewound"),
@@ -114,7 +115,7 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     type: z.literal("state:changed"),
     /**
      * What changed, as named by the agent kind's policy (`"draft"` for the writing agent).
-     * Bump-only — the client refetches rather than diffing over the wire.
+     * Bump-only: the client refetches rather than diffing over the wire.
      */
     scope: z.string().optional(),
     revision: z.number(),
@@ -122,7 +123,7 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("error"),
     /**
-     * See `AgentErrorKind`. The kind is all a client gets — it picks a headline from it; the
+     * See `AgentErrorKind`. The kind is all a client gets; it picks a headline from it. The
      * provider's or the host's own text stays in the server log.
      */
     kind: agentErrorKindSchema,

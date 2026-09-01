@@ -13,11 +13,6 @@ const transformValue = (text: string) => {
   return text.replace(/[\u00A0]/g, " ");
 };
 
-/**
- * Copies the given text to the clipboard.
- * @param {number} timeout - timeout in ms, default 2000
- * @returns {copy, copied, error, reset} - copy function, copied state, error state, reset function
- */
 export function useClipboard({ timeout = 2000 }: UseClipboardProps = {}) {
   const [error, setError] = useState<Error | null>(null);
   const [copied, setCopied] = useState(false);

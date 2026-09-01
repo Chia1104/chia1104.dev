@@ -12,12 +12,8 @@ import { AGENT_TURN_KEY } from "./execution";
 import { costToMicros, microsToUsd } from "./usage";
 
 /**
- * The usage quota: how much house spend a caller below `Root` may run up per week.
- *
- * Read side of the ledger. The policy is a property of the caller's tier — `Root` is the
- * operator and pays the bill, everyone else draws on one shared allowance — and the numbers
- * are the operator's `agent.quota_config` row over the code defaults, so the allowance and
- * its week can change from the dashboard without a deploy. Only house-paid calls count: a
+ * How much house spend a caller below `Root` may run up per week. The numbers are the
+ * operator's `agent.quota_config` row over the code defaults. Only house-paid calls count: a
  * BYOK call is recorded in the ledger but is the user's own bill.
  */
 
@@ -28,8 +24,8 @@ export interface AgentQuota {
   resetTimeZone: string;
   /**
    * Turns one user may have executing at once, across all their sessions. Bounds what one
-   * visitor can put on the single-replica runner regardless of how much allowance remains.
-   * `0` closes new turns to every limited tier.
+   * visitor can put on the single-replica runner regardless of remaining allowance. `0` closes
+   * new turns to every limited tier.
    */
   maxRunningTurns: number;
 }
@@ -84,10 +80,6 @@ export const effectiveAgentQuota = (
 export const loadAgentQuota = async (db: DB): Promise<AgentQuota> =>
   effectiveAgentQuota(await getAgentQuotaConfig(db));
 
-// ============================================
-// The week
-// ============================================
-
 export interface UsagePeriod {
   /** Inclusive. */
   start: Date;
@@ -107,10 +99,6 @@ export const weekPeriod = (now: Date, timeZone: string): UsagePeriod => {
   };
 };
 
-// ============================================
-// The check
-// ============================================
-
 export interface AgentQuotaStanding {
   quota: AgentQuota;
   period: UsagePeriod;
@@ -118,7 +106,6 @@ export interface AgentQuotaStanding {
   usedMicros: number;
 }
 
-/** Where `userId` stands against the quota right now. */
 export const readAgentQuotaStanding = async (
   db: DB,
   userId: string,
@@ -147,8 +134,7 @@ export interface AgentUsageStanding {
 }
 
 /**
- * The caller's standing as a client shows it. Read for everyone, exempt or not — the operator
- * sees their own spend and running turns too, with no limits beside them.
+ * The caller's standing as a client shows it. Read for everyone, exempt or not.
  */
 export const readAgentUsageStanding = async (
   db: DB,
@@ -185,11 +171,9 @@ const formatReset = (period: UsagePeriod, timeZone: string): string =>
   }).format(period.end);
 
 /**
- * Refuses a model call for a caller whose week is spent.
- *
- * A soft limit: the call is allowed while anything remains, so the last one may overrun by
- * at most one turn — which the kind's turn budget bounds. Checked where the call is accepted
- * (prompt, approval decision, compaction, branch summary), never mid-turn.
+ * Refuses a model call for a caller whose week is spent. Soft limit: the last call may overrun
+ * by at most one turn, which the kind's turn budget bounds. Checked where the call is accepted,
+ * never mid-turn.
  */
 export const assertWithinAgentQuota = async (
   db: DB,
@@ -212,13 +196,10 @@ export const assertWithinAgentQuota = async (
 };
 
 /**
- * Refuses a new turn for a caller who already has `maxRunningTurns` executing.
- *
- * Counted under the caller's own advisory lock, taken on the transaction the turn is accepted
- * in — the session lock's — so two prompts on two sessions cannot both pass on the same count:
- * the second waits, and reads the marker the first wrote when its transaction committed. A
- * message queued behind a turn already running on its session adds no running turn and is not
- * refused. Must run inside `withAgentSessionLock`.
+ * Refuses a new turn for a caller who already has `maxRunningTurns` executing. Counted under
+ * the caller's advisory lock, taken on the transaction the turn is accepted in, so two
+ * prompts on two sessions cannot both pass on the same count. A message queued behind a turn
+ * already running on its session adds no running turn. Must run inside `withAgentSessionLock`.
  */
 export const assertBelowRunningTurnCap = async (
   tx: DB,

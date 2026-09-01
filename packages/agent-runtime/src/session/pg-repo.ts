@@ -59,8 +59,8 @@ export class SessionNotFoundError extends Error {
 /**
  * Session lifecycle over `agent.session`.
  *
- * `fork` is the interesting one — it powers "rewind three steps and try another angle". The copied
- * prefix lands in a *new* session row so the original branch stays readable in the dashboard.
+ * `fork` copies the prefix into a new session row so the original branch stays readable in the
+ * dashboard.
  */
 export class PgSessionRepo {
   /**
@@ -128,7 +128,7 @@ export class PgSessionRepo {
     return { row, session };
   }
 
-  /** Opens by id — what the transport actually holds, without a metadata round-trip. */
+  /** Opens by id: what the transport actually holds, without a metadata round-trip. */
   openById(sessionId: string): Promise<PgSessionStorage> {
     return this.open({ id: sessionId });
   }
@@ -149,7 +149,7 @@ export class PgSessionRepo {
 
   /**
    * Soft delete. A transcript is worth keeping after an operator clears a session from the
-   * list — a hard delete cascades the whole tree away.
+   * list; a hard delete cascades the whole tree away.
    */
   async delete(metadata: Pick<PgSessionMetadata, "id">): Promise<void> {
     await softDeleteAgentSession(this.db, metadata.id);
@@ -188,8 +188,8 @@ export class PgSessionRepo {
 
 /**
  * What a fork copies: the whole tree when no target is given, otherwise the branch below
- * `entryId` from the newest compaction down. `before` only makes sense on a user message, whose
- * parent becomes the effective leaf.
+ * `entryId` from the newest compaction down.
+ * `before` only makes sense on a user message, whose parent becomes the effective leaf.
  */
 const entriesToFork = async (
   session: PgSessionStorage,
@@ -209,13 +209,9 @@ const entriesToFork = async (
   return session.getBranch(target.parentId);
 };
 
-// ============================================
-// Session settings (outside the tree)
-// ============================================
-
 /**
- * Runtime settings are read and written directly rather than as tree entries: the transport
- * needs the current values *before* a turn exists in order to build one.
+ * Runtime settings are read and written on the session row rather than as tree entries: the
+ * transport needs the current values before a turn exists in order to build one.
  */
 export const readSessionSettings = async (
   db: DB,

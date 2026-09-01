@@ -81,8 +81,8 @@ export const workflowRunStatusSchema = z.enum([
 export type WorkflowRunStatus = z.infer<typeof workflowRunStatusSchema>;
 
 /**
- * A run as the API process needs to see it to reconcile its own records: whether the
- * World still has it, where it is, and — only once completed — what it returned.
+ * A run as the API process needs it to reconcile records: whether the World
+ * still has it, its status, and (only once completed) its output.
  */
 export const workflowRunStateSchema = z.object({
   type: z.literal("run"),

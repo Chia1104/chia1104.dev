@@ -10,9 +10,7 @@ import { allow, deny } from "./types";
 
 export interface ApiKeyPolicyOptions {
   permissions?: Record<string, string[]>;
-  /**
-   * When set, the key must belong to this project.
-   */
+  /** When set, the key must belong to this project. */
   projectId?: number;
 }
 
@@ -25,10 +23,7 @@ const invalidKey = (
     issues: [{ field: "api_key", message, code: keyCode }],
   });
 
-/**
- * Maps better-auth's `verifyApiKey` failure codes onto {@link AppError}, preserving the
- * exact status codes and issue payloads the previous Hono guard returned.
- */
+/** Maps better-auth `verifyApiKey` failure codes onto {@link AppError}. */
 const KEY_ERRORS = new Map<string, AppError>([
   [
     "KEY_NOT_FOUND",
@@ -49,9 +44,7 @@ const KEY_ERRORS = new Map<string, AppError>([
   ],
 ]);
 
-/**
- * Verifies the `X-CH-API-KEY` header against better-auth's api-key plugin.
- */
+/** Verifies the `X-CH-API-KEY` header against better-auth's api-key plugin. */
 export const apiKeyPolicy = (
   options: ApiKeyPolicyOptions = {}
 ): Policy<{ apiKey: Omit<ApiKey, "key"> }> => {

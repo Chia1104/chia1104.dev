@@ -7,7 +7,6 @@ import { truncateForEmbedding } from "./utils.ts";
 export { countEmbeddingTokens, loadTokenizer };
 export { cleanMdxKeepStructure, splitByHeadings } from "./markdown.ts";
 
-/** Target size of a section chunk. */
 export const SECTION_CHUNK_TOKENS = 512;
 
 /** Chunks below this carry no signal. */
@@ -31,10 +30,10 @@ interface SplitUnit {
 }
 
 /**
- * Paragraph boundaries first, then sentence-ish punctuation.
+ * Paragraph boundaries first, then sentence punctuation.
  *
- * The joiner records which boundary a unit came from, so reassembling does not
- * turn every sentence of one paragraph into a paragraph of its own — the chunk
+ * The joiner records which boundary a unit came from, so reassembling does
+ * not turn every sentence of one paragraph into its own paragraph. Chunk
  * text is stored and rendered as snippets, not just embedded.
  */
 const toUnits = (
@@ -46,7 +45,7 @@ const toUnits = (
     if (countEmbeddingTokens(paragraph, encoding) <= maxTokens) {
       return [{ text: paragraph, joiner: "\n\n" }];
     }
-    // the lookbehind keeps the delimiter on the preceding sentence, so joining
+    // Lookbehind keeps the delimiter on the preceding sentence, so joining
     // with "" restores the paragraph verbatim
     return paragraph.split(/(?<=[。．！？!?;；\n])/).map((sentence, index) => ({
       text: sentence,
@@ -55,18 +54,18 @@ const toUnits = (
   });
 
 /**
- * Last resort for a unit with no boundary left to split on — a long CJK
- * paragraph without `。`, a wide table row. Slicing keeps the tail searchable;
- * emitting it whole would hand the provider an over-length input and store
- * text that does not match the vector.
+ * Last resort when no boundary remains (a long CJK paragraph without `。`,
+ * a wide table row). Slicing keeps the tail searchable; emitting it whole
+ * would hand the provider an over-length input and store text that does not
+ * match the vector.
  */
 const sliceToBudget = (text: string, maxTokens: number): string[] => {
   const slices: string[] = [];
   let rest = text;
   while (rest) {
     const head = truncateForEmbedding(rest, maxTokens);
-    // the estimate is pessimistic, never zero-length for a non-empty input, but
-    // the fallback guarantees progress
+    // Estimate is pessimistic and never zero-length for non-empty input; the
+    // fallback still guarantees progress
     const take = head.length > 0 ? head : rest.slice(0, 1);
     slices.push(take);
     rest = rest.slice(take.length);
@@ -117,13 +116,12 @@ const splitOversized = (
 };
 
 /**
- * A section's heading path, baked into the chunk text as its first line.
+ * Heading path as the chunk's first line.
  *
- * `splitByHeadings` strips heading lines, and the chunk `content` is what gets
- * embedded and BM25-indexed — without this, a query for the heading's words
- * ("CSRF", "hydrateRoot") cannot reach the section that answers it, because
- * headings are precisely the words a body rarely repeats. The full ancestor
- * path rather than the leaf, so "參數" arrives as "HNSW 調校 > 參數".
+ * `splitByHeadings` strips heading lines, and `content` is what is embedded
+ * and BM25-indexed. Without this, a query for the heading's words cannot
+ * reach the section. Full ancestor path, not the leaf, so "參數" arrives as
+ * "HNSW 調校 > 參數".
  */
 const withHeadingPrefix = (
   headingMarkdownPath: string | null,
@@ -133,22 +131,19 @@ const withHeadingPrefix = (
 /**
  * Headings at or above this level start a new pack group.
  *
- * Packing may not cross group boundaries, because a greedy pack over the whole
- * document cascades: text inserted at the top changes which sections land in
- * every later chunk, so every hash changes and `planChunkReplacement` sees a
- * full rewrite instead of moves. A boundary at every H1/H2 bounds that cascade
- * to one group — and the rule reads only the heading's own level, so an edit
- * elsewhere in the document can never change where a group starts.
+ * Packing may not cross group boundaries: a greedy pack over the whole
+ * document cascades, so an insert at the top changes every later chunk hash
+ * and `planChunkReplacement` sees a full rewrite. A boundary at every H1/H2
+ * bounds that cascade. The rule reads only the heading's own level, so an
+ * edit elsewhere cannot change where a group starts.
  */
 const GROUP_BOUNDARY_LEVEL = 2;
 
 /**
- * Splits a document into section chunks at heading boundaries, packing small
- * sections together (never across an H1/H2 boundary — see
- * `GROUP_BOUNDARY_LEVEL`) and splitting oversized ones.
- *
- * `headingPath` is carried through for citation anchors, and additionally
- * prefixed onto each section's text (see `withHeadingPrefix`).
+ * Section chunks at heading boundaries. Packs small sections together
+ * (never across an H1/H2 boundary; see `GROUP_BOUNDARY_LEVEL`) and splits
+ * oversized ones. `headingPath` is carried for citations and prefixed onto
+ * each section (see `withHeadingPrefix`).
  */
 export const chunkMarkdown = async (params: {
   content: string;
@@ -203,8 +198,8 @@ export const chunkMarkdown = async (params: {
 
     if (sectionTokens > targetTokens) {
       flush();
-      // every piece repeats the prefix — each becomes its own chunk and must
-      // carry the heading context itself — so the split budget pays for it
+      // Every piece repeats the prefix; each becomes its own chunk and must
+      // carry the heading context, so the split budget pays for it
       const prefixTokens = section.headingMarkdownPath
         ? sectionTokens - countEmbeddingTokens(section.text, encoding)
         : 0;

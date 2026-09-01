@@ -1,14 +1,9 @@
 import { vi } from "vitest";
 
 /**
- * `apps/dash` imports the oRPC router to build its in-process RSC client, and has no
- * Resend configuration of its own. Importing the router therefore must not construct
- * that client.
- *
- * This guards the class of regression where an integration constructs its client at
- * module scope and throws during dash's instrumentation hook — a failure that survives
- * env validation when the credentials are declared optional. (The original case was
- * Algolia, since removed.)
+ * `apps/dash` imports the oRPC router for its in-process RSC client and has no Resend
+ * configuration. Importing the router must not construct that client — a module-scope
+ * client throws during dash's instrumentation even when the key is optional.
  */
 describe("oRPC router import", () => {
   it("does not construct the Resend client", async () => {

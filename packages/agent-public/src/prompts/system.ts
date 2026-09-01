@@ -1,16 +1,13 @@
 import type { Locale } from "@chia/db/types";
 
 /**
- * Prompt assembly, split by how often the text changes: `buildSystemPrompt` is stable for a
- * session so the provider's cached prefix survives from turn to turn; `buildTurnContext` is
- * the volatile block, refreshed on every provider request and never persisted.
+ * Prompt assembly split by churn: `buildSystemPrompt` is the cached prefix for a session;
+ * `buildTurnContext` is the volatile block, refreshed per provider request and never persisted.
  */
 
 export interface SystemPromptInput {
   /**
-   * The operator's standing instructions from the kind's configuration — a persona, house
-   * rules, what to say about the author. Part of the stable prompt: they change when the
-   * operator edits them, and a change is meant to reach every session from its next turn on.
+   * Kind-config instructions. Stable prompt: they change when the operator edits them.
    */
   instructions?: string;
 }
@@ -63,7 +60,7 @@ export const buildSystemPrompt = (input: SystemPromptInput = {}): string => {
   return sections.join("\n\n");
 };
 
-/** The clock, so "latest" and "recent" mean something, and the locale the site defaults to. */
+/** Clock so "latest" and "recent" mean something, plus the site's default locale. */
 export const buildTurnContext = (input: TurnContextInput): string =>
   [
     "# Current session",

@@ -15,8 +15,9 @@ import type {
 } from "./control.contract";
 
 /**
- * The API process's view of `apps/workflow`: one authenticated POST per command. The host
- * resolves the URL and holds the token; this module knows nothing about env.
+ * The API process's view of `apps/workflow`: one authenticated POST per
+ * command. The host resolves the URL and holds the token; this module knows
+ * nothing about env.
  */
 
 type WorkflowControlFetch = (
@@ -80,7 +81,7 @@ export const createWorkflowControlClient = ({
     });
     const payload: unknown = await response.json();
     if (!response.ok) {
-      // The workflow service answers with the `AppError` status it hit, so the code round-trips.
+      // The workflow service returns the `AppError` status it hit, so the code round-trips.
       const parsed = workflowControlErrorSchema.safeParse(payload);
       throw new AppError(appErrorCodeFromStatus(response.status), {
         message: parsed.success
@@ -161,7 +162,7 @@ export const createWorkflowControlClient = ({
     async cancelRun(runId: string) {
       await execute({ type: "run:cancel", runId });
     },
-    /** Where a run stands in the World; `exists: false` when the World has no such run. */
+    /** `exists: false` when the World has no such run. */
     async getRun(runId: string): Promise<WorkflowRunState> {
       const result = await execute({ type: "run:status", runId });
       if (result.type !== "run") {

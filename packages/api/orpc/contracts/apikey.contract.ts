@@ -6,22 +6,6 @@ import dayjs from "@chia/utils/day";
 
 export const createAPIKeySchema = z.object({
   name: z.string().optional(),
-  // expiresIn: z.number().min(1).optional().nullable().default(null),
-  // prefix: z
-  //   .string()
-  //   .regex(/^[a-zA-Z0-9_-]+$/, {
-  //     message:
-  //       "Invalid prefix format, must be alphanumeric and contain only underscores and hyphens.",
-  //   })
-  //   .optional(),
-  // remaining: z.number().min(0).optional().nullable().default(null),
-  // metadata: z.any().optional(),
-  // refillAmount: z.number().optional(),
-  // refillInterval: z.number().optional(),
-  // rateLimitTimeWindow: z.number().optional(),
-  // rateLimitMax: z.number().optional(),
-  // rateLimitEnabled: z.boolean().optional(),
-  // permissions: z.record(z.string(), z.array(z.string())).optional(),
 });
 
 export const baseApiKeySchema = z.object({

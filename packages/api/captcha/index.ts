@@ -80,10 +80,7 @@ const turnstileSiteverify = async (credentials: CaptchaCredentials) => {
   return siteverifyJson;
 };
 
-/**
- * Verifies an already-extracted captcha token. Transport-agnostic — this is what the
- * `captchaPolicy` in `@chia/service-kit` is wired to.
- */
+/** Verifies an extracted captcha token. Wired to `captchaPolicy` in `@chia/service-kit`. */
 export const captchaSiteverifyWithCredentials = async (
   credentials: CaptchaCredentials,
   options?: Options

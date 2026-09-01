@@ -137,21 +137,18 @@ export const VideoPlayer = ({ src, poster, className }: VideoPlayerProps) => {
         onCanPlay={() => setIsLoading(false)}
       />
 
-      {/* Loading spinner */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
           <Spinner size="lg" />
         </div>
       )}
 
-      {/* Controls overlay */}
       <div
         className={cn(
           "absolute right-0 bottom-0 left-0 bg-gradient-to-t  to-transparent px-3 pt-10 pb-2 transition-opacity duration-200",
           showControls ? "opacity-100" : "opacity-0"
         )}
         onClick={(e) => e.stopPropagation()}>
-        {/* Seek bar */}
         <Slider
           aria-label="Seek"
           value={currentTime}
@@ -166,7 +163,6 @@ export const VideoPlayer = ({ src, poster, className }: VideoPlayerProps) => {
           </Slider.Track>
         </Slider>
 
-        {/* Buttons row */}
         <div className="flex items-center gap-1">
           <Button
             size="sm"

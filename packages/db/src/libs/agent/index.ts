@@ -14,19 +14,6 @@ import {
 } from "../../schemas/schema.ts";
 import type { AgentRunStatus, Locale } from "../../schemas/schema.ts";
 
-/**
- * Repository for shared agent persistence and kind-owned extensions.
- *
- * Every drizzle query for the agent tables lives here, matching the rest of `packages/db`.
- * Agent packages call these instead of importing `drizzle-orm` themselves — sharing one ORM
- * instance and keeping SQL in the package that owns the schema. Writing-specific queries are
- * explicitly named so another kind can add a sibling extension without changing shared records.
- */
-
-// ============================================
-// Sessions
-// ============================================
-
 export interface InsertAgentSessionDTO {
   id: string;
   userId: string;
@@ -106,12 +93,7 @@ export interface UpdateAgentSessionDTO {
   leafEntryId?: string | null;
 }
 
-/**
- * Only the keys present in `patch` are written.
- *
- * `null` and `undefined` mean different things here: a nullable setting can be cleared with
- * `null`, while omitting the key leaves it alone.
- */
+/** Only keys present in `patch` are written. `null` clears a nullable setting; omitting the key leaves it. */
 export const updateAgentSession = async (
   db: DB,
   sessionId: string,
@@ -128,13 +110,7 @@ export const updateAgentSession = async (
     .where(eq(agentSessions.id, sessionId));
 };
 
-/**
- * Writes a generated title only while the session still has none.
- *
- * Auto-titling runs alongside the first turn, and the operator may rename the session in that
- * window; a conditional update, rather than read-then-write, is what guarantees their name wins.
- * Returns whether the title landed.
- */
+/** Writes a generated title only while the session still has none, so a concurrent rename wins. Returns whether it landed. */
 export const setAgentSessionTitleIfUnset = async (
   db: DB,
   sessionId: string,
@@ -167,12 +143,7 @@ export const deleteAgentSession = async (db: DB, sessionId: string) => {
   await db.delete(agentSessions).where(eq(agentSessions.id, sessionId));
 };
 
-/**
- * Re-keys everything `fromUserId` owns onto `toUserId`: a guest who signs in keeps their
- * sessions, and their spend keeps counting against them — the ledger moves with the sessions,
- * so signing in never resets a quota. One transaction, because a half-moved user would leave
- * sessions the ledger no longer explains.
- */
+/** Moves a guest's sessions, ledger and approvals onto `toUserId` in one transaction so signing in does not reset quota. */
 export const transferAgentOwnership = async (
   db: DB,
   options: { fromUserId: string; toUserId: string }
@@ -193,14 +164,7 @@ export const transferAgentOwnership = async (
   });
 };
 
-// ============================================
-// Runs
-// ============================================
-
-/**
- * Replaces the session's active run in one transaction. The workflow backend only supports one
- * message hook per session, so superseded runs must not remain active in the database.
- */
+/** Replaces the session's active run in one transaction. The workflow backend allows one message hook per session. */
 export const createAgentRun = async (
   db: DB,
   input: {
@@ -240,12 +204,7 @@ export const getActiveAgentRun = async (db: DB, sessionId: string) =>
     orderBy: { startedAt: "desc" },
   });
 
-/**
- * Shallow-merges `patch` into the run's `metadata`; keys already present are overwritten.
- * Addressed by the row's own id, which is fixed from creation, rather than by workflow run id
- * (bound later, see `bindAgentRunExternalId`) or by session (a late writer from a cancelled run
- * must never touch the run that replaced it).
- */
+/** Shallow-merges `patch` into `metadata`, addressed by the row's own id so a cancelled run cannot touch its replacement. */
 export const patchAgentRunMetadata = async (
   db: DB,
   runId: string,
@@ -272,12 +231,8 @@ export const bindAgentRunExternalId = async (
 };
 
 /**
- * Runs `fn` while holding the session's advisory lock, so enqueueing a turn and maintenance on
- * the tree (compact, rewind, fork) never interleave. The lock lives on the transaction's
- * connection, and `fn` must do all of its database work through the `tx` it is handed: an
- * operation then holds exactly one pool connection for its whole duration, so under load the
- * pool queues rather than deadlocks — lock holders waiting for a second connection that other
- * lock holders are keeping.
+ * Runs `fn` under the session's advisory lock so turn enqueue and tree maintenance never interleave.
+ * `fn` must use the handed `tx` only; a second connection would deadlock under load.
  */
 export const withAgentSessionLock = <T>(
   db: DB,
@@ -292,10 +247,8 @@ export const withAgentSessionLock = <T>(
   });
 
 /**
- * Takes the user's advisory lock on the current transaction, so two turns accepted for one user
- * on two sessions cannot both pass a per-user check on the same reading. Always taken *after*
- * the session lock, and only inside `withAgentSessionLock`'s `tx`, so the order is fixed and
- * the lock ends with the transaction.
+ * Takes the user's advisory lock on this transaction so two sessions cannot both pass a per-user check.
+ * Always after the session lock, and only inside `withAgentSessionLock`'s `tx`.
  */
 export const lockAgentUser = async (tx: DB, userId: string): Promise<void> => {
   await tx.execute(
@@ -312,11 +265,8 @@ const runningTurnsOf = (options: { userId: string; turnKey: string }) =>
   );
 
 /**
- * Turns executing right now across every session the user owns, as the rows say. A run parked
- * on its message hook is active but not running, and does not count. The marker is written by
- * the host and cleared by the step; a step the process died under leaves it set, so a reader
- * that must not over-count reconciles the rows against the World first
- * (`reconcileRunningAgentTurns` in `apps/service`).
+ * Turns whose `metadata[turnKey].running` marker is set. A run parked on its message hook does not count.
+ * A dead step can leave the marker set; callers that must not over-count reconcile against the World first.
  */
 export const countRunningAgentTurns = async (
   db: DB,
@@ -353,10 +303,6 @@ export const completeAgentRun = async (
     .where(eq(agentRuns.id, runId));
 };
 
-// ============================================
-// Session entries (the transcript tree)
-// ============================================
-
 export interface InsertAgentSessionEntryDTO {
   id: string;
   sessionId: string;
@@ -366,11 +312,7 @@ export interface InsertAgentSessionEntryDTO {
   timestamp: Date;
 }
 
-/**
- * Appends an entry and makes it the session's active leaf in one transaction, so a failure
- * between the two writes can never leave an entry outside every branch. Returns the `seq` the
- * row landed on.
- */
+/** Appends an entry and sets it as the leaf in one transaction so a failure cannot leave an entry off every branch. */
 export const appendAgentSessionEntryAsLeaf = async (
   db: DB,
   input: InsertAgentSessionEntryDTO
@@ -388,10 +330,7 @@ export const appendAgentSessionEntryAsLeaf = async (
     return row;
   });
 
-/**
- * The newest `seq` persisted for the session on any branch; `0` for a session with no entries.
- * `max()` decodes through the column, so the value keeps the column's full `bigserial` range.
- */
+/** Newest `seq` on any branch; `0` if none. `max()` keeps the column's full `bigserial` range. */
 export const getAgentSessionLastSeq = async (
   db: DB,
   sessionId: string
@@ -437,17 +376,13 @@ export const getAgentSessionEntriesByType = async (
     )
     .orderBy(asc(agentSessionEntries.seq));
 
-/** Every entry of the session, all branches, in `seq` order. */
+/** Every entry, all branches, in `seq` order. */
 export const getAgentSessionEntries = async (db: DB, sessionId: string) =>
   await db
     .select()
     .from(agentSessionEntries)
     .where(eq(agentSessionEntries.sessionId, sessionId))
     .orderBy(asc(agentSessionEntries.seq));
-
-// ============================================
-// Writing agent state
-// ============================================
 
 export const createWritingAgentSession = async (
   db: DB,
@@ -551,10 +486,6 @@ export const deleteWritingAgentDrafts = async (db: DB, sessionId: string) => {
     .where(eq(writingAgentDrafts.sessionId, sessionId));
 };
 
-// ============================================
-// Tool approvals
-// ============================================
-
 export const recordAgentApprovalRequests = async (
   db: DB,
   inputs: readonly {
@@ -576,8 +507,7 @@ export const recordAgentApprovalRequests = async (
         args: input.args ?? null,
       }))
     )
-    // The model may re-issue a gated call; the first request wins so an existing decision
-    // is never overwritten by a fresh request.
+    // First request wins; a re-issued gated call must not overwrite an existing decision.
     .onConflictDoNothing({
       target: [agentToolApprovals.sessionId, agentToolApprovals.toolCallId],
     });

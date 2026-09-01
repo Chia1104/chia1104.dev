@@ -6,9 +6,8 @@ export const AGENT_DELTA_NAMESPACE = "agent:deltas";
 export const AGENT_TURN_KEY = "turn";
 
 /**
- * Where a turn begins on the run's durable streams. The coarse stream and the delta namespace
- * are indexed independently, so a turn needs a cursor into each; replaying deltas from any
- * earlier point re-appends text to messages the client already holds.
+ * Start cursors for a turn. Coarse stream and delta namespace are indexed independently;
+ * replaying deltas from an earlier point re-appends text the client already holds.
  */
 export interface AgentStreamPosition extends JsonObject {
   streamIndex: number;

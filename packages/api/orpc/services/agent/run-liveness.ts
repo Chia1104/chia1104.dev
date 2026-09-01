@@ -12,12 +12,9 @@ import type { AgentRunHost } from "../agent.factory";
 import { readAgentAbortControllerRef, signalAgentAbort } from "./abort";
 
 /**
- * What an `agent.run` row is doing right now, as every reader must ask it.
- *
- * The row's turn marker says a step is executing; the World says whether the run that would
- * execute it is alive. A marker on a dead run is a process that died under a step — the
- * marker was never cleared — so no reader trusts the marker alone, and one reader
- * (`reconcileRunningAgentTurns`) closes such rows for good.
+ * The row's turn marker says a step is executing; the World says whether that run is alive.
+ * A marker on a dead run is a process that died under a step, so no reader trusts the
+ * marker alone. `reconcileRunningAgentTurns` closes such rows.
  */
 
 /** The active `agent.run` row as every state question reads it. */
@@ -45,24 +42,22 @@ export const isRunLive = async (
 };
 
 /**
- * A run row `prompt` wrote ahead of the workflow it is about to start: its `externalRunId` is
- * still its own id. It is the session's turn lease until the started run is bound to it.
+ * A run row `prompt` wrote ahead of the workflow it is about to start: its `externalRunId`
+ * is still its own id. It is the session's turn lease until the started run is bound to it.
  */
 export const isRunLease = (row: AgentRunRef): boolean =>
   row.activeRunId !== null && row.workflowRunId === row.activeRunId;
 
 /**
- * How long an unbound lease counts as running. `prompt` binds within milliseconds or marks the
- * row failed; only a process that died in between leaves a lease this old, and the next prompt
- * replaces it.
+ * How long an unbound lease counts as running. `prompt` binds within milliseconds or marks
+ * the row failed; only a process that died in between leaves a lease this old.
  */
 export const RUN_LEASE_TTL_MS = 60_000;
 
 /**
- * What the durable run is doing right now. `running` is a turn step executing; `waiting` is the
- * run parked on its message or approval hook; `null` means no live run. The SDK's own status
- * cannot tell the first two apart — a parked run is `running` too — so the turn marker the step
- * maintains decides.
+ * `running` is a turn step executing; `waiting` is parked on a message or approval hook;
+ * `null` means no live run. The SDK's own status cannot tell the first two apart — a parked
+ * run is `running` too — so the turn marker decides.
  */
 export const runStateOf = async (
   runs: AgentRunHost,
@@ -83,12 +78,9 @@ export const runStateOf = async (
 };
 
 /**
- * Closes the user's runs whose turn marker is set but whose World run is gone, so the running
- * count that follows is what is actually executing. Returns how many rows were closed.
- *
- * The workflow's own `finally` closes a run whose step threw; this catches what that cannot — a
- * row from before that `finally` existed, a run the World cancelled from outside, a lease whose
- * `start` never returned. Bounded: a user has at most their cap of such rows.
+ * Closes runs whose turn marker is set but whose World run is gone. Catches what the
+ * workflow `finally` cannot: a row from before that `finally` existed, a run cancelled
+ * from outside, a lease whose `start` never returned.
  */
 export const reconcileRunningAgentTurns = async (
   db: DB,

@@ -29,7 +29,6 @@ import {
 import { SESSION_TITLE_MAX_LENGTH } from "./session-tabs.tsx";
 
 export interface MessageActionsProps {
-  /** The entry behind the message: its wire `messageId`. */
   messageId: string;
   role: "user" | "assistant";
   text: string;
@@ -38,11 +37,7 @@ export interface MessageActionsProps {
 
 type PendingAction = "rewind" | "fork" | null;
 
-/**
- * What the operator can do from a message: go back to their own message and re-ask it (a rewind,
- * in place), or branch the conversation from any message into a new session. Offered only while
- * the session can take a prompt — both are refused server-side mid-turn.
- */
+/** Offered only while the session can take a prompt; both actions are refused server-side mid-turn. */
 export const MessageActions = ({
   className,
   messageId,
@@ -123,14 +118,7 @@ const ActionButton = ({
   </Tooltip>
 );
 
-// ============================================
-// Dialogs
-// ============================================
-
-/**
- * Rewind to the operator's message. On success the message's text is handed to the composer, so
- * "go back" reads as "edit and send again" rather than as a bare deletion.
- */
+/** On success, the message text is handed to the composer. */
 const RewindDialog = ({
   isOpen,
   messageId,
@@ -217,7 +205,7 @@ const RewindDialog = ({
   );
 };
 
-/** Fork from a message into a new session; the title is optional and defaults to this session's. */
+/** Title is optional and defaults to this session's. */
 const ForkDialog = ({
   isOpen,
   messageId,

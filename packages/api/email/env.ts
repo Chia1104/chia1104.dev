@@ -2,11 +2,9 @@ import { createEnv } from "@t3-oss/env-core";
 import * as z from "zod";
 
 /**
- * `RESEND_API_KEY` is intentionally optional here even though sending requires it.
- *
- * This module is reached from the oRPC router, which `apps/dash` imports for its
- * in-process RSC client — a required var would make merely importing the router throw in
- * every app that never sends email. `sendContactEmail` reports the missing key instead.
+ * `RESEND_API_KEY` is optional here even though sending requires it. This module is
+ * reached from the oRPC router, which `apps/dash` imports; a required var would throw
+ * in every app that never sends email. `sendContactEmail` reports the missing key.
  */
 export const env = createEnv({
   server: {

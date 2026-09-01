@@ -27,15 +27,9 @@ import type { AgentTaskConfig, AgentTaskParams } from "@chia/db/schema";
 import type { AgentModels } from "./kind";
 
 /**
- * The agent tasks this process runs.
- *
- * A task is a one-shot model call beside a session (title, lesson extraction, compaction): a
- * model slot plus, where the call exposes them, a prompt and sampling parameters. The
- * definition is the code's choice, `agent.task_config` the operator's override, and
- * {@link resolveAgentTask} the only place the two meet.
- *
- * A task is code and a row only re-points it: the step that runs it ships with the deployment.
- * This module imports prompt text from the domain packages, so it is loaded on first use.
+ * One-shot model calls beside a session (title, lesson extraction, compaction). The definition
+ * is the code's choice, `agent.task_config` the operator's override, and {@link resolveAgentTask}
+ * the only place the two meet. A task is code; a row only re-points it.
  */
 
 export interface AgentTaskParamsResolved {
@@ -47,13 +41,12 @@ export interface AgentTaskDefinition {
   readonly id: string;
   readonly label: string;
   readonly description: string;
-  /** The kind the task belongs to; absent for one every kind shares. */
   readonly kind?: string;
   /**
    * The model when the operator has not chosen one: a house gateway ref, or `"session"` for a
    * task that runs on the model of the session it serves. A fixed model is always resolved on
-   * the house account — a side job is never the operator's own bill, and it may run in a
-   * workflow that has no caller credentials at all.
+   * the house account: a side job is never the operator's own bill, and it may run in a
+   * workflow that has no caller credentials.
    */
   readonly defaultModel: AgentModelRef | "session";
   /** Absent when the call's prompt is not the operator's to write (Pi's compaction carries its own). */
@@ -71,7 +64,6 @@ export const AGENT_TASK_IDS = {
 
 export type AgentTaskId = (typeof AGENT_TASK_IDS)[keyof typeof AGENT_TASK_IDS];
 
-/** The house gateway's cheap model — what a side job runs on unless the operator says otherwise. */
 const HOUSE_CHEAP_MODEL: AgentModelRef = {
   providerId: AGENT_PROVIDERS.gateway,
   modelId: "anthropic/claude-haiku-4.5",
@@ -124,11 +116,6 @@ export const getAgentTaskDefinition = (
 ): AgentTaskDefinition | undefined =>
   definitions.find((definition) => definition.id === taskId);
 
-// ============================================
-// Models a task may be pinned to
-// ============================================
-
-/** A fixed task model is a house gateway model; see {@link AgentTaskDefinition.defaultModel}. */
 export const isAgentTaskModel = (ref: AgentModelRef): boolean =>
   ref.providerId === AGENT_PROVIDERS.gateway;
 
@@ -140,24 +127,17 @@ export const assertAgentTaskModel = (ref: AgentModelRef): void => {
 export const listAgentTaskModels = (): AgentModelInfo[] =>
   listModels(isAgentTaskModel);
 
-// ============================================
-// Resolution
-// ============================================
-
 export interface ResolvedAgentTask {
   model: AgentModel;
-  /** The collection `model` was resolved from — what the call must be made on. */
   models: AgentModels;
-  /** The effective system prompt; absent for a task without one. */
   systemPrompt?: string;
-  /** The effective sampling parameters; absent for a task without them. */
   params?: AgentTaskParamsResolved;
 }
 
 export interface ResolveAgentTaskOptions {
   /**
    * The session the task serves, for a task whose effective model is `"session"`. A thunk so a
-   * task pinned to a fixed model never resolves the session's own — which may need a BYOK key
+   * task pinned to a fixed model never resolves the session's own, which may need a BYOK key
    * the request does not carry.
    */
   session?: () => { model: AgentModel; models: AgentModels };
@@ -182,10 +162,10 @@ export const definedTaskParams = (
 });
 
 /**
- * The model, prompt and parameters a task runs with right now: the operator's row over the
- * definition. A pinned model that the catalogue no longer carries falls back to the definition's
- * default with a warning, so a pi-ai upgrade that retires a model id degrades the task rather
- * than the work it rides alongside.
+ * The model, prompt and parameters a task runs with: the operator's row over the definition.
+ * A pinned model the catalogue no longer carries falls back to the definition's default with a
+ * warning, so a pi-ai upgrade that retires a model id degrades the task rather than the work
+ * it rides alongside.
  */
 export const resolveAgentTask = async (
   db: DB,

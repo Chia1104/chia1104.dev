@@ -7,17 +7,15 @@ import type { AgentLabels } from "./labels.ts";
 import { defaultAgentLabels, mergeLabels } from "./labels.ts";
 
 /**
- * The label catalog as React context, on its own so an element that only needs strings —
- * the model picker, the thinking slider — can be mounted without a session.
- * `AgentSessionProvider` mounts one for its subtree; a host that renders such an element
- * elsewhere mounts one itself. With no provider at all the `en-US` catalog applies, so an
- * element is never blocked on wiring for what is, after all, cosmetic.
+ * Label catalog as its own context so elements that only need strings can mount without a
+ * session. `AgentSessionProvider` mounts one for its subtree; a host rendering those elements
+ * elsewhere mounts one itself. With no provider the `en-US` catalog applies.
  */
 
 const AgentLabelsContext = createContext<AgentLabels>(defaultAgentLabels);
 
 export interface AgentLabelsProviderProps {
-  /** The catalog for the host's locale (`@chia/i18n/agent-elements/<locale>.json`), or overrides. */
+  /** Host locale catalog (`@chia/i18n/agent-elements/<locale>.json`), or overrides. */
   labels?: Partial<AgentLabels>;
   children: ReactNode;
 }

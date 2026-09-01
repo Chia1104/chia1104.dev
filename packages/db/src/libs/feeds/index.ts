@@ -228,7 +228,6 @@ const queryInfiniteFeeds = async (
         where: {
           locale,
         },
-        // skip the body unless it was asked for
         columns: withContent
           ? undefined
           : {
@@ -237,9 +236,7 @@ const queryInfiniteFeeds = async (
               unstableSerializedSource: false,
             },
         extras: {
-          // "has ever been embedded": no `model` / `index_version` comparison, so
-          // a vector left over from an older index key still counts. The exact
-          // state per key comes from `libs/resources/stats.ts`.
+          // Any stored vector counts, including leftovers from an older index key. Per-key state is in `libs/resources/stats.ts`.
           hasEmbedding: (translation, { sql }) =>
             sql<boolean>`exists (
               select 1 from chia_resource_chunk c
@@ -280,16 +277,9 @@ const queryInfiniteFeeds = async (
 };
 
 interface FeedDetailsScope {
-  /**
-   * Restrict to a single author. Callers serving the public site pass the configured
-   * admin id so a feed belonging to anyone else is invisible.
-   */
+  /** Public callers pass the configured admin id so other authors' feeds are invisible. */
   userId?: string;
-  /**
-   * Restrict to published feeds. Public callers must set this — the detail query is
-   * addressable by slug, so without it any draft is readable by anyone who knows or
-   * guesses its slug.
-   */
+  /** Public callers must set this; the query is addressable by slug, so omitting it leaks drafts. */
   published?: boolean;
 }
 
@@ -326,8 +316,7 @@ const getFeedDetails = async (
     eq(feedTranslations.feedId, feed.id),
     locale ? eq(feedTranslations.locale, locale) : undefined
   );
-  // the body lives on the translation row now, so this is one query instead of
-  // two joined ones; the vector is selected as a boolean and never shipped
+  // `hasEmbedding` is a boolean; the vector is never shipped.
   const [feedTranslationRows, tagRows] = await Promise.all([
     db
       .select({
@@ -346,9 +335,7 @@ const getFeedDetails = async (
         deleted: feedTranslations.deleted,
         createdAt: feedTranslations.createdAt,
         updatedAt: feedTranslations.updatedAt,
-        // "has ever been embedded", same as the list query above: not compared
-        // against the current `(model, index_version)`; see
-        // `libs/resources/stats.ts` for the per-key state.
+        // Any stored vector counts; per-key state is in `libs/resources/stats.ts`.
         hasEmbedding: sql<boolean>`exists (
           select 1 from chia_resource_chunk c
           join chia_resource_embedding e on e.chunk_id = c.id
@@ -483,8 +470,7 @@ export const getFeedForIndexing = withDTO(
       return null;
     }
 
-    // tag names feed the document card's `Tags:` line, so they are needed per
-    // locale alongside the translations
+    // Tag names per locale, for the document card's `Tags:` line.
     const tagRows = await db
       .select({
         locale: tagTranslations.locale,
@@ -503,7 +489,6 @@ export const getFeedForIndexing = withDTO(
   }
 );
 
-/** Maps translation ids to the feed identity callers key off. */
 export const getFeedRefsByTranslationIds = withDTO(
   async (db, params: { translationIds: number[] }) => {
     if (params.translationIds.length === 0) {
@@ -568,12 +553,7 @@ export const getFeedIdByTranslationId = withDTO(
   }
 );
 
-/**
- * Every translation id, ascending — what a full reindex iterates.
- *
- * Unfiltered on purpose: unpublished and soft-deleted feeds are indexed too, with
- * their visibility mirrored onto the chunks so BM25 can filter on it.
- */
+/** Every translation id, including unpublished and soft-deleted; visibility is mirrored onto chunks for BM25. */
 export const listFeedTranslationIds = withDTO(
   async (db, _params: Record<string, never>) => {
     const rows = await db
@@ -614,7 +594,6 @@ export const createFeed = withDTO(
   async (
     db,
     dto: InsertFeedDTO & {
-      // the body is part of the translation now, not a nested object
       translations: InsertFeedTranslationDTO[];
     }
   ) => {
@@ -762,13 +741,7 @@ export const updateFeedTranslation = withDTO(
   }
 );
 
-/**
- * Writes a translation's body.
- *
- * Kept as its own function because callers update the body independently of the
- * metadata, but it is now a plain `UPDATE` on the translation row — which is
- * also what refreshes the BM25 index, since that index is built on this table.
- */
+/** Writes a translation's body independently of metadata. Also refreshes BM25, which is built on this table. */
 export const upsertContent = withDTO(
   async (
     db,

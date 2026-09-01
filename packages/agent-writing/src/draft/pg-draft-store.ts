@@ -20,12 +20,9 @@ import {
 } from "./operations.ts";
 
 /**
- * {@link DraftStore} over `agent.writing_draft` (per-locale) +
- * `agent.writing_session.feedMeta` (feed-level).
- *
- * The split mirrors the real schema — `feed` vs `feed_translation` — so committing maps onto
- * `createFeedSchema` without reshaping. Both halves are jsonb rather than columns because the
- * draft is a scratch buffer: adding a field the agent can propose should not need a migration.
+ * {@link DraftStore} over `agent.writing_draft` (per-locale) + `agent.writing_session.feedMeta`
+ * (feed-level). Both halves are jsonb rather than columns: the draft is a scratch buffer, so
+ * adding a field the agent can propose should not need a migration.
  */
 export class PgDraftStore implements DraftStore {
   constructor(private readonly db: DB) {}

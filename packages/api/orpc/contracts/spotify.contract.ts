@@ -5,21 +5,10 @@ import type { CurrentPlaying, PlayList } from "../../spotify/types";
 import { spotifyCredentialUserSchema } from "../../spotify/validator";
 
 /**
- * The whole Spotify surface: the public playback reads the site renders, and the account
- * management the operator drives. They used to sit in two top-level namespaces (`media`
- * and `spotify`) that each held exactly one child.
+ * Public playback plus operator account management.
  */
 
-// ============================================
-// Output Schemas
-// ============================================
-
-/**
- * Spotify payloads are passed straight through, so the shape is Spotify's to own.
- * `z.custom` keeps the types exact for consumers without committing us to maintaining a
- * zod mirror of their schema that breaks whenever they add a field — the trade-off is no
- * runtime validation.
- */
+/** Spotify owns the payload shape; `z.custom` keeps types exact with no runtime validation. */
 const spotifyPlaylistSchema = z.custom<PlayList>();
 const spotifyNowPlayingSchema = z.custom<CurrentPlaying | null>();
 
@@ -51,14 +40,7 @@ const spotifyActivateSchema = z.object({
   isActive: z.boolean(),
 });
 
-// ============================================
-// Playback
-// ============================================
-
-/**
- * Only `apps/www`'s server-side client reads the playlist, so it sits behind the project
- * API key.
- */
+/** Only `apps/www`'s server-side client reads the playlist, so it sits behind the project API key. */
 export const getSpotifyPlaylistContract = oc
   .errors({
     UNAUTHORIZED: {},
@@ -69,9 +51,7 @@ export const getSpotifyPlaylistContract = oc
   .input(z.object({ playlistId: z.string().min(1) }))
   .output(spotifyPlaylistSchema);
 
-/**
- * Reached from the browser, so it stays public.
- */
+/** Reached from the browser, so it stays public. */
 export const getSpotifyNowPlayingContract = oc
   .errors({
     SERVICE_UNAVAILABLE: {},
@@ -79,10 +59,6 @@ export const getSpotifyNowPlayingContract = oc
     TOO_MANY_REQUESTS: {},
   })
   .output(spotifyNowPlayingSchema);
-
-// ============================================
-// Account management (admin)
-// ============================================
 
 export const getSpotifyAccountsContract = oc
   .errors({

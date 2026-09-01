@@ -1,7 +1,6 @@
 /**
- * The composer's local editing state. Text and cursor travel together so the slash-token lookup
- * never sees one updated without the other; the menu's highlight and dismissal are keyed to the
- * text they were made against and reset on any edit.
+ * Text and cursor travel together so slash-token lookup never sees one without the other.
+ * Menu highlight and dismissal are keyed to the text they were made against and reset on any edit.
  */
 export interface ComposerDraft {
   text: string;
@@ -21,7 +20,7 @@ export type ComposerDraftAction =
   | { type: "reportActiveDescendant"; id: string | undefined }
   | { type: "dismissMenu"; key: string };
 
-/** A draft holding `text` with the caret at its end — what a seeded editor starts from. */
+/** Caret at the end of `text`. */
 export const composerDraftOf = (text: string): ComposerDraft => ({
   text,
   cursor: text.length,

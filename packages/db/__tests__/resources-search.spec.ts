@@ -25,7 +25,7 @@ const hit = (
 describe("aggregateChunkHits", () => {
   it("rewards breadth: several relevant chunks outrank one equal best chunk", () => {
     // both resources share the same best chunk score; resource 2 has two more
-    // relevant chunks — under a top-N mean it would have lost or tied
+    // relevant chunks. Under a top-N mean it would have lost or tied
     const hits = [hit(1, 0.9), hit(2, 0.9), hit(2, 0.5), hit(2, 0.4)].sort(
       (a, b) => b.score - a.score
     );
@@ -41,7 +41,7 @@ describe("aggregateChunkHits", () => {
     const hits = [...focused, ...many];
 
     const [first] = aggregateChunkHits(hits, 10);
-    // 0.2 × (1 + ¼ + ¹⁄₁₆) < 0.9 × (1 + ¼) — chunks beyond the top N
+    // 0.2 × (1 + ¼ + ¹⁄₁₆) < 0.9 × (1 + ¼). Chunks beyond the top N
     // contribute nothing, and decayed later ranks cannot pile up past a
     // dominant best chunk
     expect(first?.sourceId).toBe(2);

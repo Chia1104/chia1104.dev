@@ -20,11 +20,7 @@ const callerOS = os.$context<CallerContext>();
 
 /**
  * Resolves the caller's tier onto the context, optionally requiring a minimum.
- *
- * Replaces `authGuard` / `adminGuard()` / `apiKeyGuard()` on every procedure that serves
- * more than one audience: instead of one procedure per credential, the procedure widens
- * what it returns as `context.caller.tier` rises. Procedures with a single audience keep
- * using the narrower guards.
+ * Multi-audience procedures widen what they return as `context.caller.tier` rises.
  */
 export const callerGuard = (options: CallerPolicyOptions = {}) =>
   baseOS
@@ -48,11 +44,8 @@ export const callerGuard = (options: CallerPolicyOptions = {}) =>
     );
 
 /**
- * How far each tier's budget is stretched past the anonymous one.
- *
- * Multipliers rather than four configured budgets: the deployment only ever tunes one
- * number (`RATELIMIT_MAX`), and the *relative* trust between tiers is a property of the
- * architecture, not of the environment.
+ * Multipliers rather than four configured budgets: the deployment only ever tunes
+ * `RATELIMIT_MAX`. Relative trust between tiers is architecture, not environment.
  */
 const TIER_MULTIPLIER = {
   [CallerTier.Anonymous]: 1,
@@ -63,12 +56,7 @@ const TIER_MULTIPLIER = {
   [CallerTier.Root]: 100,
 } satisfies Record<CallerTier, number>;
 
-/**
- * Identity the budget is counted against.
- *
- * An authenticated caller is counted per principal, not per address, so the operator is
- * not throttled by whatever else shares their egress IP.
- */
+/** Authenticated callers are counted per principal, not per address. */
 const callerKey = (caller: Caller, clientIP: string): string => {
   if (caller.session) return `user-${caller.session.user.id}`;
   if (caller.apiKey) return `key-${caller.apiKey.id}`;
@@ -76,11 +64,8 @@ const callerKey = (caller: Caller, clientIP: string): string => {
 };
 
 /**
- * Per-procedure rate limiting whose budget scales with the caller's tier.
- *
- * Must be chained **after** {@link callerGuard}, whose context it reads. The coarse
- * IP-keyed limit on the `/rpc` and REST mounts still runs first, so an unauthenticated
- * flood is bounded before it reaches tier resolution.
+ * Per-procedure rate limiting whose budget scales with the caller's tier. Chain after
+ * {@link callerGuard}. The coarse IP-keyed limit on `/rpc` and REST still runs first.
  */
 export const tieredRateLimitGuard = (options: {
   prefix: string;

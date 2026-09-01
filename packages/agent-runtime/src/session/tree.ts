@@ -6,10 +6,10 @@ import { computeSessionStats } from "./entries.ts";
 /**
  * One session's tree of entries plus its active leaf.
  *
- * This is the whole persistence contract the runtime needs: a turn reads the branch under the
- * leaf, appends what the model and its tools produced, and compaction, navigation and forks move
- * or copy entries. Pi's `Agent` never sees it — it receives projected messages and hands back
- * events — so the tree can live wherever the host keeps its data.
+ * A turn reads the branch under the leaf and appends what the model and tools produced.
+ * Compaction, navigation and forks move or copy entries. Pi's `Agent` never sees it: it
+ * receives projected messages and hands back events, so the tree can live wherever the host
+ * keeps its data.
  */
 export interface SessionTree {
   readonly id: string;
@@ -25,7 +25,8 @@ export interface SessionTree {
   ): Promise<Extract<SessionEntry, { type: TType }>[]>;
   /**
    * Root-first path from `fromId` to the root, stopping at the newest compaction, which
-   * summarises everything before it. `undefined` starts at the leaf; `null` is the empty branch.
+   * summarises everything before it.
+   * `undefined` starts at the leaf; `null` is the empty branch.
    */
   getBranch(fromId?: string | null): Promise<SessionEntry[]>;
   getLabel(id: string): Promise<string | undefined>;
@@ -77,8 +78,8 @@ export const walkBranch = (
 ): SessionEntry[] => walkPath(entries, leafId, isCompaction);
 
 /**
- * The leaf's whole ancestry, root-first, through every compaction: what the operator sees. A
- * compaction condenses what the model is sent, not what was said, so the transcript keeps the
+ * The leaf's whole ancestry, root-first, through every compaction: what the operator sees.
+ * A compaction condenses what the model is sent, not what was said, so the transcript keeps the
  * messages behind it and shows the compaction where it happened.
  */
 export const walkTranscript = (
@@ -98,7 +99,7 @@ export const labelOf = (
   return label;
 };
 
-/** The tree in memory, for tests and any caller that never needs the transcript to outlive it. */
+/** In-memory tree for tests and callers that never need the transcript to outlive it. */
 export class InMemorySessionTree implements SessionTree {
   private readonly entries: SessionEntry[] = [];
   private leafId: string | null = null;

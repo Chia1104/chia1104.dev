@@ -18,11 +18,9 @@ const buildAuth = (db: DB, kv: Keyv) =>
     plugins: [
       ...baseAuthConfig.plugins,
       /**
-       * Guests: a visitor who has not signed in gets a real user row so they can own agent
-       * sessions and be metered. Registered here rather than in `baseAuthConfig` because the
-       * link hook needs the database: when a guest later signs in, what they own moves to the
-       * account before better-auth deletes the guest row, so their sessions — and their
-       * spend — follow them.
+       * Registered here rather than in `baseAuthConfig` because the link hook
+       * needs the database. On sign-in, ownership moves to the account before
+       * better-auth deletes the guest row.
        */
       anonymous({
         onLinkAccount: async ({ anonymousUser, newUser }) => {
@@ -36,9 +34,6 @@ const buildAuth = (db: DB, kv: Keyv) =>
     account: {
       skipStateCookieCheck: !IS_PRODUCTION,
     },
-    /**
-     * database adapter
-     */
     database: drizzleAdapter(db, {
       provider: "pg",
       schema: schemas,
@@ -78,9 +73,8 @@ const buildAuth = (db: DB, kv: Keyv) =>
   });
 
 /**
- * Memoized: `betterAuth()` eagerly builds the full auth context and endpoint router
- * (~0.7 MB allocated per call), and `db`/`kv` are process singletons, so one instance
- * serves every request.
+ * Memoized: `betterAuth()` eagerly builds the full auth context (~0.7 MB per
+ * call), and `db`/`kv` are process singletons.
  */
 let auth: ReturnType<typeof buildAuth> | undefined;
 

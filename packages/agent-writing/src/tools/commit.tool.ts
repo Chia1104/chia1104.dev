@@ -6,14 +6,9 @@ import { TOOL_NAMES, labelOf } from "./registry.ts";
 import { Type, defineTool, jsonBlock, textResult } from "./schema.ts";
 
 /**
- * Tier 3 — the only tools that touch published data.
- *
- * Both are gated by `permissions.ts`. They are also `sequential`: committing and publishing in
- * the same batch would race, and the model must see the resulting `feedId` before it can
- * publish.
- *
- * Deliberately absent: delete, hard-delete and image upload. The agent has no business
- * removing posts, and presigned uploads stay a human action.
+ * The only tools that touch published data. Sequential: committing and publishing in the same
+ * batch would race, and the model must see `feedId` before it can publish. No delete or image
+ * upload.
  */
 
 export const commitDraftTool = defineTool({
@@ -43,8 +38,7 @@ export const commitDraftTool = defineTool({
     }
 
     // The create procedure requires a translation for the default locale and rejects a
-    // translation without a title — check here so the model gets an actionable error instead of
-    // a BAD_REQUEST from the RPC layer.
+    // translation without a title. Check here so the model gets an actionable error.
     const defaultLocale = draft.feedMeta.defaultLocale ?? locales[0]!;
     if (!draft.translations[defaultLocale]) {
       throw new Error(

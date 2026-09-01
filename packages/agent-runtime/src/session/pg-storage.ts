@@ -16,10 +16,7 @@ import { computeSessionStats } from "./entries.ts";
 import type { SessionTree } from "./tree.ts";
 import { labelOf, walkBranch } from "./tree.ts";
 
-/**
- * The session tree over `agent.session` and `agent.session_entry`. All SQL lives in
- * `@chia/db/repos/agent`.
- */
+/** Session tree over `agent.session` and `agent.session_entry`. SQL lives in `@chia/db/repos/agent`. */
 
 export interface PgSessionMetadata {
   id: string;
@@ -120,12 +117,12 @@ export class PgSessionStorage implements SessionTree {
 }
 
 /**
- * `payload` holds the entry minus the base fields, so rehydrating is a spread. Base fields are
+ * `payload` holds the entry minus the base fields; rehydrating is a spread. Base fields are
  * assigned after the spread so the projected shape never depends on column order.
  *
- * The cast is deliberate: the payload is stored opaquely so an entry type this runtime has not
- * modelled still round-trips. A compaction persisted before `retainedTail` was mandatory reads
- * back with an empty tail, which is how the projection already treated it.
+ * The payload is stored opaquely so an entry type this runtime has not modelled still
+ * round-trips. A compaction persisted before `retainedTail` was mandatory reads back with an
+ * empty tail, which is how the projection already treated it.
  */
 const toEntry = (row: EntryRow): SessionEntry => {
   const entry =

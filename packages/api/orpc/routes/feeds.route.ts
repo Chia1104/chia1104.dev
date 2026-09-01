@@ -29,19 +29,9 @@ import { sessionGuard } from "../guards/auth.guard";
 import { callerGuard, tieredRateLimitGuard } from "../guards/caller.guard";
 import { contractOS } from "../utils";
 
-// ============================================
-// Reads
-//
-// `resolveFeedVisibility` turns the caller's tier into the slice they may see, and the
-// rate-limit budget scales with the same tier. The floor each read sits on is set by who
-// can actually reach it:
-//
-// - `publicReadGuard` — a browser calls these directly (`apps/www`'s infinite scroll and
-//   search box), and a browser can never hold the project API key. No floor.
-// - `keyedReadGuard` — only `apps/www`'s server-side client calls these, and it always
-//   sends `x-ch-api-key`. Anonymous callers have no business here.
-// - `sessionReadGuard` — only `apps/dash` calls this, with a session cookie.
-// ============================================
+// `publicReadGuard` has no floor: a browser never holds the project API key.
+// `keyedReadGuard` is www's server client with `x-ch-api-key`.
+// `sessionReadGuard` is dash with a session cookie. Rate limit scales with the same tier.
 
 const publicReadGuard = callerGuard();
 const keyedReadGuard = callerGuard({ minTier: CallerTier.ApiKey });
@@ -126,10 +116,6 @@ export const getRelatedFeedsRoute = contractOS.feeds.related
     return { items };
   });
 
-// ============================================
-// Search
-// ============================================
-
 export const searchFeedsRoute = contractOS.feeds.search
   .use(publicReadGuard)
   .use(readRateLimit)
@@ -146,8 +132,8 @@ export const searchFeedsRoute = contractOS.feeds.search
 
 export const searchFeedsAdvancedRoute = contractOS.feeds["search:advanced"]
   /**
-   * Authenticated for every mode, and root-only for the modes that embed the query —
-   * those spend the server's embedding credentials, `bm25` does not.
+   * Authenticated for every mode; root-only for modes that embed the query. Those spend
+   * the server's embedding credentials; `bm25` does not.
    */
   .use(sessionGuard, (input) => ({ rootOnly: input.model !== "bm25" }))
   .handler(async (opts) => {
@@ -161,13 +147,8 @@ export const searchFeedsAdvancedRoute = contractOS.feeds["search:advanced"]
     });
   });
 
-// ============================================
-// Writes
-//
-// `update`, `translation:upsert` and `content:upsert` sit at the API-key tier because the
-// content pipeline drives them deployment-to-deployment; the rest require the operator's
-// own session.
-// ============================================
+// `update`, `translation:upsert` and `content:upsert` sit at API-key because the
+// content pipeline drives them; the rest require the operator's session.
 
 const contentWriteGuard = callerGuard({ minTier: CallerTier.ApiKey });
 const rootWriteGuard = callerGuard({ minTier: CallerTier.Root });
@@ -175,8 +156,6 @@ const rootWriteGuard = callerGuard({ minTier: CallerTier.Root });
 export const createFeedRoute = contractOS.feeds.create
   .use(rootWriteGuard)
   .handler((opts) =>
-    // The write logic lives in `feeds/write` because the writing agent's durable turn calls
-    // it too, from a workflow step that has no request to authorise against.
     withORPCErrors(() =>
       createFeedService(
         opts.context.db,
@@ -243,11 +222,7 @@ export const upsertFeedTranslationRoute = contractOS.feeds["translation:upsert"]
 export const upsertContentRoute = contractOS.feeds["content:upsert"]
   .use(contentWriteGuard)
   .handler(async (opts) => {
-    /**
-     * An `UPDATE` keyed on the translation id, so an unknown id matches no row and returns
-     * nothing. Ignoring that answered 2xx to a write that never landed, which the content
-     * pipeline had no way to notice.
-     */
+    // `UPDATE` keyed on translation id: an unknown id matches no row. Ignoring that answered 2xx to a write that never landed.
     const content = await upsertContent(opts.context.db, opts.input);
 
     if (!content) {

@@ -4,11 +4,8 @@ const containsNonAscii = (value: string): boolean =>
   Array.from(value).some((character) => character.charCodeAt(0) > 127);
 
 /**
- * Normalises an English/ASCII phrase into a lowercase, hyphenated URL slug.
- *
- * Returns `undefined` for non-ASCII input rather than silently dropping words. This is a syntax
- * normaliser, not a translator or transliterator; callers must supply the meaningful English
- * wording themselves.
+ * Lowercase hyphenated slug. Returns `undefined` for non-ASCII input rather
+ * than dropping words; callers must supply English wording themselves.
  */
 export const normalizeAsciiSlug = (input: string): string | undefined => {
   const trimmed = input.trim();

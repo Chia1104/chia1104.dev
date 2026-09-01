@@ -19,8 +19,8 @@ const COOKIE_BY_PROVIDER = {
 
 export interface AiKeyGuardInput {
   /**
-   * Whether the key is required for *this* call. Callers map it from the validated input
-   * — e.g. `feeds.search` only needs a key for OpenAI-hosted embedding models.
+   * Whether the key is required for this call. Mapped from the validated input — e.g.
+   * `feeds.search` only needs a key for OpenAI-hosted embedding models.
    */
   enabled: boolean;
   provider?: AiProvider;
@@ -28,9 +28,8 @@ export interface AiKeyGuardInput {
 
 /**
  * Resolves the caller's provider API key from cookies into `context.AI_AUTH_TOKEN`.
- *
  * Whether a key is needed depends on the request's input, which a policy never sees, so
- * the decision is mapped in by the procedure via `.use(guard, mapInput)`.
+ * the procedure maps it in via `.use(guard, mapInput)`.
  */
 export const aiKeyGuard = (defaults?: { provider?: AiProvider }) =>
   baseOS

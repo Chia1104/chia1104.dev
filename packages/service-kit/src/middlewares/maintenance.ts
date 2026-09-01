@@ -13,18 +13,15 @@ export const isMaintenanceEnabled = (value?: string): boolean =>
 
 export interface MaintenanceOptions {
   /**
-   * 是否啟用維護模式
    * @default false
    */
   enabled?: boolean;
   /**
-   * 允許訪問的路徑
+   * Paths that still answer during maintenance.
    * @default ["/api/v1/health"]
    */
   allowedPaths?: string[];
-  /**
-   * 維護模式的 bypass token
-   */
+  /** Header/cookie that skips maintenance. */
   bypassToken?: string;
 }
 
@@ -40,7 +37,6 @@ export const maintenance = (options?: MaintenanceOptions) =>
     }
 
     try {
-      // 檢查 bypass token
       const bypassToken =
         c.req.raw.headers.get(MAINTENANCE_BYPASS_TOKEN) ??
         getCookie(c, MAINTENANCE_BYPASS_TOKEN)?.toString();

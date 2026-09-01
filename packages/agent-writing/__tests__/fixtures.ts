@@ -14,7 +14,6 @@ import type {
   WebSearchResult,
 } from "../src/types.ts";
 
-/** Scriptable {@link ContentPort} for tests. */
 export interface FakeContentPortOptions {
   searchHits?: PostSearchHit[];
   posts?: PostSnapshot[];
@@ -68,7 +67,6 @@ export const createFakeContentPort = (
   };
 };
 
-/** Scriptable {@link WebPort} for tests. */
 export interface FakeWebPortOptions {
   pages?: Record<string, FetchedPage>;
   results?: WebSearchResult[];
@@ -76,9 +74,7 @@ export interface FakeWebPortOptions {
 
 export interface FakeWebPort extends WebPort {
   readonly searches: WebSearchInput[];
-  /** The signal each call received, search and fetch alike, in call order. */
   readonly signals: (AbortSignal | undefined)[];
-  /** What every `search` returns; mutable so a test can script it after construction. */
   readonly results: WebSearchResult[];
 }
 

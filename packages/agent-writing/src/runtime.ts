@@ -31,16 +31,13 @@ export interface RunWritingTurnOptions<TApproval> {
   web: WebPort;
   draft: DraftStore;
   memory: MemoryPort;
-  /** The operator's standing instructions; see `SystemPromptInput.instructions`. */
   instructions?: string;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
   approvedToolCallIds?: ReadonlySet<string>;
   preAuthorizedToolNames?: ReadonlySet<string>;
-  /** Host-owned abort; see `RunPiTurnOptions.signal`. */
   signal?: AbortSignal;
   models?: Models;
-  /** See `RunPiTurnOptions.compactionModel`; the session's own model when omitted. */
   compactionModel?: Model<Api>;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
@@ -55,7 +52,6 @@ export interface RunWritingTurnOptions<TApproval> {
  */
 const LESSONS_DIGEST_LIMIT = 20;
 
-/** Composes the writing domain and executes one turn on Pi's `Agent`. */
 export const runWritingTurn = <TApproval>(
   options: RunWritingTurnOptions<TApproval>
 ): Promise<AgentTurnExecution<TApproval>> => {

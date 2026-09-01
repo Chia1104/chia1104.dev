@@ -11,19 +11,15 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { useAgentLabels } from "./labels-context.tsx";
 
 export interface ExpandableProps {
-  /** Height the content is clipped to until expanded, in px. */
   maxHeight: number;
   children: ReactNode;
   className?: string;
-  /** Applied to the toggle row, e.g. to align it with the content's padding. */
   toggleClassName?: string;
 }
 
 /**
- * Clips its content to `maxHeight` and offers to show the rest. Content that fits shows no
- * toggle at all, and one that grows past the limit later — a streaming message — gains it: the
- * overflow is observed, not computed once. Expanding changes the element's height, which the
- * thread's virtualizer re-measures through its own `ResizeObserver`.
+ * Overflow is observed, not computed once, so a streaming message that grows past `maxHeight`
+ * gains a toggle. Expanding changes height; the thread virtualizer re-measures via ResizeObserver.
  */
 export const Expandable = ({
   children,

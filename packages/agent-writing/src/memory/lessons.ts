@@ -6,11 +6,8 @@ import { isOperatorDecisionText } from "@chia/agent-runtime/wire/operator-decisi
 import type { MemorySummary } from "../types.ts";
 
 /**
- * Lesson extraction: what a session's transcript is reduced to before a model is asked what
- * the operator taught the agent, and how the answer is read back.
- *
- * Pure functions, so the durable step that runs them stays a thin orchestrator and this —
- * the part where a prompt injection would have to get through — is unit-tested.
+ * Lesson extraction from a transcript. Pure functions so injection paths can be unit-tested
+ * without the durable step.
  */
 
 export const LESSON_EXTRACTION_MAX = 3;
@@ -26,10 +23,9 @@ export interface OperatorExchangeTurn {
 }
 
 /**
- * The active branch, root first, through compaction entries. `walkBranch` stops at the
- * newest compaction because the model's context starts there; extraction wants the
- * operator's earlier corrections too, and reads them from the raw entries rather than
- * from a compaction summary the model wrote.
+ * The active branch, root first, through compaction entries. `walkBranch` stops at the newest
+ * compaction because the model's context starts there; extraction wants the operator's earlier
+ * corrections too, and reads them from the raw entries rather than a compaction summary.
  */
 export const wholeBranch = (
   entries: readonly SessionEntry[],
@@ -64,10 +60,9 @@ const textOf = (
 };
 
 /**
- * Only the operator's own messages and the assistant's prose. Tool results — where every
- * fetched page lives — thinking and tool calls are dropped, so nothing a web page said can
- * become a lesson (plan §3.6). Approval relay turns are kept: they carry the operator's
- * rejection comments, the highest-signal input there is.
+ * Only the operator's own messages and the assistant's prose. Tool results, thinking and tool
+ * calls are dropped, so nothing a web page said can become a lesson. Approval relay turns are
+ * kept: they carry the operator's rejection comments.
  */
 export const collectOperatorExchange = (
   entries: readonly SessionEntry[]
@@ -117,7 +112,7 @@ export const LESSON_EXTRACTION_PARAMS = {
 export interface LessonExtractionInput {
   exchange: readonly OperatorExchangeTurn[];
   existingLessons: readonly Pick<MemorySummary, "title">[];
-  /** Replaces {@link LESSON_EXTRACTION_SYSTEM_PROMPT}; the operator's override, when they made one. */
+  /** Replaces {@link LESSON_EXTRACTION_SYSTEM_PROMPT} when the operator set an override. */
   systemPrompt?: string;
 }
 
@@ -127,8 +122,7 @@ export interface LessonExtractionPrompt {
 }
 
 /**
- * The prompt, or null when the transcript holds nothing an operator said — a session the
- * model talked to itself in has no lessons.
+ * The prompt, or null when the transcript holds nothing an operator said.
  */
 export const buildLessonExtractionPrompt = (
   input: LessonExtractionInput
@@ -162,9 +156,8 @@ const lessonSchema = z.object({
 export type ExtractedLesson = z.infer<typeof lessonSchema>;
 
 /**
- * Reads the model's reply. Tolerates a fenced block around the JSON; anything else that does
- * not parse as an array of lessons is "nothing", not an error — a lesson is a gain, never a
- * correctness requirement.
+ * Reads the model's reply. A fenced JSON block is accepted; anything else that does not
+ * parse as an array of lessons is nothing, not an error.
  */
 export const parseExtractedLessons = (raw: string): ExtractedLesson[] => {
   // trimmed before the fence strip, so neither pattern backtracks over whitespace

@@ -9,20 +9,14 @@ import {
 import type { EmbeddingTask } from "./utils.ts";
 
 /**
- * The one seam for swapping embedding models.
+ * The seam for swapping embedding models.
  *
- * There used to be a registry of five models with `indexed` / `canonical` /
- * `queryEnabled` flags, two vector columns, and an `isOllama` branch in six
- * call sites — to serve a system that in practice queried exactly one model.
- * Everything a caller needs is now behind `embed()`, chosen once here.
+ * `id` is folded into the index key, so switching providers invalidates
+ * stored vectors instead of silently comparing across models.
  *
- * `id` is folded into the index key, so switching providers invalidates every
- * stored vector automatically instead of silently comparing across models.
- *
- * `task` is required, not defaulted: most embedding models worth trying next
- * (nomic, mxbai, e5, voyage) are asymmetric — a query embedded with the
- * document prefix silently degrades retrieval — so every caller has to state
- * which side of the search it is on. Symmetric models ignore it.
+ * `task` is required: most models worth trying next are asymmetric, and a
+ * query embedded with the document prefix silently degrades retrieval.
+ * Symmetric models ignore it.
  */
 export interface EmbeddingProvider {
   readonly id: string;
@@ -43,9 +37,9 @@ export interface OpenAIProviderOptions {
 }
 
 /**
- * `./openai.ts` is imported inside `embed` rather than at module scope: resolving a
- * provider is part of the boot path of everything that indexes, but `@ai-sdk/openai`
- * and `ai` are only needed once vectors are actually requested.
+ * `./openai.ts` is imported inside `embed`, not at module scope: resolving a
+ * provider is on the boot path of everything that indexes, but `@ai-sdk/openai`
+ * and `ai` are only needed once vectors are requested.
  */
 export const openAIEmbeddingProvider = (
   options: OpenAIProviderOptions = {}
@@ -64,10 +58,10 @@ export const openAIEmbeddingProvider = (
 });
 
 /**
- * Local models for experimentation. Each reports its *native* width rather than
- * the column's, because none of them can be asked for 1536 — see
- * `OLLAMA_EMBEDDING_DIMENSIONS`. `assertColumnWidth` is what turns that into a
- * startup error instead of a failed insert.
+ * Local models. Each reports its native width rather than the column's;
+ * none can be asked for 1536 (see `OLLAMA_EMBEDDING_DIMENSIONS`).
+ * `assertColumnWidth` turns a mismatch into a startup error instead of a
+ * failed insert.
  */
 export const ollamaEmbeddingProvider = (
   model: OllamaEmbeddingModel = OLLAMA_EMBEDDING_MODEL
@@ -83,12 +77,10 @@ export const ollamaEmbeddingProvider = (
 });
 
 /**
- * One vector column, one width. A provider whose vectors do not fit it is
- * rejected here rather than at insert time, where the error names a Postgres
- * column and not the setting that caused it.
- *
- * Switching to a narrower model is a schema change (`EMBEDDING_DIMENSIONS` plus
- * the `resource_embedding.embedding` column) followed by a reindex.
+ * Rejects a provider whose vectors do not fit the column here rather than
+ * at insert time, where the error names a Postgres column instead of the
+ * setting that caused it. Switching to a narrower model is a schema change
+ * (`EMBEDDING_DIMENSIONS` plus `resource_embedding.embedding`) then a reindex.
  */
 const assertColumnWidth = (provider: EmbeddingProvider): EmbeddingProvider => {
   if (provider.dimensions !== EMBEDDING_DIMENSIONS) {
@@ -102,8 +94,8 @@ const assertColumnWidth = (provider: EmbeddingProvider): EmbeddingProvider => {
 };
 
 /**
- * Resolves the provider for this process. `EMBEDDING_PROVIDER=ollama` opts into
- * the local model; anything else uses OpenAI.
+ * `EMBEDDING_PROVIDER=ollama` opts into the local model; anything else uses
+ * OpenAI.
  */
 export const resolveEmbeddingProvider = (
   options: OpenAIProviderOptions = {}

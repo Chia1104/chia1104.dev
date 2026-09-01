@@ -7,14 +7,9 @@ import { TOOL_NAMES, labelOf } from "./registry.ts";
 import { Type, defineTool, jsonBlock, textResult } from "./schema.ts";
 
 /**
- * Long-term memory across sessions.
- *
- * `save_memory` writes a `fact` only. A `source` is recorded automatically by `fetch_url`,
- * and a `lesson` is extracted from the operator's feedback by a workflow and reviewed before
- * it takes effect — neither is something the model should author by hand.
- *
- * Retrieval is a tool rather than an automatic lookup on every request so the cost is
- * visible (one call, one search) and the transcript shows what the agent drew on.
+ * `save_memory` writes a `fact` only. A `source` is recorded by `fetch_url`; a `lesson` is
+ * extracted by a workflow. Retrieval is a tool so cost is visible and the transcript shows
+ * what was drawn on.
  */
 
 /** Small enough to force a distillation; a page goes through `fetch_url`, not here. */
@@ -24,8 +19,8 @@ const DEFAULT_SEARCH_LIMIT = 5;
 const MAX_SEARCH_LIMIT = 10;
 /**
  * Token budget for one `get_memory`. A `source` is a whole page; `buildDocumentContext`
- * lets one document take 60% of this, so a 16k-character English page returns in full and a
- * Chinese one degrades to its matched sections, then to an outline — as `get_post` does.
+ * lets one document take 60% of this, so a long English page returns in full and a Chinese
+ * one degrades to matched sections, then an outline.
  */
 const MEMORY_BODY_TOKEN_BUDGET = 8_000;
 

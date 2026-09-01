@@ -52,28 +52,30 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   /** Must be the same credential-bearing collection that resolved `model`. */
   models: Models;
   /**
-   * The model the end-of-turn compaction summarises with; `model` when omitted. A house gateway
-   * model is always resolvable on `models`, which is what lets the host pin compaction there.
+   * The model the end-of-turn compaction summarises with; `model` when omitted.
+   * A house gateway model is always resolvable on `models`, which is what lets the host pin
+   * compaction there.
    */
   compactionModel?: Model<Api>;
   tools: AgentTool<TContext>[];
   toolContext: ToolContextSource<TContext>;
   /**
-   * Stable for the life of a session. It heads every provider request, so anything that changes
-   * turn to turn belongs in `volatileContext` instead — a changed system prompt invalidates the
-   * cached prefix for the system prompt, the tool schemas and the whole transcript behind it.
+   * Stable for the life of a session. Heads every provider request, so anything that changes
+   * turn to turn belongs in `volatileContext` instead.
+   * A changed system prompt invalidates the cached prefix for the system prompt, the tool
+   * schemas and the whole transcript behind it.
    */
   systemPrompt: string | (() => string | Promise<string>);
   /**
    * Current state the model should see on every provider request: draft status, clock, anything
-   * that would be stale by the next hop. Appended as the last message of the request and never
-   * persisted, so it costs no transcript space and cannot go stale in history. Undefined omits it.
+   * that would be stale by the next hop.
+   * Appended as the last message of the request and never persisted. Undefined omits it.
    */
   volatileContext?: () => string | undefined | Promise<string | undefined>;
   /**
    * Host-owned abort. Firing it aborts the run at once, mid-generation included: Pi cancels the
-   * in-flight provider stream and the turn ends as `aborted`. Already-aborted on entry skips the
-   * provider entirely.
+   * in-flight provider stream and the turn ends as `aborted`.
+   * Already-aborted on entry skips the provider entirely.
    */
   signal?: AbortSignal;
   promptTemplates?: readonly PromptTemplate[];
@@ -115,10 +117,9 @@ const promptText = (
 
 /**
  * Executes one complete turn on Pi's `Agent`.
- *
- * The agent is built for this turn only: it receives the branch projected into messages and hands
- * back events, and every message it finishes is appended to the session tree here, in order,
- * before the event reaches the wire. Nothing about the run outlives the call.
+ * The agent is built for this turn only: it receives the branch projected into messages and
+ * hands back events. Every finished message is appended to the session tree before the event
+ * reaches the wire. Nothing about the run outlives the call.
  */
 export const runPiTurn = async <TContext extends object, TApproval>({
   agentSessionId,
@@ -159,10 +160,10 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       : tools;
 
     /**
-     * A failure raised by the host inside a Pi hook. Pi turns a throwing hook into a tool error or
-     * an assistant message with `stopReason: "error"`, indistinguishable from a provider failure,
-     * so hooks catch their own errors here and the turn is failed as `internal` once the run has
-     * unwound.
+     * A failure raised by the host inside a Pi hook. Pi turns a throwing hook into a tool error
+     * or an assistant message with `stopReason: "error"`, indistinguishable from a provider
+     * failure, so hooks catch their own errors here and the turn is failed as `internal` once
+     * the run has unwound.
      */
     let hostFailure: AgentTurnError | undefined;
     /** What threw, when the failure came from a throw. Logged beside the failure, never sent. */
@@ -184,7 +185,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       approvedToolCallIds,
       preAuthorizedToolNames,
       // Announced at once so the approval card replaces the tool card while the model is still
-      // writing its hand-back, instead of appearing only after the turn has ended.
+      // writing its hand-back.
       onRequest: (request) =>
         onEvent({
           type: "approval:request",
@@ -204,9 +205,9 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     });
 
     /**
-     * Bounds the model's generation only. It is cleared as soon as the reply resolves, so it can
-     * never fail a turn whose model has already stopped — approval persistence and compaction
-     * that follow are host work, and a turn that reaches them is not running away.
+     * Bounds the model's generation only. Cleared as soon as the reply resolves, so it can
+     * never fail a turn whose model has already stopped. Approval persistence and compaction
+     * that follow are host work.
      */
     const deadline = setTimeout(
       () =>
@@ -227,8 +228,9 @@ export const runPiTurn = async <TContext extends object, TApproval>({
         tools: bindToolContext(activeTools, toolContext),
         messages: buildBranchContext(branch).messages,
       },
-      // Bound to this turn's collection rather than a process-wide default: the collection carries
-      // the operator's own credentials, and a default would let a BYOK turn fall back to ambient keys.
+      // Bound to this turn's collection rather than a process-wide default: the collection
+      // carries the operator's own credentials, and a default would let a BYOK turn fall back
+      // to ambient keys.
       streamFn: (requestModel, context, options) =>
         models.streamSimple(requestModel, context, options),
       transformContext: volatileContext
@@ -277,9 +279,10 @@ export const runPiTurn = async <TContext extends object, TApproval>({
 
     /**
      * Entry ids are reserved when a message starts and spent when it ends, so the wire names a
-     * message by the id the tree persists it under — live and replayed transcripts then agree,
-     * and a client can hand any message id back as a rewind or fork target. The operator's
-     * prompt is reserved up front: its `user` event goes out before Pi has started the message.
+     * message by the id the tree persists it under. Live and replayed transcripts then agree,
+     * and a client can hand any message id back as a rewind or fork target.
+     * The operator's prompt is reserved up front: its `user` event goes out before Pi has
+     * started the message.
      */
     const userEntryId = session.newEntryId();
     let reservedEntryId: string | undefined = userEntryId;
@@ -303,7 +306,8 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       agent.subscribe(async (event) => {
         if (treeFailed) return;
         if (event.type === "message_end") {
-          // Persisted before it reaches the wire, so a client never sees a message the tree lost.
+          // Persisted before it reaches the wire, so a client never sees a message the tree
+          // lost.
           const entry: NewSessionEntry<MessageEntry> = {
             type: "message",
             id: reservedEntryId ?? session.newEntryId(),
@@ -315,7 +319,8 @@ export const runPiTurn = async <TContext extends object, TApproval>({
           try {
             await session.appendEntry(entry);
           } catch (error) {
-            // Thrown out of here, Pi would resolve the run as a provider error and persist that.
+            // Thrown out of here, Pi would resolve the run as a provider error and persist
+            // that.
             treeFailed = true;
             failTurn(
               {
@@ -329,8 +334,8 @@ export const runPiTurn = async <TContext extends object, TApproval>({
           cursor = entry.id;
           if (event.message.role === "assistant") {
             reply = event.message;
-            // Reported by what the provider says answered, not what was asked for: the two differ
-            // when a gateway routes a request, and the bill follows the provider.
+            // Reported by what the provider says answered, not what was asked for: the two
+            // differ when a gateway routes a request, and the bill follows the provider.
             await onUsage?.({
               source: "turn",
               providerId: event.message.provider,
@@ -353,7 +358,8 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     onEvent({ type: "run:start", sessionId: agentSessionId });
     if (message.decision) {
       // The decision was persisted by the host before this turn was woken, so announcing it
-      // here is a replay of fact, not a new state; it closes the approval card on the live view.
+      // here is a replay of fact, not a new state; it closes the approval card on the live
+      // view.
       onEvent({
         type: "approval:resolved",
         toolCallId: message.decision.toolCallId,
@@ -370,8 +376,8 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     });
 
     let failure: AgentTurnError | undefined;
-    // Checked right before the run arms its controller: an abort that fired earlier would find no
-    // run to cancel, and one that fires later is delivered by the listener above.
+    // Checked right before the run arms its controller: an abort that fired earlier would find
+    // no run to cancel, and one that fires later is delivered by the listener above.
     let aborted = signal?.aborted ?? false;
     if (!aborted) {
       try {
@@ -395,7 +401,8 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     }
     clearTimeout(deadline);
     // An abort that lands after the reply resolved must still keep the turn from persisting
-    // approvals or compacting: the run is being cancelled, and rows written now would outlive it.
+    // approvals or compacting: the run is being cancelled, and rows written now would outlive
+    // it.
     if (!failure && signal?.aborted) aborted = true;
 
     let approvals: TApproval[] = [];
@@ -430,7 +437,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     }
 
     if (failure) {
-      // The wire carries the kind alone; the detail — and what threw — stays in the log.
+      // The wire carries the kind alone; the detail and what threw stay in the log.
       console.error("Agent turn failed", {
         sessionId: agentSessionId,
         kind: failure.kind,

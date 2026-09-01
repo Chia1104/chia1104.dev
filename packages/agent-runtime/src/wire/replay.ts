@@ -8,22 +8,17 @@ import { clipDetails } from "./clip.ts";
 import { isOperatorDecisionText } from "./operator-decision.ts";
 import type { AgentWireEvent } from "./schema.ts";
 
-// ============================================
-// Transcript replay: session entries → wire events
-// ============================================
-
 /**
- * Rebuilds wire events from a persisted branch so a reconnecting client renders through
- * exactly the same fold as the live stream. Deltas are not replayed — a completed message
- * arrives as a single `assistant:end`.
+ * Rebuilds wire events from a persisted branch so a reconnecting client renders through the
+ * same fold as the live stream. Deltas are not replayed: a completed message arrives as a
+ * single `assistant:end`.
  *
  * A message's wire id is its entry id, live and replayed alike, so a client can name the entry
- * behind any message it shows — which is what rewind and fork targets are.
+ * behind any message it shows (rewind and fork targets).
  *
  * Pi appends a call's result right after the assistant message that issued it, so a call whose
- * result is not the next thing on the branch never got one — the turn was stopped mid-execution,
- * the process died, or a fork cut the branch at the assistant message. Those are closed as
- * `aborted` here, because a `tool:start` with no end would read as still running forever.
+ * result is not the next thing on the branch never got one. Those are closed as `aborted` here:
+ * a `tool:start` with no end would read as still running forever.
  */
 export const entriesToWireEvents = (
   entries: readonly SessionEntry[],
@@ -113,8 +108,9 @@ export const entriesToWireEvents = (
           kind: errorOfAssistantMessage(message).kind,
         });
       }
-      // Pi never executes the calls of a message that ended in `error` or `aborted`, and the live
-      // turn showed no card for them; replay matches, or a stop mid-generation grows cards on reload.
+      // Pi never executes the calls of a message that ended in `error` or `aborted`, and the
+      // live turn showed no card for them. Replay matches, or a stop mid-generation grows cards
+      // on reload.
       if (message.stopReason === "error" || message.stopReason === "aborted") {
         continue;
       }

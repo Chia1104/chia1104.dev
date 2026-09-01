@@ -9,7 +9,7 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { Expandable } from "./expandable.tsx";
 import { useAgentLabels } from "./labels-context.tsx";
 
-/** A compaction or branch summary runs to pages; the first few lines say what it is. */
+/** Compaction or branch summaries can run long; clip after a few lines. */
 const SUMMARY_MAX_HEIGHT = 160;
 
 export interface NoticeProps {
@@ -17,10 +17,6 @@ export interface NoticeProps {
   className?: string;
 }
 
-/**
- * Compaction, rewinds, relayed approval decisions and agent-side errors, inline where they
- * happened in the transcript.
- */
 export const Notice = ({ className, notice }: NoticeProps) => {
   const labels = useAgentLabels();
 

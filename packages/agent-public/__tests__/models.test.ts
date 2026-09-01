@@ -17,9 +17,9 @@ import {
 } from "../src/models.ts";
 
 /**
- * The cost boundary of the public kind. The house pays for every gateway call a visitor makes,
- * so what needs pinning is that the gateway side is a closed list of cheap ids — a vendor
- * prefix would let a visitor pick the vendor's flagship.
+ * The cost boundary of the public kind. The house pays for every gateway call a visitor
+ * makes, so the gateway side is a closed list of cheap ids. A vendor prefix would let a
+ * visitor pick the vendor's flagship.
  */
 
 describe("isPublicModel", () => {
@@ -44,7 +44,6 @@ describe("isPublicModel", () => {
     }
   });
 
-  /** A visitor who supplied their own key is paying for the call; no second filter. */
   it("admits any model on a native provider", () => {
     expect(
       isPublicModel({ providerId: AGENT_PROVIDERS.openai, modelId: "gpt-5.4" })

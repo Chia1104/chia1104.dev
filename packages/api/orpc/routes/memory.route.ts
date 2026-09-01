@@ -10,14 +10,9 @@ import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { contractOS } from "../utils";
 
 /**
- * Agent memory management routes.
- *
- * **Every route is `adminGuard()`, reads included.** A memory is the writing agent's
- * unpublished research, and an active lesson is a standing instruction injected into every
- * future turn — nothing here is for anyone but the configured author.
- *
- * Writes go through `memories/write.ts` so the index run is never skipped; the hook comes
- * from the context, which only the process with a workflow runtime supplies.
+ * Every route is `adminGuard()`, reads included. A memory is unpublished research; an
+ * active lesson is a standing instruction. Writes go through `memories/write.ts` so the
+ * index run is never skipped.
  */
 
 const detailOf = (row: AgentMemory) => ({
@@ -31,10 +26,6 @@ const detailOf = (row: AgentMemory) => ({
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,
 });
-
-// ============================================
-// Reads
-// ============================================
 
 export const listMemoriesRoute = contractOS.memory.list
   .use(adminGuard())
@@ -55,10 +46,6 @@ export const getMemoryRoute = contractOS.memory.get
     }
     return { memory: detailOf(row) };
   });
-
-// ============================================
-// Writes
-// ============================================
 
 export const updateMemoryRoute = contractOS.memory.update
   .use(adminGuard())
@@ -110,10 +97,7 @@ export const approveLessonRoute = contractOS.memory["lesson:approve"]
     })
   );
 
-/**
- * Starts a reflection run over one session. Fire-and-forget from the writing turn, awaited
- * for its run id from the dashboard; the run reports its own outcome.
- */
+/** Starts a reflection run over one session. Fire-and-forget from the writing turn; the dashboard awaits the run id. */
 export const consolidateMemoryRoute = contractOS.memory.consolidate
   .use(adminGuard())
   .use(rateLimitGuard({ prefix: "rate-limiter:memory-consolidate" }))

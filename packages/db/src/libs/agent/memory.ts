@@ -22,16 +22,11 @@ import {
   AGENT_MEMORY_STATUS,
 } from "../../schemas/schema.ts";
 
-/**
- * Repository for `agent.memory`.
- *
- * Soft-deleted rows are invisible to every read here except `getAgentMemory`, which the RAG
- * adapter uses to decide whether a memory still owns chunks — it needs to see the row go.
- */
+/** Soft-deleted rows are invisible except to `getAgentMemory`, which the RAG adapter uses to see a row go. */
 
 const live = () => isNull(agentMemories.deletedAt);
 
-/** The population the index carries: live, `active` rows — a pending lesson is not yet agent context. */
+/** Live, `active` rows. A pending lesson is not yet agent context. */
 const indexable = () =>
   and(live(), eq(agentMemories.status, AGENT_MEMORY_STATUS.Active));
 
@@ -67,7 +62,7 @@ export const createAgentMemory = async (
 export const getAgentMemory = async (db: DB, id: number) =>
   await db.query.agentMemories.findFirst({ where: { id } });
 
-/** Live rows only, in no particular order — key the result by id. */
+/** Live rows only, unordered; key the result by id. */
 export const getAgentMemories = async (
   db: DB,
   ids: readonly number[]
@@ -129,16 +124,8 @@ export interface UpsertSourceMemoryDTO {
 }
 
 /**
- * Records a page the agent read, keyed on its URL.
- *
- * `ON CONFLICT` names the same predicate as the partial unique index
- * (`agent_memory_source_url_idx`), which is what lets Postgres pick it as the arbiter. A
- * revisit writes only when title or content differ (`setWhere`), so `updated_at` means "last
- * content change" — which is what the index freshness check compares against — and the
- * first session stays as provenance.
- *
- * `changed` is whether a row was written. Two parallel fetches of one URL can both see no
- * row and both insert-or-update; the loser's `setWhere` finds identical content and skips.
+ * Upserts a page by URL. `ON CONFLICT` repeats the partial unique index predicate; `setWhere` skips identical content so `updated_at` means last content change.
+ * `changed` is whether a row was written; two parallel fetches can both insert-or-update and the loser's `setWhere` skips.
  */
 export const upsertSourceMemory = async (
   db: DB,
@@ -200,7 +187,7 @@ const summaryColumns = {
   sourceUrl: agentMemories.sourceUrl,
 };
 
-/** What a session has written so far, oldest first — for the volatile context. */
+/** Session memories, oldest first, for the volatile context. */
 export const listAgentMemoriesBySession = async (
   db: DB,
   sessionId: string
@@ -211,7 +198,6 @@ export const listAgentMemoriesBySession = async (
     .where(and(eq(agentMemories.sessionId, sessionId), live()))
     .orderBy(asc(agentMemories.id));
 
-/** Active lessons, most recently touched first — the operator archives to make room. */
 export const listActiveAgentLessons = async (
   db: DB,
   limit: number
@@ -259,10 +245,7 @@ export interface AgentMemoryListItem extends AgentMemorySummary {
 const PREVIEW_LENGTH = 160;
 const LIST_LIMIT_MAX = 100;
 
-/**
- * The dashboard's list: newest first, cursor on the id. `query` is a substring match, a
- * list filter rather than retrieval — the ranked search is the agent's `search_memory`.
- */
+/** Dashboard list, newest first, cursor on id. `query` is a substring filter, not ranked retrieval. */
 export const listAgentMemories = async (
   db: DB,
   dto: {

@@ -58,7 +58,6 @@ export interface SessionTabsProps {
   /** When given, every session gets a "Delete" action; the host persists and refreshes the list. */
   onDelete?: (sessionId: string) => void | Promise<void>;
   isCreating?: boolean;
-  /** How many sessions ride in the strip before the rest move behind "more". */
   visible?: number;
   formatTime?: (timestamp: number) => string;
   labels?: Partial<SessionTabsLabels>;
@@ -79,9 +78,7 @@ interface PendingAction {
 }
 
 /**
- * Presentational: the host owns the session list (it already fetches it) and the current
- * selection. This is a strip of the most recent sessions plus a searchable overflow; each entry
- * carries rename and delete when the host wires them.
+ * Host owns the session list and the current selection.
  */
 export const SessionTabs = ({
   activeId,
@@ -323,10 +320,6 @@ export const SessionTabs = ({
   );
 };
 
-// ============================================
-// Actions
-// ============================================
-
 const SessionActions = ({
   className,
   labels,
@@ -374,10 +367,6 @@ const SessionActions = ({
     </Dropdown.Popover>
   </Dropdown>
 );
-
-// ============================================
-// Dialogs
-// ============================================
 
 /** Remounted per session (via `key`) so the field always opens on that session's current title. */
 const RenameSessionDialog = ({

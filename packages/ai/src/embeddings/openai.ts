@@ -20,16 +20,14 @@ export interface BatchOptions {
     input: string | URL | Request,
     init?: RequestInit
   ) => Promise<Response>;
-  /** defaults to `EMBEDDING_BATCH_MAX_INPUTS` */
   maxInputsPerRequest?: number;
-  /** defaults to `EMBEDDING_BATCH_MAX_TOKENS` */
   maxTokensPerRequest?: number;
 }
 
 /**
- * Splits inputs into requests that respect both the array-length and the
- * total-token ceiling. A long article with many chunks would otherwise exceed
- * the per-request token limit even though every individual input fits.
+ * Splits into requests that respect both the array-length and total-token
+ * ceilings. A long article's chunks can exceed the per-request token limit
+ * even when every individual input fits.
  */
 const buildBatches = (
   inputs: { text: string; tokenCount: number }[],
@@ -60,9 +58,9 @@ const buildBatches = (
 };
 
 /**
- * Batch embedding via the AI SDK. Inputs are token-guarded and split into
- * requests that stay under the per-request limits; vectors come back in input
- * order. Failures propagate so the calling workflow step's retry handles them.
+ * Token-guards inputs and splits them under the per-request limits. Vectors
+ * come back in input order. Failures propagate so the workflow step's retry
+ * handles them.
  */
 export const generateEmbeddings = async (
   values: string[],
@@ -74,7 +72,7 @@ export const generateEmbeddings = async (
   const model = options?.model ?? "text-embedding-3-small";
   const provider = createAiSdkOpenAI({
     apiKey: options?.apiKey ?? process.env.OPENAI_API_KEY,
-    // the SDK types demand fetch.preconnect but never call it; the workflow
+    // SDK types demand fetch.preconnect but never call it; the workflow
     // runtime's instrumented fetch does not carry it
     fetch:
       /* SAFETY: The producer contract guarantees this value satisfies typeof globalThis.fetch | undefined. */ options?.fetch as

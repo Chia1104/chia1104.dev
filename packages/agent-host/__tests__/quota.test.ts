@@ -6,9 +6,9 @@ import { isAppError } from "@chia/service-kit/errors";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 /**
- * The quota is a tier policy over the operator's row and the ledger. Pinned: the week is the
- * zone's Monday-to-Monday, DST included; Root is never read against it; only house spend
- * counts; a stale zone on the row degrades to the default rather than failing the turn.
+ * Quota is a tier policy over the operator's row and the ledger. The week is
+ * Monday-to-Monday in the zone; Root is exempt; only house spend counts; a stale
+ * zone degrades to the default.
  */
 
 const { repo } = vi.hoisted(() => ({

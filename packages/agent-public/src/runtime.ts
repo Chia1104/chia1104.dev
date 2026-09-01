@@ -26,16 +26,13 @@ export interface RunPublicTurnOptions<TApproval> {
   agentSessionId: string;
   /** Built by the host with `public` visibility; the tools cannot widen it. */
   content: ContentReadPort;
-  /** The operator's standing instructions; see `SystemPromptInput.instructions`. */
   instructions?: string;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
   approvedToolCallIds?: ReadonlySet<string>;
   preAuthorizedToolNames?: ReadonlySet<string>;
-  /** Host-owned abort; see `RunPiTurnOptions.signal`. */
   signal?: AbortSignal;
   models?: Models;
-  /** See `RunPiTurnOptions.compactionModel`; the session's own model when omitted. */
   compactionModel?: Model<Api>;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
@@ -44,7 +41,6 @@ export interface RunPublicTurnOptions<TApproval> {
   onUsage?: AgentUsageListener;
 }
 
-/** Composes the public domain and executes one turn on Pi's `Agent`. */
 export const runPublicTurn = <TApproval>(
   options: RunPublicTurnOptions<TApproval>
 ): Promise<AgentTurnExecution<TApproval>> => {

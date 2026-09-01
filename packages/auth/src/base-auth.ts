@@ -23,9 +23,6 @@ const getOrigin = (url?: string) => {
 export const baseAuthConfig = {
   appName: "Chia1104.dev",
 
-  /**
-   * session configuration
-   */
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days in seconds
     updateAge: 60 * 60 * 24, // 1 day in seconds
@@ -48,12 +45,7 @@ export const baseAuthConfig = {
         : undefined,
   },
 
-  /**
-   * comment the following if you want to run the migration script
-   * ```sh
-   * pnpm auth-schema:generate
-   * ```
-   */
+  /** Comment out `user.additionalFields` to run `pnpm auth-schema:generate`. */
   user: {
     additionalFields: {
       role: {
@@ -65,17 +57,11 @@ export const baseAuthConfig = {
     },
   },
 
-  /**
-   * base path for all auth routes
-   */
   basePath: env.AUTH_BASE_PATH,
 
   baseURL: getOrigin(env.AUTH_URL),
   secret: env.AUTH_SECRET,
 
-  /**
-   * advanced configuration
-   */
   advanced: {
     cookiePrefix: "chia1104.dev",
     crossSubDomainCookies: {
@@ -94,10 +80,9 @@ export const baseAuthConfig = {
   plugins: [
     magicLink({
       /**
-       * `resend` and the React template are imported lazily: this config is part of
-       * every service's boot path, and a static import would pull `@react-email/render`
-       * plus the whole component library into the eager module graph for a code path
-       * that only runs when someone requests a magic link.
+       * `resend` and the React template are imported lazily: this config is on
+       * every service's boot path, and a static import would pull
+       * `@react-email/render` plus the component library into the eager graph.
        */
       sendMagicLink: async ({ email, url }) => {
         const [{ Resend }, { default: AuthEmailTemplate }] = await Promise.all([

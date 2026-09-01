@@ -16,10 +16,6 @@ import { locale, feedType, contentType } from "./enums.ts";
 import { pgTable } from "./table.ts";
 import { user } from "./user.schema.ts";
 
-// ============================================
-// Tags
-// ============================================
-
 export const tags = pgTable(
   "tag",
   {
@@ -29,10 +25,6 @@ export const tags = pgTable(
   },
   (table) => [uniqueIndex("tag_slug_idx").on(table.slug)]
 );
-
-// ============================================
-// Tag Translations
-// ============================================
 
 export const tagTranslations = pgTable(
   "tag_translation",
@@ -53,10 +45,6 @@ export const tagTranslations = pgTable(
   ]
 );
 
-// ============================================
-// Assets
-// ============================================
-
 export const assets = pgTable(
   "asset",
   {
@@ -74,10 +62,6 @@ export const assets = pgTable(
     index("asset_name_idx").on(table.name),
   ]
 );
-
-// ============================================
-// Feeds
-// ============================================
 
 const baseFeedsColumns = {
   id: serial("id").primaryKey(),
@@ -103,14 +87,7 @@ export const feeds = pgTable("feed", baseFeedsColumns, (table) => [
   index("feed_deleted_at_idx").on(table.deletedAt),
 ]);
 
-// ============================================
-// Feed Translations
-// ============================================
-
-/**
- * A translation holds the prose. Search indexes live on `resource_chunk`, which
- * mirrors `published` / `deleted` / `locale` from here.
- */
+/** Translation prose. `resource_chunk` mirrors `published` / `deleted` / `locale` from here. */
 export const feedTranslations = pgTable(
   "feed_translation",
   {
@@ -125,7 +102,6 @@ export const feedTranslations = pgTable(
     summary: text("summary"),
     readTime: integer("read_time"),
 
-    // ---- body (was the `content` table) ----
     content: text("content"),
     source: text("source"),
     unstableSerializedSource: text("unstable_serialized_source"),
@@ -146,10 +122,6 @@ export const feedTranslations = pgTable(
     index("feed_translation_title_idx").on(table.title),
   ]
 );
-
-// ============================================
-// Many-to-Many Junction Tables
-// ============================================
 
 export const assetsToTags = pgTable(
   "assets_to_tags",
@@ -184,10 +156,6 @@ export const feedsToTags = pgTable(
     index("feeds_to_tags_tag_id_idx").on(t.tagId),
   ]
 );
-
-// ============================================
-// Types
-// ============================================
 
 export type Asset = InferSelectModel<typeof assets>;
 export type Feed = InferSelectModel<typeof feeds>;

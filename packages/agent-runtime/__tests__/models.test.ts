@@ -11,13 +11,12 @@ import {
 import type { AgentModelRef } from "../src/models.ts";
 
 /**
- * The model layer's job is to keep two things straight: whose key pays, and which provider a model
- * id belongs to. Both fail *silently* when they go wrong — a turn that quietly bills the house
- * gateway account looks exactly like a working turn — so they are pinned here rather than left to
- * an end-to-end run to reveal.
+ * The model layer's job is to keep two things straight: whose key pays, and which provider a
+ * model id belongs to. Both fail silently when they go wrong (a turn that quietly bills the
+ * house gateway account looks exactly like a working turn), so they are pinned here.
  *
- * These use pi-ai's real providers. That is deliberate and offline-safe: all three ship static
- * catalogues and perform no I/O when registered.
+ * These use pi-ai's real providers. Offline-safe: all three ship static catalogues and perform
+ * no I/O when registered.
  */
 
 const allowAll = () => true;
@@ -38,10 +37,9 @@ describe("createAgentModels", () => {
   });
 
   /**
-   * The load-bearing one. `OPENAI_API_KEY` exists in the service environment for unrelated
-   * features, and pi-ai falls back to ambient env vars when no credential is stored — so a provider
-   * registered unconditionally would resolve against the house key and bill it for what is meant to
-   * be the operator's own account.
+   * `OPENAI_API_KEY` exists in the service environment for unrelated features, and pi-ai falls
+   * back to ambient env vars when no credential is stored. A provider registered
+   * unconditionally would resolve against the house key and bill it.
    */
   it("omits a BYOK provider entirely when its key was not supplied", () => {
     const models = createAgentModels();
@@ -81,9 +79,9 @@ describe("resolveModel", () => {
   });
 
   /**
-   * The same model carries different ids under different providers — `anthropic/claude-sonnet-5` on
-   * the gateway is `claude-sonnet-5` natively. Matching on the id alone would resolve a session to
-   * the wrong provider, so a mismatched pair must fail rather than fall back.
+   * The same model carries different ids under different providers. `anthropic/claude-sonnet-5`
+   * on the gateway is `claude-sonnet-5` natively. Matching on the id alone would resolve a
+   * session to the wrong provider, so a mismatched pair must fail rather than fall back.
    */
   it("rejects a native model id under the gateway", () => {
     expect(() =>
@@ -112,7 +110,8 @@ describe("listModels", () => {
       (ref) => ref.providerId === AGENT_PROVIDERS.gateway
     );
 
-    // The exact count tracks pi-ai's bundled catalogue; only the order of magnitude is the point.
+    // The exact count tracks pi-ai's bundled catalogue; only the order of magnitude is the
+    // point.
     expect(gateway.length).toBeGreaterThan(100);
     expect(gateway.every((model) => model.name.length > 0)).toBe(true);
     expect(gateway.every((model) => model.contextWindow > 0)).toBe(true);
@@ -128,8 +127,8 @@ describe("listModels", () => {
   });
 
   /**
-   * The picker lists BYOK models the caller cannot yet use, flagged rather than hidden: hiding them
-   * would leave no way to discover that registering a key unlocks them.
+   * The picker lists BYOK models the caller cannot yet use, flagged rather than hidden: hiding
+   * them would leave no way to discover that registering a key unlocks them.
    */
   it("flags BYOK models the caller has no key for", () => {
     const listed = listModels(

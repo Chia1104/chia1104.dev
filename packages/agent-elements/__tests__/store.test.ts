@@ -11,10 +11,6 @@ import {
 } from "../src/store.ts";
 import type { AgentSessionClient, AgentSessionDetail } from "../src/types.ts";
 
-// ============================================
-// Fixtures
-// ============================================
-
 const detailOf = (
   overrides: Partial<AgentSessionDetail> = {}
 ): AgentSessionDetail => ({
@@ -45,7 +41,7 @@ const detailOf = (
   ...overrides,
 });
 
-/** A push-based event stream: the test controls when each event arrives and when it ends. */
+/** Push-based stream; the test controls arrival and end. */
 const channel = () => {
   const queue: AgentWireEvent[] = [];
   let waiting: (() => void) | null = null;
@@ -165,10 +161,6 @@ const turn = (text: string): AgentWireEvent[] => [
   { type: "run:end", reason: "done" },
 ];
 
-// ============================================
-// foldDetail
-// ============================================
-
 describe("foldDetail", () => {
   it("re-applies server-side pending approvals the replay does not carry", () => {
     const view = foldDetail(
@@ -262,10 +254,6 @@ describe("foldDetail", () => {
     ).toBe("running");
   });
 });
-
-// ============================================
-// Store
-// ============================================
 
 describe("createAgentSessionStore", () => {
   it("hydrates the transcript from the server", async () => {

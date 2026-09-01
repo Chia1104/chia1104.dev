@@ -6,12 +6,14 @@ import type { SessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
 
 /**
- * The projection is what the provider sees, and the provider's cached prefix survives only if the
- * next turn's projection starts with exactly the bytes the previous turn sent. These pin that the
- * projection is a pure function of the branch, so persistence never drifts from what was sent.
+ * The projection is what the provider sees, and the provider's cached prefix survives only if
+ * the next turn's projection starts with exactly the bytes the previous turn sent. These pin
+ * that the projection is a pure function of the branch, so persistence never drifts from what
+ * was sent.
  */
 
-// Fixtures carry a seq so they can stand in a branch literal; the in-memory tree assigns its own.
+// Fixtures carry a seq so they can stand in a branch literal; the in-memory tree assigns its
+// own.
 let seq = 0;
 
 const user = (

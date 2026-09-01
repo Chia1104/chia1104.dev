@@ -16,9 +16,8 @@ import {
 } from "../src/models.ts";
 
 /**
- * The policy half of model selection. It replaced a hand-written list of four ids, so what needs
- * pinning is the *shape* of the filter — a predicate that is too generous quietly exposes 26
- * vendors' models to an agent with publish rights to the blog.
+ * Pins the filter shape: a predicate that is too generous exposes every gateway vendor to an
+ * agent with publish rights.
  */
 
 describe("isWritingModel", () => {
@@ -49,7 +48,6 @@ describe("isWritingModel", () => {
     }
   });
 
-  /** A caller who supplied their own OpenAI key is asking for OpenAI models; no second filter. */
   it("admits any model on a native provider", () => {
     expect(
       isWritingModel({ providerId: AGENT_PROVIDERS.openai, modelId: "gpt-5.2" })
@@ -76,10 +74,6 @@ describe("resolveWritingModel", () => {
     expect(model.id).toBe(DEFAULT_WRITING_MODEL.modelId);
   });
 
-  /**
-   * The pair — not the id — selects the provider. Same vendor, same model family, two different
-   * ids and two different payers.
-   */
   it("resolves the same vendor through either provider", () => {
     const viaGateway = resolveWritingModel({
       providerId: AGENT_PROVIDERS.gateway,
@@ -114,9 +108,7 @@ describe("resolveWritingModel", () => {
 });
 
 /**
- * The pre-persistence gate. Its whole reason to exist is that `isWritingModel` returns `true` for
- * *any* id on a native provider, so policy alone would let a typo be stored and then fail on every
- * later turn — inside the workflow step, where the operator never sees the cause.
+ * `isWritingModel` admits any native id, so this gate checks the catalogue before persist.
  */
 describe("assertWritingModel", () => {
   it("accepts a pair that exists in the catalogue", () => {
@@ -147,10 +139,6 @@ describe("assertWritingModel", () => {
     ).toThrow(UnknownAgentModelError);
   });
 
-  /**
-   * Validation runs against the catalogue, not a credential-bearing collection — otherwise whether
-   * a model "exists" would depend on which browser the operator happened to be using.
-   */
   it("accepts a native model even with no key registered", () => {
     expect(() =>
       assertWritingModel({
@@ -190,7 +178,6 @@ describe("listWritingModels", () => {
 });
 
 describe("WRITING_SESSION_DEFAULTS", () => {
-  /** A new session must keep landing on the house gateway account, key or no key. */
   it("defaults a new session to the gateway", () => {
     expect(WRITING_SESSION_DEFAULTS.providerId).toBe(AGENT_PROVIDERS.gateway);
     expect(isWritingModel(DEFAULT_WRITING_MODEL)).toBe(true);

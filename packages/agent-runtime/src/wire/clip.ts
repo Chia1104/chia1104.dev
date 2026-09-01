@@ -1,13 +1,12 @@
 /**
  * Bounds a tool's `details` before it crosses the wire.
  *
- * `details` is the per-tool view model and is written verbatim to the run's durable stream, then
- * replayed to every reconnecting client. A `get_post` result carries a whole post body, so an
- * unbounded payload turns one tool call into tens of kilobytes of durable writes and replay. The
- * clip keeps the shape (clients render `details` as JSON, and tool cards read known keys) and only
- * shortens what is inside it: long strings, long arrays, wide objects, deep nesting, and — the bound
- * that actually holds — a total character budget shared by the whole value, after which every
- * further leaf becomes a marker. The model never sees this copy — it reads the tool's `content`.
+ * `details` is the per-tool view model, written verbatim to the run's durable stream and
+ * replayed to every reconnecting client. An unbounded payload turns one tool call into tens of
+ * kilobytes of durable writes. The clip keeps the shape (clients render `details` as JSON, and
+ * tool cards read known keys) and shortens what is inside it. A total character budget is
+ * shared by the whole value; after it, every further leaf becomes a marker. The model never
+ * sees this copy; it reads the tool's `content`.
  */
 
 export const DETAILS_MAX_STRING_CHARS = 8_000;

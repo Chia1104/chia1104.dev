@@ -14,17 +14,15 @@ import { TOOL_NAMES, labelOf } from "./registry.ts";
 import { Type, defineTool, textResult, truncate } from "./schema.ts";
 
 /**
- * Tier 1 — read-only grounding tools: the shared content read tools plus the outbound web
- * tools (`web_search`, `fetch_url`), which only the writing agent gets. Outbound requests are
- * a cost and an SSRF surface, acceptable for the operator's own authoring session and not for
- * a public one.
+ * Shared content reads plus outbound web. Search and fetch are a cost and an SSRF surface,
+ * for the author's session only.
  */
 
 const MAX_PAGE_CHARS = 16_000;
 /**
- * How much of a page a `source` memory keeps. Far more than the model reads in one call: the
- * index chunks the whole thing, so a later `search_memory` can land on a section this turn
- * never looked at. Bounded only so a pathological page cannot become a megabyte row.
+ * How much of a page a `source` memory keeps. The index chunks the whole thing, so a later
+ * `search_memory` can land on a section this turn never looked at. Bounded so a pathological
+ * page cannot become a megabyte row.
  */
 const SOURCE_MAX_CHARS = 64_000;
 const MAX_SEARCH_RESULTS = 10;
@@ -163,19 +161,9 @@ export const fetchUrlTool = defineTool({
 });
 
 /**
- * The content tools are typed over the narrower `ContentToolContext`; a `WritingToolContext`
- * satisfies it, so they slot into the writing tool set unchanged. Search precedes fetch so the
- * listing order matches the discover-then-read workflow.
- */
-/**
- * Leaves a trail of every page read, keyed on its URL, so a later session can find it with
- * `search_memory`. Deterministic and model-free. Never fails the fetch: the model's result
- * is the same whether or not the trail was written, and a memory outage must not cost a
- * turn its research.
- *
- * The whole page, not an excerpt: the RAG pipeline is built for documents — sections with
- * heading paths, a card from the outline — and an excerpt only ever bought recall on the
- * page's first paragraph.
+ * Records every fetched page as a `source`, keyed on URL. Never fails the fetch: a memory
+ * outage must not cost the turn its research. Stores the whole page, not an excerpt: RAG
+ * recalls by section, and an excerpt only ever bought the first paragraph.
  */
 const recordSource = async (
   context: WritingToolContext,

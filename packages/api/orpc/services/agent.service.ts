@@ -16,33 +16,23 @@ import type { BaseOSContext } from "../utils";
 import type { AgentFactory } from "./agent.factory";
 
 /**
- * Port for host-owned agent services.
- *
- * The oRPC package owns the session, durable-run and maintenance behavior. The host contributes a
- * typed factory with kind definitions and credential handling; no service registry is kept on the
- * request context.
+ * The oRPC package owns session, durable-run and maintenance. The host supplies a typed
+ * factory with kind definitions and credential handling.
  */
 
 /** Where the caller stands against the usage quota right now; see `agent.usage.me`. */
 export type AgentUsageStanding = agentContracts.AgentUsageStanding;
 
 /**
- * Per-call context the service needs from the request that triggered it.
- *
- * Extends the resolved {@link Caller} rather than restating a role: which tier a kind admits is
- * the kind's own policy (the factory's registered `minTier`), so the transport passes what it
- * learned and lets the kind read `tier`, `session` or `adminId` as it needs. By the time a service
- * sees this the guard has already enforced the kind's minimum tier.
+ * Extends the resolved {@link Caller}: which tier a kind admits is the kind's registered
+ * `minTier`. By the time a service sees this the guard has already enforced that floor.
  */
 export interface AgentServiceContext extends ServiceContext {
   workflow: WorkflowControlClient;
 }
 
 export interface AgentServiceCaller extends AgentKindCaller {
-  /**
-   * Session user who owns every session this call may touch. Always present: a session row has
-   * an owner, so every kind requires at least a session-bearing tier.
-   */
+  /** Session user who owns every session this call may touch. Always present: every kind requires a session-bearing tier. */
   userId: string;
   context: AgentServiceContext;
 }
@@ -55,10 +45,7 @@ export interface AgentStreamCursor {
 }
 
 /**
- * Model identity, mirroring `agentModelRefSchema`.
- *
- * Restated structurally rather than importing the concrete Pi session so this package keeps no
- * dependency on a provider SDK — the port is a contract, not an implementation.
+ * Mirrors `agentModelRefSchema` structurally so this package has no provider-SDK dependency.
  */
 export interface AgentModelRef {
   providerId: string;
@@ -109,10 +96,7 @@ export interface AgentKindService {
     }
   ): Promise<agentContracts.AgentSessionDetail | null>;
 
-  /**
-   * Enqueues a turn on the session's durable run and returns immediately. Output is consumed via
-   * {@link AgentKindService.stream}.
-   */
+  /** Enqueues a turn on the session's durable run and returns immediately. Consume via {@link AgentKindService.stream}. */
   prompt(
     caller: AgentServiceCaller,
     input: {
@@ -123,20 +107,15 @@ export interface AgentKindService {
     }
   ): Promise<AgentStreamCursor & { startedRun: boolean }>;
 
-  /**
-   * Cursor to the start of the turn currently executing, or `null` when no turn is running. Reads
-   * only; the caller then tails `stream` from it.
-   */
+  /** Cursor to the start of the turn currently executing, or `null` when none is running. */
   attach(
     caller: AgentServiceCaller,
     input: { sessionId: string }
   ): Promise<AgentStreamCursor | null>;
 
   /**
-   * Streams a run's durable event stream.
-   *
-   * Returning an async generator (rather than taking a callback) is what lets the oRPC handler hand
-   * the iterator straight to `eventIterator` without buffering.
+   * Returns an async generator so the oRPC handler can hand the iterator to `eventIterator`
+   * without buffering.
    */
   stream(
     caller: AgentServiceCaller,
@@ -165,9 +144,8 @@ export interface AgentKindService {
   ): Promise<AgentStreamCursor | null>;
 
   /**
-   * Compacts the active branch and returns the detail rebuilt, the way {@link navigate} does.
-   * Refused (`CONFLICT`) while a turn runs, while an approval is undecided, or when the branch
-   * has nothing to condense.
+   * Compacts the active branch and returns the rebuilt detail. `CONFLICT` while a turn runs,
+   * an approval is undecided, or the branch has nothing to condense.
    */
   compact(
     caller: AgentServiceCaller,
@@ -175,9 +153,8 @@ export interface AgentKindService {
   ): Promise<agentContracts.AgentSessionDetail | null>;
 
   /**
-   * Rewinds the session in place: the leaf moves to `entryId` (a user message's parent, so it
-   * can be re-asked) and the detail is returned rebuilt, because a changed branch invalidates
-   * every view the client held. Refused (`CONFLICT`) while a turn runs or an approval is undecided.
+   * Rewinds in place: the leaf moves to `entryId`. `CONFLICT` while a turn runs or an
+   * approval is undecided.
    */
   navigate(
     caller: AgentServiceCaller,
@@ -190,9 +167,8 @@ export interface AgentKindService {
   ): Promise<agentContracts.AgentSessionDetail | null>;
 
   /**
-   * Copies the session into a new one — the branch below `entryId` (`before` a user message so
-   * it can be re-asked, or `at` any entry) or the whole tree — along with the kind's state as it
-   * stands now. Returns the new session's detail. Same refusals as {@link navigate}.
+   * Copies the session into a new one — the branch below `entryId` or the whole tree — with
+   * kind state as it stands now. Same refusals as {@link navigate}.
    */
   fork(
     caller: AgentServiceCaller,
@@ -205,17 +181,14 @@ export interface AgentKindService {
   ): Promise<agentContracts.AgentSessionDetail | null>;
 
   /**
-   * Checks a model selection before anything persists it.
-   *
-   * Returns a human-readable reason when the pair is unusable, or `null` when it is fine. A return
-   * value rather than a thrown error, because the caller is a middleware that has to turn this into
-   * a `BAD_REQUEST` — and because which models a kind admits is the kind's own policy, so the
-   * *reason* has to come from here rather than be reconstructed at the transport.
+   * Returns a human-readable reason when the pair is unusable, or `null` when it is fine.
+   * A return value rather than a throw: the caller is middleware that turns this into
+   * `BAD_REQUEST`, and the reason has to come from the kind's own policy.
    */
   validateModel(ref: AgentModelRef): Promise<string | null>;
 
   /**
-   * Takes the caller because `requiresApiKey` depends on which provider keys *they* have
+   * Takes the caller because `requiresApiKey` depends on which provider keys they have
    * registered. The catalogue itself is caller-independent.
    */
   listModels(caller: AgentServiceCaller): Promise<
@@ -247,8 +220,7 @@ export const requireAgentFactory = (context: BaseOSContext): AgentFactory => {
 
 /**
  * The registered tier floor for `kind`, or `SERVICE_UNAVAILABLE` when the factory has none.
- * Eager on purpose: the guards refuse a caller below the floor before the definition — and the
- * domain package behind it — is ever loaded.
+ * Eager so the guards refuse a caller below the floor before the definition is loaded.
  */
 export const requireAgentKindTier = (
   context: BaseOSContext,
@@ -281,7 +253,6 @@ export const requireAgentKind = async (
   return service;
 };
 
-/** Kinds this process can serve. */
 export const availableAgentKinds = (context: BaseOSContext): string[] => [
   ...(context.agentFactory?.kinds ?? []),
 ];

@@ -5,9 +5,8 @@ import type { AgentKindConfig } from "@chia/db/schema";
 import { effectiveKindConfig, effectiveKindDefaults } from "../src/config";
 
 /**
- * The kind's effective configuration is the row over the definition. Pinned: the model pair
- * is taken whole or not at all, each other field falls through on its own, and a row the
- * current schema rejects is ignored rather than half-applied.
+ * Effective config is the row over the definition. The model pair is all-or-nothing;
+ * other fields fall through; a schema-rejected row is ignored, not half-applied.
  */
 
 const definition = {

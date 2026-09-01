@@ -241,7 +241,7 @@ describe("navigatePiSession", () => {
     const summarised = JSON.stringify(seen[0]?.messages);
     expect(summarised).toContain("Third answer");
     expect(summarised).toContain("The first exchange, condensed.");
-    // u1 is the target's own entry — an ancestor of both paths — and must not be summarised.
+    // u1 is the target's own entry, an ancestor of both paths, and must not be summarised.
     expect(summarised).not.toContain("First question");
     const leaf = (await session.getBranch()).at(-1);
     expect(leaf).toMatchObject({

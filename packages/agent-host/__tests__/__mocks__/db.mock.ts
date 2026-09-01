@@ -1,13 +1,5 @@
 import type { Mock } from "vitest";
 
-/**
- * Feed rows shaped like the repository actually returns them.
- *
- * These used to be loose stubs, which was harmless while the Hono routes returned
- * whatever the repository gave them. The oRPC procedures validate their output against
- * the contract, so the fixtures now have to be faithful — that is the point of moving
- * to contract-first.
- */
 const mockTranslation = (locale: "en" | "zh-TW", title: string) => ({
   id: 1,
   feedId: 1,
@@ -48,17 +40,11 @@ export const mockFeeds = [
   mockFeed(2, "test-feed-2", "zh-TW", "Test Feed 2"),
 ];
 
-/**
- * `{ items, nextCursor }` — the shape `queryInfiniteFeeds` returns
- * (`packages/db/src/libs/feeds/index.ts`). The previous fixture invented a
- * `meta: { nextCursor, hasMore }` wrapper that production never produced.
- */
 export const mockFeedsResponse = {
   items: mockFeeds,
   nextCursor: null,
 };
 
-// Mock functions for @chia/db/repos/feeds
 export const getInfiniteFeedsByUserId: Mock = vi
   .fn()
   .mockResolvedValue(mockFeedsResponse);
@@ -85,10 +71,8 @@ export const softDeleteFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 export const deleteFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 export const restoreFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 
-// Mock functions for @chia/db/repos/feeds/search
 export const getRelatedFeeds: Mock = vi.fn().mockResolvedValue([]);
 
-// Helper function to reset all mocks
 export const resetAllDbMocks = () => {
   getInfiniteFeedsByUserId.mockClear();
   getInfiniteFeeds.mockClear();
