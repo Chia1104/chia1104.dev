@@ -22,7 +22,8 @@ The frontends import only the contract type from `@chia/api/orpc/contracts` and 
 ## `www`
 
 - `src/libs/orpc/client.rsc.ts` is server-only and sends `CH_API_KEY` plus the Cloudflare bypass token.
-- `src/libs/orpc/client.ts` runs in the browser and may call only public procedures. Never expose an API key to it.
+- `src/libs/orpc/client.ts` runs in the browser with the session cookie and may call only public procedures and the visitor's own agent sessions. Never expose an API key to it.
+- The public agent chat is `src/components/agent/`: a drawer on every page whose content loads on first open, a guest session from better-auth's anonymous plugin, and `@chia/agent-elements` with the content renderers only.
 - Content uses `@chia/contents`; localization uses `next-intl` with `packages/i18n/www`.
 
 ## `dash`

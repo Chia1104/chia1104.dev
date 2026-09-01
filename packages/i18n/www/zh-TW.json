@@ -183,10 +183,21 @@
     "error": "這裡看起來有點無聊，我會盡快為你準備好"
   },
   "chbot": {
-    "comming-soon": {
-      "title": "即將推出",
-      "description": "你正在訪問一個尚未推出的功能。我正在努力開發中，很快就會推出。"
-    }
+    "title": "問問部落格",
+    "open": "開啟部落格助理",
+    "emptyTitle": "想找什麼文章？",
+    "emptyDescription": "我可以搜尋並閱讀已發佈的文章，幫你找到對的那一篇。用任何語言提問都可以。",
+    "suggestions": {
+      "latest": "最近發佈了哪些文章？",
+      "topics": "這個部落格涵蓋哪些主題？",
+      "find": "有哪些文章談到 Next.js？"
+    },
+    "placeholder": "問問部落格的內容…",
+    "signingIn": "正在準備你的工作階段…",
+    "loadFailed": "助理無法啟動。",
+    "retry": "再試一次",
+    "usage": "本週免費額度已使用 {percent}%",
+    "usageReset": "{time} 重置"
   },
   "settings": {
     "title": "設定",

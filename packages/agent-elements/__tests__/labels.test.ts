@@ -22,6 +22,7 @@ describe("agent-elements catalogs", () => {
       expect(catalog.alwaysAllow).toContain("{tier}");
       expect(catalog.contextCompactsAutomatically).toContain("{model}");
       expect(catalog.forkedFrom).toContain("{title}");
+      expect(catalog.quotaExceeded).toContain("{resetAt}");
     }
   });
 });

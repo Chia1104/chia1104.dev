@@ -183,10 +183,21 @@
     "error": "Here looks a little boring, I'll prepare it for you soon"
   },
   "chbot": {
-    "comming-soon": {
-      "title": "Coming Soon",
-      "description": "You're visiting a feature that is not yet available. I'm working on it and it will be released soon."
-    }
+    "title": "Ask the blog",
+    "open": "Open the blog assistant",
+    "emptyTitle": "Ask about the posts",
+    "emptyDescription": "I search and read the published posts and point you to the right one. Ask in any language.",
+    "suggestions": {
+      "latest": "What has been published recently?",
+      "topics": "What topics does this blog cover?",
+      "find": "Which posts talk about Next.js?"
+    },
+    "placeholder": "Ask about the blog…",
+    "signingIn": "Preparing your session…",
+    "loadFailed": "The assistant could not start.",
+    "retry": "Try again",
+    "usage": "{percent}% of this week's free allowance used",
+    "usageReset": "resets {time}"
   },
   "settings": {
     "title": "Settings",

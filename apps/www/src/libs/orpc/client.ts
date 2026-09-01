@@ -14,11 +14,16 @@ const endpoint = new URL(
   })
 );
 
-/** Browser client: public procedures only. Never attach `CH_API_KEY`. */
+/**
+ * Browser client: public procedures and the visitor's own agent sessions, authenticated by the
+ * cross-subdomain session cookie. Never attach `CH_API_KEY`.
+ */
 export const link = new RPCLink({
   origin: endpoint.origin,
   /** SAFETY: `URL.pathname` always starts with `/`. */
   url: endpoint.pathname as `/${string}`,
+  fetch: (url, init) =>
+    globalThis.fetch(url, { ...init, credentials: "include" }),
 });
 
 export const client: RouterContractClient<typeof routerContract> =

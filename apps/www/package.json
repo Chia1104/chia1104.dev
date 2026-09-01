@@ -30,7 +30,9 @@
     "env:check": "tsx ./src/env.ts"
   },
   "dependencies": {
+    "@chia/agent-elements": "workspace:*",
     "@chia/api": "workspace:*",
+    "@chia/auth": "workspace:*",
     "@chia/contents": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/i18n": "workspace:*",

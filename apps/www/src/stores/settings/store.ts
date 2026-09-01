@@ -158,6 +158,8 @@ const emptyThemeState: ThemeState = {
 
 export interface SettingsState {
   aiEnabled: boolean;
+  /** The public agent conversation to reopen; validated against the server's list on mount. */
+  agentSessionId: string | null;
   theme: ThemeState;
   backgroundEnabled: boolean;
   cursorEnabled: boolean;
@@ -165,6 +167,7 @@ export interface SettingsState {
 
 export interface SettingsActions {
   setAiEnabled: (enabled: boolean) => void;
+  setAgentSessionId: (sessionId: string | null) => void;
   setThemeConfig: (
     mode: typeof Theme.DARK | typeof Theme.LIGHT,
     config: Partial<ThemeConfig>
@@ -189,7 +192,8 @@ export interface SettingsActions {
 export type SettingsStore = SettingsState & SettingsActions;
 
 const defaultState: SettingsState = {
-  aiEnabled: false,
+  aiEnabled: true,
+  agentSessionId: null,
   theme: emptyThemeState,
   backgroundEnabled: true,
   cursorEnabled: true,
@@ -201,6 +205,7 @@ export const useSettingsStore = create<SettingsStore>()(
       ...defaultState,
 
       setAiEnabled: (enabled) => set({ aiEnabled: enabled }),
+      setAgentSessionId: (sessionId) => set({ agentSessionId: sessionId }),
       setBackgroundEnabled: (enabled) => set({ backgroundEnabled: enabled }),
       setCursorEnabled: (enabled) => set({ cursorEnabled: enabled }),
       setThemeConfig: (mode, config) =>
@@ -290,8 +295,16 @@ export const useSettingsStore = create<SettingsStore>()(
     }),
     {
       name: "SETTINGS_STORE",
+      /** 1: AI features became opt-out; every earlier visitor had `false` persisted by default. */
+      version: 1,
+      migrate: (persisted, version) => {
+        const state =
+          /* SAFETY: Only this store writes `SETTINGS_STORE`; earlier versions persisted a subset of these keys. */ persisted as Partial<SettingsState>;
+        return version < 1 ? { ...state, aiEnabled: true } : state;
+      },
       partialize: (state) => ({
         aiEnabled: state.aiEnabled,
+        agentSessionId: state.agentSessionId,
         theme: state.theme,
         backgroundEnabled: state.backgroundEnabled,
         cursorEnabled: state.cursorEnabled,
