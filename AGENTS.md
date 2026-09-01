@@ -10,7 +10,7 @@ Personal site and architecture playground built as a pnpm + Turborepo monorepo. 
 - Use the current stack as designed. Check dependency docs and types before downgrading, replacing or routing around an API.
 - Prefer existing dependencies over custom code or new packages.
 - Choose the long-term design; do not land stopgaps intended for later replacement.
-- Comments explain constraints and invariants, not implementation history.
+- Comments explain constraints and invariants, not implementation history. One sentence for what the symbol does; a second only when the code cannot show why. If the name is enough, write nothing. Do not restate identifiers, narrate migrations or decorate files with section banners. Keep `SAFETY`, `@deprecated`, `@default` and `@example`.
 
 ## Architecture
 
