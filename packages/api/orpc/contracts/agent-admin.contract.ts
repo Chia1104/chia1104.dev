@@ -183,7 +183,55 @@ export const updateAgentQuotaAdminContract = oc
   )
   .output(agentQuotaAdminSchema);
 
+const usagePeriodSchema = z.object({
+  /** ISO instants; `end` is when every allowance is whole again. */
+  start: z.string(),
+  end: z.string(),
+  timeZone: z.string(),
+});
+
+const usageUserSchema = z.object({
+  userId: z.string(),
+  name: z.string(),
+  email: z.string(),
+  image: z.string().nullable(),
+  isAnonymous: z.boolean(),
+  houseUsd: z.number(),
+  turns: z.number().int(),
+});
+
+/** House spend across every user this week, against the per-user allowance. */
+export const agentUsageWeekAdminSchema = z.object({
+  period: usagePeriodSchema,
+  weeklyLimitUsd: z.number(),
+  houseUsd: z.number(),
+  turns: z.number().int(),
+  /** Highest spenders first. */
+  topUsers: z.array(usageUserSchema),
+});
+
+/** One user's standing: this week's house spend and turns, lifetime spend on any bill, and sessions kept. */
+export const agentUserUsageAdminSchema = z.object({
+  period: usagePeriodSchema,
+  weeklyLimitUsd: z.number(),
+  houseUsd: z.number(),
+  turns: z.number().int(),
+  allTimeUsd: z.number(),
+  sessions: z.number().int(),
+});
+
+export const getAgentUsageWeekAdminContract = oc
+  .errors(errors)
+  .output(agentUsageWeekAdminSchema);
+
+export const getAgentUserUsageAdminContract = oc
+  .errors(errors)
+  .input(z.object({ userId: z.string().min(1) }))
+  .output(agentUserUsageAdminSchema);
+
 export type AgentKindAdmin = z.infer<typeof agentKindAdminSchema>;
+export type AgentUsageWeekAdmin = z.infer<typeof agentUsageWeekAdminSchema>;
+export type AgentUserUsageAdmin = z.infer<typeof agentUserUsageAdminSchema>;
 export type AgentQuotaAdmin = z.infer<typeof agentQuotaAdminSchema>;
 export type AgentTaskAdmin = z.infer<typeof agentTaskAdminSchema>;
 export type AgentTaskParamsInput = z.infer<typeof agentTaskParamsSchema>;

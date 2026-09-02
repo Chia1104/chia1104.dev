@@ -23,7 +23,7 @@ export const user = pgTable(
     ...timestamps,
     banned: boolean("banned").default(false).notNull(),
     banReason: text("ban_reason"),
-    banExpires: timestamp("ban_expires"),
+    banExpires: timestamp("ban_expires", { withTimezone: true }),
   },
   (table) => [index("user_email_idx").on(table.email)]
 );

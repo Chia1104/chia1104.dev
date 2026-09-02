@@ -50,6 +50,8 @@ const service = {
   listTaskModels: vi.fn(),
   getQuota: vi.fn(),
   updateQuota: vi.fn(),
+  usageWeek: vi.fn(),
+  usageOfUser: vi.fn(),
 } satisfies AgentAdminService;
 
 const factory = {
@@ -127,10 +129,46 @@ describe("agent admin routes", () => {
           { context }
         )
       ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(
+        call(routes.getAgentUsageWeekAdminRoute, undefined, { context })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(
+        call(routes.getAgentUserUsageAdminRoute, { userId: "u1" }, { context })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
       expect(service.listKinds).not.toHaveBeenCalled();
       expect(service.updateKind).not.toHaveBeenCalled();
       expect(service.updateQuota).not.toHaveBeenCalled();
+      expect(service.usageWeek).not.toHaveBeenCalled();
+      expect(service.usageOfUser).not.toHaveBeenCalled();
     });
+  });
+
+  it("reads a user's usage through the port with the id as given", async ({
+    context,
+  }) => {
+    const standing = {
+      period: {
+        start: "2026-08-31T00:00:00.000Z",
+        end: "2026-09-07T00:00:00.000Z",
+        timeZone: "UTC",
+      },
+      weeklyLimitUsd: 0.3,
+      houseUsd: 0.12,
+      turns: 4,
+      allTimeUsd: 1.5,
+      sessions: 3,
+    };
+    service.usageOfUser.mockResolvedValueOnce(standing);
+    const result = await call(
+      routes.getAgentUserUsageAdminRoute,
+      { userId: "u1" },
+      { context }
+    );
+    expect(result).toEqual(standing);
+    expect(service.usageOfUser).toHaveBeenCalledWith(
+      expect.objectContaining({ adminId: ADMIN_ID }),
+      { userId: "u1" }
+    );
   });
 
   it("rejects a negative quota before the port sees it", async ({

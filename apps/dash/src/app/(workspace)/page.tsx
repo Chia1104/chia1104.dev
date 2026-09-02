@@ -1,23 +1,13 @@
-import { Suspense } from "react";
-import { ViewTransition } from "react";
+import "server-only";
+import { DashboardOverview } from "@/components/dashboard/overview";
 
-import { Spinner } from "@heroui/react";
+export const dynamic = "force-dynamic";
 
-import { ManageList } from "@/containers/user/manage-list";
+const OverviewPage = () => (
+  <article className="container flex flex-col gap-6 py-8">
+    <h1 className="text-2xl font-semibold">Overview</h1>
+    <DashboardOverview />
+  </article>
+);
 
-export default function Page() {
-  return (
-    <ViewTransition>
-      <article className="container py-8">
-        <Suspense
-          fallback={
-            <div className="flex w-full items-center justify-center py-12">
-              <Spinner size="lg" />
-            </div>
-          }>
-          <ManageList />
-        </Suspense>
-      </article>
-    </ViewTransition>
-  );
-}
+export default OverviewPage;

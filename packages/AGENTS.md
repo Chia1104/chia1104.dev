@@ -40,10 +40,11 @@ Authorization belongs in `service-kit/src/policies`. Bind policies through `runP
 ## Core package boundaries
 
 - `service-kit`: `createServiceFactory()` builds per-request `ServiceContext`; `bootstrap()` applies cross-cutting Hono middleware.
-- `db`: `connectDatabase(env, { withCache })` is memoized by URL and cache setting. Request paths may use explicit Redis-backed Drizzle caching; workflow steps use `withCache: false`. All text and JSON parameters pass through `storableCodecs` before reaching Postgres.
+- `db`: every timestamp column is `timestamptz` (`withTimezone: true`); a plain `timestamp` would be read as UTC by Drizzle but written in the process's zone by a raw `sql` parameter. `connectDatabase(env, { withCache })` is memoized by URL and cache setting. Request paths may use explicit Redis-backed Drizzle caching; workflow steps use `withCache: false`. All text and JSON parameters pass through `storableCodecs` before reaching Postgres.
 - `auth`: Better Auth configuration and server/browser clients. Keep email providers and templates lazily imported.
 - `kv`: shared Keyv adapters, the Drizzle cache and rate-limiter integration.
 - `ai`: embeddings, chunking, content tools, provider model creation and API-key crypto. Keep provider SDKs lazily imported.
+- `meta`: site metadata authored in Pkl, generated as `meta.json`.
 
 ## Agent packages
 
@@ -59,9 +60,7 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before changi
 
 `agent-runtime` exports `./pi/*`, `./session/*` and `./models` for server use only. Browser and SSR bundles may import `./wire/schema` and `./wire/fold`; `./wire/replay` remains server-only because it loads Pi.
 
-`agent-elements` owns live client state in one zustand store per session and server state in TanStack Query. Hosts provide the oRPC client, `QueryClient`, localized labels and kind-specific renderers. Host Tailwind sources must include this package and Streamdown's distributed JavaScript.
-
-Every locale must carry the same keys; agent label tests enforce this. `meta` is authored in Pkl and generated as `meta.json`.
+`agent-elements` owns live client state in one zustand store per session and server state in TanStack Query. Hosts provide the oRPC client, `QueryClient`, localized labels and kind-specific renderers. Host Tailwind sources must include this package and Streamdown's distributed JavaScript. Every locale must carry the same keys; agent label tests enforce this.
 
 ## Testing
 
@@ -74,4 +73,4 @@ Every locale must carry the same keys; agent label tests enforce this. `meta` is
 - `@chia/test/mocks/*` — `vi.mock` wiring stays in the consumer.
 - `@chia/test/fixtures/content-read-port` — read-port fake.
 
-Local helpers only when they add behavior. Import `{ describe, expect, it, vi }` from `vitest`. Titles are behavior sentences, not `should ...`.
+Keep app-specific helpers next to the app. Import `{ describe, expect, it, vi }` from `vitest`. Titles are behavior sentences, not `should ...`.

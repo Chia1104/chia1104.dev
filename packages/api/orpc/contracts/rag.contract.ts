@@ -97,7 +97,7 @@ const embeddingKeyCountSchema = z.object({
  */
 const activeRunIdSchema = z.string().nullable();
 
-const runSnapshotSchema = z.object({
+export const runSnapshotSchema = z.object({
   runId: z.string(),
   recordId: z.number(),
   scope: z.enum(RESOURCE_INDEX_RUN_SCOPE),

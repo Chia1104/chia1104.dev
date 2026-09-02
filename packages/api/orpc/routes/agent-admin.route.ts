@@ -87,3 +87,24 @@ export const listAgentTaskModelsAdminRoute = contractOS.agent.admin.tasks.models
       (await requireAgentFactory(opts.context).createAdmin()).listTaskModels()
     )
   );
+
+export const getAgentUsageWeekAdminRoute = contractOS.agent.admin.usage.week
+  .use(adminGuard())
+  .handler((opts) =>
+    withORPCErrors(async () =>
+      (await requireAgentFactory(opts.context).createAdmin()).usageWeek(
+        callerOf(opts)
+      )
+    )
+  );
+
+export const getAgentUserUsageAdminRoute = contractOS.agent.admin.usage.user
+  .use(adminGuard())
+  .handler((opts) =>
+    withORPCErrors(async () =>
+      (await requireAgentFactory(opts.context).createAdmin()).usageOfUser(
+        callerOf(opts),
+        opts.input
+      )
+    )
+  );

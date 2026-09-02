@@ -18,7 +18,9 @@ export const spotifyCredential = pgTable(
     spotifyImageUrl: text("spotify_image_url"),
     accessToken: text("access_token").notNull(),
     refreshToken: text("refresh_token").notNull(),
-    accessTokenExpiresAt: timestamp("access_token_expires_at").notNull(),
+    accessTokenExpiresAt: timestamp("access_token_expires_at", {
+      withTimezone: true,
+    }).notNull(),
     scope: text("scope").notNull(),
     isActive: boolean("is_active").default(false).notNull(),
     ...timestamps,

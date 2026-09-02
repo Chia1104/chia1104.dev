@@ -1,6 +1,7 @@
 import * as agentAdminRoutes from "./routes/agent-admin.route";
 import * as agentRoutes from "./routes/agent.route";
 import * as apikeyRoutes from "./routes/apikey.route";
+import * as dashboardRoutes from "./routes/dashboard.route";
 import * as emailRoutes from "./routes/email.route";
 import * as feedsRoutes from "./routes/feeds.route";
 import * as fileRoutes from "./routes/file.route";
@@ -51,7 +52,14 @@ export const router = contractOS.router({
         get: agentAdminRoutes.getAgentQuotaAdminRoute,
         update: agentAdminRoutes.updateAgentQuotaAdminRoute,
       },
+      usage: {
+        week: agentAdminRoutes.getAgentUsageWeekAdminRoute,
+        user: agentAdminRoutes.getAgentUserUsageAdminRoute,
+      },
     },
+  },
+  dashboard: {
+    overview: dashboardRoutes.getDashboardOverviewRoute,
   },
   health: {
     client: healthRoutes.protectedHealthRoute,
@@ -95,8 +103,8 @@ export const router = contractOS.router({
     delete: fileRoutes.deleteObjectRoute,
   },
   user: {
-    "profile:update": userRoutes.updateUserProfileRoute,
-    list: userRoutes.getInfiniteUsersRoute,
+    list: userRoutes.listUsersRoute,
+    get: userRoutes.getUserRoute,
   },
   toolings: {
     "link-preview": toolingsRoutes.linkPreviewRoute,
