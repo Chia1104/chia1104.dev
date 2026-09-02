@@ -50,10 +50,14 @@ export interface AgentSessionClient {
       input: Parameters<CapabilityProcedures["list"]>[0]
     ) => Promise<AgentCapabilities>;
   };
+  usage: {
+    me: () => Promise<AgentUsageStanding>;
+  };
 }
 
 export type AgentSessionDetail = agentContracts.AgentSessionDetail;
 export type AgentSessionSummary = agentContracts.AgentSessionSummary;
+export type AgentUsageStanding = agentContracts.AgentUsageStanding;
 export type AgentModel = Awaited<
   ReturnType<AgentClient["models"]["list"]>
 >[number];

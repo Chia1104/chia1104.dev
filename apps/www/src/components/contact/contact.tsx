@@ -1,9 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, memo } from "react";
+import { useId, useState, memo } from "react";
 
 import {
   Input,
@@ -17,28 +16,20 @@ import type { FormProps } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ORPCError } from "@orpc/client";
 import { useMutation } from "@tanstack/react-query";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { ErrorCode as CaptchaErrorCode } from "@chia/api/captcha";
+import { ErrorCode as CaptchaErrorCode } from "@chia/api/captcha/constants";
 import meta from "@chia/meta";
 import Card from "@chia/ui/card";
 import SubmitForm from "@chia/ui/submit-form";
 import { cn } from "@chia/ui/utils/cn.util";
-import useTheme from "@chia/ui/utils/use-theme";
 
-import { env } from "@/env";
+import { SiteCaptcha } from "@/components/commons/captcha";
 import { orpc } from "@/libs/orpc/client";
 import type { Contact as ContactInput } from "@/shared/validator";
 import { contactSchema } from "@/shared/validator";
-
-const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), {
-  ssr: false,
-});
-const Turnstile = dynamic(() =>
-  import("@marsidev/react-turnstile").then((mod) => mod.Turnstile)
-);
 
 export const ContactForm = ({
   className,
@@ -53,10 +44,10 @@ export const ContactForm = ({
 }) => {
   const id = useId();
   const router = useRouter();
-  const { isDarkMode } = useTheme();
-  const locale = useLocale();
   const t = useTranslations("contact.form");
   const tContact = useTranslations("contact");
+  /** Single-use: the widget remounts on `captchaAttempt` after a rejected submission. */
+  const [captchaAttempt, setCaptchaAttempt] = useState(0);
 
   const { mutateAsync, isPending } = useMutation(
     orpc.email.send.mutationOptions()
@@ -81,6 +72,8 @@ export const ContactForm = ({
         return t("success");
       },
       error: (error) => {
+        form.resetField("captchaToken");
+        setCaptchaAttempt((count) => count + 1);
         if (error instanceof Error) {
           onError?.(error);
         }
@@ -184,33 +177,12 @@ export const ContactForm = ({
           name="captchaToken"
           render={({ field, fieldState }) => (
             <TextField isInvalid={fieldState.invalid}>
-              {env.NEXT_PUBLIC_CAPTCHA_PROVIDER === "google-recaptcha" ? (
-                <div className="recaptcha-style">
-                  <ReCAPTCHA
-                    key={isDarkMode ? "dark" : "light"}
-                    theme={isDarkMode ? "dark" : "light"}
-                    sitekey={env.NEXT_PUBLIC_CAPTCHA_SITE_KEY}
-                    onChange={(value) => {
-                      field.onChange(value ?? "");
-                    }}
-                    onReset={() => {
-                      field.onChange("");
-                    }}
-                  />
-                </div>
-              ) : (
-                <Turnstile
-                  options={{
-                    theme: isDarkMode ? "dark" : "light",
-                    language: locale,
-                  }}
-                  siteKey={env.NEXT_PUBLIC_CAPTCHA_SITE_KEY}
-                  onSuccess={(data) => {
-                    field.onChange(data);
-                  }}
-                  tw=""
-                />
-              )}
+              <SiteCaptcha
+                key={captchaAttempt}
+                onToken={(token) => {
+                  field.onChange(token ?? "");
+                }}
+              />
               <FieldError>{fieldState.error?.message}</FieldError>
             </TextField>
           )}

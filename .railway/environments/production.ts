@@ -1,4 +1,4 @@
-import { github, image, preserve, service } from "railway/iac";
+import { github, image, preserve, ref, service } from "railway/iac";
 
 import {
   dashboardWatchPatterns,
@@ -78,7 +78,12 @@ export const createProductionResources = () => {
       sleepApplication: true,
     },
     domains: [{ domain: "dash.chia1104.dev", port: 8080 }],
-    env: createDashboardEnv(),
+    env: {
+      ...createDashboardEnv(),
+      // The login form's widget must be the provider `service` verifies against.
+      NEXT_PUBLIC_CAPTCHA_PROVIDER: ref(api, "NEXT_PUBLIC_CAPTCHA_PROVIDER"),
+      NEXT_PUBLIC_CAPTCHA_SITE_KEY: preserve(),
+    },
   });
 
   const dbStudio = service("DB Studio", {

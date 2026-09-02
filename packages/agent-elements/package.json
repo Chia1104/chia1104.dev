@@ -29,6 +29,10 @@
       "types": "./src/queries.ts",
       "default": "./src/queries.ts"
     },
+    "./usage": {
+      "types": "./src/usage.ts",
+      "default": "./src/usage.ts"
+    },
     "./provider": {
       "types": "./src/provider.tsx",
       "default": "./src/provider.tsx"
@@ -142,6 +146,7 @@
     "@chia/i18n": "workspace:*",
     "@chia/ui": "workspace:*",
     "@heroui/react": "catalog:heroui-v3",
+    "@orpc/client": "catalog:orpc",
     "@orpc/contract": "catalog:orpc",
     "@shikijs/stream": "catalog:ui",
     "@streamdown/cjk": "catalog:streamdown",

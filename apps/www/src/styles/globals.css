@@ -10,6 +10,9 @@
 
 @source "./src/**/*.{js,ts,jsx,tsx}";
 @source "../../node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@chia/agent-elements/src/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@chia/agent-elements/node_modules/streamdown/dist/*.js";
+@source "../../node_modules/@chia/agent-elements/node_modules/@streamdown/cjk/dist/*.js";
 @source "../../node_modules/@chia/contents/src/**/*.tsx";
 @source "../../node_modules/fumadocs-ui/dist/**/*.js";
 

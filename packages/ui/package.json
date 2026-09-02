@@ -75,6 +75,7 @@
     "@chia/utils": "workspace:*",
     "@chiastack/ui": "catalog:chiastack",
     "@heroui/react": "catalog:heroui-v3",
+    "@marsidev/react-turnstile": "catalog:ui",
     "@radix-ui/react-accordion": "catalog:radix-ui",
     "@radix-ui/react-avatar": "catalog:radix-ui",
     "@radix-ui/react-collapsible": "catalog:radix-ui",
@@ -103,6 +104,7 @@
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
     "react-email": "catalog:email",
+    "react-google-recaptcha": "catalog:ui",
     "react-medium-image-zoom": "catalog:ui",
     "sonner": "catalog:ui",
     "tailwind-merge": "catalog:ui",
@@ -116,6 +118,7 @@
     "@testing-library/react": "catalog:testing-library",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
+    "@types/react-google-recaptcha": "catalog:ui",
     "tailwindcss": "catalog:tailwindcss",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"

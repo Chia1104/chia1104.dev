@@ -65,6 +65,10 @@
       "types": "./captcha/index.ts",
       "default": "./captcha/index.ts"
     },
+    "./captcha/constants": {
+      "types": "./captcha/constants.ts",
+      "default": "./captcha/constants.ts"
+    },
     "./captcha/env": {
       "types": "./captcha/env.ts",
       "default": "./captcha/env.ts"

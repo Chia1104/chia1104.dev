@@ -4,6 +4,7 @@ import "@/styles/globals.css";
 import "react-medium-image-zoom/dist/styles.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 
 import {
   getLocale,
@@ -15,9 +16,9 @@ import {
 import meta from "@chia/meta";
 import { WWW_BASE_URL } from "@chia/utils/config";
 
+import { ChatDrawer } from "@/components/agent/chat-drawer";
 import AppLayout from "@/components/commons/app-layout";
 import AppPlugins from "@/components/commons/app-plugins";
-import { CHBot } from "@/components/commons/ch-bot";
 import RootLayout from "@/components/commons/root-layout";
 import RootProvider from "@/components/commons/root-provider";
 import { routing } from "@/libs/i18n/routing";
@@ -82,10 +83,10 @@ const Layout = async ({
         <AppLayout locale={locale}>
           {children}
           {modal}
-          <CHBot
-            wrapperProps={{ className: "fixed right-6 bottom-6 z-50 size-20" }}
-            className="size-20 rounded-full shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]"
-          />
+          {/* Reads `?chat`; static pages need the boundary to prerender. */}
+          <Suspense>
+            <ChatDrawer />
+          </Suspense>
         </AppLayout>
         <AppPlugins />
       </RootProvider>
