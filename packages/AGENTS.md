@@ -41,6 +41,7 @@ Authorization belongs in `service-kit/src/policies`. Bind policies through `runP
 
 - `service-kit`: `createServiceFactory()` builds per-request `ServiceContext`; `bootstrap()` applies cross-cutting Hono middleware.
 - `db`: every timestamp column is `timestamptz` (`withTimezone: true`); a plain `timestamp` would be read as UTC by Drizzle but written in the process's zone by a raw `sql` parameter. `connectDatabase(env, { withCache })` is memoized by URL and cache setting. Request paths may use explicit Redis-backed Drizzle caching; workflow steps use `withCache: false`. All text and JSON parameters pass through `storableCodecs` before reaching Postgres.
+  `profile_entry.data` is kind-specific JSON whose only schema is `profileEntryContentSchema`; a shape change is a backfill of stored rows, never a reader fallback.
 - `auth`: Better Auth configuration and server/browser clients. Keep email providers and templates lazily imported.
 - `kv`: shared Keyv adapters, the Drizzle cache and rate-limiter integration.
 - `ai`: embeddings, chunking, content tools, provider model creation and API-key crypto. Keep provider SDKs lazily imported.

@@ -38,3 +38,14 @@ export const Locale = {
 } as const;
 
 export type Locale = (typeof Locale)[keyof typeof Locale];
+
+export const ProfileEntryKind = {
+  /** The one self-introduction; the site and the agent read the first published row. */
+  About: "about",
+  Experience: "experience",
+  Education: "education",
+  Project: "project",
+} as const;
+
+export type ProfileEntryKind =
+  (typeof ProfileEntryKind)[keyof typeof ProfileEntryKind];
