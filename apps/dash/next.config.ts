@@ -40,6 +40,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   typedRoutes: true,
+  agentRules: false,
   async headers() {
     return [
       {

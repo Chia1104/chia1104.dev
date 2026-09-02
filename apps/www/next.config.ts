@@ -37,6 +37,7 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   cacheComponents: false,
   typedRoutes: true,
+  agentRules: false,
   transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
   experimental: {
     authInterrupts: true,
