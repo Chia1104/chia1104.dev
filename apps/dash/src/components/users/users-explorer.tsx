@@ -124,6 +124,7 @@ export const UsersExplorer = () => {
 
   const {
     data,
+    error,
     isSuccess,
     isLoading,
     isFetchingNextPage,
@@ -134,9 +135,8 @@ export const UsersExplorer = () => {
       input: (pageParam) => ({ ...filters, cursor: pageParam }),
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? null,
       initialPageParam:
-        /* SAFETY: The producer contract guarantees this value satisfies string | number | null. */ null as
+        /* SAFETY: The producer contract guarantees this value satisfies string | null. */ null as
           | string
-          | number
           | null,
     })
   );
@@ -199,8 +199,15 @@ export const UsersExplorer = () => {
               </Table.Header>
               <Table.Body
                 renderEmptyState={() => (
-                  <div className="text-foreground/70 py-4 text-center text-sm">
-                    {isLoading ? "Loading..." : "No users match these filters"}
+                  <div
+                    className={
+                      error
+                        ? "text-danger py-4 text-center text-sm"
+                        : "text-foreground/70 py-4 text-center text-sm"
+                    }>
+                    {isLoading
+                      ? "Loading..."
+                      : (error?.message ?? "No users match these filters")}
                   </div>
                 )}>
                 <Table.Collection items={rows}>

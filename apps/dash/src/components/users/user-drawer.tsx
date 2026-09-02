@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Avatar,
@@ -83,6 +83,12 @@ const BanDialog = ({
 }) => {
   const [reason, setReason] = useState("");
   const [duration, setDuration] = useState<BanDurationId>("forever");
+  // The dialog stays mounted across users, so a closed dialog forgets its inputs.
+  useEffect(() => {
+    if (isOpen) return;
+    setReason("");
+    setDuration("forever");
+  }, [isOpen]);
   return (
     <Modal>
       <Modal.Backdrop
@@ -500,7 +506,11 @@ export const UserDrawer = ({
                 {error?.message ?? "Could not load this user"}
               </p>
             ) : (
-              <UserDetailView detail={data} onClose={onClose} />
+              <UserDetailView
+                key={data.user.id}
+                detail={data}
+                onClose={onClose}
+              />
             )}
           </Drawer.Body>
         </Drawer.Dialog>

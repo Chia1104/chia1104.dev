@@ -40,7 +40,12 @@ export const userDetailSchema = z.object({
 export const listUsersContract = oc
   .errors(READ_ERRORS)
   .input(listUsersSchema)
-  .output(withMetaSchema(userSchema));
+  .output(
+    withMetaSchema(userSchema).extend({
+      /** Narrowed from `withMetaSchema`: a `(timestamp, id)` keyset cursor. */
+      nextCursor: z.string().nullable(),
+    })
+  );
 
 export const getUserContract = oc
   .errors({ ...READ_ERRORS, NOT_FOUND: {} })

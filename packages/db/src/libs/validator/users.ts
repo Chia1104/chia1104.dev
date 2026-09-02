@@ -4,7 +4,12 @@ import { FeedOrderBy, Role } from "../../types";
 
 import { baseInfiniteSchema } from "./shared";
 
+/** `<timestamp as Postgres text>|<user id>`, as `listUsers` hands it back in `nextCursor`. */
+export const USER_CURSOR_PATTERN =
+  /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d{1,6})?\|[^|]+$/;
+
 export const listUsersSchema = baseInfiniteSchema.extend({
+  cursor: z.string().regex(USER_CURSOR_PATTERN).nullish(),
   orderBy: z
     .enum([FeedOrderBy.CreatedAt, FeedOrderBy.UpdatedAt])
     .optional()

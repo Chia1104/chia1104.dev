@@ -15,13 +15,19 @@ import dayjs from "@chia/utils/day";
 
 import * as schema from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
-import { parseCursorForOrder, sliceNextCursor, withDTO } from "../index.ts";
+import { withDTO } from "../index.ts";
 import type { ListUsersDTO } from "../validator/users";
 
-const USER_DATE_ORDER_BY = new Set([
-  FeedOrderBy.UpdatedAt,
-  FeedOrderBy.CreatedAt,
-]);
+/**
+ * Keyset on `(timestamp, id)`. The timestamp travels as Postgres text so the boundary keeps
+ * its microseconds, which a JS `Date` would round away; `id` breaks ties, so a page can never
+ * repeat or skip a row. Bound as text because a `Date` in a raw template is serialized in the
+ * process's zone while the column is `timestamp` without one.
+ */
+const parseCursor = (cursor: string) => {
+  const separator = cursor.lastIndexOf("|");
+  return { at: cursor.slice(0, separator), id: cursor.slice(separator + 1) };
+};
 
 const toISO = (date: Date | null) => (date ? dayjs(date).toISOString() : null);
 
@@ -70,26 +76,20 @@ export const listUsers = withDTO(
       anonymous,
     }: ListUsersDTO
   ) => {
-    const parsedCursor = parseCursorForOrder(
-      cursor ?? null,
-      orderBy,
-      USER_DATE_ORDER_BY
-    );
-    // Bound as text: a `Date` in a raw template is serialized in the process's zone and the
-    // column is `timestamp` without one, which would shift the cursor by the UTC offset.
-    const cursorValue = parsedCursor ? dayjs(parsedCursor).toISOString() : null;
     const search = query?.trim();
     const column = schema.user[orderBy];
+    const direction = sortOrder === "asc" ? asc : desc;
+    const boundary = cursor ? parseCursor(cursor) : null;
 
     const rawItems = await db
-      .select(userColumns)
+      .select({ ...userColumns, cursorAt: sql<string>`${column}::text` })
       .from(schema.user)
       .where(
         and(
-          cursorValue
+          boundary
             ? sortOrder === "asc"
-              ? sql`${column} >= ${cursorValue}`
-              : sql`${column} <= ${cursorValue}`
+              ? sql`(${column}, ${schema.user.id}) >= (${boundary.at}::timestamp, ${boundary.id})`
+              : sql`(${column}, ${schema.user.id}) <= (${boundary.at}::timestamp, ${boundary.id})`
             : undefined,
           search
             ? or(
@@ -109,19 +109,16 @@ export const listUsers = withDTO(
                 )
         )
       )
-      .orderBy(sortOrder === "asc" ? asc(column) : desc(column))
+      .orderBy(direction(column), direction(schema.user.id))
       .limit(limit + 1);
 
-    const { items, nextCursor } = sliceNextCursor(
-      rawItems,
-      limit,
-      orderBy,
-      USER_DATE_ORDER_BY
-    );
-
+    // The extra row is where the next page starts; the predicate above is inclusive.
+    const next = rawItems[limit];
     return {
-      items: items.map(serializeUser),
-      nextCursor,
+      items: rawItems
+        .slice(0, limit)
+        .map(({ cursorAt: _cursorAt, ...item }) => serializeUser(item)),
+      nextCursor: next ? `${next.cursorAt}|${next.id}` : null,
     };
   }
 );
