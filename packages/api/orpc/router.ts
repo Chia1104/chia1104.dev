@@ -7,6 +7,7 @@ import * as feedsRoutes from "./routes/feeds.route";
 import * as fileRoutes from "./routes/file.route";
 import * as healthRoutes from "./routes/health.route";
 import * as memoryRoutes from "./routes/memory.route";
+import * as profileRoutes from "./routes/profile.route";
 import * as ragRoutes from "./routes/rag.route";
 import * as spotifyRoutes from "./routes/spotify.route";
 import * as toolingsRoutes from "./routes/toolings.route";
@@ -120,6 +121,13 @@ export const router = contractOS.router({
     remove: memoryRoutes.removeMemoryRoute,
     "lesson:approve": memoryRoutes.approveLessonRoute,
     consolidate: memoryRoutes.consolidateMemoryRoute,
+  },
+  profile: {
+    list: profileRoutes.listProfileEntriesRoute,
+    get: profileRoutes.getProfileEntryRoute,
+    create: profileRoutes.createProfileEntryRoute,
+    update: profileRoutes.updateProfileEntryRoute,
+    remove: profileRoutes.removeProfileEntryRoute,
   },
   spotify: {
     playlist: spotifyRoutes.getSpotifyPlaylistRoute,
