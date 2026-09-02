@@ -114,7 +114,11 @@ export function LoginForm(props: FormProps) {
             siteKey={captchaEnv.NEXT_PUBLIC_CAPTCHA_SITE_KEY}
             theme={isDarkMode ? "dark" : "light"}
           />
-          <SubmitForm type="submit" fullWidth isDisabled={!captchaToken}>
+          <SubmitForm
+            type="submit"
+            fullWidth
+            isDisabled={isPending || !captchaToken}
+            isPending={isPending}>
             Send magic link
           </SubmitForm>
           <span className="flex items-center gap-2">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, memo } from "react";
+import { useId, useState, memo } from "react";
 
 import {
   Input,
@@ -46,6 +46,8 @@ export const ContactForm = ({
   const router = useRouter();
   const t = useTranslations("contact.form");
   const tContact = useTranslations("contact");
+  /** Single-use: the widget remounts on `captchaAttempt` after a rejected submission. */
+  const [captchaAttempt, setCaptchaAttempt] = useState(0);
 
   const { mutateAsync, isPending } = useMutation(
     orpc.email.send.mutationOptions()
@@ -70,6 +72,8 @@ export const ContactForm = ({
         return t("success");
       },
       error: (error) => {
+        form.resetField("captchaToken");
+        setCaptchaAttempt((count) => count + 1);
         if (error instanceof Error) {
           onError?.(error);
         }
@@ -174,6 +178,7 @@ export const ContactForm = ({
           render={({ field, fieldState }) => (
             <TextField isInvalid={fieldState.invalid}>
               <SiteCaptcha
+                key={captchaAttempt}
                 onToken={(token) => {
                   field.onChange(token ?? "");
                 }}

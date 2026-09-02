@@ -13,9 +13,9 @@ export const UsageMeter = () => {
   const format = useFormatter();
   const usage = useAgentUsage(client.agent);
   const standing = usage.data;
-  const fraction = standing ? (usageFractionOf(standing) ?? 0) : 0;
+  const fraction = standing ? usageFractionOf(standing) : null;
 
-  if (!standing) {
+  if (!standing || fraction === null) {
     return null;
   }
 

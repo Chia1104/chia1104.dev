@@ -4,6 +4,7 @@ import "@/styles/globals.css";
 import "react-medium-image-zoom/dist/styles.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 
 import {
   getLocale,
@@ -82,7 +83,10 @@ const Layout = async ({
         <AppLayout locale={locale}>
           {children}
           {modal}
-          <ChatDrawer />
+          {/* Reads `?chat`; static pages need the boundary to prerender. */}
+          <Suspense>
+            <ChatDrawer />
+          </Suspense>
         </AppLayout>
         <AppPlugins />
       </RootProvider>

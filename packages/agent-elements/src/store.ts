@@ -97,7 +97,7 @@ export interface AgentSessionStoreOptions extends AgentSessionCallbacks {
 export const VIEW_FLUSH_MS = 32;
 
 /** The part of `QUOTA_EXCEEDED`'s data the sentence needs; the rest is for the host's meter. */
-const quotaExceededData = z.object({ resetAt: z.string() });
+const quotaExceededData = z.object({ resetAt: z.iso.datetime() });
 
 /**
  * Refusals the agent contract declares get the catalog's sentence; the server's message for

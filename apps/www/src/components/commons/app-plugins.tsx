@@ -1,5 +1,7 @@
 "use client";
 
+import { Suspense } from "react";
+
 import { GoogleTagManager } from "@next/third-parties/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
@@ -16,13 +18,12 @@ import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
 import { useSettingsStore } from "@/stores/settings/store";
 
+/** Mounted only while chat is enabled so a disabled chat never swallows the shortcut. */
 const ContactCMD = () => {
-  const aiEnabled = useSettingsStore((state) => state.aiEnabled);
   const [isOpen, setIsOpen] = useQueryState("chat");
   useCMD(false, {
     cmd: "i",
     onKeyDown: () => {
-      if (!aiEnabled) return;
       setIsOpen(isOpen ? null : "true");
     },
   });
@@ -44,6 +45,7 @@ const Toaster = () => {
 
 const AppPlugins = () => {
   const cursorEnabled = useSettingsStore((s) => s.cursorEnabled);
+  const aiEnabled = useSettingsStore((s) => s.aiEnabled);
   return (
     <>
       <Toaster />
@@ -55,7 +57,11 @@ const AppPlugins = () => {
           }}
         />
       )}
-      <ContactCMD />
+      {aiEnabled && (
+        <Suspense>
+          <ContactCMD />
+        </Suspense>
+      )}
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       {env.NEXT_PUBLIC_ENV === "production" && (
         <>
