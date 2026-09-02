@@ -21,8 +21,7 @@ import type { ListUsersDTO } from "../validator/users";
 /**
  * Keyset on `(timestamp, id)`. The timestamp travels as Postgres text so the boundary keeps
  * its microseconds, which a JS `Date` would round away; `id` breaks ties, so a page can never
- * repeat or skip a row. Bound as text because a `Date` in a raw template is serialized in the
- * process's zone while the column is `timestamp` without one.
+ * repeat or skip a row.
  */
 const parseCursor = (cursor: string) => {
   const separator = cursor.lastIndexOf("|");
@@ -88,8 +87,8 @@ export const listUsers = withDTO(
         and(
           boundary
             ? sortOrder === "asc"
-              ? sql`(${column}, ${schema.user.id}) >= (${boundary.at}::timestamp, ${boundary.id})`
-              : sql`(${column}, ${schema.user.id}) <= (${boundary.at}::timestamp, ${boundary.id})`
+              ? sql`(${column}, ${schema.user.id}) >= (${boundary.at}::timestamptz, ${boundary.id})`
+              : sql`(${column}, ${schema.user.id}) <= (${boundary.at}::timestamptz, ${boundary.id})`
             : undefined,
           search
             ? or(

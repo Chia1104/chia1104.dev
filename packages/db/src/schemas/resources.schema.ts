@@ -230,8 +230,8 @@ export const resourceIndexRuns = pgTable(
     progress: jsonb("progress").$type<ResourceIndexRunProgress>(),
     result: jsonb("result"),
     error: text("error"),
-    startedAt: timestamp("started_at", { mode: "date" }),
-    endedAt: timestamp("ended_at", { mode: "date" }),
+    startedAt: timestamp("started_at", { withTimezone: true, mode: "date" }),
+    endedAt: timestamp("ended_at", { withTimezone: true, mode: "date" }),
     ...timestamps,
   },
   (table) => [

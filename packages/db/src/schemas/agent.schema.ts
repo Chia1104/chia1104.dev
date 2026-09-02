@@ -95,8 +95,10 @@ export const agentRuns = agentSchema.table(
     /** Provider/workflow-owned identifier used to stream, resume or cancel this run. */
     externalRunId: text("external_run_id").notNull(),
     metadata: jsonb("metadata").$type<JsonObject>().notNull().default({}),
-    startedAt: timestamp("started_at", { mode: "date" }).defaultNow().notNull(),
-    endedAt: timestamp("ended_at", { mode: "date" }),
+    startedAt: timestamp("started_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    endedAt: timestamp("ended_at", { withTimezone: true, mode: "date" }),
   },
   (table) => [
     index("agent_run_session_status_idx").on(table.sessionId, table.status),
@@ -124,7 +126,9 @@ export const agentSessionEntries = agentSchema.table(
     parentId: text("parent_id"),
     type: text("type").notNull(),
     payload: jsonb("payload").$type<JsonObject>().notNull(),
-    timestamp: timestamp("timestamp", { mode: "date" }).defaultNow().notNull(),
+    timestamp: timestamp("timestamp", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.sessionId, table.id] }),
@@ -167,7 +171,7 @@ export const writingAgentDrafts = agentSchema.table(
     /** title/excerpt/description/summary. jsonb so adding a field needs no migration. */
     meta: jsonb("meta").$type<JsonObject>().notNull().default({}),
     content: text("content"),
-    updatedAt: timestamp("updated_at", { mode: "date" })
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull()
       .$onUpdate(() => new Date()),
@@ -250,7 +254,7 @@ export const agentKindConfigs = agentSchema.table("kind_config", {
   /** `null` defers to the definition; a session created with an explicit list still wins. */
   autoApprove: jsonb("auto_approve").$type<string[] | null>(),
   config: jsonb("config").$type<JsonObject>().notNull().default({}),
-  updatedAt: timestamp("updated_at", { mode: "date" })
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),
@@ -274,7 +278,7 @@ export const agentTaskConfigs = agentSchema.table("task_config", {
   /** Replaces the task's default system prompt; `null` restores it. */
   systemPrompt: text("system_prompt"),
   params: jsonb("params").$type<AgentTaskParams>().notNull().default({}),
-  updatedAt: timestamp("updated_at", { mode: "date" })
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),
@@ -296,7 +300,7 @@ export const agentQuotaConfigs = agentSchema.table("quota_config", {
   resetTimeZone: text("reset_time_zone"),
   /** Turns one user may have running across all their sessions; the single-replica runner's guard. */
   maxRunningTurns: integer("max_running_turns"),
-  updatedAt: timestamp("updated_at", { mode: "date" })
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),
@@ -326,8 +330,10 @@ export const agentToolApprovals = agentSchema.table(
     decidedBy: text("decided_by").references(() => user.id, {
       onDelete: "set null",
     }),
-    decidedAt: timestamp("decided_at", { mode: "date" }),
-    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    decidedAt: timestamp("decided_at", { withTimezone: true, mode: "date" }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [primaryKey({ columns: [table.sessionId, table.toolCallId] })]
 );
@@ -372,7 +378,9 @@ export const agentUsageLedger = agentSchema.table(
     /** Subset of `output`; only some providers report it. */
     reasoning: integer("reasoning"),
     costMicros: bigint("cost_micros", { mode: "number" }).notNull(),
-    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     /** The quota read: one user's spend over a period. */
