@@ -19,6 +19,7 @@ import {
   Wrench,
   Brain,
   SlidersHorizontal,
+  UserRound,
   Users,
 } from "lucide-react";
 
@@ -95,6 +96,13 @@ export const useRouteItems = (level: AccessLevel) => {
           isActive: segments[0] === "assets",
           icon: <File />,
           title: "Assets",
+          operator: true,
+        },
+        {
+          url: "/profile",
+          isActive: segments[0] === "profile",
+          icon: <UserRound />,
+          title: "Profile",
           operator: true,
         },
         {
