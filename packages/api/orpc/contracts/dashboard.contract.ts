@@ -27,3 +27,17 @@ export const getDashboardOverviewContract = oc
   .output(dashboardOverviewSchema);
 
 export type DashboardOverview = z.infer<typeof dashboardOverviewSchema>;
+
+/**
+ * What the dashboard may show the signed-in person. `operator` is the configured admin
+ * (`CallerTier.Root`); everyone else is a `member`. The `role` column decides nothing here.
+ */
+export const dashboardAccessSchema = z.object({
+  level: z.enum(["member", "operator"]),
+});
+
+export const getDashboardAccessContract = oc
+  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
+  .output(dashboardAccessSchema);
+
+export type DashboardAccess = z.infer<typeof dashboardAccessSchema>;

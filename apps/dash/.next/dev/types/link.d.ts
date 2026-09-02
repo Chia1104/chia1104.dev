@@ -33,28 +33,28 @@ declare namespace __next_route_internal_types__ {
 
   type StaticRoutes = 
     | `/` // ../../../src/app/(workspace)/page.tsx
-    | `/agent` // ../../../src/app/(workspace)/agent/page.tsx
-    | `/agents` // ../../../src/app/(workspace)/agents/page.tsx
-    | `/api-keys` // ../../../src/app/(workspace)/api-keys/page.tsx
+    | `/agent` // ../../../src/app/(workspace)/(operator)/agent/page.tsx
+    | `/agents` // ../../../src/app/(workspace)/(operator)/agents/page.tsx
+    | `/api-keys` // ../../../src/app/(workspace)/(operator)/api-keys/page.tsx
     | `/api/v1/health` // ../../../src/app/api/v1/health/route.ts
-    | `/assets` // ../../../src/app/(workspace)/assets/page.tsx
+    | `/assets` // ../../../src/app/(workspace)/(operator)/assets/page.tsx
     | `/auth/callback/sent-success` // ../../../src/app/(auth)/auth/callback/sent-success/page.tsx
     | `/auth/login` // ../../../src/app/(auth)/auth/login/page.tsx
-    | `/feed` // ../../../src/app/(workspace)/feed/page.tsx
-    | `/feed/create` // ../../../src/app/(workspace)/feed/(edit)/create/page.tsx
-    | `/feed/drafts` // ../../../src/app/(workspace)/feed/(manage)/drafts/page.tsx
-    | `/feed/notes` // ../../../src/app/(workspace)/feed/(manage)/notes/page.tsx
-    | `/feed/posts` // ../../../src/app/(workspace)/feed/(manage)/posts/page.tsx
-    | `/memory` // ../../../src/app/(workspace)/memory/page.tsx
-    | `/rag` // ../../../src/app/(workspace)/rag/page.tsx
-    | `/rag/chunks` // ../../../src/app/(workspace)/rag/chunks/page.tsx
-    | `/rag/maintenance` // ../../../src/app/(workspace)/rag/maintenance/page.tsx
-    | `/rag/runs` // ../../../src/app/(workspace)/rag/runs/page.tsx
+    | `/feed` // ../../../src/app/(workspace)/(operator)/feed/page.tsx
+    | `/feed/create` // ../../../src/app/(workspace)/(operator)/feed/(edit)/create/page.tsx
+    | `/feed/drafts` // ../../../src/app/(workspace)/(operator)/feed/(manage)/drafts/page.tsx
+    | `/feed/notes` // ../../../src/app/(workspace)/(operator)/feed/(manage)/notes/page.tsx
+    | `/feed/posts` // ../../../src/app/(workspace)/(operator)/feed/(manage)/posts/page.tsx
+    | `/memory` // ../../../src/app/(workspace)/(operator)/memory/page.tsx
+    | `/rag` // ../../../src/app/(workspace)/(operator)/rag/page.tsx
+    | `/rag/chunks` // ../../../src/app/(workspace)/(operator)/rag/chunks/page.tsx
+    | `/rag/maintenance` // ../../../src/app/(workspace)/(operator)/rag/maintenance/page.tsx
+    | `/rag/runs` // ../../../src/app/(workspace)/(operator)/rag/runs/page.tsx
     | `/settings` // ../../../src/app/(workspace)/settings/page.tsx
-    | `/settings/spotify` // ../../../src/app/(workspace)/settings/spotify/page.tsx
-    | `/users` // ../../../src/app/(workspace)/users/page.tsx
+    | `/settings/spotify` // ../../../src/app/(workspace)/(operator)/settings/spotify/page.tsx
+    | `/users` // ../../../src/app/(workspace)/(operator)/users/page.tsx
   type DynamicRoutes<T extends string = string> = 
-    | `/feed/edit/${SafeSlug<T>}` // ../../../src/app/(workspace)/feed/(edit)/edit/[id]/page.tsx
+    | `/feed/edit/${SafeSlug<T>}` // ../../../src/app/(workspace)/(operator)/feed/(edit)/edit/[id]/page.tsx
 
   type RouteImpl<T> = 
     | StaticRoutes

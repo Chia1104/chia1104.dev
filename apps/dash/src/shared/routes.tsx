@@ -23,13 +23,30 @@ import {
 } from "lucide-react";
 
 import type { NavMainItem } from "@/components/commons/nav-main";
+import type { RouterOutputs } from "@/libs/orpc/types";
+
+export type AccessLevel = RouterOutputs["dashboard"]["access"]["level"];
+
+interface RouteItem extends NavMainItem {
+  /** Hidden from a member; the `(operator)` route group refuses the URL as well. */
+  operator?: boolean;
+  items?: RouteItem[];
+}
 
 type RouteGroup = "overview" | "content" | "rag" | "agents" | "settings";
 
-export const useRouteItems = () => {
+const visibleTo = (level: AccessLevel, items: RouteItem[]): NavMainItem[] =>
+  items
+    .filter((item) => !item.operator || level === "operator")
+    .map(({ operator: _operator, items, ...item }) => ({
+      ...item,
+      items: items ? visibleTo(level, items) : undefined,
+    }));
+
+export const useRouteItems = (level: AccessLevel) => {
   const segments = useSelectedLayoutSegments();
   return useMemo(() => {
-    return {
+    const groups = {
       overview: [
         {
           url: "/",
@@ -42,6 +59,7 @@ export const useRouteItems = () => {
           icon: <Users />,
           title: "Users",
           isActive: segments[0] === "users",
+          operator: true,
         },
       ],
       content: [
@@ -50,6 +68,7 @@ export const useRouteItems = () => {
           isActive: segments[0] === "feed",
           icon: <Bookmark />,
           title: "Content",
+          operator: true,
           items: [
             {
               url: "/feed/posts",
@@ -76,12 +95,14 @@ export const useRouteItems = () => {
           isActive: segments[0] === "assets",
           icon: <File />,
           title: "Assets",
+          operator: true,
         },
         {
           url: "/agent",
           isActive: segments[0] === "agent",
           icon: <Bot />,
           title: "Writing Agent",
+          operator: true,
         },
       ],
       rag: [
@@ -90,6 +111,7 @@ export const useRouteItems = () => {
           isActive: segments[0] === "rag",
           icon: <Database />,
           title: "RAG",
+          operator: true,
           items: [
             {
               url: "/rag",
@@ -124,12 +146,14 @@ export const useRouteItems = () => {
           isActive: segments[0] === "agents",
           icon: <SlidersHorizontal />,
           title: "Agents",
+          operator: true,
         },
         {
           url: "/memory",
           isActive: segments[0] === "memory",
           icon: <Brain />,
           title: "Agent Memory",
+          operator: true,
         },
       ],
       settings: [
@@ -150,6 +174,7 @@ export const useRouteItems = () => {
               icon: <Music2 />,
               title: "Spotify",
               isActive: segments[0] === "settings" && segments[1] === "spotify",
+              operator: true,
             },
           ],
         },
@@ -158,8 +183,17 @@ export const useRouteItems = () => {
           icon: <KeySquare />,
           title: "API Keys",
           isActive: segments[0] === "api-keys",
+          operator: true,
         },
       ],
+    } satisfies Record<RouteGroup, RouteItem[]>;
+
+    return {
+      overview: visibleTo(level, groups.overview),
+      content: visibleTo(level, groups.content),
+      rag: visibleTo(level, groups.rag),
+      agents: visibleTo(level, groups.agents),
+      settings: visibleTo(level, groups.settings),
     } satisfies Record<RouteGroup, NavMainItem[]>;
-  }, [segments]);
+  }, [level, segments]);
 };

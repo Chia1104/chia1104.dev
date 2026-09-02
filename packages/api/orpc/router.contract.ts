@@ -57,6 +57,7 @@ export const routerContract = {
     },
   },
   dashboard: {
+    access: dashboardContracts.getDashboardAccessContract,
     overview: dashboardContracts.getDashboardOverviewContract,
   },
   health: {

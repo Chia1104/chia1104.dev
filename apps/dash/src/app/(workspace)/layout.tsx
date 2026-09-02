@@ -18,7 +18,8 @@ import { getSession } from "@/services/auth/resources.rsc";
 export default async function Layout({ children }: { children: ReactNode }) {
   const session = await getSession();
 
-  if (!session.data) {
+  // A guest from the public site holds a session cookie but is not a person.
+  if (!session.data || session.data.user.isAnonymous) {
     unauthorized();
   }
 

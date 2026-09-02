@@ -32,6 +32,8 @@ All oRPC calls run in the browser through `src/libs/orpc/client.ts` with the Bet
 
 `dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns.
 
+What a signed-in person may see comes from `dashboard.access`, never the `role` column: an `operator` is the configured admin id and gets the `(operator)` route group; a `member` gets the overview and general settings. Guests are refused at the workspace layout.
+
 User administration writes through better-auth's admin client. Do not duplicate ban or session semantics. Admin access is the configured admin id, not the `role` column.
 
 ## `service`
