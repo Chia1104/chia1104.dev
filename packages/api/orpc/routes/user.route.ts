@@ -1,38 +1,20 @@
-import { updateUserProfile, getInfiniteUsers } from "@chia/db/repos/users";
-import { tryCatch } from "@chia/utils/error-helper";
+import { getUserDetail, listUsers } from "@chia/db/repos/users";
 
 import { adminGuard } from "../guards/admin.guard";
-import { authGuard } from "../guards/auth.guard";
 import { contractOS } from "../utils";
 
-export const updateUserProfileRoute = contractOS.user["profile:update"]
-  .use(authGuard)
-  .handler(async (opts) => {
-    const { data, error } = await tryCatch(
-      updateUserProfile(opts.context.db, opts.input)
-    );
+/** Reads only. Bans, session revocation, impersonation and deletion go through better-auth's admin endpoints. */
 
-    if (error) {
-      throw opts.errors.INTERNAL_SERVER_ERROR();
-    }
+export const listUsersRoute = contractOS.user.list
+  .use(adminGuard())
+  .handler(async (opts) => await listUsers(opts.context.db, opts.input));
 
-    if (!data) {
-      throw opts.errors.NOT_FOUND();
-    }
-
-    return data;
-  });
-
-export const getInfiniteUsersRoute = contractOS.user.list
+export const getUserRoute = contractOS.user.get
   .use(adminGuard())
   .handler(async (opts) => {
-    const { data, error } = await tryCatch(
-      getInfiniteUsers(opts.context.db, opts.input)
-    );
-
-    if (error) {
-      throw opts.errors.INTERNAL_SERVER_ERROR();
+    const detail = await getUserDetail(opts.context.db, opts.input);
+    if (!detail) {
+      throw opts.errors.NOT_FOUND();
     }
-
-    return data;
+    return detail;
   });

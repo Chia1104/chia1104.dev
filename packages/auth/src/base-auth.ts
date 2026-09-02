@@ -4,6 +4,7 @@ import type { BetterAuthOptions } from "better-auth";
 import { magicLink } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { organization } from "better-auth/plugins";
+import { userAc } from "better-auth/plugins/admin/access";
 
 import { Role } from "@chia/db/types";
 import { AUTH_EMAIL } from "@chia/utils/config";
@@ -110,13 +111,22 @@ export const baseAuthConfig = {
       },
     }),
     admin({
-      adminRoles: ["admin"],
       adminUserIds:
         /* SAFETY: The producer contract guarantees this value satisfies string[]. */ [
           env.ADMIN_ID,
           env.BETA_ADMIN_ID,
           env.LOCAL_ADMIN_ID,
         ].filter(Boolean) as string[],
+      /**
+       * Admin access is `adminUserIds` only, as in `adminPolicy`: every role carries the
+       * empty permission set, so a `role` column value grants nothing here.
+       */
+      adminRoles: [Role.Admin, Role.Root],
+      roles: {
+        [Role.User]: userAc,
+        [Role.Admin]: userAc,
+        [Role.Root]: userAc,
+      },
     }),
     organization(),
   ],
