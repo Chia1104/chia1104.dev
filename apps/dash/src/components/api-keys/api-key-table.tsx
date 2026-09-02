@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useMemo, useId } from "react";
+import { useCallback, useMemo, useId, useState } from "react";
 
 import {
+  AlertDialog,
   Button,
   Modal,
   Input,
@@ -53,6 +54,12 @@ const createSchema = z.object({
 });
 
 type CreateFormData = z.infer<typeof createSchema>;
+
+const editSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+});
+
+type EditFormData = z.infer<typeof editSchema>;
 
 const ApiKeyDisplay = ({ apiKey }: { apiKey: string }) => {
   return (
@@ -168,6 +175,147 @@ const CreateAction = () => {
   );
 };
 
+const EditAction = ({ item }: { item: ApiKeys[0] }) => {
+  const queryClient = useQueryClient();
+  const formId = useId();
+  const [isOpen, setIsOpen] = useState(false);
+  const form = useForm<EditFormData>({
+    resolver: zodResolver(editSchema),
+    defaultValues: { name: item.name ?? "" },
+  });
+
+  const { mutate, isPending } = useMutation(
+    orpc.apikey.update.mutationOptions({
+      onSuccess: async () => {
+        toast.success("API Key updated successfully");
+        await queryClient.invalidateQueries({ queryKey: orpc.apikey.key() });
+        setIsOpen(false);
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
+
+  const open = () => {
+    form.reset({ name: item.name ?? "" });
+    setIsOpen(true);
+  };
+
+  const handleSubmit = form.handleSubmit((data) => {
+    mutate({ keyId: item.id, name: data.name });
+  });
+
+  return (
+    <>
+      <Button
+        isIconOnly
+        variant="ghost"
+        size="sm"
+        aria-label="Edit API Key"
+        onPress={open}>
+        <PencilIcon size={16} />
+      </Button>
+      <Modal>
+        <Modal.Backdrop isOpen={isOpen} onOpenChange={setIsOpen}>
+          <Modal.Container placement="auto">
+            <Modal.Dialog className="sm:max-w-md">
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <Modal.Heading>Edit API Key</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body className="p-4">
+                <Form
+                  onSubmit={handleSubmit}
+                  className="flex w-full flex-col gap-4">
+                  <Controller
+                    control={form.control}
+                    name="name"
+                    render={({ field, fieldState: { invalid, error } }) => (
+                      <TextField
+                        isInvalid={invalid}
+                        isRequired
+                        variant="secondary">
+                        <Label htmlFor={`${formId}-name`}>API Key Name</Label>
+                        <Input
+                          id={`${formId}-name`}
+                          placeholder="Enter your API Key name"
+                          {...field}
+                        />
+                        <FieldError>{error?.message}</FieldError>
+                      </TextField>
+                    )}
+                  />
+                  <SubmitForm isPending={isPending}>Save</SubmitForm>
+                </Form>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+    </>
+  );
+};
+
+const DeleteAction = ({ item }: { item: ApiKeys[0] }) => {
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation(
+    orpc.apikey.delete.mutationOptions({
+      onSuccess: async () => {
+        toast.success("API Key deleted successfully");
+        await queryClient.invalidateQueries({ queryKey: orpc.apikey.key() });
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
+
+  return (
+    <AlertDialog>
+      <Button isIconOnly variant="danger" size="sm" aria-label="Delete API Key">
+        <Trash2Icon size={16} />
+      </Button>
+      <AlertDialog.Backdrop>
+        {(action) => (
+          <AlertDialog.Container>
+            <AlertDialog.Dialog className="sm:max-w-[400px]">
+              <AlertDialog.CloseTrigger />
+              <AlertDialog.Header>
+                <AlertDialog.Icon status="danger" />
+                <AlertDialog.Heading>Delete API key?</AlertDialog.Heading>
+              </AlertDialog.Header>
+              <AlertDialog.Body>
+                <p>
+                  <span className="font-semibold">{item.name}</span> will stop
+                  working immediately. This action cannot be undone.
+                </p>
+              </AlertDialog.Body>
+              <AlertDialog.Footer>
+                <Button slot="close" variant="tertiary" isDisabled={isPending}>
+                  Cancel
+                </Button>
+                <Button
+                  onPress={() =>
+                    mutate(item.id, {
+                      onSuccess: () => action.state.close(),
+                    })
+                  }
+                  isDisabled={isPending}
+                  isPending={isPending}
+                  variant="danger">
+                  Delete
+                </Button>
+              </AlertDialog.Footer>
+            </AlertDialog.Dialog>
+          </AlertDialog.Container>
+        )}
+      </AlertDialog.Backdrop>
+    </AlertDialog>
+  );
+};
+
 export const ApiKeyTablePrimitive = ({
   data,
   hasNextPage,
@@ -198,20 +346,8 @@ export const ApiKeyTablePrimitive = ({
       case "id":
         return (
           <div className="flex gap-2">
-            <Button
-              isIconOnly
-              variant="ghost"
-              size="sm"
-              aria-label="Edit API Key">
-              <PencilIcon size={16} />
-            </Button>
-            <Button
-              isIconOnly
-              variant="danger"
-              size="sm"
-              aria-label="Delete API Key">
-              <Trash2Icon size={16} />
-            </Button>
+            <EditAction item={item} />
+            <DeleteAction item={item} />
           </div>
         );
       default:
