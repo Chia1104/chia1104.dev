@@ -56,6 +56,7 @@ declare namespace __next_route_internal_types__ {
     | `/rag/runs` // ../../../src/app/(workspace)/rag/runs/page.tsx
     | `/settings` // ../../../src/app/(workspace)/settings/page.tsx
     | `/settings/spotify` // ../../../src/app/(workspace)/settings/spotify/page.tsx
+    | `/users` // ../../../src/app/(workspace)/users/page.tsx
   type DynamicRoutes<T extends string = string> = 
     | `/feed/edit/${SafeSlug<T>}` // ../../../src/app/(workspace)/feed/(edit)/edit/[id]/page.tsx
     | `/projects/${SafeSlug<T>}` // ../../../src/app/(workspace)/projects/[slug]/page.tsx

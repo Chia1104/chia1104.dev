@@ -802,6 +802,9 @@ export const deleteFeedTranslation = withDTO(
   }
 );
 
+/** Cache life of the overview counts; a feed write through this process clears them, a workflow's write waits it out. */
+const STATS_CACHE_SECONDS = 60;
+
 /** Live content by state: published posts, published notes and unpublished drafts of either type. */
 export const getFeedStats = async (db: DB) => {
   const live = isNull(feeds.deletedAt);
@@ -821,7 +824,8 @@ export const getFeedStats = async (db: DB) => {
         ),
     })
     .from(feeds)
-    .where(live);
+    .where(live)
+    .$withCache({ config: { ex: STATS_CACHE_SECONDS } });
   return {
     posts: row?.posts ?? 0,
     notes: row?.notes ?? 0,
