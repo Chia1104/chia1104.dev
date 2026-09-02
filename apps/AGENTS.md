@@ -23,7 +23,7 @@ The frontends import only the contract type from `@chia/api/orpc/contracts` and 
 
 - `src/libs/orpc/client.rsc.ts` is server-only and sends `CH_API_KEY` plus the Cloudflare bypass token.
 - `src/libs/orpc/client.ts` runs in the browser with the session cookie and may call only public procedures and the visitor's own agent sessions. Never expose an API key to it.
-- The public agent chat is `src/components/agent/`: a drawer on every page whose content loads on first open, a guest session from better-auth's anonymous plugin, and `@chia/agent-elements` with the content renderers only. A first visit passes the captcha before a guest session is minted; sign-in (GitHub, Google) and bring-your-own-key live in the drawer, and `?chat` on any page reopens it after an OAuth round trip. `@chia/ui/captcha` is the one challenge widget; `src/components/commons/captcha.tsx` binds it to the site's provider.
+- Public agent chat lives in `src/components/agent/` and uses `@chia/agent-elements` content renderers only. Guest sessions come from better-auth's anonymous plugin and require the site captcha before minting. `@chia/ui/captcha` is the shared challenge widget.
 - Content uses `@chia/contents`; localization uses `next-intl` with `packages/i18n/www`.
 
 ## `dash`
@@ -32,7 +32,7 @@ All oRPC calls run in the browser through `src/libs/orpc/client.ts` with the Bet
 
 `dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns such as the current-organization cookie.
 
-User administration reads through oRPC (`user.*`, `dashboard.overview`, `agent.admin.usage.*`) and writes through better-auth's admin client (`authClient.admin.*`); the dashboard never duplicates ban or session semantics. Admin access on both sides is the configured admin id, not the `role` column.
+User administration writes through better-auth's admin client. Do not duplicate ban or session semantics. Admin access is the configured admin id, not the `role` column.
 
 ## `service`
 

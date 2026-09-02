@@ -11,6 +11,7 @@ Personal site and architecture playground built as a pnpm + Turborepo monorepo. 
 - Prefer existing dependencies over custom code or new packages.
 - Choose the long-term design; do not land stopgaps intended for later replacement.
 - Comments explain constraints and invariants, not implementation history. One sentence for what the symbol does; a second only when the code cannot show why. If the name is enough, write nothing. Do not restate identifiers, narrate migrations or decorate files with section banners. Keep `SAFETY`, `@deprecated`, `@default` and `@example`.
+- `AGENTS.md` records boundaries and invariants. Update it when a seam changes, not when a feature ships. Do not add walkthroughs, procedure catalogs, UI placement or implementation history.
 
 ## Architecture
 
