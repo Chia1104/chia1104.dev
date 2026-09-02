@@ -4,7 +4,6 @@ import type { BetterAuthClientOptions } from "better-auth";
 import { anonymousClient } from "better-auth/client/plugins";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { magicLinkClient } from "better-auth/client/plugins";
-import { organizationClient } from "better-auth/client/plugins";
 import { adminClient } from "better-auth/client/plugins";
 
 import { Role } from "@chia/db/types";
@@ -34,7 +33,6 @@ export const baseAuthClient = (config?: Partial<BetterAuthClientOptions>) => {
       magicLinkClient(),
       passkeyClient(),
       apiKeyClient(),
-      organizationClient(),
       adminClient(),
       anonymousClient(),
     ],

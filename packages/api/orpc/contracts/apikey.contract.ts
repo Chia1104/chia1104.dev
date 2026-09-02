@@ -50,32 +50,12 @@ export const originalApiKeySchema = baseApiKeySchema
       : null,
   }));
 
-export const projectSchema = z
-  .object({
-    createdAt: z.date(),
-    deletedAt: z.date().nullable(),
-    id: z.number(),
-    logo: z.string().nullable(),
-    metadata: z.any().nullable(),
-    name: z.string(),
-    organizationId: z.string(),
-    slug: z.string(),
-    updatedAt: z.date().nullable(),
-  })
-  .transform((data) => ({
-    ...data,
-    createdAt: dayjs(data.createdAt).toISOString(),
-    updatedAt: dayjs(data.updatedAt).toISOString(),
-    deletedAt: data.deletedAt ? dayjs(data.deletedAt).toISOString() : null,
-  }));
-
 export const apiKeySchema = baseApiKeySchema.extend({
   lastRequest: z.string().nullable(),
   lastRefillAt: z.string().nullable(),
   expiresAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  project: projectSchema.nullish(),
 });
 
 export const createAPIKeyContract = oc
@@ -85,11 +65,7 @@ export const createAPIKeyContract = oc
     NOT_FOUND: {},
     INTERNAL_SERVER_ERROR: {},
   })
-  .input(
-    createAPIKeySchema.extend({
-      projectId: z.number().optional(),
-    })
-  )
+  .input(createAPIKeySchema)
   .output(originalApiKeySchema);
 
 export const getAllApiKeysWithMetaContract = oc
@@ -99,32 +75,7 @@ export const getAllApiKeysWithMetaContract = oc
     NOT_FOUND: {},
     INTERNAL_SERVER_ERROR: {},
   })
-  .input(
-    baseInfiniteSchema
-      .extend({
-        withProject: z.boolean().optional(),
-      })
-      .optional()
-  )
-  .output(
-    z.object({
-      items: z.array(apiKeySchema),
-      nextCursor: z.union([z.string(), z.number()]).nullable(),
-    })
-  );
-
-export const getProjectApiKeysContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    FORBIDDEN: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
-  .input(
-    baseInfiniteSchema.extend({
-      projectId: z.number(),
-    })
-  )
+  .input(baseInfiniteSchema.optional())
   .output(
     z.object({
       items: z.array(apiKeySchema),

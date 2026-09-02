@@ -10,8 +10,6 @@ import { allow, deny } from "./types";
 
 export interface ApiKeyPolicyOptions {
   permissions?: Record<string, string[]>;
-  /** When set, the key must belong to this project. */
-  projectId?: number;
 }
 
 const invalidKey = (
@@ -97,14 +95,6 @@ export const apiKeyPolicy = (
         ApiKey,
         "key"
       >;
-
-    if (
-      options.projectId !== undefined &&
-      apiKey.projectId &&
-      apiKey.projectId !== options.projectId
-    ) {
-      return deny(new AppError("FORBIDDEN"));
-    }
 
     return allow({ apiKey });
   };

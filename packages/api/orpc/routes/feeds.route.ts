@@ -29,7 +29,7 @@ import { sessionGuard } from "../guards/auth.guard";
 import { callerGuard, tieredRateLimitGuard } from "../guards/caller.guard";
 import { contractOS } from "../utils";
 
-// `publicReadGuard` has no floor: a browser never holds the project API key.
+// `publicReadGuard` has no floor: a browser never holds an API key.
 // `keyedReadGuard` is www's server client with `x-ch-api-key`.
 // `sessionReadGuard` is dash with a session cookie. Rate limit scales with the same tier.
 

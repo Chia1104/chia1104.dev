@@ -15,9 +15,4 @@ export const providerSchema = z.enum(Provider);
 
 export type Session = Auth["$Infer"]["Session"];
 
-export type Organization = Omit<Auth["$Infer"]["Organization"], "createdAt"> & {
-  /** better-auth types this as Date; at runtime it is always a string. */
-  createdAt: string | Date;
-};
-
 export { APIError };

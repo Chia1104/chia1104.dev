@@ -25,8 +25,6 @@ import {
   useSidebar,
 } from "@chia/ui/sidebar";
 
-import { revokeCurrentOrg } from "@/server/org.action";
-
 export function NavUser({
   user,
 }: {
@@ -92,7 +90,6 @@ export function NavUser({
                   fullWidth
                   onPress={() =>
                     startTransition(async () => {
-                      await revokeCurrentOrg();
                       await authClient.signOut({
                         fetchOptions: {
                           onSuccess: () => {

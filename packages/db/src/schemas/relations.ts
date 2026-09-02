@@ -24,12 +24,6 @@ import {
   tags,
   tagTranslations,
 } from "./contents.schema.ts";
-import {
-  invitation,
-  member,
-  organization,
-  project,
-} from "./organization.schema.ts";
 import { resourceChunks, resourceEmbeddings } from "./resources.schema.ts";
 import { spotifyCredential } from "./spotify.schema.ts";
 import { user } from "./user.schema.ts";
@@ -43,10 +37,6 @@ const schema = {
   resourceChunks,
   resourceEmbeddings,
   spotifyCredential,
-  organization,
-  member,
-  invitation,
-  project,
   tags,
   tagTranslations,
   assets,
@@ -76,11 +66,6 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.spotifyCredential.userId,
     }),
-    members: r.many.member({ from: r.user.id, to: r.member.userId }),
-    invitations: r.many.invitation({
-      from: r.user.id,
-      to: r.invitation.inviterId,
-    }),
     feeds: r.many.feeds({ from: r.user.id, to: r.feeds.userId }),
     assets: r.many.assets({ from: r.user.id, to: r.assets.userId }),
   },
@@ -93,50 +78,10 @@ export const relations = defineRelations(schema, (r) => ({
   passkey: {
     user: r.one.user({ from: r.passkey.userId, to: r.user.id }),
   },
-  apikey: {
-    project: r.one.project({
-      from: r.apikey.projectId,
-      to: r.project.id,
-    }),
-  },
   spotifyCredential: {
     user: r.one.user({
       from: r.spotifyCredential.userId,
       to: r.user.id,
-    }),
-  },
-  organization: {
-    projects: r.many.project({
-      from: r.organization.id,
-      to: r.project.organizationId,
-    }),
-    members: r.many.member({
-      from: r.organization.id,
-      to: r.member.organizationId,
-    }),
-    invitations: r.many.invitation({
-      from: r.organization.id,
-      to: r.invitation.organizationId,
-    }),
-  },
-  member: {
-    organization: r.one.organization({
-      from: r.member.organizationId,
-      to: r.organization.id,
-    }),
-    user: r.one.user({ from: r.member.userId, to: r.user.id }),
-  },
-  invitation: {
-    organization: r.one.organization({
-      from: r.invitation.organizationId,
-      to: r.organization.id,
-    }),
-    user: r.one.user({ from: r.invitation.inviterId, to: r.user.id }),
-  },
-  project: {
-    organization: r.one.organization({
-      from: r.project.organizationId,
-      to: r.organization.id,
     }),
   },
   tags: {
@@ -306,12 +251,7 @@ export const userRelations = relations.user;
 export const sessionRelations = relations.session;
 export const accountRelations = relations.account;
 export const passkeyRelations = relations.passkey;
-export const apikeyRelations = relations.apikey;
 export const spotifyCredentialRelations = relations.spotifyCredential;
-export const organizationRelations = relations.organization;
-export const memberRelations = relations.member;
-export const invitationRelations = relations.invitation;
-export const projectRelations = relations.project;
 export const tagsRelations = relations.tags;
 export const tagTranslationsRelations = relations.tagTranslations;
 export const feedsRelations = relations.feeds;

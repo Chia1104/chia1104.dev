@@ -6,7 +6,6 @@ import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 const FAKE_API_KEY = {
   id: "test-api-key-id",
-  projectId: null,
   userId: "test-user-id",
   enabled: true,
 };

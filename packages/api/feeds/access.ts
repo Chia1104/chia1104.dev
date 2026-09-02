@@ -23,7 +23,7 @@ export interface FeedVisibility {
 
 /**
  * Largest page a tier may request. The anonymous cap stops the browser from walking the
- * whole table; `apps/www`'s sitemap asks for 1000 with the project API key.
+ * whole table; `apps/www`'s sitemap asks for 1000 with `apps/www`'s API key.
  */
 const MAX_LIMIT = {
   [CallerTier.Anonymous]: 50,

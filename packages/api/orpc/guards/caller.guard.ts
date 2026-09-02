@@ -36,7 +36,6 @@ export const callerGuard = (options: CallerPolicyOptions = {}) =>
           callerPolicy({
             minTier: options.minTier,
             permissions: options.permissions,
-            projectId: options.projectId ?? context.config.projectId,
           }),
           context
         ),

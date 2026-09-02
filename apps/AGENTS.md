@@ -28,9 +28,11 @@ The frontends import only the contract type from `@chia/api/orpc/contracts` and 
 
 ## `dash`
 
-All oRPC calls run in the browser through `src/libs/orpc/client.ts` with the Better Auth session cookie. Keep pages as thin server shells or client pages, and fetch data in client components through oRPC query and mutation options.
+Data fetching runs in the browser through `src/libs/orpc/client.ts` with the Better Auth session cookie. Keep pages as thin server shells or client pages, and fetch data in client components through oRPC query and mutation options. `src/libs/orpc/client.rsc.ts` is the server-only twin that forwards the request cookie; layouts use it to decide what to render, never to fetch page data.
 
-`dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns such as the current-organization cookie.
+`dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns.
+
+What a signed-in person may see comes from `dashboard.access`, never the `role` column: an `operator` is the configured admin id and gets the `(operator)` route group, whose server layout redirects everyone else; a `member` gets the overview and general settings. Guests are refused at the workspace layout.
 
 User administration writes through better-auth's admin client. Do not duplicate ban or session semantics. Admin access is the configured admin id, not the `role` column.
 
