@@ -20,13 +20,14 @@ vi.mock("../src/services/spotify.service", () => ({
     `http://localhost:3001/settings/spotify?spotify=${status}`,
 }));
 
-// `playlist` requires the project API key; only `apps/www`'s server client reads it.
+// `playlist` requires the API key; only `apps/www`'s server client reads it.
 vi.mock("@chia/api/spotify/playback", () => ({
   getSpotifyNowPlayingService: mocks.getSpotifyNowPlayingService,
   getSpotifyPlaylistService: mocks.getSpotifyPlaylistService,
 }));
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import { app } from "../src/server";

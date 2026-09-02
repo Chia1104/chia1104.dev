@@ -24,7 +24,7 @@ Authorization belongs in `service-kit/src/policies`. Bind policies through `runP
 
 `packages/api` reads no environment variables and holds no host state. `BaseOSContext` supplies:
 
-- `config`: rate limits, project ID and AI key material.
+- `config`: rate limits and AI key material.
 - `workflow`: the `@chia/workflow-control` client.
 - `hooks`: optional feed and memory lifecycle hooks.
 - `agentFactory`: optional per-kind bindings, dynamic definition loaders and credential handling.

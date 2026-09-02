@@ -30,7 +30,7 @@ The frontends import only the contract type from `@chia/api/orpc/contracts` and 
 
 All oRPC calls run in the browser through `src/libs/orpc/client.ts` with the Better Auth session cookie. Keep pages as thin server shells or client pages, and fetch data in client components through oRPC query and mutation options.
 
-`dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns such as the current-organization cookie.
+`dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns.
 
 User administration writes through better-auth's admin client. Do not duplicate ban or session semantics. Admin access is the configured admin id, not the `role` column.
 

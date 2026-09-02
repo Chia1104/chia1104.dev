@@ -7,7 +7,7 @@ import * as dbMocks from "@chia/test/mocks/db-feeds";
 import * as guardMocks from "./helpers/guards";
 import { client, errorCode } from "./helpers/rpc";
 
-/** Upserts use the project API key; deletes need the operator session. */
+/** Upserts use the API key; deletes need the operator session. */
 describe("feeds writes require the right tier", () => {
   beforeEach(() => {
     guardMocks.resetAllGuardMocks();

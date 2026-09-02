@@ -90,7 +90,7 @@ const flexibleBoolean = z.union([z.boolean(), z.stringbool()]);
 
 /** `resolveFeedVisibility` clamps each flag for callers below the required tier rather than rejecting, so a browser that sends `includeUnpublished` receives the published set instead of a 403. */
 const feedVisibilityFields = {
-  /** Include drafts. Requires the project API key or a session. */
+  /** Include drafts. Requires an API key or a session. */
   includeUnpublished: flexibleBoolean.optional().default(false),
   /** Include soft-deleted feeds. Requires a session. */
   includeDeleted: flexibleBoolean.optional().default(false),

@@ -7,7 +7,6 @@ import {
   Home,
   Bookmark,
   Settings,
-  Folder,
   KeySquare,
   Notebook,
   PenSquare,
@@ -25,13 +24,7 @@ import {
 
 import type { NavMainItem } from "@/components/commons/nav-main";
 
-type RouteGroup =
-  | "overview"
-  | "project"
-  | "content"
-  | "rag"
-  | "agents"
-  | "settings";
+type RouteGroup = "overview" | "content" | "rag" | "agents" | "settings";
 
 export const useRouteItems = () => {
   const segments = useSelectedLayoutSegments();
@@ -49,22 +42,6 @@ export const useRouteItems = () => {
           icon: <Users />,
           title: "Users",
           isActive: segments[0] === "users",
-        },
-      ],
-      project: [
-        {
-          url: "/projects",
-          icon: <Folder />,
-          title: "Projects",
-          isActive: segments[0] === "projects",
-          items: [
-            {
-              url: "/projects/api-key",
-              icon: <KeySquare />,
-              title: "Api Keys",
-              isActive: segments[0] === "projects" && segments[1] === "api-key",
-            },
-          ],
         },
       ],
       content: [
@@ -175,6 +152,12 @@ export const useRouteItems = () => {
               isActive: segments[0] === "settings" && segments[1] === "spotify",
             },
           ],
+        },
+        {
+          url: "/api-keys",
+          icon: <KeySquare />,
+          title: "API Keys",
+          isActive: segments[0] === "api-keys",
         },
       ],
     } satisfies Record<RouteGroup, NavMainItem[]>;

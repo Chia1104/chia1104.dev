@@ -11,23 +11,19 @@ import {
 import { useRouteItems } from "@/shared/routes";
 
 import AuthGuard from "./auth-guard";
+import { Logo } from "./logo";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import { OrgSwitcher } from "./org-switcher";
 
-export function AppSidebar({
-  org,
-  ...props
-}: React.ComponentProps<typeof Sidebar> & { org: string }) {
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const routeItems = useRouteItems();
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="pt-3">
-        <OrgSwitcher org={org} />
+        <Logo />
       </SidebarHeader>
       <SidebarContent className="gap-0">
         <NavMain title="Overview" items={routeItems.overview} />
-        <NavMain title="Projects" items={routeItems.project} />
         <NavMain title="Content" items={routeItems.content} />
         <NavMain title="RAG" items={routeItems.rag} />
         <NavMain title="Agents" items={routeItems.agents} />

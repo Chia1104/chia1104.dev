@@ -6,7 +6,6 @@ import { ErrorBoundary } from "@chia/ui/error-boundary";
 
 import AuthGuard from "@/components/commons/auth-guard";
 import { AISetting } from "@/components/settings/ai-setting";
-import { OrgSetting } from "@/components/settings/org-setting";
 import { ProfileSetting } from "@/components/settings/profile-setting";
 
 const Pages = () => {
@@ -19,7 +18,6 @@ const Pages = () => {
         </AuthGuard>
       </ErrorBoundary>
       <AISetting />
-      <OrgSetting />
     </div>
   );
 };

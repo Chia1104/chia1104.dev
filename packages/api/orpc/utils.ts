@@ -18,8 +18,6 @@ export interface ORPCConfig {
     /** Budget for an anonymous caller. Higher tiers multiply it — see `TIER_MULTIPLIER`. */
     limit: number;
   };
-  /** Project the `X-CH-API-KEY` must belong to, when the app scopes keys per project. */
-  projectId?: number;
   /** Private half of the keypair the AI provider-key cookies are encrypted with. */
   aiAuthPrivateKey?: string;
 }
