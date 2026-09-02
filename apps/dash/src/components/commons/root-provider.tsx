@@ -11,6 +11,8 @@ import type { Theme } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
 import { getQueryClient } from "@chia/utils/query-client";
 
+import { ImpersonationBanner } from "./impersonation-banner";
+
 interface Props {
   children: React.ReactNode;
 }
@@ -35,6 +37,7 @@ const RootProvider = ({ children }: Props) => {
       <NuqsAdapter>
         <ThemeProvider defaultTheme="system" enableSystem attribute="class">
           <Toaster />
+          <ImpersonationBanner />
           {children}
         </ThemeProvider>
       </NuqsAdapter>

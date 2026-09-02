@@ -8,8 +8,11 @@ import {
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import {
   AGENT_QUOTA_DEFAULTS,
+  QUOTA_PROVIDER_IDS,
   effectiveAgentQuota,
   isTimeZone,
+  loadAgentQuota,
+  weekPeriod,
 } from "@chia/agent-host/quota";
 import {
   assertAgentTaskModel,
@@ -25,6 +28,7 @@ import { UnknownAgentModelError } from "@chia/agent-runtime/models";
 import type { AgentModelRef } from "@chia/agent-runtime/models";
 import type { ThinkingLevel } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
+import { countAgentSessions } from "@chia/db/repos/agent";
 import {
   getAgentQuotaConfig,
   listAgentKindConfigs,
@@ -33,6 +37,10 @@ import {
   upsertAgentQuotaConfig,
   upsertAgentTaskConfig,
 } from "@chia/db/repos/agent/config";
+import {
+  listTopAgentUsageUsers,
+  summarizeAgentUsage,
+} from "@chia/db/repos/agent/usage";
 import type {
   AgentKindConfig,
   AgentQuotaConfig,
@@ -46,6 +54,8 @@ import type {
   AgentQuotaAdmin,
   AgentTaskAdmin,
   AgentTaskParamsInput,
+  AgentUsageWeekAdmin,
+  AgentUserUsageAdmin,
 } from "../../contracts/agent-admin.contract";
 import type { AgentModelInfo } from "../../contracts/agent.contract";
 
@@ -97,6 +107,13 @@ export interface AgentAdminService {
       maxRunningTurns?: number | null;
     }
   ): Promise<AgentQuotaAdmin>;
+
+  usageWeek(caller: AgentAdminCaller): Promise<AgentUsageWeekAdmin>;
+  /** Reads whatever the ledger holds; an unknown user is simply zero. */
+  usageOfUser(
+    caller: AgentAdminCaller,
+    input: { userId: string }
+  ): Promise<AgentUserUsageAdmin>;
 }
 
 type LoadedKind = AgentKindDefinition<unknown, object>;
@@ -240,6 +257,27 @@ const quotaView = (row: AgentQuotaConfig | undefined): AgentQuotaAdmin => {
   };
 };
 
+/** Rows the overview lists; the users page has the rest. */
+const TOP_USERS = 5;
+
+/** Earliest instant the ledger can hold; a lifetime read starts here. */
+const LEDGER_EPOCH = new Date(0);
+
+const currentWeek = async (db: DB) => {
+  const quota = await loadAgentQuota(db);
+  const period = weekPeriod(new Date(), quota.resetTimeZone);
+  return {
+    quota,
+    from: period.start,
+    to: period.end,
+    period: {
+      start: period.start.toISOString(),
+      end: period.end.toISOString(),
+      timeZone: quota.resetTimeZone,
+    },
+  };
+};
+
 /** A model the operator chose is checked by the kind: policy and catalogue membership at once. */
 const assertKindModel = (definition: LoadedKind, ref: AgentModelRef): void => {
   try {
@@ -380,6 +418,56 @@ export const createAgentAdminService = (
         maxRunningTurns: input.maxRunningTurns,
       });
       return quotaView(row);
+    },
+
+    async usageWeek({ db }) {
+      const week = await currentWeek(db);
+      const house = {
+        from: week.from,
+        to: week.to,
+        providerIds: QUOTA_PROVIDER_IDS,
+      };
+      const [total, top] = await Promise.all([
+        summarizeAgentUsage(db, house),
+        listTopAgentUsageUsers(db, { ...house, limit: TOP_USERS }),
+      ]);
+      return {
+        period: week.period,
+        weeklyLimitUsd: microsToUsd(week.quota.weeklyLimitMicros),
+        houseUsd: microsToUsd(total.costMicros),
+        turns: total.turns,
+        topUsers: top.map((row) => ({
+          userId: row.userId,
+          name: row.name,
+          email: row.email,
+          image: row.image,
+          isAnonymous: row.isAnonymous,
+          houseUsd: microsToUsd(row.costMicros),
+          turns: row.turns,
+        })),
+      };
+    },
+
+    async usageOfUser({ db }, { userId }) {
+      const week = await currentWeek(db);
+      const [thisWeek, allTime, sessions] = await Promise.all([
+        summarizeAgentUsage(db, {
+          userId,
+          from: week.from,
+          to: week.to,
+          providerIds: QUOTA_PROVIDER_IDS,
+        }),
+        summarizeAgentUsage(db, { userId, from: LEDGER_EPOCH, to: week.to }),
+        countAgentSessions(db, { userId }),
+      ]);
+      return {
+        period: week.period,
+        weeklyLimitUsd: microsToUsd(week.quota.weeklyLimitMicros),
+        houseUsd: microsToUsd(thisWeek.costMicros),
+        turns: thisWeek.turns,
+        allTimeUsd: microsToUsd(allTime.costMicros),
+        sessions,
+      };
     },
   };
 };

@@ -1,6 +1,7 @@
 import * as agentAdminContracts from "./contracts/agent-admin.contract";
 import * as agentContracts from "./contracts/agent.contract";
 import * as apikeyContracts from "./contracts/apikey.contract";
+import * as dashboardContracts from "./contracts/dashboard.contract";
 import * as emailContracts from "./contracts/email.contract";
 import * as feedsContracts from "./contracts/feeds.contract";
 import * as fileContracts from "./contracts/file.contract";
@@ -50,7 +51,14 @@ export const routerContract = {
         get: agentAdminContracts.getAgentQuotaAdminContract,
         update: agentAdminContracts.updateAgentQuotaAdminContract,
       },
+      usage: {
+        week: agentAdminContracts.getAgentUsageWeekAdminContract,
+        user: agentAdminContracts.getAgentUserUsageAdminContract,
+      },
     },
+  },
+  dashboard: {
+    overview: dashboardContracts.getDashboardOverviewContract,
   },
   health: {
     client: healthContracts.protectedHealthContract,
@@ -64,8 +72,8 @@ export const routerContract = {
     update: apikeyContracts.updateApiKeyContract,
   },
   user: {
-    "profile:update": userContracts.updateUserProfileContract,
-    list: userContracts.getInfiniteUsersContract,
+    list: userContracts.listUsersContract,
+    get: userContracts.getUserContract,
   },
   feeds: {
     list: feedsContracts.getFeedsContract,
@@ -138,6 +146,7 @@ export {
   agentAdminContracts,
   agentContracts,
   apikeyContracts,
+  dashboardContracts,
   emailContracts,
   feedsContracts,
   healthContracts,

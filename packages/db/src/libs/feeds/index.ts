@@ -801,3 +801,30 @@ export const deleteFeedTranslation = withDTO(
       .where(eq(feedTranslations.id, dto.translationId));
   }
 );
+
+/** Live content by state: published posts, published notes and unpublished drafts of either type. */
+export const getFeedStats = async (db: DB) => {
+  const live = isNull(feeds.deletedAt);
+  const [row] = await db
+    .select({
+      posts:
+        sql<number>`count(*) filter (where ${feeds.published} and ${eq(feeds.type, FeedType.Post)})`.mapWith(
+          Number
+        ),
+      notes:
+        sql<number>`count(*) filter (where ${feeds.published} and ${eq(feeds.type, FeedType.Note)})`.mapWith(
+          Number
+        ),
+      drafts:
+        sql<number>`count(*) filter (where not ${feeds.published})`.mapWith(
+          Number
+        ),
+    })
+    .from(feeds)
+    .where(live);
+  return {
+    posts: row?.posts ?? 0,
+    notes: row?.notes ?? 0,
+    drafts: row?.drafts ?? 0,
+  };
+};

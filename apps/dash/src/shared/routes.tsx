@@ -20,6 +20,7 @@ import {
   Wrench,
   Brain,
   SlidersHorizontal,
+  Users,
 } from "lucide-react";
 
 import type { NavMainItem } from "@/components/commons/nav-main";
@@ -42,6 +43,12 @@ export const useRouteItems = () => {
           icon: <Home />,
           title: "Overview",
           isActive: segments.length === 0,
+        },
+        {
+          url: "/users",
+          icon: <Users />,
+          title: "Users",
+          isActive: segments[0] === "users",
         },
       ],
       project: [

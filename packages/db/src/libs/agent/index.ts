@@ -81,6 +81,23 @@ export const getAgentSessions = async (
     .limit(options.limit ?? 50);
 };
 
+/** Sessions a user still has, deleted ones excluded. */
+export const countAgentSessions = async (
+  db: DB,
+  options: { userId: string }
+): Promise<number> => {
+  const [row] = await db
+    .select({ total: count() })
+    .from(agentSessions)
+    .where(
+      and(
+        eq(agentSessions.userId, options.userId),
+        isNull(agentSessions.deletedAt)
+      )
+    );
+  return row?.total ?? 0;
+};
+
 export interface UpdateAgentSessionDTO {
   title?: string | null;
   providerId?: string | null;

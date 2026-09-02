@@ -1,11 +1,11 @@
 # Apps
 
-| App        | Port | Deployment           | Responsibility                                         |
-| ---------- | ---- | -------------------- | ------------------------------------------------------ |
-| `www`      | 3000 | Vercel               | Public profile, blog, projects and contact             |
-| `dash`     | 3001 | Railway              | Admin UI for content, assets, RAG, agents and settings |
-| `service`  | 3005 | Railway              | Auth, database access, oRPC and AI HTTP routes         |
-| `workflow` | 3008 | Railway, one replica | Durable workflows, steps and agent turns               |
+| App        | Port | Deployment           | Responsibility                                                |
+| ---------- | ---- | -------------------- | ------------------------------------------------------------- |
+| `www`      | 3000 | Vercel               | Public profile, blog, projects and contact                    |
+| `dash`     | 3001 | Railway              | Admin UI for users, content, assets, RAG, agents and settings |
+| `service`  | 3005 | Railway              | Auth, database access, oRPC and AI HTTP routes                |
+| `workflow` | 3008 | Railway, one replica | Durable workflows, steps and agent turns                      |
 
 `apps/functions/pg-dump-cron` is the scheduled Postgres-to-S3 backup job.
 
@@ -31,6 +31,8 @@ The frontends import only the contract type from `@chia/api/orpc/contracts` and 
 All oRPC calls run in the browser through `src/libs/orpc/client.ts` with the Better Auth session cookie. Keep pages as thin server shells or client pages, and fetch data in client components through oRPC query and mutation options.
 
 `dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns such as the current-organization cookie.
+
+User administration reads through oRPC (`user.*`, `dashboard.overview`, `agent.admin.usage.*`) and writes through better-auth's admin client (`authClient.admin.*`); the dashboard never duplicates ban or session semantics. Admin access on both sides is the configured admin id, not the `role` column.
 
 ## `service`
 
