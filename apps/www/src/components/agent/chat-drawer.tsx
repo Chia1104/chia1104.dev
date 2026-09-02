@@ -44,7 +44,7 @@ export const ChatDrawer = () => {
       <Drawer.Trigger
         aria-label={t("open")}
         className={cn(
-          "fixed right-6 bottom-6 z-50 size-20 rounded-full",
+          "fixed right-6 bottom-6 z-50 size-16 rounded-full",
           isOpen && "invisible"
         )}>
         <CHBot className="size-16 rounded-full shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]" />

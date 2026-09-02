@@ -10,7 +10,6 @@ const FEATURES = [
   { key: "read", icon: "i-mdi-book-open-page-variant-outline" },
   { key: "profile", icon: "i-mdi-account-outline" },
   { key: "feedback", icon: "i-mdi-comment-edit-outline" },
-  { key: "language", icon: "i-mdi-translate" },
 ] as const;
 
 /** Shown while the public kind is still gated to the operator: the visitor is signed in, the kind refuses them. */
@@ -43,7 +42,7 @@ export const ComingSoon = () => {
         {FEATURES.map((feature) => (
           <li
             key={feature.key}
-            className="border-border bg-surface-secondary/60 flex items-center gap-3 rounded-xl border px-3.5 py-2.5">
+            className="bg-surface-secondary/60 flex items-center gap-3 rounded-xl px-3.5 py-2.5">
             <span className="bg-accent/10 text-accent flex size-8 shrink-0 items-center justify-center rounded-lg">
               <span aria-hidden className={`${feature.icon} size-4`} />
             </span>
