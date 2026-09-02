@@ -1,10 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
+
 import { GoogleTagManager } from "@next/third-parties/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { useQueryState } from "nuqs";
 import { Toaster as ST } from "sonner";
 
 import { useCMD } from "@chia/ui/cmd";
@@ -14,15 +16,15 @@ import useTheme from "@chia/ui/utils/use-theme";
 
 import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
-import { useRouter } from "@/libs/i18n/navigation";
 import { useSettingsStore } from "@/stores/settings/store";
 
+/** Mounted only while chat is enabled so a disabled chat never swallows the shortcut. */
 const ContactCMD = () => {
-  const router = useRouter();
+  const [isOpen, setIsOpen] = useQueryState("chat");
   useCMD(false, {
     cmd: "i",
     onKeyDown: () => {
-      router.push("/email");
+      setIsOpen(isOpen ? null : "true");
     },
   });
   return null;
@@ -43,6 +45,7 @@ const Toaster = () => {
 
 const AppPlugins = () => {
   const cursorEnabled = useSettingsStore((s) => s.cursorEnabled);
+  const aiEnabled = useSettingsStore((s) => s.aiEnabled);
   return (
     <>
       <Toaster />
@@ -54,8 +57,12 @@ const AppPlugins = () => {
           }}
         />
       )}
-      <ContactCMD />
-      <ReactQueryDevtools initialIsOpen={false} />
+      {aiEnabled && (
+        <Suspense>
+          <ContactCMD />
+        </Suspense>
+      )}
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       {env.NEXT_PUBLIC_ENV === "production" && (
         <>
           <VercelAnalytics />

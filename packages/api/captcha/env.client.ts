@@ -1,6 +1,14 @@
 import { createEnv } from "@t3-oss/env-core";
 import * as z from "zod";
 
+const provider = process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER ?? "google-recaptcha";
+
+/** Each provider publishes a site key that always passes; used outside production. */
+const TEST_SITE_KEY =
+  provider === "google-recaptcha"
+    ? "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+    : "1x00000000000000000000AA";
+
 export const env = createEnv({
   client: {
     NEXT_PUBLIC_CAPTCHA_PROVIDER: z
@@ -10,13 +18,10 @@ export const env = createEnv({
   },
   clientPrefix: "NEXT_PUBLIC_",
   runtimeEnv: {
-    NEXT_PUBLIC_CAPTCHA_PROVIDER:
-      process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER ?? "google-recaptcha",
+    NEXT_PUBLIC_CAPTCHA_PROVIDER: provider,
     NEXT_PUBLIC_CAPTCHA_SITE_KEY:
       process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
-        ? process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER === "google-recaptcha"
-          ? "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-          : "1x00000000000000000000AA"
+        ? TEST_SITE_KEY
         : process.env.NEXT_PUBLIC_CAPTCHA_SITE_KEY,
   },
   skipValidation:

@@ -183,9 +183,58 @@
     "error": "Here looks a little boring, I'll prepare it for you soon"
   },
   "chbot": {
-    "comming-soon": {
-      "title": "Coming Soon",
-      "description": "You're visiting a feature that is not yet available. I'm working on it and it will be released soon."
+    "title": "Ask the blog",
+    "open": "Open the blog assistant",
+    "emptyTitle": "Ask about the posts",
+    "emptyDescription": "I search and read the published posts and point you to the right one. Ask in any language.",
+    "suggestions": {
+      "latest": "What has been published recently?",
+      "topics": "What topics does this blog cover?",
+      "find": "Which posts talk about Next.js?"
+    },
+    "placeholder": "Ask about the blog…",
+    "signingIn": "Preparing your session…",
+    "loadFailed": "The assistant could not start.",
+    "retry": "Try again",
+    "usage": "{percent}% of this week's free allowance used",
+    "usageReset": "resets {time}",
+    "comingSoon": {
+      "badge": "Coming soon",
+      "title": "The blog assistant is almost ready",
+      "description": "Here is what it will do for you.",
+      "features": {
+        "search": "Search the published posts by topic or exact phrase",
+        "read": "Read a post before answering and link you to the section",
+        "profile": "Answer questions about my experience and the projects I have worked on",
+        "feedback": "Take your questions or corrections on a post and pass them on to me",
+        "language": "Reply in whatever language you write in"
+      },
+      "note": "Check back soon."
+    },
+    "account": {
+      "signIn": "Sign in",
+      "signInTitle": "Keep your conversations",
+      "signInDescription": "Sign in to find these conversations on any device. What you have used this week carries over. Complete the check, then pick a provider.",
+      "github": "Continue with GitHub",
+      "google": "Continue with Google",
+      "account": "Account",
+      "signOut": "Sign out"
+    },
+    "apiKey": {
+      "open": "Use your own API key",
+      "title": "Use your own API key",
+      "description": "The key is encrypted into a cookie on this browser and sent only to that provider. Calls with your own key do not count against the free allowance.",
+      "provider": "Provider",
+      "label": "API key",
+      "save": "Save key",
+      "saved": "Key saved. Pick one of that provider's models.",
+      "failed": "The key could not be saved."
+    },
+    "humanCheck": {
+      "title": "One quick check",
+      "description": "Confirm you're human and the assistant is yours for the week.",
+      "starting": "Starting your session…",
+      "failed": "That didn't go through. Try the check again."
     }
   },
   "settings": {

@@ -19,6 +19,8 @@ export const agentQueryKeys = {
   models: (kind: string) => [...agentQueryKeys.all, "models", kind] as const,
   capabilities: (kind: string) =>
     [...agentQueryKeys.all, "capabilities", kind] as const,
+  /** Per caller, not per session: one standing covers every session they own. */
+  usage: () => [...agentQueryKeys.all, "usage"] as const,
 };
 
 /**
@@ -52,4 +54,15 @@ export const agentCapabilitiesQuery = (
     queryKey: agentQueryKeys.capabilities(kind),
     queryFn: () => client.capabilities.list({ kind }),
     staleTime: 5 * 60_000,
+  });
+
+/**
+ * Spend moves only when a turn ends, so the host invalidates this from `onTurnEnd` rather than
+ * polling; a short `staleTime` still catches a turn finished in another tab.
+ */
+export const agentUsageQuery = (client: AgentSessionClient) =>
+  queryOptions({
+    queryKey: agentQueryKeys.usage(),
+    queryFn: () => client.usage.me(),
+    staleTime: 30_000,
   });

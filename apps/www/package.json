@@ -30,7 +30,9 @@
     "env:check": "tsx ./src/env.ts"
   },
   "dependencies": {
+    "@chia/agent-elements": "workspace:*",
     "@chia/api": "workspace:*",
+    "@chia/auth": "workspace:*",
     "@chia/contents": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/i18n": "workspace:*",
@@ -69,6 +71,7 @@
     "next": "catalog:next",
     "next-intl": "catalog:next",
     "next-themes": "catalog:ui",
+    "nuqs": "catalog:ui",
     "react": "catalog:react-is",
     "react-activity-calendar": "catalog:ui",
     "react-dom": "catalog:react-is",

@@ -93,23 +93,24 @@ export const rateLimiterGuard = vi.fn(() =>
   })
 );
 
-export const verifyAuth = vi.fn((_rootOnly?: boolean) =>
-  createMiddleware(async (c, next) => {
-    c.set("user", {
-      id: "test-user-id",
-      email: "test@example.com",
-      name: "Test User",
-      role: "root",
-      emailVerified: true,
-      image: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      banned: false,
-      banReason: null,
-      banExpires: null,
-    });
-    await next();
-  })
+export const verifyAuth = vi.fn(
+  (_options?: { rootOnly?: boolean; allowAnonymous?: boolean }) =>
+    createMiddleware(async (c, next) => {
+      c.set("user", {
+        id: "test-user-id",
+        email: "test@example.com",
+        name: "Test User",
+        role: "root",
+        emailVerified: true,
+        image: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        banned: false,
+        banReason: null,
+        banExpires: null,
+      });
+      await next();
+    })
 );
 
 export const ai = vi.fn((_provider?: string, _enabled?: any) =>

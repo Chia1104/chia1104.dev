@@ -1,12 +1,15 @@
+import { ORPCError } from "@orpc/client";
 import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
+import { defaultAgentLabels } from "../src/labels.ts";
 import { agentQueryKeys } from "../src/queries.ts";
 import {
   VIEW_FLUSH_MS,
   createAgentSessionStore,
+  failureOf,
   foldDetail,
 } from "../src/store.ts";
 import type { AgentSessionClient, AgentSessionDetail } from "../src/types.ts";
@@ -115,6 +118,15 @@ const fakeClient = (overrides: {
     commands: [],
     skills: [],
   }));
+  const usage = vi.fn(async () => ({
+    exempt: false,
+    limitMicros: 300_000,
+    usedMicros: 0,
+    period: { start: "2026-08-31T00:00:00Z", end: "2026-09-07T00:00:00Z" },
+    timeZone: "Asia/Taipei",
+    runningTurns: 0,
+    maxRunningTurns: 3,
+  }));
   const client: AgentSessionClient = {
     sessions: {
       get,
@@ -127,8 +139,9 @@ const fakeClient = (overrides: {
     },
     models: { list: models },
     capabilities: { list: capabilities },
+    usage: { me: usage },
   };
-  return { client, get, chat, abort, update, models, capabilities };
+  return { client, get, chat, abort, update, models, capabilities, usage };
 };
 
 const makeStore = (
@@ -394,6 +407,37 @@ describe("createAgentSessionStore", () => {
       { kind: "user" },
       { kind: "assistant", text: "recovered" },
     ]);
+  });
+
+  it("shows the catalog sentence for a declared refusal, not the wire code", async () => {
+    const { client } = fakeClient({
+      chat: async () => {
+        throw new ORPCError("QUOTA_EXCEEDED", {
+          data: {
+            limitMicros: 300_000,
+            usedMicros: 300_000,
+            resetAt: "2026-09-07T00:00:00Z",
+            timeZone: "Asia/Taipei",
+          },
+        });
+      },
+    });
+    const { store } = makeStore({ client });
+    await store.getState().hydrate();
+
+    await expect(store.getState().prompt("hello")).rejects.toThrow();
+    const failure = store.getState().failure;
+    expect(failure).not.toContain("QUOTA_EXCEEDED");
+    expect(failure).toContain(
+      defaultAgentLabels.quotaExceeded.split("{resetAt}")[0]
+    );
+  });
+
+  it("keeps an undeclared error's own message", () => {
+    expect(failureOf(new Error("offline"), defaultAgentLabels)).toBe("offline");
+    expect(
+      failureOf(new ORPCError("TOO_MANY_REQUESTS"), defaultAgentLabels)
+    ).toBe(defaultAgentLabels.tooManyTurns);
   });
 
   it("returns the prompt to the caller when the request fails", async () => {

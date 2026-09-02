@@ -1,5 +1,7 @@
+import { ORPCError } from "@orpc/client";
 import { Throttler } from "@tanstack/react-pacer";
 import type { QueryClient } from "@tanstack/react-query";
+import * as z from "zod";
 import { createStore } from "zustand/vanilla";
 
 import type { AgentViewState } from "@chia/agent-runtime/wire/fold";
@@ -11,10 +13,11 @@ import {
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
 import type { AgentLabels } from "./labels.ts";
-import { mergeLabels } from "./labels.ts";
+import { fill, mergeLabels } from "./labels.ts";
 import { agentQueryKeys, sessionDetailQuery } from "./queries.ts";
 import { formatSlashCommand } from "./slash-command.ts";
 import { consumeStream } from "./stream.ts";
+import { formatMessageTime } from "./time.ts";
 import type { AgentSessionClient, AgentSessionDetail } from "./types.ts";
 
 export type AgentConnection = "hydrating" | "idle" | "streaming";
@@ -93,8 +96,32 @@ export interface AgentSessionStoreOptions extends AgentSessionCallbacks {
 /** Shortest gap between view commits while deltas stream (~two frames). */
 export const VIEW_FLUSH_MS = 32;
 
-const messageOf = (cause: unknown): string =>
-  cause instanceof Error ? cause.message : String(cause);
+/** The part of `QUOTA_EXCEEDED`'s data the sentence needs; the rest is for the host's meter. */
+const quotaExceededData = z.object({ resetAt: z.iso.datetime() });
+
+/**
+ * Refusals the agent contract declares get the catalog's sentence; the server's message for
+ * them is a code, not something to show. Anything else keeps its own message.
+ */
+export const failureOf = (cause: unknown, labels: AgentLabels): string => {
+  if (cause instanceof ORPCError) {
+    switch (cause.code) {
+      case "QUOTA_EXCEEDED": {
+        const data = quotaExceededData.safeParse(cause.data);
+        return fill(labels.quotaExceeded, {
+          resetAt: data.success
+            ? formatMessageTime(Date.parse(data.data.resetAt))
+            : "",
+        });
+      }
+      case "TOO_MANY_REQUESTS":
+        return labels.tooManyTurns;
+      case "UNAUTHORIZED":
+        return labels.signedOut;
+    }
+  }
+  return cause instanceof Error ? cause.message : String(cause);
+};
 
 /**
  * The persisted transcript never replays approval events, so the server lists the approval rows
@@ -177,7 +204,8 @@ export const createAgentSessionStore = ({
         try {
           detail = await fetchDetail();
         } catch (cause) {
-          if (mine === generation) set({ failure: messageOf(cause) });
+          if (mine === generation)
+            set({ failure: failureOf(cause, get().labels) });
           return;
         }
         if (mine !== generation) return;
@@ -271,7 +299,7 @@ export const createAgentSessionStore = ({
         );
       } catch (cause) {
         if (!own.signal.aborted && mine === generation) {
-          set({ failure: messageOf(cause) });
+          set({ failure: failureOf(cause, get().labels) });
         }
       } finally {
         flushView();
@@ -342,7 +370,10 @@ export const createAgentSessionStore = ({
           detail = await fetchDetail();
         } catch (cause) {
           if (mine === generation) {
-            set({ connection: "idle", failure: messageOf(cause) });
+            set({
+              connection: "idle",
+              failure: failureOf(cause, get().labels),
+            });
           }
           return;
         }
@@ -356,7 +387,8 @@ export const createAgentSessionStore = ({
             // says so, and a real transport failure surfaces from that read instead.
             if (mine === generation) {
               await fetchDetail().catch((cause: unknown) => {
-                if (mine === generation) set({ failure: messageOf(cause) });
+                if (mine === generation)
+                  set({ failure: failureOf(cause, get().labels) });
               });
             }
           }
@@ -373,7 +405,7 @@ export const createAgentSessionStore = ({
             )
           );
         } catch (cause) {
-          set({ pendingPrompt: null, failure: messageOf(cause) });
+          set({ pendingPrompt: null, failure: failureOf(cause, get().labels) });
           throw cause;
         }
       },
@@ -389,7 +421,7 @@ export const createAgentSessionStore = ({
             )
           );
         } catch (cause) {
-          set({ pendingPrompt: null, failure: messageOf(cause) });
+          set({ pendingPrompt: null, failure: failureOf(cause, get().labels) });
           throw cause;
         }
       },
@@ -406,7 +438,7 @@ export const createAgentSessionStore = ({
             )
           );
         } catch (cause) {
-          set({ failure: messageOf(cause) });
+          set({ failure: failureOf(cause, get().labels) });
           throw cause;
         }
       },
