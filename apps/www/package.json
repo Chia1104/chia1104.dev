@@ -71,6 +71,7 @@
     "next": "catalog:next",
     "next-intl": "catalog:next",
     "next-themes": "catalog:ui",
+    "nuqs": "catalog:ui",
     "react": "catalog:react-is",
     "react-activity-calendar": "catalog:ui",
     "react-dom": "catalog:react-is",

@@ -1,10 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
 
 import { Drawer, Spinner } from "@heroui/react";
 import { useTranslations } from "next-intl";
+import { useQueryState } from "nuqs";
 import { useMediaQuery } from "usehooks-ts";
 
 import { cn } from "@chia/ui/utils/cn.util";
@@ -28,24 +28,19 @@ const PublicChat = dynamic(
 export const ChatDrawer = () => {
   const t = useTranslations("chbot");
   const aiEnabled = useSettingsStore((state) => state.aiEnabled);
-  const [isOpen, setOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 640px)", {
     initializeWithValue: false,
   });
-
-  // Sign-in sends the visitor back with `?chat`; read from `window` so the layout stays static.
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).has("chat")) {
-      setOpen(true);
-    }
-  }, []);
+  const [isOpen, setIsOpen] = useQueryState("chat");
 
   if (!aiEnabled) {
     return null;
   }
 
   return (
-    <Drawer isOpen={isOpen} onOpenChange={setOpen}>
+    <Drawer
+      isOpen={!!isOpen}
+      onOpenChange={(value) => setIsOpen(value ? "true" : null)}>
       <Drawer.Trigger
         aria-label={t("open")}
         className={cn(
@@ -59,10 +54,9 @@ export const ChatDrawer = () => {
           <Drawer.Dialog
             className={cn(
               "flex flex-col p-0",
-              isMobile ? "h-[88svh]" : "h-full w-full max-w-xl"
+              isMobile ? "h-[92svh] pt-4" : "h-full w-full max-w-xl"
             )}>
             {isMobile ? <Drawer.Handle /> : null}
-            <Drawer.CloseTrigger />
             <Drawer.Body className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
               {isOpen ? <PublicChat /> : null}
             </Drawer.Body>

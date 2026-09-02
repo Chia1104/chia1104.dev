@@ -15,6 +15,7 @@ import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
 import { SessionModelPicker } from "@chia/agent-elements/session-model-picker";
 import { SessionTabs } from "@chia/agent-elements/session-tabs";
 import { Thread } from "@chia/agent-elements/thread";
+import { authClient } from "@chia/auth/client";
 import enUS from "@chia/i18n/agent-elements/en-US.json";
 import zhTW from "@chia/i18n/agent-elements/zh-TW.json";
 
@@ -22,14 +23,11 @@ import { client, orpc } from "@/libs/orpc/client";
 import { Locale } from "@/libs/utils/i18n";
 import { useSettingsStore } from "@/stores/settings/store";
 
-import { AccountMenu } from "./account-menu";
 import { ApiKeyDialog } from "./api-key-dialog";
 import { ComingSoon } from "./coming-soon";
 import { HumanCheck } from "./human-check";
 import { PUBLIC_AGENT_KIND } from "./kind";
 import { UsageMeter } from "./usage-meter";
-import { useChatSession } from "./use-chat-session";
-import type { ChatUser } from "./use-chat-session";
 
 /** House first: no setup. BYOK providers follow once the visitor registers a key. */
 const PROVIDER_ORDER = ["vercel-ai-gateway", "openai", "anthropic"];
@@ -48,9 +46,9 @@ const Centered = ({ children }: { children: React.ReactNode }) => (
 
 export const PublicChat = () => {
   const t = useTranslations("chbot");
-  const session = useChatSession();
+  const session = authClient.useSession();
 
-  if (session.isError) {
+  if (session.error) {
     return (
       <Centered>
         <p className="text-muted text-sm">{t("loadFailed")}</p>
@@ -64,7 +62,7 @@ export const PublicChat = () => {
     );
   }
 
-  if (session.data === undefined) {
+  if (session.isPending) {
     return (
       <Centered>
         <Spinner aria-label={t("signingIn")} size="sm" />
@@ -72,14 +70,14 @@ export const PublicChat = () => {
     );
   }
 
-  if (session.data === null) {
+  if (!session.data) {
     return <HumanCheck />;
   }
 
-  return <PublicChatSessions user={session.data} />;
+  return <PublicChatSessions />;
 };
 
-const PublicChatSessions = ({ user }: { user: ChatUser }) => {
+const PublicChatSessions = () => {
   const t = useTranslations("chbot");
   const locale = useLocale();
   const labels = agentLabelsOf(locale);
@@ -231,9 +229,8 @@ const PublicChatSessions = ({ user }: { user: ChatUser }) => {
           }}
           onSelect={setStoredSessionId}
           sessions={sessions}
-          visible={2}
+          visible={3}
         />
-        <AccountMenu user={user} />
       </div>
       {selectedSessionId ? (
         <AgentSessionProvider

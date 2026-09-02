@@ -5,6 +5,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { useQueryState } from "nuqs";
 import { Toaster as ST } from "sonner";
 
 import { useCMD } from "@chia/ui/cmd";
@@ -14,15 +15,16 @@ import useTheme from "@chia/ui/utils/use-theme";
 
 import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
-import { useRouter } from "@/libs/i18n/navigation";
 import { useSettingsStore } from "@/stores/settings/store";
 
 const ContactCMD = () => {
-  const router = useRouter();
+  const aiEnabled = useSettingsStore((state) => state.aiEnabled);
+  const [isOpen, setIsOpen] = useQueryState("chat");
   useCMD(false, {
     cmd: "i",
     onKeyDown: () => {
-      router.push("/email");
+      if (!aiEnabled) return;
+      setIsOpen(isOpen ? null : "true");
     },
   });
   return null;
