@@ -45,10 +45,6 @@
       "types": "./src/libs/users/index.ts",
       "default": "./src/libs/users/index.ts"
     },
-    "./repos/organization": {
-      "types": "./src/libs/organization/index.ts",
-      "default": "./src/libs/organization/index.ts"
-    },
     "./repos/apikey": {
       "types": "./src/libs/apikey/index.ts",
       "default": "./src/libs/apikey/index.ts"
@@ -64,10 +60,6 @@
     "./validator/users": {
       "types": "./src/libs/validator/users.ts",
       "default": "./src/libs/validator/users.ts"
-    },
-    "./validator/organization": {
-      "types": "./src/libs/validator/organization.ts",
-      "default": "./src/libs/validator/organization.ts"
     },
     "./validator/apikey": {
       "types": "./src/libs/validator/apikey.ts",

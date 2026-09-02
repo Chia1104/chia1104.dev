@@ -40,7 +40,7 @@ const spotifyActivateSchema = z.object({
   isActive: z.boolean(),
 });
 
-/** Only `apps/www`'s server-side client reads the playlist, so it sits behind the project API key. */
+/** Only `apps/www`'s server-side client reads the playlist, so it sits behind the API key tier. */
 export const getSpotifyPlaylistContract = oc
   .errors({
     UNAUTHORIZED: {},

@@ -16,7 +16,7 @@ export const CallerTier = {
   Anonymous: 0,
   /** Session cookie for a guest minted by `anonymous()`. Below ApiKey. */
   Guest: 1,
-  /** Valid `X-CH-API-KEY` for the configured project. */
+  /** Valid `X-CH-API-KEY`. */
   ApiKey: 2,
   /** Valid session cookie for a signed-in person. */
   Session: 3,
@@ -36,8 +36,6 @@ export interface Caller {
 export interface CallerPolicyOptions {
   /** Reject anything below this tier. At `Anonymous`, never denies. */
   minTier?: CallerTier;
-  /** Project the `X-CH-API-KEY` must belong to. */
-  projectId?: number;
   permissions?: Record<string, string[]>;
 }
 
@@ -73,7 +71,6 @@ export const callerPolicy = (
        */
       const result = await apiKeyPolicy({
         permissions: options.permissions,
-        projectId: options.projectId,
       })(context);
 
       if (!result.ok) {

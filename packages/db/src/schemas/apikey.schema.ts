@@ -3,7 +3,6 @@ import { text, timestamp, integer, boolean, index } from "drizzle-orm/pg-core";
 
 import { timestamps } from "../libs/common.schema.ts";
 
-import { project } from "./organization.schema.ts";
 import { pgTable } from "./table.ts";
 
 export const apikey = pgTable(
@@ -28,16 +27,11 @@ export const apikey = pgTable(
     ...timestamps,
     permissions: text("permissions"),
     metadata: text("metadata"),
-    projectId: integer("project_id").references(() => project.id, {
-      onDelete: "cascade",
-    }),
-
     configId: text("config_id").default("default").notNull(),
     referenceId: text("reference_id").notNull(),
   },
   (table) => [
     index("apikey_key_idx").on(table.key),
-    index("apikey_project_id_idx").on(table.projectId),
     index("apikey_configId_idx").on(table.configId),
     index("apikey_referenceId_idx").on(table.referenceId),
   ]

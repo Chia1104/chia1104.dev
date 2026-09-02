@@ -7,7 +7,6 @@ import * as feedsRoutes from "./routes/feeds.route";
 import * as fileRoutes from "./routes/file.route";
 import * as healthRoutes from "./routes/health.route";
 import * as memoryRoutes from "./routes/memory.route";
-import * as organizationRoutes from "./routes/organization.route";
 import * as ragRoutes from "./routes/rag.route";
 import * as spotifyRoutes from "./routes/spotify.route";
 import * as toolingsRoutes from "./routes/toolings.route";
@@ -59,6 +58,7 @@ export const router = contractOS.router({
     },
   },
   dashboard: {
+    access: dashboardRoutes.getDashboardAccessRoute,
     overview: dashboardRoutes.getDashboardOverviewRoute,
   },
   health: {
@@ -67,7 +67,6 @@ export const router = contractOS.router({
   apikey: {
     create: apikeyRoutes.createAPIKeyRoute,
     list: apikeyRoutes.getAllApiKeysWithMetaRoute,
-    "project-list": apikeyRoutes.getProjectApiKeysRoute,
     revoke: apikeyRoutes.revokeApiKeyRoute,
     delete: apikeyRoutes.deleteApiKeyRoute,
     update: apikeyRoutes.updateApiKeyRoute,
@@ -85,17 +84,6 @@ export const router = contractOS.router({
     restore: feedsRoutes.restoreFeedRoute,
     "translation:upsert": feedsRoutes.upsertFeedTranslationRoute,
     "content:upsert": feedsRoutes.upsertContentRoute,
-  },
-  organization: {
-    details: organizationRoutes.getOrganizationRoute,
-    create: organizationRoutes.createOrganizationRoute,
-    delete: organizationRoutes.deleteOrganizationRoute,
-    projects: {
-      create: organizationRoutes.createProjectRoute,
-      "details-by-id": organizationRoutes.getProjectByIdRoute,
-      "details-by-slug": organizationRoutes.getProjectBySlugRoute,
-      list: organizationRoutes.getInfiniteProjectsRoute,
-    },
   },
   file: {
     "signed-url:create": fileRoutes.createSignedUrlForUploadRoute,

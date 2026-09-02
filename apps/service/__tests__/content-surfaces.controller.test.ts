@@ -56,7 +56,7 @@ describe("feeds reads scale with the caller's tier", () => {
     });
 
     /**
-     * Detail and `related` require the project API key (`apps/www` server client);
+     * Detail and `related` require the API key (`apps/www` server client);
      * anonymous cannot reach them.
      */
     it.each<[string, () => Promise<unknown>]>([

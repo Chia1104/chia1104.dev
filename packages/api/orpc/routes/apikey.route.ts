@@ -1,9 +1,5 @@
 import { APIError } from "@chia/auth/types";
-import {
-  setApiKeyProjectId,
-  getInfiniteApiKeys,
-  getInfiniteApiKeysByProjectId,
-} from "@chia/db/repos/apikey";
+import { getInfiniteApiKeys } from "@chia/db/repos/apikey";
 import { tryCatch } from "@chia/utils/error-helper";
 
 import { adminGuard } from "../guards/admin.guard";
@@ -41,13 +37,6 @@ export const createAPIKeyRoute = contractOS.apikey.create
       throw opts.errors.INTERNAL_SERVER_ERROR();
     }
 
-    if (opts.input.projectId) {
-      await setApiKeyProjectId(opts.context.db, {
-        apiKey: data.id,
-        projectId: opts.input.projectId,
-      });
-    }
-
     return data;
   });
 
@@ -56,31 +45,6 @@ export const getAllApiKeysWithMetaRoute = contractOS.apikey.list
   .handler(async (opts) => {
     const { data, error } = await tryCatch(
       getInfiniteApiKeys(opts.context.db, opts.input ?? {})
-    );
-
-    if (error) {
-      if (error instanceof APIError) {
-        switch (error.statusCode) {
-          case 401:
-            throw opts.errors.UNAUTHORIZED();
-          case 403:
-            throw opts.errors.FORBIDDEN();
-          case 404:
-            throw opts.errors.NOT_FOUND();
-        }
-        throw opts.errors.INTERNAL_SERVER_ERROR();
-      }
-      throw opts.errors.INTERNAL_SERVER_ERROR();
-    }
-
-    return data;
-  });
-
-export const getProjectApiKeysRoute = contractOS.apikey["project-list"]
-  .use(adminGuard())
-  .handler(async (opts) => {
-    const { data, error } = await tryCatch(
-      getInfiniteApiKeysByProjectId(opts.context.db, opts.input)
     );
 
     if (error) {

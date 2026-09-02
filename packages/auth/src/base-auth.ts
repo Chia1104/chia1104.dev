@@ -3,7 +3,6 @@ import { passkey } from "@better-auth/passkey";
 import type { BetterAuthOptions } from "better-auth";
 import { magicLink } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
-import { organization } from "better-auth/plugins";
 import { userAc } from "better-auth/plugins/admin/access";
 
 import { Role } from "@chia/db/types";
@@ -128,6 +127,5 @@ export const baseAuthConfig = {
         [Role.Root]: userAc,
       },
     }),
-    organization(),
   ],
 } satisfies BetterAuthOptions;

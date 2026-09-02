@@ -1,11 +1,7 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
-
-import { Role } from "@chia/db/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 
-import AuthGuard from "@/components/commons/auth-guard";
 import { SpotifySettings } from "@/components/settings/spotify-settings";
 
 const Page = () => {
@@ -16,11 +12,7 @@ const Page = () => {
         <h1 className="text-2xl font-semibold">Spotify</h1>
       </div>
       <ErrorBoundary>
-        <AuthGuard
-          roles={[Role.Admin, Role.Root]}
-          fallback={<Spinner aria-label="Verifying administrator access" />}>
-          <SpotifySettings />
-        </AuthGuard>
+        <SpotifySettings />
       </ErrorBoundary>
     </div>
   );

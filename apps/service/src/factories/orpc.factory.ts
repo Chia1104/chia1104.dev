@@ -14,7 +14,6 @@ const config: ORPCConfig = {
     windowMs: env.RATELIMIT_WINDOW_MS,
     limit: env.RATELIMIT_MAX,
   },
-  projectId: env.PROJECT_ID,
   aiAuthPrivateKey: env.AI_AUTH_PRIVATE_KEY,
 };
 
