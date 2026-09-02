@@ -35,6 +35,7 @@ declare namespace __next_route_internal_types__ {
     | `/` // ../../../src/app/(workspace)/page.tsx
     | `/agent` // ../../../src/app/(workspace)/agent/page.tsx
     | `/agents` // ../../../src/app/(workspace)/agents/page.tsx
+    | `/api-keys` // ../../../src/app/(workspace)/api-keys/page.tsx
     | `/api/v1/health` // ../../../src/app/api/v1/health/route.ts
     | `/assets` // ../../../src/app/(workspace)/assets/page.tsx
     | `/auth/callback/sent-success` // ../../../src/app/(auth)/auth/callback/sent-success/page.tsx
@@ -45,11 +46,6 @@ declare namespace __next_route_internal_types__ {
     | `/feed/notes` // ../../../src/app/(workspace)/feed/(manage)/notes/page.tsx
     | `/feed/posts` // ../../../src/app/(workspace)/feed/(manage)/posts/page.tsx
     | `/memory` // ../../../src/app/(workspace)/memory/page.tsx
-    | `/onboarding` // ../../../src/app/(onboarding)/onboarding/page.tsx
-    | `/onboarding/create` // ../../../src/app/(onboarding)/onboarding/create/page.tsx
-    | `/projects` // ../../../src/app/(workspace)/projects/page.tsx
-    | `/projects/api-key` // ../../../src/app/(workspace)/projects/api-key/page.tsx
-    | `/projects/create` // ../../../src/app/(workspace)/projects/create/page.tsx
     | `/rag` // ../../../src/app/(workspace)/rag/page.tsx
     | `/rag/chunks` // ../../../src/app/(workspace)/rag/chunks/page.tsx
     | `/rag/maintenance` // ../../../src/app/(workspace)/rag/maintenance/page.tsx
@@ -59,7 +55,6 @@ declare namespace __next_route_internal_types__ {
     | `/users` // ../../../src/app/(workspace)/users/page.tsx
   type DynamicRoutes<T extends string = string> = 
     | `/feed/edit/${SafeSlug<T>}` // ../../../src/app/(workspace)/feed/(edit)/edit/[id]/page.tsx
-    | `/projects/${SafeSlug<T>}` // ../../../src/app/(workspace)/projects/[slug]/page.tsx
 
   type RouteImpl<T> = 
     | StaticRoutes
