@@ -102,6 +102,7 @@ const BanDialog = ({
                 ends. The reason is shown to them.
               </p>
               <TextField
+                variant="secondary"
                 aria-label="Ban reason"
                 isDisabled={isPending}
                 maxLength={200}
@@ -111,6 +112,7 @@ const BanDialog = ({
                 <Input placeholder="Why they are banned" />
               </TextField>
               <Select
+                variant="secondary"
                 aria-label="Ban duration"
                 className="w-full"
                 isDisabled={isPending}
