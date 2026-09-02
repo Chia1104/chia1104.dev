@@ -2,7 +2,6 @@
 
 import { GoogleTagManager } from "@next/third-parties/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { useQueryState } from "nuqs";
@@ -57,7 +56,7 @@ const AppPlugins = () => {
         />
       )}
       <ContactCMD />
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       {env.NEXT_PUBLIC_ENV === "production" && (
         <>
           <VercelAnalytics />

@@ -23,6 +23,7 @@ import { client, orpc } from "@/libs/orpc/client";
 import { Locale } from "@/libs/utils/i18n";
 import { useSettingsStore } from "@/stores/settings/store";
 
+import { AccountMenu } from "./account-menu";
 import { ApiKeyDialog } from "./api-key-dialog";
 import { ComingSoon } from "./coming-soon";
 import { HumanCheck } from "./human-check";
@@ -82,6 +83,7 @@ const PublicChatSessions = () => {
   const locale = useLocale();
   const labels = agentLabelsOf(locale);
   const queryClient = useQueryClient();
+  const session = authClient.useSession();
 
   const listOptions = orpc.agent.sessions.list.queryOptions({
     input: { kind: PUBLIC_AGENT_KIND, limit: 20 },
@@ -259,15 +261,18 @@ const PublicChatSessions = () => {
             localCommands={localCommands}
             placeholder={t("placeholder")}
             toolbar={
-              <>
-                <SessionModelPicker
-                  isOpen={modelPickerOpen}
-                  onOpenChange={setModelPickerOpen}
-                  providerOrder={PROVIDER_ORDER}
-                />
+              <SessionModelPicker
+                isOpen={modelPickerOpen}
+                onOpenChange={setModelPickerOpen}
+                providerOrder={PROVIDER_ORDER}
+              />
+            }
+            footer={
+              <div className="flex items-center gap-2 p-1">
                 <ApiKeyDialog />
                 <UsageMeter />
-              </>
+                {session.data && <AccountMenu user={session.data.user} />}
+              </div>
             }
           />
         </AgentSessionProvider>

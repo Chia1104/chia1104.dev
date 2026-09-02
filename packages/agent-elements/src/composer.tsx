@@ -59,6 +59,8 @@ export interface ComposerProps {
   toolbar?: ReactNode;
   /** Stacked above the input. Compose from `ComposerAttachment` rows. */
   attachments?: ReactNode;
+  /** Tucked under the input. Defaults to `ComposerStatus`; pass `null` for none. */
+  footer?: ReactNode;
   /** Client-only commands that act on the composer UI instead of starting an agent turn. */
   localCommands?: readonly ComposerLocalCommand[];
 }
@@ -193,11 +195,11 @@ const ComposerFailure = () => {
   );
 };
 
-const ComposerStatus = () => {
+export const ComposerStatus = () => {
   const labels = useAgentLabels();
   const status = useAgentStatus();
   return (
-    <div className="text-muted flex justify-between px-1 text-[11px]">
+    <div className="text-muted flex min-h-8 items-center justify-between px-2 py-1 text-[11px]">
       <span>{labels.composerHint}</span>
       <span>
         {status === "running"
@@ -209,6 +211,25 @@ const ComposerStatus = () => {
     </div>
   );
 };
+
+/** Negative margin tucks rows under the composer. A bottom well is `z-0` so it cannot paint over the input. */
+const ComposerWell = ({
+  children,
+  side,
+}: {
+  children: ReactNode;
+  side: "top" | "bottom";
+}) => (
+  <div
+    className={cn(
+      "bg-surface-secondary border-border divide-border max-h-40 w-full max-w-[95%] divide-y self-center overflow-y-auto border",
+      side === "top"
+        ? "-mb-5 rounded-t-2xl border-b-0 pb-3"
+        : "relative z-0 -mt-5 rounded-b-2xl border-t-0 pt-3"
+    )}>
+    {children}
+  </div>
+);
 
 interface ComposerToolbarProps {
   isEmpty: boolean;
@@ -286,6 +307,7 @@ const initialDraftOf = (seed: ComposerSeed | null): ComposerDraft =>
 const ComposerEditor = ({
   attachments,
   className,
+  footer = <ComposerStatus />,
   localCommands,
   placeholder,
   seed,
@@ -485,9 +507,7 @@ const ComposerEditor = ({
         <ComposerFailure />
 
         {attachments ? (
-          <div className="bg-surface-secondary border-border divide-border -mb-5 max-h-40 w-full max-w-[95%] divide-y self-center overflow-y-auto rounded-t-2xl border border-b-0 pb-3">
-            {attachments}
-          </div>
+          <ComposerWell side="top">{attachments}</ComposerWell>
         ) : null}
 
         <BorderBeam
@@ -575,7 +595,7 @@ const ComposerEditor = ({
           </div>
         </BorderBeam>
 
-        <ComposerStatus />
+        {footer ? <ComposerWell side="bottom">{footer}</ComposerWell> : null}
       </div>
     </div>
   );

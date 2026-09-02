@@ -67,8 +67,13 @@ export const ApiKeyDialog = () => {
 
   return (
     <Modal isOpen={isOpen} onOpenChange={setOpen}>
-      <Button aria-label={t("open")} isIconOnly size="sm" variant="tertiary">
-        <span aria-hidden className="i-mdi-key-outline size-4" />
+      <Button
+        aria-label={t("open")}
+        isIconOnly
+        size="sm"
+        variant="ghost"
+        className="size-5 p-1">
+        <span aria-hidden className="i-mdi-key-outline size-3" />
       </Button>
       <Modal.Backdrop>
         <Modal.Container placement="center">
@@ -85,6 +90,7 @@ export const ApiKeyDialog = () => {
                   if (next === "openai" || next === "anthropic")
                     setProvider(next);
                 }}
+                variant="secondary"
                 orientation="horizontal"
                 value={provider}>
                 <Label>{t("provider")}</Label>
@@ -108,6 +114,7 @@ export const ApiKeyDialog = () => {
                   placeholder="sk-…"
                   type="password"
                   value={apiKey}
+                  variant="secondary"
                 />
               </TextField>
               <Button

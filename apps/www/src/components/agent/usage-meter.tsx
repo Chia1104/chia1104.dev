@@ -1,9 +1,9 @@
 "use client";
 
+import { Label, ProgressBar } from "@heroui/react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { useAgentUsage, usageFractionOf } from "@chia/agent-elements/usage";
-import { cn } from "@chia/ui/utils/cn.util";
 
 import { client } from "@/libs/orpc/client";
 
@@ -13,9 +13,9 @@ export const UsageMeter = () => {
   const format = useFormatter();
   const usage = useAgentUsage(client.agent);
   const standing = usage.data;
-  const fraction = standing ? usageFractionOf(standing) : null;
+  const fraction = standing ? (usageFractionOf(standing) ?? 0) : 0;
 
-  if (!standing || fraction === null) {
+  if (!standing) {
     return null;
   }
 
@@ -25,30 +25,22 @@ export const UsageMeter = () => {
     hour: "numeric",
     minute: "numeric",
   });
-  const label = `${t("usage", { percent })} · ${t("usageReset", { time: reset })}`;
 
   return (
-    <div
-      aria-label={label}
-      aria-valuemax={100}
-      aria-valuemin={0}
-      aria-valuenow={percent}
-      className="text-muted flex min-w-0 items-center gap-1.5 text-[11px]"
-      role="meter"
-      title={label}>
-      <span className="bg-surface-secondary h-1.5 w-12 shrink-0 overflow-hidden rounded-full">
-        <span
-          className={cn(
-            "block h-full rounded-full",
-            percent >= 100 ? "bg-danger" : "bg-accent"
-          )}
-          style={{ width: `${percent}%` }}
-        />
-      </span>
-      <span className="tabular-nums">{percent}%</span>
-      <span className="hidden truncate sm:inline">
-        · {t("usageReset", { time: reset })}
-      </span>
-    </div>
+    <ProgressBar
+      className="min-w-0 flex-1"
+      color={percent >= 100 ? "danger" : "accent"}
+      size="sm"
+      value={percent}>
+      <Label className="text-muted truncate text-[11px] font-normal">
+        {t("usage", { percent })}
+      </Label>
+      <ProgressBar.Output className="text-muted text-[11px] font-normal">
+        {t("usageReset", { time: reset })}
+      </ProgressBar.Output>
+      <ProgressBar.Track>
+        <ProgressBar.Fill />
+      </ProgressBar.Track>
+    </ProgressBar>
   );
 };
