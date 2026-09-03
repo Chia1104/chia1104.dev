@@ -5,7 +5,7 @@ import { ProfileEntryKind } from "@chia/db/types";
 import { profileEntryContentSchema } from "@chia/db/validator/profile";
 
 /**
- * RPC-only and admin-only for now. The profile is the operator's résumé; a published read
+ * RPC-only and admin-only for now. The profile is the operator's resume; a published read
  * for the public site is the seam to widen later, not a second contract.
  */
 

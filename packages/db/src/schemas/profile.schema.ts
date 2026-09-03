@@ -16,7 +16,7 @@ import { pgTable } from "./table.ts";
 import { user } from "./user.schema.ts";
 
 /**
- * One résumé item. Columns are what a list filters and orders by; everything a
+ * One resume item. Columns are what a list filters and orders by; everything a
  * kind renders lives in `data`, whose shape is `profileEntryContentSchema` for that kind.
  * A shape change is a backfill of stored rows, not a reader fallback.
  */

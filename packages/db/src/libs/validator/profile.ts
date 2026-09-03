@@ -9,13 +9,13 @@ import { Locale, ProfileEntryKind } from "../../types.ts";
 
 export const PROFILE_TITLE_MAX_CHARS = 200;
 export const PROFILE_SUMMARY_MAX_CHARS = 1_000;
-/** Markdown body; a résumé item is bullets, not an essay. */
+/** Markdown body; a resume item is bullets, not an essay. */
 export const PROFILE_CONTENT_MAX_CHARS = 16_000;
 const NAME_MAX_CHARS = 120;
 const STACK_ITEM_MAX_CHARS = 40;
 const STACK_MAX_ITEMS = 40;
 
-/** `YYYY-MM`: month precision is what a résumé shows, and the string sorts as a date. */
+/** `YYYY-MM`: month precision is what a resume shows, and the string sorts as a date. */
 export const yearMonthSchema = z
   .string()
   .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Use YYYY-MM");
