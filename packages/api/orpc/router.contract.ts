@@ -7,6 +7,7 @@ import * as feedsContracts from "./contracts/feeds.contract";
 import * as fileContracts from "./contracts/file.contract";
 import * as healthContracts from "./contracts/health.contract";
 import * as memoryContracts from "./contracts/memory.contract";
+import * as profileContracts from "./contracts/profile.contract";
 import * as ragContracts from "./contracts/rag.contract";
 import * as spotifyContracts from "./contracts/spotify.contract";
 import * as toolingsContracts from "./contracts/toolings.contract";
@@ -120,6 +121,13 @@ export const routerContract = {
     "lesson:approve": memoryContracts.approveLessonContract,
     consolidate: memoryContracts.consolidateMemoryContract,
   },
+  profile: {
+    list: profileContracts.listProfileEntriesContract,
+    get: profileContracts.getProfileEntryContract,
+    create: profileContracts.createProfileEntryContract,
+    update: profileContracts.updateProfileEntryContract,
+    remove: profileContracts.removeProfileEntryContract,
+  },
   spotify: {
     playlist: spotifyContracts.getSpotifyPlaylistContract,
     playing: spotifyContracts.getSpotifyNowPlayingContract,
@@ -139,6 +147,7 @@ export {
   feedsContracts,
   healthContracts,
   memoryContracts,
+  profileContracts,
   ragContracts,
   spotifyContracts,
   toolingsContracts,

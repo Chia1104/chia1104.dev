@@ -49,6 +49,16 @@ export {
   type TagTranslation,
 } from "./contents.schema.ts";
 
+export { profileEntries, type ProfileEntry } from "./profile.schema.ts";
+
+export type {
+  ProfileEntryContent,
+  ProfileEntryContentInput,
+  ProfileEntryData,
+  ProfileEntryTranslation,
+  ProfileEntryTranslations,
+} from "../libs/validator/profile.ts";
+
 export {
   resourceChunks,
   resourceEmbeddings,
@@ -114,6 +124,7 @@ export {
   assetsRelations,
   assetsToTagsRelations,
   feedsToTagsRelations,
+  profileEntriesRelations,
   agentSessionsRelations,
   agentRunsRelations,
   agentSessionEntriesRelations,

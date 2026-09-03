@@ -1,6 +1,9 @@
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
-import type { ContentReadPort } from "@chia/agent-content/types";
+import type {
+  ContentReadPort,
+  ProfileReadPort,
+} from "@chia/agent-content/types";
 import { createAgentModels } from "@chia/agent-runtime/models";
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import { runPiTurn } from "@chia/agent-runtime/pi/turn";
@@ -16,6 +19,7 @@ import { Locale } from "@chia/db/types";
 
 import { resolvePublicModel } from "./models.ts";
 import { publicPolicy, publicTurnBudget } from "./policy.ts";
+import { renderProfileBrief } from "./prompts/profile.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import { createPublicTools } from "./tools/tool-set.ts";
 import type { PublicToolContext } from "./types.ts";
@@ -26,6 +30,8 @@ export interface RunPublicTurnOptions<TApproval> {
   agentSessionId: string;
   /** Built by the host with `public` visibility; the tools cannot widen it. */
   content: ContentReadPort;
+  /** Published rows only; rendered into the system prompt once per turn. */
+  profile: ProfileReadPort;
   instructions?: string;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
@@ -41,23 +47,31 @@ export interface RunPublicTurnOptions<TApproval> {
   onUsage?: AgentUsageListener;
 }
 
-export const runPublicTurn = <TApproval>(
+export const runPublicTurn = async <TApproval>(
   options: RunPublicTurnOptions<TApproval>
 ): Promise<AgentTurnExecution<TApproval>> => {
   const defaultLocale = options.defaultLocale ?? Locale.zhTW;
   const models = options.models ?? createAgentModels();
   const toolContext: PublicToolContext = { content: options.content };
+  // the allowlist check precedes any read, so a refused model costs no query
+  const model = resolvePublicModel(options.settings, models);
+  const profile = renderProfileBrief(await options.profile.listPublished(), {
+    locale: defaultLocale,
+  });
 
   return runPiTurn({
     agentSessionId: options.agentSessionId,
     session: options.session,
     settings: options.settings,
-    model: resolvePublicModel(options.settings, models),
+    model,
     models,
     compactionModel: options.compactionModel,
     tools: createPublicTools(),
     toolContext,
-    systemPrompt: buildSystemPrompt({ instructions: options.instructions }),
+    systemPrompt: buildSystemPrompt({
+      instructions: options.instructions,
+      profile,
+    }),
     volatileContext: () => buildTurnContext({ defaultLocale, now: new Date() }),
     signal: options.signal,
     policy: publicPolicy,

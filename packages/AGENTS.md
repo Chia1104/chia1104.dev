@@ -54,7 +54,7 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before changi
 | Package          | Boundary                                                                       |
 | ---------------- | ------------------------------------------------------------------------------ |
 | `agent-runtime`  | Kind-independent session, turn, tool, compaction, wire-event and model runtime |
-| `agent-content`  | Shared read-only content tools and `ContentReadPort`                           |
+| `agent-content`  | Shared read-only content tools, `ContentReadPort` and `ProfileReadPort`        |
 | `agent-writing`  | Writing prompts, tools, policy, state and content/web ports                    |
 | `agent-public`   | Public reader prompt, policy and model allowlist                               |
 | `agent-elements` | Client session store, queries, providers and UI components                     |
@@ -72,6 +72,6 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before changi
 - `@chia/test/session`, `@chia/test/context` — `sessionOf`, `contextOf`, `serviceContextOf`.
 - `@chia/test/orpc` — `session` fixture; extend `context` in the consumer. Import `vi` from `vitest`.
 - `@chia/test/mocks/*` — `vi.mock` wiring stays in the consumer.
-- `@chia/test/fixtures/content-read-port` — read-port fake.
+- `@chia/test/fixtures/content-read-port`, `@chia/test/fixtures/profile-read-port` — read-port fakes.
 
 Keep app-specific helpers next to the app. Import `{ describe, expect, it, vi }` from `vitest`. Titles are behavior sentences, not `should ...`.

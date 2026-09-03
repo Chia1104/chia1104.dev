@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 import type { Locale } from "@chia/db/types";
 
+import { DrawerPanel } from "@/components/commons/drawer-panel";
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
@@ -287,60 +288,58 @@ export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
       </Tooltip>
 
       <Drawer.Backdrop isOpen={isOpen} onOpenChange={setIsOpen}>
-        <Drawer.Content placement="right">
-          <Drawer.Dialog>
-            <Drawer.CloseTrigger />
-            <Drawer.Header>
-              <Drawer.Heading>Embedding status</Drawer.Heading>
-              {first && (
-                <IndexKeyLine
-                  indexVersion={first.indexVersion}
-                  model={first.model}
+        <DrawerPanel>
+          <Drawer.CloseTrigger />
+          <Drawer.Header>
+            <Drawer.Heading>Embedding status</Drawer.Heading>
+            {first && (
+              <IndexKeyLine
+                indexVersion={first.indexVersion}
+                model={first.model}
+              />
+            )}
+          </Drawer.Header>
+          <Drawer.Body className="flex flex-col gap-6">
+            {resources.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                This feed has no translations to index.
+              </p>
+            ) : (
+              resources.map((resource, index) => (
+                <ResourceSection
+                  key={resource.sourceId}
+                  canTrigger={canTrigger}
+                  isLoading={statuses[index]?.isLoading ?? false}
+                  onInvalidate={invalidateStatuses}
+                  resource={resource}
+                  status={statuses[index]?.data}
                 />
-              )}
-            </Drawer.Header>
-            <Drawer.Body className="flex flex-col gap-6">
-              {resources.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  This feed has no translations to index.
-                </p>
+              ))
+            )}
+          </Drawer.Body>
+          <Drawer.Footer>
+            <div className="flex w-full items-center justify-between gap-2">
+              {feedRun.run && feedRun.isActive ? (
+                <RunStatusChip status={feedRun.run.status} />
               ) : (
-                resources.map((resource, index) => (
-                  <ResourceSection
-                    key={resource.sourceId}
-                    canTrigger={canTrigger}
-                    isLoading={statuses[index]?.isLoading ?? false}
-                    onInvalidate={invalidateStatuses}
-                    resource={resource}
-                    status={statuses[index]?.data}
-                  />
-                ))
+                <span />
               )}
-            </Drawer.Body>
-            <Drawer.Footer>
-              <div className="flex w-full items-center justify-between gap-2">
-                {feedRun.run && feedRun.isActive ? (
-                  <RunStatusChip status={feedRun.run.status} />
-                ) : (
-                  <span />
-                )}
-                <Button
-                  isDisabled={!canTrigger || isFeedBusy}
-                  isPending={isFeedBusy}
-                  size="sm"
-                  onPress={() => indexFeed.mutate({ feedId })}>
-                  <RefreshCwIcon className="size-3.5" />
-                  Recompute whole feed
-                </Button>
-              </div>
-              {feedRun.error && (
-                <p className="text-danger w-full text-xs">
-                  Could not read the run's progress: {feedRun.error.message}
-                </p>
-              )}
-            </Drawer.Footer>
-          </Drawer.Dialog>
-        </Drawer.Content>
+              <Button
+                isDisabled={!canTrigger || isFeedBusy}
+                isPending={isFeedBusy}
+                size="sm"
+                onPress={() => indexFeed.mutate({ feedId })}>
+                <RefreshCwIcon className="size-3.5" />
+                Recompute whole feed
+              </Button>
+            </div>
+            {feedRun.error && (
+              <p className="text-danger w-full text-xs">
+                Could not read the run's progress: {feedRun.error.message}
+              </p>
+            )}
+          </Drawer.Footer>
+        </DrawerPanel>
       </Drawer.Backdrop>
     </>
   );

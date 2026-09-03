@@ -245,13 +245,13 @@ export const ConfigFields = <TValues extends FieldValues>({
                       onChange={(selected) =>
                         field.onChange(selected ? true : null)
                       }>
-                      <Switch.Control>
-                        <Switch.Thumb />
-                      </Switch.Control>
                       <Switch.Content>
+                        <Switch.Control>
+                          <Switch.Thumb />
+                        </Switch.Control>
                         <Label className="text-xs">{label}</Label>
-                        {describe(property, fallback)}
                       </Switch.Content>
+                      {describe(property, fallback)}
                     </Switch>
                   );
                 default:

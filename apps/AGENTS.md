@@ -1,11 +1,11 @@
 # Apps
 
-| App        | Port | Deployment           | Responsibility                                                |
-| ---------- | ---- | -------------------- | ------------------------------------------------------------- |
-| `www`      | 3000 | Vercel               | Public profile, blog, projects and contact                    |
-| `dash`     | 3001 | Railway              | Admin UI for users, content, assets, RAG, agents and settings |
-| `service`  | 3005 | Railway              | Auth, database access, oRPC and AI HTTP routes                |
-| `workflow` | 3008 | Railway, one replica | Durable workflows, steps and agent turns                      |
+| App        | Port | Deployment           | Responsibility                                                         |
+| ---------- | ---- | -------------------- | ---------------------------------------------------------------------- |
+| `www`      | 3000 | Vercel               | Public profile, blog, projects and contact                             |
+| `dash`     | 3001 | Railway              | Admin UI for users, content, profile, assets, RAG, agents and settings |
+| `service`  | 3005 | Railway              | Auth, database access, oRPC and AI HTTP routes                         |
+| `workflow` | 3008 | Railway, one replica | Durable workflows, steps and agent turns                               |
 
 `apps/functions/pg-dump-cron` is the scheduled Postgres-to-S3 backup job.
 

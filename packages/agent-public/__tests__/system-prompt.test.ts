@@ -17,6 +17,23 @@ describe("buildSystemPrompt", () => {
     ).toBe(true);
   });
 
+  it("places the profile between the rules and the instructions, and skips it when empty", () => {
+    const bare = buildSystemPrompt();
+    expect(bare).not.toContain("# About the author");
+    expect(buildSystemPrompt({ profile: null })).toBe(bare);
+    expect(buildSystemPrompt({ profile: " \n" })).toBe(bare);
+
+    const prompt = buildSystemPrompt({
+      profile: "### Frontend engineer",
+      instructions: "Call the author Chia.",
+    });
+    const profileAt = prompt.indexOf(
+      "# About the author\n\n### Frontend engineer"
+    );
+    expect(profileAt).toBeGreaterThan(bare.length - 1);
+    expect(profileAt).toBeLessThan(prompt.indexOf("# Operator instructions"));
+  });
+
   it("names every tool it tells the model to use", () => {
     const prompt = buildSystemPrompt();
     for (const name of [

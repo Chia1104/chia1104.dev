@@ -1,5 +1,6 @@
 import type { AgentTool } from "@chia/agent-runtime/types";
 import type { ContentType, FeedType, Locale } from "@chia/db/types";
+import type { ProfileEntryContent } from "@chia/db/validator/profile";
 
 /**
  * `FeedType` includes `"all"`, which is a filter value rather than a storable one. A real post
@@ -82,6 +83,17 @@ export interface ContentReadPort {
   getPost(input: GetPostInput): Promise<PostSnapshot | null>;
   listPosts(input: ListPostsInput): Promise<PostListItem[]>;
   listTags(): Promise<TagItem[]>;
+}
+
+/** One published résumé item, parsed for its kind, in the site's order. */
+export type ProfileEntrySnapshot = ProfileEntryContent;
+
+/**
+ * Read access to the author's profile. Like `ContentReadPort`, visibility is fixed by the
+ * implementation: a public port lists published rows and nothing else.
+ */
+export interface ProfileReadPort {
+  listPublished(): Promise<ProfileEntrySnapshot[]>;
 }
 
 export interface ContentToolContext {
