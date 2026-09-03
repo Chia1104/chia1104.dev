@@ -7,7 +7,10 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import type { ContentReadPort } from "@chia/agent-content/types";
+import type {
+  ContentReadPort,
+  ProfileEntrySnapshot,
+} from "@chia/agent-content/types";
 import { UnknownAgentModelError } from "@chia/agent-runtime/models";
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
@@ -19,12 +22,20 @@ import type {
 import { foldEvents } from "@chia/agent-runtime/wire/fold";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
+import { createFakeProfileReadPort } from "@chia/test/fixtures/profile-read-port";
 
 import { publicTurnBudget } from "../src/policy.ts";
 import { runPublicTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 
 const SESSION_ID = "session-1";
+
+const PROFILE: ProfileEntrySnapshot[] = [
+  {
+    kind: "about",
+    data: { translations: { en: { title: "Frontend engineer" } } },
+  },
+];
 
 interface Fixture {
   events: AgentWireEvent[];
@@ -98,6 +109,7 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
         settings: sessionSettings,
         agentSessionId: SESSION_ID,
         content,
+        profile: createFakeProfileReadPort(PROFILE),
         message: { text },
         onEvent: (event) => events.push(event),
         models,
@@ -180,6 +192,9 @@ describe("runPublicTurn", () => {
     expect(seen).toHaveLength(2);
     for (const context of seen) {
       expect(context.systemPrompt).not.toContain("# Current session");
+      expect(context.systemPrompt).toContain(
+        "# About the author\n\n### Frontend engineer"
+      );
       const last = context.messages.at(-1);
       expect(last?.role).toBe("user");
       expect(JSON.stringify(last?.content)).toMatch(
@@ -230,10 +245,10 @@ describe("runPublicTurn", () => {
     ).toMatchObject({ text: "Answered over OpenAI.", streaming: false });
   });
 
-  it("refuses a gateway model off the house list before touching the provider", () => {
+  it("refuses a gateway model off the house list before touching the provider", async () => {
     const expensive = build({ modelId: "anthropic/claude-sonnet-5" });
 
-    expect(() => expensive.run("Hi")).toThrow(UnknownAgentModelError);
+    await expect(expensive.run("Hi")).rejects.toThrow(UnknownAgentModelError);
     expect(expensive.events).toEqual([]);
   });
 });

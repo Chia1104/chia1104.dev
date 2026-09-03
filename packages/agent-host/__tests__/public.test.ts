@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import type { ContentReadPort } from "@chia/agent-content/types";
+import type {
+  ContentReadPort,
+  ProfileReadPort,
+} from "@chia/agent-content/types";
 import { PUBLIC_AGENT_KIND } from "@chia/agent-public/models";
 import type { DB } from "@chia/db/client";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
@@ -15,6 +18,10 @@ const port: ContentReadPort = {
   getPost: () => Promise.resolve(null),
   listPosts: () => Promise.resolve([]),
   listTags: () => Promise.resolve([]),
+};
+
+const profile: ProfileReadPort = {
+  listPublished: () => Promise.resolve([]),
 };
 
 describe("createPublicAgentKind", () => {
@@ -47,7 +54,10 @@ describe("createPublicAgentKind", () => {
     expect(kind.runTurn).toBeUndefined();
     expect(
       createPublicAgentKind({
-        execution: { createContentPort: () => port },
+        execution: {
+          createContentPort: () => port,
+          createProfilePort: () => profile,
+        },
       }).runTurn
     ).toBeTypeOf("function");
   });

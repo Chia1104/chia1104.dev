@@ -181,6 +181,10 @@
       "types": "./agents/content-read.port.ts",
       "default": "./agents/content-read.port.ts"
     },
+    "./agents/profile-read.port": {
+      "types": "./agents/profile-read.port.ts",
+      "default": "./agents/profile-read.port.ts"
+    },
     "./orpc/contracts/agent-admin.contract": {
       "types": "./orpc/contracts/agent-admin.contract.ts",
       "default": "./orpc/contracts/agent-admin.contract.ts"
