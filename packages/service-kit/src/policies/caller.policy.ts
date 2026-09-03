@@ -1,11 +1,12 @@
+import type { ApiKeyScope } from "@chia/auth/apikey";
 import type { Session } from "@chia/auth/types";
 import { X_CH_API_KEY } from "@chia/auth/utils";
-import type { ApiKey } from "@chia/db/schema";
 import { Role } from "@chia/db/types";
 import { getAdminId } from "@chia/utils/config";
 
 import { AppError } from "../errors";
 
+import type { VerifiedApiKey } from "./apikey.policy";
 import { apiKeyPolicy } from "./apikey.policy";
 import { sessionPolicy } from "./session.policy";
 import type { Policy } from "./types";
@@ -30,13 +31,14 @@ export interface Caller {
   tier: CallerTier;
   adminId: string;
   session?: Session;
-  apiKey?: Omit<ApiKey, "key">;
+  apiKey?: VerifiedApiKey;
 }
 
 export interface CallerPolicyOptions {
   /** Reject anything below this tier. At `Anonymous`, never denies. */
   minTier?: CallerTier;
-  permissions?: Record<string, string[]>;
+  /** Scopes an API key must carry to be accepted at all; a session is never scoped. */
+  scopes?: readonly ApiKeyScope[];
 }
 
 /** Both spellings of the better-auth session cookie (`__Secure-` prefixed under TLS). */
@@ -69,9 +71,7 @@ export const callerPolicy = (
       /**
        * A present-but-invalid key is a hard failure, not a silent demotion to anonymous.
        */
-      const result = await apiKeyPolicy({
-        permissions: options.permissions,
-      })(context);
+      const result = await apiKeyPolicy({ scopes: options.scopes })(context);
 
       if (!result.ok) {
         return result;

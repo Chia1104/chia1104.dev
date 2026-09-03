@@ -1,3 +1,5 @@
+import type { ApiKeyPermissions, ApiKeyScope } from "@chia/auth/apikey";
+import { hasApiKeyScope } from "@chia/auth/apikey";
 import { APIError } from "@chia/auth/types";
 import { X_CH_API_KEY } from "@chia/auth/utils";
 import type { ApiKey } from "@chia/db/schema";
@@ -8,8 +10,14 @@ import { AppError, appErrorCodeFromStatus } from "../errors";
 import type { Policy } from "./types";
 import { allow, deny } from "./types";
 
+/** better-auth returns the key row with `permissions` already parsed. */
+export type VerifiedApiKey = Omit<ApiKey, "key" | "permissions"> & {
+  permissions: ApiKeyPermissions | null;
+};
+
 export interface ApiKeyPolicyOptions {
-  permissions?: Record<string, string[]>;
+  /** Every listed scope must be on the key. */
+  scopes?: readonly ApiKeyScope[];
 }
 
 const invalidKey = (
@@ -42,10 +50,13 @@ const KEY_ERRORS = new Map<string, AppError>([
   ],
 ]);
 
-/** Verifies the `X-CH-API-KEY` header against better-auth's api-key plugin. */
+/**
+ * Verifies the `X-CH-API-KEY` header against better-auth's api-key plugin, then checks the
+ * key's scopes locally so a missing scope is FORBIDDEN rather than better-auth's NOT_FOUND.
+ */
 export const apiKeyPolicy = (
   options: ApiKeyPolicyOptions = {}
-): Policy<{ apiKey: Omit<ApiKey, "key"> }> => {
+): Policy<{ apiKey: VerifiedApiKey }> => {
   return async (context) => {
     const key = context.headers.get(X_CH_API_KEY);
 
@@ -66,7 +77,7 @@ export const apiKeyPolicy = (
     try {
       verified = await context.auth.api.verifyApiKey({
         headers: context.headers,
-        body: { key, permissions: options.permissions },
+        body: { key },
       });
     } catch (error) {
       if (error instanceof APIError) {
@@ -91,10 +102,20 @@ export const apiKeyPolicy = (
     }
 
     const apiKey =
-      /* SAFETY: The producer contract guarantees this value satisfies Omit<ApiKey, "key">. */ verified.key as Omit<
-        ApiKey,
-        "key"
-      >;
+      /* SAFETY: The producer contract guarantees this value satisfies VerifiedApiKey. */ verified.key as VerifiedApiKey;
+
+    const missing = options.scopes?.find(
+      (scope) => !hasApiKeyScope(apiKey.permissions, scope)
+    );
+    if (missing) {
+      return deny(
+        invalidKey(
+          "FORBIDDEN",
+          `API key lacks the ${missing} scope`,
+          "SCOPE_MISSING"
+        )
+      );
+    }
 
     return allow({ apiKey });
   };

@@ -1,3 +1,4 @@
+import { ApiKeyScope } from "@chia/auth/apikey";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import {
@@ -18,7 +19,12 @@ import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { contractOS } from "../utils";
 
 export const getSpotifyPlaylistRoute = contractOS.spotify.playlist
-  .use(callerGuard({ minTier: CallerTier.ApiKey }))
+  .use(
+    callerGuard({
+      minTier: CallerTier.ApiKey,
+      scopes: [ApiKeyScope.SpotifyRead],
+    })
+  )
   .use(tieredRateLimitGuard({ prefix: "rate-limiter:spotify" }))
   .handler(async (opts) => {
     return await getSpotifyPlaylistService(opts.input.playlistId);

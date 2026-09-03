@@ -18,7 +18,7 @@ Wire contracts live in `api/orpc/contracts/*.contract.ts`; handlers live in `api
 
 ### Authorization
 
-Authorization belongs in `service-kit/src/policies`. Bind policies through `runPolicy` for oRPC or `toHonoMiddleware` for Hono. Guards contain transport binding, not duplicated authorization logic.
+Authorization belongs in `service-kit/src/policies`. Bind policies through `runPolicy` for oRPC or `toHonoMiddleware` for Hono. Guards contain transport binding, not duplicated authorization logic. API keys carry scopes from `@chia/auth/apikey`; a guard that admits `CallerTier.ApiKey` states the scopes it needs, and a key sent without them is refused even where a browser would pass.
 
 ### Context injection
 

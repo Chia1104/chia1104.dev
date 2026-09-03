@@ -1,3 +1,4 @@
+import { ApiKeyScope } from "@chia/auth/apikey";
 import {
   getFeedById,
   getFeedBySlug,
@@ -29,12 +30,15 @@ import { sessionGuard } from "../guards/auth.guard";
 import { callerGuard, tieredRateLimitGuard } from "../guards/caller.guard";
 import { contractOS } from "../utils";
 
-// `publicReadGuard` has no floor: a browser never holds an API key.
-// `keyedReadGuard` is www's server client with `x-ch-api-key`.
+// `publicReadGuard` has no floor: a browser never holds an API key, but one that is sent must
+// still carry `feeds:read`. `keyedReadGuard` is www's server client with `x-ch-api-key`.
 // `sessionReadGuard` is dash with a session cookie. Rate limit scales with the same tier.
 
-const publicReadGuard = callerGuard();
-const keyedReadGuard = callerGuard({ minTier: CallerTier.ApiKey });
+const publicReadGuard = callerGuard({ scopes: [ApiKeyScope.FeedsRead] });
+const keyedReadGuard = callerGuard({
+  minTier: CallerTier.ApiKey,
+  scopes: [ApiKeyScope.FeedsRead],
+});
 const sessionReadGuard = callerGuard({ minTier: CallerTier.Session });
 const readRateLimit = tieredRateLimitGuard({ prefix: "rate-limiter:feeds" });
 
@@ -152,7 +156,10 @@ export const searchFeedsAdvancedRoute = contractOS.feeds["search:advanced"]
 // `update`, `translation:upsert` and `content:upsert` sit at API-key because the
 // content pipeline drives them; the rest require the operator's session.
 
-const contentWriteGuard = callerGuard({ minTier: CallerTier.ApiKey });
+const contentWriteGuard = callerGuard({
+  minTier: CallerTier.ApiKey,
+  scopes: [ApiKeyScope.FeedsWrite],
+});
 const rootWriteGuard = callerGuard({ minTier: CallerTier.Root });
 
 export const createFeedRoute = contractOS.feeds.create

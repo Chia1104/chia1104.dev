@@ -21,7 +21,7 @@ The frontends import only the contract type from `@chia/api/orpc/contracts` and 
 
 ## `www`
 
-- `src/libs/orpc/client.rsc.ts` is server-only and sends `CH_API_KEY` plus the Cloudflare bypass token.
+- `src/libs/orpc/client.rsc.ts` is server-only and sends `CH_API_KEY` plus the Cloudflare bypass token. That key needs the `feeds:read` and `spotify:read` scopes.
 - `src/libs/orpc/client.ts` runs in the browser with the session cookie and may call only public procedures and the visitor's own agent sessions. Never expose an API key to it.
 - Public agent chat lives in `src/components/agent/` and uses `@chia/agent-elements` content renderers only. Guest sessions come from better-auth's anonymous plugin and require the site captcha before minting. `@chia/ui/captcha` is the shared challenge widget.
 - Content uses `@chia/contents`; localization uses `next-intl` with `packages/i18n/www`.
