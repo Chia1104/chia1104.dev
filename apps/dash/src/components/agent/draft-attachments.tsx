@@ -6,8 +6,8 @@ import { Chip, Drawer } from "@heroui/react";
 import { FileText, Languages } from "lucide-react";
 
 import { ComposerAttachment } from "@chia/agent-elements/composer";
-import useIsMobile from "@chia/ui/utils/use-is-mobile";
 
+import { DrawerPanel } from "@/components/commons/drawer-panel";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
 type AgentDraft = NonNullable<
@@ -70,7 +70,6 @@ const TranslationBody = ({
 
 export const DraftAttachments = ({ draft }: { draft: AgentDraft }) => {
   const [selection, setSelection] = useState<Selection | null>(null);
-  const isMobile = useIsMobile("(max-width: 767px)");
 
   // SAFETY: `translations` is a `Partial<Record<Locale, …>>`; `Object.entries` widens its keys to
   // `string` and drops nothing else, so the pairs are exactly the locale-keyed entries.
@@ -125,27 +124,24 @@ export const DraftAttachments = ({ draft }: { draft: AgentDraft }) => {
         onOpenChange={(open) => {
           if (!open) setSelection(null);
         }}>
-        <Drawer.Content placement={isMobile ? "bottom" : "right"}>
-          <Drawer.Dialog className={isMobile ? undefined : "w-full max-w-2xl"}>
-            {isMobile ? <Drawer.Handle /> : null}
-            <Drawer.CloseTrigger />
-            <Drawer.Header>
-              <Drawer.Heading>{heading}</Drawer.Heading>
-              {selection?.kind === "translation" ? (
-                <Chip size="sm" variant="soft">
-                  <Chip.Label>{selection.locale}</Chip.Label>
-                </Chip>
-              ) : null}
-            </Drawer.Header>
-            <Drawer.Body>
-              {selection?.kind === "meta" ? (
-                <FeedMetaBody draft={draft} />
-              ) : selected ? (
-                <TranslationBody translation={selected} />
-              ) : null}
-            </Drawer.Body>
-          </Drawer.Dialog>
-        </Drawer.Content>
+        <DrawerPanel>
+          <Drawer.CloseTrigger />
+          <Drawer.Header>
+            <Drawer.Heading>{heading}</Drawer.Heading>
+            {selection?.kind === "translation" ? (
+              <Chip size="sm" variant="soft">
+                <Chip.Label>{selection.locale}</Chip.Label>
+              </Chip>
+            ) : null}
+          </Drawer.Header>
+          <Drawer.Body>
+            {selection?.kind === "meta" ? (
+              <FeedMetaBody draft={draft} />
+            ) : selected ? (
+              <TranslationBody translation={selected} />
+            ) : null}
+          </Drawer.Body>
+        </DrawerPanel>
       </Drawer.Backdrop>
     </>
   );

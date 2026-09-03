@@ -1,10 +1,10 @@
 import { ScrollShadow } from "@heroui/react";
 import "server-only";
-import dayjs from "dayjs";
 
 import { getContributions } from "@chia/api/github";
 import meta from "@chia/meta";
 import { cn } from "@chia/ui/utils/cn.util";
+import dayjs from "@chia/utils/day";
 
 import { ContributionsChart as ContributionsChartComponent } from "@/components/project/contributions-chart";
 

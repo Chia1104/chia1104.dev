@@ -2,8 +2,7 @@
 
 import { useMemo } from "react";
 
-import type { ConfigType } from "dayjs";
-
+import type { ConfigType } from "@chia/utils/day";
 import _dayjs from "@chia/utils/day";
 
 export interface Options {

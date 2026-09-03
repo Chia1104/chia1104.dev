@@ -199,6 +199,9 @@ catalogs:
     dayjs:
       specifier: ^1.11.23
       version: 1.11.23
+    es-toolkit:
+      specifier: 1.52.0
+      version: 1.52.0
     graphql-request:
       specifier: ^7.4.0
       version: 7.4.0
@@ -299,9 +302,6 @@ catalogs:
     hono:
       specifier: 4.13.5
       version: 4.13.5
-    srvx:
-      specifier: 0.12.7
-      version: 0.12.7
   kv:
     '@keyv/postgres':
       specifier: ^2.2.3
@@ -309,9 +309,6 @@ catalogs:
     '@keyv/redis':
       specifier: ^5.1.6
       version: 5.1.6
-    '@keyv/test-suite':
-      specifier: ^2.1.2
-      version: 2.1.2
     '@keyv/valkey':
       specifier: ^1.0.11
       version: 1.0.11
@@ -350,6 +347,13 @@ catalogs:
     takumi-js:
       specifier: ^2.13.3
       version: 2.13.3
+  nitro:
+    nitro:
+      specifier: 3.0.260610-beta
+      version: 3.0.260610-beta
+    srvx:
+      specifier: 0.12.7
+      version: 0.12.7
   orpc:
     '@orpc/client':
       specifier: 2.0.0-beta.32
@@ -729,9 +733,6 @@ catalogs:
     '@workflow/world-postgres':
       specifier: 4.3.5
       version: 4.3.5
-    nitro:
-      specifier: 3.0.260610-beta
-      version: 3.0.260610-beta
     workflow:
       specifier: 4.8.5
       version: 4.8.5
@@ -899,9 +900,9 @@ importers:
       clsx:
         specifier: catalog:ui
         version: 2.1.1
-      dayjs:
+      es-toolkit:
         specifier: 'catalog:'
-        version: 1.11.23
+        version: 1.52.0
       fumadocs-mdx:
         specifier: catalog:fumadocs
         version: 15.4.0(@types/mdast@4.0.4)(@types/mdx@2.0.14)(@types/react@19.2.18)(fumadocs-core@16.15.4(@mdx-js/mdx@3.1.1(supports-color@10.2.2))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.38.0(react@19.2.8))(next@16.3.3(@babel/core@7.29.7(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.4.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(supports-color@10.2.2)(zod@4.5.4))(next@16.3.3(@babel/core@7.29.7(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.4.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(rolldown@1.2.6)(supports-color@10.2.2)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
@@ -1122,12 +1123,12 @@ importers:
       better-auth:
         specifier: catalog:better-auth
         version: 1.7.2(@opentelemetry/api@1.9.1)(drizzle-kit@1.0.0-rc.4)(drizzle-orm@1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(bun-types@1.4.0)(pg@8.20.0)(sqlite3@5.1.7(supports-color@8.1.1))(zod@4.5.4))(next@16.3.3(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.4.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pg@8.20.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.11)
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       drizzle-orm:
         specifier: catalog:drizzle
         version: 1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(bun-types@1.4.0)(pg@8.20.0)(sqlite3@5.1.7(supports-color@8.1.1))(zod@4.5.4)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       firecrawl:
         specifier: catalog:ai
         version: 4.37.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1138,7 +1139,7 @@ importers:
         specifier: 'catalog:'
         version: 2.1.0
       nitro:
-        specifier: catalog:workflow
+        specifier: catalog:nitro
         version: 3.0.260610-beta(@vercel/functions@3.9.5(@aws-sdk/credential-provider-web-identity@3.972.49)(ws@8.21.3))(@vercel/queue@0.3.1)(chokidar@5.0.0)(dotenv@17.4.2)(drizzle-orm@1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(bun-types@1.4.0)(pg@8.20.0)(sqlite3@5.1.7(supports-color@8.1.1))(zod@4.5.4))(giget@3.3.1)(ioredis@5.11.1(supports-color@8.1.1))(jiti@2.7.0)(lru-cache@11.5.2)(sqlite3@5.1.7(supports-color@8.1.1))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
       react:
         specifier: catalog:react-is
@@ -1237,6 +1238,9 @@ importers:
       ai:
         specifier: catalog:ai
         version: 7.0.85(zod@4.5.4)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       firecrawl:
         specifier: catalog:ai
         version: 4.37.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
@@ -1269,7 +1273,7 @@ importers:
         specifier: catalog:react-is
         version: 19.2.5(@types/react@19.2.18)
       nitro:
-        specifier: catalog:workflow
+        specifier: catalog:nitro
         version: 3.0.260610-beta(@vercel/functions@3.9.5(@aws-sdk/credential-provider-web-identity@3.972.76)(ws@8.21.3))(@vercel/queue@0.3.1)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(ioredis@5.11.1(supports-color@10.2.2))(jiti@2.7.0)(lru-cache@11.5.2)(sqlite3@5.1.7(supports-color@10.2.2))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
       typescript:
         specifier: 'catalog:'
@@ -1373,9 +1377,9 @@ importers:
       cobe:
         specifier: catalog:ui
         version: 2.0.1
-      dayjs:
+      es-toolkit:
         specifier: 'catalog:'
-        version: 1.11.23
+        version: 1.52.0
       fumadocs-mdx:
         specifier: catalog:fumadocs
         version: 15.4.0(@types/mdast@4.0.4)(@types/mdx@2.0.14)(@types/react@19.2.18)(fumadocs-core@16.15.4(@mdx-js/mdx@3.1.1(supports-color@10.2.2))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.38.0(react@19.2.8))(next@16.3.3(@babel/core@7.29.7(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.4.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(supports-color@10.2.2)(zod@4.5.4))(next@16.3.3(@babel/core@7.29.7(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.4.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(rolldown@1.2.6)(supports-color@10.2.2)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
@@ -1530,6 +1534,9 @@ importers:
       '@earendil-works/pi-ai':
         specifier: catalog:agent
         version: 0.84.4(supports-color@10.2.2)(ws@8.21.3)(zod@4.5.4)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       typebox:
         specifier: catalog:agent
         version: 1.3.23
@@ -1600,6 +1607,9 @@ importers:
       border-beam:
         specifier: catalog:ui
         version: 1.3.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       lucide-react:
         specifier: catalog:ui
         version: 1.38.0(react@19.2.8)
@@ -1673,6 +1683,9 @@ importers:
       '@chia/workflow-control':
         specifier: workspace:*
         version: link:../workflow-control
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       zod:
         specifier: 'catalog:'
         version: 4.5.4
@@ -1707,6 +1720,9 @@ importers:
       '@earendil-works/pi-ai':
         specifier: catalog:agent
         version: 0.84.4(supports-color@10.2.2)(ws@8.21.3)(zod@4.5.4)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       zod:
         specifier: 'catalog:'
         version: 4.5.4
@@ -1744,6 +1760,9 @@ importers:
       '@earendil-works/pi-ai':
         specifier: catalog:agent
         version: 0.84.4(supports-color@10.2.2)(ws@8.21.3)(zod@4.5.4)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       typebox:
         specifier: catalog:agent
         version: 1.3.23
@@ -1790,6 +1809,9 @@ importers:
       '@earendil-works/pi-ai':
         specifier: catalog:agent
         version: 0.84.4(supports-color@10.2.2)(ws@8.21.3)(zod@4.5.4)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       typebox:
         specifier: catalog:agent
         version: 1.3.23
@@ -1839,6 +1861,9 @@ importers:
       ai:
         specifier: catalog:ai
         version: 7.0.85(zod@4.5.4)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       github-slugger:
         specifier: catalog:unified
         version: 2.0.0
@@ -1960,9 +1985,6 @@ importers:
       client-only:
         specifier: 'catalog:'
         version: 0.0.1
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       drizzle-orm:
         specifier: catalog:drizzle
         version: 1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(bun-types@1.4.0)(pg@8.23.0)(sqlite3@5.1.7(supports-color@7.2.0))(zod@4.5.4)
@@ -2033,9 +2055,6 @@ importers:
       client-only:
         specifier: 'catalog:'
         version: 0.0.1
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       resend:
         specifier: catalog:email
         version: 6.25.0(@react-email/render@2.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
@@ -2082,9 +2101,9 @@ importers:
       '@mdx-js/react':
         specifier: catalog:fumadocs
         version: 3.1.1(@types/react@19.2.18)(react@19.2.8)
-      dayjs:
+      es-toolkit:
         specifier: 'catalog:'
-        version: 1.11.23
+        version: 1.52.0
       fumadocs-core:
         specifier: catalog:fumadocs
         version: 16.15.4(@mdx-js/mdx@3.1.1(supports-color@10.2.2))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.38.0(react@19.2.8))(next@16.3.3(@babel/core@7.29.7(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.4.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(supports-color@10.2.2)(zod@4.5.4)
@@ -2164,6 +2183,9 @@ importers:
       drizzle-orm:
         specifier: catalog:drizzle
         version: 1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(bun-types@1.4.0)(pg@8.23.0)(sqlite3@5.1.7(supports-color@7.2.0))(zod@4.5.4)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       pg:
         specifier: catalog:drizzle
         version: 8.23.0
@@ -2255,6 +2277,9 @@ importers:
       drizzle-orm:
         specifier: catalog:drizzle
         version: 1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(@upstash/redis@1.38.3)(bun-types@1.4.0)(pg@8.23.0)(sqlite3@5.1.7(supports-color@10.2.2))(typebox@1.3.23)(zod@4.5.4)
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       keyv:
         specifier: catalog:kv
         version: 5.6.0
@@ -2268,9 +2293,6 @@ importers:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
-      '@keyv/test-suite':
-        specifier: catalog:kv
-        version: 2.1.2(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/ui@4.1.11)(happy-dom@20.12.0)(keyv@5.6.0)(msw@2.15.0(@types/node@26.4.0)(typescript@7.0.2))(supports-color@10.2.2)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -2280,9 +2302,9 @@ importers:
 
   packages/meta:
     dependencies:
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
     devDependencies:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
@@ -2311,6 +2333,9 @@ importers:
       '@orpc/server':
         specifier: catalog:orpc
         version: 2.0.0-beta.32(@opentelemetry/api@1.9.1)(crossws@0.4.12(srvx@0.12.7))
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       hono:
         specifier: catalog:hono
         version: 4.13.5
@@ -2325,7 +2350,7 @@ importers:
         specifier: catalog:chiastack
         version: 2.1.2
       srvx:
-        specifier: catalog:hono
+        specifier: catalog:nitro
         version: 0.12.7
       typescript:
         specifier: 'catalog:'
@@ -2511,9 +2536,9 @@ importers:
       cmdk:
         specifier: catalog:ui
         version: 1.1.1(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      dayjs:
+      es-toolkit:
         specifier: 'catalog:'
-        version: 1.11.23
+        version: 1.52.0
       ky:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2599,6 +2624,9 @@ importers:
       dayjs:
         specifier: 'catalog:'
         version: 1.11.23
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       ky:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2630,6 +2658,9 @@ importers:
       '@chia/service-kit':
         specifier: workspace:*
         version: link:../service-kit
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.52.0
       workflow:
         specifier: catalog:workflow
         version: 4.8.5(@nestjs/common@12.0.1(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@12.0.1(@nestjs/common@12.0.1(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))(@opentelemetry/api@1.9.1)(@swc/cli@0.8.1(@swc/core@1.16.1(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2))(@swc/core@1.16.1(@swc/helpers@0.5.23))(@swc/helpers@0.5.23)(magicast@0.5.4)(next@16.3.3(@babel/core@7.29.7(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.4.0))(supports-color@10.2.2)(typescript@7.0.2)(ws@8.21.3)
@@ -4401,11 +4432,6 @@ packages:
 
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
-
-  '@keyv/test-suite@2.1.2':
-    resolution: {integrity: sha512-3DizJxnIx4OSDSYsGoY8Z4KYYmYGfz97D/0AwPd2sMYTcdKcfumXCKBo4YAYgS32uFJRvqs8HUFHyg8noJ8AGA==}
-    peerDependencies:
-      keyv: ^5.5.4
 
   '@keyv/valkey@1.0.11':
     resolution: {integrity: sha512-uXf4TftClagJxquhlo1QFKd7JIcmxVm9vlWkDZGlkLQAIesocKaap2ojJocMDvon6h56L2SczoWkkL5OZs4AfQ==}
@@ -13632,9 +13658,6 @@ packages:
     resolution: {integrity: sha512-75voc/9G4rDIJleOo4jPvN4/YC4GRZrY8yy1uU4lwrB3XEQbWve8zXoO5No4eFrGcTAMYyoY67p8jRQdtA1HbA==}
     engines: {node: '>=12'}
 
-  timekeeper@2.3.1:
-    resolution: {integrity: sha512-LeQRS7/4JcC0PgdSFnfUiStQEdiuySlCj/5SJ18D+T1n9BoY7PxKFfCwLulpHXoLUFr67HxBddQdEX47lDGx1g==}
-
   tiny-invariant@1.3.1:
     resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
 
@@ -16031,32 +16054,6 @@ snapshots:
       - '@opentelemetry/api'
 
   '@keyv/serialize@1.1.1': {}
-
-  '@keyv/test-suite@2.1.2(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/ui@4.1.11)(happy-dom@20.12.0)(keyv@5.6.0)(msw@2.15.0(@types/node@26.4.0)(typescript@7.0.2))(supports-color@10.2.2)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))':
-    dependencies:
-      '@vitest/coverage-v8': 4.1.11(vitest@4.1.11)
-      bignumber.js: 9.3.1
-      json-bigint: 1.0.0
-      keyv: 5.6.0
-      sqlite3: 5.1.7(supports-color@10.2.2)
-      timekeeper: 2.3.1
-      vitest: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(happy-dom@20.12.0)(msw@2.15.0(@types/node@26.4.0)(typescript@7.0.2))(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.0))
-    transitivePeerDependencies:
-      - '@edge-runtime/vm'
-      - '@opentelemetry/api'
-      - '@types/node'
-      - '@vitest/browser'
-      - '@vitest/browser-playwright'
-      - '@vitest/browser-preview'
-      - '@vitest/browser-webdriverio'
-      - '@vitest/coverage-istanbul'
-      - '@vitest/ui'
-      - bluebird
-      - happy-dom
-      - jsdom
-      - msw
-      - supports-color
-      - vite
 
   '@keyv/valkey@1.0.11(supports-color@10.2.2)':
     dependencies:
@@ -20584,6 +20581,7 @@ snapshots:
   bindings@1.5.0:
     dependencies:
       file-uri-to-path: 1.0.0
+    optional: true
 
   bl@4.1.0:
     dependencies:
@@ -20841,9 +20839,11 @@ snapshots:
     dependencies:
       readdirp: 5.1.1
 
-  chownr@1.1.4: {}
+  chownr@1.1.4:
+    optional: true
 
-  chownr@2.0.0: {}
+  chownr@2.0.0:
+    optional: true
 
   chrome-trace-event@1.0.4: {}
 
@@ -21309,6 +21309,7 @@ snapshots:
   decompress-response@6.0.0:
     dependencies:
       mimic-response: 3.1.0
+    optional: true
 
   deep-extend@0.6.0: {}
 
@@ -21914,7 +21915,8 @@ snapshots:
       strip-final-newline: 4.0.0
       yoctocolors: 2.2.0
 
-  expand-template@2.0.3: {}
+  expand-template@2.0.3:
+    optional: true
 
   expect-type@1.4.0: {}
 
@@ -22103,7 +22105,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  file-uri-to-path@1.0.0: {}
+  file-uri-to-path@1.0.0:
+    optional: true
 
   filelist@1.0.6:
     dependencies:
@@ -22234,6 +22237,7 @@ snapshots:
   fs-minipass@2.1.0:
     dependencies:
       minipass: 3.3.6
+    optional: true
 
   fs.realpath@1.0.0:
     optional: true
@@ -22429,7 +22433,8 @@ snapshots:
 
   giget@3.3.1: {}
 
-  github-from-package@0.0.0: {}
+  github-from-package@0.0.0:
+    optional: true
 
   github-slugger@2.0.0: {}
 
@@ -24171,7 +24176,8 @@ snapshots:
 
   mimic-function@5.0.1: {}
 
-  mimic-response@3.1.0: {}
+  mimic-response@3.1.0:
+    optional: true
 
   mimic-response@4.0.0: {}
 
@@ -24245,8 +24251,10 @@ snapshots:
   minipass@3.3.6:
     dependencies:
       yallist: 4.0.0
+    optional: true
 
-  minipass@5.0.0: {}
+  minipass@5.0.0:
+    optional: true
 
   minipass@7.1.3: {}
 
@@ -24254,6 +24262,7 @@ snapshots:
     dependencies:
       minipass: 3.3.6
       yallist: 4.0.0
+    optional: true
 
   mixin-deep@1.3.2:
     dependencies:
@@ -24264,9 +24273,11 @@ snapshots:
 
   mixpart@0.0.6: {}
 
-  mkdirp-classic@0.5.3: {}
+  mkdirp-classic@0.5.3:
+    optional: true
 
-  mkdirp@1.0.4: {}
+  mkdirp@1.0.4:
+    optional: true
 
   mlly@1.8.2:
     dependencies:
@@ -24355,7 +24366,8 @@ snapshots:
 
   nanostores@1.5.2: {}
 
-  napi-build-utils@2.0.0: {}
+  napi-build-utils@2.0.0:
+    optional: true
 
   natural-compare@1.4.0: {}
 
@@ -24569,6 +24581,7 @@ snapshots:
   node-abi@3.96.0:
     dependencies:
       semver: 7.8.5
+    optional: true
 
   node-abort-controller@3.1.1: {}
 
@@ -25276,6 +25289,7 @@ snapshots:
       simple-get: 4.0.1
       tar-fs: 2.1.5
       tunnel-agent: 0.6.0
+    optional: true
 
   prelude-ls@1.2.1: {}
 
@@ -25359,6 +25373,7 @@ snapshots:
     dependencies:
       end-of-stream: 1.4.5
       once: 1.4.0
+    optional: true
 
   punycode@2.3.1: {}
 
@@ -26181,13 +26196,15 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  simple-concat@1.0.1: {}
+  simple-concat@1.0.1:
+    optional: true
 
   simple-get@4.0.1:
     dependencies:
       decompress-response: 6.0.0
       once: 1.4.0
       simple-concat: 1.0.1
+    optional: true
 
   sirv@3.0.2:
     dependencies:
@@ -26342,6 +26359,7 @@ snapshots:
     transitivePeerDependencies:
       - bluebird
       - supports-color
+    optional: true
 
   sqlite3@5.1.7(supports-color@7.2.0):
     dependencies:
@@ -26617,6 +26635,7 @@ snapshots:
       mkdirp-classic: 0.5.3
       pump: 3.0.4
       tar-stream: 2.2.0
+    optional: true
 
   tar-stream@2.2.0:
     dependencies:
@@ -26643,6 +26662,7 @@ snapshots:
       minizlib: 2.1.2
       mkdirp: 1.0.4
       yallist: 4.0.0
+    optional: true
 
   terminal-link@5.0.0:
     dependencies:
@@ -26695,8 +26715,6 @@ snapshots:
   time-span@5.1.0:
     dependencies:
       convert-hrtime: 5.0.0
-
-  timekeeper@2.3.1: {}
 
   tiny-invariant@1.3.1: {}
 
@@ -26820,6 +26838,7 @@ snapshots:
   tunnel-agent@0.6.0:
     dependencies:
       safe-buffer: 5.2.1
+    optional: true
 
   tunnel-rat@0.1.2(@types/react@19.2.18)(immer@11.1.18)(react@19.2.8):
     dependencies:
@@ -27431,7 +27450,8 @@ snapshots:
 
   yallist@3.1.1: {}
 
-  yallist@4.0.0: {}
+  yallist@4.0.0:
+    optional: true
 
   yaml@2.9.0: {}
 

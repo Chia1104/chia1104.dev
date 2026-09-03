@@ -84,13 +84,14 @@
     "@chia/utils": "workspace:*",
     "@hono/sentry": "catalog:hono",
     "@orpc/server": "catalog:orpc",
+    "es-toolkit": "catalog:",
     "hono": "catalog:hono",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "srvx": "catalog:hono",
+    "srvx": "catalog:nitro",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
   }

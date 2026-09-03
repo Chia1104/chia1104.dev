@@ -47,7 +47,7 @@
     "ai": "catalog:ai",
     "client-only": "catalog:",
     "clsx": "catalog:ui",
-    "dayjs": "catalog:",
+    "es-toolkit": "catalog:",
     "fumadocs-mdx": "catalog:fumadocs",
     "fumadocs-ui": "catalog:fumadocs",
     "hono": "catalog:hono",

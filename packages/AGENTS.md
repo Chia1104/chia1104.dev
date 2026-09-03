@@ -39,8 +39,9 @@ Authorization belongs in `service-kit/src/policies`. Bind policies through `runP
 
 ## Core package boundaries
 
+- Dates: persist and compare instants as `Date` (Drizzle `mode: "date"`) and ISO strings on the wire. Calendar, timezone, locale and display use `@chia/utils/day`. Do not import `dayjs` directly.
 - `service-kit`: `createServiceFactory()` builds per-request `ServiceContext`; `bootstrap()` applies cross-cutting Hono middleware.
-- `db`: every timestamp column is `timestamptz` (`withTimezone: true`); a plain `timestamp` would be read as UTC by Drizzle but written in the process's zone by a raw `sql` parameter. `connectDatabase(env, { withCache })` is memoized by URL and cache setting. Request paths may use explicit Redis-backed Drizzle caching; workflow steps use `withCache: false`. All text and JSON parameters pass through `storableCodecs` before reaching Postgres.
+- `db`: every timestamp column is `timestamptz` (`withTimezone: true`); a plain `timestamp` would be read as UTC by Drizzle but written in the process's zone by a raw `sql` parameter. Timestamp columns use `mode: "date"`. `connectDatabase(env, { withCache })` is memoized by URL and cache setting. Request paths may use explicit Redis-backed Drizzle caching; workflow steps use `withCache: false`. All text and JSON parameters pass through `storableCodecs` before reaching Postgres.
 - `auth`: Better Auth configuration and server/browser clients. Keep email providers and templates lazily imported.
 - `kv`: shared Keyv adapters, the Drizzle cache and rate-limiter integration.
 - `ai`: embeddings, chunking, content tools, provider model creation and API-key crypto. Keep provider SDKs lazily imported.
@@ -53,7 +54,7 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before changi
 | Package          | Boundary                                                                       |
 | ---------------- | ------------------------------------------------------------------------------ |
 | `agent-runtime`  | Kind-independent session, turn, tool, compaction, wire-event and model runtime |
-| `agent-content`  | Shared read-only content tools and `ContentReadPort`                           |
+| `agent-content`  | Shared read-only content tools, `ContentReadPort` and `ProfileReadPort`        |
 | `agent-writing`  | Writing prompts, tools, policy, state and content/web ports                    |
 | `agent-public`   | Public reader prompt, policy and model allowlist                               |
 | `agent-elements` | Client session store, queries, providers and UI components                     |
@@ -71,6 +72,6 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before changi
 - `@chia/test/session`, `@chia/test/context` — `sessionOf`, `contextOf`, `serviceContextOf`.
 - `@chia/test/orpc` — `session` fixture; extend `context` in the consumer. Import `vi` from `vitest`.
 - `@chia/test/mocks/*` — `vi.mock` wiring stays in the consumer.
-- `@chia/test/fixtures/content-read-port` — read-port fake.
+- `@chia/test/fixtures/content-read-port`, `@chia/test/fixtures/profile-read-port` — read-port fakes.
 
 Keep app-specific helpers next to the app. Import `{ describe, expect, it, vi }` from `vitest`. Titles are behavior sentences, not `should ...`.

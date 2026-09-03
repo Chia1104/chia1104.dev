@@ -24,6 +24,7 @@ import {
   tags,
   tagTranslations,
 } from "./contents.schema.ts";
+import { profileEntries } from "./profile.schema.ts";
 import { resourceChunks, resourceEmbeddings } from "./resources.schema.ts";
 import { spotifyCredential } from "./spotify.schema.ts";
 import { user } from "./user.schema.ts";
@@ -34,6 +35,7 @@ const schema = {
   account,
   passkey,
   apikey,
+  profileEntries,
   resourceChunks,
   resourceEmbeddings,
   spotifyCredential,
@@ -68,6 +70,13 @@ export const relations = defineRelations(schema, (r) => ({
     }),
     feeds: r.many.feeds({ from: r.user.id, to: r.feeds.userId }),
     assets: r.many.assets({ from: r.user.id, to: r.assets.userId }),
+    profileEntries: r.many.profileEntries({
+      from: r.user.id,
+      to: r.profileEntries.userId,
+    }),
+  },
+  profileEntries: {
+    user: r.one.user({ from: r.profileEntries.userId, to: r.user.id }),
   },
   session: {
     user: r.one.user({ from: r.session.userId, to: r.user.id }),
@@ -259,6 +268,7 @@ export const feedTranslationsRelations = relations.feedTranslations;
 export const assetsRelations = relations.assets;
 export const assetsToTagsRelations = relations.assetsToTags;
 export const feedsToTagsRelations = relations.feedsToTags;
+export const profileEntriesRelations = relations.profileEntries;
 export const agentSessionsRelations = relations.agentSessions;
 export const agentRunsRelations = relations.agentRuns;
 export const agentSessionEntriesRelations = relations.agentSessionEntries;

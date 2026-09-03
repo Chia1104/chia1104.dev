@@ -31,13 +31,13 @@ flowchart TB
     RUNTIME --> PG[(Postgres agent schema)]
 ```
 
-| Layer                       | Owner                                           | Responsibility                                               |
-| --------------------------- | ----------------------------------------------- | ------------------------------------------------------------ |
-| Transport and orchestration | `packages/api`, `apps/service`, `apps/workflow` | Auth, oRPC, workflow control, streams and host ports         |
-| Execution                   | `@chia/agent-runtime`                           | Pi lifecycle, persistence, approvals, models and wire events |
-| Shared content              | `@chia/agent-content`                           | Read-only blog tools and `ContentReadPort`                   |
-| Domain                      | `@chia/agent-writing`, `@chia/agent-public`     | Prompts, tools, policy, model allowlist and domain ports     |
-| Client                      | `@chia/agent-elements`                          | Session store, queries and shared chat UI                    |
+| Layer                       | Owner                                           | Responsibility                                                |
+| --------------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
+| Transport and orchestration | `packages/api`, `apps/service`, `apps/workflow` | Auth, oRPC, workflow control, streams and host ports          |
+| Execution                   | `@chia/agent-runtime`                           | Pi lifecycle, persistence, approvals, models and wire events  |
+| Shared content              | `@chia/agent-content`                           | Read-only blog tools, `ContentReadPort` and `ProfileReadPort` |
+| Domain                      | `@chia/agent-writing`, `@chia/agent-public`     | Prompts, tools, policy, model allowlist and domain ports      |
+| Client                      | `@chia/agent-elements`                          | Session store, queries and shared chat UI                     |
 
 The stable client boundary is `AgentWireEvent`, not an interchangeable model engine. Pi-specific names and types remain explicit inside the runtime.
 
@@ -59,10 +59,10 @@ The oRPC context receives an `agentFactory` built from eager `minTier` values an
 
 Every agent route resolves a `CallerTier`. Kind and session guards compare that tier with the persisted kind's `minTier` and verify ownership.
 
-| Kind      | Minimum tier | Content visibility                               | Mutable domain state |
-| --------- | ------------ | ------------------------------------------------ | -------------------- |
-| `writing` | `Root`       | Configured author's drafts and published content | Drafts and memory    |
-| `public`  | `Guest`      | Configured author's published content only       | None                 |
+| Kind      | Minimum tier | Content visibility                                | Mutable domain state |
+| --------- | ------------ | ------------------------------------------------- | -------------------- |
+| `writing` | `Root`       | Configured author's drafts and published content  | Drafts and memory    |
+| `public`  | `Guest`      | Configured author's published content and profile | None                 |
 
 The generic layer does not carry an admin identity. The writing binding reads the configured author when its content port needs it; the public binding never receives that identity or a write-capable port.
 
@@ -159,7 +159,7 @@ Host hook failures are recorded as internal errors and abort the turn. The model
 
 ### Prompt layering
 
-The system prompt contains stable rules, skill indexes and approval posture. Turn-specific data such as the clock, draft state and saved memories enters through Pi's context hook as a final volatile user message. It is recomputed for every provider request and never persisted.
+The system prompt contains stable rules, skill indexes and approval posture. The public kind also renders the author's published profile into it, one locale under a character cap, because the profile is bounded and changes only when the operator edits it. Turn-specific data such as the clock, draft state and saved memories enters through Pi's context hook as a final volatile user message. It is recomputed for every provider request and never persisted.
 
 This keeps the provider's cached prefix stable and prevents changing context from accumulating in the transcript.
 
@@ -327,7 +327,7 @@ Visibility is fixed when the host constructs `ContentReadPort`:
 - `author` can read the configured author's drafts and published content.
 - `public` can read only published content and cannot widen that filter.
 
-The public kind receives the public port and never receives `WebPort` or write capabilities.
+The public kind receives the public port and never receives `WebPort` or write capabilities. Its `ProfileReadPort` is built the same way: the host lists only the configured author's published profile rows, and the kind renders them into the system prompt rather than exposing a tool.
 
 ## 10. Operator configuration
 

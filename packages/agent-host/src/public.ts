@@ -1,4 +1,7 @@
-import type { ContentReadPort } from "@chia/agent-content/types";
+import type {
+  ContentReadPort,
+  ProfileReadPort,
+} from "@chia/agent-content/types";
 import {
   PUBLIC_CONFIG_DEFAULTS,
   publicConfigSchema,
@@ -33,6 +36,8 @@ type PublicAgentKind = AgentKindDefinition<PublicAgentState, PublicConfig>;
 interface PublicExecutionHost {
   /** Must be built with `public` visibility; the kind cannot check that, only rely on it. */
   createContentPort(options: { db: DB }): ContentReadPort;
+  /** Published rows only, for the same reason. */
+  createProfilePort(options: { db: DB }): ProfileReadPort;
 }
 
 export interface CreatePublicAgentKindOptions {
@@ -47,7 +52,7 @@ export const createPublicAgentKind = (
     kind: PUBLIC_AGENT_KIND,
     label: "Reader",
     description:
-      "Answers visitors' questions about the published posts, on the public site.",
+      "Answers visitors' questions about the author and the published posts, on the public site.",
 
     /**
      * Anyone with a user row. Lower tiers are metered by the shared weekly allowance and the
@@ -110,6 +115,7 @@ export const createPublicAgentKind = (
           instructions: context.config.instructions,
           agentSessionId: context.row.id,
           content: execution.createContentPort({ db: context.db }),
+          profile: execution.createProfilePort({ db: context.db }),
           onEvent: context.onEvent,
           approvedToolCallIds: context.approvedToolCallIds,
           preAuthorizedToolNames: context.preAuthorizedToolNames,

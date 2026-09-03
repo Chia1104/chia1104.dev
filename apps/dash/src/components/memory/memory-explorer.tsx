@@ -32,6 +32,7 @@ import { toast } from "sonner";
 
 import { Markdown } from "@chia/agent-elements/markdown";
 
+import { DrawerPanel } from "@/components/commons/drawer-panel";
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 
@@ -507,29 +508,27 @@ const MemoryDetailDrawer = ({
     <Drawer.Backdrop
       isOpen={memoryId !== null}
       onOpenChange={(open) => !open && onClose()}>
-      <Drawer.Content placement="right">
-        <Drawer.Dialog>
-          <Drawer.CloseTrigger />
-          <Drawer.Header>
-            <Drawer.Heading>
-              {data ? data.memory.title : `Memory #${memoryId}`}
-            </Drawer.Heading>
-          </Drawer.Header>
-          <Drawer.Body>
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Spinner size="sm" />
-              </div>
-            ) : error || !data ? (
-              <p className="text-danger py-8 text-sm">
-                {error?.message ?? "Could not load this memory"}
-              </p>
-            ) : (
-              <MemoryEditor memory={data.memory} onClose={onClose} />
-            )}
-          </Drawer.Body>
-        </Drawer.Dialog>
-      </Drawer.Content>
+      <DrawerPanel>
+        <Drawer.CloseTrigger />
+        <Drawer.Header>
+          <Drawer.Heading>
+            {data ? data.memory.title : `Memory #${memoryId}`}
+          </Drawer.Heading>
+        </Drawer.Header>
+        <Drawer.Body>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Spinner size="sm" />
+            </div>
+          ) : error || !data ? (
+            <p className="text-danger py-8 text-sm">
+              {error?.message ?? "Could not load this memory"}
+            </p>
+          ) : (
+            <MemoryEditor memory={data.memory} onClose={onClose} />
+          )}
+        </Drawer.Body>
+      </DrawerPanel>
     </Drawer.Backdrop>
   );
 };

@@ -35,7 +35,7 @@ flowchart TB
 | -------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
 | Transport 與 orchestration | `packages/api`、`apps/service`、`apps/workflow` | Auth、oRPC、workflow control、streams 與 host ports         |
 | Execution                  | `@chia/agent-runtime`                           | Pi lifecycle、persistence、approvals、models 與 wire events |
-| Shared content             | `@chia/agent-content`                           | 唯讀部落格 tools 與 `ContentReadPort`                       |
+| Shared content             | `@chia/agent-content`                           | 唯讀部落格 tools、`ContentReadPort` 與 `ProfileReadPort`    |
 | Domain                     | `@chia/agent-writing`、`@chia/agent-public`     | Prompts、tools、policy、model allowlist 與 domain ports     |
 | Client                     | `@chia/agent-elements`                          | Session store、queries 與共用 chat UI                       |
 
@@ -59,10 +59,10 @@ oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建�
 
 每條 agent route 先解析 `CallerTier`，再由 kind 與 session guard 比對 persisted kind 的 `minTier` 並驗證 ownership。
 
-| Kind      | 最低 tier | 內容可見性                 | 可變 domain state |
-| --------- | --------- | -------------------------- | ----------------- |
-| `writing` | `Root`    | 設定作者的草稿與已發佈內容 | Draft 與 memory   |
-| `public`  | `Guest`   | 設定作者的已發佈內容       | 無                |
+| Kind      | 最低 tier | 內容可見性                     | 可變 domain state |
+| --------- | --------- | ------------------------------ | ----------------- |
+| `writing` | `Root`    | 設定作者的草稿與已發佈內容     | Draft 與 memory   |
+| `public`  | `Guest`   | 設定作者的已發佈內容與 profile | 無                |
 
 Generic 層不攜帶 admin 身分。Writing binding 只在建立 content port 時讀設定作者；public binding 不會收到該身分或任何可寫 port。
 
@@ -159,7 +159,7 @@ Host hook 失敗會記為 internal error 並中止 turn。缺少 volatile contex
 
 ### Prompt 分層
 
-System prompt 只放穩定的規則、skill index 與 approval posture。時鐘、draft state 和已存 memory 等 turn-specific 資料，透過 Pi context hook 加在最後一則 volatile user message；每次 provider request 都重新計算，且不持久化。
+System prompt 只放穩定的規則、skill index 與 approval posture。Public kind 另外把作者已發佈的 profile 以單一 locale、字元上限內渲染進去，因為 profile 有界且只在 operator 編輯時改變。時鐘、draft state 和已存 memory 等 turn-specific 資料，透過 Pi context hook 加在最後一則 volatile user message；每次 provider request 都重新計算，且不持久化。
 
 這能維持 provider cached prefix 穩定，也避免變動資料累積進 transcript。
 
@@ -327,7 +327,7 @@ Host 建立 `ContentReadPort` 時就固定 visibility：
 - `author` 可讀設定作者的草稿與已發佈內容。
 - `public` 只能讀已發佈內容，且不能擴大 filter。
 
-Public kind 只收到 public port，不會收到 `WebPort` 或寫入能力。
+Public kind 只收到 public port，不會收到 `WebPort` 或寫入能力。它的 `ProfileReadPort` 以同樣方式建立：host 只列出設定作者已發佈的 profile rows，kind 將其渲染進 system prompt，而不是開放成工具。
 
 ## 10. Operator 設定
 

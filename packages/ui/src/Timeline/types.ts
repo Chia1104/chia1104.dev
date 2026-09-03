@@ -5,8 +5,9 @@ import type {
   ComponentProps,
 } from "react";
 
-import type { Dayjs } from "dayjs";
 import type { HTMLMotionProps, ForwardRefComponent } from "motion/react";
+
+import type { Dayjs } from "@chia/utils/day";
 
 export interface TimelineItemData {
   id: number;

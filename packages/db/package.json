@@ -53,6 +53,10 @@
       "types": "./src/libs/spotify/index.ts",
       "default": "./src/libs/spotify/index.ts"
     },
+    "./repos/profile": {
+      "types": "./src/libs/profile/index.ts",
+      "default": "./src/libs/profile/index.ts"
+    },
     "./validator/feeds": {
       "types": "./src/libs/validator/feeds.ts",
       "default": "./src/libs/validator/feeds.ts"
@@ -64,6 +68,10 @@
     "./validator/apikey": {
       "types": "./src/libs/validator/apikey.ts",
       "default": "./src/libs/validator/apikey.ts"
+    },
+    "./validator/profile": {
+      "types": "./src/libs/validator/profile.ts",
+      "default": "./src/libs/validator/profile.ts"
     },
     "./env": {
       "types": "./src/env.ts",
@@ -119,6 +127,7 @@
     "@paradedb/drizzle-paradedb": "catalog:drizzle",
     "@t3-oss/env-core": "catalog:env",
     "drizzle-orm": "catalog:drizzle",
+    "es-toolkit": "catalog:",
     "pg": "catalog:drizzle",
     "zod": "catalog:"
   },

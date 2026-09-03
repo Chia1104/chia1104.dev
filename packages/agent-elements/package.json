@@ -154,6 +154,7 @@
     "@tanstack/react-query": "catalog:tanstack",
     "@tanstack/react-virtual": "catalog:tanstack",
     "border-beam": "catalog:ui",
+    "es-toolkit": "catalog:",
     "lucide-react": "catalog:ui",
     "motion": "catalog:ui",
     "react": "catalog:react-is",

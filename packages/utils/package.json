@@ -77,6 +77,7 @@
     "@t3-oss/env-core": "catalog:env",
     "@tanstack/react-query": "catalog:tanstack",
     "dayjs": "catalog:",
+    "es-toolkit": "catalog:",
     "ky": "catalog:",
     "superjson": "catalog:",
     "zod": "catalog:"

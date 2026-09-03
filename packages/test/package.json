@@ -40,6 +40,10 @@
     "./fixtures/content-read-port": {
       "types": "./src/fixtures/content-read-port.ts",
       "default": "./src/fixtures/content-read-port.ts"
+    },
+    "./fixtures/profile-read-port": {
+      "types": "./src/fixtures/profile-read-port.ts",
+      "default": "./src/fixtures/profile-read-port.ts"
     }
   },
   "scripts": {

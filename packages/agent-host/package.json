@@ -59,6 +59,7 @@
     "@chia/service-kit": "workspace:*",
     "@chia/utils": "workspace:*",
     "@chia/workflow-control": "workspace:*",
+    "es-toolkit": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

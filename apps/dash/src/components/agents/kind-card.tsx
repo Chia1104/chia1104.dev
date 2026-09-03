@@ -225,20 +225,20 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
                     shouldDirty: true,
                   })
                 }>
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
                 <Switch.Content>
+                  <Switch.Control>
+                    <Switch.Thumb />
+                  </Switch.Control>
                   <Label className="text-xs">
                     Override pre-approved tool tiers
                   </Label>
-                  <Description className="text-xs">
-                    Default:{" "}
-                    {code.autoApprove.length > 0
-                      ? code.autoApprove.join(", ")
-                      : "none — every gated tool asks first"}
-                  </Description>
                 </Switch.Content>
+                <Description className="text-xs">
+                  Default:{" "}
+                  {code.autoApprove.length > 0
+                    ? code.autoApprove.join(", ")
+                    : "none — every gated tool asks first"}
+                </Description>
               </Switch>
               {autoApprove !== null ? (
                 <Controller

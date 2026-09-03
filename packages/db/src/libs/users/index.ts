@@ -11,8 +11,6 @@ import {
   sql,
 } from "drizzle-orm";
 
-import dayjs from "@chia/utils/day";
-
 import * as schema from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
 import { withDTO } from "../index.ts";
@@ -28,7 +26,7 @@ const parseCursor = (cursor: string) => {
   return { at: cursor.slice(0, separator), id: cursor.slice(separator + 1) };
 };
 
-const toISO = (date: Date | null) => (date ? dayjs(date).toISOString() : null);
+const toISO = (date: Date | null) => date?.toISOString() ?? null;
 
 const userColumns = {
   id: schema.user.id,
@@ -57,8 +55,8 @@ const serializeUser = <
   ...row,
   isAnonymous: row.isAnonymous === true,
   banExpires: toISO(row.banExpires),
-  createdAt: dayjs(row.createdAt).toISOString(),
-  updatedAt: dayjs(row.updatedAt).toISOString(),
+  createdAt: row.createdAt.toISOString(),
+  updatedAt: row.updatedAt.toISOString(),
 });
 
 export const listUsers = withDTO(
@@ -157,7 +155,7 @@ export const getUserDetail = withDTO(async (db, { id }: { id: string }) => {
     user: serializeUser(row),
     accounts: accounts.map((account) => ({
       ...account,
-      createdAt: dayjs(account.createdAt).toISOString(),
+      createdAt: account.createdAt.toISOString(),
     })),
     passkeys: passkeys?.total ?? 0,
     apiKeys: apiKeys?.total ?? 0,
