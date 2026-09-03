@@ -13,6 +13,13 @@ const APIKEY_DATE_ORDER_BY = new Set([FeedOrderBy.CreatedAt]);
 
 const toISO = (date: Date | null) => date?.toISOString() ?? null;
 
+/** better-auth stores permissions as JSON text; its own endpoints hand back the object. */
+const parsePermissions = (raw: string | null) => {
+  if (!raw) return null;
+  // SAFETY: better-auth writes this column with JSON.stringify of a permissions record.
+  return JSON.parse(raw) as Record<string, string[]>;
+};
+
 export const getInfiniteApiKeys = withDTO(
   async (
     db,
@@ -57,6 +64,7 @@ export const getInfiniteApiKeys = withDTO(
 
     const serializedItems = items.map((item) => ({
       ...item,
+      permissions: parsePermissions(item.permissions),
       updatedAt: item.updatedAt.toISOString(),
       createdAt: item.createdAt.toISOString(),
       lastRefillAt: toISO(item.lastRefillAt),
