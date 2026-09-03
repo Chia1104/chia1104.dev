@@ -35,7 +35,7 @@ export const callerGuard = (options: CallerPolicyOptions = {}) =>
         context: await runPolicy(
           callerPolicy({
             minTier: options.minTier,
-            permissions: options.permissions,
+            scopes: options.scopes,
           }),
           context
         ),

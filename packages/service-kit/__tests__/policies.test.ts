@@ -251,3 +251,79 @@ describe("callerPolicy", () => {
     expect(!result.ok && result.error.code).toBe("FORBIDDEN");
   });
 });
+
+describe("apiKeyPolicy", () => {
+  const verifiedKey = (permissions: Record<string, string[]> | null) => ({
+    valid: true,
+    error: null,
+    key: { id: "k1", referenceId: "u1", permissions },
+  });
+
+  type VerifyResult =
+    | ReturnType<typeof verifiedKey>
+    | { valid: false; error: { code: string; message: string }; key: null };
+
+  const withKey = (
+    verifyApiKey: () => Promise<VerifyResult>,
+    header = "ch_test"
+  ) =>
+    makeContext({
+      headers: new Headers({ "x-ch-api-key": header }),
+      auth: /* SAFETY: This fixture implements the better-auth surface the policy calls. */ {
+        api: { verifyApiKey },
+      } as never,
+    });
+
+  it("denies with UNAUTHORIZED when no key header is sent", async () => {
+    const { apiKeyPolicy } = await import("../src/policies/apikey.policy");
+    const result = await apiKeyPolicy()(makeContext());
+    expect(!result.ok && result.error.code).toBe("UNAUTHORIZED");
+  });
+
+  it("verifies the key with better-auth and hands the parsed row downstream", async () => {
+    const { apiKeyPolicy } = await import("../src/policies/apikey.policy");
+    const verifyApiKey = vi.fn(() =>
+      Promise.resolve(verifiedKey({ feeds: ["read"] }))
+    );
+    const result = await apiKeyPolicy()(withKey(verifyApiKey));
+
+    expect(verifyApiKey).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { key: "ch_test" } })
+    );
+    expect(result.ok && result.patch?.apiKey.permissions).toEqual({
+      feeds: ["read"],
+    });
+  });
+
+  it("refuses a valid key that lacks a required scope as FORBIDDEN", async () => {
+    const { apiKeyPolicy } = await import("../src/policies/apikey.policy");
+    const result = await apiKeyPolicy({ scopes: ["feeds:write"] })(
+      withKey(() => Promise.resolve(verifiedKey({ feeds: ["read"] })))
+    );
+
+    expect(!result.ok && result.error.code).toBe("FORBIDDEN");
+    expect(!result.ok && result.error.issues?.[0]?.code).toBe("SCOPE_MISSING");
+  });
+
+  it("refuses a key created before scopes existed when a scope is required", async () => {
+    const { apiKeyPolicy } = await import("../src/policies/apikey.policy");
+    const result = await apiKeyPolicy({ scopes: ["feeds:read"] })(
+      withKey(() => Promise.resolve(verifiedKey(null)))
+    );
+    expect(!result.ok && result.error.code).toBe("FORBIDDEN");
+  });
+
+  it("maps better-auth's KEY_DISABLED onto FORBIDDEN", async () => {
+    const { apiKeyPolicy } = await import("../src/policies/apikey.policy");
+    const result = await apiKeyPolicy()(
+      withKey(() =>
+        Promise.resolve({
+          valid: false,
+          error: { code: "KEY_DISABLED", message: "disabled" },
+          key: null,
+        })
+      )
+    );
+    expect(!result.ok && result.error.code).toBe("FORBIDDEN");
+  });
+});

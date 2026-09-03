@@ -1,16 +1,18 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
+import { apiKeyPermissionsSchema, apiKeyScopesSchema } from "@chia/auth/apikey";
 import { baseInfiniteSchema } from "@chia/db/validator/apikey";
 
 export const createAPIKeySchema = z.object({
   name: z.string().optional(),
+  scopes: apiKeyScopesSchema,
 });
 
 export const baseApiKeySchema = z.object({
   key: z.string(),
   metadata: z.any(),
-  permissions: z.any(),
+  permissions: apiKeyPermissionsSchema.nullable(),
   id: z.string(),
   name: z.string().nullable(),
   start: z.string().nullable(),
@@ -107,5 +109,6 @@ export const updateApiKeyContract = oc
     z.object({
       name: z.string(),
       keyId: z.string(),
+      scopes: apiKeyScopesSchema.optional(),
     })
   );

@@ -1,3 +1,4 @@
+import { toApiKeyPermissions } from "@chia/auth/apikey";
 import { APIError } from "@chia/auth/types";
 import { getInfiniteApiKeys } from "@chia/db/repos/apikey";
 import { tryCatch } from "@chia/utils/error-helper";
@@ -12,13 +13,15 @@ export const createAPIKeyRoute = contractOS.apikey.create
       throw opts.errors.UNAUTHORIZED();
     }
 
+    // Server-side call: with request headers better-auth treats `permissions` as a client
+    // property and refuses it. `adminGuard()` already proved the session; ownership is `userId`.
     const { data, error } = await tryCatch(
       opts.context.auth.api.createApiKey({
         body: {
           name: opts.input.name,
           userId: opts.context.session?.user.id,
+          permissions: toApiKeyPermissions(opts.input.scopes),
         },
-        headers: opts.context.headers,
       })
     );
 
@@ -139,10 +142,17 @@ export const updateApiKeyRoute = contractOS.apikey.update
       throw opts.errors.UNAUTHORIZED();
     }
 
+    // Same server-side shape as `create`; better-auth still checks the key belongs to `userId`.
     const { data, error } = await tryCatch(
       opts.context.auth.api.updateApiKey({
-        headers: opts.context.headers,
-        body: opts.input,
+        body: {
+          keyId: opts.input.keyId,
+          userId: opts.context.session?.user.id,
+          name: opts.input.name,
+          permissions: opts.input.scopes
+            ? toApiKeyPermissions(opts.input.scopes)
+            : undefined,
+        },
       })
     );
 
