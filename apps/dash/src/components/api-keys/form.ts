@@ -28,6 +28,8 @@ export const SCOPE_HINT = {
   [ApiKeyScope.FeedsWrite]:
     "Update a post's metadata, translations and content.",
   [ApiKeyScope.SpotifyRead]: "Read the public playlist.",
+  [ApiKeyScope.OperatorRoot]:
+    "Act as you: every route your session can reach, the writing agent included. Only your own keys get it.",
 } satisfies Record<ApiKeyScope, string>;
 
 export const emptyFormValues = (): ApiKeyFormInput => ({
