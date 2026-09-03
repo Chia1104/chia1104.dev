@@ -28,6 +28,7 @@ const experience: ProfileEntryView = {
     url: "https://www.leadbestconsultant.com/",
     startDate: "2023-03-01",
     stack: ["TypeScript", "React"],
+    agentNotes: "A consultancy.",
     translations: {
       [Locale.zhTW]: { title: "前端工程師", content: "- 開發多鏈錢包" },
     },
@@ -40,6 +41,7 @@ describe("profileFormSchema", () => {
     expect(values.data.stack).toBe("TypeScript, React");
     expect(values.data.endDate).toBe("");
     expect(values.data.translations[Locale.En].title).toBe("");
+    expect(values.data.agentNotes).toBe("A consultancy.");
 
     expect(profileFormSchema.parse(values)).toEqual({
       published: true,
@@ -50,6 +52,7 @@ describe("profileFormSchema", () => {
         url: "https://www.leadbestconsultant.com/",
         startDate: "2023-03-01",
         stack: ["TypeScript", "React"],
+        agentNotes: "A consultancy.",
         translations: {
           "zh-TW": { title: "前端工程師", content: "- 開發多鏈錢包" },
         },

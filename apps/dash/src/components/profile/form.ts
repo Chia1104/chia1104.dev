@@ -42,6 +42,7 @@ const dataFieldsSchema = z.object({
   endDate: z.string(),
   /** Comma- or newline-separated. */
   stack: z.string(),
+  agentNotes: z.string(),
   translations: z.object({
     [Locale.zhTW]: translationFieldsSchema,
     [Locale.En]: translationFieldsSchema,
@@ -89,6 +90,7 @@ export const profileFormSchema = z.discriminatedUnion("kind", [
     data: dataFieldsSchema
       .transform((data): z.input<typeof aboutDataSchema> => ({
         translations: translationsOf(data.translations),
+        agentNotes: blankToUndefined(data.agentNotes),
       }))
       .pipe(aboutDataSchema),
   }),
@@ -104,6 +106,7 @@ export const profileFormSchema = z.discriminatedUnion("kind", [
         endDate: blankToUndefined(data.endDate),
         stack: stackOf(data.stack),
         translations: translationsOf(data.translations),
+        agentNotes: blankToUndefined(data.agentNotes),
       }))
       .pipe(experienceDataSchema),
   }),
@@ -117,6 +120,7 @@ export const profileFormSchema = z.discriminatedUnion("kind", [
         startDate: data.startDate,
         endDate: blankToUndefined(data.endDate),
         translations: translationsOf(data.translations),
+        agentNotes: blankToUndefined(data.agentNotes),
       }))
       .pipe(educationDataSchema),
   }),
@@ -132,6 +136,7 @@ export const profileFormSchema = z.discriminatedUnion("kind", [
         endDate: blankToUndefined(data.endDate),
         stack: stackOf(data.stack),
         translations: translationsOf(data.translations),
+        agentNotes: blankToUndefined(data.agentNotes),
       }))
       .pipe(projectDataSchema),
   }),
@@ -155,6 +160,7 @@ const emptyData = (): DataFields => ({
   startDate: "",
   endDate: "",
   stack: "",
+  agentNotes: "",
   translations: {
     [Locale.zhTW]: emptyTranslation(),
     [Locale.En]: emptyTranslation(),
@@ -183,6 +189,7 @@ export const formValuesOf = (entry: ProfileEntryView): ProfileFormInput => {
   };
   const data: DataFields = {
     ...emptyData(),
+    agentNotes: entry.data.agentNotes ?? "",
     translations: {
       [Locale.zhTW]: translationFieldsOf(entry.data.translations[Locale.zhTW]),
       [Locale.En]: translationFieldsOf(entry.data.translations[Locale.En]),

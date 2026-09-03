@@ -50,7 +50,7 @@ const periodOf = (data: { startDate?: string; endDate?: string }) =>
 interface Item {
   /** Heading and one-line facts; always kept. */
   head: string;
-  /** Markdown body; the first thing dropped under budget. */
+  /** Markdown body plus the agent-only background; the first thing dropped under budget. */
   body: string | null;
 }
 
@@ -91,7 +91,14 @@ const itemOf = (entry: ProfileEntrySnapshot, locale: Locale): Item | null => {
     .filter((line): line is string => line !== null)
     .join("\n");
 
-  return { head, body: translation.content ?? null };
+  const body = [
+    translation.content ?? null,
+    entry.data.agentNotes ? `Background: ${entry.data.agentNotes}` : null,
+  ]
+    .filter((part): part is string => part !== null)
+    .join("\n\n");
+
+  return { head, body: body === "" ? null : body };
 };
 
 const render = (

@@ -21,6 +21,7 @@ const leadbest: ProfileEntrySnapshot = {
     location: "Taipei",
     startDate: "2023-03-01",
     stack: ["TypeScript", "React"],
+    agentNotes: "A consultancy building blockchain products for banks.",
     translations: {
       "zh-TW": {
         title: "前端工程師",
@@ -74,6 +75,8 @@ describe("renderProfileBrief", () => {
         "- 開發區塊鏈數據分析平台",
         "- 開發多鏈錢包",
         "",
+        "Background: A consultancy building blockchain products for banks.",
+        "",
         "## Projects",
         "",
         "### chia1104.dev",
@@ -100,6 +103,7 @@ describe("renderProfileBrief", () => {
     });
     expect(trimmed).not.toContain("- Turborepo migration");
     expect(trimmed).toContain("- 開發多鏈錢包");
+    expect(trimmed).toContain("Background: A consultancy");
     expect(trimmed).toContain("### Frontend engineer · WANIN");
 
     const cut = renderProfileBrief([leadbest, wanin], {

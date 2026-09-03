@@ -69,6 +69,23 @@ describe("profileEntryContentSchema", () => {
     });
   });
 
+  it("keeps agent notes on any kind and drops a blank one", () => {
+    const parsed = profileEntryContentSchema.parse({
+      kind: "about",
+      data: {
+        translations: { en: { title: "Engineer" } },
+        agentNotes: "  Likes board games.  ",
+      },
+    });
+    expect(parsed.data.agentNotes).toBe("Likes board games.");
+    expect(
+      profileEntryContentSchema.parse({
+        ...experience,
+        data: { ...experience.data, agentNotes: undefined },
+      }).data.agentNotes
+    ).toBeUndefined();
+  });
+
   it("defaults a project's stack to an empty list", () => {
     const parsed = profileEntryContentSchema.parse({
       kind: "project",

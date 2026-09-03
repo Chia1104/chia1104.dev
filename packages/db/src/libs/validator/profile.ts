@@ -11,6 +11,8 @@ export const PROFILE_TITLE_MAX_CHARS = 200;
 export const PROFILE_SUMMARY_MAX_CHARS = 1_000;
 /** Markdown body; a resume item is bullets, not an essay. */
 export const PROFILE_CONTENT_MAX_CHARS = 16_000;
+/** Background the agent reads and the site never shows: what a company does, why a project mattered. */
+export const PROFILE_AGENT_NOTES_MAX_CHARS = 4_000;
 const NAME_MAX_CHARS = 120;
 const STACK_ITEM_MAX_CHARS = 40;
 const STACK_MAX_ITEMS = 40;
@@ -55,8 +57,14 @@ const ENDS_AFTER_START = {
   path: ["endDate"],
 };
 
+/** Not localized: the agent reads one locale and translates for the visitor. */
+const agentNotes = {
+  agentNotes: z.string().trim().max(PROFILE_AGENT_NOTES_MAX_CHARS).optional(),
+};
+
 export const aboutDataSchema = z.object({
   translations: translationsSchema,
+  ...agentNotes,
 });
 
 export const experienceDataSchema = z
@@ -67,6 +75,7 @@ export const experienceDataSchema = z
     ...tenure,
     stack: stackSchema,
     translations: translationsSchema,
+    ...agentNotes,
   })
   .refine(endsAfterStart, ENDS_AFTER_START);
 
@@ -76,6 +85,7 @@ export const educationDataSchema = z
     url: z.url().optional(),
     ...tenure,
     translations: translationsSchema,
+    ...agentNotes,
   })
   .refine(endsAfterStart, ENDS_AFTER_START);
 
@@ -88,6 +98,7 @@ export const projectDataSchema = z
     endDate: isoDateSchema.optional(),
     stack: stackSchema,
     translations: translationsSchema,
+    ...agentNotes,
   })
   .refine(endsAfterStart, ENDS_AFTER_START);
 

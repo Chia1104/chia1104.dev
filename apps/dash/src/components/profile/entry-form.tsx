@@ -26,7 +26,10 @@ import type { Control } from "react-hook-form";
 
 import { Markdown } from "@chia/agent-elements/markdown";
 import { Locale, ProfileEntryKind } from "@chia/db/types";
-import { PROFILE_CONTENT_MAX_CHARS } from "@chia/db/validator/profile";
+import {
+  PROFILE_AGENT_NOTES_MAX_CHARS,
+  PROFILE_CONTENT_MAX_CHARS,
+} from "@chia/db/validator/profile";
 
 import {
   LOCALES,
@@ -326,6 +329,43 @@ const KindFields = ({
   }
 };
 
+/** One language is enough: the agent translates for the visitor, and the site never renders it. */
+const AgentNotesInput = ({
+  control,
+  isDisabled,
+}: {
+  control: FormControl;
+  isDisabled: boolean;
+}) => (
+  <Controller
+    control={control}
+    name="data.agentNotes"
+    render={({ field, fieldState }) => (
+      <div className="flex flex-col gap-1">
+        <Label className="text-xs">Agent notes</Label>
+        <TextArea
+          aria-label="Agent notes"
+          className="text-xs"
+          disabled={isDisabled}
+          maxLength={PROFILE_AGENT_NOTES_MAX_CHARS}
+          onBlur={field.onBlur}
+          onChange={(event) => field.onChange(event.target.value)}
+          placeholder="What the company does, what the project was for, anything a visitor might ask about."
+          rows={4}
+          value={field.value}
+          variant={FIELD_VARIANT}
+        />
+        <Description className="text-xs">
+          Read only by the public agent; never shown on the site.
+        </Description>
+        {fieldState.error ? (
+          <p className="text-danger text-xs">{fieldState.error.message}</p>
+        ) : null}
+      </div>
+    )}
+  />
+);
+
 const ContentEditor = ({
   control,
   isDisabled,
@@ -450,6 +490,7 @@ export const EntryForm = ({
       </div>
 
       <KindFields control={control} isDisabled={isPending} kind={kind} />
+      <AgentNotesInput control={control} isDisabled={isPending} />
 
       <Tabs defaultSelectedKey={Locale.zhTW}>
         <Tabs.ListContainer>
