@@ -69,6 +69,11 @@ vi.mock("../src/guards/auth.guard", async () => {
   };
 });
 
+vi.mock("../src/guards/operator.guard", async () => {
+  const mocks = await import("./helpers/guards");
+  return { verifyOperator: mocks.verifyOperator };
+});
+
 vi.mock("../src/guards/ai.guard", async () => {
   const mocks = await import("./helpers/guards");
   return {

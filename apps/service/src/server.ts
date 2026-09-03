@@ -5,6 +5,7 @@ import appFactory from "./factories/app.factory";
 import aiRoutes from "./routes/ai.route";
 import authRoutes from "./routes/auth.route";
 import healthRoutes from "./routes/health.route";
+import mcpRoutes from "./routes/mcp.route";
 import rpcRoutes from "./routes/rpc.route";
 import spotifyRoutes from "./routes/spotify.route";
 
@@ -14,6 +15,7 @@ export const app = bootstrap(appFactory.createApp())
   .route("/rpc", rpcRoutes)
   .route("/health", healthRoutes)
   .route("/ai", aiRoutes)
+  .route("/mcp", mcpRoutes)
   .route("/spotify", spotifyRoutes);
 
 export default {

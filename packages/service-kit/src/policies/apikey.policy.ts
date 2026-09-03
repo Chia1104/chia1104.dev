@@ -104,19 +104,28 @@ export const apiKeyPolicy = (
     const apiKey =
       /* SAFETY: The producer contract guarantees this value satisfies VerifiedApiKey. */ verified.key as VerifiedApiKey;
 
-    const missing = options.scopes?.find(
-      (scope) => !hasApiKeyScope(apiKey.permissions, scope)
-    );
+    const missing = missingApiKeyScope(apiKey, options.scopes);
     if (missing) {
-      return deny(
-        invalidKey(
-          "FORBIDDEN",
-          `API key lacks the ${missing} scope`,
-          "SCOPE_MISSING"
-        )
-      );
+      return deny(missing);
     }
 
     return allow({ apiKey });
   };
+};
+
+/** The FORBIDDEN to raise when `apiKey` lacks one of `scopes`, or nothing when it has them all. */
+export const missingApiKeyScope = (
+  apiKey: VerifiedApiKey,
+  scopes: readonly ApiKeyScope[] | undefined
+): AppError | undefined => {
+  const missing = scopes?.find(
+    (scope) => !hasApiKeyScope(apiKey.permissions, scope)
+  );
+  return missing
+    ? invalidKey(
+        "FORBIDDEN",
+        `API key lacks the ${missing} scope`,
+        "SCOPE_MISSING"
+      )
+    : undefined;
 };

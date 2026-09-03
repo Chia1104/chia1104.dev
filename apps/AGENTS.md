@@ -45,6 +45,7 @@ User administration writes through better-auth's admin client. Do not duplicate 
 /rpc       oRPC
 /health
 /ai        Vercel AI SDK streaming routes; `key:signed` also admits guests
+/mcp       Model Context Protocol over stateless Streamable HTTP; operator only
 /spotify   OAuth callback
 ```
 
@@ -54,6 +55,7 @@ Keep these boundaries under `src/`:
 - `factories/orpc.factory.ts` is the only place that builds the oRPC context.
 - `agents/` contains host bindings and dynamic agent-kind loaders; business logic belongs in `packages/api`.
 - `guards/` binds shared policies to Hono.
+- `mcp/` builds the MCP server over an in-process router client. Tools are adapters over oRPC procedures and hold no business logic; `write_post` returns once the durable turn has started and review stays in dash.
 - `services/` orchestrates host-side ports; `repos/` owns remote access. Table access belongs in `@chia/db/repos`.
 
 `service` never executes workflows. Starts, resumes and cancellations go through the context's `@chia/workflow-control` client; run state and streams use shared World storage. See [`docs/workflow-deployment.md`](../docs/workflow-deployment.md).

@@ -119,16 +119,20 @@ export const agentKindGuard = () =>
     );
 
 /**
- * `callerGuard()` admits anonymous and API-key callers; they have no user to own a session.
- * Guest is the floor. Exported for `list` and `usage.me`, which have no kind to resolve.
+ * `callerGuard()` admits anonymous and plain API-key callers; they have no user to own a
+ * session. Guest is the floor. A key lifted to Root by `operator:root` owns sessions as the
+ * admin it belongs to. Exported for `list` and `usage.me`, which have no kind to resolve.
  */
 export const agentCallerOf = (
   context: CallerContext,
   errors: { UNAUTHORIZED: () => Error }
 ): AgentServiceCaller => {
   const { caller } = context;
-  if (!caller.session || caller.tier < CallerTier.Guest) {
+  const userId =
+    caller.session?.user.id ??
+    (caller.tier >= CallerTier.Root ? caller.apiKey?.referenceId : undefined);
+  if (userId === undefined || caller.tier < CallerTier.Guest) {
     throw errors.UNAUTHORIZED();
   }
-  return { ...caller, userId: caller.session.user.id, context };
+  return { ...caller, userId, context };
 };
