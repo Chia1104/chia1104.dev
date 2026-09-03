@@ -121,11 +121,27 @@ export const ai = vi.fn((_provider?: string, _enabled?: any) =>
 
 export const AI_AUTH_TOKEN = "AI_AUTH_TOKEN";
 
+let operatorDenied = false;
+
+export const setOperatorDenied = (denied: boolean) => {
+  operatorDenied = denied;
+};
+
+export const verifyOperator = vi.fn(() =>
+  createMiddleware(async (c, next) => {
+    if (operatorDenied) {
+      return c.json({ message: "UNAUTHORIZED" }, 401);
+    }
+    await next();
+  })
+);
+
 export const resetAllGuardMocks = () => {
   rateLimiterGuard.mockClear();
   verifyAuth.mockClear();
   ai.mockClear();
   callerTier = CallerTier.Root;
+  operatorDenied = false;
 };
 
 export const mockVerifyAuthUnauthorized = () => {

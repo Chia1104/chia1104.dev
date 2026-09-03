@@ -327,3 +327,94 @@ describe("apiKeyPolicy", () => {
     expect(!result.ok && result.error.code).toBe("FORBIDDEN");
   });
 });
+
+describe("callerPolicy with an API key", () => {
+  const ADMIN_ID = "admin-1";
+
+  beforeAll(() => {
+    vi.stubEnv("SKIP_ENV_VALIDATION", "true");
+    vi.stubEnv("ENV", "test");
+    vi.stubEnv("LOCAL_ADMIN_ID", ADMIN_ID);
+  });
+
+  afterAll(() => {
+    vi.unstubAllEnvs();
+  });
+
+  const withVerifiedKey = (key: {
+    referenceId: string;
+    permissions: Record<string, string[]> | null;
+  }) =>
+    makeContext({
+      headers: new Headers({ "x-ch-api-key": "ch_test" }),
+      auth: /* SAFETY: This fixture implements the better-auth surface the policy calls. */ {
+        api: {
+          verifyApiKey: () =>
+            Promise.resolve({
+              valid: true,
+              error: null,
+              key: { id: "k1", ...key },
+            }),
+        },
+      } as never,
+    });
+
+  it("lifts an admin-owned key carrying operator:root to Root", async () => {
+    const { callerPolicy, CallerTier } =
+      await import("../src/policies/caller.policy");
+    const result = await callerPolicy({ minTier: CallerTier.Root })(
+      withVerifiedKey({
+        referenceId: ADMIN_ID,
+        permissions: { operator: ["root"] },
+      })
+    );
+    expect(result.ok && result.patch?.caller.tier).toBe(CallerTier.Root);
+    expect(result.ok && result.patch?.caller.apiKey?.referenceId).toBe(
+      ADMIN_ID
+    );
+  });
+
+  it("asks no scopes of a key lifted to Root but every scope of a plain key", async () => {
+    const { callerPolicy, CallerTier } =
+      await import("../src/policies/caller.policy");
+    const lifted = await callerPolicy({ scopes: ["feeds:write"] })(
+      withVerifiedKey({
+        referenceId: ADMIN_ID,
+        permissions: { operator: ["root"] },
+      })
+    );
+    expect(lifted.ok && lifted.patch?.caller.tier).toBe(CallerTier.Root);
+
+    const plain = await callerPolicy({ scopes: ["feeds:write"] })(
+      withVerifiedKey({
+        referenceId: ADMIN_ID,
+        permissions: { feeds: ["read"] },
+      })
+    );
+    expect(!plain.ok && plain.error.code).toBe("FORBIDDEN");
+  });
+
+  it("keeps operator:root at ApiKey when someone else owns the key", async () => {
+    const { callerPolicy, CallerTier } =
+      await import("../src/policies/caller.policy");
+    const result = await callerPolicy()(
+      withVerifiedKey({
+        referenceId: "user-2",
+        permissions: { operator: ["root"] },
+      })
+    );
+    expect(result.ok && result.patch?.caller.tier).toBe(CallerTier.ApiKey);
+  });
+
+  it("keeps an admin-owned key without the scope at ApiKey", async () => {
+    const { callerPolicy, CallerTier } =
+      await import("../src/policies/caller.policy");
+    const result = await callerPolicy()(
+      withVerifiedKey({
+        referenceId: ADMIN_ID,
+        permissions: { feeds: ["read"] },
+      })
+    );
+    expect(result.ok && result.patch?.caller.tier).toBe(CallerTier.ApiKey);
+  });
+});
