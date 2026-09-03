@@ -109,6 +109,7 @@
     "@chia/utils": "workspace:*",
     "@earendil-works/pi-agent-core": "catalog:agent",
     "@earendil-works/pi-ai": "catalog:agent",
+    "es-toolkit": "catalog:",
     "typebox": "catalog:agent",
     "zod": "catalog:"
   },

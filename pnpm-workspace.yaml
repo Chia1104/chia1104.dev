@@ -29,6 +29,7 @@ catalog:
   bun-types: ^1.4.0
   client-only: ^0.0.1
   dayjs: ^1.11.23
+  es-toolkit: 1.52.0
   graphql-request: ^7.4.0
   ky: ^2.1.0
   server-only: ^0.0.1
@@ -97,11 +98,9 @@ catalogs:
     "@hono/sentry": 1.2.2
     "@hono/zod-validator": 0.9.1
     hono: 4.13.5
-    srvx: 0.12.7
   kv:
     "@keyv/postgres": ^2.2.3
     "@keyv/redis": ^5.1.6
-    "@keyv/test-suite": ^2.1.2
     "@keyv/valkey": ^1.0.11
     "@upstash/ratelimit": 2.0.8
     "@upstash/redis": 1.38.3
@@ -116,6 +115,9 @@ catalogs:
     next-safe-action: 8.6.1
     sharp: 0.35.4
     takumi-js: ^2.13.3
+  nitro:
+    nitro: 3.0.260610-beta
+    srvx: 0.12.7
   orpc:
     "@orpc/client": 2.0.0-beta.32
     "@orpc/contract": 2.0.0-beta.32
@@ -253,7 +255,6 @@ catalogs:
   workflow:
     "@workflow-worlds/redis": ^0.2.2
     "@workflow/world-postgres": 4.3.5
-    nitro: 3.0.260610-beta
     workflow: 4.8.5
 
 linkWorkspacePackages: true

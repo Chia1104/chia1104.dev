@@ -86,6 +86,7 @@
     "@chia/utils": "workspace:*",
     "@google/genai": "catalog:ai",
     "ai": "catalog:ai",
+    "es-toolkit": "catalog:",
     "github-slugger": "catalog:unified",
     "hast-util-from-html": "catalog:unified",
     "hast-util-to-text": "catalog:unified",

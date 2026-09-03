@@ -54,6 +54,7 @@
     "@chia/agent-runtime": "workspace:*",
     "@chia/db": "workspace:*",
     "@earendil-works/pi-ai": "catalog:agent",
+    "es-toolkit": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

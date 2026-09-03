@@ -29,6 +29,7 @@
     "@workflow-worlds/redis": "catalog:workflow",
     "@workflow/world-postgres": "catalog:workflow",
     "ai": "catalog:ai",
+    "es-toolkit": "catalog:",
     "firecrawl": "catalog:ai",
     "hono": "catalog:hono",
     "reading-time-estimator": "catalog:unified",
@@ -41,7 +42,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
-    "nitro": "catalog:workflow",
+    "nitro": "catalog:nitro",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
   }
