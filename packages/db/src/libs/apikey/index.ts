@@ -1,12 +1,17 @@
 import type { SQLWrapper } from "drizzle-orm";
 
-import dayjs from "@chia/utils/day";
-
 import { FeedOrderBy } from "../../types";
-import { parseCursorForOrder, sliceNextCursor, withDTO } from "../index.ts";
+import {
+  buildCursorWhere,
+  parseCursorForOrder,
+  sliceNextCursor,
+  withDTO,
+} from "../index.ts";
 import type { InfiniteDTO } from "../validator/apikey";
 
 const APIKEY_DATE_ORDER_BY = new Set([FeedOrderBy.CreatedAt]);
+
+const toISO = (date: Date | null) => date?.toISOString() ?? null;
 
 export const getInfiniteApiKeys = withDTO(
   async (
@@ -26,14 +31,7 @@ export const getInfiniteApiKeys = withDTO(
       orderBy,
       APIKEY_DATE_ORDER_BY
     );
-    const cursorValue = parsedCursor ? dayjs(parsedCursor).toISOString() : null;
-    const cursorFilter = cursorValue
-      ? {
-          [orderBy]: {
-            [sortOrder === "asc" ? "gte" : "lte"]: cursorValue,
-          },
-        }
-      : null;
+    const cursorFilter = buildCursorWhere(orderBy, parsedCursor, sortOrder);
     const rawFilters = whereAnd.filter(Boolean).map((condition) => ({
       RAW: condition,
     }));
@@ -59,15 +57,11 @@ export const getInfiniteApiKeys = withDTO(
 
     const serializedItems = items.map((item) => ({
       ...item,
-      updatedAt: dayjs(item.updatedAt).toISOString(),
-      createdAt: dayjs(item.createdAt).toISOString(),
-      lastRefillAt: item.lastRefillAt
-        ? dayjs(item.lastRefillAt).toISOString()
-        : null,
-      expiresAt: item.expiresAt ? dayjs(item.expiresAt).toISOString() : null,
-      lastRequest: item.lastRequest
-        ? dayjs(item.lastRequest).toISOString()
-        : null,
+      updatedAt: item.updatedAt.toISOString(),
+      createdAt: item.createdAt.toISOString(),
+      lastRefillAt: toISO(item.lastRefillAt),
+      expiresAt: toISO(item.expiresAt),
+      lastRequest: toISO(item.lastRequest),
     }));
     return {
       items: serializedItems,

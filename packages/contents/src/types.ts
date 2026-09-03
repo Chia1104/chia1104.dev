@@ -1,8 +1,8 @@
-import type { ConfigType } from "dayjs";
 import type { TableOfContents } from "fumadocs-core/toc";
 import type { MDXComponents } from "mdx/types";
 
 import type { ContentType } from "@chia/db/types";
+import type { ConfigType } from "@chia/utils/day";
 
 export interface BaseProps {
   className?: string;

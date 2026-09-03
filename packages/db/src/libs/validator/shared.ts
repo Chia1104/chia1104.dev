@@ -1,13 +1,11 @@
 import * as z from "zod";
 
-import dayjs from "@chia/utils/day";
-
 export const dateSchema = z.union([z.string(), z.number()]);
 
 export type DateDTO = z.infer<typeof dateSchema>;
 
 export const dateTransformSchema = z.date().transform((val) => {
-  return dayjs(val).toISOString();
+  return val.toISOString();
 });
 
 export type TransformedDateDTO = z.infer<typeof dateTransformSchema>;

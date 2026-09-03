@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 
-import dayjs from "dayjs";
 import { z } from "zod";
+
+import dayjs from "@chia/utils/day";
 
 export const useFormRules = () => {
   const messages = useMemo(

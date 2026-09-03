@@ -48,7 +48,6 @@
     "@fumadocs/mdx-remote": "catalog:fumadocs",
     "@heroui/react": "catalog:heroui-v3",
     "@mdx-js/react": "catalog:fumadocs",
-    "dayjs": "catalog:",
     "es-toolkit": "catalog:",
     "fumadocs-core": "catalog:fumadocs",
     "fumadocs-mdx": "catalog:fumadocs",

@@ -42,7 +42,6 @@
     "ai": "catalog:ai",
     "better-all": "catalog:",
     "better-auth": "catalog:better-auth",
-    "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
     "es-toolkit": "catalog:",
     "firecrawl": "catalog:ai",

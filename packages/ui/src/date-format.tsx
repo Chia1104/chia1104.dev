@@ -1,7 +1,6 @@
 "use client";
 
-import type { ConfigType } from "dayjs";
-
+import type { ConfigType } from "@chia/utils/day";
 import type dayjs from "@chia/utils/day";
 
 import type { Options } from "../utils/use-date";

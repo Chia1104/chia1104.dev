@@ -224,7 +224,6 @@
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:env",
     "client-only": "catalog:",
-    "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
     "github-slugger": "catalog:unified",
     "graphql-request": "catalog:",

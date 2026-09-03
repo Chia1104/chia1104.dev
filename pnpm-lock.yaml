@@ -900,9 +900,6 @@ importers:
       clsx:
         specifier: catalog:ui
         version: 2.1.1
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       es-toolkit:
         specifier: 'catalog:'
         version: 1.52.0
@@ -1126,9 +1123,6 @@ importers:
       better-auth:
         specifier: catalog:better-auth
         version: 1.7.2(@opentelemetry/api@1.9.1)(drizzle-kit@1.0.0-rc.4)(drizzle-orm@1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(bun-types@1.4.0)(pg@8.20.0)(sqlite3@5.1.7(supports-color@8.1.1))(zod@4.5.4))(next@16.3.3(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.4.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(pg@8.20.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.11)
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       drizzle-orm:
         specifier: catalog:drizzle
         version: 1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(bun-types@1.4.0)(pg@8.20.0)(sqlite3@5.1.7(supports-color@8.1.1))(zod@4.5.4)
@@ -1383,9 +1377,6 @@ importers:
       cobe:
         specifier: catalog:ui
         version: 2.0.1
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       es-toolkit:
         specifier: 'catalog:'
         version: 1.52.0
@@ -1994,9 +1985,6 @@ importers:
       client-only:
         specifier: 'catalog:'
         version: 0.0.1
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       drizzle-orm:
         specifier: catalog:drizzle
         version: 1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(bun-types@1.4.0)(pg@8.23.0)(sqlite3@5.1.7(supports-color@7.2.0))(zod@4.5.4)
@@ -2067,9 +2055,6 @@ importers:
       client-only:
         specifier: 'catalog:'
         version: 0.0.1
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       resend:
         specifier: catalog:email
         version: 6.25.0(@react-email/render@2.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
@@ -2116,9 +2101,6 @@ importers:
       '@mdx-js/react':
         specifier: catalog:fumadocs
         version: 3.1.1(@types/react@19.2.18)(react@19.2.8)
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       es-toolkit:
         specifier: 'catalog:'
         version: 1.52.0
@@ -2320,9 +2302,9 @@ importers:
 
   packages/meta:
     dependencies:
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
     devDependencies:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
@@ -2554,9 +2536,6 @@ importers:
       cmdk:
         specifier: catalog:ui
         version: 1.1.1(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       es-toolkit:
         specifier: 'catalog:'
         version: 1.52.0
