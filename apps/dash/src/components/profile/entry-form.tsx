@@ -4,7 +4,10 @@ import { useState } from "react";
 
 import {
   Button,
+  Calendar,
   Card,
+  DateField,
+  DatePicker,
   Description,
   FieldError,
   Form,
@@ -16,6 +19,8 @@ import {
   TextArea,
   TextField,
 } from "@heroui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { parseDate } from "@internationalized/date";
 import { Controller, useForm } from "react-hook-form";
 import type { Control } from "react-hook-form";
 
@@ -27,13 +32,13 @@ import {
   LOCALES,
   emptyFormValues,
   formValuesOf,
-  profileFormResolver,
-  toWrite,
+  profileFormSchema,
 } from "./form";
 import type {
   ProfileEntryView,
   ProfileEntryWrite,
-  ProfileFormValues,
+  ProfileFormInput,
+  ProfileFormOutput,
 } from "./form";
 
 export interface EntryFormProps {
@@ -51,17 +56,20 @@ const LOCALE_LABEL = {
 
 const SORT_ORDER_LIMIT = 10_000;
 
+type FormControl = Control<ProfileFormInput, unknown, ProfileFormOutput>;
+
 type TextFieldName =
-  | "organization"
-  | "url"
-  | "location"
-  | "repository"
-  | "image"
-  | "startDate"
-  | "endDate"
-  | "stack"
-  | `translations.${Locale}.title`
-  | `translations.${Locale}.summary`;
+  | "data.organization"
+  | "data.url"
+  | "data.location"
+  | "data.repository"
+  | "data.image"
+  | "data.stack"
+  | `data.translations.${Locale}.title`
+  | `data.translations.${Locale}.summary`;
+
+/** Fields sit on the drawer's overlay surface; `secondary` is the variant that stays visible there in dark mode. */
+const FIELD_VARIANT = "secondary";
 
 const TextInput = ({
   control,
@@ -72,7 +80,7 @@ const TextInput = ({
   name,
   placeholder,
 }: {
-  control: Control<ProfileFormValues>;
+  control: FormControl;
   description?: string;
   isDisabled: boolean;
   label: string;
@@ -95,6 +103,7 @@ const TextInput = ({
         <Input
           className={mono ? "font-mono text-xs" : undefined}
           placeholder={placeholder}
+          variant={FIELD_VARIANT}
         />
         {description ? (
           <Description className="text-xs">{description}</Description>
@@ -105,34 +114,99 @@ const TextInput = ({
   />
 );
 
+const DateInput = ({
+  control,
+  description,
+  isDisabled,
+  label,
+  name,
+}: {
+  control: FormControl;
+  description: string;
+  isDisabled: boolean;
+  label: string;
+  name: "data.startDate" | "data.endDate";
+}) => (
+  <Controller
+    control={control}
+    name={name}
+    render={({ field, fieldState }) => (
+      <DatePicker
+        className="min-w-48 flex-1"
+        isDisabled={isDisabled}
+        isInvalid={fieldState.invalid}
+        onBlur={field.onBlur}
+        onChange={(date) => field.onChange(date?.toString() ?? "")}
+        value={field.value === "" ? null : parseDate(field.value)}>
+        <Label className="text-xs">{label}</Label>
+        <DateField.Group fullWidth variant={FIELD_VARIANT}>
+          <DateField.Input>
+            {(segment) => <DateField.Segment segment={segment} />}
+          </DateField.Input>
+          <DateField.Suffix>
+            <DatePicker.Trigger>
+              <DatePicker.TriggerIndicator />
+            </DatePicker.Trigger>
+          </DateField.Suffix>
+        </DateField.Group>
+        <Description className="text-xs">{description}</Description>
+        <FieldError>{fieldState.error?.message}</FieldError>
+        <DatePicker.Popover>
+          <Calendar aria-label={label}>
+            <Calendar.Header>
+              <Calendar.YearPickerTrigger>
+                <Calendar.YearPickerTriggerHeading />
+                <Calendar.YearPickerTriggerIndicator />
+              </Calendar.YearPickerTrigger>
+              <Calendar.NavButton slot="previous" />
+              <Calendar.NavButton slot="next" />
+            </Calendar.Header>
+            <Calendar.Grid>
+              <Calendar.GridHeader>
+                {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+              </Calendar.GridHeader>
+              <Calendar.GridBody>
+                {(date) => <Calendar.Cell date={date} />}
+              </Calendar.GridBody>
+            </Calendar.Grid>
+            <Calendar.YearPickerGrid>
+              <Calendar.YearPickerGridBody>
+                {({ year }) => (
+                  <Calendar.YearPickerCell className="text-xs" year={year} />
+                )}
+              </Calendar.YearPickerGridBody>
+            </Calendar.YearPickerGrid>
+          </Calendar>
+        </DatePicker.Popover>
+      </DatePicker>
+    )}
+  />
+);
+
 const Tenure = ({
   control,
   isDisabled,
   required,
 }: {
-  control: Control<ProfileFormValues>;
+  control: FormControl;
   isDisabled: boolean;
   /** Experience and education always start somewhere; a project may be undated. */
   required: boolean;
 }) => (
   <div className="flex flex-wrap gap-4">
-    <TextInput
+    <DateInput
       control={control}
-      description={required ? "YYYY-MM" : "YYYY-MM, or blank"}
+      description={required ? "When it began" : "When it began, if dated"}
       isDisabled={isDisabled}
       label="Start"
-      mono
-      name="startDate"
-      placeholder="2023-03"
+      name="data.startDate"
     />
-    <TextInput
+    <DateInput
       control={control}
-      description="YYYY-MM; blank means ongoing"
+      description="Blank means ongoing"
       isDisabled={isDisabled}
       label="End"
-      mono
-      name="endDate"
-      placeholder="2024-01"
+      name="data.endDate"
     />
   </div>
 );
@@ -141,7 +215,7 @@ const StackInput = ({
   control,
   isDisabled,
 }: {
-  control: Control<ProfileFormValues>;
+  control: FormControl;
   isDisabled: boolean;
 }) => (
   <TextInput
@@ -149,7 +223,7 @@ const StackInput = ({
     description="Comma-separated"
     isDisabled={isDisabled}
     label="Stack"
-    name="stack"
+    name="data.stack"
     placeholder="TypeScript, React, Next.js"
   />
 );
@@ -159,7 +233,7 @@ const KindFields = ({
   isDisabled,
   kind,
 }: {
-  control: Control<ProfileFormValues>;
+  control: FormControl;
   isDisabled: boolean;
   kind: ProfileEntryKind;
 }) => {
@@ -174,13 +248,13 @@ const KindFields = ({
               control={control}
               isDisabled={isDisabled}
               label="Organization"
-              name="organization"
+              name="data.organization"
             />
             <TextInput
               control={control}
               isDisabled={isDisabled}
               label="Location"
-              name="location"
+              name="data.location"
               placeholder="Taipei, Taiwan"
             />
           </div>
@@ -189,7 +263,7 @@ const KindFields = ({
             isDisabled={isDisabled}
             label="URL"
             mono
-            name="url"
+            name="data.url"
             placeholder="https://"
           />
           <Tenure control={control} isDisabled={isDisabled} required />
@@ -203,14 +277,14 @@ const KindFields = ({
             control={control}
             isDisabled={isDisabled}
             label="Organization"
-            name="organization"
+            name="data.organization"
           />
           <TextInput
             control={control}
             isDisabled={isDisabled}
             label="URL"
             mono
-            name="url"
+            name="data.url"
             placeholder="https://"
           />
           <Tenure control={control} isDisabled={isDisabled} required />
@@ -225,7 +299,7 @@ const KindFields = ({
               isDisabled={isDisabled}
               label="URL"
               mono
-              name="url"
+              name="data.url"
               placeholder="https://"
             />
             <TextInput
@@ -233,7 +307,7 @@ const KindFields = ({
               isDisabled={isDisabled}
               label="Repository"
               mono
-              name="repository"
+              name="data.repository"
               placeholder="https://github.com/"
             />
           </div>
@@ -242,7 +316,7 @@ const KindFields = ({
             isDisabled={isDisabled}
             label="Image URL"
             mono
-            name="image"
+            name="data.image"
             placeholder="https://"
           />
           <Tenure control={control} isDisabled={isDisabled} required={false} />
@@ -257,7 +331,7 @@ const ContentEditor = ({
   isDisabled,
   locale,
 }: {
-  control: Control<ProfileFormValues>;
+  control: FormControl;
   isDisabled: boolean;
   locale: Locale;
 }) => {
@@ -265,7 +339,7 @@ const ContentEditor = ({
   return (
     <Controller
       control={control}
-      name={`translations.${locale}.content`}
+      name={`data.translations.${locale}.content`}
       render={({ field, fieldState }) => (
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">
@@ -293,6 +367,7 @@ const ContentEditor = ({
               onChange={(event) => field.onChange(event.target.value)}
               rows={12}
               value={field.value}
+              variant={FIELD_VARIANT}
             />
           )}
           {fieldState.error ? (
@@ -310,12 +385,17 @@ export const EntryForm = ({
   kind,
   onSubmit,
 }: EntryFormProps) => {
-  const { control, formState, handleSubmit } = useForm<ProfileFormValues>({
-    resolver: profileFormResolver(kind),
-    defaultValues: entry ? formValuesOf(entry) : emptyFormValues(),
+  const { control, formState, handleSubmit } = useForm<
+    ProfileFormInput,
+    unknown,
+    ProfileFormOutput
+  >({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: entry ? formValuesOf(entry) : emptyFormValues(kind),
   });
 
-  const submit = handleSubmit((values) => onSubmit(toWrite(kind, values)));
+  const submit = handleSubmit((write) => onSubmit(write));
+  const translationsError = formState.errors.data?.translations?.message;
 
   return (
     <Form onSubmit={submit} className="flex flex-col gap-4">
@@ -328,14 +408,16 @@ export const EntryForm = ({
               isDisabled={isPending}
               isSelected={field.value}
               onChange={field.onChange}>
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-              <Switch.Content>
-                <Label className="text-xs">Published</Label>
-                <Description className="text-xs">
-                  Only published entries reach the site and the agent.
-                </Description>
+              <Switch.Content className="flex flex-col items-start gap-1">
+                <div className="flex flex-col items-start gap-1">
+                  <Label className="text-xs">Published</Label>
+                  <Description className="text-xs">
+                    Only published entries reach the site and the agent.
+                  </Description>
+                </div>
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
               </Switch.Content>
             </Switch>
           )}
@@ -352,7 +434,8 @@ export const EntryForm = ({
               onBlur={field.onBlur}
               onChange={(next) => field.onChange(Number.isNaN(next) ? 0 : next)}
               step={1}
-              value={field.value}>
+              value={field.value}
+              variant={FIELD_VARIANT}>
               <Label className="text-xs">Order</Label>
               <NumberField.Group>
                 <NumberField.DecrementButton />
@@ -389,13 +472,13 @@ export const EntryForm = ({
               description="Leave blank to skip this locale."
               isDisabled={isPending}
               label={`${LOCALE_LABEL[locale]} title`}
-              name={`translations.${locale}.title`}
+              name={`data.translations.${locale}.title`}
             />
             <TextInput
               control={control}
               isDisabled={isPending}
               label={`${LOCALE_LABEL[locale]} summary`}
-              name={`translations.${locale}.summary`}
+              name={`data.translations.${locale}.summary`}
             />
             <ContentEditor
               control={control}
@@ -406,10 +489,8 @@ export const EntryForm = ({
         ))}
       </Tabs>
 
-      {formState.errors.translations?.message ? (
-        <p className="text-danger text-sm">
-          {formState.errors.translations.message}
-        </p>
+      {translationsError ? (
+        <p className="text-danger text-sm">{translationsError}</p>
       ) : null}
 
       <div className="flex gap-2">

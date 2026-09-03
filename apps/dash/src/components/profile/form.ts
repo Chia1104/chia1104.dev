@@ -1,112 +1,55 @@
-import type { FieldErrors, Resolver } from "react-hook-form";
+import * as z from "zod";
 
 import { Locale, ProfileEntryKind } from "@chia/db/types";
-import { profileEntryContentSchema } from "@chia/db/validator/profile";
+import {
+  aboutDataSchema,
+  educationDataSchema,
+  experienceDataSchema,
+  projectDataSchema,
+} from "@chia/db/validator/profile";
 import type { ProfileEntryContentInput } from "@chia/db/validator/profile";
 
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 
 /**
- * The form is one flat shape for every kind; `toContent` keeps the fields the kind stores
- * and `profileEntryContentSchema` is the only validation, so the form cannot drift from
- * what the API accepts.
+ * Every kind edits the same flat text fields. Each kind's branch keeps what it stores and
+ * pipes it through the database data schema, so the form has no rules of its own and its
+ * output is already the write payload.
  */
 
 export type ProfileEntryView =
   RouterOutputs["profile"]["list"]["items"][number];
 export type ProfileEntryWrite = RouterInputs["profile"]["create"];
 
-export interface TranslationFormValues {
-  title: string;
-  summary: string;
-  content: string;
-}
-
-export interface ProfileFormValues {
-  published: boolean;
-  sortOrder: number;
-  organization: string;
-  url: string;
-  location: string;
-  repository: string;
-  image: string;
-  startDate: string;
-  endDate: string;
-  /** Comma- or newline-separated. */
-  stack: string;
-  translations: Record<Locale, TranslationFormValues>;
-}
+const SORT_ORDER_LIMIT = 10_000;
 
 export const LOCALES: readonly Locale[] = [Locale.zhTW, Locale.En];
 
-const translationFormOf = (
-  translation: { title: string; summary?: string; content?: string } | undefined
-): TranslationFormValues => ({
-  title: translation?.title ?? "",
-  summary: translation?.summary ?? "",
-  content: translation?.content ?? "",
+const translationFieldsSchema = z.object({
+  title: z.string(),
+  summary: z.string(),
+  content: z.string(),
 });
 
-export const emptyFormValues = (): ProfileFormValues => ({
-  published: false,
-  sortOrder: 0,
-  organization: "",
-  url: "",
-  location: "",
-  repository: "",
-  image: "",
-  startDate: "",
-  endDate: "",
-  stack: "",
-  translations: {
-    [Locale.zhTW]: translationFormOf(undefined),
-    [Locale.En]: translationFormOf(undefined),
-  },
+const dataFieldsSchema = z.object({
+  organization: z.string(),
+  url: z.string(),
+  location: z.string(),
+  repository: z.string(),
+  image: z.string(),
+  /** `YYYY-MM-DD`, or empty. */
+  startDate: z.string(),
+  endDate: z.string(),
+  /** Comma- or newline-separated. */
+  stack: z.string(),
+  translations: z.object({
+    [Locale.zhTW]: translationFieldsSchema,
+    [Locale.En]: translationFieldsSchema,
+  }),
 });
 
-export const formValuesOf = (entry: ProfileEntryView): ProfileFormValues => {
-  const base: ProfileFormValues = {
-    ...emptyFormValues(),
-    published: entry.published,
-    sortOrder: entry.sortOrder,
-    translations: {
-      [Locale.zhTW]: translationFormOf(entry.data.translations[Locale.zhTW]),
-      [Locale.En]: translationFormOf(entry.data.translations[Locale.En]),
-    },
-  };
-  switch (entry.kind) {
-    case ProfileEntryKind.About:
-      return base;
-    case ProfileEntryKind.Experience:
-      return {
-        ...base,
-        organization: entry.data.organization,
-        url: entry.data.url ?? "",
-        location: entry.data.location ?? "",
-        startDate: entry.data.startDate,
-        endDate: entry.data.endDate ?? "",
-        stack: entry.data.stack.join(", "),
-      };
-    case ProfileEntryKind.Education:
-      return {
-        ...base,
-        organization: entry.data.organization,
-        url: entry.data.url ?? "",
-        startDate: entry.data.startDate,
-        endDate: entry.data.endDate ?? "",
-      };
-    case ProfileEntryKind.Project:
-      return {
-        ...base,
-        url: entry.data.url ?? "",
-        repository: entry.data.repository ?? "",
-        image: entry.data.image ?? "",
-        startDate: entry.data.startDate ?? "",
-        endDate: entry.data.endDate ?? "",
-        stack: entry.data.stack.join(", "),
-      };
-  }
-};
+type DataFields = z.infer<typeof dataFieldsSchema>;
+type TranslationFields = z.infer<typeof translationFieldsSchema>;
 
 const blankToUndefined = (value: string): string | undefined => {
   const trimmed = value.trim();
@@ -120,7 +63,7 @@ const stackOf = (value: string): string[] =>
     .filter((item) => item !== "");
 
 /** A locale without a title is absent, not an empty translation. */
-const translationInputOf = (translation: TranslationFormValues) =>
+const translationOf = (translation: TranslationFields) =>
   blankToUndefined(translation.title) === undefined
     ? undefined
     : {
@@ -129,65 +72,167 @@ const translationInputOf = (translation: TranslationFormValues) =>
         content: blankToUndefined(translation.content),
       };
 
-export const toContent = (
-  kind: ProfileEntryKind,
-  values: ProfileFormValues
-): ProfileEntryContentInput => {
-  const translations = {
-    [Locale.zhTW]: translationInputOf(values.translations[Locale.zhTW]),
-    [Locale.En]: translationInputOf(values.translations[Locale.En]),
+const translationsOf = (translations: DataFields["translations"]) => ({
+  [Locale.zhTW]: translationOf(translations[Locale.zhTW]),
+  [Locale.En]: translationOf(translations[Locale.En]),
+});
+
+const entryFields = {
+  published: z.boolean(),
+  sortOrder: z.number().int().min(-SORT_ORDER_LIMIT).max(SORT_ORDER_LIMIT),
+};
+
+export const profileFormSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal(ProfileEntryKind.About),
+    ...entryFields,
+    data: dataFieldsSchema
+      .transform((data): z.input<typeof aboutDataSchema> => ({
+        translations: translationsOf(data.translations),
+      }))
+      .pipe(aboutDataSchema),
+  }),
+  z.object({
+    kind: z.literal(ProfileEntryKind.Experience),
+    ...entryFields,
+    data: dataFieldsSchema
+      .transform((data): z.input<typeof experienceDataSchema> => ({
+        organization: data.organization,
+        url: blankToUndefined(data.url),
+        location: blankToUndefined(data.location),
+        startDate: data.startDate,
+        endDate: blankToUndefined(data.endDate),
+        stack: stackOf(data.stack),
+        translations: translationsOf(data.translations),
+      }))
+      .pipe(experienceDataSchema),
+  }),
+  z.object({
+    kind: z.literal(ProfileEntryKind.Education),
+    ...entryFields,
+    data: dataFieldsSchema
+      .transform((data): z.input<typeof educationDataSchema> => ({
+        organization: data.organization,
+        url: blankToUndefined(data.url),
+        startDate: data.startDate,
+        endDate: blankToUndefined(data.endDate),
+        translations: translationsOf(data.translations),
+      }))
+      .pipe(educationDataSchema),
+  }),
+  z.object({
+    kind: z.literal(ProfileEntryKind.Project),
+    ...entryFields,
+    data: dataFieldsSchema
+      .transform((data): z.input<typeof projectDataSchema> => ({
+        url: blankToUndefined(data.url),
+        repository: blankToUndefined(data.repository),
+        image: blankToUndefined(data.image),
+        startDate: blankToUndefined(data.startDate),
+        endDate: blankToUndefined(data.endDate),
+        stack: stackOf(data.stack),
+        translations: translationsOf(data.translations),
+      }))
+      .pipe(projectDataSchema),
+  }),
+]);
+
+export type ProfileFormInput = z.input<typeof profileFormSchema>;
+export type ProfileFormOutput = z.output<typeof profileFormSchema>;
+
+const emptyTranslation = (): TranslationFields => ({
+  title: "",
+  summary: "",
+  content: "",
+});
+
+const emptyData = (): DataFields => ({
+  organization: "",
+  url: "",
+  location: "",
+  repository: "",
+  image: "",
+  startDate: "",
+  endDate: "",
+  stack: "",
+  translations: {
+    [Locale.zhTW]: emptyTranslation(),
+    [Locale.En]: emptyTranslation(),
+  },
+});
+
+export const emptyFormValues = (kind: ProfileEntryKind): ProfileFormInput => ({
+  kind,
+  published: false,
+  sortOrder: 0,
+  data: emptyData(),
+});
+
+const translationFieldsOf = (
+  translation: { title: string; summary?: string; content?: string } | undefined
+): TranslationFields => ({
+  title: translation?.title ?? "",
+  summary: translation?.summary ?? "",
+  content: translation?.content ?? "",
+});
+
+export const formValuesOf = (entry: ProfileEntryView): ProfileFormInput => {
+  const base = {
+    published: entry.published,
+    sortOrder: entry.sortOrder,
   };
-  switch (kind) {
+  const data: DataFields = {
+    ...emptyData(),
+    translations: {
+      [Locale.zhTW]: translationFieldsOf(entry.data.translations[Locale.zhTW]),
+      [Locale.En]: translationFieldsOf(entry.data.translations[Locale.En]),
+    },
+  };
+  switch (entry.kind) {
     case ProfileEntryKind.About:
-      return { kind, data: { translations } };
+      return { ...base, kind: entry.kind, data };
     case ProfileEntryKind.Experience:
       return {
-        kind,
+        ...base,
+        kind: entry.kind,
         data: {
-          organization: values.organization,
-          url: blankToUndefined(values.url),
-          location: blankToUndefined(values.location),
-          startDate: values.startDate,
-          endDate: blankToUndefined(values.endDate),
-          stack: stackOf(values.stack),
-          translations,
+          ...data,
+          organization: entry.data.organization,
+          url: entry.data.url ?? "",
+          location: entry.data.location ?? "",
+          startDate: entry.data.startDate,
+          endDate: entry.data.endDate ?? "",
+          stack: entry.data.stack.join(", "),
         },
       };
     case ProfileEntryKind.Education:
       return {
-        kind,
+        ...base,
+        kind: entry.kind,
         data: {
-          organization: values.organization,
-          url: blankToUndefined(values.url),
-          startDate: values.startDate,
-          endDate: blankToUndefined(values.endDate),
-          translations,
+          ...data,
+          organization: entry.data.organization,
+          url: entry.data.url ?? "",
+          startDate: entry.data.startDate,
+          endDate: entry.data.endDate ?? "",
         },
       };
     case ProfileEntryKind.Project:
       return {
-        kind,
+        ...base,
+        kind: entry.kind,
         data: {
-          url: blankToUndefined(values.url),
-          repository: blankToUndefined(values.repository),
-          image: blankToUndefined(values.image),
-          startDate: blankToUndefined(values.startDate),
-          endDate: blankToUndefined(values.endDate),
-          stack: stackOf(values.stack),
-          translations,
+          ...data,
+          url: entry.data.url ?? "",
+          repository: entry.data.repository ?? "",
+          image: entry.data.image ?? "",
+          startDate: entry.data.startDate ?? "",
+          endDate: entry.data.endDate ?? "",
+          stack: entry.data.stack.join(", "),
         },
       };
   }
 };
-
-export const toWrite = (
-  kind: ProfileEntryKind,
-  values: ProfileFormValues
-): ProfileEntryWrite => ({
-  published: values.published,
-  sortOrder: values.sortOrder,
-  ...toContent(kind, values),
-});
 
 /** Re-pairs `kind` with `data` so an existing row can be sent back as a write. */
 export const contentOf = (
@@ -204,73 +249,3 @@ export const contentOf = (
       return { kind: entry.kind, data: entry.data };
   }
 };
-
-type ScalarField = Exclude<
-  keyof ProfileFormValues,
-  "published" | "sortOrder" | "translations"
->;
-
-const SCALAR_FIELDS: ReadonlySet<PropertyKey> = new Set<ScalarField>([
-  "organization",
-  "url",
-  "location",
-  "repository",
-  "image",
-  "startDate",
-  "endDate",
-  "stack",
-]);
-
-const isScalarField = (value: PropertyKey | undefined): value is ScalarField =>
-  value !== undefined && SCALAR_FIELDS.has(value);
-
-const isLocale = (value: PropertyKey | undefined): value is Locale =>
-  value === Locale.zhTW || value === Locale.En;
-
-const isTranslationField = (
-  value: PropertyKey | undefined
-): value is keyof TranslationFormValues =>
-  value === "title" || value === "summary" || value === "content";
-
-/**
- * Validates through the content schema and maps its issues back onto form fields. An issue
- * with no field of its own, such as "at least one locale", lands on `translations`.
- */
-export const profileFormResolver =
-  (kind: ProfileEntryKind): Resolver<ProfileFormValues> =>
-  (values) => {
-    const parsed = profileEntryContentSchema.safeParse(toContent(kind, values));
-    if (parsed.success) {
-      return { values, errors: {} };
-    }
-
-    const errors: FieldErrors<ProfileFormValues> = {};
-    const unmapped: string[] = [];
-    for (const issue of parsed.error.issues) {
-      const [head, second, third] = issue.path.filter(
-        (segment) => segment !== "data"
-      );
-      const error = { type: "validation", message: issue.message };
-      if (
-        head === "translations" &&
-        isLocale(second) &&
-        isTranslationField(third)
-      ) {
-        const translations = (errors.translations ??= {});
-        const locale = (translations[second] ??= {});
-        locale[third] = error;
-      } else if (isScalarField(head)) {
-        errors[head] = error;
-      } else {
-        unmapped.push(issue.message);
-      }
-    }
-    if (unmapped.length > 0) {
-      errors.translations = {
-        ...errors.translations,
-        type: "validation",
-        message: unmapped.join(" "),
-      };
-    }
-    return { values: {}, errors };
-  };

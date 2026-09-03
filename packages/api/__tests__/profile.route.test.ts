@@ -34,7 +34,7 @@ const it = orpcIt.extend("context", ({ session }) =>
 
 const experienceData = {
   organization: "LeadBest",
-  startDate: "2023-03",
+  startDate: "2023-03-01",
   stack: ["TypeScript"],
   translations: { "zh-TW": { title: "前端工程師" } },
 };

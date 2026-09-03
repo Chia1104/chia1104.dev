@@ -21,8 +21,8 @@ const row = (overrides: Partial<ProfileEntry> = {}): ProfileEntry => ({
   sortOrder: 0,
   data: {
     organization: "CGU",
-    startDate: "2018-06",
-    endDate: "2022-06",
+    startDate: "2018-06-01",
+    endDate: "2022-06-30",
     translations: { en: { title: "MIS" } },
   },
   userId: "author",

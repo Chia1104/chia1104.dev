@@ -19,6 +19,7 @@ import { toast } from "sonner";
 
 import { Locale, ProfileEntryKind } from "@chia/db/types";
 
+import { DrawerPanel } from "@/components/commons/drawer-panel";
 import { orpc } from "@/libs/orpc/client";
 
 import { EntryForm } from "./entry-form";
@@ -214,47 +215,45 @@ const EntryDrawer = ({
     <Drawer.Backdrop
       isOpen={editor !== null}
       onOpenChange={(open) => !open && onClose()}>
-      <Drawer.Content placement="right">
-        <Drawer.Dialog className="sm:max-w-2xl">
-          <Drawer.CloseTrigger />
-          <Drawer.Header>
-            <Drawer.Heading>
-              {entry
-                ? titleOf(entry)
-                : `New ${KIND_LABEL[kind].toLowerCase()} entry`}
-            </Drawer.Heading>
-          </Drawer.Header>
-          <Drawer.Body>
-            {editor ? (
-              <EntryForm
-                key={entry?.id ?? "create"}
-                entry={entry}
-                isPending={busy}
-                kind={kind}
-                onSubmit={(write) =>
-                  entry
-                    ? update.mutate({ id: entry.id, ...write })
-                    : create.mutate(write)
-                }
-              />
-            ) : null}
-          </Drawer.Body>
-          {entry ? (
-            <Drawer.Footer className="justify-between">
-              <span className="text-muted-foreground text-xs">
-                updated {formatDate(entry.updatedAt)}
-              </span>
-              <Button
-                isDisabled={busy}
-                size="sm"
-                variant="danger-soft"
-                onPress={() => setConfirmDelete(true)}>
-                Delete
-              </Button>
-            </Drawer.Footer>
+      <DrawerPanel>
+        <Drawer.CloseTrigger />
+        <Drawer.Header>
+          <Drawer.Heading>
+            {entry
+              ? titleOf(entry)
+              : `New ${KIND_LABEL[kind].toLowerCase()} entry`}
+          </Drawer.Heading>
+        </Drawer.Header>
+        <Drawer.Body>
+          {editor ? (
+            <EntryForm
+              key={entry?.id ?? "create"}
+              entry={entry}
+              isPending={busy}
+              kind={kind}
+              onSubmit={(write) =>
+                entry
+                  ? update.mutate({ id: entry.id, ...write })
+                  : create.mutate(write)
+              }
+            />
           ) : null}
-        </Drawer.Dialog>
-      </Drawer.Content>
+        </Drawer.Body>
+        {entry ? (
+          <Drawer.Footer className="justify-between">
+            <span className="text-muted-foreground text-xs">
+              updated {formatDate(entry.updatedAt)}
+            </span>
+            <Button
+              isDisabled={busy}
+              size="sm"
+              variant="danger-soft"
+              onPress={() => setConfirmDelete(true)}>
+              Delete
+            </Button>
+          </Drawer.Footer>
+        ) : null}
+      </DrawerPanel>
       {entry ? (
         <DeleteConfirm
           isOpen={confirmDelete}
@@ -296,9 +295,11 @@ const PublishedSwitch = ({ entry }: { entry: ProfileEntryView }) => {
           ...contentOf(entry),
         })
       }>
-      <Switch.Control>
-        <Switch.Thumb />
-      </Switch.Control>
+      <Switch.Content>
+        <Switch.Control>
+          <Switch.Thumb />
+        </Switch.Control>
+      </Switch.Content>
     </Switch>
   );
 };

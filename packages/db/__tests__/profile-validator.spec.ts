@@ -7,7 +7,7 @@ const experience = {
   data: {
     organization: "LeadBest",
     url: "https://www.leadbestconsultant.com/",
-    startDate: "2023-03",
+    startDate: "2023-03-01",
     stack: ["TypeScript", "React"],
     translations: {
       "zh-TW": { title: "前端工程師", content: "- 開發區塊鏈數據分析平台" },
@@ -38,17 +38,21 @@ describe("profileEntryContentSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects dates that are not YYYY-MM or that end before they start", () => {
+  it("rejects dates that are not YYYY-MM-DD or that end before they start", () => {
     expect(
       profileEntryContentSchema.safeParse({
         ...experience,
-        data: { ...experience.data, startDate: "2023-3" },
+        data: { ...experience.data, startDate: "2023-03" },
       }).success
     ).toBe(false);
     expect(
       profileEntryContentSchema.safeParse({
         ...experience,
-        data: { ...experience.data, startDate: "2023-03", endDate: "2022-12" },
+        data: {
+          ...experience.data,
+          startDate: "2023-03-01",
+          endDate: "2022-12-31",
+        },
       }).success
     ).toBe(false);
   });

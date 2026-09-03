@@ -22,6 +22,7 @@ import { parseAsString, parseAsStringLiteral, useQueryStates } from "nuqs";
 
 import { Locale } from "@chia/db/types";
 
+import { DrawerPanel } from "@/components/commons/drawer-panel";
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs } from "@/libs/orpc/types";
 
@@ -85,77 +86,70 @@ const ChunkDetailDrawer = ({
     <Drawer.Backdrop
       isOpen={chunkId !== null}
       onOpenChange={(open) => !open && onClose()}>
-      <Drawer.Content placement="right">
-        <Drawer.Dialog>
-          <Drawer.CloseTrigger />
-          <Drawer.Header>
-            <Drawer.Heading>Chunk {chunkId}</Drawer.Heading>
-            {data && (
-              <IndexKeyLine
-                indexVersion={data.indexVersion}
-                model={data.model}
-              />
-            )}
-          </Drawer.Header>
-          <Drawer.Body className="flex flex-col gap-4">
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Spinner size="sm" />
+      <DrawerPanel>
+        <Drawer.CloseTrigger />
+        <Drawer.Header>
+          <Drawer.Heading>Chunk {chunkId}</Drawer.Heading>
+          {data && (
+            <IndexKeyLine indexVersion={data.indexVersion} model={data.model} />
+          )}
+        </Drawer.Header>
+        <Drawer.Body className="flex flex-col gap-4">
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Spinner size="sm" />
+            </div>
+          ) : error || !data ? (
+            // without this branch a failed fetch leaves `data` undefined and spins forever
+            <p className="text-danger py-8 text-sm">
+              {error?.message ?? "Could not load this chunk"}
+            </p>
+          ) : (
+            <>
+              <dl className="grid grid-cols-2 gap-2 text-xs">
+                <dt className="text-muted-foreground">Source</dt>
+                <dd className="font-mono">
+                  {data.chunk.sourceType}:{data.chunk.sourceId}
+                </dd>
+                <dt className="text-muted-foreground">Kind / index</dt>
+                <dd className="font-mono">
+                  {data.chunk.kind} #{data.chunk.chunkIndex}
+                </dd>
+                <dt className="text-muted-foreground">Heading</dt>
+                <dd className="font-mono">{data.chunk.headingPath ?? "—"}</dd>
+                <dt className="text-muted-foreground">Tokens</dt>
+                <dd className="font-mono">{data.chunk.tokenCount ?? "—"}</dd>
+                <dt className="text-muted-foreground">Content hash</dt>
+                <dd className="truncate font-mono">{data.chunk.contentHash}</dd>
+              </dl>
+
+              <div className="flex flex-col gap-1">
+                <span className="text-muted-foreground text-xs">
+                  Stored vectors
+                </span>
+                {data.chunk.vectors.length === 0 ? (
+                  <span className="text-xs">None</span>
+                ) : (
+                  data.chunk.vectors.map((vector) => (
+                    <span
+                      key={`${vector.model}:${vector.indexVersion}`}
+                      className="font-mono text-xs">
+                      {vector.model} · {vector.indexVersion}
+                    </span>
+                  ))
+                )}
               </div>
-            ) : error || !data ? (
-              // without this branch a failed fetch leaves `data` undefined and spins forever
-              <p className="text-danger py-8 text-sm">
-                {error?.message ?? "Could not load this chunk"}
-              </p>
-            ) : (
-              <>
-                <dl className="grid grid-cols-2 gap-2 text-xs">
-                  <dt className="text-muted-foreground">Source</dt>
-                  <dd className="font-mono">
-                    {data.chunk.sourceType}:{data.chunk.sourceId}
-                  </dd>
-                  <dt className="text-muted-foreground">Kind / index</dt>
-                  <dd className="font-mono">
-                    {data.chunk.kind} #{data.chunk.chunkIndex}
-                  </dd>
-                  <dt className="text-muted-foreground">Heading</dt>
-                  <dd className="font-mono">{data.chunk.headingPath ?? "—"}</dd>
-                  <dt className="text-muted-foreground">Tokens</dt>
-                  <dd className="font-mono">{data.chunk.tokenCount ?? "—"}</dd>
-                  <dt className="text-muted-foreground">Content hash</dt>
-                  <dd className="truncate font-mono">
-                    {data.chunk.contentHash}
-                  </dd>
-                </dl>
 
-                <div className="flex flex-col gap-1">
-                  <span className="text-muted-foreground text-xs">
-                    Stored vectors
-                  </span>
-                  {data.chunk.vectors.length === 0 ? (
-                    <span className="text-xs">None</span>
-                  ) : (
-                    data.chunk.vectors.map((vector) => (
-                      <span
-                        key={`${vector.model}:${vector.indexVersion}`}
-                        className="font-mono text-xs">
-                        {vector.model} · {vector.indexVersion}
-                      </span>
-                    ))
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <span className="text-muted-foreground text-xs">Content</span>
-                  <Card variant="tertiary" className="rounded-md p-2 text-xs">
-                    <Card.Content>{data.chunk.content}</Card.Content>
-                  </Card>
-                </div>
-              </>
-            )}
-          </Drawer.Body>
-        </Drawer.Dialog>
-      </Drawer.Content>
+              <div className="flex flex-col gap-1">
+                <span className="text-muted-foreground text-xs">Content</span>
+                <Card variant="tertiary" className="rounded-md p-2 text-xs">
+                  <Card.Content>{data.chunk.content}</Card.Content>
+                </Card>
+              </div>
+            </>
+          )}
+        </Drawer.Body>
+      </DrawerPanel>
     </Drawer.Backdrop>
   );
 };

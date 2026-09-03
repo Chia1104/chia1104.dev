@@ -19,7 +19,7 @@ const leadbest: ProfileEntrySnapshot = {
   data: {
     organization: "LeadBest",
     location: "Taipei",
-    startDate: "2023-03",
+    startDate: "2023-03-01",
     stack: ["TypeScript", "React"],
     translations: {
       "zh-TW": {
@@ -34,8 +34,8 @@ const wanin: ProfileEntrySnapshot = {
   kind: "experience",
   data: {
     organization: "WANIN",
-    startDate: "2022-07",
-    endDate: "2023-01",
+    startDate: "2022-07-01",
+    endDate: "2023-01-31",
     stack: [],
     translations: {
       en: { title: "Frontend engineer", content: "- Turborepo migration" },
@@ -64,11 +64,11 @@ describe("renderProfileBrief", () => {
         "",
         "## Experience",
         "",
-        "### Frontend engineer · WANIN (2022-07 – 2023-01)",
+        "### Frontend engineer · WANIN (2022-07-01 – 2023-01-31)",
         "",
         "- Turborepo migration",
         "",
-        "### 前端工程師 · LeadBest (2023-03 – present)",
+        "### 前端工程師 · LeadBest (2023-03-01 – present)",
         "Taipei · Stack: TypeScript, React",
         "",
         "- 開發區塊鏈數據分析平台",

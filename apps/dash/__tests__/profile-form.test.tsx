@@ -7,14 +7,13 @@ import { EntryForm } from "../src/components/profile/entry-form";
 import {
   emptyFormValues,
   formValuesOf,
-  profileFormResolver,
-  toWrite,
+  profileFormSchema,
 } from "../src/components/profile/form";
 import type { ProfileEntryView } from "../src/components/profile/form";
 
 /**
- * The form is one flat shape; what reaches the API is decided by `toWrite` and refused by
- * the content schema, so most of the behaviour is testable without a DOM.
+ * The form is one flat shape; `profileFormSchema` turns it into the write payload and is
+ * the only validation, so most of the behaviour is testable without a DOM.
  */
 
 const experience: ProfileEntryView = {
@@ -27,7 +26,7 @@ const experience: ProfileEntryView = {
   data: {
     organization: "LeadBest",
     url: "https://www.leadbestconsultant.com/",
-    startDate: "2023-03",
+    startDate: "2023-03-01",
     stack: ["TypeScript", "React"],
     translations: {
       [Locale.zhTW]: { title: "前端工程師", content: "- 開發多鏈錢包" },
@@ -35,46 +34,40 @@ const experience: ProfileEntryView = {
   },
 };
 
-const resolverOptions = { fields: {}, shouldUseNativeValidation: false };
-
-describe("profile form mapping", () => {
+describe("profileFormSchema", () => {
   it("round-trips an entry through form values and back", () => {
     const values = formValuesOf(experience);
-    expect(values.stack).toBe("TypeScript, React");
-    expect(values.endDate).toBe("");
-    expect(values.translations[Locale.En].title).toBe("");
+    expect(values.data.stack).toBe("TypeScript, React");
+    expect(values.data.endDate).toBe("");
+    expect(values.data.translations[Locale.En].title).toBe("");
 
-    const write = toWrite(ProfileEntryKind.Experience, values);
-    expect(write).toEqual({
+    expect(profileFormSchema.parse(values)).toEqual({
       published: true,
       sortOrder: 1,
       kind: "experience",
       data: {
         organization: "LeadBest",
         url: "https://www.leadbestconsultant.com/",
-        location: undefined,
-        startDate: "2023-03",
-        endDate: undefined,
+        startDate: "2023-03-01",
         stack: ["TypeScript", "React"],
         translations: {
-          "zh-TW": {
-            title: "前端工程師",
-            summary: undefined,
-            content: "- 開發多鏈錢包",
-          },
-          en: undefined,
+          "zh-TW": { title: "前端工程師", content: "- 開發多鏈錢包" },
         },
       },
     });
   });
 
   it("splits the stack on commas and newlines and drops blanks", () => {
-    const write = toWrite(ProfileEntryKind.Project, {
-      ...emptyFormValues(),
-      stack: "Next.js,\n Hono , ,Drizzle",
-      translations: {
-        ...emptyFormValues().translations,
-        [Locale.En]: { title: "chia1104.dev", summary: "", content: "" },
+    const empty = emptyFormValues(ProfileEntryKind.Project);
+    const write = profileFormSchema.parse({
+      ...empty,
+      data: {
+        ...empty.data,
+        stack: "Next.js,\n Hono , ,Drizzle",
+        translations: {
+          ...empty.data.translations,
+          [Locale.En]: { title: "chia1104.dev", summary: "", content: "" },
+        },
       },
     });
     if (write.kind !== "project") throw new Error("kind mismatch");
@@ -82,33 +75,45 @@ describe("profile form mapping", () => {
     expect(write.data.startDate).toBeUndefined();
   });
 
-  it("maps schema issues onto fields and the rest onto root", async () => {
-    const resolve = profileFormResolver(ProfileEntryKind.Experience);
-    const result = await resolve(
-      { ...emptyFormValues(), startDate: "2023-3" },
-      undefined,
-      resolverOptions
-    );
-    expect(result.errors).toMatchObject({
-      organization: { message: expect.any(String) },
-      startDate: { message: "Use YYYY-MM" },
-      translations: { message: "At least one locale is required" },
+  it("reports the data schema's issues at the form's field paths", () => {
+    const empty = emptyFormValues(ProfileEntryKind.Experience);
+    const result = profileFormSchema.safeParse({
+      ...empty,
+      data: { ...empty.data, startDate: "2023-03" },
     });
-
-    const valid = await resolve(
-      formValuesOf(experience),
-      undefined,
-      resolverOptions
+    expect(result.success).toBe(false);
+    const paths = result.error?.issues.map((issue) => issue.path.join("."));
+    expect(paths).toEqual(
+      expect.arrayContaining([
+        "data.organization",
+        "data.startDate",
+        "data.translations",
+      ])
     );
-    expect(valid.errors).toEqual({});
   });
 });
 
+const education: ProfileEntryView = {
+  id: 4,
+  kind: ProfileEntryKind.Education,
+  published: false,
+  sortOrder: 0,
+  createdAt: new Date("2026-09-01T00:00:00Z"),
+  updatedAt: new Date("2026-09-01T00:00:00Z"),
+  data: {
+    organization: "CGU",
+    startDate: "2018-06-01",
+    endDate: "2022-06-30",
+    translations: { [Locale.zhTW]: { title: "資訊管理學系" } },
+  },
+};
+
 describe("EntryForm", () => {
-  it("submits what the operator typed as a kind-correlated write", async () => {
+  it("submits the edited entry as a kind-correlated write and keeps the dates", async () => {
     const onSubmit = vi.fn();
     render(
       <EntryForm
+        entry={education}
         isPending={false}
         kind={ProfileEntryKind.Education}
         onSubmit={onSubmit}
@@ -118,16 +123,7 @@ describe("EntryForm", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Organization" }), {
       target: { value: "CGU, IM" },
     });
-    fireEvent.change(screen.getByRole("textbox", { name: "Start" }), {
-      target: { value: "2018-06" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: "End" }), {
-      target: { value: "2022-06" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: "中文 title" }), {
-      target: { value: "資訊管理學系" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Create" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     expect(onSubmit).toHaveBeenCalledWith({
@@ -136,22 +132,14 @@ describe("EntryForm", () => {
       kind: "education",
       data: {
         organization: "CGU, IM",
-        url: undefined,
-        startDate: "2018-06",
-        endDate: "2022-06",
-        translations: {
-          "zh-TW": {
-            title: "資訊管理學系",
-            summary: undefined,
-            content: undefined,
-          },
-          en: undefined,
-        },
+        startDate: "2018-06-01",
+        endDate: "2022-06-30",
+        translations: { "zh-TW": { title: "資訊管理學系" } },
       },
     });
   });
 
-  it("shows the schema's message on the field and does not submit", async () => {
+  it("shows the schema's message and does not submit an entry without a locale", async () => {
     const onSubmit = vi.fn();
     render(
       <EntryForm
@@ -161,12 +149,14 @@ describe("EntryForm", () => {
       />
     );
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Start" }), {
-      target: { value: "March 2023" },
+    fireEvent.change(screen.getByRole("textbox", { name: "Organization" }), {
+      target: { value: "LeadBest" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
-    await waitFor(() => expect(screen.getByText("Use YYYY-MM")).toBeDefined());
+    await waitFor(() =>
+      expect(screen.getByText("At least one locale is required")).toBeDefined()
+    );
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });

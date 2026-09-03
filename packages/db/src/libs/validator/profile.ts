@@ -15,10 +15,8 @@ const NAME_MAX_CHARS = 120;
 const STACK_ITEM_MAX_CHARS = 40;
 const STACK_MAX_ITEMS = 40;
 
-/** `YYYY-MM`: month precision is what a resume shows, and the string sorts as a date. */
-export const yearMonthSchema = z
-  .string()
-  .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Use YYYY-MM");
+/** `YYYY-MM-DD`; the string sorts as a date, and readers format it to the precision they show. */
+export const isoDateSchema = z.iso.date();
 
 const translationSchema = z.object({
   title: z.string().trim().min(1).max(PROFILE_TITLE_MAX_CHARS),
@@ -43,8 +41,8 @@ const stackSchema = z
 
 /** Absent `endDate` means ongoing. */
 const tenure = {
-  startDate: yearMonthSchema,
-  endDate: yearMonthSchema.optional(),
+  startDate: isoDateSchema,
+  endDate: isoDateSchema.optional(),
 };
 
 const endsAfterStart = (value: { startDate?: string; endDate?: string }) =>
@@ -86,8 +84,8 @@ export const projectDataSchema = z
     url: z.url().optional(),
     repository: z.url().optional(),
     image: z.url().optional(),
-    startDate: yearMonthSchema.optional(),
-    endDate: yearMonthSchema.optional(),
+    startDate: isoDateSchema.optional(),
+    endDate: isoDateSchema.optional(),
     stack: stackSchema,
     translations: translationsSchema,
   })
