@@ -2,7 +2,6 @@ import type { MetadataRoute } from "next";
 
 import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
-import dayjs from "@chia/utils/day";
 
 import { client } from "@/libs/orpc/client.rsc";
 import { Locale as ILocale } from "@/libs/utils/i18n";
@@ -46,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           (feed) =>
             ({
               url: `${baseUrl}/${localeResolver(locale)}/${feed.type}s/${feed.slug}`,
-              lastModified: dayjs(feed.updatedAt).toISOString(),
+              lastModified: feed.updatedAt,
               priority: 0.8,
               changeFrequency: "weekly",
             }) satisfies MetadataRoute.Sitemap[0]

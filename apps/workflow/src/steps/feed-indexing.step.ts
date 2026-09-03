@@ -2,7 +2,6 @@ import "zod/compile";
 import { connectDatabase } from "@chia/db/client";
 import { getFeedForIndexing } from "@chia/db/repos/feeds";
 import type { Locale } from "@chia/db/types";
-import dayjs from "@chia/utils/day";
 
 export interface FeedIndexingSnapshot {
   type: "post" | "note";
@@ -54,8 +53,8 @@ export const loadFeedForIndexingStep = async (
     enabled: feed.published && !feed.deletedAt,
     published: feed.published,
     deleted: !!feed.deletedAt,
-    createdAt: dayjs(feed.createdAt).toISOString(),
-    updatedAt: dayjs(feed.updatedAt).toISOString(),
+    createdAt: feed.createdAt.toISOString(),
+    updatedAt: feed.updatedAt.toISOString(),
     translations: feed.translations.map((translation) => ({
       translationID: translation.id,
       locale: translation.locale,

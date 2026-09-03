@@ -2,8 +2,6 @@ import type { KnownKeysOnly, RelationsFilterColumns } from "drizzle-orm";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import * as z from "zod";
 
-import dayjs from "@chia/utils/day";
-
 import type { DB } from "../../client.ts";
 import type { Locale, relations } from "../../schemas/schema.ts";
 import {
@@ -14,7 +12,7 @@ import {
   tagTranslations,
 } from "../../schemas/schema.ts";
 import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types.ts";
-import { parseCursorForOrder, withDTO } from "../index.ts";
+import { parseCursorForOrder, parseInstant, withDTO } from "../index.ts";
 import type {
   InfiniteDTO,
   InsertFeedDTO,
@@ -119,9 +117,7 @@ const createFeedCursor = (
   orderBy: FeedOrderBy
 ): string => {
   const rawValue = item[orderBy];
-  const value = FEED_DATE_ORDER_BY.has(orderBy)
-    ? dayjs(rawValue).valueOf()
-    : rawValue;
+  const value = rawValue instanceof Date ? rawValue.getTime() : rawValue;
   return `${FEED_CURSOR_PREFIX}${JSON.stringify([value, item.id])}`;
 };
 
@@ -133,14 +129,14 @@ function serializeFeed(feed: SerializableFeed) {
 
   return {
     ...feedData,
-    createdAt: dayjs(createdAt).toISOString(),
-    updatedAt: dayjs(updatedAt).toISOString(),
-    deletedAt: deletedAt ? dayjs(deletedAt).toISOString() : null,
+    createdAt: createdAt.toISOString(),
+    updatedAt: updatedAt.toISOString(),
+    deletedAt: deletedAt ? deletedAt.toISOString() : null,
     translations: translations.map(
       ({ createdAt: at, updatedAt: upAt, ...translation }) => ({
         ...translation,
-        createdAt: dayjs(at).toISOString(),
-        updatedAt: dayjs(upAt).toISOString(),
+        createdAt: at.toISOString(),
+        updatedAt: upAt.toISOString(),
       })
     ),
   };
@@ -608,8 +604,8 @@ export const createFeed = withDTO(
           defaultLocale: dto.defaultLocale ?? LocaleEnum.zhTW,
           userId: dto.userId,
           mainImage: dto.mainImage,
-          createdAt: dto.createdAt ? dayjs(dto.createdAt).toDate() : undefined,
-          updatedAt: dto.updatedAt ? dayjs(dto.updatedAt).toDate() : undefined,
+          createdAt: dto.createdAt ? parseInstant(dto.createdAt) : undefined,
+          updatedAt: dto.updatedAt ? parseInstant(dto.updatedAt) : undefined,
         })
         .returning();
 
@@ -672,7 +668,7 @@ export const updateFeed = withDTO(
         published: dto.published,
         defaultLocale: dto.defaultLocale,
         mainImage: dto.mainImage,
-        updatedAt: dto.updatedAt ? dayjs(dto.updatedAt).toDate() : new Date(),
+        updatedAt: dto.updatedAt ? parseInstant(dto.updatedAt) : new Date(),
       })
       .where(eq(feeds.id, dto.feedId))
       .returning();

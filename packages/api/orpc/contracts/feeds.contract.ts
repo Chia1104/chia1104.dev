@@ -157,6 +157,8 @@ const translationOutputSchema = feedTranslationSchema
   });
 
 export const feedWithTranslationsSchema = feedSchema.extend({
+  createdAt: z.string(),
+  updatedAt: z.string(),
   deletedAt: z.string().nullable(),
   translations: z.array(translationOutputSchema),
   feedsToTags: z

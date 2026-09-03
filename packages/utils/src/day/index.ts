@@ -19,4 +19,5 @@ dayjs.extend(weekOfYear);
 dayjs.extend(isoWeek);
 dayjs.extend(advancedFormat);
 
+export type { ConfigType, Dayjs } from "dayjs";
 export default dayjs;

@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@chia/service-kit": "workspace:*",
+    "es-toolkit": "catalog:",
     "workflow": "catalog:workflow",
     "zod": "catalog:"
   },

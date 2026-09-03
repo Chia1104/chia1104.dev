@@ -1,6 +1,15 @@
-import dayjs from "@chia/utils/day";
-
 import type { DB } from "../client.ts";
+
+/**
+ * Epoch ms, numeric string, or ISO. `new Date("1693…")` is invalid, so numeric
+ * strings are parsed as milliseconds first.
+ */
+export const parseInstant = (value: string | number): Date => {
+  const wire = String(value);
+  const epoch = Number(wire);
+  if (wire !== "" && Number.isFinite(epoch)) return new Date(epoch);
+  return new Date(wire);
+};
 
 export const cursorTransform = (
   cursor: string | number,
@@ -8,17 +17,13 @@ export const cursorTransform = (
 ) => {
   try {
     if (mode === "date") {
-      return dayjs(cursor).toDate();
+      return parseInstant(cursor);
     }
     return cursor;
   } catch (e) {
     console.error(e);
     return null;
   }
-};
-
-export const dateToTimestamp = (date: dayjs.ConfigType) => {
-  return dayjs(date).valueOf();
 };
 
 export type CursorPaginationOrderBy = string;
@@ -70,10 +75,8 @@ export function sliceNextCursor<T extends object>(
         ).has(orderBy);
     // SAFETY: orderBy selects a cursor-compatible scalar column from the same row.
     nextCursor =
-      isDateOrder && raw != null
-        ? dateToTimestamp(
-            /* SAFETY: The producer contract guarantees this value satisfies dayjs.ConfigType. */ raw as dayjs.ConfigType
-          )
+      isDateOrder && raw instanceof Date
+        ? raw.getTime()
         : /* SAFETY: The producer contract guarantees this value satisfies string | number | null. */ ((raw as
             | string
             | number

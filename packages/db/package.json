@@ -127,6 +127,7 @@
     "@paradedb/drizzle-paradedb": "catalog:drizzle",
     "@t3-oss/env-core": "catalog:env",
     "drizzle-orm": "catalog:drizzle",
+    "es-toolkit": "catalog:",
     "pg": "catalog:drizzle",
     "zod": "catalog:"
   },

@@ -49,7 +49,6 @@
     "@t3-oss/env-core": "catalog:env",
     "better-auth": "catalog:better-auth",
     "client-only": "catalog:",
-    "dayjs": "catalog:",
     "resend": "catalog:email",
     "server-only": "catalog:",
     "zod": "catalog:"

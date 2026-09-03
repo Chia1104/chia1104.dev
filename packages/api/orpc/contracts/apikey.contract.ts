@@ -2,7 +2,6 @@ import { oc } from "@orpc/contract";
 import * as z from "zod";
 
 import { baseInfiniteSchema } from "@chia/db/validator/apikey";
-import dayjs from "@chia/utils/day";
 
 export const createAPIKeySchema = z.object({
   name: z.string().optional(),
@@ -39,15 +38,11 @@ export const originalApiKeySchema = baseApiKeySchema
   })
   .transform((data) => ({
     ...data,
-    updatedAt: dayjs(data.updatedAt).toISOString(),
-    createdAt: dayjs(data.createdAt).toISOString(),
-    lastRefillAt: data.lastRefillAt
-      ? dayjs(data.lastRefillAt).toISOString()
-      : null,
-    expiresAt: data.expiresAt ? dayjs(data.expiresAt).toISOString() : null,
-    lastRequest: data.lastRequest
-      ? dayjs(data.lastRequest).toISOString()
-      : null,
+    updatedAt: data.updatedAt.toISOString(),
+    createdAt: data.createdAt.toISOString(),
+    lastRefillAt: data.lastRefillAt?.toISOString() ?? null,
+    expiresAt: data.expiresAt?.toISOString() ?? null,
+    lastRequest: data.lastRequest?.toISOString() ?? null,
   }));
 
 export const apiKeySchema = baseApiKeySchema.extend({

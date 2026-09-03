@@ -12,7 +12,6 @@ import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
 import Timeline from "@chia/ui/timeline";
 import type { TimelineItemData } from "@chia/ui/timeline/types";
-import dayjs from "@chia/utils/day";
 
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs } from "@/libs/orpc/types";
@@ -71,7 +70,7 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
               locale={locale}
             />
           ),
-          startDate: createdAt ? dayjs(createdAt) : null,
+          startDate: createdAt ?? null,
           content: translations[0]?.description,
           link: `${getLinkPrefix()}/${slug}`,
         } satisfies TimelineItemData;

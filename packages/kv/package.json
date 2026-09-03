@@ -62,13 +62,13 @@
     "@upstash/ratelimit": "catalog:kv",
     "@upstash/redis": "catalog:kv",
     "drizzle-orm": "catalog:drizzle",
+    "es-toolkit": "catalog:",
     "keyv": "catalog:kv",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "@keyv/test-suite": "catalog:kv",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
   }
