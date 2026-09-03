@@ -31,7 +31,8 @@ export const createFeedSchema = insertFeedSchema
   .omit({ userId: true, createdAt: true, updatedAt: true })
   .extend({
     slug: z.string().min(1),
-    translations: z.record(
+    /** Partial: a post may exist in one locale. The write service requires the default one. */
+    translations: z.partialRecord(
       z.enum(locale.enumValues),
       z.object({
         title: z.string().min(1),
@@ -58,7 +59,7 @@ export const updateFeedSchema = insertFeedSchema
   .extend({
     feedId: z.number(),
     translations: z
-      .record(
+      .partialRecord(
         z.enum(locale.enumValues),
         z.object({
           title: z.string().min(1).optional(),
