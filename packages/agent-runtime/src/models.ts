@@ -11,6 +11,9 @@ import { anthropicProvider } from "@earendil-works/pi-ai/providers/anthropic";
 import { openaiProvider } from "@earendil-works/pi-ai/providers/openai";
 import { vercelAIGatewayProvider } from "@earendil-works/pi-ai/providers/vercel-ai-gateway";
 
+import { HOUSE_MODELS } from "@chia/ai/house-models";
+import type { HouseModelRole } from "@chia/ai/house-models";
+
 /**
  * Three providers, two credential stories:
  *
@@ -20,9 +23,9 @@ import { vercelAIGatewayProvider } from "@earendil-works/pi-ai/providers/vercel-
  *   so `openai/*` models are served over the same `anthropic-messages` API.
  * - `openai` / `anthropic`: bring-your-own-key. Registered only when a credential is supplied.
  *   A registration-time decision rather than a resolve-time check: pi-ai's auth resolution falls
- *   back to ambient env vars when nothing is stored, and `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`
- *   exist in the service environment for unrelated features. Registering them unconditionally
- *   would silently bill the house account.
+ *   back to ambient env vars when nothing is stored, and a process may carry `OPENAI_API_KEY` /
+ *   `ANTHROPIC_API_KEY` for reasons of its own. Registering them unconditionally would silently
+ *   bill whoever owns that key.
  *
  * `Models` is per-credential-set, not process-wide. See {@link createAgentModels}.
  */
@@ -63,6 +66,12 @@ export interface AgentModelRef {
   providerId: string;
   modelId: string;
 }
+
+/** The house-billed ref for a role; every house model runs through the gateway. */
+export const houseModel = (role: HouseModelRole): AgentModelRef => ({
+  providerId: AGENT_PROVIDERS.gateway,
+  modelId: HOUSE_MODELS[role],
+});
 
 /** Whether a kind's policy admits a model. See `@chia/agent-writing`'s `isWritingModel`. */
 export type AgentModelPredicate = (ref: AgentModelRef) => boolean;

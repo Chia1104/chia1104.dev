@@ -1,6 +1,7 @@
 import { createEnv } from "@t3-oss/env-core";
 import * as z from "zod";
 
+import { env as aiEnv } from "@chia/ai/env";
 import { env as dbEnv } from "@chia/db/env";
 import { NumericStringSchema } from "@chia/utils/schema";
 
@@ -23,9 +24,6 @@ export const env = createEnv({
     BETA_ADMIN_ID: z.string().optional(),
     AI_AUTH_PRIVATE_KEY: z.string().optional(),
     AI_GATEWAY_API_KEY: z.string().optional(),
-    OPENAI_API_KEY: z.string().optional(),
-    ANTHROPIC_API_KEY: z.string().optional(),
-    OLLAMA_BASE_URL: z.string().optional(),
     FIRECRAWL_API_KEY: z.string().min(1),
   },
   runtimeEnv: {
@@ -46,13 +44,10 @@ export const env = createEnv({
     BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,
     AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
-    OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
     FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [dbEnv],
+  extends: [dbEnv, aiEnv],
 });

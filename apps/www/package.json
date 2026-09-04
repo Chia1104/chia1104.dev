@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@chia/agent-elements": "workspace:*",
+    "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",
     "@chia/contents": "workspace:*",

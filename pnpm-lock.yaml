@@ -123,9 +123,6 @@ catalogs:
     '@ai-sdk/gateway':
       specifier: 4.0.69
       version: 4.0.69
-    '@ai-sdk/google':
-      specifier: 4.0.58
-      version: 4.0.58
     '@ai-sdk/openai':
       specifier: 4.0.52
       version: 4.0.52
@@ -135,9 +132,6 @@ catalogs:
     '@anthropic-ai/sdk':
       specifier: 0.122.0
       version: 0.122.0
-    '@google/genai':
-      specifier: 2.19.0
-      version: 2.19.0
     ai:
       specifier: 7.0.85
       version: 7.0.85
@@ -1051,9 +1045,6 @@ importers:
 
   apps/service:
     dependencies:
-      '@ai-sdk/gateway':
-        specifier: catalog:ai
-        version: 4.0.69(zod@4.5.4)
       '@chia/agent-content':
         specifier: workspace:*
         version: link:../../packages/agent-content
@@ -1299,6 +1290,9 @@ importers:
       '@chia/agent-elements':
         specifier: workspace:*
         version: link:../../packages/agent-elements
+      '@chia/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@chia/api':
         specifier: workspace:*
         version: link:../../packages/api
@@ -1760,6 +1754,9 @@ importers:
 
   packages/agent-runtime:
     dependencies:
+      '@chia/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@chia/db':
         specifier: workspace:*
         version: link:../db
@@ -1855,9 +1852,6 @@ importers:
       '@ai-sdk/gateway':
         specifier: catalog:ai
         version: 4.0.69(zod@4.5.4)
-      '@ai-sdk/google':
-        specifier: catalog:ai
-        version: 4.0.58(zod@4.5.4)
       '@ai-sdk/openai':
         specifier: catalog:ai
         version: 4.0.52(zod@4.5.4)
@@ -1867,9 +1861,9 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
-      '@google/genai':
-        specifier: catalog:ai
-        version: 2.19.0(supports-color@10.2.2)
+      '@t3-oss/env-core':
+        specifier: catalog:env
+        version: 0.13.11(typescript@7.0.2)(zod@4.5.4)
       ai:
         specifier: catalog:ai
         version: 7.0.85(zod@4.5.4)
@@ -2789,12 +2783,6 @@ packages:
 
   '@ai-sdk/gateway@4.0.69':
     resolution: {integrity: sha512-W5MMdyqsaziQy/A4kxlK74iEQ+NuO6OaszH32cEQpUgBW0o15S2fAdP0aYSH2/5lrVZSMXLQLCzuMkRGHBua3A==}
-    engines: {node: '>=22'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/google@4.0.58':
-    resolution: {integrity: sha512-4xd28cAErn/aO0yoG95qwPO7QvoBlSKw7UeQuxivbTwFCSjA5hy/OrMEM4adPLPoPrnTi4PXFVzNesNBtKHI0Q==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -3850,15 +3838,6 @@ packages:
 
   '@google/genai@1.52.0':
     resolution: {integrity: sha512-gwSvbpiN/17O9TbsqSsE/OzZcpv5Fo4RQjdngGgogtuB9RsyJ8ZHhX5KjHj1bp5N9snN2eK8LDGXSaWW2hof8Q==}
-    engines: {node: '>=20.0.0'}
-    peerDependencies:
-      '@modelcontextprotocol/sdk': ^1.25.2
-    peerDependenciesMeta:
-      '@modelcontextprotocol/sdk':
-        optional: true
-
-  '@google/genai@2.19.0':
-    resolution: {integrity: sha512-IM3u1FjpOLyOPsPh0smGA6Ntj2olUWCPbTs/WQj7cA/2AKCGw/652W7IaySx0XtwuscFnMYBoraebQusSZ0zSQ==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       '@modelcontextprotocol/sdk': ^1.25.2
@@ -14623,12 +14602,6 @@ snapshots:
       '@vercel/oidc': 3.2.0
       zod: 4.5.4
 
-  '@ai-sdk/google@4.0.58(zod@4.5.4)':
-    dependencies:
-      '@ai-sdk/provider': 4.0.9
-      '@ai-sdk/provider-utils': 5.0.34(zod@4.5.4)
-      zod: 4.5.4
-
   '@ai-sdk/mcp@2.0.41(zod@4.5.4)':
     dependencies:
       '@ai-sdk/provider': 4.0.9
@@ -15640,17 +15613,6 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@google/genai@2.19.0(supports-color@10.2.2)':
-    dependencies:
-      google-auth-library: 10.9.1(supports-color@10.2.2)
-      p-retry: 4.6.2
-      protobufjs: 7.6.6
-      ws: 8.21.3
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   '@graphile/logger@0.2.0': {}
 
   '@graphql-typed-document-node/core@3.2.0(graphql@16.14.2)':
@@ -16207,6 +16169,28 @@ snapshots:
   '@mermaid-js/parser@1.2.1':
     dependencies:
       '@chevrotain/types': 11.1.2
+
+  '@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.5.4)':
+    dependencies:
+      '@hono/node-server': 2.1.1(hono@4.13.5)
+      ajv: 8.20.0
+      ajv-formats: 3.0.1(ajv@8.20.0)
+      content-type: 1.0.5
+      cors: 2.8.6
+      cross-spawn: 7.0.6
+      eventsource: 3.0.7
+      eventsource-parser: 3.1.1
+      express: 5.2.1(supports-color@10.2.2)
+      express-rate-limit: 8.7.0(express@5.2.1(supports-color@10.2.2))(supports-color@10.2.2)
+      hono: 4.13.5
+      jose: 6.2.10
+      json-schema-typed: 8.0.2
+      pkce-challenge: 5.0.1
+      raw-body: 3.0.2
+      zod: 4.5.4
+      zod-to-json-schema: 3.25.2(zod@4.5.4)
+    transitivePeerDependencies:
+      - supports-color
 
   '@modelcontextprotocol/sdk@1.30.0(supports-color@8.1.1)(zod@4.5.4)':
     dependencies:
@@ -22012,6 +21996,14 @@ snapshots:
     optional: true
 
   expect-type@1.4.0: {}
+
+  express-rate-limit@8.7.0(express@5.2.1(supports-color@10.2.2))(supports-color@10.2.2):
+    dependencies:
+      debug: 4.4.3(supports-color@10.2.2)
+      express: 5.2.1(supports-color@10.2.2)
+      ip-address: 10.7.0
+    transitivePeerDependencies:
+      - supports-color
 
   express-rate-limit@8.7.0(express@5.2.1(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:

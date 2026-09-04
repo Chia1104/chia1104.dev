@@ -2,6 +2,7 @@ import {
   AGENT_PROVIDERS,
   createAgentCatalog,
   createAgentModels,
+  houseModel,
   listModels,
   resolveModel,
   UnknownAgentModelError,
@@ -64,18 +65,13 @@ export const AGENT_TASK_IDS = {
 
 export type AgentTaskId = (typeof AGENT_TASK_IDS)[keyof typeof AGENT_TASK_IDS];
 
-const HOUSE_CHEAP_MODEL: AgentModelRef = {
-  providerId: AGENT_PROVIDERS.gateway,
-  modelId: "anthropic/claude-haiku-4.5",
-};
-
 export const AGENT_TASKS = {
   [AGENT_TASK_IDS.sessionTitle]: {
     id: AGENT_TASK_IDS.sessionTitle,
     label: "Session title",
     description:
       "Condenses the first prompt of a session into the short title shown in the session list.",
-    defaultModel: HOUSE_CHEAP_MODEL,
+    defaultModel: houseModel("cheap"),
     prompt: { default: SESSION_TITLE_SYSTEM_PROMPT },
     params: SESSION_TITLE_PARAMS,
   },
@@ -99,7 +95,7 @@ export const AGENT_TASKS = {
     description:
       "Reads a finished writing session and proposes the lessons the operator taught the agent, for review.",
     kind: WRITING_AGENT_KIND,
-    defaultModel: HOUSE_CHEAP_MODEL,
+    defaultModel: houseModel("cheap"),
     prompt: { default: LESSON_EXTRACTION_SYSTEM_PROMPT },
     params: LESSON_EXTRACTION_PARAMS,
   },

@@ -88,7 +88,14 @@ describe("POST /ai/key:signed", () => {
   it("keeps the rest of /ai closed to guests", async () => {
     mockGetSession.mockResolvedValue(guest);
 
-    const res = await app.request("/api/v1/ai/models");
+    const res = await app.request("/api/v1/ai/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: { provider: "openai", id: "gpt-5-nano" },
+        messages: [],
+      }),
+    });
 
     expect(res.status).toBe(401);
   });

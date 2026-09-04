@@ -15,7 +15,8 @@ export type TextEmbeddingModel =
 
 export interface BatchOptions {
   model?: TextEmbeddingModel;
-  apiKey?: string;
+  /** Explicit so the SDK never falls back to an ambient `OPENAI_API_KEY`. */
+  apiKey: string;
   fetch?: (
     input: string | URL | Request,
     init?: RequestInit
@@ -64,18 +65,18 @@ const buildBatches = (
  */
 export const generateEmbeddings = async (
   values: string[],
-  options?: BatchOptions
+  options: BatchOptions
 ): Promise<number[][]> => {
   if (values.length === 0) {
     return [];
   }
-  const model = options?.model ?? "text-embedding-3-small";
+  const model = options.model ?? "text-embedding-3-small";
   const provider = createAiSdkOpenAI({
-    apiKey: options?.apiKey ?? process.env.OPENAI_API_KEY,
+    apiKey: options.apiKey,
     // SDK types demand fetch.preconnect but never call it; the workflow
     // runtime's instrumented fetch does not carry it
     fetch:
-      /* SAFETY: The producer contract guarantees this value satisfies typeof globalThis.fetch | undefined. */ options?.fetch as
+      /* SAFETY: The producer contract guarantees this value satisfies typeof globalThis.fetch | undefined. */ options.fetch as
         | typeof globalThis.fetch
         | undefined,
   });
@@ -83,8 +84,8 @@ export const generateEmbeddings = async (
   const guarded = await guardEmbeddingInputs(values, { model });
   const batches = buildBatches(
     guarded,
-    options?.maxInputsPerRequest ?? EMBEDDING_BATCH_MAX_INPUTS,
-    options?.maxTokensPerRequest ?? EMBEDDING_BATCH_MAX_TOKENS
+    options.maxInputsPerRequest ?? EMBEDDING_BATCH_MAX_INPUTS,
+    options.maxTokensPerRequest ?? EMBEDDING_BATCH_MAX_TOKENS
   );
 
   const embeddings: number[][] = [];

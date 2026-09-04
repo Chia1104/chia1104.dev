@@ -339,7 +339,7 @@ Three override sources are stored separately:
 | `AGENT_TASKS`         | `agent.task_config`  | Model, prompt and exposed parameters for one-shot tasks |
 | Quota defaults        | `agent.quota_config` | Weekly allowance, time zone and running-turn cap        |
 
-Kind defaults are copied when a session is created; later edits do not mutate existing sessions. Kind `config` is loaded every turn, so preference changes apply on the next turn. Safety boundaries such as tool tiers, approval requirements, turn budgets and model allowlists remain in code.
+House model ids are written once, by role, in `@chia/ai/house-models`; kinds and tasks reference a role through `houseModel`. Kind defaults are copied when a session is created; later edits do not mutate existing sessions. Kind `config` is loaded every turn, so preference changes apply on the next turn. Safety boundaries such as tool tiers, approval requirements, turn budgets and model allowlists remain in code.
 
 Tasks cover title generation, compaction, branch summaries and lesson extraction. A task may default to the session model or a house model. Operator-pinned task models always use the house catalogue.
 

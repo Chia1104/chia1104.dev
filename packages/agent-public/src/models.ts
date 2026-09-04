@@ -4,6 +4,7 @@ import {
   AGENT_PROVIDERS,
   createAgentCatalog,
   createAgentModels,
+  houseModel,
   listModels,
   resolveModel,
 } from "@chia/agent-runtime/models";
@@ -38,10 +39,7 @@ export const isPublicModel = (ref: AgentModelRef): boolean => {
   }
 };
 
-export const DEFAULT_PUBLIC_MODEL: AgentModelRef = {
-  providerId: AGENT_PROVIDERS.gateway,
-  modelId: "anthropic/claude-haiku-4.5",
-};
+export const DEFAULT_PUBLIC_MODEL: AgentModelRef = houseModel("public");
 
 /**
  * Resolves a session's model. Defaults to a credential-free collection, so a BYOK pair with

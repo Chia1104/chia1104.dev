@@ -4,6 +4,7 @@ import {
   AGENT_PROVIDERS,
   createAgentCatalog,
   createAgentModels,
+  houseModel,
   listModels,
   resolveModel,
 } from "@chia/agent-runtime/models";
@@ -34,10 +35,7 @@ export const isWritingModel = (ref: AgentModelRef): boolean => {
   }
 };
 
-export const DEFAULT_WRITING_MODEL: AgentModelRef = {
-  providerId: AGENT_PROVIDERS.gateway,
-  modelId: "anthropic/claude-sonnet-5",
-};
+export const DEFAULT_WRITING_MODEL: AgentModelRef = houseModel("writing");
 
 /**
  * Resolves a session's model. Defaults to a credential-free collection (gateway only), so a

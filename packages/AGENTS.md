@@ -44,7 +44,7 @@ Authorization belongs in `service-kit/src/policies`. Bind policies through `runP
 - `db`: every timestamp column is `timestamptz` (`withTimezone: true`); a plain `timestamp` would be read as UTC by Drizzle but written in the process's zone by a raw `sql` parameter. Timestamp columns use `mode: "date"`. `connectDatabase(env, { withCache })` is memoized by URL and cache setting. Request paths may use explicit Redis-backed Drizzle caching; workflow steps use `withCache: false`. All text and JSON parameters pass through `storableCodecs` before reaching Postgres.
 - `auth`: Better Auth configuration and server/browser clients. Keep email providers and templates lazily imported.
 - `kv`: shared Keyv adapters, the Drizzle cache and rate-limiter integration.
-- `ai`: embeddings, chunking, content tools, provider model creation and API-key crypto. Keep provider SDKs lazily imported.
+- `ai`: embeddings, chunking, content tools, provider model creation and API-key crypto. Keep provider SDKs lazily imported. `@chia/ai/provider` is the only definition of the BYOK vendors and their cookie names; `@chia/ai/house-models` is the only place a house-billed model id is written, keyed by role. `@chia/ai/env` owns `EMBEDDING_PROVIDER`, `EMBEDDING_API_KEY` and `OLLAMA_BASE_URL`.
 - `meta`: site metadata authored in Pkl, generated as `meta.json`.
 
 ## Agent packages
