@@ -96,11 +96,15 @@ const api = new Hono<HonoContext>()
   )
   /** Which keys this browser holds. Presence only; the ciphertext never leaves the cookie jar. */
   .get("/keys", verifyAuth({ allowAnonymous: true }), (c) =>
-    c.json({
-      configured: KEY_IDS.filter((id) =>
-        Boolean(getCookie(c, KEY_COOKIE_NAMES[id]))
-      ),
-    })
+    c.json(
+      {
+        configured: KEY_IDS.filter((id) =>
+          Boolean(getCookie(c, KEY_COOKIE_NAMES[id]))
+        ),
+      },
+      200,
+      { "Cache-Control": "no-store" }
+    )
   )
   .delete(
     "/key",
