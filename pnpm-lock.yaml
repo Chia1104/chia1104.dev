@@ -615,9 +615,6 @@ catalogs:
     cobe:
       specifier: ^2.0.1
       version: 2.0.1
-    immer:
-      specifier: ^11.1.18
-      version: 11.1.18
     katex:
       specifier: ^0.18.5
       version: 0.18.5
@@ -905,9 +902,6 @@ importers:
       hono:
         specifier: catalog:hono
         version: 4.13.5
-      immer:
-        specifier: catalog:ui
-        version: 11.1.18
       ky:
         specifier: 'catalog:'
         version: 2.1.0
@@ -968,9 +962,6 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.5.4
-      zustand:
-        specifier: catalog:ui
-        version: 5.0.15(@types/react@19.2.18)(immer@11.1.18)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
     devDependencies:
       '@chia/tailwind':
         specifier: workspace:*
@@ -22704,7 +22695,8 @@ snapshots:
 
   immediate@3.0.6: {}
 
-  immer@11.1.18: {}
+  immer@11.1.18:
+    optional: true
 
   import-fresh@3.3.1:
     dependencies:

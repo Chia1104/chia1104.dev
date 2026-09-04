@@ -6,12 +6,11 @@ import { useFormContext } from "react-hook-form";
 
 import { EmbeddingDrawer } from "@/components/rag/embedding-drawer";
 import type { EmbeddingResource } from "@/components/rag/embedding-drawer";
-import { useEditFields } from "@/store/draft";
-import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
 import { DefaultLocaleField } from "./default-locale-field";
 import { DeleteButton } from "./delete-button";
 import { DescriptionField } from "./description-field";
+import type { DraftFormValues } from "./draft-form-schema";
 import { FeedTypeTabs } from "./feed-type-tabs";
 import { LocaleTabs } from "./locale-tabs";
 import { MetaChip } from "./meta-chip";
@@ -30,8 +29,7 @@ export const MetadataFields = memo(
     resources?: EmbeddingResource[];
   }) => {
     const id = useId();
-    const form = useFormContext<FormSchema>();
-    const { disabled } = useEditFields();
+    const form = useFormContext<DraftFormValues>();
 
     return (
       <div className="flex w-full flex-col gap-5">
@@ -50,15 +48,15 @@ export const MetadataFields = memo(
           ) : null}
         </div>
 
-        <SlugField />
+        <SlugField isBound={feedId !== undefined} />
 
         <DefaultLocaleField />
 
         <LocaleTabs />
 
-        <TitleField id={id} disabled={disabled} />
+        <TitleField id={id} />
 
-        <DescriptionField id={id} disabled={disabled} />
+        <DescriptionField id={id} />
       </div>
     );
   }

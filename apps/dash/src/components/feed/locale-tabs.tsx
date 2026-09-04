@@ -5,12 +5,11 @@ import { memo } from "react";
 import { Chip, Tabs } from "@heroui/react";
 import { Controller, useFormContext } from "react-hook-form";
 
-import type { FormSchema } from "@/store/draft/slices/edit-fields";
-
 import { SUPPORTED_LOCALES } from "./constants";
+import type { DraftFormValues } from "./draft-form-schema";
 
 export const LocaleTabs = memo(() => {
-  const form = useFormContext<FormSchema>();
+  const form = useFormContext<DraftFormValues>();
   const defaultLocale = form.watch("defaultLocale");
 
   return (

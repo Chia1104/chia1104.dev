@@ -4,24 +4,20 @@ import { memo } from "react";
 
 import { Controller, useFormContext } from "react-hook-form";
 
-import { cn } from "@chia/ui/utils/cn.util";
 import useTheme from "@chia/ui/utils/use-theme";
 
-import { useEditFields } from "@/store/draft";
-import type { FormSchema } from "@/store/draft/slices/edit-fields";
-
+import type { DraftFormValues } from "./draft-form-schema";
 import { MarkdownEditor } from "./markdown-editor";
 
 export const SwitchEditor = memo(() => {
-  const form = useFormContext<FormSchema>();
-  const { disabled } = useEditFields();
+  const form = useFormContext<DraftFormValues>();
   const { isDarkMode } = useTheme();
 
   const activeLocale = form.watch("activeLocale");
   const title = form.watch(`translations.${activeLocale}.title`) ?? "";
 
   return (
-    <div className={cn("relative w-full", disabled && "pointer-events-none")}>
+    <div className="relative w-full">
       <Controller
         key={activeLocale}
         control={form.control}

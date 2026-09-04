@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AlertDialog, Button, Chip, Form, Spinner } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,11 +16,10 @@ import dayjs from "@chia/utils/day";
 
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
-import { DraftProvider, useEditFields } from "@/store/draft";
-import { formSchema } from "@/store/draft/slices/edit-fields";
-import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
 import { DraftActions } from "./draft-actions";
+import { draftFormSchema } from "./draft-form-schema";
+import type { DraftFormValues } from "./draft-form-schema";
 import { EditFields } from "./edit-fields";
 
 /**
@@ -31,7 +30,7 @@ import { EditFields } from "./edit-fields";
 
 export type DraftView = RouterOutputs["feeds"]["draft:get"];
 type PatchInput = RouterInputs["feeds"]["draft:patch"];
-type DraftValues = Omit<FormSchema, "activeLocale">;
+type DraftValues = Omit<DraftFormValues, "activeLocale">;
 type TranslationValues = NonNullable<DraftValues["translations"][LocaleType]>;
 
 const LOCALES = [Locale.zhTW, Locale.En] as const;
@@ -133,7 +132,7 @@ type SaveState =
   | { kind: "saved"; revision: number; at: Date }
   | { kind: "dirty" }
   | { kind: "saving" }
-  | { kind: "conflict" }
+  | { kind: "conflict"; draft: DraftView }
   | { kind: "error"; message: string };
 
 const SaveStatus = ({
@@ -183,19 +182,17 @@ const SaveStatus = ({
 
 const DraftForm = ({ initial }: { initial: DraftView }) => {
   const queryClient = useQueryClient();
-  const { setMode } = useEditFields();
-  const draftKey = orpc.feeds["draft:get"].queryOptions({
-    input: { draftId: initial.id },
-  }).queryKey;
-
-  const draftQuery = useQuery(
-    orpc.feeds["draft:get"].queryOptions({
-      input: { draftId: initial.id },
-      initialData: initial,
-      refetchInterval: POLL_INTERVAL_MS,
-      refetchOnWindowFocus: true,
-    })
+  const draftQueryOptions = useMemo(
+    () =>
+      orpc.feeds["draft:get"].queryOptions({
+        input: { draftId: initial.id },
+        initialData: initial,
+        refetchInterval: POLL_INTERVAL_MS,
+        refetchOnWindowFocus: true,
+      }),
+    [initial]
   );
+  const draftQuery = useQuery(draftQueryOptions);
   const draft = draftQuery.data;
 
   // What the server holds as far as this form knows. Diffs are taken against it.
@@ -210,20 +207,15 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
     revision: initial.revision,
     at: new Date(initial.updatedAt),
   });
-  const [remoteChanged, setRemoteChanged] = useState(false);
-  const [conflict, setConflict] = useState<DraftView | null>(null);
+  const conflict = saveState.kind === "conflict" ? saveState.draft : null;
 
-  const form = useForm<FormSchema>({
+  const form = useForm<DraftFormValues>({
     defaultValues: {
       ...toValues(initial),
       activeLocale: initial.defaultLocale,
     },
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(draftFormSchema),
   });
-
-  useEffect(() => {
-    setMode(draft.feedId === null ? "create" : "edit");
-  }, [draft.feedId, setMode]);
 
   const currentValues = useCallback((): DraftValues => {
     const { activeLocale: _active, ...values } = form.getValues();
@@ -236,18 +228,17 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
       const values = toValues(next);
       savedRef.current = { values, revision: next.revision };
       form.reset({ ...values, activeLocale: form.getValues("activeLocale") });
-      queryClient.setQueryData(draftKey, next);
+      queryClient.setQueryData(draftQueryOptions.queryKey, next);
       setSaveState({
         kind: "saved",
         revision: next.revision,
         at: new Date(next.updatedAt),
       });
-      setRemoteChanged(false);
     },
-    [draftKey, form, queryClient]
+    [draftQueryOptions.queryKey, form, queryClient]
   );
 
-  const patchMutation = useMutation(
+  const { mutateAsync: patchDraft } = useMutation(
     orpc.feeds["draft:patch"].mutationOptions()
   );
 
@@ -261,7 +252,7 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
     inFlightRef.current = true;
     setSaveState({ kind: "saving" });
     try {
-      const next = await patchMutation.mutateAsync({
+      const next = await patchDraft({
         draftId: initial.id,
         expectedRevision: savedRef.current.revision,
         ...patch,
@@ -270,22 +261,21 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
         values: applyPatch(savedRef.current.values, patch),
         revision: next.revision,
       };
-      queryClient.setQueryData(draftKey, next);
+      queryClient.setQueryData(draftQueryOptions.queryKey, next);
       setSaveState({
         kind: "saved",
         revision: next.revision,
         at: new Date(next.updatedAt),
       });
-      setRemoteChanged(false);
     } catch (error) {
       if (error instanceof ORPCError && error.code === "CONFLICT") {
-        setSaveState({ kind: "conflict" });
         const latest = await queryClient.query(
           orpc.feeds["draft:get"].queryOptions({
             input: { draftId: initial.id },
           })
         );
-        setConflict(latest);
+        queuedRef.current = false;
+        setSaveState({ kind: "conflict", draft: latest });
       } else {
         setSaveState({
           kind: "error",
@@ -299,39 +289,43 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
         void flush();
       }
     }
-  }, [currentValues, draftKey, initial.id, patchMutation, queryClient]);
+  }, [
+    currentValues,
+    draftQueryOptions.queryKey,
+    initial.id,
+    patchDraft,
+    queryClient,
+  ]);
 
   const scheduleSave = useDebouncedCallback(() => void flush(), {
     wait: AUTOSAVE_WAIT_MS,
   });
 
   useEffect(() => {
-    const subscription = form.watch((_values, { name }) => {
-      if (name === "activeLocale" || conflict) return;
-      setSaveState((state) =>
-        state.kind === "saving" ? state : { kind: "dirty" }
-      );
-      scheduleSave();
+    return form.subscribe({
+      formState: { values: true },
+      callback: ({ name }) => {
+        if (!name || name === "activeLocale" || conflict) return;
+        setSaveState((state) =>
+          state.kind === "saving" ? state : { kind: "dirty" }
+        );
+        scheduleSave();
+      },
     });
-    return () => subscription.unsubscribe();
   }, [conflict, form, scheduleSave]);
 
   // A newer revision from polling: adopt it when nothing is pending here, warn otherwise.
   useEffect(() => {
     if (conflict || draft.revision <= savedRef.current.revision) return;
     const dirty = diffValues(currentValues(), savedRef.current.values) !== null;
-    if (dirty || inFlightRef.current) {
-      setRemoteChanged(true);
-    } else {
-      adopt(draft);
-    }
+    if (dirty || inFlightRef.current) return;
+    adopt(draft);
   }, [adopt, conflict, currentValues, draft]);
 
   const keepMine = useCallback(async () => {
     if (!conflict) return;
     const mine = diffValues(currentValues(), savedRef.current.values);
     const server = conflict;
-    setConflict(null);
     if (!mine) {
       adopt(server);
       return;
@@ -340,15 +334,21 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
     const merged = applyPatch(toValues(server), mine);
     form.reset({ ...merged, activeLocale: form.getValues("activeLocale") });
     savedRef.current = { values: toValues(server), revision: server.revision };
+    setSaveState({ kind: "dirty" });
     await flush();
   }, [adopt, conflict, currentValues, flush, form]);
 
   const takeTheirs = useCallback(() => {
     if (!conflict) return;
     const server = conflict;
-    setConflict(null);
     adopt(server);
   }, [adopt, conflict]);
+
+  const remoteChanged =
+    conflict === null &&
+    draft.revision > savedRef.current.revision &&
+    (inFlightRef.current ||
+      diffValues(currentValues(), savedRef.current.values) !== null);
 
   return (
     <FormProvider {...form}>
@@ -411,12 +411,6 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
 
 export const DraftEditor = ({ draft }: { draft: DraftView }) => (
   <ErrorBoundary>
-    <DraftProvider
-      initialValues={{
-        mode: draft.feedId === null ? "create" : "edit",
-        activeLocale: draft.defaultLocale,
-      }}>
-      <DraftForm key={draft.id} initial={draft} />
-    </DraftProvider>
+    <DraftForm key={draft.id} initial={draft} />
   </ErrorBoundary>
 );

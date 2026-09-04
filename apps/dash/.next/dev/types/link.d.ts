@@ -41,7 +41,6 @@ declare namespace __next_route_internal_types__ {
     | `/auth/callback/sent-success` // ../../../src/app/(auth)/auth/callback/sent-success/page.tsx
     | `/auth/login` // ../../../src/app/(auth)/auth/login/page.tsx
     | `/feed` // ../../../src/app/(workspace)/(operator)/feed/page.tsx
-    | `/feed/create` // ../../../src/app/(workspace)/(operator)/feed/(edit)/create/page.tsx
     | `/feed/drafts` // ../../../src/app/(workspace)/(operator)/feed/(manage)/drafts/page.tsx
     | `/feed/notes` // ../../../src/app/(workspace)/(operator)/feed/(manage)/notes/page.tsx
     | `/feed/posts` // ../../../src/app/(workspace)/(operator)/feed/(manage)/posts/page.tsx
@@ -55,6 +54,7 @@ declare namespace __next_route_internal_types__ {
     | `/settings/spotify` // ../../../src/app/(workspace)/(operator)/settings/spotify/page.tsx
     | `/users` // ../../../src/app/(workspace)/(operator)/users/page.tsx
   type DynamicRoutes<T extends string = string> = 
+    | `/feed/draft/${SafeSlug<T>}` // ../../../src/app/(workspace)/(operator)/feed/(edit)/draft/[id]/page.tsx
     | `/feed/edit/${SafeSlug<T>}` // ../../../src/app/(workspace)/(operator)/feed/(edit)/edit/[id]/page.tsx
 
   type RouteImpl<T> = 

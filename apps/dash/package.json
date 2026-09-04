@@ -51,7 +51,6 @@
     "fumadocs-mdx": "catalog:fumadocs",
     "fumadocs-ui": "catalog:fumadocs",
     "hono": "catalog:hono",
-    "immer": "catalog:ui",
     "ky": "catalog:",
     "lucide-react": "catalog:ui",
     "monaco-editor": "catalog:monaco",
@@ -71,8 +70,7 @@
     "superjson": "catalog:",
     "tailwind-merge": "catalog:ui",
     "usehooks-ts": "catalog:ui",
-    "zod": "catalog:",
-    "zustand": "catalog:ui"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@chia/tailwind": "workspace:*",

@@ -15,16 +15,11 @@ import { toast } from "sonner";
 import { SupportedTools } from "@chia/ai/types";
 
 import { generateAIContentMeta } from "@/resources/ai.resource";
-import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
-export const DescriptionField = ({
-  id,
-  disabled,
-}: {
-  id: string;
-  disabled?: boolean;
-}) => {
-  const form = useFormContext<FormSchema>();
+import type { DraftFormValues } from "./draft-form-schema";
+
+export const DescriptionField = ({ id }: { id: string }) => {
+  const form = useFormContext<DraftFormValues>();
   const activeLocale = form.watch("activeLocale");
   const title = form.watch(`translations.${activeLocale}.title`);
   const content = form.watch(`translations.${activeLocale}.content`);
@@ -46,7 +41,6 @@ export const DescriptionField = ({
           <InputGroup fullWidth>
             <InputGroup.TextArea
               id={`${id}-description-${activeLocale}`}
-              disabled={disabled}
               placeholder="Enter description"
               rows={7}
               {...field}
