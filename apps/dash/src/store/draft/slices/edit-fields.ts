@@ -8,27 +8,27 @@ import { Locale } from "@chia/db/types";
 
 import type { DraftState } from "../store";
 
-export type FormSchema = feedsContracts.CreateFeedInput & {
-  activeLocale: Locale;
-};
-
+/** The editable half of a draft plus which locale the form is showing. */
 export const formSchema = z.compile(
-  feedsContracts.createFeedSchema.extend({
-    activeLocale: z.enum(Locale),
-  })
+  feedsContracts.feedDraftSchema
+    .pick({
+      slug: true,
+      type: true,
+      defaultLocale: true,
+      mainImage: true,
+      translations: true,
+    })
+    .extend({ activeLocale: z.enum(Locale) })
 );
 
-export interface ContentData {
-  content: string;
-  source: string;
-}
+export type FormSchema = z.infer<typeof formSchema>;
 
 export interface EditFieldsContext {
   disabled?: boolean;
   isPending?: boolean;
+  /** `edit` once the draft is bound to a feed: the slug is fixed and feed actions show. */
   mode: "edit" | "create";
   activeLocale: Locale;
-  token?: string;
 }
 
 export interface EditFieldsState {
@@ -45,7 +45,7 @@ export interface EditFieldsState {
 
 export const createEditFieldsSlice: StateCreator<
   DraftState,
-  [["zustand/immer", never], ["zustand/persist", unknown]],
+  [["zustand/immer", never]],
   [],
   EditFieldsState
 > = (set) => ({

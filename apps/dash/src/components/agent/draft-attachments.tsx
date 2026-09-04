@@ -1,9 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { Chip, Drawer } from "@heroui/react";
-import { FileText, Languages } from "lucide-react";
+import { Button, Chip, Drawer } from "@heroui/react";
+import { FileText, Languages, PencilLine } from "lucide-react";
 
 import { ComposerAttachment } from "@chia/agent-elements/composer";
 
@@ -20,10 +21,8 @@ type Selection =
   | { kind: "meta" }
   | { kind: "translation"; locale: DraftLocale };
 
-/** Per-locale fields `commit_draft` carries; shown even when empty so a gap is visible. */
+/** Per-locale fields the apply step carries; shown even when empty so a gap is visible. */
 const TRANSLATION_FIELDS = ["excerpt", "description", "summary"] as const;
-
-const jsonOf = <TValue,>(value: TValue) => JSON.stringify(value, null, 2);
 
 const MissingChip = ({ label }: { label: string }) => (
   <Chip color="warning" size="sm" variant="soft">
@@ -48,9 +47,20 @@ const MetaField = ({
 );
 
 const FeedMetaBody = ({ draft }: { draft: AgentDraft }) => (
-  <pre className="bg-surface-secondary overflow-x-auto rounded-xl p-3 text-xs whitespace-pre-wrap">
-    {jsonOf(draft.feedMeta)}
-  </pre>
+  <div className="flex flex-col gap-4">
+    <MetaField label="slug" value={draft.slug} />
+    <MetaField label="type" value={draft.type} />
+    <MetaField label="default locale" value={draft.defaultLocale} />
+    <MetaField label="main image" value={draft.mainImage} />
+    <p className="text-muted text-xs">
+      Revision {draft.revision}
+      {draft.feedId === null
+        ? " · not yet created as a post"
+        : draft.appliedRevision === draft.revision
+          ? ` · applied to feed #${draft.feedId}`
+          : ` · feed #${draft.feedId} has unapplied changes`}
+    </p>
+  </div>
 );
 
 const TranslationBody = ({
@@ -68,7 +78,9 @@ const TranslationBody = ({
   </div>
 );
 
+/** The session's shared draft; the editor link opens the same draft the agent is writing to. */
 export const DraftAttachments = ({ draft }: { draft: AgentDraft }) => {
+  const router = useRouter();
   const [selection, setSelection] = useState<Selection | null>(null);
 
   // SAFETY: `translations` is a `Partial<Record<Locale, …>>`; `Object.entries` widens its keys to
@@ -83,7 +95,7 @@ export const DraftAttachments = ({ draft }: { draft: AgentDraft }) => {
       : null;
   const heading =
     selection?.kind === "meta"
-      ? "Feed metadata"
+      ? "Draft metadata"
       : selection?.kind === "translation"
         ? selected?.title || "Untitled"
         : "";
@@ -92,13 +104,18 @@ export const DraftAttachments = ({ draft }: { draft: AgentDraft }) => {
     <>
       <ComposerAttachment
         icon={<FileText />}
-        label="Feed metadata"
+        label="Draft"
         meta={
-          draft.committedFeedId ? (
-            <Chip color="success" size="sm" variant="soft">
-              <Chip.Label>Feed #{draft.committedFeedId}</Chip.Label>
+          <span className="flex items-center gap-1">
+            {draft.feedId !== null ? (
+              <Chip color="success" size="sm" variant="soft">
+                <Chip.Label>Feed #{draft.feedId}</Chip.Label>
+              </Chip>
+            ) : null}
+            <Chip size="sm" variant="soft">
+              <Chip.Label>r{draft.revision}</Chip.Label>
             </Chip>
-          ) : null
+          </span>
         }
         onPress={() => setSelection({ kind: "meta" })}
       />
@@ -118,6 +135,13 @@ export const DraftAttachments = ({ draft }: { draft: AgentDraft }) => {
           onPress={() => setSelection({ kind: "translation", locale })}
         />
       ))}
+      <Button
+        onPress={() => router.push(`/feed/draft/${draft.id}`)}
+        size="sm"
+        variant="secondary">
+        <PencilLine className="size-4" />
+        Open in editor
+      </Button>
 
       <Drawer.Backdrop
         isOpen={selection !== null}

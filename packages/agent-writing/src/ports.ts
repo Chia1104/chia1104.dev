@@ -1,9 +1,9 @@
-import type { ContentReadPort, PostSnapshot } from "@chia/agent-content/types";
+import type { ContentReadPort } from "@chia/agent-content/types";
 import type { Locale } from "@chia/db/types";
 
 import type {
-  CommitDraftInput,
   CommitDraftResult,
+  DraftChange,
   DraftFeedMeta,
   DraftTranslation,
   FeedDraft,
@@ -19,8 +19,8 @@ import type {
 } from "./types.ts";
 
 export type {
-  CommitDraftInput,
   CommitDraftResult,
+  DraftChange,
   DraftFeedMeta,
   DraftTranslation,
   FeedDraft,
@@ -43,7 +43,8 @@ export type {
  * Carries no author id: the host builds this port for the configured author.
  */
 export interface ContentPort extends ContentReadPort {
-  commitDraft(input: CommitDraftInput): Promise<CommitDraftResult>;
+  /** Writes the shared draft onto the feed, creating an unpublished one the first time. */
+  applyDraft(input: { draftId: number }): Promise<CommitDraftResult>;
   setPublished(input: {
     feedId: number;
     published: boolean;
@@ -62,23 +63,27 @@ export interface WebPort {
   fetchPage(url: string, signal?: AbortSignal): Promise<FetchedPage>;
 }
 
-/** Staging buffer for one writing session. */
+/**
+ * The session's shared working draft. Bound to one draft when constructed; every write goes
+ * through the same compare-and-set row the dashboard editor uses.
+ */
 export interface DraftStore {
-  get(sessionId: string): Promise<FeedDraft>;
-  patchFeedMeta(sessionId: string, patch: DraftFeedMeta): Promise<FeedDraft>;
-  patchTranslation(
-    sessionId: string,
-    locale: Locale,
-    patch: DraftTranslation
-  ): Promise<FeedDraft>;
+  get(): Promise<FeedDraft>;
+  patchFeedMeta(patch: DraftFeedMeta): Promise<FeedDraft>;
+  patchTranslation(locale: Locale, patch: DraftTranslation): Promise<FeedDraft>;
+  /**
+   * Replaces a locale's body. With `expectedRevision`, a draft that moved since that
+   * revision rejects the write with {@link DraftConflictError} instead of overwriting it.
+   */
   setContent(
-    sessionId: string,
     locale: Locale,
-    content: string
+    content: string,
+    expectedRevision?: number
   ): Promise<FeedDraft>;
-  markCommitted(sessionId: string, feedId: number): Promise<FeedDraft>;
-  /** Seeds the buffer from an existing post when a session is opened to edit one. */
-  seedFromPost(sessionId: string, post: PostSnapshot): Promise<FeedDraft>;
+  /** What the operator changed after `afterRevision`, merged per locale. */
+  operatorChangesSince(afterRevision: number): Promise<DraftChange[]>;
+  /** Highest revision this store has returned; the host records it as seen when the turn ends. */
+  readonly lastObservedRevision: number;
 }
 
 /**

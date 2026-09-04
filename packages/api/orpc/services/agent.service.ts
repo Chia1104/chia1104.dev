@@ -66,6 +66,7 @@ export interface AgentKindService {
     input: {
       title?: string;
       targetFeedId?: number;
+      draftId?: number;
       model?: AgentModelRef;
       thinkingLevel?: string;
       autoApprove?: string[];

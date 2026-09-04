@@ -10,11 +10,7 @@ import { MetadataFields } from "./metadata-fields";
 import { SwitchEditor } from "./switch-editor";
 
 interface Props {
-  disabled?: boolean;
-  isPending?: boolean;
   className?: string;
-  mode?: "edit" | "create";
-  token?: string;
   feedId?: number;
   meta?: MetaChipProps;
   resources?: EmbeddingResource[];

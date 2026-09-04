@@ -32,6 +32,8 @@ Data fetching runs in the browser through `src/libs/orpc/client.ts` with the Bet
 
 `dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns.
 
+The post editor edits `feed_draft`, never the feed: autosave is a compare-and-set on the draft revision polled every few seconds, and only Apply writes the feed. Feed-level switches (published, date, delete) call `feeds.update` directly.
+
 What a signed-in person may see comes from `dashboard.access`, never the `role` column: an `operator` is the configured admin id and gets the `(operator)` route group, whose server layout redirects everyone else; a `member` gets the overview and general settings. Guests are refused at the workspace layout.
 
 User administration writes through better-auth's admin client. Do not duplicate ban or session semantics. Admin access is the configured admin id, not the `role` column.
@@ -55,7 +57,7 @@ Keep these boundaries under `src/`:
 - `factories/orpc.factory.ts` is the only place that builds the oRPC context.
 - `agents/` contains host bindings and dynamic agent-kind loaders; business logic belongs in `packages/api`.
 - `guards/` binds shared policies to Hono.
-- `mcp/` builds the MCP server over an in-process router client. Tools are adapters over oRPC procedures and hold no business logic; `write_post` returns once the durable turn has started and review stays in dash.
+- `mcp/` builds the MCP server over an in-process router client. Tools are adapters over oRPC procedures and hold no business logic; content writes go through `feeds.draft:*`, `write_post` returns once the durable turn has started and review stays in dash.
 - `services/` orchestrates host-side ports; `repos/` owns remote access. Table access belongs in `@chia/db/repos`.
 
 `service` never executes workflows. Starts, resumes and cancellations go through the context's `@chia/workflow-control` client; run state and streams use shared World storage. See [`docs/workflow-deployment.md`](../docs/workflow-deployment.md).

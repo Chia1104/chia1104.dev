@@ -10,7 +10,6 @@ import {
   agentSessions,
   agentToolApprovals,
   agentUsageLedger,
-  writingAgentDrafts,
   writingAgentSessions,
 } from "./agent.schema.ts";
 import { apikey } from "./apikey.schema.ts";
@@ -18,6 +17,9 @@ import { account, passkey, session } from "./auth.schema.ts";
 import {
   assets,
   assetsToTags,
+  feedDraftRevisions,
+  feedDrafts,
+  feedDraftTranslations,
   feeds,
   feedsToTags,
   feedTranslations,
@@ -44,13 +46,15 @@ const schema = {
   assets,
   feeds,
   feedTranslations,
+  feedDrafts,
+  feedDraftTranslations,
+  feedDraftRevisions,
   assetsToTags,
   feedsToTags,
   agentSessions,
   agentRuns,
   agentSessionEntries,
   writingAgentSessions,
-  writingAgentDrafts,
   agentToolApprovals,
   agentMemories,
   agentKindConfigs,
@@ -122,6 +126,35 @@ export const relations = defineRelations(schema, (r) => ({
     feedsToTags: r.many.feedsToTags({
       from: r.feeds.id,
       to: r.feedsToTags.feedId,
+    }),
+    draft: r.one.feedDrafts({ from: r.feeds.id, to: r.feedDrafts.feedId }),
+  },
+  feedDrafts: {
+    feed: r.one.feeds({ from: r.feedDrafts.feedId, to: r.feeds.id }),
+    user: r.one.user({ from: r.feedDrafts.userId, to: r.user.id }),
+    translations: r.many.feedDraftTranslations({
+      from: r.feedDrafts.id,
+      to: r.feedDraftTranslations.draftId,
+    }),
+    revisions: r.many.feedDraftRevisions({
+      from: r.feedDrafts.id,
+      to: r.feedDraftRevisions.draftId,
+    }),
+    writingSessions: r.many.writingAgentSessions({
+      from: r.feedDrafts.id,
+      to: r.writingAgentSessions.draftId,
+    }),
+  },
+  feedDraftTranslations: {
+    draft: r.one.feedDrafts({
+      from: r.feedDraftTranslations.draftId,
+      to: r.feedDrafts.id,
+    }),
+  },
+  feedDraftRevisions: {
+    draft: r.one.feedDrafts({
+      from: r.feedDraftRevisions.draftId,
+      to: r.feedDrafts.id,
     }),
   },
   feedTranslations: {
@@ -219,23 +252,9 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.writingAgentSessions.sessionId,
       to: r.agentSessions.id,
     }),
-    targetFeed: r.one.feeds({
-      from: r.writingAgentSessions.targetFeedId,
-      to: r.feeds.id,
-    }),
-    drafts: r.many.writingAgentDrafts({
-      from: r.writingAgentSessions.sessionId,
-      to: r.writingAgentDrafts.sessionId,
-    }),
-  },
-  writingAgentDrafts: {
-    session: r.one.agentSessions({
-      from: r.writingAgentDrafts.sessionId,
-      to: r.agentSessions.id,
-    }),
-    writingState: r.one.writingAgentSessions({
-      from: r.writingAgentDrafts.sessionId,
-      to: r.writingAgentSessions.sessionId,
+    draft: r.one.feedDrafts({
+      from: r.writingAgentSessions.draftId,
+      to: r.feedDrafts.id,
     }),
   },
   agentToolApprovals: {
@@ -265,6 +284,9 @@ export const tagsRelations = relations.tags;
 export const tagTranslationsRelations = relations.tagTranslations;
 export const feedsRelations = relations.feeds;
 export const feedTranslationsRelations = relations.feedTranslations;
+export const feedDraftsRelations = relations.feedDrafts;
+export const feedDraftTranslationsRelations = relations.feedDraftTranslations;
+export const feedDraftRevisionsRelations = relations.feedDraftRevisions;
 export const assetsRelations = relations.assets;
 export const assetsToTagsRelations = relations.assetsToTags;
 export const feedsToTagsRelations = relations.feedsToTags;
@@ -273,7 +295,6 @@ export const agentSessionsRelations = relations.agentSessions;
 export const agentRunsRelations = relations.agentRuns;
 export const agentSessionEntriesRelations = relations.agentSessionEntries;
 export const writingAgentSessionsRelations = relations.writingAgentSessions;
-export const writingAgentDraftsRelations = relations.writingAgentDrafts;
 export const agentToolApprovalsRelations = relations.agentToolApprovals;
 export const agentMemoriesRelations = relations.agentMemories;
 export const agentUsageLedgerRelations = relations.agentUsageLedger;

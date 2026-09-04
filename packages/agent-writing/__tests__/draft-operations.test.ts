@@ -42,8 +42,8 @@ describe("patchTranslation", () => {
 describe("patchFeedMeta", () => {
   it("merges without dropping previously set fields", () => {
     let draft = patchFeedMeta(emptyDraft(), { slug: "a-post", type: "post" });
-    draft = patchFeedMeta(draft, { defaultLocale: "en" });
-    expect(draft.feedMeta).toEqual({
+    draft = patchFeedMeta(draft, { defaultLocale: "en", slug: undefined });
+    expect(draft).toMatchObject({
       slug: "a-post",
       type: "post",
       defaultLocale: "en",

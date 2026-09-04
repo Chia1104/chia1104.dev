@@ -26,8 +26,6 @@ export const upsertFeedTranslationRequestSchema = z.object({
 export const upsertContentRequestSchema = z.object({
   feedTranslationId: z.coerce.number().int(),
   content: z.string().optional().nullable(),
-  source: z.string().optional().nullable(),
-  unstableSerializedSource: z.string().optional().nullable(),
 });
 
 export const publicFeedSearchItemSchema = z.object({

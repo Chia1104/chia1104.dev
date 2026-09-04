@@ -1,83 +1,102 @@
-import type { PostSnapshot } from "@chia/agent-content/types";
 import type { Locale } from "@chia/db/types";
 
 import type { DraftStore } from "../ports.ts";
-import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
+import type {
+  DraftChange,
+  DraftFeedMeta,
+  DraftTranslation,
+  FeedDraft,
+} from "../types.ts";
 
-import { emptyDraft, patchFeedMeta, patchTranslation } from "./operations.ts";
+import {
+  DraftConflictError,
+  emptyDraft,
+  patchFeedMeta,
+  patchTranslation,
+} from "./operations.ts";
 
 /** In-memory {@link DraftStore} for tests and the faux provider. */
 export class InMemoryDraftStore implements DraftStore {
-  private readonly drafts = new Map<string, FeedDraft>();
+  private draft: FeedDraft;
+  /** Simulated operator edits, each stamped with the revision it produced. */
+  private readonly operatorRevisions: {
+    revision: number;
+    change: DraftChange;
+  }[] = [];
+  lastObservedRevision = 0;
 
-  private read(sessionId: string): FeedDraft {
-    return this.drafts.get(sessionId) ?? emptyDraft();
+  constructor(initial: Partial<FeedDraft> = {}) {
+    this.draft = emptyDraft({ id: 1, ...initial });
   }
 
-  private write(sessionId: string, draft: FeedDraft): FeedDraft {
-    this.drafts.set(sessionId, draft);
-    return draft;
-  }
-
-  get(sessionId: string): Promise<FeedDraft> {
-    return Promise.resolve(this.read(sessionId));
-  }
-
-  patchFeedMeta(sessionId: string, patch: DraftFeedMeta): Promise<FeedDraft> {
-    return Promise.resolve(
-      this.write(sessionId, patchFeedMeta(this.read(sessionId), patch))
+  private observe(): FeedDraft {
+    this.lastObservedRevision = Math.max(
+      this.lastObservedRevision,
+      this.draft.revision
     );
+    return this.draft;
+  }
+
+  private write(next: FeedDraft): FeedDraft {
+    this.draft = { ...next, revision: this.draft.revision + 1 };
+    return this.observe();
+  }
+
+  get(): Promise<FeedDraft> {
+    return Promise.resolve(this.observe());
+  }
+
+  patchFeedMeta(patch: DraftFeedMeta): Promise<FeedDraft> {
+    return Promise.resolve(this.write(patchFeedMeta(this.draft, patch)));
   }
 
   patchTranslation(
-    sessionId: string,
     locale: Locale,
     patch: DraftTranslation
   ): Promise<FeedDraft> {
     return Promise.resolve(
-      this.write(
-        sessionId,
-        patchTranslation(this.read(sessionId), locale, patch)
-      )
+      this.write(patchTranslation(this.draft, locale, patch))
     );
   }
 
   setContent(
-    sessionId: string,
     locale: Locale,
-    content: string
+    content: string,
+    expectedRevision?: number
   ): Promise<FeedDraft> {
-    return this.patchTranslation(sessionId, locale, { content });
+    if (
+      expectedRevision !== undefined &&
+      expectedRevision !== this.draft.revision
+    ) {
+      return Promise.reject(
+        new DraftConflictError(expectedRevision, this.draft.revision)
+      );
+    }
+    return this.patchTranslation(locale, { content });
   }
 
-  markCommitted(sessionId: string, feedId: number): Promise<FeedDraft> {
+  operatorChangesSince(afterRevision: number): Promise<DraftChange[]> {
     return Promise.resolve(
-      this.write(sessionId, {
-        ...this.read(sessionId),
-        committedFeedId: feedId,
-      })
+      this.operatorRevisions
+        .filter((entry) => entry.revision > afterRevision)
+        .map((entry) => entry.change)
     );
   }
 
-  seedFromPost(sessionId: string, post: PostSnapshot): Promise<FeedDraft> {
-    let draft: FeedDraft = {
-      feedMeta: {
-        slug: post.slug,
-        type: post.type,
-        contentType: post.contentType,
-        defaultLocale: post.defaultLocale,
-        mainImage: post.mainImage,
-        tagSlugs: post.tagSlugs,
-      },
-      translations: {},
-      committedFeedId: post.feedId,
-    };
-    for (const { locale, ...translation } of post.translations) {
-      draft = patchTranslation(draft, locale, {
-        ...translation,
-        content: translation.content ?? undefined,
-      });
-    }
-    return Promise.resolve(this.write(sessionId, draft));
+  /** Applies an edit as the operator would from the dashboard: bumps the revision and leaves a change record. */
+  operatorEdit(locale: Locale, patch: DraftTranslation): FeedDraft {
+    const next = this.write(patchTranslation(this.draft, locale, patch));
+    this.operatorRevisions.push({
+      revision: next.revision,
+      change: { locale, fields: Object.keys(patch) },
+    });
+    // The store did not "see" this write on the agent's behalf.
+    this.lastObservedRevision = next.revision - 1;
+    return next;
+  }
+
+  /** Marks the draft as applied to a feed, as `applyDraft` does server-side. */
+  bindFeed(feedId: number): void {
+    this.draft = { ...this.draft, feedId };
   }
 }

@@ -49,6 +49,7 @@ export const SlugField = memo(() => {
               disabled={isFieldDisabled}
               placeholder="slug"
               {...field}
+              value={field.value ?? ""}
             />
             <InputGroup.Suffix>
               <Button

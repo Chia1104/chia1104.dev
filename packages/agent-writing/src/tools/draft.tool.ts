@@ -1,11 +1,20 @@
 import { StringEnum } from "@earendil-works/pi-ai";
 
-import { ContentType, FeedType } from "@chia/db/types";
+import { FeedType } from "@chia/db/types";
 import type { Locale } from "@chia/db/types";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 
-import { applyEdit, withLineNumbers } from "../draft/operations.ts";
-import type { DraftFeedMeta, DraftTranslation, WritingTool } from "../types.ts";
+import {
+  DraftConflictError,
+  applyEdit,
+  withLineNumbers,
+} from "../draft/operations.ts";
+import type {
+  DraftFeedMeta,
+  DraftTranslation,
+  FeedDraft,
+  WritingTool,
+} from "../types.ts";
 
 import { TOOL_NAMES, labelOf } from "./registry.ts";
 import {
@@ -17,8 +26,10 @@ import {
 } from "./schema.ts";
 
 /**
- * Staging-buffer tools. Sequential: they mutate shared state, and pi's default is parallel, so
+ * Shared-draft tools. Sequential: they mutate shared state, and pi's default is parallel, so
  * two concurrent edits of the same locale would lose one write. None touch published data.
+ * The operator edits the same draft from the dashboard, so bodies are written against the
+ * revision the model last read.
  */
 
 /** SEO description cap enforced by the site's metadata layer. */
@@ -31,6 +42,13 @@ interface MetaReadback {
   locale?: Locale;
   translation?: Omit<DraftTranslation, "content">;
 }
+
+const feedMetaOf = (draft: FeedDraft): DraftFeedMeta => ({
+  slug: draft.slug,
+  type: draft.type,
+  defaultLocale: draft.defaultLocale,
+  mainImage: draft.mainImage,
+});
 
 export const readDraftTool = defineTool({
   name: TOOL_NAMES.readDraft,
@@ -47,18 +65,20 @@ export const readDraftTool = defineTool({
   }),
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
-    const draft = await context.draft.get(context.agentSessionId);
+    const draft = await context.draft.get();
     // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
     const locales = Object.keys(draft.translations) as Locale[];
+    const feedMeta = feedMetaOf(draft);
 
     if (!params.locale) {
       return textResult(
         `Draft metadata:\n\n${jsonBlock({
-          feedMeta: draft.feedMeta,
+          feedMeta,
           locales,
-          committedFeedId: draft.committedFeedId,
+          feedId: draft.feedId,
+          revision: draft.revision,
         })}\n\nCall again with a \`locale\` to read a body.`,
-        { feedMeta: draft.feedMeta, locales }
+        { feedMeta, locales, revision: draft.revision }
       );
     }
 
@@ -78,11 +98,17 @@ export const readDraftTool = defineTool({
     const body = content ?? "";
 
     return textResult(
-      `Draft (${locale}) metadata:\n\n${jsonBlock({ feedMeta: draft.feedMeta, ...meta })}\n\n` +
-        `Body (${body.split("\n").length} lines):\n\n${
+      `Draft (${locale}) metadata:\n\n${jsonBlock({ feedMeta, ...meta })}\n\n` +
+        `Body (${body.split("\n").length} lines, revision ${draft.revision}):\n\n${
           body.length > 0 ? withLineNumbers(body) : "(empty)"
         }`,
-      { locale, exists: true, meta, lineCount: body.split("\n").length }
+      {
+        locale,
+        exists: true,
+        meta,
+        lineCount: body.split("\n").length,
+        revision: draft.revision,
+      }
     );
   },
 });
@@ -92,8 +118,9 @@ export const patchDraftMetaTool = defineTool({
   label: labelOf(TOOL_NAMES.patchDraftMeta),
   description:
     "Update draft metadata. Omitted fields are left alone; pass `null` to clear an optional field. " +
-    "Feed-level fields (slug/type/tags) apply to the whole post; the rest are per-locale and " +
-    "require `locale`. The result echoes the merged metadata, so no read-back call is needed.",
+    "Feed-level fields (slug/type/mainImage/defaultLocale) apply to the whole post; the rest are " +
+    "per-locale and require `locale`. The result echoes the merged metadata, so no read-back " +
+    "call is needed.",
   parameters: Type.Object({
     locale: Type.Optional(
       LocaleSchema("Required when setting any per-locale field.")
@@ -133,12 +160,6 @@ export const patchDraftMetaTool = defineTool({
       })
     ),
     defaultLocale: Type.Optional(LocaleSchema("Canonical locale of the post.")),
-    tagSlugs: Type.Optional(
-      Type.Array(Type.String(), {
-        description:
-          "Suggested tag slugs. Recorded for the operator; NOT attached on commit.",
-      })
-    ),
   }),
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
@@ -167,9 +188,9 @@ export const patchDraftMetaTool = defineTool({
       );
     }
 
-    let draft = await context.draft.get(context.agentSessionId);
+    let draft = await context.draft.get();
 
-    const feedMetaPatch = { ...feedMeta };
+    const feedMetaPatch: DraftFeedMeta = { ...feedMeta };
     if (feedMeta.slug !== undefined) {
       const slug = normalizeAsciiSlug(feedMeta.slug);
       if (!slug) {
@@ -181,23 +202,16 @@ export const patchDraftMetaTool = defineTool({
     }
 
     if (Object.values(feedMetaPatch).some((value) => value !== undefined)) {
-      draft = await context.draft.patchFeedMeta(
-        context.agentSessionId,
-        feedMetaPatch
-      );
+      draft = await context.draft.patchFeedMeta(feedMetaPatch);
     }
 
     if (hasPerLocale && locale) {
-      draft = await context.draft.patchTranslation(
-        context.agentSessionId,
-        locale,
-        perLocale
-      );
+      draft = await context.draft.patchTranslation(locale, perLocale);
     }
 
     // Echo the merged per-locale fields so the model can confirm the patch from this result.
     const readback: MetaReadback = {
-      feedMeta: draft.feedMeta,
+      feedMeta: feedMetaOf(draft),
       locales: Object.keys(draft.translations),
     };
     if (locale) {
@@ -224,7 +238,8 @@ export const writeDraftContentTool = defineTool({
   label: labelOf(TOOL_NAMES.writeDraftContent),
   description:
     "Replace a locale's entire MDX body. Use this to create the first version; prefer " +
-    "`edit_draft_content` for revisions so you do not rewrite text that was already reviewed.",
+    "`edit_draft_content` for revisions so you do not rewrite text that was already reviewed. " +
+    "Fails if the operator changed the draft since you last read it; read it again and decide.",
   parameters: Type.Object({
     locale: LocaleSchema("Locale to write."),
     content: Type.String({
@@ -234,15 +249,26 @@ export const writeDraftContentTool = defineTool({
   }),
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
-    await context.draft.setContent(
-      context.agentSessionId,
+    // Guard against overwriting an operator edit the model has not seen: the write is pinned
+    // to the last revision this turn observed. A fresh draft that was never read still writes.
+    const expected =
+      context.draft.lastObservedRevision > 0
+        ? context.draft.lastObservedRevision
+        : undefined;
+    const draft = await context.draft.setContent(
       params.locale,
-      params.content
+      params.content,
+      expected
     );
     const lineCount = params.content.split("\n").length;
     return textResult(
-      `Wrote ${params.content.length} characters (${lineCount} lines) to the ${params.locale} draft.`,
-      { locale: params.locale, lineCount, charCount: params.content.length }
+      `Wrote ${params.content.length} characters (${lineCount} lines) to the ${params.locale} draft (revision ${draft.revision}).`,
+      {
+        locale: params.locale,
+        lineCount,
+        charCount: params.content.length,
+        revision: draft.revision,
+      }
     );
   },
 });
@@ -274,38 +300,48 @@ export const editDraftContentTool = defineTool({
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
     const locale = params.locale;
-    const draft = await context.draft.get(context.agentSessionId);
-    const current = draft.translations[locale]?.content;
 
-    if (current === undefined) {
-      throw new Error(
-        `No draft body for locale "${locale}" yet. Use write_draft_content first.`
-      );
-    }
+    // Read-apply-write pinned to the revision read. If the operator saved in between, the
+    // edit is re-applied on the new body once: an exact-string edit usually still lands.
+    for (let attempt = 0; ; attempt += 1) {
+      const draft = await context.draft.get();
+      const current = draft.translations[locale]?.content;
 
-    const result = applyEdit(
-      current,
-      params.oldString,
-      params.newString,
-      params.replaceAll ?? false
-    );
-
-    await context.draft.setContent(
-      context.agentSessionId,
-      locale,
-      result.content
-    );
-
-    return textResult(
-      `Applied ${result.replacements} replacement(s) to the ${locale} draft.`,
-      {
-        locale,
-        replacements: result.replacements,
-        // Enough for the UI to render a diff without shipping both full bodies.
-        oldString: params.oldString,
-        newString: params.newString,
+      if (current === undefined || current === null) {
+        throw new Error(
+          `No draft body for locale "${locale}" yet. Use write_draft_content first.`
+        );
       }
-    );
+
+      const result = applyEdit(
+        current,
+        params.oldString,
+        params.newString,
+        params.replaceAll ?? false
+      );
+
+      try {
+        const next = await context.draft.setContent(
+          locale,
+          result.content,
+          draft.revision
+        );
+        return textResult(
+          `Applied ${result.replacements} replacement(s) to the ${locale} draft (revision ${next.revision}).`,
+          {
+            locale,
+            replacements: result.replacements,
+            revision: next.revision,
+            // Enough for the UI to render a diff without shipping both full bodies.
+            oldString: params.oldString,
+            newString: params.newString,
+          }
+        );
+      } catch (error) {
+        if (error instanceof DraftConflictError && attempt === 0) continue;
+        throw error;
+      }
+    }
   },
 });
 
@@ -315,5 +351,3 @@ export const draftTools: WritingTool[] = [
   writeDraftContentTool,
   editDraftContentTool,
 ];
-
-export const DEFAULT_CONTENT_TYPE = ContentType.Mdx;

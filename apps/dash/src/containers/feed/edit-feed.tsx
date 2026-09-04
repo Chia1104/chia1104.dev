@@ -1,99 +1,51 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 
 import { Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 
-import type { Locale } from "@chia/db/types";
-import { ErrorBoundary } from "@chia/ui/error-boundary";
-import dayjs from "@chia/utils/day";
-
 import { orpc } from "@/libs/orpc/client";
-import type { RouterOutputs } from "@/libs/orpc/types";
-import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
-import EditView from "./edit-view";
+const DraftEditor = dynamic(
+  () => import("@/components/feed/draft-editor").then((mod) => mod.DraftEditor),
+  { ssr: false }
+);
 
-type Feed = NonNullable<RouterOutputs["feeds"]["details-by-id"]>;
+const Loading = () => (
+  <div className="flex justify-center py-16">
+    <Spinner size="md" />
+  </div>
+);
 
-const toDefaultValues = (feed: Feed) => ({
-  type: feed.type,
-  slug: feed.slug,
-  updatedAt: dayjs(feed.updatedAt).valueOf(),
-  createdAt: dayjs(feed.createdAt).valueOf(),
-  contentType: feed.contentType,
-  published: feed.published,
-  defaultLocale: feed.defaultLocale,
-  translations: feed.translations.reduce<
-    Record<Locale, FormSchema["translations"][Locale]>
-  >(
-    (acc, translation) => {
-      acc[translation.locale] = {
-        title: translation.title,
-        description: translation.description ?? null,
-        excerpt: translation.excerpt ?? null,
-        summary: translation.summary ?? null,
-        readTime: translation.readTime ?? null,
-        // the body is flat on the translation; the form still groups it
-        content: {
-          content: translation.content ?? null,
-          source: translation.source ?? null,
-          unstableSerializedSource:
-            translation.unstableSerializedSource ?? null,
-        },
-      };
-      return acc;
-    },
-    /* SAFETY: The producer contract guarantees this value satisfies Record<Locale, FormSchema["translations"][Locale]>. */ {} as Record<
-      Locale,
-      FormSchema["translations"][Locale]
-    >
-  ),
-});
-
-/** Reached for drafts and trash too, so it opts out of the published, non-deleted default. */
-export const EditFeed = ({ feedId }: { feedId: number }) => {
-  const { data: feed, isLoading } = useQuery(
-    orpc.feeds["details-by-id"].queryOptions({
-      input: { feedId, includeUnpublished: true, includeDeleted: true },
-      // The form owns its state after mount; a background refetch would only churn
-      // the props `useForm` has already read once.
+/** Opens a draft by its own id. */
+export const EditDraft = ({ draftId }: { draftId: number }) => {
+  const { data: draft, isLoading } = useQuery(
+    orpc.feeds["draft:get"].queryOptions({
+      input: { draftId },
+      // The editor owns the draft after mount and polls on its own.
       staleTime: Infinity,
       retry: false,
     })
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-16">
-        <Spinner size="md" />
-      </div>
-    );
-  }
-  if (!feed) {
-    notFound();
-  }
+  if (isLoading) return <Loading />;
+  if (!draft) notFound();
+  return <DraftEditor draft={draft} />;
+};
 
-  return (
-    <ErrorBoundary>
-      <EditView
-        feedId={feed.id}
-        defaultValues={toDefaultValues(feed)}
-        // the drawer indexes by translation id, so it needs the ids the
-        // form itself has no use for
-        resources={feed.translations.map((t) => ({
-          locale: t.locale,
-          sourceId: t.id,
-        }))}
-        meta={{
-          embedding: Object.fromEntries(
-            feed.translations.map((t) => [t.locale, t.hasEmbedding])
-          ),
-          published: feed.published,
-          deleted: feed.deletedAt ? dayjs(feed.deletedAt).toISOString() : null,
-        }}
-      />
-    </ErrorBoundary>
+/** Opens a post's working draft, creating it from the post when there is none. */
+export const EditFeed = ({ feedId }: { feedId: number }) => {
+  const { data: draft, isLoading } = useQuery(
+    orpc.feeds["draft:open"].queryOptions({
+      input: { feedId },
+      staleTime: Infinity,
+      retry: false,
+    })
   );
+
+  if (isLoading) return <Loading />;
+  if (!draft) notFound();
+  return <DraftEditor draft={draft} />;
 };

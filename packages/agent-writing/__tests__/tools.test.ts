@@ -3,7 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
 import { commitDraftTool } from "../src/tools/commit.tool.ts";
-import { patchDraftMetaTool } from "../src/tools/draft.tool.ts";
+import {
+  editDraftContentTool,
+  patchDraftMetaTool,
+  writeDraftContentTool,
+} from "../src/tools/draft.tool.ts";
 import { fetchUrlTool, webSearchTool } from "../src/tools/retrieval.tool.ts";
 import { createWritingTools } from "../src/tools/tool-set.ts";
 import type { WritingToolContext } from "../src/types.ts";
@@ -16,6 +20,7 @@ const SESSION_ID = "session-1";
 type TestContext = WritingToolContext & {
   content: FakeContentPort;
   web: FakeWebPort;
+  draft: InMemoryDraftStore;
   memory: InMemoryMemoryPort;
 };
 
@@ -220,15 +225,13 @@ describe("draft slug handling", () => {
         context
       )
     ).rejects.toThrow("must be an English/ASCII phrase");
-    await expect(context.draft.get(SESSION_ID)).resolves.toMatchObject({
-      feedMeta: {},
-    });
+    await expect(context.draft.get()).resolves.toMatchObject({ slug: null });
   });
 
   it("requires an explicit slug before creating a feed", async () => {
     const context = createContext();
-    await context.draft.patchFeedMeta(SESSION_ID, { defaultLocale: "en" });
-    await context.draft.patchTranslation(SESSION_ID, "en", {
+    await context.draft.patchFeedMeta({ defaultLocale: "en" });
+    await context.draft.patchTranslation("en", {
       title: "Embedding RAG architecture",
       content: "## Architecture",
     });
@@ -243,6 +246,58 @@ describe("draft slug handling", () => {
       )
     ).rejects.toThrow("needs an English/ASCII slug");
     expect(context.content.commits).toHaveLength(0);
+  });
+
+  it("re-applies an exact edit once when the operator saved in between", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation("en", {
+      content: "## Title\n\nFirst paragraph.\n\nSecond paragraph.",
+    });
+    const store = context.draft;
+    const originalSet = store.setContent.bind(store);
+    let interleaved = false;
+    store.setContent = (locale, content, expectedRevision) => {
+      if (!interleaved) {
+        interleaved = true;
+        store.operatorEdit("en", {
+          content:
+            "## Title\n\nFirst paragraph.\n\nSecond paragraph.\n\nOperator note.",
+        });
+      }
+      return originalSet(locale, content, expectedRevision);
+    };
+
+    const result = await editDraftContentTool.execute(
+      "call-1",
+      { locale: "en", oldString: "First paragraph.", newString: "Rewritten." },
+      undefined,
+      undefined,
+      context
+    );
+
+    expect(result.details).toMatchObject({ replacements: 1 });
+    expect((await context.draft.get()).translations.en?.content).toBe(
+      "## Title\n\nRewritten.\n\nSecond paragraph.\n\nOperator note."
+    );
+  });
+
+  it("refuses a whole-body write over an operator edit the model has not read", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation("en", { content: "## Old" });
+    context.draft.operatorEdit("en", { content: "## Operator version" });
+
+    await expect(
+      writeDraftContentTool.execute(
+        "call-1",
+        { locale: "en", content: "## Model version" },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow("someone else changed it");
+    expect((await context.draft.get()).translations.en?.content).toBe(
+      "## Operator version"
+    );
   });
 
   it("does not expose the obsolete slugify tool", () => {

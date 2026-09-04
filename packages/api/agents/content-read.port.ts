@@ -15,7 +15,7 @@ import {
   getFeedBySlug,
   getInfiniteFeeds,
 } from "@chia/db/repos/feeds";
-import type { ContentType, Locale } from "@chia/db/types";
+import type { Locale } from "@chia/db/types";
 
 import { searchFeedsService } from "../feeds/search";
 
@@ -175,7 +175,6 @@ const toPostSnapshot = (feed: {
   id: number;
   slug: string;
   type: string;
-  contentType: string;
   published: boolean;
   defaultLocale: string;
   mainImage?: string | null;
@@ -194,8 +193,6 @@ const toPostSnapshot = (feed: {
   feedId: feed.id,
   slug: feed.slug,
   type: /* SAFETY: The producer contract guarantees this value satisfies PostFeedType. */ feed.type as PostFeedType,
-  contentType:
-    /* SAFETY: The producer contract guarantees this value satisfies ContentType. */ feed.contentType as ContentType,
   published: feed.published,
   defaultLocale:
     /* SAFETY: The producer contract guarantees this value satisfies Locale. */ feed.defaultLocale as Locale,

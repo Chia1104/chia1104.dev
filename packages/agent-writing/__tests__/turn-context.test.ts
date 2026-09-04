@@ -9,6 +9,25 @@ const base = {
   now: new Date("2026-08-27T00:00:00Z"),
 };
 
+describe("buildTurnContext operator edits", () => {
+  it("lists what the operator changed so the model re-reads before editing", () => {
+    const context = buildTurnContext({
+      ...base,
+      operatorChanges: [
+        { locale: "en", fields: ["content", "title"] },
+        { fields: ["slug"] },
+      ],
+    });
+
+    expect(context).toContain("Operator edits since your last turn");
+    expect(context).toContain("  - en: content, title");
+    expect(context).toContain("  - feed-level: slug");
+    expect(buildTurnContext({ ...base, operatorChanges: [] })).not.toContain(
+      "Operator edits"
+    );
+  });
+});
+
 describe("buildTurnContext memories", () => {
   it("omits the section when the session has saved nothing", () => {
     expect(buildTurnContext({ ...base, sessionMemories: [] })).not.toContain(

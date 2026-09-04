@@ -9,10 +9,9 @@ import {
   agentSessions,
   agentToolApprovals,
   agentUsageLedger,
-  writingAgentDrafts,
   writingAgentSessions,
 } from "../../schemas/schema.ts";
-import type { AgentRunStatus, Locale } from "../../schemas/schema.ts";
+import type { AgentRunStatus } from "../../schemas/schema.ts";
 
 export interface InsertAgentSessionDTO {
   id: string;
@@ -403,35 +402,30 @@ export const getAgentSessionEntries = async (db: DB, sessionId: string) =>
 
 export const createWritingAgentSession = async (
   db: DB,
-  input: {
-    sessionId: string;
-    targetFeedId?: number | null;
-    feedMeta?: JsonObject;
-  }
+  input: { sessionId: string; draftId: number | null }
 ) => {
   const [row] = await db
     .insert(writingAgentSessions)
-    .values({
-      sessionId: input.sessionId,
-      targetFeedId: input.targetFeedId ?? null,
-      feedMeta: input.feedMeta ?? {},
-    })
+    .values({ sessionId: input.sessionId, draftId: input.draftId })
     .returning();
   return row;
 };
 
+/** The extension row with the bound draft's feed, which the session summary reports as `targetFeedId`. */
 export const getWritingAgentSession = async (db: DB, sessionId: string) =>
   await db.query.writingAgentSessions.findFirst({
     where: { sessionId },
+    with: { draft: { columns: { id: true, feedId: true } } },
   });
+
+export type WritingAgentSessionState = NonNullable<
+  Awaited<ReturnType<typeof getWritingAgentSession>>
+>;
 
 export const updateWritingAgentSession = async (
   db: DB,
   sessionId: string,
-  patch: {
-    targetFeedId?: number | null;
-    feedMeta?: JsonObject;
-  }
+  patch: { draftId?: number | null; lastSeenRevision?: number }
 ) => {
   const set = {};
   for (const [key, value] of Object.entries(patch)) {
@@ -442,65 +436,6 @@ export const updateWritingAgentSession = async (
     .update(writingAgentSessions)
     .set(set)
     .where(eq(writingAgentSessions.sessionId, sessionId));
-};
-
-export const getWritingAgentDrafts = async (db: DB, sessionId: string) =>
-  await db
-    .select()
-    .from(writingAgentDrafts)
-    .where(eq(writingAgentDrafts.sessionId, sessionId));
-
-export const upsertWritingAgentDraft = async (
-  db: DB,
-  input: {
-    sessionId: string;
-    locale: Locale;
-    meta: JsonObject;
-    /** `undefined` leaves the existing body untouched; `null` clears it. */
-    content?: string | null;
-  }
-) => {
-  const update =
-    input.content === undefined
-      ? { meta: input.meta }
-      : { meta: input.meta, content: input.content };
-
-  await db
-    .insert(writingAgentDrafts)
-    .values({
-      sessionId: input.sessionId,
-      locale: input.locale,
-      meta: input.meta,
-      content: input.content ?? null,
-    })
-    .onConflictDoUpdate({
-      target: [writingAgentDrafts.sessionId, writingAgentDrafts.locale],
-      set: update,
-    });
-};
-
-/** Copies every per-locale draft of `fromSessionId` onto `toSessionId`, which must have none yet. */
-export const copyWritingAgentDrafts = async (
-  db: DB,
-  fromSessionId: string,
-  toSessionId: string
-) => {
-  const rows = await getWritingAgentDrafts(db, fromSessionId);
-  if (rows.length === 0) return;
-  await db.insert(writingAgentDrafts).values(
-    rows.map((row) => ({
-      sessionId: toSessionId,
-      locale: row.locale,
-      meta: row.meta,
-      content: row.content,
-    }))
-  );
-};
-
-export const deleteWritingAgentDrafts = async (db: DB, sessionId: string) => {
-  await db
-    .delete(writingAgentDrafts)
-    .where(eq(writingAgentDrafts.sessionId, sessionId));
 };
 
 export const recordAgentApprovalRequests = async (

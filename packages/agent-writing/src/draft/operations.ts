@@ -1,20 +1,24 @@
 import type { Locale } from "@chia/db/types";
-import { mergeDefined } from "@chia/utils/object";
+import { mergeDefined, omitUndefined } from "@chia/utils/object";
 
 import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
 
-export const emptyDraft = (): FeedDraft => ({
-  feedMeta: {},
+export const emptyDraft = (overrides: Partial<FeedDraft> = {}): FeedDraft => ({
+  id: 0,
+  feedId: null,
+  revision: 1,
+  slug: null,
+  type: "post",
+  defaultLocale: "zh-TW",
+  mainImage: null,
   translations: {},
+  ...overrides,
 });
 
 export const patchFeedMeta = (
   draft: FeedDraft,
   patch: DraftFeedMeta
-): FeedDraft => ({
-  ...draft,
-  feedMeta: mergeDefined(draft.feedMeta, patch),
-});
+): FeedDraft => ({ ...draft, ...omitUndefined(patch) });
 
 export const patchTranslation = (
   draft: FeedDraft,
@@ -28,11 +32,18 @@ export const patchTranslation = (
   },
 });
 
-export const setContent = (
-  draft: FeedDraft,
-  locale: Locale,
-  content: string
-): FeedDraft => patchTranslation(draft, locale, { content });
+/** A write presented a revision the draft has already moved past. */
+export class DraftConflictError extends Error {
+  constructor(
+    readonly expectedRevision: number,
+    readonly currentRevision: number
+  ) {
+    super(
+      `The draft is at revision ${currentRevision}, not ${expectedRevision}: someone else changed it. Read it again before writing.`
+    );
+    this.name = "DraftConflictError";
+  }
+}
 
 export class EditNotAppliedError extends Error {
   constructor(

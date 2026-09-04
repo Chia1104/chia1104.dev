@@ -18,9 +18,9 @@ import type {
   AgentUsageListener,
 } from "@chia/agent-runtime/types";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
-import type { FeedDraft } from "@chia/agent-writing/types";
 import type { DB } from "@chia/db/client";
 import type { AgentSession } from "@chia/db/schema";
+import type { Locale } from "@chia/db/types";
 import type { ServiceContext } from "@chia/service-kit/context";
 import type {
   Caller,
@@ -103,13 +103,38 @@ export interface AgentKindCaller extends Caller {
 export interface AgentCreateSessionInput {
   title?: string;
   targetFeedId?: number;
+  draftId?: number;
   model?: AgentModelRef;
   thinkingLevel?: string;
   autoApprove?: string[];
   runtimeConfig?: JsonObject;
 }
 
-export type AgentDraftPayload = FeedDraft;
+/** The writing agent's shared draft, as the contract's `draft` field carries it. */
+export interface AgentDraftPayload {
+  id: number;
+  feedId: number | null;
+  revision: number;
+  appliedRevision: number | null;
+  slug: string | null;
+  type: "post" | "note";
+  defaultLocale: Locale;
+  mainImage: string | null;
+  translations: Partial<
+    Record<
+      Locale,
+      {
+        title: string | null;
+        excerpt: string | null;
+        description: string | null;
+        summary: string | null;
+        content: string | null;
+      }
+    >
+  >;
+  createdAt: string;
+  updatedAt: string;
+}
 
 /**
  * The kind's 1:1 extension row. `create` runs after the `agent.session` row exists and is
@@ -134,7 +159,10 @@ export interface AgentKindState<TState> {
    * Kind-owned fields of the session summary. The contract still carries the writing agent's
    * `targetFeedId`; a kind with nothing to add returns `{}`.
    */
-  summary(state: TState): { targetFeedId?: number | null };
+  summary(state: TState): {
+    draftId?: number | null;
+    targetFeedId?: number | null;
+  };
   /**
    * Kind-owned fields of the session detail. The contract still carries the writing agent's
    * `draft`; a kind with nothing to add returns `{}`.

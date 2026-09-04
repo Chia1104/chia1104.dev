@@ -7,7 +7,6 @@ import {
   feedSchema,
   feedTranslationSchema,
   insertFeedSchema,
-  insertContentSchema,
 } from "@chia/db/validator/feeds";
 
 import type { SearchFeedsServiceResult } from "../../feeds/search";
@@ -40,7 +39,8 @@ export const createFeedSchema = insertFeedSchema
         description: z.string().optional().nullable(),
         summary: z.string().optional().nullable(),
         readTime: z.number().optional().nullable(),
-        content: insertContentSchema.optional(),
+        /** MDX body. */
+        content: z.string().optional().nullable(),
       })
     ),
     ...dateFields,
@@ -67,7 +67,8 @@ export const updateFeedSchema = insertFeedSchema
           description: z.string().optional().nullable(),
           summary: z.string().optional().nullable(),
           readTime: z.number().optional().nullable(),
-          content: insertContentSchema.optional(),
+          /** MDX body; omit to leave the stored body alone. */
+          content: z.string().optional().nullable(),
         })
       )
       .optional(),
@@ -145,13 +146,9 @@ const translationOutputSchema = feedTranslationSchema
     published: true,
     deleted: true,
     content: true,
-    source: true,
-    unstableSerializedSource: true,
   })
   .extend({
     content: z.string().nullable().optional(),
-    source: z.string().nullable().optional(),
-    unstableSerializedSource: z.string().nullable().optional(),
     createdAt: z.string(),
     updatedAt: z.string(),
     hasEmbedding: z.boolean(),
@@ -304,3 +301,132 @@ export const upsertContentContract = oc
   .errors(WRITE_ERRORS)
   .input(upsertContentRequestSchema)
   .output(z.void());
+
+/**
+ * The working draft of a post, shared by the dashboard editor and the writing agent. `revision`
+ * is the compare-and-set counter a write must present.
+ */
+
+export const feedDraftTranslationSchema = z.object({
+  title: z.string().nullable(),
+  excerpt: z.string().nullable(),
+  description: z.string().nullable(),
+  summary: z.string().nullable(),
+  content: z.string().nullable(),
+});
+
+export const feedDraftSchema = z.object({
+  id: z.number().int(),
+  /** `null` until the draft has been applied once. */
+  feedId: z.number().int().nullable(),
+  revision: z.number().int(),
+  appliedRevision: z.number().int().nullable(),
+  slug: z.string().nullable(),
+  type: z.enum([FeedType.Post, FeedType.Note]),
+  defaultLocale: z.enum(locale.enumValues),
+  mainImage: z.string().nullable(),
+  translations: z.partialRecord(
+    z.enum(locale.enumValues),
+    feedDraftTranslationSchema
+  ),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export type FeedDraftOutput = z.infer<typeof feedDraftSchema>;
+
+const feedDraftTranslationPatchSchema = feedDraftTranslationSchema.partial();
+
+export const patchFeedDraftSchema = z.object({
+  draftId: z.number().int(),
+  /** Omit to write over the current revision; the editor always sends the one it loaded. */
+  expectedRevision: z.number().int().optional(),
+  slug: z.string().nullable().optional(),
+  type: z.enum([FeedType.Post, FeedType.Note]).optional(),
+  defaultLocale: z.enum(locale.enumValues).optional(),
+  mainImage: z.string().nullable().optional(),
+  translations: z
+    .partialRecord(z.enum(locale.enumValues), feedDraftTranslationPatchSchema)
+    .optional(),
+});
+
+export type PatchFeedDraftInput = z.infer<typeof patchFeedDraftSchema>;
+
+export const feedDraftChangeSchema = z.object({
+  locale: z.enum(locale.enumValues).optional(),
+  fields: z.array(z.string()),
+});
+
+export const feedDraftRevisionSchema = z.object({
+  id: z.number().int(),
+  revision: z.number().int(),
+  author: z.enum(["operator", "agent"]),
+  sessionId: z.string().nullable(),
+  changes: z.array(feedDraftChangeSchema),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+const DRAFT_ERRORS = {
+  UNAUTHORIZED: {},
+  FORBIDDEN: {},
+  NOT_FOUND: {},
+  BAD_REQUEST: {},
+  INTERNAL_SERVER_ERROR: {},
+} as const;
+
+/** Get-or-create: a feed's working draft, or an empty draft for a new post when `feedId` is omitted. */
+export const openFeedDraftContract = oc
+  .errors(DRAFT_ERRORS)
+  .input(z.object({ feedId: z.number().int().optional() }))
+  .output(feedDraftSchema);
+
+export const getFeedDraftContract = oc
+  .errors(DRAFT_ERRORS)
+  .input(z.object({ draftId: z.number().int() }))
+  .output(feedDraftSchema);
+
+/** Drafts with unapplied work: never applied, or edited since the last apply. */
+export const listFeedDraftsContract = oc
+  .errors(DRAFT_ERRORS)
+  .output(z.object({ items: z.array(feedDraftSchema) }));
+
+export const patchFeedDraftContract = oc
+  .errors({
+    ...DRAFT_ERRORS,
+    /** `data.revision` is the current revision; reload and rebase. */
+    CONFLICT: { data: z.object({ revision: z.number().int() }) },
+  })
+  .input(patchFeedDraftSchema)
+  .output(feedDraftSchema);
+
+export const applyFeedDraftContract = oc
+  .errors(DRAFT_ERRORS)
+  .input(z.object({ draftId: z.number().int() }))
+  .output(
+    z.object({
+      feedId: z.number().int(),
+      slug: z.string(),
+      created: z.boolean(),
+    })
+  );
+
+export const discardFeedDraftContract = oc
+  .errors(DRAFT_ERRORS)
+  .input(z.object({ draftId: z.number().int() }))
+  .output(z.void());
+
+export const listFeedDraftRevisionsContract = oc
+  .errors(DRAFT_ERRORS)
+  .input(
+    z.object({
+      draftId: z.number().int(),
+      limit: z.number().int().min(1).max(100).optional().default(30),
+    })
+  )
+  .output(z.object({ items: z.array(feedDraftRevisionSchema) }));
+
+export const restoreFeedDraftRevisionContract = oc
+  .errors(DRAFT_ERRORS)
+  .input(z.object({ draftId: z.number().int(), revisionId: z.number().int() }))
+  .output(feedDraftSchema);

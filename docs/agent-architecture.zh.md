@@ -59,10 +59,10 @@ oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建�
 
 每條 agent route 先解析 `CallerTier`，再由 kind 與 session guard 比對 persisted kind 的 `minTier` 並驗證 ownership。
 
-| Kind      | 最低 tier | 內容可見性                     | 可變 domain state |
-| --------- | --------- | ------------------------------ | ----------------- |
-| `writing` | `Root`    | 設定作者的草稿與已發佈內容     | Draft 與 memory   |
-| `public`  | `Guest`   | 設定作者的已發佈內容與 profile | 無                |
+| Kind      | 最低 tier | 內容可見性                     | 可變 domain state    |
+| --------- | --------- | ------------------------------ | -------------------- |
+| `writing` | `Root`    | 設定作者的草稿與已發佈內容     | 共用 draft 與 memory |
+| `public`  | `Guest`   | 設定作者的已發佈內容與 profile | 無                   |
 
 Generic 層不攜帶 admin 身分。Writing binding 只在建立 content port 時讀設定作者；public binding 不會收到該身分或任何可寫 port。
 
@@ -79,8 +79,7 @@ agent.session            kind、settings、active leaf
 agent.session_entry      transcript tree nodes
 agent.run                durable run 與 turn marker
 agent.tool_approval      approval state 與 audit trail
-agent.writing_session    writing-specific state
-agent.writing_draft      各 locale 的 staging buffer
+agent.writing_session    session 編輯的共用 draft，以及它最後看到的 revision
 agent.memory             跨 session 的 memory
 agent.kind_config        operator 的 kind overrides
 agent.task_config        operator 的 task overrides
@@ -93,7 +92,7 @@ Server-side conversational state 都能持久化；client view 則由 server det
 | State                                | 儲存位置                        |
 | ------------------------------------ | ------------------------------- |
 | Transcript 與 branches               | Postgres session tree           |
-| Draft 與 memory                      | Postgres domain tables          |
+| 共用 draft 與 memory                 | Postgres domain tables          |
 | Approvals 與 run metadata            | Postgres agent tables           |
 | Message inbox、pauses、event streams | Workflow backend                |
 | Client request state                 | TanStack Query                  |
@@ -261,7 +260,7 @@ Turn 執行中或 approval 未決時，navigate、fork 與手動 compaction 都�
 
 Maintenance 的 model call 有獨立 deadline，並在 lock transaction 中執行。Timeout 會取消 model call 並 rollback。Transaction 共用單一 connection，因此內部查詢必須循序執行。
 
-Kind state 不隨 transcript entries 版本化。Rewind 保留目前 writing draft；fork 複製當下的 draft，而不是 target entry 當時的狀態。
+Kind state 不隨 transcript entries 版本化。Rewind 保留目前的 draft；fork 讓新 session 綁定同一份共用 draft，而不是複製一份。
 
 Auto-compaction 只在成功且沒有 pending approval 的 turn 後執行。Compaction 失敗不會把已完成的 turn 改成失敗。
 
@@ -293,16 +292,24 @@ Usage 記錄採 best-effort，不在 response critical path。Insert 失敗會�
 
 Writing kind 組合 host-owned ports：
 
-| Port          | 責任                                |
-| ------------- | ----------------------------------- |
-| `ContentPort` | 讀取作者內容，並提交 staged draft。 |
-| `WebPort`     | 透過 Firecrawl 搜尋與抓取頁面。     |
-| `MemoryPort`  | 持久化與檢索跨 session memory。     |
-| `DraftStore`  | 在 commit 前暫存各 locale 的修改。  |
+| Port          | 責任                               |
+| ------------- | ---------------------------------- |
+| `ContentPort` | 讀取作者內容、套用 draft、發佈。   |
+| `WebPort`     | 透過 Firecrawl 搜尋與抓取頁面。    |
+| `MemoryPort`  | 持久化與檢索跨 session memory。    |
+| `DraftStore`  | 以 CAS 讀寫 session 的共用 draft。 |
 
 只有 commit-tier tool 會寫入正式 feed，且需要 approval。Draft 與 memory write 可逆。破壞性刪除與圖片上傳不提供給 agent。
 
 Web search 只回 snippets；`fetch_url` 抓取單一頁面，並透過 `MemoryPort` 記錄來源。Host port 接收 turn abort signal。Domain package 不直接執行 outbound fetch。
+
+### 共用 draft
+
+`feed_draft` 是一篇文章的 working copy，由 dashboard 編輯器、MCP tools 與 writing agent 共用。一個 feed 最多一份 draft；沒有 feed 的 draft 就是尚未建立的新文章。`feed` 只在 draft 被 apply 時改變，因此 draft 寫入不會觸發 feed indexing。
+
+每次寫入都是對 `feed_draft.revision` 的 compare-and-set，在同一個鎖住該列的 transaction 內完成。編輯器帶著它載入時的 revision，遇到 `CONFLICT` 時把自己改過的欄位合併到較新的 draft 上，或直接採用較新的版本。Agent 的 `edit_draft_content` 在衝突時重讀並重套一次精確字串替換；`write_draft_content` 釘在該 turn 最後觀察到的 revision，寧可失敗也不覆蓋 operator 的修改。`feed_draft_revision` 保存 restore points 與每個 revision 改了哪些欄位；連續的 operator 儲存會合併，且每份 draft 有上限。
+
+`agent.writing_session.lastSeenRevision` 記錄 agent turn 結束時觀察到的最高 revision。下一個 turn 的 volatile context 會把高於它的 operator revisions 列成「operator edits since your last turn」，讓 model 先重讀再編輯。丟棄未綁定的 draft 會刪除它並把 session 的 `draftId` 設為 null；下一個 turn 會開一份新的 draft。
 
 ### Memory lifecycle
 

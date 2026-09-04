@@ -141,6 +141,10 @@
       "types": "./feeds/write.ts",
       "default": "./feeds/write.ts"
     },
+    "./feeds/draft": {
+      "types": "./feeds/draft.ts",
+      "default": "./feeds/draft.ts"
+    },
     "./memories/write": {
       "types": "./memories/write.ts",
       "default": "./memories/write.ts"

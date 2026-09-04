@@ -27,7 +27,7 @@ export const DescriptionField = ({
   const form = useFormContext<FormSchema>();
   const activeLocale = form.watch("activeLocale");
   const title = form.watch(`translations.${activeLocale}.title`);
-  const content = form.watch(`translations.${activeLocale}.content.content`);
+  const content = form.watch(`translations.${activeLocale}.content`);
 
   const generateDescriptionMutation = useMutation({
     mutationFn: generateAIContentMeta,

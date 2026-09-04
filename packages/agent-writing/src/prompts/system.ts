@@ -3,7 +3,7 @@ import type { Skill } from "@earendil-works/pi-agent-core";
 import type { ToolTier } from "@chia/agent-runtime/types";
 import type { Locale } from "@chia/db/types";
 
-import type { FeedDraft, MemorySummary } from "../types.ts";
+import type { DraftChange, FeedDraft, MemorySummary } from "../types.ts";
 
 /**
  * Prompt assembly split by churn: `buildSystemPrompt` is the cached prefix for a session;
@@ -23,7 +23,11 @@ export interface SystemPromptInput {
 
 export interface TurnContextInput {
   draft: FeedDraft;
-  targetFeedId?: number;
+  /**
+   * What the operator edited in the dashboard since the agent last looked. The draft is
+   * shared, so the model must re-read before editing anything listed here.
+   */
+  operatorChanges?: readonly DraftChange[];
   defaultLocale: Locale;
   now: Date;
   /** What this session has already saved, so the model neither repeats itself nor forgets the ids. */
@@ -67,8 +71,8 @@ initiative.
 
 # How work flows
 
-You never edit the live blog directly. You edit a **staging draft** attached to this
-conversation, and the operator promotes it when they are satisfied:
+You never edit the live blog directly. You edit a **shared draft** that the operator also
+edits in the dashboard editor, and the operator promotes it when they are satisfied:
 
 1. **Load the rules.** \`read_skill\` for every skill whose description matches the task —
    \`mdx-authoring\` before any body, the locale's tone skill before any prose, \`seo-metadata\`
@@ -97,7 +101,8 @@ conversation, and the operator promotes it when they are satisfied:
   API signature, a figure — \`save_memory\` it with the URL, so the next session does not
   re-research it. Record the conclusion, not the page.
 - **Read before editing.** \`edit_draft_content\` needs byte-exact \`oldString\`. Guessing wastes
-  a turn and risks matching the wrong place.
+  a turn and risks matching the wrong place. The operator may have edited the draft since your
+  last turn; the session context lists what they touched.
 - **Prefer editing to rewriting.** Once the operator has reviewed prose, replacing the whole
   body throws that review away. Make targeted edits.
 - **Match the existing voice.** This is one person's blog with a consistent register.
@@ -139,18 +144,16 @@ export const buildTurnContext = (input: TurnContextInput): string => {
 
   lines.push(`- Current time: ${input.now.toISOString()} (UTC)`);
   lines.push(
-    input.targetFeedId === undefined &&
-      input.draft.committedFeedId === undefined
+    input.draft.feedId === null
       ? "- Editing: a new post, not yet committed to the database."
-      : `- Editing: existing feed ${input.draft.committedFeedId ?? input.targetFeedId}.`
+      : `- Editing: existing feed ${input.draft.feedId}.`
   );
+  lines.push(`- Draft revision: ${input.draft.revision}`);
 
   lines.push(`- Site default locale: ${input.defaultLocale}`);
-  lines.push(
-    `- Draft default locale: ${input.draft.feedMeta.defaultLocale ?? "(not set)"}`
-  );
-  lines.push(`- Draft slug: ${input.draft.feedMeta.slug ?? "(not set)"}`);
-  lines.push(`- Draft type: ${input.draft.feedMeta.type ?? "(not set)"}`);
+  lines.push(`- Draft default locale: ${input.draft.defaultLocale}`);
+  lines.push(`- Draft slug: ${input.draft.slug ?? "(not set)"}`);
+  lines.push(`- Draft type: ${input.draft.type}`);
 
   if (locales.length === 0) {
     lines.push("- Draft locales: none — the draft is empty.");
@@ -167,6 +170,17 @@ export const buildTurnContext = (input: TurnContextInput): string => {
           (missing.length > 0
             ? `, missing ${missing.join("/")}`
             : ", metadata complete")
+      );
+    }
+  }
+
+  if (input.operatorChanges && input.operatorChanges.length > 0) {
+    lines.push(
+      "- Operator edits since your last turn (read the draft again before editing these):"
+    );
+    for (const change of input.operatorChanges) {
+      lines.push(
+        `  - ${change.locale ? `${change.locale}: ` : "feed-level: "}${change.fields.join(", ")}`
       );
     }
   }

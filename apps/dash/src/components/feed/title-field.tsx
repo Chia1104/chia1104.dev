@@ -25,6 +25,7 @@ export const TitleField = memo(
               disabled={disabled}
               placeholder="Untitled"
               {...field}
+              value={field.value ?? ""}
             />
             <FieldError>{error?.message}</FieldError>
           </TextField>

@@ -1,7 +1,6 @@
 import type { TableOfContents } from "fumadocs-core/toc";
 import type { MDXComponents } from "mdx/types";
 
-import type { ContentType } from "@chia/db/types";
 import type { ConfigType } from "@chia/utils/day";
 
 export interface BaseProps {
@@ -20,56 +19,19 @@ export interface BaseProps {
   };
 }
 
-export interface BasePropsWithType extends BaseProps {
-  type: ContentType;
+export interface ContentProps extends BaseProps {
+  toc: TableOfContents;
+  content: React.FC<{
+    components?: MDXComponents;
+  }>;
 }
 
-export type ContentProps = BaseProps &
-  (
-    | {
-        type: typeof ContentType.Mdx;
-        toc: TableOfContents;
-        content: React.FC<{
-          components?: MDXComponents;
-        }>;
-      }
-    | {
-        type: typeof ContentType.Tiptap;
-        content?: string | null;
-      }
-    | {
-        type: typeof ContentType.Plate;
-        content?: string | null;
-      }
-    | {
-        type: typeof ContentType.Notion;
-        content?: string | null;
-      }
-  );
-
-export type ContentContextProps = BaseProps &
-  (
-    | {
-        type: typeof ContentType.Mdx;
-        toc: TableOfContents;
-      }
-    | {
-        type: typeof ContentType.Tiptap;
-        content?: string | null;
-      }
-    | {
-        type: typeof ContentType.Plate;
-        content?: string | null;
-      }
-    | {
-        type: typeof ContentType.Notion;
-        content?: string | null;
-      }
-  );
+export interface ContentContextProps extends BaseProps {
+  toc: TableOfContents;
+}
 
 export interface GetContentPropsArgs {
-  contentType: ContentType;
-  /** Raw body. The wrapper object it used to take was never read. */
+  /** Raw MDX body. */
   content: string | null | undefined;
 }
 

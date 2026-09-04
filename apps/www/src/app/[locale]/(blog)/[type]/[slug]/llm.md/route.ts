@@ -17,7 +17,7 @@ export const GET = async (
       locale: dbLocaleResolver(locale),
     })
   );
-  if (error || feed.contentType !== "mdx") {
+  if (error) {
     notFound();
   }
   return new Response(feed.translations[0]?.content, {

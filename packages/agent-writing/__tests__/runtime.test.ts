@@ -77,7 +77,6 @@ const build = async (
         feedId: 1,
         slug: "existing-post",
         type: "post",
-        contentType: "mdx",
         published: true,
         defaultLocale: "en",
         translations: [
@@ -286,7 +285,7 @@ describe("runWritingTurn", () => {
 
     await fixture.run("Draft something");
 
-    const draft = await fixture.draft.get(SESSION_ID);
+    const draft = await fixture.draft.get();
     expect(draft.translations.en?.content).toBe("## Hello\n\nSome body text.");
     expect(fixture.content.commits).toHaveLength(0);
 
@@ -372,8 +371,9 @@ describe("runWritingTurn", () => {
     await approved.run("Write and commit a post");
 
     expect(approved.content.commits).toHaveLength(1);
-    expect(approved.content.commits[0]).toMatchObject({
-      feedMeta: { slug: "a-post", defaultLocale: "en" },
+    expect(await approved.draft.get()).toMatchObject({
+      slug: "a-post",
+      defaultLocale: "en",
     });
     expect(approved.events.some((e) => e.type === "approval:request")).toBe(
       false
@@ -452,7 +452,7 @@ describe("runWritingTurn", () => {
   });
 
   it("sends the draft state as a volatile last message, not in the system prompt or transcript", async () => {
-    await fixture.draft.patchFeedMeta(SESSION_ID, { slug: "hello-world" });
+    await fixture.draft.patchFeedMeta({ slug: "hello-world" });
     const seen: Context[] = [];
     fixture.setResponses([
       (context) => {

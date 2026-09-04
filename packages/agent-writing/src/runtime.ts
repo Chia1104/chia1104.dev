@@ -27,10 +27,11 @@ export interface RunWritingTurnOptions<TApproval> {
   session: SessionTree;
   settings: AgentSessionSettings;
   agentSessionId: string;
-  targetFeedId?: number;
   content: ContentPort;
   web: WebPort;
   draft: DraftStore;
+  /** Draft revision the agent had seen when its previous turn ended; operator edits above it are reported. */
+  lastSeenRevision?: number;
   memory: MemoryPort;
   instructions?: string;
   message: AgentTurnMessage;
@@ -62,7 +63,6 @@ export const runWritingTurn = <TApproval>(
   const models = options.models ?? createAgentModels();
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
-    targetFeedId: options.targetFeedId,
     content: options.content,
     web: options.web,
     draft: options.draft,
@@ -88,16 +88,18 @@ export const runWritingTurn = <TApproval>(
       instructions: options.instructions,
     }),
     volatileContext: async () => {
-      const [draft, sessionMemories, lessons] = await Promise.all([
-        options.draft.get(options.agentSessionId),
-        options.memory.listBySession(options.agentSessionId),
-        options.memory.listActiveLessons(LESSONS_DIGEST_LIMIT),
-      ]);
+      const [draft, operatorChanges, sessionMemories, lessons] =
+        await Promise.all([
+          options.draft.get(),
+          options.draft.operatorChangesSince(options.lastSeenRevision ?? 0),
+          options.memory.listBySession(options.agentSessionId),
+          options.memory.listActiveLessons(LESSONS_DIGEST_LIMIT),
+        ]);
       return buildTurnContext({
         draft,
+        operatorChanges,
         sessionMemories,
         lessons,
-        targetFeedId: options.targetFeedId,
         defaultLocale,
         now: new Date(),
       });

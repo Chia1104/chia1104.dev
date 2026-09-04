@@ -4,7 +4,6 @@ import { memo } from "react";
 
 import { Controller, useFormContext } from "react-hook-form";
 
-import { ContentType } from "@chia/db/types";
 import { cn } from "@chia/ui/utils/cn.util";
 import useTheme from "@chia/ui/utils/use-theme";
 
@@ -18,16 +17,15 @@ export const SwitchEditor = memo(() => {
   const { disabled } = useEditFields();
   const { isDarkMode } = useTheme();
 
-  const contentType = form.watch("contentType") ?? ContentType.Mdx;
   const activeLocale = form.watch("activeLocale");
   const title = form.watch(`translations.${activeLocale}.title`) ?? "";
 
-  return contentType !== ContentType.Mdx ? null : (
+  return (
     <div className={cn("relative w-full", disabled && "pointer-events-none")}>
       <Controller
         key={activeLocale}
         control={form.control}
-        name={`translations.${activeLocale}.content.content`}
+        name={`translations.${activeLocale}.content`}
         render={({ field }) => (
           <MarkdownEditor
             value={field.value ?? ""}

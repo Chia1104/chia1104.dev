@@ -1,5 +1,13 @@
 import { ApiKeyScope } from "@chia/auth/apikey";
 import {
+  listFeedDraftRevisions,
+  listOpenFeedDrafts,
+} from "@chia/db/repos/drafts";
+import type {
+  FeedDraftRecord,
+  FeedDraftRevisionSummary,
+} from "@chia/db/repos/drafts";
+import {
   getFeedById,
   getFeedBySlug,
   getFeedForIndexing,
@@ -11,6 +19,7 @@ import {
   upsertContent,
   upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
+import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
@@ -20,6 +29,14 @@ import {
   toFeedDetailScope,
   toFeedListScope,
 } from "../../feeds/access";
+import {
+  applyFeedDraftService,
+  discardFeedDraftService,
+  getFeedDraftService,
+  openFeedDraftService,
+  patchFeedDraftService,
+  restoreFeedDraftRevisionService,
+} from "../../feeds/draft";
 import {
   getRelatedFeedsService,
   searchFeedsService,
@@ -246,3 +263,127 @@ export const upsertContentRoute = contractOS.feeds["content:upsert"]
       await opts.context.hooks?.onFeedChanged?.(feedID);
     }
   });
+
+// The working draft is the operator's; the agent reaches it through its own port, never here.
+
+const toDraftOutput = (draft: FeedDraftRecord) => ({
+  ...draft,
+  createdAt: draft.createdAt.toISOString(),
+  updatedAt: draft.updatedAt.toISOString(),
+});
+
+const toRevisionOutput = (revision: FeedDraftRevisionSummary) => ({
+  id: revision.id,
+  revision: revision.revision,
+  author: revision.author,
+  sessionId: revision.sessionId,
+  changes: revision.changes,
+  createdAt: revision.createdAt.toISOString(),
+  updatedAt: revision.updatedAt.toISOString(),
+});
+
+export const openFeedDraftRoute = contractOS.feeds["draft:open"]
+  .use(rootWriteGuard)
+  .handler((opts) =>
+    withORPCErrors(async () =>
+      toDraftOutput(
+        await openFeedDraftService(opts.context.db, {
+          adminId: opts.context.caller.adminId,
+          feedId: opts.input.feedId,
+          author: FEED_DRAFT_AUTHOR.Operator,
+        })
+      )
+    )
+  );
+
+export const getFeedDraftRoute = contractOS.feeds["draft:get"]
+  .use(rootWriteGuard)
+  .handler((opts) =>
+    withORPCErrors(async () =>
+      toDraftOutput(
+        await getFeedDraftService(opts.context.db, {
+          draftId: opts.input.draftId,
+          adminId: opts.context.caller.adminId,
+        })
+      )
+    )
+  );
+
+export const listFeedDraftsRoute = contractOS.feeds["draft:list"]
+  .use(rootWriteGuard)
+  .handler(async (opts) => ({
+    items: (
+      await listOpenFeedDrafts(opts.context.db, opts.context.caller.adminId)
+    ).map(toDraftOutput),
+  }));
+
+export const patchFeedDraftRoute = contractOS.feeds["draft:patch"]
+  .use(rootWriteGuard)
+  .handler((opts) =>
+    withORPCErrors(async () => {
+      const { draftId, expectedRevision, translations, ...meta } = opts.input;
+      return toDraftOutput(
+        await patchFeedDraftService(opts.context.db, {
+          draftId,
+          adminId: opts.context.caller.adminId,
+          expectedRevision,
+          meta,
+          translations,
+          author: FEED_DRAFT_AUTHOR.Operator,
+        })
+      );
+    })
+  );
+
+export const applyFeedDraftRoute = contractOS.feeds["draft:apply"]
+  .use(rootWriteGuard)
+  .handler((opts) =>
+    withORPCErrors(() =>
+      applyFeedDraftService(
+        opts.context.db,
+        { draftId: opts.input.draftId, adminId: opts.context.caller.adminId },
+        opts.context.hooks ?? {}
+      )
+    )
+  );
+
+export const discardFeedDraftRoute = contractOS.feeds["draft:discard"]
+  .use(rootWriteGuard)
+  .handler((opts) =>
+    withORPCErrors(() =>
+      discardFeedDraftService(opts.context.db, {
+        draftId: opts.input.draftId,
+        adminId: opts.context.caller.adminId,
+      })
+    )
+  );
+
+export const listFeedDraftRevisionsRoute = contractOS.feeds["draft:revisions"]
+  .use(rootWriteGuard)
+  .handler((opts) =>
+    withORPCErrors(async () => {
+      await getFeedDraftService(opts.context.db, {
+        draftId: opts.input.draftId,
+        adminId: opts.context.caller.adminId,
+      });
+      const items = await listFeedDraftRevisions(opts.context.db, {
+        draftId: opts.input.draftId,
+        limit: opts.input.limit,
+      });
+      return { items: items.map(toRevisionOutput) };
+    })
+  );
+
+export const restoreFeedDraftRevisionRoute = contractOS.feeds["draft:restore"]
+  .use(rootWriteGuard)
+  .handler((opts) =>
+    withORPCErrors(async () =>
+      toDraftOutput(
+        await restoreFeedDraftRevisionService(opts.context.db, {
+          draftId: opts.input.draftId,
+          revisionId: opts.input.revisionId,
+          adminId: opts.context.caller.adminId,
+        })
+      )
+    )
+  );

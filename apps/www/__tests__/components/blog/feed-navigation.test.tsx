@@ -76,7 +76,6 @@ describe("FeedNavigation Component", () => {
       updatedAt: "2024-01-01T00:00:00.000Z",
       deletedAt: null,
       mainImage: null,
-      contentType: "mdx",
       defaultLocale: "zh-TW",
       translations: [
         {
@@ -105,7 +104,6 @@ describe("FeedNavigation Component", () => {
       updatedAt: "2024-01-01T00:00:00.000Z",
       deletedAt: null,
       mainImage: null,
-      contentType: "mdx",
       defaultLocale: "zh-TW",
       translations: [
         {
