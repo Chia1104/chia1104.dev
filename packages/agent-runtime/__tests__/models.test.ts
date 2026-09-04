@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { HOUSE_MODELS } from "@chia/ai/house-models";
+
 import {
   accessOf,
   AGENT_PROVIDERS,
@@ -159,8 +161,10 @@ describe("houseModel", () => {
   it("names a role's model on the gateway", () => {
     expect(houseModel("cheap")).toEqual({
       providerId: AGENT_PROVIDERS.gateway,
-      modelId: "anthropic/claude-haiku-4.5",
+      modelId: HOUSE_MODELS.cheap,
     });
+    expect(houseModel("writing").modelId).toBe(HOUSE_MODELS.writing);
+    expect(houseModel("public").modelId).toBe(HOUSE_MODELS.public);
   });
 });
 

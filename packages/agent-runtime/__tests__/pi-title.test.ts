@@ -1,6 +1,8 @@
 import type { AssistantMessage, Context, Models } from "@earendil-works/pi-ai";
 import { describe, expect, it, vi } from "vitest";
 
+import { HOUSE_MODELS } from "@chia/ai/house-models";
+
 import { AGENT_PROVIDERS, createAgentModels } from "../src/models.ts";
 import {
   SESSION_TITLE_MAX_LENGTH,
@@ -23,7 +25,7 @@ const reply = (
   content: [{ type: "text", text }],
   api: "anthropic-messages",
   provider: "vercel-ai-gateway",
-  model: "anthropic/claude-haiku-4.5",
+  model: HOUSE_MODELS.cheap,
   usage: {
     input: 0,
     output: 0,
@@ -46,7 +48,7 @@ const modelsWith = (
 /** A real catalogue entry; the stub never calls it, the generator only passes it through. */
 const model = createAgentModels().getModel(
   AGENT_PROVIDERS.gateway,
-  "anthropic/claude-haiku-4.5"
+  HOUSE_MODELS.cheap
 )!;
 
 describe("normalizeSessionTitle", () => {
@@ -110,7 +112,7 @@ describe("generateSessionTitle", () => {
     expect(title).toBeNull();
     expect(onUsage).toHaveBeenCalledExactlyOnceWith({
       providerId: "vercel-ai-gateway",
-      modelId: "anthropic/claude-haiku-4.5",
+      modelId: HOUSE_MODELS.cheap,
       usage: aborted.usage,
     });
   });
