@@ -113,6 +113,7 @@ export const consolidateSessionMemoryStep = async (request: {
         sessionId: row.id,
         kind: row.kind,
         source: "lessons",
+        credentialSource: "house",
         ...usage,
       }),
   });

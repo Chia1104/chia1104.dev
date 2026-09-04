@@ -281,7 +281,7 @@ Each domain owns its model allowlist. One-shot tasks may use the session model o
 
 ### Usage ledger and quota
 
-Every billed provider call creates one `agent.usage_ledger` row, including turns, compaction, branch summaries, titles and lesson extraction. Cost is stored in integer micro-dollars with the provider ID, so house spend and BYOK spend remain one ledger with different filters. Ledger rows survive session deletion.
+Every billed provider call creates one `agent.usage_ledger` row, including turns, compaction, branch summaries, titles and lesson extraction. Cost is stored in integer micro-dollars with the provider ID and a `credential_source` (`house`, `byok-gateway`, `byok-native`), so house spend and BYOK spend remain one ledger with different filters. Quota counts `house` rows only; the provider ID never decides who paid. Ledger rows survive session deletion.
 
 Usage recording is best-effort and outside the response critical path. A failed ledger insert is logged and loses at most one call in the user's favor.
 

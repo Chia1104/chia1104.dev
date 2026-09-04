@@ -2,7 +2,10 @@ import { and, desc, eq, gte, inArray, lt, sql, sum } from "drizzle-orm";
 
 import type { DB } from "../../client.ts";
 import { agentUsageLedger, user } from "../../schemas/schema.ts";
-import type { AgentUsageSource } from "../../schemas/schema.ts";
+import type {
+  AgentCredentialSource,
+  AgentUsageSource,
+} from "../../schemas/schema.ts";
 
 export interface InsertAgentUsageDTO {
   userId: string;
@@ -13,6 +16,7 @@ export interface InsertAgentUsageDTO {
   source: AgentUsageSource;
   providerId: string;
   modelId: string;
+  credentialSource: AgentCredentialSource;
   input: number;
   output: number;
   cacheRead: number;
@@ -33,6 +37,7 @@ export const insertAgentUsage = async (db: DB, input: InsertAgentUsageDTO) => {
       source: input.source,
       providerId: input.providerId,
       modelId: input.modelId,
+      credentialSource: input.credentialSource,
       input: input.input,
       output: input.output,
       cacheRead: input.cacheRead,
@@ -44,14 +49,14 @@ export const insertAgentUsage = async (db: DB, input: InsertAgentUsageDTO) => {
   return row;
 };
 
-/** One user's spend over `[from, to)`, in micro-dollars. `providerIds` selects which bills count (house gateway vs the user's own key). */
+/** One user's spend over `[from, to)`, in micro-dollars. `credentialSources` selects whose bills count. */
 export const sumAgentUsageCost = async (
   db: DB,
   options: {
     userId: string;
     from: Date;
     to: Date;
-    providerIds?: readonly string[];
+    credentialSources?: readonly AgentCredentialSource[];
   }
 ): Promise<number> => {
   const conditions = [
@@ -59,9 +64,9 @@ export const sumAgentUsageCost = async (
     gte(agentUsageLedger.createdAt, options.from),
     lt(agentUsageLedger.createdAt, options.to),
   ];
-  if (options.providerIds) {
+  if (options.credentialSources) {
     conditions.push(
-      inArray(agentUsageLedger.providerId, [...options.providerIds])
+      inArray(agentUsageLedger.credentialSource, [...options.credentialSources])
     );
   }
   const [row] = await db
@@ -74,12 +79,12 @@ export const sumAgentUsageCost = async (
 const periodConditions = (options: {
   from: Date;
   to: Date;
-  providerIds?: readonly string[];
+  credentialSources?: readonly AgentCredentialSource[];
 }) => [
   gte(agentUsageLedger.createdAt, options.from),
   lt(agentUsageLedger.createdAt, options.to),
-  options.providerIds
-    ? inArray(agentUsageLedger.providerId, [...options.providerIds])
+  options.credentialSources
+    ? inArray(agentUsageLedger.credentialSource, [...options.credentialSources])
     : undefined,
 ];
 
@@ -103,7 +108,7 @@ export const summarizeAgentUsage = async (
     userId?: string;
     from: Date;
     to: Date;
-    providerIds?: readonly string[];
+    credentialSources?: readonly AgentCredentialSource[];
   }
 ): Promise<AgentUsageSummary> => {
   const query = db
@@ -143,7 +148,7 @@ export const listTopAgentUsageUsers = async (
   options: {
     from: Date;
     to: Date;
-    providerIds?: readonly string[];
+    credentialSources?: readonly AgentCredentialSource[];
     limit: number;
   }
 ): Promise<AgentUsageByUser[]> => {

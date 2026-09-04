@@ -1,9 +1,8 @@
-import { AGENT_PROVIDERS } from "@chia/agent-runtime/models";
 import type { DB } from "@chia/db/client";
 import { countRunningAgentTurns, lockAgentUser } from "@chia/db/repos/agent";
 import { getAgentQuotaConfig } from "@chia/db/repos/agent/config";
 import { sumAgentUsageCost } from "@chia/db/repos/agent/usage";
-import type { AgentQuotaConfig } from "@chia/db/schema";
+import type { AgentCredentialSource, AgentQuotaConfig } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 import dayjs from "@chia/utils/day";
@@ -49,8 +48,10 @@ export const AGENT_QUOTA_DEFAULTS: AgentQuota = {
   maxRunningTurns: 3,
 };
 
-/** The bills a quota counts: the house gateway's only. */
-export const QUOTA_PROVIDER_IDS: readonly string[] = [AGENT_PROVIDERS.gateway];
+/** The bills a quota counts: the house account's only. */
+export const QUOTA_CREDENTIAL_SOURCES: readonly AgentCredentialSource[] = [
+  "house",
+];
 
 /** Tiers the quota never applies to. */
 export const isQuotaExempt = (tier: CallerTier): boolean =>
@@ -117,7 +118,7 @@ export const readAgentQuotaStanding = async (
     userId,
     from: period.start,
     to: period.end,
-    providerIds: QUOTA_PROVIDER_IDS,
+    credentialSources: QUOTA_CREDENTIAL_SOURCES,
   });
   return { quota, period, usedMicros };
 };

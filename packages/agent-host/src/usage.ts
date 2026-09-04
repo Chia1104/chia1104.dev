@@ -1,7 +1,9 @@
+import { isByokProviderId } from "@chia/agent-runtime/models";
+import type { AgentCredentials } from "@chia/agent-runtime/models";
 import type { AgentModelUsage } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import { insertAgentUsage } from "@chia/db/repos/agent/usage";
-import type { AgentUsageSource } from "@chia/db/schema";
+import type { AgentCredentialSource, AgentUsageSource } from "@chia/db/schema";
 
 /**
  * Write side of the usage ledger: every provider call made for a user lands here, whoever
@@ -24,6 +26,19 @@ export const costToMicros = (usd: number): number => {
 
 export const microsToUsd = (micros: number): number => micros / MICROS_PER_USD;
 
+/**
+ * Whose key a call on `providerId` ran on, given the credentials the request carried. A BYOK
+ * provider is registered only when its key was supplied, so its presence in `credentials` is
+ * the whole answer.
+ */
+export const credentialSourceOf = (
+  credentials: AgentCredentials,
+  providerId: string
+): AgentCredentialSource =>
+  isByokProviderId(providerId) && credentials[providerId]
+    ? "byok-native"
+    : "house";
+
 export interface RecordAgentUsageInput extends AgentModelUsage {
   userId: string;
   sessionId?: string | null;
@@ -31,6 +46,7 @@ export interface RecordAgentUsageInput extends AgentModelUsage {
   entryId?: string | null;
   kind: string;
   source: AgentUsageSource;
+  credentialSource: AgentCredentialSource;
 }
 
 /**
@@ -54,6 +70,7 @@ export const recordAgentUsage = async (
       source: input.source,
       providerId: input.providerId,
       modelId: input.modelId,
+      credentialSource: input.credentialSource,
       input: usage.input,
       output: usage.output,
       cacheRead: usage.cacheRead,

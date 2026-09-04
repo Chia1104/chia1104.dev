@@ -349,6 +349,12 @@ export type AgentUsageSource =
   | "lessons";
 
 /**
+ * Whose key paid for a call. `providerId` alone cannot say: the same provider serves the house
+ * account and a caller's own gateway key.
+ */
+export type AgentCredentialSource = "house" | "byok-gateway" | "byok-native";
+
+/**
  * One billed provider call, attributed to the user. Entries cascade with the session, so usage lives here; `session_id` is SET NULL when the session goes.
  * `cost_micros` is pi's `usage.cost.total` in micro-dollars; token columns are breakdown, not metering.
  */
@@ -371,6 +377,9 @@ export const agentUsageLedger = agentSchema.table(
     source: text("source").$type<AgentUsageSource>().notNull(),
     providerId: text("provider_id").notNull(),
     modelId: text("model_id").notNull(),
+    credentialSource: text("credential_source")
+      .$type<AgentCredentialSource>()
+      .notNull(),
     input: integer("input").notNull(),
     output: integer("output").notNull(),
     cacheRead: integer("cache_read").notNull(),

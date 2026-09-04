@@ -108,6 +108,7 @@ export {
   type AgentQuotaConfig,
   type AgentUsageLedgerRow,
   type AgentUsageSource,
+  type AgentCredentialSource,
 } from "./agent.schema.ts";
 
 export {
