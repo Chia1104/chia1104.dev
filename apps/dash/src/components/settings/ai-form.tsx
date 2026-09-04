@@ -20,6 +20,7 @@ import {
   useQueryClient,
   experimental_streamedQuery as streamedQuery,
 } from "@tanstack/react-query";
+import { HTTPError } from "ky";
 import {
   Eye,
   EyeOff,
@@ -38,7 +39,6 @@ import type { KeyId } from "@chia/ai/provider";
 import type { ModelMessage } from "@chia/ai/types";
 import SubmitForm from "@chia/ui/submit-form";
 
-import { HonoRPCError } from "@/libs/service/error";
 import {
   generateAIContent,
   getAIKeys,
@@ -119,7 +119,7 @@ export const AIForm = ({ provider }: Props) => {
       await refresh();
     },
     onError: (error) => {
-      if (error instanceof HonoRPCError) {
+      if (error instanceof HTTPError) {
         toast.error(`Failed to save API Key: ${error.message}`);
       }
     },
@@ -132,7 +132,7 @@ export const AIForm = ({ provider }: Props) => {
       await refresh();
     },
     onError: (error) => {
-      if (error instanceof HonoRPCError) {
+      if (error instanceof HTTPError) {
         toast.error(`Failed to remove API Key: ${error.message}`);
       }
     },

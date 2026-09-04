@@ -13,7 +13,6 @@ import {
   TextField,
 } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import ky from "ky";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -26,6 +25,7 @@ import {
 } from "@chia/ai/provider";
 import type { KeyId } from "@chia/ai/provider";
 import { withServiceEndpoint } from "@chia/utils/config";
+import { del, get, post } from "@chia/utils/request";
 import { Service } from "@chia/utils/schema";
 
 import { PUBLIC_AGENT_KIND } from "./kind";
@@ -37,25 +37,12 @@ const aiEndpoint = (path: string) =>
   });
 
 const signKey = (provider: KeyId, apiKey: string) =>
-  ky
-    .post(aiEndpoint("/ai/key:signed"), {
-      json: { apiKey, provider },
-      credentials: "include",
-    })
-    .json<{ message: string }>();
+  post<{ message: string }>(aiEndpoint("/ai/key:signed"), { apiKey, provider });
 
 const revokeKey = (provider: KeyId) =>
-  ky
-    .delete(aiEndpoint("/ai/key"), {
-      json: { provider },
-      credentials: "include",
-    })
-    .json<{ message: string }>();
+  del<{ message: string }>(aiEndpoint("/ai/key"), { json: { provider } });
 
-const fetchKeys = () =>
-  ky
-    .get(aiEndpoint("/ai/keys"), { credentials: "include" })
-    .json<{ configured: KeyId[] }>();
+const fetchKeys = () => get<{ configured: KeyId[] }>(aiEndpoint("/ai/keys"));
 
 const keysQueryKey = ["agent", "keys"] as const;
 

@@ -48,7 +48,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "db:up": "docker compose --env-file .env.global up -d",
+    "db:up": "docker compose --env-file .env.global up -d --wait",
     "db:down": "docker compose --env-file .env.global down",
     "service:up": "docker compose --env-file .env.global --profile app up --build",
     "service:down": "docker compose --env-file .env.global --profile app down",
