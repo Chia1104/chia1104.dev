@@ -2,11 +2,11 @@ import { modelMessageSchema } from "ai";
 import type { ModelMessage } from "ai";
 import * as z from "zod";
 
-import { providerIdSchema } from "../provider";
+import { keyIdSchema } from "../provider";
 
-/** A native model on a vendor the caller holds a key for; the id is theirs to choose. */
+/** A model on a wire the caller holds a key for; the id is spelled as that wire wants it. */
 export const modelSchema = z.object({
-  provider: providerIdSchema,
+  provider: keyIdSchema,
   id: z.string().min(1),
 });
 

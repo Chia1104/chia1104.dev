@@ -1,4 +1,4 @@
-import { isByokProviderId } from "@chia/agent-runtime/models";
+import { AGENT_PROVIDERS } from "@chia/agent-runtime/models";
 import type { AgentCredentials } from "@chia/agent-runtime/models";
 import type { AgentModelUsage } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
@@ -27,17 +27,17 @@ export const costToMicros = (usd: number): number => {
 export const microsToUsd = (micros: number): number => micros / MICROS_PER_USD;
 
 /**
- * Whose key a call on `providerId` ran on, given the credentials the request carried. A BYOK
- * provider is registered only when its key was supplied, so its presence in `credentials` is
- * the whole answer.
+ * Whose key a call ran on. `providerId` is the provider pi reported; a native provider is
+ * registered only with the caller's key, and a gateway call is theirs only if they brought a
+ * gateway key.
  */
 export const credentialSourceOf = (
   credentials: AgentCredentials,
   providerId: string
-): AgentCredentialSource =>
-  isByokProviderId(providerId) && credentials[providerId]
-    ? "byok-native"
-    : "house";
+): AgentCredentialSource => {
+  if (providerId !== AGENT_PROVIDERS.gateway) return "byok-native";
+  return credentials.gateway ? "byok-gateway" : "house";
+};
 
 export interface RecordAgentUsageInput extends AgentModelUsage {
   userId: string;

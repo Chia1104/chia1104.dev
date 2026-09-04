@@ -2,7 +2,7 @@ import { parse } from "hono/utils/cookie";
 
 import { decryptAgentCredentials as decryptCredentials } from "@chia/agent-host/credentials";
 export { AgentCredentialError } from "@chia/agent-host/credentials";
-import { PROVIDER_COOKIE_NAMES } from "@chia/ai/provider";
+import { KEY_COOKIE_NAMES } from "@chia/ai/provider";
 import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-hooks";
 
 import { env } from "../env";
@@ -12,15 +12,13 @@ import { env } from "../env";
  * Cookies are the same ones `/ai/key:signed` writes.
  */
 
-/** A missing cookie returns undefined; house-gateway sessions need no key. */
+/** A missing cookie returns undefined; sessions on the house gateway key need none. */
 export const readEncryptedAgentCredentials = (
   headers: Headers
 ): EncryptedAgentCredentials | undefined => {
   const cookies = parse(headers.get("Cookie") ?? "");
   const credentials: EncryptedAgentCredentials = {};
-  for (const [providerId, cookieName] of Object.entries(
-    PROVIDER_COOKIE_NAMES
-  )) {
+  for (const [providerId, cookieName] of Object.entries(KEY_COOKIE_NAMES)) {
     const encoded = cookies[cookieName];
     if (encoded) {
       credentials[

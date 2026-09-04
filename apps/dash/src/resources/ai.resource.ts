@@ -1,6 +1,6 @@
 import type * as z from "zod";
 
-import type { ProviderId } from "@chia/ai/provider";
+import type { KeyId } from "@chia/ai/provider";
 import type {
   generateContentCompleteInput,
   generateContentInput,
@@ -10,10 +10,17 @@ import type {
   generateSummaryInput,
 } from "@chia/ai/tools/content";
 import type { baseRequestSchema, SupportedTools } from "@chia/ai/types";
+import { withServiceEndpoint } from "@chia/utils/config";
+import { del, get, post, postTextStream } from "@chia/utils/request";
+import { Service } from "@chia/utils/schema";
 
-import { postJson, postTextStream } from "@/libs/service/fetcher";
+const aiEndpoint = (path: string) =>
+  withServiceEndpoint(path, Service.LegacyService, {
+    isInternal: false,
+    version: "LEGACY",
+  });
 
-/** AI endpoints stay on Hono (streaming, `Set-Cookie`), so these are plain fetch calls typed from `@chia/ai`. */
+/** AI endpoints stay on Hono (streaming, `Set-Cookie`); request types come from `@chia/ai`. */
 
 export interface SignAIKeyResponse {
   message: string;
@@ -69,25 +76,31 @@ export type GenerateAIContentMetaResponse =
       content: { excerpt: string };
     };
 
-export const getSignedAIKey = (apiKey: string, provider: ProviderId) =>
-  postJson<SignAIKeyResponse>("/ai/key:signed", { apiKey, provider });
+export const getSignedAIKey = (apiKey: string, provider: KeyId) =>
+  post<SignAIKeyResponse>(aiEndpoint("/ai/key:signed"), { apiKey, provider });
+
+export const getAIKeys = () =>
+  get<{ configured: KeyId[] }>(aiEndpoint("/ai/keys"));
+
+export const revokeAIKey = (provider: KeyId) =>
+  del<{ message: string }>(aiEndpoint("/ai/key"), { json: { provider } });
 
 export const generateAIContent = (input: GenerateAIContentInput) =>
-  postTextStream("/ai/generate", input);
+  postTextStream(aiEndpoint("/ai/generate"), input);
 
 export const generateAIArticleContent = (
   input: GenerateAIArticleContentInput
-) => postTextStream("/ai/content/generate", input);
+) => postTextStream(aiEndpoint("/ai/content/generate"), input);
 
 export const generateAIContentComplete = async (
   input: GenerateAIContentCompleteInput
 ): Promise<string> => {
-  const { completion } = await postJson<{ completion: string }>(
-    "/ai/content/complete",
+  const { completion } = await post<{ completion: string }>(
+    aiEndpoint("/ai/content/complete"),
     input
   );
   return completion;
 };
 
 export const generateAIContentMeta = (input: GenerateAIContentMetaInput) =>
-  postJson<GenerateAIContentMetaResponse>("/ai/content/meta", input);
+  post<GenerateAIContentMetaResponse>(aiEndpoint("/ai/content/meta"), input);

@@ -75,13 +75,22 @@ describe("costToMicros", () => {
 });
 
 describe("credentialSourceOf", () => {
-  it("bills the house for a provider the caller brought no key for", async () => {
+  it("bills the house for a gateway call when the caller brought no gateway key", async () => {
     const { credentialSourceOf } = await import("../src/usage");
     expect(credentialSourceOf({}, "vercel-ai-gateway")).toBe("house");
-    expect(credentialSourceOf({ anthropic: "sk" }, "openai")).toBe("house");
+    expect(credentialSourceOf({ anthropic: "sk" }, "vercel-ai-gateway")).toBe(
+      "house"
+    );
   });
 
-  it("bills the caller for a provider registered with their own key", async () => {
+  it("bills the caller for a gateway call on their own gateway key", async () => {
+    const { credentialSourceOf } = await import("../src/usage");
+    expect(credentialSourceOf({ gateway: "vck" }, "vercel-ai-gateway")).toBe(
+      "byok-gateway"
+    );
+  });
+
+  it("bills the caller for a call on a vendor wire, which only their key opens", async () => {
     const { credentialSourceOf } = await import("../src/usage");
     expect(credentialSourceOf({ openai: "sk" }, "openai")).toBe("byok-native");
   });

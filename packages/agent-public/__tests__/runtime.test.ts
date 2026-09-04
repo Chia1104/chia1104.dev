@@ -24,6 +24,7 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 import { createFakeProfileReadPort } from "@chia/test/fixtures/profile-read-port";
 
+import { DEFAULT_PUBLIC_MODEL } from "../src/models.ts";
 import { publicTurnBudget } from "../src/policy.ts";
 import { runPublicTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
@@ -47,8 +48,8 @@ interface Fixture {
 }
 
 const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
-  const providerId = settings.providerId ?? "vercel-ai-gateway";
-  const modelId = settings.modelId ?? "anthropic/claude-haiku-4.5";
+  const providerId = settings.providerId ?? DEFAULT_PUBLIC_MODEL.providerId;
+  const modelId = settings.modelId ?? DEFAULT_PUBLIC_MODEL.modelId;
   const faux = fauxProvider({
     provider: providerId,
     models: [{ id: modelId }],

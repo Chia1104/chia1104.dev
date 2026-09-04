@@ -1,14 +1,20 @@
 import { describe, expect, it } from "vitest";
 
+import { HOUSE_MODELS } from "@chia/ai/house-models";
+
 import {
+  accessOf,
   AGENT_PROVIDERS,
-  UnknownAgentModelError,
   createAgentCatalog,
   createAgentModels,
+  HOUSE_ACCESS,
+  houseModel,
   listModels,
+  NO_ACCESS,
   resolveModel,
+  UnknownAgentModelError,
 } from "../src/models.ts";
-import type { AgentModelRef } from "../src/models.ts";
+import type { AgentModelPredicate, AgentModelRef } from "../src/models.ts";
 
 /**
  * The model layer's job is to keep two things straight: whose key pays, and which provider a
@@ -19,15 +25,25 @@ import type { AgentModelRef } from "../src/models.ts";
  * no I/O when registered.
  */
 
-const allowAll = () => true;
+const allowAll: AgentModelPredicate = () => true;
 
 const GATEWAY_SONNET: AgentModelRef = {
   providerId: AGENT_PROVIDERS.gateway,
   modelId: "anthropic/claude-sonnet-5",
 };
 
+describe("accessOf", () => {
+  it("reports presence per key and nothing about the keys", () => {
+    expect(accessOf(undefined)).toEqual(NO_ACCESS);
+    expect(accessOf({ gateway: "vck", openai: "sk" })).toEqual({
+      gateway: true,
+      native: [AGENT_PROVIDERS.openai],
+    });
+  });
+});
+
 describe("createAgentModels", () => {
-  it("registers the gateway with no credentials, because it runs on an ambient env key", () => {
+  it("registers the gateway with no credentials, because it runs on the house env key", () => {
     const models = createAgentModels();
 
     expect(models.getProvider(AGENT_PROVIDERS.gateway)).toBeDefined();
@@ -41,32 +57,45 @@ describe("createAgentModels", () => {
    * credential is stored, and a developer shell may well carry them. A provider registered
    * unconditionally would resolve against that key and bill it.
    */
-  it("omits a BYOK provider entirely when its key was not supplied", () => {
+  it("omits a native provider entirely when its key was not supplied", () => {
     const models = createAgentModels();
 
     expect(models.getProvider(AGENT_PROVIDERS.openai)).toBeUndefined();
     expect(models.getProvider(AGENT_PROVIDERS.anthropic)).toBeUndefined();
   });
 
-  it("registers only the BYOK provider whose key was supplied", () => {
+  it("registers only the native provider whose key was supplied", () => {
     const models = createAgentModels({ openai: "sk-test" });
 
     expect(models.getProvider(AGENT_PROVIDERS.openai)).toBeDefined();
     expect(models.getProvider(AGENT_PROVIDERS.anthropic)).toBeUndefined();
   });
 
-  it("resolves a supplied key ahead of the ambient environment", async () => {
+  it("resolves a supplied vendor key ahead of the ambient environment", async () => {
     const models = createAgentModels({ anthropic: "sk-supplied" });
 
     const auth = await models.getAuth(AGENT_PROVIDERS.anthropic);
 
     expect(auth?.auth.apiKey).toBe("sk-supplied");
   });
+
+  it("resolves a supplied gateway key ahead of the house env key", async () => {
+    const models = createAgentModels({ gateway: "vck-supplied" });
+
+    const auth = await models.getAuth(AGENT_PROVIDERS.gateway);
+
+    expect(auth?.auth.apiKey).toBe("vck-supplied");
+  });
 });
 
 describe("resolveModel", () => {
   it("resolves a pair the predicate admits", () => {
-    const model = resolveModel(GATEWAY_SONNET, allowAll, createAgentModels());
+    const model = resolveModel(
+      GATEWAY_SONNET,
+      allowAll,
+      createAgentModels(),
+      NO_ACCESS
+    );
 
     expect(model.id).toBe(GATEWAY_SONNET.modelId);
     expect(model.contextWindow).toBeGreaterThan(0);
@@ -74,8 +103,30 @@ describe("resolveModel", () => {
 
   it("rejects a pair the predicate refuses", () => {
     expect(() =>
-      resolveModel(GATEWAY_SONNET, () => false, createAgentModels())
+      resolveModel(GATEWAY_SONNET, () => false, createAgentModels(), NO_ACCESS)
     ).toThrow(UnknownAgentModelError);
+  });
+
+  it("hands the predicate the caller's access", () => {
+    const gatewayKeyOnly: AgentModelPredicate = (_ref, access) =>
+      access.gateway;
+
+    expect(() =>
+      resolveModel(
+        GATEWAY_SONNET,
+        gatewayKeyOnly,
+        createAgentModels(),
+        NO_ACCESS
+      )
+    ).toThrow(UnknownAgentModelError);
+    expect(
+      resolveModel(
+        GATEWAY_SONNET,
+        gatewayKeyOnly,
+        createAgentModels({ gateway: "vck" }),
+        accessOf({ gateway: "vck" })
+      ).id
+    ).toBe(GATEWAY_SONNET.modelId);
   });
 
   /**
@@ -88,26 +139,39 @@ describe("resolveModel", () => {
       resolveModel(
         { providerId: AGENT_PROVIDERS.gateway, modelId: "claude-sonnet-5" },
         allowAll,
-        createAgentModels()
+        createAgentModels(),
+        NO_ACCESS
       )
     ).toThrow(UnknownAgentModelError);
   });
 
-  it("rejects a model on a BYOK provider with no key, naming the provider", () => {
+  it("rejects a model on a native provider with no key, naming the provider", () => {
     expect(() =>
       resolveModel(
         { providerId: AGENT_PROVIDERS.openai, modelId: "gpt-5.2" },
         allowAll,
-        createAgentModels()
+        createAgentModels(),
+        NO_ACCESS
       )
     ).toThrow(/openai/);
   });
 });
 
+describe("houseModel", () => {
+  it("names a role's model on the gateway", () => {
+    expect(houseModel("cheap")).toEqual({
+      providerId: AGENT_PROVIDERS.gateway,
+      modelId: HOUSE_MODELS.cheap,
+    });
+    expect(houseModel("writing").modelId).toBe(HOUSE_MODELS.writing);
+    expect(houseModel("public").modelId).toBe(HOUSE_MODELS.public);
+  });
+});
+
 describe("listModels", () => {
   it("enumerates the catalogue rather than a hand-written list", () => {
-    const gateway = listModels(
-      (ref) => ref.providerId === AGENT_PROVIDERS.gateway
+    const gateway = listModels(allowAll, { access: HOUSE_ACCESS }).filter(
+      (model) => model.providerId === AGENT_PROVIDERS.gateway
     );
 
     // The exact count tracks pi-ai's bundled catalogue; only the order of magnitude is the
@@ -117,41 +181,43 @@ describe("listModels", () => {
     expect(gateway.every((model) => model.contextWindow > 0)).toBe(true);
   });
 
-  it("applies the predicate per pair", () => {
-    const listed = listModels(
-      (ref) => ref.modelId === "anthropic/claude-sonnet-5"
-    );
-
-    expect(listed).toHaveLength(1);
-    expect(listed[0]?.providerId).toBe(AGENT_PROVIDERS.gateway);
-  });
-
   /**
-   * The picker lists BYOK models the caller cannot yet use, flagged rather than hidden: hiding
+   * The picker lists models the caller cannot yet use, flagged rather than hidden: hiding
    * them would leave no way to discover that registering a key unlocks them.
    */
-  it("flags BYOK models the caller has no key for", () => {
+  it("flags what the predicate refuses instead of hiding it", () => {
     const listed = listModels(
-      (ref) => ref.providerId === AGENT_PROVIDERS.openai,
-      { models: createAgentCatalog() }
+      (ref) => ref.modelId === "anthropic/claude-sonnet-5",
+      { access: HOUSE_ACCESS }
     );
+    const usable = listed.filter((model) => !model.requiresApiKey);
+
+    expect(listed.length).toBeGreaterThan(1);
+    expect(usable).toHaveLength(1);
+    expect(usable[0]?.providerId).toBe(AGENT_PROVIDERS.gateway);
+  });
+
+  it("flags native models the caller has no key for", () => {
+    const listed = listModels(allowAll, {
+      models: createAgentCatalog(),
+      access: NO_ACCESS,
+    }).filter((model) => model.providerId === AGENT_PROVIDERS.openai);
 
     expect(listed.length).toBeGreaterThan(0);
     expect(listed.every((model) => model.requiresApiKey)).toBe(true);
   });
 
   it("clears the flag for a provider the caller has registered", () => {
-    const listed = listModels(
-      (ref) => ref.providerId === AGENT_PROVIDERS.openai,
-      { configured: [AGENT_PROVIDERS.openai] }
-    );
+    const listed = listModels(allowAll, {
+      access: accessOf({ openai: "sk" }),
+    }).filter((model) => model.providerId === AGENT_PROVIDERS.openai);
 
-    expect(listed.every((model) => model.requiresApiKey)).toBe(false);
+    expect(listed.every((model) => !model.requiresApiKey)).toBe(true);
   });
 
-  it("never flags the gateway, which needs no caller-supplied key", () => {
-    const listed = listModels(
-      (ref) => ref.providerId === AGENT_PROVIDERS.gateway
+  it("never flags the gateway on the house's behalf", () => {
+    const listed = listModels(allowAll, { access: NO_ACCESS }).filter(
+      (model) => model.providerId === AGENT_PROVIDERS.gateway
     );
 
     expect(listed.every((model) => !model.requiresApiKey)).toBe(true);

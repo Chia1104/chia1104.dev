@@ -9,6 +9,7 @@ import {
   FieldError,
   Label,
   Button,
+  Chip,
   Fieldset,
   Spinner,
 } from "@heroui/react";
@@ -16,8 +17,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useMutation,
   useQuery,
+  useQueryClient,
   experimental_streamedQuery as streamedQuery,
 } from "@tanstack/react-query";
+import { HTTPError } from "ky";
 import {
   Eye,
   EyeOff,
@@ -31,13 +34,17 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 import { KEY_PROBE_MODELS } from "@chia/ai/house-models";
-import { PROVIDER_LABELS } from "@chia/ai/provider";
-import type { ProviderId } from "@chia/ai/provider";
+import { KEY_LABELS } from "@chia/ai/provider";
+import type { KeyId } from "@chia/ai/provider";
 import type { ModelMessage } from "@chia/ai/types";
 import SubmitForm from "@chia/ui/submit-form";
 
-import { HonoRPCError } from "@/libs/service/error";
-import { getSignedAIKey, generateAIContent } from "@/resources/ai.resource";
+import {
+  generateAIContent,
+  getAIKeys,
+  getSignedAIKey,
+  revokeAIKey,
+} from "@/resources/ai.resource";
 
 const schema = z.object({
   aiApiKey: z.string().min(1, "API Key is required"),
@@ -46,10 +53,12 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 interface Props {
-  provider: ProviderId;
+  provider: KeyId;
 }
 
-/** Sends one tiny prompt on the cheapest native model, so a saved key fails here instead of mid-edit. */
+const keysQueryKey = ["ai-keys"] as const;
+
+/** Sends one tiny prompt on the cheapest model that key reaches, so a saved key fails here instead of mid-edit. */
 const CheckAIKeyStatus = ({ provider }: Props) => {
   const checkStreamResult = useQuery({
     queryKey: ["check-ai-key", provider],
@@ -92,23 +101,44 @@ const CheckAIKeyStatus = ({ provider }: Props) => {
 export const AIForm = ({ provider }: Props) => {
   const id = useId();
   const [show, setShow] = useState(false);
+  const queryClient = useQueryClient();
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const { mutate } = useMutation({
+  const keys = useQuery({ queryKey: keysQueryKey, queryFn: getAIKeys });
+  const isConfigured = keys.data?.configured.includes(provider) ?? false;
+  const refresh = () =>
+    queryClient.invalidateQueries({ queryKey: keysQueryKey });
+
+  const save = useMutation({
     mutationFn: (data: FormData) => getSignedAIKey(data.aiApiKey, provider),
-    onSuccess: () => {
+    onSuccess: async () => {
+      form.reset({ aiApiKey: "" });
       toast.success("API Key saved successfully");
+      await refresh();
     },
     onError: (error) => {
-      if (error instanceof HonoRPCError) {
+      if (error instanceof HTTPError) {
         toast.error(`Failed to save API Key: ${error.message}`);
       }
     },
   });
 
-  const handleSubmit = form.handleSubmit((data) => mutate(data));
+  const revoke = useMutation({
+    mutationFn: () => revokeAIKey(provider),
+    onSuccess: async () => {
+      toast.success("API Key removed");
+      await refresh();
+    },
+    onError: (error) => {
+      if (error instanceof HTTPError) {
+        toast.error(`Failed to remove API Key: ${error.message}`);
+      }
+    },
+  });
+
+  const handleSubmit = form.handleSubmit((data) => save.mutate(data));
 
   return (
     <Form onSubmit={handleSubmit} className="space-y-4">
@@ -119,13 +149,24 @@ export const AIForm = ({ provider }: Props) => {
             name="aiApiKey"
             render={({ field, fieldState: { invalid, error } }) => (
               <TextField isInvalid={invalid} isRequired variant="secondary">
-                <Label htmlFor={`${id}-aiApiKey`}>
-                  {PROVIDER_LABELS[provider]} API Key
+                <Label
+                  className="flex items-center gap-2"
+                  htmlFor={`${id}-aiApiKey`}>
+                  {KEY_LABELS[provider]} API Key
+                  {isConfigured ? (
+                    <Chip size="sm" variant="soft">
+                      <Chip.Label className="text-xs">configured</Chip.Label>
+                    </Chip>
+                  ) : null}
                 </Label>
                 <InputGroup>
                   <InputGroup.Input
                     id={`${id}-aiApiKey`}
-                    placeholder="Enter your API key"
+                    placeholder={
+                      isConfigured
+                        ? "Enter a new key to replace it"
+                        : "Enter your API key"
+                    }
                     type={show ? "text" : "password"}
                     {...field}
                   />
@@ -145,11 +186,20 @@ export const AIForm = ({ provider }: Props) => {
           />
         </Fieldset.Group>
 
-        <Fieldset.Actions className="flex w-full items-center">
+        <Fieldset.Actions className="flex w-full items-center gap-2">
           <SubmitForm size="sm" fullWidth>
             Save
           </SubmitForm>
           <CheckAIKeyStatus provider={provider} />
+          {isConfigured ? (
+            <Button
+              isPending={revoke.isPending}
+              onPress={() => revoke.mutate()}
+              size="sm"
+              variant="danger-soft">
+              Revoke
+            </Button>
+          ) : null}
         </Fieldset.Actions>
       </Fieldset>
     </Form>

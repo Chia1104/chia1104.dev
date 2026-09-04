@@ -1,12 +1,12 @@
 import { zValidator } from "@hono/zod-validator";
 import { streamText, createTextStreamResponse } from "ai";
 import { Hono } from "hono";
-import { setCookie } from "hono/cookie";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { timeout } from "hono/timeout";
 import * as z from "zod";
 
 import { HOUSE_MODELS } from "@chia/ai/house-models";
-import { providerIdSchema } from "@chia/ai/provider";
+import { KEY_COOKIE_NAMES, KEY_IDS, keyIdSchema } from "@chia/ai/provider";
 import {
   generateSlug,
   generateDescription,
@@ -43,6 +43,9 @@ const getCreateModel = async () =>
 /** Content tools run on the house gateway account; the id is the AI SDK's default-provider form. */
 const contentModel = HOUSE_MODELS.content;
 
+/** Set and delete must name the same scope, or the delete lands on a different cookie. */
+const keyCookieScope = () => ({ domain: getCookieDomain({ env }), path: "/" });
+
 const api = new Hono<HonoContext>()
   .use(
     rateLimiterGuard({
@@ -61,7 +64,7 @@ const api = new Hono<HonoContext>()
       "json",
       z.object({
         apiKey: z.string().min(1),
-        provider: providerIdSchema,
+        provider: keyIdSchema,
       }),
       (result, c) => {
         if (!result.success) {
@@ -81,12 +84,43 @@ const api = new Hono<HonoContext>()
         providerCookieName(provider),
         encodeApiKey(apiKey, env.AI_AUTH_PUBLIC_KEY),
         {
-          domain: getCookieDomain({ env }),
+          ...keyCookieScope(),
+          // Only the server reads it back; a script on the page has no business with a key.
+          httpOnly: true,
           secure: env.NODE_ENV === "production",
           sameSite: "strict",
         }
       );
       return c.json({ message: "API key saved successfully" });
+    }
+  )
+  /** Which keys this browser holds. Presence only; the ciphertext never leaves the cookie jar. */
+  .get("/keys", verifyAuth({ allowAnonymous: true }), (c) =>
+    c.json(
+      {
+        configured: KEY_IDS.filter((id) =>
+          Boolean(getCookie(c, KEY_COOKIE_NAMES[id]))
+        ),
+      },
+      200,
+      { "Cache-Control": "no-store" }
+    )
+  )
+  .delete(
+    "/key",
+    verifyAuth({ allowAnonymous: true }),
+    zValidator("json", z.object({ provider: keyIdSchema }), (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }),
+    (c) => {
+      deleteCookie(
+        c,
+        providerCookieName(c.req.valid("json").provider),
+        keyCookieScope()
+      );
+      return c.json({ message: "API key removed" });
     }
   )
   .use(verifyAuth())

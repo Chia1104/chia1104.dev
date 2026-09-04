@@ -223,12 +223,16 @@
     "apiKey": {
       "open": "Use your own API key",
       "title": "Use your own API key",
-      "description": "The key is encrypted into a cookie on this browser and sent only to that provider. Calls with your own key do not count against the free allowance.",
+      "description": "Each key is encrypted into a cookie on this browser and sent only to that provider. A Vercel AI Gateway key unlocks every model; a vendor key unlocks that vendor's. Calls on your own key do not count against the free allowance.",
       "provider": "Provider",
       "label": "API key",
       "save": "Save key",
       "saved": "Key saved. Pick one of that provider's models.",
-      "failed": "The key could not be saved."
+      "failed": "The key could not be saved.",
+      "configured": "Saved",
+      "revoke": "Remove",
+      "revoked": "Key removed.",
+      "revokeFailed": "The key could not be removed."
     },
     "humanCheck": {
       "title": "One quick check",

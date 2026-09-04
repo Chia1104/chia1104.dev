@@ -4,7 +4,7 @@ import { Tabs } from "@heroui/react";
 import { Card } from "@heroui/react";
 import { MessageCircle } from "lucide-react";
 
-import { PROVIDER_IDS, PROVIDER_LABELS } from "@chia/ai/provider";
+import { KEY_IDS, KEY_LABELS } from "@chia/ai/provider";
 
 import { AIForm } from "@/components/settings/ai-form";
 
@@ -21,15 +21,15 @@ export const AISetting = () => {
         <Tabs className="w-full">
           <Tabs.ListContainer>
             <Tabs.List>
-              {PROVIDER_IDS.map((provider) => (
+              {KEY_IDS.map((provider) => (
                 <Tabs.Tab key={provider} id={provider}>
-                  {PROVIDER_LABELS[provider]}
+                  {KEY_LABELS[provider]}
                   <Tabs.Indicator />
                 </Tabs.Tab>
               ))}
             </Tabs.List>
           </Tabs.ListContainer>
-          {PROVIDER_IDS.map((provider) => (
+          {KEY_IDS.map((provider) => (
             <Tabs.Panel key={provider} className="pt-4" id={provider}>
               <AIForm provider={provider} />
             </Tabs.Panel>

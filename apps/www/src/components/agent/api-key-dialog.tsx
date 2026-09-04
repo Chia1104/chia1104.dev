@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import {
   Button,
+  Chip,
   Input,
   Label,
   Modal,
@@ -11,56 +12,84 @@ import {
   RadioGroup,
   TextField,
 } from "@heroui/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import ky from "ky";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { agentQueryKeys } from "@chia/agent-elements/queries";
 import {
-  isProviderId,
-  PROVIDER_IDS,
-  PROVIDER_LABELS,
-  ProviderId,
+  GATEWAY_KEY_ID,
+  isKeyId,
+  KEY_IDS,
+  KEY_LABELS,
 } from "@chia/ai/provider";
+import type { KeyId } from "@chia/ai/provider";
 import { withServiceEndpoint } from "@chia/utils/config";
+import { del, get, post } from "@chia/utils/request";
 import { Service } from "@chia/utils/schema";
 
 import { PUBLIC_AGENT_KIND } from "./kind";
 
-const signKey = (provider: ProviderId, apiKey: string) =>
-  ky
-    .post(
-      withServiceEndpoint("/ai/key:signed", Service.LegacyService, {
-        isInternal: false,
-        version: "LEGACY",
-      }),
-      { json: { apiKey, provider }, credentials: "include" }
-    )
-    .json<{ message: string }>();
+const aiEndpoint = (path: string) =>
+  withServiceEndpoint(path, Service.LegacyService, {
+    isInternal: false,
+    version: "LEGACY",
+  });
+
+const signKey = (provider: KeyId, apiKey: string) =>
+  post<{ message: string }>(aiEndpoint("/ai/key:signed"), { apiKey, provider });
+
+const revokeKey = (provider: KeyId) =>
+  del<{ message: string }>(aiEndpoint("/ai/key"), { json: { provider } });
+
+const fetchKeys = () => get<{ configured: KeyId[] }>(aiEndpoint("/ai/keys"));
+
+const keysQueryKey = ["agent", "keys"] as const;
 
 /**
- * Bring-your-own-key. The key is encrypted into a provider cookie on this browser; the
- * model list refetches so that provider's models stop asking for a key.
+ * Bring-your-own-key. Each key is encrypted into a cookie on this browser; the model list
+ * refetches so the models that key unlocks stop asking for one. A gateway key opens every
+ * model; a vendor key opens that vendor's, on the vendor's own API.
  */
 export const ApiKeyDialog = () => {
   const t = useTranslations("chbot.apiKey");
   const queryClient = useQueryClient();
   const [isOpen, setOpen] = useState(false);
-  const [provider, setProvider] = useState<ProviderId>(ProviderId.OpenAI);
+  const [provider, setProvider] = useState<KeyId>(GATEWAY_KEY_ID);
   const [apiKey, setApiKey] = useState("");
+
+  const keys = useQuery({
+    queryKey: keysQueryKey,
+    queryFn: fetchKeys,
+    enabled: isOpen,
+  });
+  const configured = new Set(keys.data?.configured ?? []);
+
+  const refresh = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: keysQueryKey }),
+      queryClient.invalidateQueries({
+        queryKey: agentQueryKeys.models(PUBLIC_AGENT_KIND),
+      }),
+    ]);
 
   const save = useMutation({
     mutationFn: () => signKey(provider, apiKey.trim()),
     onSuccess: async () => {
       setApiKey("");
-      setOpen(false);
       toast.success(t("saved"));
-      await queryClient.invalidateQueries({
-        queryKey: agentQueryKeys.models(PUBLIC_AGENT_KIND),
-      });
+      await refresh();
     },
     onError: () => toast.error(t("failed")),
+  });
+
+  const revoke = useMutation({
+    mutationFn: (id: KeyId) => revokeKey(id),
+    onSuccess: async () => {
+      toast.success(t("revoked"));
+      await refresh();
+    },
+    onError: () => toast.error(t("revokeFailed")),
   });
 
   return (
@@ -85,19 +114,37 @@ export const ApiKeyDialog = () => {
               <RadioGroup
                 name="agent-api-key-provider"
                 onChange={(next) => {
-                  if (isProviderId(next)) setProvider(next);
+                  if (isKeyId(next)) setProvider(next);
                 }}
                 variant="secondary"
-                orientation="horizontal"
                 value={provider}>
                 <Label>{t("provider")}</Label>
-                {PROVIDER_IDS.map((id) => (
+                {KEY_IDS.map((id) => (
                   <Radio key={id} value={id}>
-                    <Radio.Content>
+                    <Radio.Content className="flex w-full items-center gap-2">
                       <Radio.Control>
                         <Radio.Indicator />
                       </Radio.Control>
-                      <span className="text-sm">{PROVIDER_LABELS[id]}</span>
+                      <span className="flex-1 text-sm">{KEY_LABELS[id]}</span>
+                      {configured.has(id) ? (
+                        <>
+                          <Chip size="sm" variant="soft">
+                            <Chip.Label className="text-xs">
+                              {t("configured")}
+                            </Chip.Label>
+                          </Chip>
+                          <Button
+                            aria-label={t("revoke")}
+                            isPending={
+                              revoke.isPending && revoke.variables === id
+                            }
+                            onPress={() => revoke.mutate(id)}
+                            size="sm"
+                            variant="ghost">
+                            {t("revoke")}
+                          </Button>
+                        </>
+                      ) : null}
                     </Radio.Content>
                   </Radio>
                 ))}

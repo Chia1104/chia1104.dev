@@ -1,8 +1,8 @@
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 
-import { isProviderId, PROVIDER_COOKIE_NAMES } from "@chia/ai/provider";
-import type { ProviderId } from "@chia/ai/provider";
+import { isKeyId, KEY_COOKIE_NAMES } from "@chia/ai/provider";
+import type { KeyId } from "@chia/ai/provider";
 import { verifyApiKey } from "@chia/ai/utils";
 import { applyPolicy } from "@chia/service-kit/adapters/hono";
 import {
@@ -18,12 +18,12 @@ export { AI_AUTH_TOKEN };
 
 type AiContext = HonoContext<undefined, Variables & { AI_AUTH_TOKEN: string }>;
 
-export const providerCookieName = (provider: ProviderId) =>
-  PROVIDER_COOKIE_NAMES[provider];
+export const providerCookieName = (provider: KeyId) =>
+  KEY_COOKIE_NAMES[provider];
 
 /** Provider may come from the JSON body, so it is resolved here and passed into `aiKeyPolicy`. */
 export const ai = (
-  provider?: ProviderId,
+  provider?: KeyId,
   enabled: (c: Context<AiContext>) => Promise<boolean> | boolean = () => true
 ) =>
   createMiddleware<AiContext>(async (c, next) => {
@@ -45,7 +45,7 @@ export const ai = (
     const bodyProvider = json?.model?.provider;
     const resolved =
       provider ??
-      (bodyProvider && isProviderId(bodyProvider) ? bodyProvider : undefined);
+      (bodyProvider && isKeyId(bodyProvider) ? bodyProvider : undefined);
 
     const denied = await applyPolicy(
       c,
