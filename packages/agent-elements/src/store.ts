@@ -186,7 +186,7 @@ export const createAgentSessionStore = ({
     const detailKey = agentQueryKeys.session(scoped);
 
     const fetchDetail = () =>
-      queryClient.fetchQuery({ ...detailQuery, staleTime: 0 });
+      queryClient.query({ ...detailQuery, staleTime: 0 });
 
     const sleep = (ms: number) =>
       new Promise<void>((resolve) => setTimeout(resolve, ms));

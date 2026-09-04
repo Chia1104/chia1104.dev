@@ -215,7 +215,7 @@ export const DraftActions = ({
             ? `Created post ${result.slug}`
             : `Updated post ${result.slug}`
         );
-        const next = await queryClient.fetchQuery(
+        const next = await queryClient.query(
           orpc.feeds["draft:get"].queryOptions({
             input: { draftId: draft.id },
           })
@@ -235,7 +235,7 @@ export const DraftActions = ({
           router.push("/feed/drafts");
           return;
         }
-        const next = await queryClient.fetchQuery(
+        const next = await queryClient.query(
           orpc.feeds["draft:get"].queryOptions({
             input: { draftId: draft.id },
           })

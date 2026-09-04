@@ -280,7 +280,7 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
     } catch (error) {
       if (error instanceof ORPCError && error.code === "CONFLICT") {
         setSaveState({ kind: "conflict" });
-        const latest = await queryClient.fetchQuery(
+        const latest = await queryClient.query(
           orpc.feeds["draft:get"].queryOptions({
             input: { draftId: initial.id },
           })
