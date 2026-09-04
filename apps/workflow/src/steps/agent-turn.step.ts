@@ -10,7 +10,7 @@ import {
 import type { AgentTurnMarker } from "@chia/agent-host/execution";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
-import { recordAgentUsage } from "@chia/agent-host/usage";
+import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
 import type {
   AgentTurnError,
   ThinkingLevel,
@@ -114,6 +114,7 @@ const titleSession = async (
           runId: request.runId,
           kind: row.kind,
           source: "title",
+          credentialSource: "house",
           ...usage,
         }),
     });
@@ -236,9 +237,8 @@ async function runKindTurn(
    * Providers without a credential are unregistered, so a missing key fails as "unknown model"
    * instead of billing the house gateway.
    */
-  const models = createAgentModels(
-    decryptAgentCredentials(request.credentials)
-  );
+  const credentials = decryptAgentCredentials(request.credentials);
+  const models = createAgentModels(credentials);
 
   if (!definition.runTurn) {
     throw new FatalError(
@@ -277,6 +277,7 @@ async function runKindTurn(
         sessionId: row.id,
         runId: request.runId,
         kind: row.kind,
+        credentialSource: credentialSourceOf(credentials, report.providerId),
         ...report,
       }),
     toApproval: (approval): AgentApprovalRequestSnapshot => ({

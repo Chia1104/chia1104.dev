@@ -167,7 +167,7 @@ describe("assertWithinAgentQuota", () => {
       userId: "user-1",
       from: new Date("2026-08-23T16:00:00Z"),
       to: new Date("2026-08-30T16:00:00Z"),
-      providerIds: ["vercel-ai-gateway"],
+      credentialSources: ["house"],
     });
   });
 

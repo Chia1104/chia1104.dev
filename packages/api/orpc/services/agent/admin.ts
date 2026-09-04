@@ -8,7 +8,7 @@ import {
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import {
   AGENT_QUOTA_DEFAULTS,
-  QUOTA_PROVIDER_IDS,
+  QUOTA_CREDENTIAL_SOURCES,
   effectiveAgentQuota,
   isTimeZone,
   loadAgentQuota,
@@ -425,7 +425,7 @@ export const createAgentAdminService = (
       const house = {
         from: week.from,
         to: week.to,
-        providerIds: QUOTA_PROVIDER_IDS,
+        credentialSources: QUOTA_CREDENTIAL_SOURCES,
       };
       const [total, top] = await Promise.all([
         summarizeAgentUsage(db, house),
@@ -455,7 +455,7 @@ export const createAgentAdminService = (
           userId,
           from: week.from,
           to: week.to,
-          providerIds: QUOTA_PROVIDER_IDS,
+          credentialSources: QUOTA_CREDENTIAL_SOURCES,
         }),
         summarizeAgentUsage(db, { userId, from: LEDGER_EPOCH, to: week.to }),
         countAgentSessions(db, { userId }),
