@@ -88,8 +88,36 @@ describe("POST /ai/key:signed", () => {
   it("keeps the rest of /ai closed to guests", async () => {
     mockGetSession.mockResolvedValue(guest);
 
-    const res = await app.request("/api/v1/ai/models");
+    const res = await app.request("/api/v1/ai/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: { provider: "openai", id: "gpt-5-nano" },
+        messages: [],
+      }),
+    });
 
     expect(res.status).toBe(401);
+  });
+});
+
+describe("GET /ai/keys", () => {
+  beforeEach(() => {
+    mockGetSession.mockReset();
+  });
+
+  it("lists which keys this browser holds and is not cacheable", async () => {
+    mockGetSession.mockResolvedValue(guest);
+
+    const signed = await signKey();
+    const cookie = signed.headers.get("set-cookie")?.split(";")[0] ?? "";
+
+    const res = await app.request("/api/v1/ai/keys", {
+      headers: { Cookie: cookie },
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    await expect(res.json()).resolves.toEqual({ configured: ["openai"] });
   });
 });

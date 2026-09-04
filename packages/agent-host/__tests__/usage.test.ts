@@ -44,6 +44,7 @@ const call = {
   source: "turn" as const,
   providerId: "vercel-ai-gateway",
   modelId: "anthropic/claude-haiku-4.5",
+  credentialSource: "house" as const,
 };
 
 describe("costToMicros", () => {
@@ -73,6 +74,28 @@ describe("costToMicros", () => {
   });
 });
 
+describe("credentialSourceOf", () => {
+  it("bills the house for a gateway call when the caller brought no gateway key", async () => {
+    const { credentialSourceOf } = await import("../src/usage");
+    expect(credentialSourceOf({}, "vercel-ai-gateway")).toBe("house");
+    expect(credentialSourceOf({ anthropic: "sk" }, "vercel-ai-gateway")).toBe(
+      "house"
+    );
+  });
+
+  it("bills the caller for a gateway call on their own gateway key", async () => {
+    const { credentialSourceOf } = await import("../src/usage");
+    expect(credentialSourceOf({ gateway: "vck" }, "vercel-ai-gateway")).toBe(
+      "byok-gateway"
+    );
+  });
+
+  it("bills the caller for a call on a vendor wire, which only their key opens", async () => {
+    const { credentialSourceOf } = await import("../src/usage");
+    expect(credentialSourceOf({ openai: "sk" }, "openai")).toBe("byok-native");
+  });
+});
+
 describe("recordAgentUsage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -93,6 +116,7 @@ describe("recordAgentUsage", () => {
       source: "turn",
       providerId: "vercel-ai-gateway",
       modelId: "anthropic/claude-haiku-4.5",
+      credentialSource: "house",
       input: 1200,
       output: 300,
       cacheRead: 8000,

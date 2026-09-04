@@ -1,6 +1,7 @@
 import { createEnv } from "@t3-oss/env-core";
 import * as z from "zod";
 
+import { env as aiEnv } from "@chia/ai/env";
 import { env as captchaEnv } from "@chia/api/captcha/env";
 import { env as s3Env } from "@chia/api/s3/env";
 import { env as spotifyEnv } from "@chia/api/spotify/env";
@@ -26,7 +27,6 @@ export const env = createEnv({
       .optional()
       .default(15 * 60000),
     RATELIMIT_MAX: z.number().optional().default(87),
-    OPENAI_API_KEY: z.string().optional(),
     AI_AUTH_PUBLIC_KEY: z.string().optional(),
     AI_AUTH_PRIVATE_KEY: z.string().optional(),
     IP_DENY_LIST: z.string().optional(),
@@ -35,9 +35,6 @@ export const env = createEnv({
     MAINTENANCE_BYPASS_TOKEN: z.string().optional(),
     TIMEOUT_MS: NumericStringSchema,
     TRIGGER_SECRET_KEY: z.string().optional(),
-    ANTHROPIC_API_KEY: z.string().optional(),
-    GENAI_API_KEY: z.string().optional(),
-    OLLAMA_BASE_URL: z.string().optional(),
     AI_GATEWAY_API_KEY: z.string().optional(),
     FIRECRAWL_API_KEY: z.string().min(1),
     /** Without this the SDK silently uses the on-disk local world. */
@@ -62,7 +59,6 @@ export const env = createEnv({
     RATELIMIT_MAX: process.env.RATELIMIT_MAX
       ? Number(process.env.RATELIMIT_MAX)
       : undefined,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     AI_AUTH_PUBLIC_KEY: process.env.AI_AUTH_PUBLIC_KEY,
     AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
     IP_DENY_LIST: process.env.IP_DENY_LIST,
@@ -75,9 +71,6 @@ export const env = createEnv({
     MAINTENANCE_BYPASS_TOKEN: process.env.MAINTENANCE_BYPASS_TOKEN,
     TIMEOUT_MS: process.env.TIMEOUT_MS || "10000",
     TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
-    GENAI_API_KEY: process.env.GENAI_API_KEY,
-    OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
     FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
     WORKFLOW_TARGET_WORLD: process.env.WORKFLOW_TARGET_WORLD,
@@ -92,7 +85,16 @@ export const env = createEnv({
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [spotifyEnv, authEnv, dbEnv, captchaEnv, kvEnv, s3Env, serviceEnv],
+  extends: [
+    spotifyEnv,
+    authEnv,
+    dbEnv,
+    captchaEnv,
+    kvEnv,
+    s3Env,
+    serviceEnv,
+    aiEnv,
+  ],
 });
 
 export type ENV = typeof env;

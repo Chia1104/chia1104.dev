@@ -4,27 +4,29 @@ import {
   AGENT_PROVIDERS,
   createAgentCatalog,
   createAgentModels,
+  houseModel,
   listModels,
+  NO_ACCESS,
   resolveModel,
 } from "@chia/agent-runtime/models";
 import type {
+  AgentModelAccess,
   AgentModelInfo,
+  AgentModelPredicate,
   AgentModelRef,
-  ListModelsOptions,
 } from "@chia/agent-runtime/models";
 import type { AgentSessionDefaults } from "@chia/agent-runtime/types";
+import { PROVIDER_IDS } from "@chia/ai/provider";
 
 /**
  * Writing-agent model policy. Gateway is limited to the two vendors the tools were built
  * against; a native provider admits any of its ids because the caller is paying.
  */
-const GATEWAY_VENDOR_PREFIXES = ["anthropic/", "openai/"] as const;
-
-export const isWritingModel = (ref: AgentModelRef): boolean => {
+export const isWritingModel: AgentModelPredicate = (ref) => {
   switch (ref.providerId) {
     case AGENT_PROVIDERS.gateway:
-      return GATEWAY_VENDOR_PREFIXES.some((prefix) =>
-        ref.modelId.startsWith(prefix)
+      return PROVIDER_IDS.some((vendor) =>
+        ref.modelId.startsWith(`${vendor}/`)
       );
     case AGENT_PROVIDERS.openai:
     case AGENT_PROVIDERS.anthropic:
@@ -34,32 +36,32 @@ export const isWritingModel = (ref: AgentModelRef): boolean => {
   }
 };
 
-export const DEFAULT_WRITING_MODEL: AgentModelRef = {
-  providerId: AGENT_PROVIDERS.gateway,
-  modelId: "anthropic/claude-sonnet-5",
-};
+export const DEFAULT_WRITING_MODEL: AgentModelRef = houseModel("writing");
 
 /**
  * Resolves a session's model. Defaults to a credential-free collection (gateway only), so a
- * missing BYOK key fails as `UnknownAgentModelError` instead of billing the house account.
+ * missing native key fails as `UnknownAgentModelError` instead of billing the house account.
  */
 export const resolveWritingModel = (
   ref: AgentModelRef,
-  models: Models = createAgentModels()
-): Model<Api> => resolveModel(ref, isWritingModel, models);
+  models: Models = createAgentModels(),
+  access: AgentModelAccess = NO_ACCESS
+): Model<Api> => resolveModel(ref, isWritingModel, models, access);
 
 /**
  * Validates a selection against the catalogue, not a credential-bearing collection.
- * `isWritingModel` admits any native id, so a typo would persist and then fail inside the workflow
- * step.
+ * `isWritingModel` admits any native id, so a typo would persist and then fail inside the
+ * workflow step.
  */
-export const assertWritingModel = (ref: AgentModelRef): void => {
-  resolveModel(ref, isWritingModel, createAgentCatalog());
+export const assertWritingModel = (
+  ref: AgentModelRef,
+  access: AgentModelAccess
+): void => {
+  resolveModel(ref, isWritingModel, createAgentCatalog(), access);
 };
 
-export const listWritingModels = (
-  options?: ListModelsOptions
-): AgentModelInfo[] => listModels(isWritingModel, options);
+export const listWritingModels = (access: AgentModelAccess): AgentModelInfo[] =>
+  listModels(isWritingModel, { access });
 
 export const WRITING_SESSION_DEFAULTS: AgentSessionDefaults = {
   providerId: DEFAULT_WRITING_MODEL.providerId,

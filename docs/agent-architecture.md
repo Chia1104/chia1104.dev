@@ -36,7 +36,7 @@ flowchart TB
 | Transport and orchestration | `packages/api`, `apps/service`, `apps/workflow` | Auth, oRPC, workflow control, streams and host ports          |
 | Execution                   | `@chia/agent-runtime`                           | Pi lifecycle, persistence, approvals, models and wire events  |
 | Shared content              | `@chia/agent-content`                           | Read-only blog tools, `ContentReadPort` and `ProfileReadPort` |
-| Domain                      | `@chia/agent-writing`, `@chia/agent-public`     | Prompts, tools, policy, model allowlist and domain ports      |
+| Domain                      | `@chia/agent-writing`, `@chia/agent-public`     | Prompts, tools, policy, model policy and domain ports         |
 | Client                      | `@chia/agent-elements`                          | Session store, queries and shared chat UI                     |
 
 The stable client boundary is `AgentWireEvent`, not an interchangeable model engine. Pi-specific names and types remain explicit inside the runtime.
@@ -66,7 +66,7 @@ Every agent route resolves a `CallerTier`. Kind and session guards compare that 
 
 The generic layer does not carry an admin identity. The writing binding reads the configured author when its content port needs it; the public binding never receives that identity or a write-capable port.
 
-The public kind has only the shared content-read tools, no approval tier, web access, memory or draft. House usage is restricted to a small cheap-model allowlist; native BYOK providers may remain open because the visitor pays for them. Its per-turn budget limits tool calls, repeats and duration.
+The public kind has only the shared content-read tools, no approval tier, web access, memory or draft. Without a key of their own a visitor may run only the model pinned as the kind default; a visitor who brought a gateway or vendor key may pick any model that key reaches, because they pay for it. Its per-turn budget limits tool calls, repeats and duration.
 
 ## 3. Durable state and session tree
 
@@ -275,13 +275,15 @@ Routes using the normal session guard still require a signed-in account. Agent r
 
 ### Models and credentials
 
-`Models` is created per caller and turn. BYOK providers are registered only when that caller supplies a key. The selected model and Pi stream function use the same credential-bearing collection; process-wide default model functions are forbidden.
+A model ref names a provider and that provider's id (`vercel-ai-gateway` + `anthropic/claude-sonnet-5`, or `anthropic` + `claude-sonnet-5`), so it also names who pays. The gateway runs on the house key or, when the caller brought one, on their gateway key; a native provider exists only on the caller's own key. Nothing is inferred from which keys happen to be present.
 
-Each domain owns its model allowlist. One-shot tasks may use the session model or a pinned house model, but never borrow unrelated ambient credentials.
+`Models` is created per caller and turn from the request's credentials, and every policy decision receives the same credentials as key presence (`AgentModelAccess`). Native providers are registered only when that caller supplies the key. The selected model and Pi stream function use the same credential-bearing collection; process-wide default model functions are forbidden.
+
+Each domain owns its model policy, decided per ref and caller. One-shot tasks run on the house gateway key, never on a caller's key.
 
 ### Usage ledger and quota
 
-Every billed provider call creates one `agent.usage_ledger` row, including turns, compaction, branch summaries, titles and lesson extraction. Cost is stored in integer micro-dollars with the provider ID, so house spend and BYOK spend remain one ledger with different filters. Ledger rows survive session deletion.
+Every billed provider call creates one `agent.usage_ledger` row, including turns, compaction, branch summaries, titles and lesson extraction. Cost is stored in integer micro-dollars with the provider ID and a `credential_source` (`house`, `byok-gateway`, `byok-native`), so house spend and BYOK spend remain one ledger with different filters. Quota counts `house` rows only; the provider ID never decides who paid. Ledger rows survive session deletion.
 
 Usage recording is best-effort and outside the response critical path. A failed ledger insert is logged and loses at most one call in the user's favor.
 
@@ -339,7 +341,7 @@ Three override sources are stored separately:
 | `AGENT_TASKS`         | `agent.task_config`  | Model, prompt and exposed parameters for one-shot tasks |
 | Quota defaults        | `agent.quota_config` | Weekly allowance, time zone and running-turn cap        |
 
-Kind defaults are copied when a session is created; later edits do not mutate existing sessions. Kind `config` is loaded every turn, so preference changes apply on the next turn. Safety boundaries such as tool tiers, approval requirements, turn budgets and model allowlists remain in code.
+House model ids are written once, by role, in `@chia/ai/house-models`; kinds and tasks reference a role through `houseModel`. Kind defaults are copied when a session is created; later edits do not mutate existing sessions. The effective default model of a kind is also the model a keyless caller of that kind may run, so pinning it in the dashboard is the operator's cost boundary. Kind `config` is loaded every turn, so preference changes apply on the next turn. Safety boundaries such as tool tiers, approval requirements, turn budgets and model policies remain in code.
 
 Tasks cover title generation, compaction, branch summaries and lesson extraction. A task may default to the session model or a house model. Operator-pinned task models always use the house catalogue.
 
@@ -347,7 +349,7 @@ Admin writes are validated against their code definition before persistence. API
 
 ## 11. Adding an agent kind
 
-1. Add `@chia/agent-<kind>` with prompts, tools, policy, model allowlist and domain ports. Compose `@chia/agent-content` when it reads the blog.
+1. Add `@chia/agent-<kind>` with prompts, tools, policy, model policy and domain ports. Compose `@chia/agent-content` when it reads the blog.
 2. Add an extension table only when the kind has persisted state.
 3. Add service and workflow bindings with matching `minTier` values and dynamic loaders.
 4. Implement `runTurn` through the domain's `run<Kind>Turn`; register any one-shot tasks in `AGENT_TASKS`.

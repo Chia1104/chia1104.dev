@@ -10,7 +10,7 @@ import {
 import type { AgentTurnMarker } from "@chia/agent-host/execution";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
-import { recordAgentUsage } from "@chia/agent-host/usage";
+import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
 import type {
   AgentTurnError,
   ThinkingLevel,
@@ -114,6 +114,7 @@ const titleSession = async (
           runId: request.runId,
           kind: row.kind,
           source: "title",
+          credentialSource: "house",
           ...usage,
         }),
     });
@@ -202,10 +203,11 @@ async function runKindTurn(
   signal: AbortSignal,
   writer: EventWriter
 ): Promise<AgentTurnOutcome> {
-  const [{ createAgentModels }, { PgSessionRepo }] = await Promise.all([
-    import("@chia/agent-runtime/models"),
-    import("@chia/agent-runtime/session/pg-repo"),
-  ]);
+  const [{ accessOf, createAgentModels }, { PgSessionRepo }] =
+    await Promise.all([
+      import("@chia/agent-runtime/models"),
+      import("@chia/agent-runtime/session/pg-repo"),
+    ]);
 
   const state = await definition.state.load(db, request.sessionId);
   if (state === null) {
@@ -214,7 +216,7 @@ async function runKindTurn(
     );
   }
   // Read per turn, not per session: an edit in the dashboard reaches the next turn.
-  const { config } = await loadKindConfig(db, definition);
+  const { config, defaults } = await loadKindConfig(db, definition);
   if (!row.providerId || !row.modelId || !row.thinkingLevel) {
     throw new FatalError(
       `Agent session ${request.sessionId} has incomplete LLM settings.`
@@ -236,9 +238,8 @@ async function runKindTurn(
    * Providers without a credential are unregistered, so a missing key fails as "unknown model"
    * instead of billing the house gateway.
    */
-  const models = createAgentModels(
-    decryptAgentCredentials(request.credentials)
-  );
+  const credentials = decryptAgentCredentials(request.credentials);
+  const models = createAgentModels(credentials);
 
   if (!definition.runTurn) {
     throw new FatalError(
@@ -261,6 +262,8 @@ async function runKindTurn(
     },
     session,
     models,
+    access: accessOf(credentials),
+    house: defaults,
     message: {
       text: request.text,
       template: request.template,
@@ -277,6 +280,7 @@ async function runKindTurn(
         sessionId: row.id,
         runId: request.runId,
         kind: row.kind,
+        credentialSource: credentialSourceOf(credentials, report.providerId),
         ...report,
       }),
     toApproval: (approval): AgentApprovalRequestSnapshot => ({

@@ -16,7 +16,6 @@
     "clean": "git clean -xdf .output node_modules .cache .turbo"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "catalog:ai",
     "@chia/agent-content": "workspace:*",
     "@chia/agent-host": "workspace:*",
     "@chia/agent-runtime": "workspace:*",

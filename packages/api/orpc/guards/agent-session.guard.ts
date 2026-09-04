@@ -81,7 +81,7 @@ export const agentSessionGuard = () =>
       const service = await requireAgentKind(context, row.kind);
 
       if (input.model) {
-        const reason = await service.validateModel(input.model);
+        const reason = await service.validateModel(caller, input.model);
         if (reason) throw errors.BAD_REQUEST({ message: reason });
       }
 
@@ -108,7 +108,7 @@ export const agentKindGuard = () =>
         const service = await requireAgentKind(context, input.kind);
 
         if (input.model) {
-          const reason = await service.validateModel(input.model);
+          const reason = await service.validateModel(caller, input.model);
           if (reason) throw errors.BAD_REQUEST({ message: reason });
         }
 

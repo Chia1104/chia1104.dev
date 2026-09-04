@@ -119,6 +119,46 @@ export const patch = async <T = unknown, U = unknown>(
     .json();
 };
 
+export interface TextStream {
+  [Symbol.asyncIterator]: () => AsyncGenerator<string>;
+  stream: ReadableStream<Uint8Array>;
+}
+
+export const postTextStream = async <TBody>(
+  url: string,
+  data: TBody,
+  opts?: Options,
+  defaultOptions?: Options
+): Promise<TextStream> => {
+  const response = await request({
+    timeout: false,
+    ...defaultOptions,
+  }).post(url, { json: data, ...opts });
+  const stream = response.body;
+
+  if (!stream) {
+    throw new TypeError("Stream response body is undefined");
+  }
+
+  const decoder = new TextDecoder();
+
+  return {
+    async *[Symbol.asyncIterator]() {
+      const reader = stream.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          yield decoder.decode(value);
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    },
+    stream,
+  };
+};
+
 export const handleKyError = async <TError extends HTTPError>(
   error: TError
 ): Promise<ErrorResponse> => {

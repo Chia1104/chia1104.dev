@@ -1,6 +1,8 @@
 import { defineHook } from "workflow";
 import * as z from "zod";
 
+import type { KeyId } from "@chia/ai/provider";
+
 /**
  * Durable inboxes and pause points for an agent session.
  *
@@ -16,7 +18,7 @@ import * as z from "zod";
  */
 
 /**
- * Caller-supplied provider keys, still encrypted.
+ * Caller-supplied keys, still encrypted, one per `KeyId`.
  *
  * RSA ciphertext from `encodeApiKey`; decrypted only inside the turn step
  * with `AI_AUTH_PRIVATE_KEY`. The workflow backend journals everything that
@@ -26,7 +28,8 @@ import * as z from "zod";
 export const encryptedAgentCredentialsSchema = z.object({
   openai: z.string().optional(),
   anthropic: z.string().optional(),
-});
+  gateway: z.string().optional(),
+}) satisfies z.ZodType<Partial<Record<KeyId, string>>>;
 
 export type EncryptedAgentCredentials = z.infer<
   typeof encryptedAgentCredentialsSchema

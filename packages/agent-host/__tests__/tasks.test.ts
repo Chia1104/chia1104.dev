@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { HOUSE_MODELS } from "@chia/ai/house-models";
 import type { DB } from "@chia/db/client";
 import type { AgentTaskConfig } from "@chia/db/schema";
 
@@ -40,7 +41,7 @@ describe("resolveAgentTask", () => {
     const task = await resolveAgentTask(db, AGENT_TASK_IDS.sessionTitle);
     const definition = AGENT_TASKS[AGENT_TASK_IDS.sessionTitle];
     expect(task.model.provider).toBe("vercel-ai-gateway");
-    expect(task.model.id).toBe("anthropic/claude-haiku-4.5");
+    expect(task.model.id).toBe(HOUSE_MODELS.cheap);
     expect(task.systemPrompt).toBe(definition.prompt.default);
     expect(task.params).toEqual(definition.params);
   });
@@ -68,7 +69,7 @@ describe("resolveAgentTask", () => {
       row({ providerId: "vercel-ai-gateway", modelId: "acme/retired-model" })
     );
     const task = await resolveAgentTask(db, AGENT_TASK_IDS.sessionTitle);
-    expect(task.model.id).toBe("anthropic/claude-haiku-4.5");
+    expect(task.model.id).toBe(HOUSE_MODELS.cheap);
     expect(warn).toHaveBeenCalledOnce();
     warn.mockRestore();
   });

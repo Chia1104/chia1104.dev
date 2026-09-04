@@ -21,6 +21,7 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
+import { DEFAULT_WRITING_MODEL } from "../src/models.ts";
 import { runWritingTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 
@@ -51,8 +52,8 @@ const build = async (
   settings: Partial<AgentSessionSettings> = {},
   fauxOptions: { tokensPerSecond?: number } = {}
 ): Promise<Fixture> => {
-  const providerId = settings.providerId ?? "vercel-ai-gateway";
-  const modelId = settings.modelId ?? "anthropic/claude-sonnet-5";
+  const providerId = settings.providerId ?? DEFAULT_WRITING_MODEL.providerId;
+  const modelId = settings.modelId ?? DEFAULT_WRITING_MODEL.modelId;
   const faux = fauxProvider({
     provider: providerId,
     models: [{ id: modelId }],

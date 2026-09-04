@@ -1,6 +1,7 @@
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
-import { createAgentModels } from "@chia/agent-runtime/models";
+import { createAgentModels, NO_ACCESS } from "@chia/agent-runtime/models";
+import type { AgentModelAccess } from "@chia/agent-runtime/models";
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import { runPiTurn } from "@chia/agent-runtime/pi/turn";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
@@ -38,6 +39,8 @@ export interface RunWritingTurnOptions<TApproval> {
   preAuthorizedToolNames?: ReadonlySet<string>;
   signal?: AbortSignal;
   models?: Models;
+  /** Keys the caller holds; must match how `models` was built. */
+  access?: AgentModelAccess;
   compactionModel?: Model<Api>;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
@@ -70,7 +73,11 @@ export const runWritingTurn = <TApproval>(
     agentSessionId: options.agentSessionId,
     session: options.session,
     settings: options.settings,
-    model: resolveWritingModel(options.settings, models),
+    model: resolveWritingModel(
+      options.settings,
+      models,
+      options.access ?? NO_ACCESS
+    ),
     models,
     compactionModel: options.compactionModel,
     tools: createWritingTools(),

@@ -1,12 +1,8 @@
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 
-import {
-  OPENAI_API_KEY,
-  ANTHROPIC_API_KEY,
-  GENAI_API_KEY,
-} from "@chia/ai/constants";
-import { Provider } from "@chia/ai/types";
+import { isKeyId, KEY_COOKIE_NAMES } from "@chia/ai/provider";
+import type { KeyId } from "@chia/ai/provider";
 import { verifyApiKey } from "@chia/ai/utils";
 import { applyPolicy } from "@chia/service-kit/adapters/hono";
 import {
@@ -22,22 +18,12 @@ export { AI_AUTH_TOKEN };
 
 type AiContext = HonoContext<undefined, Variables & { AI_AUTH_TOKEN: string }>;
 
-export const providerCookieName = (provider?: Provider) => {
-  switch (provider) {
-    case Provider.OpenAI:
-      return OPENAI_API_KEY;
-    case Provider.Anthropic:
-      return ANTHROPIC_API_KEY;
-    case Provider.Google:
-      return GENAI_API_KEY;
-    default:
-      return undefined;
-  }
-};
+export const providerCookieName = (provider: KeyId) =>
+  KEY_COOKIE_NAMES[provider];
 
 /** Provider may come from the JSON body, so it is resolved here and passed into `aiKeyPolicy`. */
 export const ai = (
-  provider?: Provider,
+  provider?: KeyId,
   enabled: (c: Context<AiContext>) => Promise<boolean> | boolean = () => true
 ) =>
   createMiddleware<AiContext>(async (c, next) => {
@@ -54,13 +40,17 @@ export const ai = (
     }
 
     const { data: json } = await tryCatch(
-      c.req.json<{ model: { provider: Provider } }>()
+      c.req.json<{ model?: { provider?: string } }>()
     );
+    const bodyProvider = json?.model?.provider;
+    const resolved =
+      provider ??
+      (bodyProvider && isKeyId(bodyProvider) ? bodyProvider : undefined);
 
     const denied = await applyPolicy(
       c,
       aiKeyPolicy({
-        cookieName: providerCookieName(provider ?? json?.model?.provider),
+        cookieName: resolved ? providerCookieName(resolved) : undefined,
         verify: (encoded) => verifyApiKey(encoded, privateKey),
       })
     );

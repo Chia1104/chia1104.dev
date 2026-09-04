@@ -3,9 +3,9 @@ import type * as z from "zod";
 import type { createAgentModels } from "@chia/agent-runtime/models";
 import type {
   AgentModel,
+  AgentModelAccess,
   AgentModelInfo,
   AgentModelRef,
-  ListModelsOptions,
 } from "@chia/agent-runtime/models";
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
@@ -46,12 +46,25 @@ export interface AgentKindDefinition<TState, TConfig extends object> {
   readonly minTier: CallerTier;
   readonly defaults: AgentSessionDefaults;
   readonly policy: AgentPolicy;
+  /**
+   * `access` is which keys the caller holds; `house` is the kind's effective default model,
+   * the one the house pays for when the caller holds none.
+   */
   readonly models: {
-    /** Throws `UnknownAgentModelError` when the kind does not admit the pair or it does not exist. */
-    assert(ref: AgentModelRef): void;
-    list(options: ListModelsOptions): AgentModelInfo[];
+    /** Throws `UnknownAgentModelError` when the kind does not admit the pair for this caller or it does not exist. */
+    assert(
+      ref: AgentModelRef,
+      access: AgentModelAccess,
+      house: AgentModelRef
+    ): void;
+    list(access: AgentModelAccess, house: AgentModelRef): AgentModelInfo[];
     /** Resolves an admitted pair on the caller's credential-bearing collection; throws like `assert`. */
-    resolve(ref: AgentModelRef, models: AgentModels): AgentModel;
+    resolve(
+      ref: AgentModelRef,
+      models: AgentModels,
+      access: AgentModelAccess,
+      house: AgentModelRef
+    ): AgentModel;
   };
   readonly config: AgentKindConfigDefinition<TConfig>;
   capabilities(): AgentKindCapabilities;
@@ -147,6 +160,10 @@ export interface AgentTurnContext<TState, TConfig extends object, TApproval> {
   settings: AgentSessionSettings;
   session: SessionTree;
   models: AgentModels;
+  /** Which keys the request carried; `models` was built from the same set. */
+  access: AgentModelAccess;
+  /** The kind's effective default model, as the operator configured it. */
+  house: AgentModelRef;
   message: AgentTurnMessage;
   signal: AbortSignal;
   approvedToolCallIds: ReadonlySet<string>;

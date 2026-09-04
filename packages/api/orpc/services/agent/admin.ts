@@ -8,7 +8,7 @@ import {
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import {
   AGENT_QUOTA_DEFAULTS,
-  QUOTA_PROVIDER_IDS,
+  QUOTA_CREDENTIAL_SOURCES,
   effectiveAgentQuota,
   isTimeZone,
   loadAgentQuota,
@@ -24,7 +24,10 @@ import {
 } from "@chia/agent-host/tasks";
 import type { AgentTaskDefinition } from "@chia/agent-host/tasks";
 import { costToMicros, microsToUsd } from "@chia/agent-host/usage";
-import { UnknownAgentModelError } from "@chia/agent-runtime/models";
+import {
+  UnknownAgentModelError,
+  HOUSE_ACCESS,
+} from "@chia/agent-runtime/models";
 import type { AgentModelRef } from "@chia/agent-runtime/models";
 import type { ThinkingLevel } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
@@ -281,7 +284,7 @@ const currentWeek = async (db: DB) => {
 /** A model the operator chose is checked by the kind: policy and catalogue membership at once. */
 const assertKindModel = (definition: LoadedKind, ref: AgentModelRef): void => {
   try {
-    definition.models.assert(ref);
+    definition.models.assert(ref, HOUSE_ACCESS, definition.defaults);
   } catch (error) {
     throw error instanceof UnknownAgentModelError
       ? badRequest(error.message)
@@ -425,7 +428,7 @@ export const createAgentAdminService = (
       const house = {
         from: week.from,
         to: week.to,
-        providerIds: QUOTA_PROVIDER_IDS,
+        credentialSources: QUOTA_CREDENTIAL_SOURCES,
       };
       const [total, top] = await Promise.all([
         summarizeAgentUsage(db, house),
@@ -455,7 +458,7 @@ export const createAgentAdminService = (
           userId,
           from: week.from,
           to: week.to,
-          providerIds: QUOTA_PROVIDER_IDS,
+          credentialSources: QUOTA_CREDENTIAL_SOURCES,
         }),
         summarizeAgentUsage(db, { userId, from: LEDGER_EPOCH, to: week.to }),
         countAgentSessions(db, { userId }),

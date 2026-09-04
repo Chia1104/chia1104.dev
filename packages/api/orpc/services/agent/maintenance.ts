@@ -1,8 +1,9 @@
+import { loadKindConfig } from "@chia/agent-host/config";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { assertWithinAgentQuota } from "@chia/agent-host/quota";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
-import { recordAgentUsage } from "@chia/agent-host/usage";
-import { createAgentModels } from "@chia/agent-runtime/models";
+import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
+import { accessOf, createAgentModels } from "@chia/agent-runtime/models";
 import { canCompactBranch } from "@chia/agent-runtime/pi/compaction";
 import {
   compactPiSession,
@@ -116,20 +117,24 @@ export const createAgentMaintenanceOperations = <
     const db = caller.context.db;
     const session = await sessions.repoFor(db).openById(row.id);
     const settings = sessions.settingsOf(row);
-    const models = createAgentModels(
-      host.credentials.decrypt(host.credentials.read(caller.context.headers))
+    const credentials = host.credentials.decrypt(
+      host.credentials.read(caller.context.headers)
     );
+    const models = createAgentModels(credentials);
+    const access = accessOf(credentials);
+    const { defaults: house } = await loadKindConfig(db, definition);
     const onUsage: AgentUsageListener = (report) =>
       recordAgentUsage(db, {
         userId: caller.userId,
         sessionId: row.id,
         kind: definition.kind,
+        credentialSource: credentialSourceOf(credentials, report.providerId),
         ...report,
       });
     const operationFor = async (taskId: string) => {
       const task = await resolveAgentTask(db, taskId, {
         session: () => ({
-          model: definition.models.resolve(settings, models),
+          model: definition.models.resolve(settings, models, access, house),
           models,
         }),
       });

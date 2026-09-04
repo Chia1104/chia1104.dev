@@ -100,11 +100,6 @@ vi.mock("@chia/api/orpc/guards/captcha.guard", async () => {
   return { captchaGuard: mocks.orpcCaptchaGuard };
 });
 
-vi.mock("@chia/api/orpc/guards/ai-key.guard", async () => {
-  const mocks = await import("./helpers/guards");
-  return { aiKeyGuard: mocks.orpcAiKeyGuard };
-});
-
 vi.mock("workflow/api", async () => {
   const { getHookByToken, getRun } = await import("@chia/test/mocks/workflow");
   return { getRun, getHookByToken };

@@ -1,147 +1,188 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  accessOf,
   AGENT_PROVIDERS,
-  UnknownAgentModelError,
   createAgentModels,
+  HOUSE_ACCESS,
+  NO_ACCESS,
+  UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
 
 import {
   assertPublicModel,
   DEFAULT_PUBLIC_MODEL,
-  HOUSE_PUBLIC_MODEL_IDS,
-  isPublicModel,
   listPublicModels,
   PUBLIC_SESSION_DEFAULTS,
+  publicModelPolicy,
   resolvePublicModel,
 } from "../src/models.ts";
 
 /**
- * The cost boundary of the public kind. The house pays for every gateway call a visitor
- * makes, so the gateway side is a closed list of cheap ids. A vendor prefix would let a
- * visitor pick the vendor's flagship.
+ * The cost boundary of the public kind. The house pays for a gateway call on its key, so a
+ * visitor without a gateway key gets exactly the operator-pinned model. A key of their own
+ * opens what that key reaches, on their bill.
  */
 
-describe("isPublicModel", () => {
-  it("admits the listed house models through the gateway", () => {
-    for (const modelId of HOUSE_PUBLIC_MODEL_IDS) {
-      expect(
-        isPublicModel({ providerId: AGENT_PROVIDERS.gateway, modelId })
-      ).toBe(true);
-    }
+const HOUSE = DEFAULT_PUBLIC_MODEL;
+const GATEWAY_SONNET = {
+  providerId: AGENT_PROVIDERS.gateway,
+  modelId: "anthropic/claude-sonnet-5",
+};
+const NATIVE_SONNET = {
+  providerId: AGENT_PROVIDERS.anthropic,
+  modelId: "claude-sonnet-5",
+};
+const isPublic = publicModelPolicy(HOUSE);
+
+describe("publicModelPolicy", () => {
+  it("admits only the pinned gateway model to a visitor with no gateway key", () => {
+    expect(isPublic(HOUSE, NO_ACCESS)).toBe(true);
+    expect(isPublic(GATEWAY_SONNET, NO_ACCESS)).toBe(false);
+    expect(isPublic(GATEWAY_SONNET, accessOf({ anthropic: "sk" }))).toBe(false);
   });
 
-  it("refuses the same vendors' expensive models through the gateway", () => {
-    for (const modelId of [
-      "anthropic/claude-sonnet-5",
-      "anthropic/claude-opus-5",
-      "openai/gpt-5.4",
-      "google/gemini-3-flash",
-    ]) {
-      expect(
-        isPublicModel({ providerId: AGENT_PROVIDERS.gateway, modelId })
-      ).toBe(false);
-    }
+  it("follows the operator's pin rather than the code default", () => {
+    expect(publicModelPolicy(GATEWAY_SONNET)(GATEWAY_SONNET, NO_ACCESS)).toBe(
+      true
+    );
+    expect(publicModelPolicy(GATEWAY_SONNET)(HOUSE, NO_ACCESS)).toBe(false);
   });
 
-  it("admits any model on a native provider", () => {
+  it("opens the whole gateway to a visitor who brought a gateway key", () => {
+    expect(isPublic(GATEWAY_SONNET, accessOf({ gateway: "vck" }))).toBe(true);
+  });
+
+  it("admits any model on a native provider, which only the visitor's key opens", () => {
+    expect(isPublic(NATIVE_SONNET, NO_ACCESS)).toBe(true);
     expect(
-      isPublicModel({ providerId: AGENT_PROVIDERS.openai, modelId: "gpt-5.4" })
-    ).toBe(true);
-    expect(
-      isPublicModel({
-        providerId: AGENT_PROVIDERS.anthropic,
-        modelId: "claude-opus-5",
-      })
+      isPublic(
+        { providerId: AGENT_PROVIDERS.openai, modelId: "gpt-5.4" },
+        NO_ACCESS
+      )
     ).toBe(true);
   });
 
   it("refuses a provider the agent does not know", () => {
     expect(
-      isPublicModel({ providerId: "openrouter", modelId: "gpt-5-mini" })
+      isPublic({ providerId: "openrouter", modelId: "gpt-5-mini" }, NO_ACCESS)
     ).toBe(false);
   });
 });
 
 describe("resolvePublicModel", () => {
   it("resolves the session default without any caller-supplied key", () => {
-    expect(resolvePublicModel(DEFAULT_PUBLIC_MODEL).id).toBe(
-      DEFAULT_PUBLIC_MODEL.modelId
+    expect(resolvePublicModel(HOUSE).id).toBe(HOUSE.modelId);
+  });
+
+  it("refuses any other gateway model to a visitor without a gateway key", () => {
+    expect(() => resolvePublicModel(GATEWAY_SONNET)).toThrow(
+      UnknownAgentModelError
     );
   });
 
-  it("resolves a native model only on a collection that carries its key", () => {
-    const ref = {
-      providerId: AGENT_PROVIDERS.anthropic,
-      modelId: "claude-sonnet-5",
-    };
+  it("runs an expensive gateway model on the visitor's own gateway key", () => {
+    const credentials = { gateway: "vck" };
+    const model = resolvePublicModel(
+      GATEWAY_SONNET,
+      createAgentModels(credentials),
+      accessOf(credentials)
+    );
 
-    expect(() => resolvePublicModel(ref)).toThrow(UnknownAgentModelError);
-    expect(
-      resolvePublicModel(ref, createAgentModels({ anthropic: "sk-test" }))
-        .provider
-    ).toBe(AGENT_PROVIDERS.anthropic);
+    expect(model.provider).toBe(AGENT_PROVIDERS.gateway);
+    expect(model.id).toBe(GATEWAY_SONNET.modelId);
   });
 
-  it("refuses a gateway model off the house list", () => {
-    expect(() =>
-      resolvePublicModel({
-        providerId: AGENT_PROVIDERS.gateway,
-        modelId: "anthropic/claude-sonnet-5",
-      })
-    ).toThrow(UnknownAgentModelError);
+  it("resolves a native model only on a collection that carries its key", () => {
+    expect(() => resolvePublicModel(NATIVE_SONNET)).toThrow(
+      UnknownAgentModelError
+    );
+    const credentials = { anthropic: "sk-test" };
+    expect(
+      resolvePublicModel(
+        NATIVE_SONNET,
+        createAgentModels(credentials),
+        accessOf(credentials)
+      ).provider
+    ).toBe(AGENT_PROVIDERS.anthropic);
   });
 });
 
 describe("assertPublicModel", () => {
-  it("accepts every house model and a native model with no key registered", () => {
-    for (const modelId of HOUSE_PUBLIC_MODEL_IDS) {
-      expect(() =>
-        assertPublicModel({ providerId: AGENT_PROVIDERS.gateway, modelId })
-      ).not.toThrow();
-    }
+  it("accepts the pinned model with no key, any gateway model for the operator, and a native model", () => {
+    expect(() => assertPublicModel(HOUSE, NO_ACCESS, HOUSE)).not.toThrow();
     expect(() =>
-      assertPublicModel({
-        providerId: AGENT_PROVIDERS.openai,
-        modelId: "gpt-5.2",
-      })
+      assertPublicModel(GATEWAY_SONNET, HOUSE_ACCESS, HOUSE)
     ).not.toThrow();
+    expect(() =>
+      assertPublicModel(NATIVE_SONNET, NO_ACCESS, HOUSE)
+    ).not.toThrow();
+  });
+
+  it("rejects a gateway model the visitor's keys do not reach", () => {
+    expect(() => assertPublicModel(GATEWAY_SONNET, NO_ACCESS, HOUSE)).toThrow(
+      UnknownAgentModelError
+    );
   });
 
   it("rejects an id policy admits but the catalogue has never heard of", () => {
     expect(() =>
-      assertPublicModel({
-        providerId: AGENT_PROVIDERS.openai,
-        modelId: "gpt-does-not-exist",
-      })
+      assertPublicModel(
+        { providerId: AGENT_PROVIDERS.openai, modelId: "gpt-does-not-exist" },
+        HOUSE_ACCESS,
+        HOUSE
+      )
     ).toThrow(UnknownAgentModelError);
   });
 });
 
 describe("listPublicModels", () => {
-  it("offers exactly the house list through the gateway", () => {
-    const gateway = listPublicModels()
-      .filter((model) => model.providerId === AGENT_PROVIDERS.gateway)
-      .map((model) => model.modelId);
+  it("lists the gateway with only the pinned model usable for a keyless visitor", () => {
+    const gateway = listPublicModels(NO_ACCESS, HOUSE).filter(
+      (model) => model.providerId === AGENT_PROVIDERS.gateway
+    );
+    const usable = gateway.filter((model) => !model.requiresApiKey);
 
-    expect(new Set(gateway)).toEqual(HOUSE_PUBLIC_MODEL_IDS);
+    expect(gateway.length).toBeGreaterThan(1);
+    expect(usable).toHaveLength(1);
+    expect(usable[0]).toMatchObject(HOUSE);
   });
 
-  it("includes both native providers, flagged as needing a key", () => {
-    const native = listPublicModels().filter(
+  it("marks every gateway model usable for a visitor with a gateway key", () => {
+    const gateway = listPublicModels(
+      accessOf({ gateway: "vck" }),
+      HOUSE
+    ).filter((model) => model.providerId === AGENT_PROVIDERS.gateway);
+
+    expect(gateway.every((model) => !model.requiresApiKey)).toBe(true);
+  });
+
+  it("includes both native providers, flagged until the visitor registers that key", () => {
+    const keyless = listPublicModels(NO_ACCESS, HOUSE).filter(
       (model) => model.providerId !== AGENT_PROVIDERS.gateway
     );
-
-    expect(new Set(native.map((model) => model.providerId))).toEqual(
+    expect(new Set(keyless.map((model) => model.providerId))).toEqual(
       new Set([AGENT_PROVIDERS.openai, AGENT_PROVIDERS.anthropic])
     );
-    expect(native.every((model) => model.requiresApiKey)).toBe(true);
+    expect(keyless.every((model) => model.requiresApiKey)).toBe(true);
+
+    const withOpenAI = listPublicModels(accessOf({ openai: "sk" }), HOUSE);
+    expect(
+      withOpenAI
+        .filter((model) => model.providerId === AGENT_PROVIDERS.openai)
+        .every((model) => !model.requiresApiKey)
+    ).toBe(true);
+    expect(
+      withOpenAI
+        .filter((model) => model.providerId === AGENT_PROVIDERS.anthropic)
+        .every((model) => model.requiresApiKey)
+    ).toBe(true);
   });
 });
 
 describe("PUBLIC_SESSION_DEFAULTS", () => {
-  it("defaults a new session to a house model", () => {
+  it("defaults a new session to the house model", () => {
+    expect(PUBLIC_SESSION_DEFAULTS).toMatchObject(HOUSE);
     expect(PUBLIC_SESSION_DEFAULTS.providerId).toBe(AGENT_PROVIDERS.gateway);
-    expect(isPublicModel(DEFAULT_PUBLIC_MODEL)).toBe(true);
   });
 });

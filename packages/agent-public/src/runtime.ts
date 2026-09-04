@@ -4,7 +4,11 @@ import type {
   ContentReadPort,
   ProfileReadPort,
 } from "@chia/agent-content/types";
-import { createAgentModels } from "@chia/agent-runtime/models";
+import { createAgentModels, NO_ACCESS } from "@chia/agent-runtime/models";
+import type {
+  AgentModelAccess,
+  AgentModelRef,
+} from "@chia/agent-runtime/models";
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import { runPiTurn } from "@chia/agent-runtime/pi/turn";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
@@ -39,6 +43,10 @@ export interface RunPublicTurnOptions<TApproval> {
   preAuthorizedToolNames?: ReadonlySet<string>;
   signal?: AbortSignal;
   models?: Models;
+  /** Keys the caller holds; must match how `models` was built. */
+  access?: AgentModelAccess;
+  /** The operator-pinned house model; the only one a keyless visitor may run. */
+  house?: AgentModelRef;
   compactionModel?: Model<Api>;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
@@ -54,7 +62,12 @@ export const runPublicTurn = async <TApproval>(
   const models = options.models ?? createAgentModels();
   const toolContext: PublicToolContext = { content: options.content };
   // the allowlist check precedes any read, so a refused model costs no query
-  const model = resolvePublicModel(options.settings, models);
+  const model = resolvePublicModel(
+    options.settings,
+    models,
+    options.access ?? NO_ACCESS,
+    options.house
+  );
   const profile = renderProfileBrief(await options.profile.listPublished(), {
     locale: defaultLocale,
   });

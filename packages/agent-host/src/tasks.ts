@@ -2,13 +2,17 @@ import {
   AGENT_PROVIDERS,
   createAgentCatalog,
   createAgentModels,
+  HOUSE_ACCESS,
+  houseModel,
   listModels,
+  NO_ACCESS,
   resolveModel,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
 import type {
   AgentModel,
   AgentModelInfo,
+  AgentModelPredicate,
   AgentModelRef,
 } from "@chia/agent-runtime/models";
 import {
@@ -43,10 +47,10 @@ export interface AgentTaskDefinition {
   readonly description: string;
   readonly kind?: string;
   /**
-   * The model when the operator has not chosen one: a house gateway ref, or `"session"` for a
-   * task that runs on the model of the session it serves. A fixed model is always resolved on
-   * the house account: a side job is never the operator's own bill, and it may run in a
-   * workflow that has no caller credentials.
+   * The model when the operator has not chosen one: a house ref, or `"session"` for a task
+   * that runs on the model of the session it serves. A fixed model is always resolved on the
+   * house account over the gateway: a side job is never the operator's own bill, and it may
+   * run in a workflow that has no caller credentials.
    */
   readonly defaultModel: AgentModelRef | "session";
   /** Absent when the call's prompt is not the operator's to write (Pi's compaction carries its own). */
@@ -64,18 +68,13 @@ export const AGENT_TASK_IDS = {
 
 export type AgentTaskId = (typeof AGENT_TASK_IDS)[keyof typeof AGENT_TASK_IDS];
 
-const HOUSE_CHEAP_MODEL: AgentModelRef = {
-  providerId: AGENT_PROVIDERS.gateway,
-  modelId: "anthropic/claude-haiku-4.5",
-};
-
 export const AGENT_TASKS = {
   [AGENT_TASK_IDS.sessionTitle]: {
     id: AGENT_TASK_IDS.sessionTitle,
     label: "Session title",
     description:
       "Condenses the first prompt of a session into the short title shown in the session list.",
-    defaultModel: HOUSE_CHEAP_MODEL,
+    defaultModel: houseModel("cheap"),
     prompt: { default: SESSION_TITLE_SYSTEM_PROMPT },
     params: SESSION_TITLE_PARAMS,
   },
@@ -99,7 +98,7 @@ export const AGENT_TASKS = {
     description:
       "Reads a finished writing session and proposes the lessons the operator taught the agent, for review.",
     kind: WRITING_AGENT_KIND,
-    defaultModel: HOUSE_CHEAP_MODEL,
+    defaultModel: houseModel("cheap"),
     prompt: { default: LESSON_EXTRACTION_SYSTEM_PROMPT },
     params: LESSON_EXTRACTION_PARAMS,
   },
@@ -116,16 +115,17 @@ export const getAgentTaskDefinition = (
 ): AgentTaskDefinition | undefined =>
   definitions.find((definition) => definition.id === taskId);
 
-export const isAgentTaskModel = (ref: AgentModelRef): boolean =>
+/** House-billed, so the gateway only; a task never rides a caller's key. */
+export const isAgentTaskModel: AgentModelPredicate = (ref) =>
   ref.providerId === AGENT_PROVIDERS.gateway;
 
 /** Throws `UnknownAgentModelError` when the pair is off the house catalogue. */
 export const assertAgentTaskModel = (ref: AgentModelRef): void => {
-  resolveModel(ref, isAgentTaskModel, createAgentCatalog());
+  resolveModel(ref, isAgentTaskModel, createAgentCatalog(), HOUSE_ACCESS);
 };
 
 export const listAgentTaskModels = (): AgentModelInfo[] =>
-  listModels(isAgentTaskModel);
+  listModels(isAgentTaskModel, { access: HOUSE_ACCESS });
 
 export interface ResolvedAgentTask {
   model: AgentModel;
@@ -197,8 +197,15 @@ const resolveFixed = (
   ref: AgentModelRef
 ): Pick<ResolvedAgentTask, "model" | "models"> | null => {
   const models = createAgentModels();
-  const model = models.getModel(ref.providerId, ref.modelId);
-  return model ? { model, models } : null;
+  try {
+    return {
+      model: resolveModel(ref, isAgentTaskModel, models, NO_ACCESS),
+      models,
+    };
+  } catch (error) {
+    if (error instanceof UnknownAgentModelError) return null;
+    throw error;
+  }
 };
 
 const warnStale = (taskId: string, ref: AgentModelRef): null => {
