@@ -101,7 +101,12 @@ export const createPublicAgentKind = (
           AGENT_TASK_IDS.sessionCompaction,
           {
             session: () => ({
-              model: resolvePublicModel(context.settings, context.models),
+              model: resolvePublicModel(
+                context.settings,
+                context.models,
+                context.access,
+                context.house
+              ),
               models: context.models,
             }),
           }
@@ -110,6 +115,8 @@ export const createPublicAgentKind = (
         return runPublicTurn({
           session: context.session,
           models: context.models,
+          access: context.access,
+          house: context.house,
           settings: context.settings,
           compactionModel: compaction.model,
           instructions: context.config.instructions,

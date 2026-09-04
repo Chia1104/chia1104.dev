@@ -13,15 +13,21 @@ const endpoint = (path: string) =>
     version: "LEGACY",
   });
 
-const post = async <TBody>(path: string, body: TBody): Promise<Response> => {
+const request = async <TBody>(
+  method: "GET" | "POST" | "DELETE",
+  path: string,
+  body?: TBody
+): Promise<Response> => {
   let response: Response;
 
   try {
     response = await fetch(endpoint(path), {
-      method: "POST",
+      method,
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      ...(body !== undefined && {
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }),
     });
   } catch {
     throw new HonoRPCError("unknown error", 500, "unknown error");
@@ -38,11 +44,24 @@ const post = async <TBody>(path: string, body: TBody): Promise<Response> => {
   return response;
 };
 
+export const getJson = async <TResult>(path: string): Promise<TResult> => {
+  const response = await request("GET", path);
+  return /* SAFETY: The producer contract guarantees this value satisfies TResult. */ (await response.json()) as TResult;
+};
+
 export const postJson = async <TResult, TBody = object>(
   path: string,
   body: TBody
 ): Promise<TResult> => {
-  const response = await post(path, body);
+  const response = await request("POST", path, body);
+  return /* SAFETY: The producer contract guarantees this value satisfies TResult. */ (await response.json()) as TResult;
+};
+
+export const deleteJson = async <TResult, TBody = object>(
+  path: string,
+  body: TBody
+): Promise<TResult> => {
+  const response = await request("DELETE", path, body);
   return /* SAFETY: The producer contract guarantees this value satisfies TResult. */ (await response.json()) as TResult;
 };
 
@@ -55,7 +74,7 @@ export const postTextStream = async <TBody>(
   path: string,
   body: TBody
 ): Promise<TextStream> => {
-  const response = await post(path, body);
+  const response = await request("POST", path, body);
   const stream = response.body;
 
   if (!stream) {

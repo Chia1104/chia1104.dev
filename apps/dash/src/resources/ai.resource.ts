@@ -1,6 +1,6 @@
 import type * as z from "zod";
 
-import type { ProviderId } from "@chia/ai/provider";
+import type { KeyId } from "@chia/ai/provider";
 import type {
   generateContentCompleteInput,
   generateContentInput,
@@ -11,7 +11,12 @@ import type {
 } from "@chia/ai/tools/content";
 import type { baseRequestSchema, SupportedTools } from "@chia/ai/types";
 
-import { postJson, postTextStream } from "@/libs/service/fetcher";
+import {
+  deleteJson,
+  getJson,
+  postJson,
+  postTextStream,
+} from "@/libs/service/fetcher";
 
 /** AI endpoints stay on Hono (streaming, `Set-Cookie`), so these are plain fetch calls typed from `@chia/ai`. */
 
@@ -69,8 +74,13 @@ export type GenerateAIContentMetaResponse =
       content: { excerpt: string };
     };
 
-export const getSignedAIKey = (apiKey: string, provider: ProviderId) =>
+export const getSignedAIKey = (apiKey: string, provider: KeyId) =>
   postJson<SignAIKeyResponse>("/ai/key:signed", { apiKey, provider });
+
+export const getAIKeys = () => getJson<{ configured: KeyId[] }>("/ai/keys");
+
+export const revokeAIKey = (provider: KeyId) =>
+  deleteJson<{ message: string }>("/ai/key", { provider });
 
 export const generateAIContent = (input: GenerateAIContentInput) =>
   postTextStream("/ai/generate", input);

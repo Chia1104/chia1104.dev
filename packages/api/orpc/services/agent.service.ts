@@ -181,15 +181,18 @@ export interface AgentKindService {
   ): Promise<agentContracts.AgentSessionDetail | null>;
 
   /**
-   * Returns a human-readable reason when the pair is unusable, or `null` when it is fine.
-   * A return value rather than a throw: the caller is middleware that turns this into
-   * `BAD_REQUEST`, and the reason has to come from the kind's own policy.
+   * Returns a human-readable reason when the pair is unusable for this caller, or `null` when
+   * it is fine. A return value rather than a throw: the caller is middleware that turns this
+   * into `BAD_REQUEST`, and the reason has to come from the kind's own policy.
    */
-  validateModel(ref: AgentModelRef): Promise<string | null>;
+  validateModel(
+    caller: AgentServiceCaller,
+    ref: AgentModelRef
+  ): Promise<string | null>;
 
   /**
-   * Takes the caller because `requiresApiKey` depends on which provider keys they have
-   * registered. The catalogue itself is caller-independent.
+   * Takes the caller because `requiresApiKey` depends on which keys they have registered.
+   * The catalogue itself is caller-independent.
    */
   listModels(caller: AgentServiceCaller): Promise<
     {

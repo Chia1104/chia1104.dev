@@ -223,12 +223,16 @@
     "apiKey": {
       "open": "使用自己的 API key",
       "title": "使用自己的 API key",
-      "description": "金鑰會加密存放在這個瀏覽器的 cookie，只會送給該供應商。用自己的金鑰不會計入免費額度。",
+      "description": "金鑰會加密存放在這個瀏覽器的 cookie，只會送給該供應商。Vercel AI Gateway 金鑰可使用所有模型，供應商金鑰可使用該供應商的模型。用自己的金鑰不會計入免費額度。",
       "provider": "供應商",
       "label": "API key",
       "save": "儲存金鑰",
       "saved": "已儲存，接著在模型選單挑選該供應商的模型。",
-      "failed": "金鑰無法儲存。"
+      "failed": "金鑰無法儲存。",
+      "configured": "已儲存",
+      "revoke": "移除",
+      "revoked": "已移除金鑰。",
+      "revokeFailed": "金鑰無法移除。"
     },
     "humanCheck": {
       "title": "先做個小驗證",

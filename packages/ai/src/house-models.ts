@@ -1,4 +1,4 @@
-import type { ProviderId } from "./provider";
+import type { KeyId } from "./provider";
 
 /**
  * Every model the house pays for, by role. Ids are gateway ids (`vendor/model`), the form
@@ -19,8 +19,9 @@ export const HOUSE_MODELS = {
 
 export type HouseModelRole = keyof typeof HOUSE_MODELS;
 
-/** Cheapest native id per vendor, for checking that a caller's key works. */
+/** A cheap model per key, spelled as that key's API wants it, for checking that the key works. */
 export const KEY_PROBE_MODELS = {
   openai: "gpt-5-nano",
   anthropic: "claude-haiku-4-5",
-} as const satisfies Readonly<Record<ProviderId, string>>;
+  gateway: HOUSE_MODELS.cheap,
+} as const satisfies Readonly<Record<KeyId, string>>;

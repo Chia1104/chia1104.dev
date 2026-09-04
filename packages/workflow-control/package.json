@@ -26,6 +26,7 @@
     "test": "vitest --run"
   },
   "dependencies": {
+    "@chia/ai": "workspace:*",
     "@chia/service-kit": "workspace:*",
     "es-toolkit": "catalog:",
     "workflow": "catalog:workflow",

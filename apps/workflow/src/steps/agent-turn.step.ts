@@ -203,10 +203,11 @@ async function runKindTurn(
   signal: AbortSignal,
   writer: EventWriter
 ): Promise<AgentTurnOutcome> {
-  const [{ createAgentModels }, { PgSessionRepo }] = await Promise.all([
-    import("@chia/agent-runtime/models"),
-    import("@chia/agent-runtime/session/pg-repo"),
-  ]);
+  const [{ accessOf, createAgentModels }, { PgSessionRepo }] =
+    await Promise.all([
+      import("@chia/agent-runtime/models"),
+      import("@chia/agent-runtime/session/pg-repo"),
+    ]);
 
   const state = await definition.state.load(db, request.sessionId);
   if (state === null) {
@@ -215,7 +216,7 @@ async function runKindTurn(
     );
   }
   // Read per turn, not per session: an edit in the dashboard reaches the next turn.
-  const { config } = await loadKindConfig(db, definition);
+  const { config, defaults } = await loadKindConfig(db, definition);
   if (!row.providerId || !row.modelId || !row.thinkingLevel) {
     throw new FatalError(
       `Agent session ${request.sessionId} has incomplete LLM settings.`
@@ -261,6 +262,8 @@ async function runKindTurn(
     },
     session,
     models,
+    access: accessOf(credentials),
+    house: defaults,
     message: {
       text: request.text,
       template: request.template,

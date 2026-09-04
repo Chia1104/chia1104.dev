@@ -184,7 +184,11 @@ export const createWritingAgentKind = (
           AGENT_TASK_IDS.sessionCompaction,
           {
             session: () => ({
-              model: resolveWritingModel(context.settings, context.models),
+              model: resolveWritingModel(
+                context.settings,
+                context.models,
+                context.access
+              ),
               models: context.models,
             }),
           }
@@ -193,6 +197,7 @@ export const createWritingAgentKind = (
         const turn = await runWritingTurn({
           session: context.session,
           models: context.models,
+          access: context.access,
           settings: context.settings,
           compactionModel: compaction.model,
           instructions: context.config.instructions,

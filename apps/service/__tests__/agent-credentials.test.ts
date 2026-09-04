@@ -52,6 +52,16 @@ describe("readEncryptedAgentCredentials", () => {
     expect(readEncryptedAgentCredentials(new Headers())).toBeUndefined();
   });
 
+  it("lifts a gateway key out of its own cookie", () => {
+    const gateway = encodeApiKey("vck-gateway", keys.public);
+
+    expect(
+      readEncryptedAgentCredentials(
+        headersWith(`AI_GATEWAY_API_KEY=${gateway}`)
+      )
+    ).toEqual({ gateway });
+  });
+
   it("carries only the providers that are actually present", () => {
     const openai = encodeApiKey("sk-openai", keys.public);
 

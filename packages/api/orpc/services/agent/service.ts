@@ -1,8 +1,6 @@
+import { loadKindConfig } from "@chia/agent-host/config";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
-import {
-  BYOK_PROVIDER_IDS,
-  UnknownAgentModelError,
-} from "@chia/agent-runtime/models";
+import { accessOf, UnknownAgentModelError } from "@chia/agent-runtime/models";
 
 import type { AgentServiceHost } from "../agent.factory";
 import type { AgentKindService } from "../agent.service";
@@ -27,27 +25,30 @@ export const createAgentKindService = <TState, TConfig extends object>(
     ...createAgentTurnOperations(definition, sessions, host),
     ...createAgentMaintenanceOperations(definition, sessions, host),
 
-    /** Validates model policy and catalogue membership before settings are persisted. */
-    validateModel(ref) {
+    /** Validates model policy and catalogue membership for this caller before settings are persisted. */
+    async validateModel(caller, ref) {
+      const { defaults } = await loadKindConfig(caller.context.db, definition);
       try {
-        definition.models.assert(ref);
-        return Promise.resolve(null);
-      } catch (error) {
-        return Promise.resolve(
-          error instanceof UnknownAgentModelError
-            ? error.message
-            : `Could not validate model "${ref.modelId}".`
+        definition.models.assert(
+          ref,
+          accessOf(host.credentials.read(caller.context.headers)),
+          defaults
         );
+        return null;
+      } catch (error) {
+        return error instanceof UnknownAgentModelError
+          ? error.message
+          : `Could not validate model "${ref.modelId}".`;
       }
     },
 
-    listModels(caller) {
+    async listModels(caller) {
       // Listing only needs key presence; plaintext credentials never enter this path.
-      const registered = host.credentials.read(caller.context.headers);
-      const configured = BYOK_PROVIDER_IDS.filter(
-        (providerId) => registered?.[providerId]
+      const { defaults } = await loadKindConfig(caller.context.db, definition);
+      return definition.models.list(
+        accessOf(host.credentials.read(caller.context.headers)),
+        defaults
       );
-      return Promise.resolve(definition.models.list({ configured }));
     },
 
     listCapabilities() {

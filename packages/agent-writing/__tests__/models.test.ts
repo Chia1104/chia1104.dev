@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  accessOf,
   AGENT_PROVIDERS,
-  UnknownAgentModelError,
   createAgentModels,
+  HOUSE_ACCESS,
+  NO_ACCESS,
+  UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
 
 import {
@@ -23,16 +26,19 @@ import {
 describe("isWritingModel", () => {
   it("admits the two vendors the agent is built against, through the gateway", () => {
     expect(
-      isWritingModel({
-        providerId: AGENT_PROVIDERS.gateway,
-        modelId: "anthropic/claude-sonnet-5",
-      })
+      isWritingModel(
+        {
+          providerId: AGENT_PROVIDERS.gateway,
+          modelId: "anthropic/claude-sonnet-5",
+        },
+        NO_ACCESS
+      )
     ).toBe(true);
     expect(
-      isWritingModel({
-        providerId: AGENT_PROVIDERS.gateway,
-        modelId: "openai/gpt-5.4",
-      })
+      isWritingModel(
+        { providerId: AGENT_PROVIDERS.gateway, modelId: "openai/gpt-5.4" },
+        NO_ACCESS
+      )
     ).toBe(true);
   });
 
@@ -43,26 +49,35 @@ describe("isWritingModel", () => {
       "meta/llama-4",
     ]) {
       expect(
-        isWritingModel({ providerId: AGENT_PROVIDERS.gateway, modelId })
+        isWritingModel(
+          { providerId: AGENT_PROVIDERS.gateway, modelId },
+          NO_ACCESS
+        )
       ).toBe(false);
     }
   });
 
   it("admits any model on a native provider", () => {
     expect(
-      isWritingModel({ providerId: AGENT_PROVIDERS.openai, modelId: "gpt-5.2" })
+      isWritingModel(
+        { providerId: AGENT_PROVIDERS.openai, modelId: "gpt-5.2" },
+        NO_ACCESS
+      )
     ).toBe(true);
     expect(
-      isWritingModel({
-        providerId: AGENT_PROVIDERS.anthropic,
-        modelId: "claude-opus-5",
-      })
+      isWritingModel(
+        { providerId: AGENT_PROVIDERS.anthropic, modelId: "claude-opus-5" },
+        NO_ACCESS
+      )
     ).toBe(true);
   });
 
   it("refuses a provider the agent does not know", () => {
     expect(
-      isWritingModel({ providerId: "openrouter", modelId: "gpt-5.2" })
+      isWritingModel(
+        { providerId: "openrouter", modelId: "gpt-5.2" },
+        NO_ACCESS
+      )
     ).toBe(false);
   });
 });
@@ -75,17 +90,34 @@ describe("resolveWritingModel", () => {
   });
 
   it("resolves the same vendor through either provider", () => {
+    const credentials = { anthropic: "sk-test" };
     const viaGateway = resolveWritingModel({
       providerId: AGENT_PROVIDERS.gateway,
       modelId: "anthropic/claude-sonnet-5",
     });
     const native = resolveWritingModel(
       { providerId: AGENT_PROVIDERS.anthropic, modelId: "claude-sonnet-5" },
-      createAgentModels({ anthropic: "sk-test" })
+      createAgentModels(credentials),
+      accessOf(credentials)
     );
 
     expect(viaGateway.provider).toBe(AGENT_PROVIDERS.gateway);
     expect(native.provider).toBe(AGENT_PROVIDERS.anthropic);
+  });
+
+  it("runs the gateway on the caller's own gateway key when they brought one", async () => {
+    const credentials = { gateway: "vck-test" };
+    const models = createAgentModels(credentials);
+    const model = resolveWritingModel(
+      DEFAULT_WRITING_MODEL,
+      models,
+      accessOf(credentials)
+    );
+
+    expect(model.provider).toBe(AGENT_PROVIDERS.gateway);
+    expect((await models.getAuth(AGENT_PROVIDERS.gateway))?.auth.apiKey).toBe(
+      "vck-test"
+    );
   });
 
   it("refuses a gateway model outside the two admitted vendors", () => {
@@ -112,61 +144,72 @@ describe("resolveWritingModel", () => {
  */
 describe("assertWritingModel", () => {
   it("accepts a pair that exists in the catalogue", () => {
-    expect(() => assertWritingModel(DEFAULT_WRITING_MODEL)).not.toThrow();
     expect(() =>
-      assertWritingModel({
-        providerId: AGENT_PROVIDERS.openai,
-        modelId: "gpt-5.2",
-      })
+      assertWritingModel(DEFAULT_WRITING_MODEL, NO_ACCESS)
+    ).not.toThrow();
+    expect(() =>
+      assertWritingModel(
+        { providerId: AGENT_PROVIDERS.openai, modelId: "gpt-5.2" },
+        HOUSE_ACCESS
+      )
     ).not.toThrow();
   });
 
   it("rejects an id policy admits but the catalogue has never heard of", () => {
     expect(() =>
-      assertWritingModel({
-        providerId: AGENT_PROVIDERS.openai,
-        modelId: "gpt-does-not-exist",
-      })
+      assertWritingModel(
+        { providerId: AGENT_PROVIDERS.openai, modelId: "gpt-does-not-exist" },
+        HOUSE_ACCESS
+      )
     ).toThrow(UnknownAgentModelError);
   });
 
   it("rejects a vendor outside the gateway's admitted set", () => {
     expect(() =>
-      assertWritingModel({
-        providerId: AGENT_PROVIDERS.gateway,
-        modelId: "google/gemini-3.1-pro",
-      })
+      assertWritingModel(
+        {
+          providerId: AGENT_PROVIDERS.gateway,
+          modelId: "google/gemini-3.1-pro",
+        },
+        HOUSE_ACCESS
+      )
     ).toThrow(UnknownAgentModelError);
   });
 
   it("accepts a native model even with no key registered", () => {
     expect(() =>
-      assertWritingModel({
-        providerId: AGENT_PROVIDERS.anthropic,
-        modelId: "claude-opus-5",
-      })
+      assertWritingModel(
+        { providerId: AGENT_PROVIDERS.anthropic, modelId: "claude-opus-5" },
+        NO_ACCESS
+      )
     ).not.toThrow();
   });
 });
 
 describe("listWritingModels", () => {
   it("offers both vendors through the gateway and nothing else from it", () => {
-    const gateway = listWritingModels().filter(
+    const gateway = listWritingModels(NO_ACCESS).filter(
       (model) => model.providerId === AGENT_PROVIDERS.gateway
     );
+    const usable = gateway.filter((model) => !model.requiresApiKey);
 
-    expect(gateway.length).toBeGreaterThan(0);
+    expect(usable.length).toBeGreaterThan(0);
     expect(
-      gateway.every(
+      usable.every(
         (model) =>
           model.modelId.startsWith("anthropic/") ||
           model.modelId.startsWith("openai/")
       )
     ).toBe(true);
+    expect(
+      gateway
+        .filter((model) => model.modelId.startsWith("google/"))
+        .every((model) => model.requiresApiKey)
+    ).toBe(true);
   });
 
-  it("includes both native providers, flagged as needing a key", () => {
-    const native = listWritingModels().filter(
+  it("includes both native providers, flagged until that key is registered", () => {
+    const native = listWritingModels(NO_ACCESS).filter(
       (model) => model.providerId !== AGENT_PROVIDERS.gateway
     );
 
@@ -180,6 +223,6 @@ describe("listWritingModels", () => {
 describe("WRITING_SESSION_DEFAULTS", () => {
   it("defaults a new session to the gateway", () => {
     expect(WRITING_SESSION_DEFAULTS.providerId).toBe(AGENT_PROVIDERS.gateway);
-    expect(isWritingModel(DEFAULT_WRITING_MODEL)).toBe(true);
+    expect(isWritingModel(DEFAULT_WRITING_MODEL, NO_ACCESS)).toBe(true);
   });
 });
