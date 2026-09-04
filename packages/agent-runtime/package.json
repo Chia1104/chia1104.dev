@@ -106,6 +106,7 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
+    "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
     "@earendil-works/pi-agent-core": "catalog:agent",

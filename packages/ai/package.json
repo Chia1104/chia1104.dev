@@ -17,13 +17,21 @@
       "types": "./src/ollama/utils.ts",
       "default": "./src/ollama/utils.ts"
     },
+    "./provider": {
+      "types": "./src/provider.ts",
+      "default": "./src/provider.ts"
+    },
+    "./house-models": {
+      "types": "./src/house-models.ts",
+      "default": "./src/house-models.ts"
+    },
+    "./env": {
+      "types": "./src/env.ts",
+      "default": "./src/env.ts"
+    },
     "./types": {
       "types": "./src/utils/types.ts",
       "default": "./src/utils/types.ts"
-    },
-    "./constants": {
-      "types": "./src/utils/constants.ts",
-      "default": "./src/utils/constants.ts"
     },
     "./utils": {
       "types": "./src/utils/index.ts",
@@ -80,11 +88,10 @@
   "dependencies": {
     "@ai-sdk/anthropic": "catalog:ai",
     "@ai-sdk/gateway": "catalog:ai",
-    "@ai-sdk/google": "catalog:ai",
     "@ai-sdk/openai": "catalog:ai",
     "@anthropic-ai/sdk": "catalog:ai",
     "@chia/utils": "workspace:*",
-    "@google/genai": "catalog:ai",
+    "@t3-oss/env-core": "catalog:env",
     "ai": "catalog:ai",
     "es-toolkit": "catalog:",
     "github-slugger": "catalog:unified",

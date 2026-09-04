@@ -17,18 +17,16 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { agentQueryKeys } from "@chia/agent-elements/queries";
+import {
+  isProviderId,
+  PROVIDER_IDS,
+  PROVIDER_LABELS,
+  ProviderId,
+} from "@chia/ai/provider";
 import { withServiceEndpoint } from "@chia/utils/config";
 import { Service } from "@chia/utils/schema";
 
 import { PUBLIC_AGENT_KIND } from "./kind";
-
-/** Provider ids as `/ai/key:signed` and the public model allowlist both spell them. */
-const PROVIDERS = [
-  { id: "openai", label: "OpenAI" },
-  { id: "anthropic", label: "Anthropic" },
-] as const;
-
-type ProviderId = (typeof PROVIDERS)[number]["id"];
 
 const signKey = (provider: ProviderId, apiKey: string) =>
   ky
@@ -49,7 +47,7 @@ export const ApiKeyDialog = () => {
   const t = useTranslations("chbot.apiKey");
   const queryClient = useQueryClient();
   const [isOpen, setOpen] = useState(false);
-  const [provider, setProvider] = useState<ProviderId>("openai");
+  const [provider, setProvider] = useState<ProviderId>(ProviderId.OpenAI);
   const [apiKey, setApiKey] = useState("");
 
   const save = useMutation({
@@ -87,20 +85,19 @@ export const ApiKeyDialog = () => {
               <RadioGroup
                 name="agent-api-key-provider"
                 onChange={(next) => {
-                  if (next === "openai" || next === "anthropic")
-                    setProvider(next);
+                  if (isProviderId(next)) setProvider(next);
                 }}
                 variant="secondary"
                 orientation="horizontal"
                 value={provider}>
                 <Label>{t("provider")}</Label>
-                {PROVIDERS.map((option) => (
-                  <Radio key={option.id} value={option.id}>
+                {PROVIDER_IDS.map((id) => (
+                  <Radio key={id} value={id}>
                     <Radio.Content>
                       <Radio.Control>
                         <Radio.Indicator />
                       </Radio.Control>
-                      <span className="text-sm">{option.label}</span>
+                      <span className="text-sm">{PROVIDER_LABELS[id]}</span>
                     </Radio.Content>
                   </Radio>
                 ))}

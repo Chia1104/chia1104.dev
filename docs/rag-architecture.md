@@ -251,6 +251,8 @@ interface EmbeddingProvider {
 
 OpenAI `text-embedding-3-small` currently emits 1536 dimensions. Available Ollama models emit 384, 768 or 1024 dimensions, so `resolveEmbeddingProvider` rejects them before a database insert can fail.
 
+The provider is chosen by `EMBEDDING_PROVIDER` and authenticates with `EMBEDDING_API_KEY`, both validated in `@chia/ai/env`. The key is dedicated to embeddings; no chat provider shares it, and the SDK is never allowed to fall back to an ambient vendor key.
+
 The provider layer also:
 
 - Truncates input against each model's token limit before the API call, reserving space for task prefixes.

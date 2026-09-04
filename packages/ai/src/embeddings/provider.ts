@@ -1,3 +1,4 @@
+import { env, EmbeddingProviderId } from "../env.ts";
 import { isOllamaEnabled } from "../ollama/utils.ts";
 
 import { ollamaEmbeddings } from "./ollama.ts";
@@ -28,7 +29,6 @@ export const OPENAI_EMBEDDING_MODEL = "text-embedding-3-small";
 export const OLLAMA_EMBEDDING_MODEL = OllamaEmbeddingModel["nomic-embed-text"];
 
 export interface OpenAIProviderOptions {
-  apiKey?: string;
   /** the workflow runtime's instrumented fetch */
   fetch?: (
     input: string | URL | Request,
@@ -47,14 +47,20 @@ export const openAIEmbeddingProvider = (
   id: OPENAI_EMBEDDING_MODEL,
   dimensions: EMBEDDING_DIMENSIONS,
   // text-embedding-3-* are symmetric; the task carries no prefix here
-  embed: async (texts, _task) =>
-    await (
+  embed: async (texts, _task) => {
+    if (!env.EMBEDDING_API_KEY) {
+      throw new Error(
+        "EMBEDDING_API_KEY is not set; the OpenAI embedding provider needs it."
+      );
+    }
+    return await (
       await import("./openai.ts")
     ).generateEmbeddings(texts, {
       model: OPENAI_EMBEDDING_MODEL,
-      apiKey: options.apiKey,
+      apiKey: env.EMBEDDING_API_KEY,
       fetch: options.fetch,
-    }),
+    });
+  },
 });
 
 /**
@@ -93,15 +99,11 @@ const assertColumnWidth = (provider: EmbeddingProvider): EmbeddingProvider => {
   return provider;
 };
 
-/**
- * `EMBEDDING_PROVIDER=ollama` opts into the local model; anything else uses
- * OpenAI.
- */
 export const resolveEmbeddingProvider = (
   options: OpenAIProviderOptions = {}
 ): EmbeddingProvider =>
   assertColumnWidth(
-    process.env.EMBEDDING_PROVIDER === "ollama"
+    env.EMBEDDING_PROVIDER === EmbeddingProviderId.Ollama
       ? ollamaEmbeddingProvider()
       : openAIEmbeddingProvider(options)
   );

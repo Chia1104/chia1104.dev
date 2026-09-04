@@ -1,5 +1,6 @@
 import type * as z from "zod";
 
+import type { ProviderId } from "@chia/ai/provider";
 import type {
   generateContentCompleteInput,
   generateContentInput,
@@ -8,11 +9,7 @@ import type {
   generateSlugInput,
   generateSummaryInput,
 } from "@chia/ai/tools/content";
-import type {
-  baseRequestSchema,
-  Provider,
-  SupportedTools,
-} from "@chia/ai/types";
+import type { baseRequestSchema, SupportedTools } from "@chia/ai/types";
 
 import { postJson, postTextStream } from "@/libs/service/fetcher";
 
@@ -72,7 +69,7 @@ export type GenerateAIContentMetaResponse =
       content: { excerpt: string };
     };
 
-export const getSignedAIKey = (apiKey: string, provider: Provider) =>
+export const getSignedAIKey = (apiKey: string, provider: ProviderId) =>
   postJson<SignAIKeyResponse>("/ai/key:signed", { apiKey, provider });
 
 export const generateAIContent = (input: GenerateAIContentInput) =>

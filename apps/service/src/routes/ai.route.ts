@@ -5,6 +5,8 @@ import { setCookie } from "hono/cookie";
 import { timeout } from "hono/timeout";
 import * as z from "zod";
 
+import { HOUSE_MODELS } from "@chia/ai/house-models";
+import { providerIdSchema } from "@chia/ai/provider";
 import {
   generateSlug,
   generateDescription,
@@ -21,7 +23,6 @@ import {
 } from "@chia/ai/tools/content";
 import { SupportedTools } from "@chia/ai/types";
 import { baseRequestSchema } from "@chia/ai/types";
-import { Provider } from "@chia/ai/types";
 import { encodeApiKey } from "@chia/ai/utils";
 import { getCookieDomain } from "@chia/auth/utils";
 import { errorGenerator } from "@chia/utils/server";
@@ -39,7 +40,8 @@ import { errorResponse } from "../utils/error.util";
 const getCreateModel = async () =>
   (await import("@chia/ai/utils/model")).createModel;
 
-const getGateway = async () => (await import("@ai-sdk/gateway")).gateway;
+/** Content tools run on the house gateway account; the id is the AI SDK's default-provider form. */
+const contentModel = HOUSE_MODELS.content;
 
 const api = new Hono<HonoContext>()
   .use(
@@ -59,7 +61,7 @@ const api = new Hono<HonoContext>()
       "json",
       z.object({
         apiKey: z.string().min(1),
-        provider: z.enum(Provider).optional(),
+        provider: providerIdSchema,
       }),
       (result, c) => {
         if (!result.success) {
@@ -73,15 +75,11 @@ const api = new Hono<HonoContext>()
           "Retry-After": "3600",
         });
       }
-      const name = providerCookieName(c.req.valid("json").provider);
-      if (!name) {
-        // An omitted provider has no cookie name; writing it would go nowhere.
-        return c.json(errorGenerator(400), 400);
-      }
+      const { apiKey, provider } = c.req.valid("json");
       setCookie(
         c,
-        name,
-        encodeApiKey(c.req.valid("json").apiKey, env.AI_AUTH_PUBLIC_KEY),
+        providerCookieName(provider),
+        encodeApiKey(apiKey, env.AI_AUTH_PUBLIC_KEY),
         {
           domain: getCookieDomain({ env }),
           secure: env.NODE_ENV === "production",
@@ -123,10 +121,6 @@ const api = new Hono<HonoContext>()
       });
     }
   )
-  .get("/models", async (c) => {
-    const availableModels = await (await getGateway()).getAvailableModels();
-    return c.json(availableModels.models);
-  })
   .post(
     "/content/meta",
     verifyAuth({ rootOnly: true }),
@@ -162,38 +156,27 @@ const api = new Hono<HonoContext>()
         case SupportedTools.GenerateSlug:
           return c.json({
             feature: SupportedTools.GenerateSlug,
-            content: {
-              slug: await generateSlug("anthropic/claude-sonnet-5", json.input),
-            },
+            content: { slug: await generateSlug(contentModel, json.input) },
           });
         case SupportedTools.GenerateDescription:
           return c.json({
             feature: SupportedTools.GenerateDescription,
             content: {
-              description: await generateDescription(
-                "anthropic/claude-sonnet-5",
-                json.input
-              ),
+              description: await generateDescription(contentModel, json.input),
             },
           });
         case SupportedTools.GenerateSummary:
           return c.json({
             feature: SupportedTools.GenerateSummary,
             content: {
-              summary: await generateSummary(
-                "anthropic/claude-sonnet-5",
-                json.input
-              ),
+              summary: await generateSummary(contentModel, json.input),
             },
           });
         case SupportedTools.GenerateExcerpt:
           return c.json({
             feature: SupportedTools.GenerateExcerpt,
             content: {
-              excerpt: await generateExcerpt(
-                "anthropic/claude-sonnet-5",
-                json.input
-              ),
+              excerpt: await generateExcerpt(contentModel, json.input),
             },
           });
         default:
@@ -211,7 +194,7 @@ const api = new Hono<HonoContext>()
     }),
     (c) => {
       const input = c.req.valid("json");
-      const result = streamContent("anthropic/claude-sonnet-5", input);
+      const result = streamContent(contentModel, input);
       return createTextStreamResponse({
         stream: result.textStream,
         headers: {
@@ -230,10 +213,7 @@ const api = new Hono<HonoContext>()
     }),
     async (c) => {
       const input = c.req.valid("json");
-      const completion = await generateContentComplete(
-        "anthropic/claude-sonnet-5",
-        input
-      );
+      const completion = await generateContentComplete(contentModel, input);
       return c.json({ completion });
     }
   );

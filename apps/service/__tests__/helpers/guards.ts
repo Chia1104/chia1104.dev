@@ -80,12 +80,6 @@ export const orpcTieredRateLimitGuard = vi.fn(() =>
 
 export const orpcCaptchaGuard = baseOS.middleware(({ next }) => next());
 
-export const orpcAiKeyGuard = vi.fn(() =>
-  baseOS.middleware(({ next }) =>
-    next({ context: { AI_AUTH_TOKEN: "mock-ai-api-key" } })
-  )
-);
-
 export const rateLimiterGuard = vi.fn(() =>
   createMiddleware(async (_c, next) => {
     await next();

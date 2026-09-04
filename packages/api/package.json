@@ -153,10 +153,6 @@
       "types": "./orpc/guards/captcha.guard.ts",
       "default": "./orpc/guards/captcha.guard.ts"
     },
-    "./orpc/guards/ai-key.guard": {
-      "types": "./orpc/guards/ai-key.guard.ts",
-      "default": "./orpc/guards/ai-key.guard.ts"
-    },
     "./orpc/guards/admin.guard": {
       "types": "./orpc/guards/admin.guard.ts",
       "default": "./orpc/guards/admin.guard.ts"

@@ -37,9 +37,9 @@ describe("createAgentModels", () => {
   });
 
   /**
-   * `OPENAI_API_KEY` exists in the service environment for unrelated features, and pi-ai falls
-   * back to ambient env vars when no credential is stored. A provider registered
-   * unconditionally would resolve against the house key and bill it.
+   * pi-ai falls back to ambient env vars (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) when no
+   * credential is stored, and a developer shell may well carry them. A provider registered
+   * unconditionally would resolve against that key and bill it.
    */
   it("omits a BYOK provider entirely when its key was not supplied", () => {
     const models = createAgentModels();

@@ -4,8 +4,7 @@ import { Tabs } from "@heroui/react";
 import { Card } from "@heroui/react";
 import { MessageCircle } from "lucide-react";
 
-import { AnthropicModel, OpenAIModel, GoogleModel } from "@chia/ai/types";
-import { Provider } from "@chia/ai/types";
+import { PROVIDER_IDS, PROVIDER_LABELS } from "@chia/ai/provider";
 
 import { AIForm } from "@/components/settings/ai-form";
 
@@ -22,44 +21,19 @@ export const AISetting = () => {
         <Tabs className="w-full">
           <Tabs.ListContainer>
             <Tabs.List>
-              <Tabs.Tab id="openai">
-                OpenAI
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="anthropic">
-                Anthropic
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="google">
-                Google
-                <Tabs.Indicator />
-              </Tabs.Tab>
+              {PROVIDER_IDS.map((provider) => (
+                <Tabs.Tab key={provider} id={provider}>
+                  {PROVIDER_LABELS[provider]}
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
             </Tabs.List>
           </Tabs.ListContainer>
-          <Tabs.Panel className="pt-4" id="openai">
-            <AIForm
-              model={{
-                provider: Provider.OpenAI,
-                id: OpenAIModel["gpt-4o-mini"],
-              }}
-            />
-          </Tabs.Panel>
-          <Tabs.Panel className="pt-4" id="anthropic">
-            <AIForm
-              model={{
-                provider: Provider.Anthropic,
-                id: AnthropicModel["claude-haiku-4-5"],
-              }}
-            />
-          </Tabs.Panel>
-          <Tabs.Panel className="pt-4" id="google">
-            <AIForm
-              model={{
-                provider: Provider.Google,
-                id: GoogleModel["gemini-3.1-flash"],
-              }}
-            />
-          </Tabs.Panel>
+          {PROVIDER_IDS.map((provider) => (
+            <Tabs.Panel key={provider} className="pt-4" id={provider}>
+              <AIForm provider={provider} />
+            </Tabs.Panel>
+          ))}
         </Tabs>
       </Card.Content>
     </Card>
