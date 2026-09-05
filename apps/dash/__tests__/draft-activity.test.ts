@@ -22,7 +22,12 @@ const start = (
     args,
   }) as const;
 
-const end = (toolCallId: string, isError = false, aborted?: true) =>
+const end = (
+  toolCallId: string,
+  isError = false,
+  aborted?: true,
+  details?: { revision: number }
+) =>
   ({
     type: "tool:end",
     toolCallId,
@@ -30,6 +35,7 @@ const end = (toolCallId: string, isError = false, aborted?: true) =>
     isError,
     aborted,
     summary: "",
+    details,
   }) as const;
 
 describe("draft activity", () => {
@@ -52,14 +58,25 @@ describe("draft activity", () => {
 
     let settled: unknown;
     act(() => {
-      settled = trackDraftToolEvent(end("t1"));
+      settled = trackDraftToolEvent(
+        end("t1", false, undefined, { revision: 4 })
+      );
     });
     expect(settled).toEqual({
       draftId: 7,
       locale: "en",
       label: "Write draft body",
+      revision: 4,
     });
     expect(hook.result.current).toBeNull();
+  });
+
+  it("reports a call whose result names no revision", () => {
+    trackDraftToolEvent(start("t1", "draft", { draftId: 7 }));
+    expect(trackDraftToolEvent(end("t1"))).toEqual({
+      draftId: 7,
+      label: "Write draft body",
+    });
   });
 
   it("ignores other tiers, calls without a draft id, and unknown ends", () => {

@@ -52,16 +52,29 @@ export const AgentPanel = () => {
     void queryClient.invalidateQueries({ queryKey: listOptions.queryKey });
   }, [listOptions.queryKey, queryClient]);
 
-  // A settled draft write refreshes the open editor without waiting for the watch stream.
+  /**
+   * A settled draft call refreshes the open editor without waiting for the watch stream. A
+   * revision the editor already holds is a replay or a watch delivery; nothing to fetch.
+   */
   const onToolEvent = useCallback(
     (event: AgentToolEvent) => {
       const settled = trackDraftToolEvent(event);
       if (!settled) return;
-      void queryClient.invalidateQueries({
-        queryKey: orpc.feeds["draft:get"].queryOptions({
-          input: { draftId: settled.draftId },
-        }).queryKey,
+      const { queryKey } = orpc.feeds["draft:get"].queryOptions({
+        input: { draftId: settled.draftId },
       });
+      const held = queryClient.getQueryData(queryKey)?.revision;
+      if (
+        settled.revision !== undefined &&
+        held !== undefined &&
+        settled.revision <= held
+      )
+        return;
+      // The write is committed before the event; a fetch already in flight will carry it.
+      void queryClient.invalidateQueries(
+        { queryKey },
+        { cancelRefetch: false }
+      );
     },
     [queryClient]
   );

@@ -53,13 +53,22 @@ const draftArgs = z.object({
   locale: z.string().optional(),
 });
 
+/** Every draft tool echoes the revision it left the draft at. */
+const draftDetails = z.object({ revision: z.number().int() });
+
+export interface SettledDraftCall extends DraftActivity {
+  /** Absent when the tool did not report one; the caller then refreshes unconditionally. */
+  revision?: number;
+}
+
 /**
- * Records a draft-tier call by its `draftId` argument and returns the activity when the call
- * settles with a result, so the caller can refresh that draft at once.
+ * Records a draft-tier call by its `draftId` argument and returns the call when it settles with
+ * a result. Attaching to a running turn replays settled calls, so the caller compares the
+ * revision with what it already has before refreshing.
  */
 export const trackDraftToolEvent = (
   event: AgentToolEvent
-): DraftActivity | null => {
+): SettledDraftCall | null => {
   const { begin, end } = draftActivityStore.getState();
   if (event.type === "tool:start") {
     if (event.tier !== "draft") return null;
@@ -70,7 +79,9 @@ export const trackDraftToolEvent = (
     return null;
   }
   const settled = end(event.toolCallId);
-  return settled && !event.isError && !event.aborted ? settled : null;
+  if (!settled || event.isError || event.aborted) return null;
+  const details = draftDetails.safeParse(event.details);
+  return details.success ? { ...settled, ...details.data } : settled;
 };
 
 export const useDraftActivity = (draftId: number): DraftActivity | null =>
