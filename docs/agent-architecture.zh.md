@@ -2,7 +2,7 @@
 
 > 狀態：as-built
 >
-> 最後更新：2026-09-01
+> 最後更新：2026-09-06
 >
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 >
@@ -72,7 +72,7 @@ Public kind 只有共用 content-read tools，沒有 approval tier、web、memor
 
 Transcript 是一棵樹。`agent.session_entry.parentId` 連接 branch，`agent.session.leafEntryId` 選擇 active leaf。`seq` 記錄所有 branch 的持久化順序；每個 session 同時只有一個 writer，因此此順序可靠。
 
-`PgSessionStorage` 實作 runtime 的 `SessionTree`，測試使用 `InMemorySessionTree`。Pi session entry 以 opaque JSON 保存；已淘汰的 entry type 直接忽略，不做資料 migration。Kind-specific state 使用 extension table，不在共用 session row 增加大量 nullable columns。
+`PgSessionStorage` 實作 runtime 的 `SessionTree`，測試使用 `InMemorySessionTree`。Entry type 與 context projection 由 runtime 自己持有，兩者都鏡射 Pi 的定義，因此 branch 讀起來與在 Pi harness 下完全一致。Session entry 以 opaque JSON 保存；已淘汰的 entry type 直接忽略，不做資料 migration。Kind-specific state 使用 extension table，不在共用 session row 增加大量 nullable columns。
 
 ```text
 agent.session            kind、settings、active leaf
@@ -366,7 +366,33 @@ Admin write 在持久化前先依 code definition 驗證。API view 回傳 `defa
 
 在第二種 execution engine 形成具體需求前，不新增 engine adapter、capability plugin system 或 provider-neutral handle。
 
-## 12. 參考位置
+## 12. Pi 的 durable harness
+
+Pi 0.85 在 `Agent` class 之外另有一條執行路徑：`createAgentHarness`，一個建立在自有 storage contract 上的 durable operation runtime。本 runtime 沒有採用。這裡記下原因與整合的樣貌，讓下一次升 Pi 時能直接重新評估，不必重推一遍。
+
+Harness 本身就是為 host 排程設計的。Lane API 收斂成四個 durable primitive，每一個都對得上本 runtime 既有的 seam：
+
+| Harness primitive  | 本 runtime                                             |
+| ------------------ | ------------------------------------------------------ |
+| `accept`           | 在 lock 下建立 `agent.run` 並啟動 workflow 或喚醒 hook |
+| `drive`            | `runAgentTurnStep`                                     |
+| `requestAbort`     | 每個 run 的 abort-controller workflow                  |
+| `inspectExecution` | 對 Workflow World 做 turn-marker reconcile             |
+
+`drive` 回傳 `settled`、帶 `notBefore` 的 `waiting: retry`，或帶 poll 間隔的 `waiting: deferred`，因此 provider retry 與 deferred response 會變成 workflow sleep，而不是 process 內的等待。
+
+整合會改變的事：
+
+- 每次 transition 都重寫完整的 operation state，turn step 因此可以續跑，`maxRetries = 0` 可以拿掉。
+- Tool call 有 intent、effect、settlement 三段 commit，可宣告 `replay: "safe" | "never"` 與 invocation-scoped memo；assistant 串流 frame 會落地，供 partial 回復。
+- `message_end` 直接帶 entry id，取代 `runPiTurn` 裡預留 id 的對齊手法；`LaneSnapshot` 配合 `reduceLaneSnapshot` 取代 coarse 與 delta stream cursor 的 reconnect 機制。
+- Approval handshake 不變：`before_tool` hook 的 `block` 加 `terminate` 與現在的 tool gate 完全相同。
+- 必須自寫 Postgres 的 `Storage` 與 `SessionRepo`；上游只出貨 Memory、JSONL 與 SQLite。`@earendil-works/pi-agent-core/harness/session/testing` 匯出 conformance suite 可用來驗證。Entry 已與 Pi 的 union 一致；values、lists 與 harness 自己的 usage ledger 是新表。
+- `packages/agent-runtime/src/pi/` 大半被 lane 呼叫取代。`AgentWireEvent` 仍是 client 邊界，只是 mapper 改吃 `HarnessEvent`。
+
+以下條件在上游全部成立之前不要啟動：storage format 宣告穩定並具備 migration 機制（規格目前標記 format 4 為 pre-stabilization，可原地改形狀）、`Storage` 介面變更開始進 changelog、未完成的 harness work package（fork、`watchSession`、remote mutation transport）收尾。屆時先依 conformance suite 寫 Postgres backend，再把 `runAgentTurnStep` 換成 `accept` 加 `drive`。
+
+## 13. 參考位置
 
 | Concern                               | Location                                                                                              |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------- |

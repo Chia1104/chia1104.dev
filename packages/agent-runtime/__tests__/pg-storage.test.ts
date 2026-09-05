@@ -120,7 +120,7 @@ describe("PgSessionStorage", () => {
     await expect(storage().getLeafId()).resolves.toBe("entry-2");
   });
 
-  it("projects rows back into entries with their seq, a numeric timestamp and a tail on compactions", async () => {
+  it("projects rows back into entries with their seq, a numeric timestamp, and a tail and hook flag on compactions", async () => {
     getEntriesMock.mockResolvedValue(
       /* SAFETY: These rows implement the repository shape exercised by this case. */ [
         row(1, "entry-1", null, "compaction", {
@@ -141,6 +141,7 @@ describe("PgSessionStorage", () => {
       summary: "Summary",
       tokensBefore: 10,
       retainedTail: [],
+      fromHook: false,
     });
   });
 

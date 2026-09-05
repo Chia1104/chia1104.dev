@@ -24,10 +24,10 @@ allowBuilds:
 # Shared primitives used across apps and packages.
 catalog:
   "@types/express": ^5.0.6
-  "@types/node": 26.4.0
+  "@types/node": 26.4.1
   "@modelcontextprotocol/sdk": 1.30.0
   better-all: 0.0.9
-  bun-types: ^1.4.0
+  bun-types: ^1.4.1
   client-only: ^0.0.1
   dayjs: ^1.11.23
   es-toolkit: 1.52.0
@@ -40,25 +40,25 @@ catalog:
 
 catalogs:
   agent:
-    "@earendil-works/pi-agent-core": 0.84.4
-    "@earendil-works/pi-ai": 0.84.4
-    typebox: 1.3.23
+    "@earendil-works/pi-agent-core": 0.85.1
+    "@earendil-works/pi-ai": 0.85.1
+    typebox: 1.3.25
   ai:
-    "@ai-sdk/anthropic": 4.0.46
-    "@ai-sdk/gateway": 4.0.69
+    "@ai-sdk/anthropic": 4.0.49
+    "@ai-sdk/gateway": 4.0.74
     "@ai-sdk/google": 4.0.58
-    "@ai-sdk/openai": 4.0.52
-    "@ai-sdk/react": 4.0.88
-    "@anthropic-ai/sdk": 0.122.0
+    "@ai-sdk/openai": 4.0.58
+    "@ai-sdk/react": 4.0.95
+    "@anthropic-ai/sdk": 0.123.0
     "@google/genai": 2.19.0
-    ai: 7.0.85
-    firecrawl: 4.37.0
+    ai: 7.0.92
+    firecrawl: 4.38.0
     js-tiktoken: ^1.0.21
     ollama: 0.6.3
-    openai: 7.8.0
+    openai: 7.10.0
   aws:
-    "@aws-sdk/client-s3": ^3.1122.0
-    "@aws-sdk/s3-request-presigner": ^3.1122.0
+    "@aws-sdk/client-s3": ^3.1126.0
+    "@aws-sdk/s3-request-presigner": ^3.1126.0
   better-auth:
     "@better-auth/api-key": 1.7.2
     "@better-auth/passkey": 1.7.2
@@ -76,7 +76,7 @@ catalogs:
   email:
     "@react-email/ui": ^6.9.3
     react-email: ^6.9.3
-    resend: ^6.25.0
+    resend: ^6.26.0
   env:
     "@t3-oss/env-core": ^0.13.11
     "@t3-oss/env-nextjs": ^0.13.11
@@ -87,9 +87,9 @@ catalogs:
     "@fumadocs/mdx-remote": 1.5.1
     "@mdx-js/react": ^3.1.1
     "@types/mdx": ^2.0.14
-    fumadocs-core: 16.15.4
+    fumadocs-core: 16.15.6
     fumadocs-mdx: 15.4.0
-    fumadocs-ui: 16.15.4
+    fumadocs-ui: 16.15.6
     mermaid: ^11.17.2
   heroui-v3:
     "@heroui/react": 3.2.4
@@ -105,30 +105,30 @@ catalogs:
     "@keyv/redis": ^5.1.6
     "@keyv/valkey": ^1.0.11
     "@upstash/ratelimit": 2.0.8
-    "@upstash/redis": 1.38.3
+    "@upstash/redis": 1.38.4
     keyv: ^5.6.0
   monaco:
     "@monaco-editor/react": ^4.7.0
     monaco-editor: ^0.56.0
   next:
-    "@next/third-parties": 16.3.3
-    next: 16.3.3
-    next-intl: ^4.14.1
-    next-safe-action: 8.6.1
+    "@next/third-parties": 16.3.4
+    next: 16.3.4
+    next-intl: ^4.14.2
+    next-safe-action: 8.7.1
     sharp: 0.35.4
-    takumi-js: ^2.13.3
+    takumi-js: ^2.13.5
   nitro:
-    nitro: 3.0.260610-beta
-    srvx: 0.12.7
+    nitro: 3.0.260903-beta
+    srvx: 1.0.3
   orpc:
     "@orpc/client": 2.0.0-beta.32
     "@orpc/contract": 2.0.0-beta.32
     "@orpc/server": 2.0.0-beta.32
     "@orpc/tanstack-query": 2.0.0-beta.32
   oxc:
-    "@oxlint/plugins": 1.80.0
-    oxfmt: 0.65.0
-    oxlint: 1.80.0
+    "@oxlint/plugins": 1.81.0
+    oxfmt: 0.66.0
+    oxlint: 1.81.0
   radix-ui:
     "@radix-ui/react-accordion": 1.2.20
     "@radix-ui/react-avatar": ^1.2.6
@@ -146,7 +146,7 @@ catalogs:
     "@radix-ui/react-tooltip": ^1.2.16
   react-is:
     "@types/react": ^19.2.18
-    "@types/react-dom": ^19.2.5
+    "@types/react-dom": ^19.2.7
     babel-plugin-react-compiler: 1.0.0
     react: ^19.2.8
     react-dom: ^19.2.8
@@ -157,10 +157,10 @@ catalogs:
     streamdown: 2.6.0
   tailwindcss:
     "@egoist/tailwindcss-icons": ^1.9.2
-    "@iconify/json": ^2.2.524
+    "@iconify/json": ^2.2.525
     "@tailwindcss/postcss": 4.3.3
     "@tailwindcss/typography": ^0.5.20
-    postcss: 8.5.26
+    postcss: 8.5.28
     tailwind-scrollbar: ^4.0.2
     tailwindcss: 4.3.3
     tw-animate-css: ^1.4.0
@@ -174,14 +174,14 @@ catalogs:
     "@playwright/test": ^1.62.1
     "@testing-library/jest-dom": 7.0.1
     "@testing-library/react": 16.3.3
-    "@testing-library/user-event": 14.6.6
+    "@testing-library/user-event": 14.6.7
     "@vitejs/plugin-react-swc": 4.3.3
-    "@vitest/coverage-v8": 4.1.11
-    "@vitest/ui": 4.1.11
-    happy-dom: ^20.12.0
+    "@vitest/coverage-v8": 5.0.0
+    "@vitest/ui": 5.0.0
+    happy-dom: ^20.14.0
     msw: ^2.15.0
     start-server-and-test: ^3.0.2
-    vitest: 4.1.11
+    vitest: 5.0.0
   three:
     "@react-three/drei": ^10.7.8
     "@react-three/fiber": ^9.7.0
@@ -189,7 +189,7 @@ catalogs:
     leva: ^0.10.1
     maath: ^0.10.8
     r3f-perf: ^7.2.3
-    shaders: ^3.1.463
+    shaders: ^3.2.466
     three: ^0.185.1
   tooling:
     "@manypkg/cli": ^0.25.1
@@ -199,14 +199,14 @@ catalogs:
     eslint-plugin-turbo: ^2.10.12
     husky: ^9.1.7
     lint-staged: ^17.4.1
-    nx: ^23.1.2
+    nx: ^23.2.0
     railway: 3.11.0
-    tsdown: 0.22.14
+    tsdown: 0.23.0
     tsx: ^4.23.13
     turbo: 2.10.12
   ui:
     "@iconify/react": ^6.0.2
-    "@internationalized/date": ^3.12.3
+    "@internationalized/date": ^3.12.4
     "@marsidev/react-turnstile": ^1.6.1
     "@shikijs/stream": ^4.4.3
     "@types/react-google-recaptcha": ^2.1.9
@@ -217,8 +217,8 @@ catalogs:
     cobe: ^2.0.1
     immer: ^11.1.18
     katex: ^0.18.5
-    lucide-react: ^1.38.0
-    motion: ^13.1.1
+    lucide-react: ^1.41.0
+    motion: ^13.2.0
     next-themes: ^0.4.6
     nuqs: ^2.10.1
     react-activity-calendar: ^3.2.1
@@ -238,8 +238,8 @@ catalogs:
     hast-util-from-html: ^2.0.3
     hast-util-to-text: ^4.0.2
     mdast-util-to-string: ^4.0.0
-    node-html-parser: ^9.0.2
-    reading-time-estimator: ^2.14.0
+    node-html-parser: ^9.0.3
+    reading-time-estimator: ^2.15.0
     rehype-katex: ^7.0.1
     remark-gfm: ^4.0.1
     remark-math: ^6.0.0
@@ -259,8 +259,8 @@ catalogs:
 linkWorkspacePackages: true
 
 minimumReleaseAgeExclude:
-  - '@earendil-works/pi-agent-core@0.84.3'
-  - '@earendil-works/pi-ai@0.84.3'
+  - '@earendil-works/pi-agent-core@0.85.1'
+  - '@earendil-works/pi-ai@0.85.1'
   - '@oxlint/binding-android-arm-eabi@1.79.0'
   - '@oxlint/binding-android-arm64@1.79.0'
   - '@oxlint/binding-darwin-arm64@1.79.0'
@@ -283,7 +283,8 @@ minimumReleaseAgeExclude:
   - '@oxlint/plugins@1.79.0'
   - oxlint@1.79.0
   - bun-types@1.4.0
-  - '@earendil-works/pi-telemetry@0.84.3'
+  - '@earendil-works/pi-telemetry@0.85.1'
+  - '@earendil-works/chord@0.85.1'
 
 strictPeerDependencies: false
 

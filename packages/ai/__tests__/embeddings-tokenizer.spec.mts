@@ -106,7 +106,6 @@ describe("tokenizer lifecycle", () => {
     const constructor = vi.fn(() => encoding);
 
     vi.doMock("js-tiktoken/lite", () => ({ Tiktoken: constructor }));
-    vi.doMock("js-tiktoken/ranks/cl100k_base", () => ({ default: {} }));
 
     const fresh = await import("../src/embeddings/tokenizer");
     return { constructor, fresh };
@@ -114,7 +113,6 @@ describe("tokenizer lifecycle", () => {
 
   afterEach(() => {
     vi.doUnmock("js-tiktoken/lite");
-    vi.doUnmock("js-tiktoken/ranks/cl100k_base");
     vi.resetModules();
   });
 
@@ -155,10 +153,8 @@ describe("tokenizer lifecycle", () => {
 
 describe("loadTokenizer", () => {
   it("does not retain the encoding across calls", async () => {
-    const [first, second] = await Promise.all([
-      loadTokenizer(),
-      loadTokenizer(),
-    ]);
+    const first = await loadTokenizer();
+    const second = await loadTokenizer();
     expect(first).not.toBe(second);
   });
 
