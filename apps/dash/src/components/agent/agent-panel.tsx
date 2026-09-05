@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 import { Button, Spinner } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,10 +11,12 @@ import { toast } from "sonner";
 import { AgentSessionProvider } from "@chia/agent-elements/provider";
 import { agentQueryKeys } from "@chia/agent-elements/queries";
 import { SessionTabs } from "@chia/agent-elements/session-tabs";
+import type { AgentToolEvent } from "@chia/agent-elements/store";
 import agentLabels from "@chia/i18n/agent-elements/en-US.json";
 
 import { client, orpc } from "@/libs/orpc/client";
 
+import { draftActivityStore, trackDraftToolEvent } from "./draft-activity";
 import { WritingSession } from "./writing-session";
 
 const WRITING_AGENT_KIND = "writing";
@@ -49,6 +51,39 @@ export const AgentPanel = () => {
   const invalidateSessions = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: listOptions.queryKey });
   }, [listOptions.queryKey, queryClient]);
+
+  /**
+   * A settled draft call refreshes the open editor without waiting for the watch stream. A
+   * revision the editor already holds is a replay or a watch delivery; nothing to fetch.
+   */
+  const onToolEvent = useCallback(
+    (event: AgentToolEvent) => {
+      const settled = trackDraftToolEvent(event);
+      if (!settled) return;
+      const { queryKey } = orpc.feeds["draft:get"].queryOptions({
+        input: { draftId: settled.draftId },
+      });
+      const held = queryClient.getQueryData(queryKey)?.revision;
+      if (
+        settled.revision !== undefined &&
+        held !== undefined &&
+        settled.revision <= held
+      )
+        return;
+      // The write is committed before the event; a fetch already in flight will carry it.
+      void queryClient.invalidateQueries(
+        { queryKey },
+        { cancelRefetch: false }
+      );
+    },
+    [queryClient]
+  );
+  // Activity belongs to the mounted session: a switch or a closed drawer leaves none behind.
+  useEffect(() => {
+    const { clear } = draftActivityStore.getState();
+    clear();
+    return clear;
+  }, [selectedSessionId]);
 
   const createMutation = useMutation(
     orpc.agent.sessions.create.mutationOptions({
@@ -197,6 +232,7 @@ export const AgentPanel = () => {
           selectSession(detail.session.id);
           invalidateSessions();
         }}
+        onToolEvent={onToolEvent}
         onTurnEnd={invalidateSessions}
         sessionId={selectedSessionId}>
         <WritingSession tabs={tabs} />

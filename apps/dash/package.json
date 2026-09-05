@@ -70,7 +70,8 @@
     "superjson": "catalog:",
     "tailwind-merge": "catalog:ui",
     "usehooks-ts": "catalog:ui",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "zustand": "catalog:ui"
   },
   "devDependencies": {
     "@chia/tailwind": "workspace:*",

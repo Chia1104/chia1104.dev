@@ -14,6 +14,7 @@ import { useProvideAgentContext } from "@chia/agent-elements/context";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 import dayjs from "@chia/utils/day";
 
+import { useDraftActivity } from "@/components/agent/draft-activity";
 import { orpc } from "@/libs/orpc/client";
 
 import { DraftActions } from "./draft-actions";
@@ -24,9 +25,6 @@ import type { DraftView } from "./draft-values";
 import { EditFields } from "./edit-fields";
 import { useDraftAutosave } from "./use-draft-autosave";
 import { useDraftWatch } from "./use-draft-watch";
-
-// The watch stream carries changes; polling covers a disconnected stream.
-const POLL_INTERVAL_MS = 60_000;
 
 const DraftForm = ({ initial }: { initial: DraftView }) => {
   const router = useRouter();
@@ -65,7 +63,6 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
     orpc.feeds["draft:get"].queryOptions({
       input: { draftId: initial.id },
       initialData: initial,
-      refetchInterval: POLL_INTERVAL_MS,
       refetchOnWindowFocus: true,
       // A discarded draft answers NOT_FOUND; retrying only delays the redirect below.
       retry: false,
@@ -94,6 +91,7 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
   }, [error, router]);
 
   useDraftWatch(initial.id);
+  const activity = useDraftActivity(initial.id);
 
   const conflict =
     autosave.issue?.kind === "conflict" ? autosave.issue.draft : null;
@@ -136,6 +134,14 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
           status={
             <div className="flex flex-wrap items-center gap-2" role="status">
               {status}
+              {activity ? (
+                <Chip color="accent" size="sm" variant="soft">
+                  <Chip.Label>
+                    Agent · {activity.label}
+                    {activity.locale ? ` (${activity.locale})` : ""}
+                  </Chip.Label>
+                </Chip>
+              ) : null}
               {remoteChanged && !conflict ? (
                 <Chip color="warning" size="sm" variant="soft">
                   <Chip.Label>Changed elsewhere</Chip.Label>

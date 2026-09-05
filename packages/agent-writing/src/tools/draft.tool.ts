@@ -39,6 +39,7 @@ const MAX_DESCRIPTION_CHARS = 160;
 /** What `patch_draft_meta` echoes back: the merged state, scoped to the locale it touched. */
 interface MetaReadback {
   draftId: number;
+  revision: number;
   feedMeta: DraftFeedMeta;
   locales: string[];
   locale?: Locale;
@@ -276,6 +277,7 @@ export const patchDraftMetaTool = defineTool({
     // Echo the merged per-locale fields so the model can confirm the patch from this result.
     const readback: MetaReadback = {
       draftId,
+      revision: draft.revision,
       feedMeta: feedMetaOf(draft),
       locales: Object.keys(draft.translations),
     };

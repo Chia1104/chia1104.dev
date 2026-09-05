@@ -613,6 +613,43 @@ describe("createAgentSessionStore", () => {
     queryClient.clear();
   });
 
+  it("hands tool boundaries to the host and nothing else", async () => {
+    const stream = channel();
+    const onToolEvent = vi.fn();
+    const { client } = fakeClient({ chat: async () => stream.iterable });
+    const { store, queryClient } = makeStore({ client, onToolEvent });
+    await store.getState().hydrate();
+
+    const prompted = store.getState().prompt("draft it");
+    await flush();
+    const started = {
+      type: "tool:start",
+      toolCallId: "t1",
+      toolName: "write_draft_content",
+      label: "Write draft body",
+      tier: "draft",
+      args: { draftId: 7, locale: "en" },
+    } as const;
+    const ended = {
+      type: "tool:end",
+      toolCallId: "t1",
+      toolName: "write_draft_content",
+      isError: false,
+      summary: "Wrote it",
+    } as const;
+    stream.push(started);
+    stream.push({ type: "tool:update", toolCallId: "t1", summary: "…" });
+    stream.push(ended);
+    stream.push({ type: "state:changed", scope: "draft", revision: 1 });
+    await flush();
+    expect(onToolEvent.mock.calls).toEqual([[started], [ended]]);
+    stream.push({ type: "run:end", reason: "done" });
+    stream.close();
+    await prompted;
+    store.getState().dispose();
+    queryClient.clear();
+  });
+
   it("sends an approval decision as a follow-up turn", async () => {
     const stream = channel();
     const { client, chat } = fakeClient({ chat: async () => stream.iterable });
