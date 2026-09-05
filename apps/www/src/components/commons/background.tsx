@@ -3,24 +3,27 @@
 import type { FC } from "react";
 import { useState, useEffect } from "react";
 
-import { useIsMounted } from "usehooks-ts";
+import { useDebouncedCallback } from "@tanstack/react-pacer";
 
 import Spotlight from "@chia/ui/spotlight";
 import useTheme from "@chia/ui/utils/use-theme";
 
 import { useSettingsStore } from "@/stores/settings/store";
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+/** The bright fill waits for the first paint so the spotlight fades in instead of flashing. */
+const SPOTLIGHT_DELAY_MS = 500;
 
 const Background: FC = () => {
   const { isDarkMode } = useTheme();
   const backgroundEnabled = useSettingsStore((s) => s.backgroundEnabled);
-  const isMounted = useIsMounted();
   const [isOK, setIsOK] = useState(false);
 
+  const reveal = useDebouncedCallback(() => setIsOK(true), {
+    wait: SPOTLIGHT_DELAY_MS,
+  });
   useEffect(() => {
-    void delay(500).then(() => isMounted() && setIsOK(true));
-  }, [isMounted]);
+    reveal();
+  }, [reveal]);
 
   if (!backgroundEnabled) {
     return null;

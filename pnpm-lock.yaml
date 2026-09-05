@@ -2480,6 +2480,9 @@ importers:
       '@react-email/ui':
         specifier: catalog:email
         version: 6.9.3(@babel/core@7.29.7(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@tanstack/react-pacer':
+        specifier: catalog:tanstack
+        version: 0.23.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@tanstack/react-query':
         specifier: catalog:tanstack
         version: 5.102.8(react@19.2.8)
