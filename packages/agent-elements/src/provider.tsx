@@ -73,6 +73,7 @@ export const AgentSessionProvider = ({
   labels,
   onForked,
   onStateChanged,
+  onToolEvent,
   onTurnEnd,
   sessionId,
 }: AgentSessionProviderProps) => {
@@ -80,7 +81,7 @@ export const AgentSessionProvider = ({
   const contextStore = useAgentContextStore();
   // Callbacks are read through a ref so a new closure from the host never recreates the store.
   const callbacks = useRef<AgentProviderCallbacks>({});
-  callbacks.current = { onForked, onStateChanged, onTurnEnd };
+  callbacks.current = { onForked, onStateChanged, onToolEvent, onTurnEnd };
 
   const storeRef = useRef<AgentSessionStoreApi>(null);
   if (!storeRef.current) {
@@ -94,6 +95,7 @@ export const AgentSessionProvider = ({
         ? () => attachedContext(contextStore.getState())
         : undefined,
       onStateChanged: (event) => callbacks.current.onStateChanged?.(event),
+      onToolEvent: (event) => callbacks.current.onToolEvent?.(event),
       onTurnEnd: () => callbacks.current.onTurnEnd?.(),
     });
   }
