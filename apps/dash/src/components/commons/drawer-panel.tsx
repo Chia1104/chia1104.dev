@@ -11,19 +11,28 @@ import useIsMobile from "@chia/ui/utils/use-is-mobile";
 export const DrawerPanel = ({
   children,
   className,
+  classNames,
 }: {
   children: ReactNode;
   className?: string;
+  classNames?: {
+    content?: string;
+    dialog?: string;
+    handle?: string;
+  };
 }) => {
   const isMobile = useIsMobile("(max-width: 767px)");
   return (
-    <Drawer.Content placement={isMobile ? "bottom" : "right"}>
+    <Drawer.Content
+      placement={isMobile ? "bottom" : "right"}
+      className={classNames?.content}>
       <Drawer.Dialog
         className={cn(
-          isMobile ? "max-h-[90dvh]" : "w-full max-w-3xl",
-          className
+          isMobile ? "max-h-[85dvh]" : "w-full max-w-3xl",
+          className,
+          classNames?.dialog
         )}>
-        {isMobile ? <Drawer.Handle /> : null}
+        {isMobile ? <Drawer.Handle className={classNames?.handle} /> : null}
         {children}
       </Drawer.Dialog>
     </Drawer.Content>

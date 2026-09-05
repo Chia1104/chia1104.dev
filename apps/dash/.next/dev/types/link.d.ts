@@ -33,7 +33,6 @@ declare namespace __next_route_internal_types__ {
 
   type StaticRoutes = 
     | `/` // ../../../src/app/(workspace)/page.tsx
-    | `/agent` // ../../../src/app/(workspace)/(operator)/agent/page.tsx
     | `/agents` // ../../../src/app/(workspace)/(operator)/agents/page.tsx
     | `/api-keys` // ../../../src/app/(workspace)/(operator)/api-keys/page.tsx
     | `/api/v1/health` // ../../../src/app/api/v1/health/route.ts

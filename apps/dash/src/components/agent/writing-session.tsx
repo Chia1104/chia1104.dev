@@ -55,7 +55,11 @@ const CurrentDraftAttachment = ({
       }
       action={
         attached ? null : (
-          <Button onPress={() => onChange(true)} size="sm" variant="ghost">
+          <Button
+            onPress={() => onChange(true)}
+            size="sm"
+            variant="ghost"
+            className="h-6 p-1 text-[11px]">
             Attach
           </Button>
         )
@@ -92,7 +96,7 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
 
   return (
     <>
-      <header className="border-border flex min-w-0 items-center gap-3 border-b px-4 py-3">
+      <header className="flex min-w-0 items-center gap-3 px-3.5 py-2.5 pt-0 sm:pt-2.5">
         {tabs}
       </header>
 

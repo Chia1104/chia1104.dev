@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { Button, Chip, Drawer } from "@heroui/react";
@@ -49,6 +49,7 @@ const MetaField = ({
 
 const DraftBody = ({ draft }: { draft: AgentDraft }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   // SAFETY: `translations` is a `Partial<Record<Locale, …>>`; `Object.entries` widens its keys to
   // `string` and drops nothing else, so the pairs are exactly the locale-keyed entries.
   const translations = Object.entries(draft.translations) as [
@@ -71,7 +72,11 @@ const DraftBody = ({ draft }: { draft: AgentDraft }) => {
               : ` · feed #${draft.feedId} has unapplied changes`}
         </p>
         <Button
-          onPress={() => router.push(`/feed/draft/${draft.id}?agent=open`)}
+          onPress={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("agent", "open");
+            router.push(`/feed/draft/${draft.id}?${params.toString()}`);
+          }}
           size="sm"
           variant="secondary">
           <PencilLine className="size-4" />

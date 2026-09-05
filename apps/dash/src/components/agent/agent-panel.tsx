@@ -205,9 +205,7 @@ export const AgentPanel = () => {
   }
   return (
     <>
-      <div className="border-border flex min-w-0 items-center gap-3 border-b px-4 py-3">
-        {tabs}
-      </div>
+      <div className="flex min-w-0 items-center gap-3 px-4 py-3">{tabs}</div>
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
         <span className="bg-surface-secondary flex size-12 items-center justify-center rounded-full">
           <Bot className="size-6" />

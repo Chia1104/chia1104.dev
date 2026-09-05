@@ -142,7 +142,7 @@ export const ModelPicker = ({
         <Button
           aria-label={labels.modelPicker}
           className={cn(
-            "h-8 gap-1.5 px-2 text-xs",
+            "h-7 gap-1.5 px-2 text-xs",
             fullWidth && "w-full justify-start",
             className
           )}
@@ -159,7 +159,7 @@ export const ModelPicker = ({
           ) : null}
           <span
             className={cn(
-              "truncate font-medium",
+              "truncate text-[11px] font-medium",
               fullWidth ? "min-w-0 flex-1 text-left" : "max-w-40"
             )}>
             {triggerModel}
@@ -167,7 +167,7 @@ export const ModelPicker = ({
           {showSlider ? (
             <>
               <span className="bg-separator mx-0.5 h-3 w-px" />
-              <span className="text-muted">
+              <span className="text-muted text-[11px]">
                 {labels.thinkingLevelNames[thinkingLevel]}
               </span>
             </>

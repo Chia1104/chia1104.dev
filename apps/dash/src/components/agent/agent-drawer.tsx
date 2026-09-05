@@ -48,7 +48,11 @@ export const AgentDrawer = () => {
   const [open, setOpen] = useAgentOpen();
   return (
     <Drawer.Backdrop isOpen={open} onOpenChange={setOpen}>
-      <DrawerPanel className="flex flex-col p-0">
+      <DrawerPanel
+        className="flex flex-col p-0"
+        classNames={{
+          handle: "mt-3",
+        }}>
         <Drawer.Body className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
           {open ? <AgentPanel /> : null}
         </Drawer.Body>
