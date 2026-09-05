@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AlertDialog, Button, Chip, Form, Spinner } from "@heroui/react";
@@ -8,6 +9,7 @@ import { ORPCError } from "@orpc/client";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormProvider, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import { Locale } from "@chia/db/types";
 import type { Locale as LocaleType } from "@chia/db/types";
@@ -21,11 +23,12 @@ import { DraftActions } from "./draft-actions";
 import { draftFormSchema } from "./draft-form-schema";
 import type { DraftFormValues } from "./draft-form-schema";
 import { EditFields } from "./edit-fields";
+import { useDraftWatch } from "./use-draft-watch";
 
 /**
  * The draft is shared with the writing agent, so every save is a compare-and-set on the
  * revision this form last loaded. A stale save opens the conflict dialog; a newer revision
- * seen while polling refreshes an idle form and warns a dirty one.
+ * announced by the watch stream refreshes an idle form and warns a dirty one.
  */
 
 export type DraftView = RouterOutputs["feeds"]["draft:get"];
@@ -43,8 +46,10 @@ const TRANSLATION_FIELDS = [
   "content",
 ] as const;
 const AUTOSAVE_WAIT_MS = 1000;
-/** Picks up agent turns that ended; the agent does not push to the editor. */
-const POLL_INTERVAL_MS = 5000;
+/** The watch stream carries changes; this poll only covers a stream that is down. */
+const POLL_INTERVAL_MS = 60_000;
+/** How long the "agent editing" chip stays lit after the agent's last write. */
+const AGENT_ACTIVE_MS = 10_000;
 
 const emptyTranslation = (): TranslationValues => ({
   title: null,
@@ -138,10 +143,19 @@ type SaveState =
 const SaveStatus = ({
   state,
   remoteChanged,
+  agentEditing,
 }: {
   state: SaveState;
   remoteChanged: boolean;
+  agentEditing: boolean;
 }) => {
+  if (agentEditing) {
+    return (
+      <Chip color="accent" size="sm" variant="soft">
+        <Chip.Label>Agent is editing</Chip.Label>
+      </Chip>
+    );
+  }
   if (remoteChanged) {
     return (
       <Chip color="warning" size="sm" variant="soft">
@@ -181,6 +195,7 @@ const SaveStatus = ({
 };
 
 const DraftForm = ({ initial }: { initial: DraftView }) => {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const draftQueryOptions = useMemo(
     () =>
@@ -241,6 +256,40 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
   const { mutateAsync: patchDraft } = useMutation(
     orpc.feeds["draft:patch"].mutationOptions()
   );
+
+  // Lit while the agent writes; the revision effect below decides whether to adopt or warn.
+  const [agentActiveAt, setAgentActiveAt] = useState<number | null>(null);
+  useEffect(() => {
+    if (agentActiveAt === null) return;
+    const timer = setTimeout(() => setAgentActiveAt(null), AGENT_ACTIVE_MS);
+    return () => clearTimeout(timer);
+  }, [agentActiveAt]);
+
+  useDraftWatch(initial.id, initial.revision, (event) => {
+    switch (event.type) {
+      case "ping":
+        return;
+      case "discarded":
+        toast.info("This draft was discarded elsewhere.");
+        router.replace("/feed/drafts");
+        return;
+      case "applied":
+        void queryClient.invalidateQueries({
+          queryKey: draftQueryOptions.queryKey,
+        });
+        return;
+      case "revision": {
+        if (event.author === "agent") setAgentActiveAt(Date.now());
+        const known =
+          queryClient.getQueryData(draftQueryOptions.queryKey)?.revision ?? 0;
+        if (event.revision > known) {
+          void queryClient.invalidateQueries({
+            queryKey: draftQueryOptions.queryKey,
+          });
+        }
+      }
+    }
+  });
 
   const flush = useCallback(async () => {
     if (inFlightRef.current) {
@@ -362,7 +411,11 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
           draft={draft}
           onDraftChanged={adopt}
           status={
-            <SaveStatus remoteChanged={remoteChanged} state={saveState} />
+            <SaveStatus
+              agentEditing={agentActiveAt !== null}
+              remoteChanged={remoteChanged}
+              state={saveState}
+            />
           }
         />
         <EditFields

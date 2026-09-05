@@ -65,6 +65,14 @@ export async function getConnection(
   }
 }
 
+/** The primary connection string for `env`, for a connection outside the pool such as LISTEN. */
+export const resolveDatabaseUrl = (env?: string): string =>
+  switchEnv(env, {
+    prod: () => internalEnv.DATABASE_URL,
+    beta: () => internalEnv.BETA_DATABASE_URL ?? "",
+    local: () => internalEnv.LOCAL_DATABASE_URL ?? "",
+  });
+
 export const connectDatabase = async (
   env?: string,
   options?: DrizzleCacheOptions

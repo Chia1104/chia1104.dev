@@ -20,6 +20,7 @@ const UNTIMED_PROCEDURE_PATHS = [
   "/agent/sessions/chat",
   "/agent/sessions/compact",
   "/agent/sessions/navigate",
+  "/feeds/draft:watch",
 ];
 
 const isUntimedProcedure = (path: string): boolean =>

@@ -32,7 +32,7 @@ Data fetching runs in the browser through `src/libs/orpc/client.ts` with the Bet
 
 `dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns.
 
-The post editor edits `feed_draft`, never the feed: autosave is a compare-and-set on the draft revision polled every few seconds, and only Apply writes the feed. Feed-level switches (published, date, delete) call `feeds.update` directly.
+The post editor edits `feed_draft`, never the feed: autosave is a compare-and-set on the draft revision, changes from the agent, MCP or another tab arrive over `feeds.draft:watch` with a slow poll as the fallback, and only Apply writes the feed. Feed-level switches (published, date, delete) call `feeds.update` directly.
 
 What a signed-in person may see comes from `dashboard.access`, never the `role` column: an `operator` is the configured admin id and gets the `(operator)` route group, whose server layout redirects everyone else; a `member` gets the overview and general settings. Guests are refused at the workspace layout.
 

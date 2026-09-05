@@ -96,6 +96,7 @@ export const routerContract = {
     "draft:discard": feedsContracts.discardFeedDraftContract,
     "draft:revisions": feedsContracts.listFeedDraftRevisionsContract,
     "draft:restore": feedsContracts.restoreFeedDraftRevisionContract,
+    "draft:watch": feedsContracts.watchFeedDraftContract,
   },
   file: {
     "signed-url:create": fileContracts.createSignedUrlForUploadContract,

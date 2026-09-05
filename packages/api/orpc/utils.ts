@@ -5,6 +5,8 @@ import GithubSlugger from "github-slugger";
 import type { ServiceContext } from "@chia/service-kit/context";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
+import type { FeedDraftBus } from "../feeds/draft-bus";
+
 import { routerContract } from "./router.contract";
 import type { AgentFactory } from "./services/agent.factory";
 
@@ -57,6 +59,11 @@ export interface BaseOSContext extends ServiceContext {
     };
   /** Typed constructor for kind services, admin views and quota standing. */
   agentFactory?: AgentFactory;
+  /**
+   * Live `feed_draft` notices for `feeds.draft:watch`. Absent, a watch still works: it falls
+   * back to polling the revision trail.
+   */
+  draftBus?: FeedDraftBus;
 }
 
 export const baseOS = os.$context<BaseOSContext>();

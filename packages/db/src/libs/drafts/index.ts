@@ -17,6 +17,9 @@ import {
   feedDraftTranslations,
 } from "../../schemas/schema.ts";
 
+import { FEED_DRAFT_CHANNEL } from "./notice.ts";
+import type { FeedDraftNotice } from "./notice.ts";
+
 /**
  * `feed_draft` with its translations, revision trail and compare-and-set writes. Every write
  * runs in one transaction that locks the draft row, so two writers cannot interleave.
@@ -73,6 +76,12 @@ const TRANSLATION_FIELDS = [
 const META_FIELDS = ["slug", "type", "defaultLocale", "mainImage"] as const;
 
 type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
+
+/** Queued on the transaction; Postgres delivers it on commit and drops it on rollback. */
+const notifyFeedDraft = (tx: Tx, notice: FeedDraftNotice) =>
+  tx.execute(
+    sql`select pg_notify(${FEED_DRAFT_CHANNEL}, ${JSON.stringify(notice)})`
+  );
 
 const toRecord = (
   draft: typeof feedDrafts.$inferSelect,
@@ -375,6 +384,14 @@ export const patchFeedDraft = (
 
     const draft = (await readDraft(tx, input.draftId))!;
     await recordRevision(tx, draft, input, changes);
+    await notifyFeedDraft(tx, {
+      type: "revision",
+      draftId: draft.id,
+      revision: draft.revision,
+      author: input.author,
+      sessionId: input.sessionId ?? null,
+      changes,
+    });
     return { status: "ok", draft };
   });
 
@@ -431,29 +448,42 @@ export const replaceFeedDraft = (
       ...Object.keys(current.translations),
       ...Object.keys(draft.translations),
     ]);
-    await recordRevision(tx, draft, input, [
+    const changes: FeedDraftChange[] = [
       { fields: [...META_FIELDS] },
       ...[...locales].map((locale) => ({
         locale: /* SAFETY: keys are Locale values. */ locale as Locale,
         fields: [...TRANSLATION_FIELDS],
       })),
-    ]);
+    ];
+    await recordRevision(tx, draft, input, changes);
+    await notifyFeedDraft(tx, {
+      type: "revision",
+      draftId: draft.id,
+      revision: draft.revision,
+      author: input.author,
+      sessionId: input.sessionId ?? null,
+      changes,
+    });
     return { status: "ok", draft };
   });
 
-export const markFeedDraftApplied = async (
+export const markFeedDraftApplied = (
   db: DB,
   input: { draftId: number; feedId: number; revision: number }
-) => {
-  await db
-    .update(feedDrafts)
-    .set({ feedId: input.feedId, appliedRevision: input.revision })
-    .where(eq(feedDrafts.id, input.draftId));
-};
+) =>
+  db.transaction(async (tx) => {
+    await tx
+      .update(feedDrafts)
+      .set({ feedId: input.feedId, appliedRevision: input.revision })
+      .where(eq(feedDrafts.id, input.draftId));
+    await notifyFeedDraft(tx, { type: "applied", ...input });
+  });
 
-export const deleteFeedDraft = async (db: DB, draftId: number) => {
-  await db.delete(feedDrafts).where(eq(feedDrafts.id, draftId));
-};
+export const deleteFeedDraft = (db: DB, draftId: number) =>
+  db.transaction(async (tx) => {
+    await tx.delete(feedDrafts).where(eq(feedDrafts.id, draftId));
+    await notifyFeedDraft(tx, { type: "discarded", draftId });
+  });
 
 export type FeedDraftRevisionSummary = Omit<FeedDraftRevision, "snapshot">;
 
@@ -476,6 +506,32 @@ export const listFeedDraftRevisions = async (
     .where(eq(feedDraftRevisions.draftId, input.draftId))
     .orderBy(desc(feedDraftRevisions.revision))
     .limit(input.limit);
+
+/** Revisions above `afterRevision`, oldest first: what a watcher missed while away. */
+export const listFeedDraftRevisionsSince = async (
+  db: DB,
+  input: { draftId: number; afterRevision: number; limit?: number }
+): Promise<FeedDraftRevisionSummary[]> =>
+  await db
+    .select({
+      id: feedDraftRevisions.id,
+      draftId: feedDraftRevisions.draftId,
+      revision: feedDraftRevisions.revision,
+      author: feedDraftRevisions.author,
+      sessionId: feedDraftRevisions.sessionId,
+      changes: feedDraftRevisions.changes,
+      createdAt: feedDraftRevisions.createdAt,
+      updatedAt: feedDraftRevisions.updatedAt,
+    })
+    .from(feedDraftRevisions)
+    .where(
+      and(
+        eq(feedDraftRevisions.draftId, input.draftId),
+        gt(feedDraftRevisions.revision, input.afterRevision)
+      )
+    )
+    .orderBy(feedDraftRevisions.revision)
+    .limit(input.limit ?? 200);
 
 export const getFeedDraftRevision = async (
   db: DB,

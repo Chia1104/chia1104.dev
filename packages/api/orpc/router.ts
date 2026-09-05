@@ -93,6 +93,7 @@ export const router = contractOS.router({
     "draft:discard": feedsRoutes.discardFeedDraftRoute,
     "draft:revisions": feedsRoutes.listFeedDraftRevisionsRoute,
     "draft:restore": feedsRoutes.restoreFeedDraftRevisionRoute,
+    "draft:watch": feedsRoutes.watchFeedDraftRoute,
   },
   file: {
     "signed-url:create": fileRoutes.createSignedUrlForUploadRoute,

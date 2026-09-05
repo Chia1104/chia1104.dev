@@ -145,6 +145,10 @@
       "types": "./feeds/draft.ts",
       "default": "./feeds/draft.ts"
     },
+    "./feeds/draft-bus": {
+      "types": "./feeds/draft-bus.ts",
+      "default": "./feeds/draft-bus.ts"
+    },
     "./memories/write": {
       "types": "./memories/write.ts",
       "default": "./memories/write.ts"
