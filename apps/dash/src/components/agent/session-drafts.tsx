@@ -71,7 +71,7 @@ const DraftBody = ({ draft }: { draft: AgentDraft }) => {
               : ` · feed #${draft.feedId} has unapplied changes`}
         </p>
         <Button
-          onPress={() => router.push(`/feed/draft/${draft.id}`)}
+          onPress={() => router.push(`/feed/draft/${draft.id}?agent=open`)}
           size="sm"
           variant="secondary">
           <PencilLine className="size-4" />

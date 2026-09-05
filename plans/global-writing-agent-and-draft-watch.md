@@ -1,10 +1,12 @@
 # 全域 writing agent、draft 即時串流與 dash drawer
 
-> 狀態：待實作
+> 狀態：已實作（2026-09-05）。Phase 1 `d6a24a233`、Phase 2 `40eb90135`、Phase 3 見其後的 commit，全部在 `feat/feed-draft`；PR 尚未開，正式環境 migration 尚未跑。
 >
 > 建立：2026-09-05
 >
-> 基底：`feat/feed-draft`（commit `7f85b08f9` 之後），PR 尚未開。本計劃在同一分支或其上再開分支實作，最後一起 PR 進 `develop`。
+> 基底：`feat/feed-draft`（commit `7f85b08f9` 之後），PR 尚未開。本計劃在同一分支實作，最後一起 PR 進 `develop`。
+>
+> 與計劃不同之處：附件渲染文字存進持久化 user message 的第一個 text block（1.2 的第二個選項）；`draft:watch` 以 revision trail 為事實來源、bus 只當喚醒（2.5 的保底做成常態）；`sessions.create` 的 `targetFeedId`／`draftId` 已移除，MCP `write_post` 改以附件交付。
 >
 > 相關：[docs/agent-architecture.md](../docs/agent-architecture.md) 第 3、7、9 節；`packages/AGENTS.md` feed_draft 條目。
 

@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
-import { Button, Card, Spinner } from "@heroui/react";
+import { Button, Spinner } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bot, CircleAlert, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -22,7 +22,8 @@ const WRITING_AGENT_KIND = "writing";
 const errorMessage = (cause: unknown) =>
   cause instanceof Error ? cause.message : "Something went wrong.";
 
-export const AgentWorkspace = () => {
+/** The writing sessions and the active one, sized by whatever mounts it (the agent drawer). */
+export const AgentPanel = () => {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -163,65 +164,68 @@ export const AgentWorkspace = () => {
     />
   );
 
+  if (sessionsQuery.isLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <Spinner aria-label="Loading writing sessions" size="sm" />
+      </div>
+    );
+  }
+  if (sessionsQuery.isError) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+        <CircleAlert className="text-danger size-6" />
+        <p>Unable to load sessions.</p>
+        <Button
+          onPress={() => void sessionsQuery.refetch()}
+          size="sm"
+          variant="secondary">
+          Try again
+        </Button>
+      </div>
+    );
+  }
+  if (selectedSessionId) {
+    return (
+      <AgentSessionProvider
+        key={selectedSessionId}
+        client={client.agent}
+        kind={WRITING_AGENT_KIND}
+        labels={agentLabels}
+        onForked={(detail) => {
+          // The fork is where the operator wants to continue; its detail is already cached.
+          selectSession(detail.session.id);
+          invalidateSessions();
+        }}
+        onTurnEnd={invalidateSessions}
+        sessionId={selectedSessionId}>
+        <WritingSession tabs={tabs} />
+      </AgentSessionProvider>
+    );
+  }
   return (
-    <main className="flex h-[calc(100svh-4rem)] min-w-0 flex-col overflow-hidden p-4">
-      <Card className="flex min-h-0 min-w-0 flex-1 flex-col gap-0 overflow-hidden p-0">
-        {sessionsQuery.isLoading ? (
-          <div className="flex flex-1 items-center justify-center">
-            <Spinner aria-label="Loading writing sessions" size="sm" />
-          </div>
-        ) : sessionsQuery.isError ? (
-          <Card.Content className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-            <CircleAlert className="text-danger size-6" />
-            <p>Unable to load sessions.</p>
-            <Button
-              onPress={() => void sessionsQuery.refetch()}
-              size="sm"
-              variant="secondary">
-              Try again
-            </Button>
-          </Card.Content>
-        ) : selectedSessionId ? (
-          <AgentSessionProvider
-            key={selectedSessionId}
-            client={client.agent}
-            kind={WRITING_AGENT_KIND}
-            labels={agentLabels}
-            onForked={(detail) => {
-              // The fork is where the operator wants to continue; its detail is already cached.
-              selectSession(detail.session.id);
-              invalidateSessions();
-            }}
-            onTurnEnd={invalidateSessions}
-            sessionId={selectedSessionId}>
-            <WritingSession tabs={tabs} />
-          </AgentSessionProvider>
-        ) : (
-          <>
-            <div className="border-border flex min-w-0 items-center gap-3 border-b px-4 py-3">
-              {tabs}
-            </div>
-            <Card.Content className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-              <span className="bg-surface-secondary flex size-12 items-center justify-center rounded-full">
-                <Bot className="size-6" />
-              </span>
-              <div>
-                <p className="font-medium">No writing session yet</p>
-                <p className="text-muted mt-1 text-sm">
-                  Create one to start working with the agent.
-                </p>
-              </div>
-              <Button
-                isPending={createMutation.isPending}
-                onPress={() => void createSession()}
-                size="sm">
-                <Plus className="size-4" />
-                New chat
-              </Button>
-            </Card.Content>
-          </>
-        )}
-      </Card>
-    </main>
+    <>
+      <div className="border-border flex min-w-0 items-center gap-3 border-b px-4 py-3">
+        {tabs}
+      </div>
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+        <span className="bg-surface-secondary flex size-12 items-center justify-center rounded-full">
+          <Bot className="size-6" />
+        </span>
+        <div>
+          <p className="font-medium">No writing session yet</p>
+          <p className="text-muted mt-1 text-sm">
+            Create one to start working with the agent.
+          </p>
+        </div>
+        <Button
+          isPending={createMutation.isPending}
+          onPress={() => void createSession()}
+          size="sm">
+          <Plus className="size-4" />
+          New chat
+        </Button>
+      </div>
+    </>
   );
 };

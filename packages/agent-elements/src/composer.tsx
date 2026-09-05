@@ -46,7 +46,7 @@ import {
 } from "./slash-command.ts";
 import type { SlashMenuItem, SlashToken } from "./slash-command.ts";
 import { SlashMenu } from "./slash-menu.tsx";
-import type { ComposerSeed } from "./store.ts";
+import type { AgentAttachmentInput, ComposerSeed } from "./store.ts";
 import type { AgentCapabilities } from "./types.ts";
 
 /** Tallest the input grows before it scrolls, in px (~eight lines). */
@@ -59,6 +59,8 @@ export interface ComposerProps {
   toolbar?: ReactNode;
   /** Stacked above the input. Compose from `ComposerAttachment` rows. */
   attachments?: ReactNode;
+  /** Sent with the next plain prompt; slash commands carry none. */
+  pendingAttachments?: readonly AgentAttachmentInput[];
   /** Tucked under the input. Defaults to `ComposerStatus`; pass `null` for none. */
   footer?: ReactNode;
   /** Client-only commands that act on the composer UI instead of starting an agent turn. */
@@ -309,6 +311,7 @@ const ComposerEditor = ({
   className,
   footer = <ComposerStatus />,
   localCommands,
+  pendingAttachments,
   placeholder,
   seed,
   toolbar,
@@ -462,7 +465,9 @@ const ComposerEditor = ({
       return;
     }
 
-    await submit(value, () => prompt(value));
+    await submit(value, () =>
+      prompt(value, { attachments: pendingAttachments })
+    );
   });
 
   const onMenuAction = (item: SlashMenuItem) => {

@@ -170,7 +170,7 @@ describe("mcp server", () => {
       sessionId: "s1",
       draftId: null,
       status: "running",
-      reviewUrl: `${DASH}/agent?session=s1`,
+      reviewUrl: `${DASH}/feed/drafts?agent=open&session=s1`,
     });
   });
 

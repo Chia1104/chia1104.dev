@@ -50,6 +50,7 @@ type ThreadRow =
       key: string;
       messageId: string;
       text: string;
+      attachments?: TextMessageView["attachments"];
       gapAfter: RowGap;
       at?: number;
     }
@@ -97,6 +98,7 @@ const buildRows = (
         key: `u:${item.messageId}`,
         messageId: item.messageId,
         text: item.text,
+        attachments: item.attachments,
         gapAfter: "group",
         at: item.at,
       });
@@ -224,6 +226,7 @@ const ThreadRowContent = ({
           />
         }
         at={row.at}
+        attachments={row.attachments}
         text={row.text}
       />
     );

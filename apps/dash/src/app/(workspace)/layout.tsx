@@ -1,6 +1,6 @@
 import { unauthorized } from "next/navigation";
 import type { ReactNode } from "react";
-import { ViewTransition } from "react";
+import { Suspense, ViewTransition } from "react";
 
 import { Separator } from "@heroui/react";
 
@@ -10,10 +10,14 @@ import {
   SidebarTrigger,
 } from "@chia/ui/sidebar";
 
+import {
+  AgentDrawer,
+  AgentDrawerTrigger,
+} from "@/components/agent/agent-drawer";
 import { AppSidebar } from "@/components/commons/app-sidebar";
 import Footer from "@/components/commons/footer";
 import { NavBreadcrumbs } from "@/components/commons/nav-breadcrumbs";
-import { getSession } from "@/services/auth/resources.rsc";
+import { getAccess, getSession } from "@/services/auth/resources.rsc";
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const session = await getSession();
@@ -22,6 +26,9 @@ export default async function Layout({ children }: { children: ReactNode }) {
   if (!session.data || session.data.user.isAnonymous) {
     unauthorized();
   }
+  // The writing agent is the operator's; a member never sees the trigger or the drawer.
+  const access = await getAccess();
+  const operator = access.data?.level === "operator";
 
   return (
     <ViewTransition>
@@ -34,8 +41,21 @@ export default async function Layout({ children }: { children: ReactNode }) {
               <Separator orientation="vertical" />
               <NavBreadcrumbs />
             </div>
+            {operator ? (
+              <div className="ml-auto flex items-center px-4">
+                {/* Reads `?agent`; the boundary keeps the rest of the shell static. */}
+                <Suspense>
+                  <AgentDrawerTrigger />
+                </Suspense>
+              </div>
+            ) : null}
           </header>
           {children}
+          {operator ? (
+            <Suspense>
+              <AgentDrawer />
+            </Suspense>
+          ) : null}
           <Footer className="mt-auto" />
         </SidebarInset>
       </SidebarProvider>

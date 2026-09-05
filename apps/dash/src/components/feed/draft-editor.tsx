@@ -19,6 +19,8 @@ import dayjs from "@chia/utils/day";
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 
+import { setCurrentDraft } from "../agent/current-draft";
+
 import { DraftActions } from "./draft-actions";
 import { draftFormSchema } from "./draft-form-schema";
 import type { DraftFormValues } from "./draft-form-schema";
@@ -256,6 +258,17 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
   const { mutateAsync: patchDraft } = useMutation(
     orpc.feeds["draft:patch"].mutationOptions()
   );
+
+  // The agent drawer offers whichever draft is open here as an attachment.
+  const currentTitle = draft.translations[draft.defaultLocale]?.title ?? null;
+  useEffect(() => {
+    setCurrentDraft({
+      id: draft.id,
+      title: currentTitle,
+      feedId: draft.feedId,
+    });
+    return () => setCurrentDraft(null);
+  }, [currentTitle, draft.feedId, draft.id]);
 
   // Lit while the agent writes; the revision effect below decides whether to adopt or warn.
   const [agentActiveAt, setAgentActiveAt] = useState<number | null>(null);

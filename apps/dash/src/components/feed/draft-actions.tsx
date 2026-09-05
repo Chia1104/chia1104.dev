@@ -17,6 +17,7 @@ import {
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bot, History, Upload } from "lucide-react";
+import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 
 import dayjs from "@chia/utils/day";
@@ -191,6 +192,7 @@ export const DraftActions = ({
   status: ReactNode;
 }) => {
   const router = useRouter();
+  const [, setAgent] = useQueryState("agent");
   const queryClient = useQueryClient();
   const [revisionsOpen, setRevisionsOpen] = useState(false);
   const bound = draft.feedId !== null;
@@ -266,7 +268,7 @@ export const DraftActions = ({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
-            onPress={() => router.push("/agent")}
+            onPress={() => void setAgent("open")}
             size="sm"
             variant="secondary">
             <Bot className="size-4" />

@@ -54,6 +54,16 @@ export interface AgentSessionState {
   failure: string | null;
 }
 
+/** What a prompt hands the agent beside the text; the kind decides what it accepts. */
+export interface AgentAttachmentInput {
+  type: string;
+  id: number;
+}
+
+export interface PromptOptions {
+  attachments?: readonly AgentAttachmentInput[];
+}
+
 export interface AgentSessionActions {
   /** Loads the server-owned transcript and rejoins a turn that is still running. */
   hydrate: () => Promise<void>;
@@ -61,7 +71,7 @@ export interface AgentSessionActions {
   replaceDetail: (detail: AgentSessionDetail) => void;
   seedComposer: (text: string) => void;
   /** Rejects when the request itself fails; stream failures land in `failure`. */
-  prompt: (text: string) => Promise<void>;
+  prompt: (text: string, options?: PromptOptions) => Promise<void>;
   command: (name: string, args: string[], text?: string) => Promise<void>;
   approve: (
     toolCallId: string,
@@ -395,12 +405,15 @@ export const createAgentSessionStore = ({
         }
       },
 
-      prompt: async (text) => {
+      prompt: async (text, options) => {
         set({ pendingPrompt: text, failure: null });
         try {
+          const attachments = options?.attachments?.length
+            ? [...options.attachments]
+            : undefined;
           await run((signal) =>
             client.sessions.chat(
-              { ...scoped, action: { type: "prompt", text } },
+              { ...scoped, action: { type: "prompt", text, attachments } },
               { signal }
             )
           );

@@ -83,17 +83,31 @@ const MessageMeta = ({
 export const UserMessage = ({
   actions,
   at,
+  attachments,
   className,
   text,
 }: {
   text: string;
   at?: number;
+  /** What the operator handed over with the message; the agent read them ahead of the text. */
+  attachments?: TextMessageView["attachments"];
   actions?: ReactNode;
   className?: string;
 }) => (
   <div
     className={cn("group flex flex-col items-end gap-1", className)}
     data-role="user">
+    {attachments && attachments.length > 0 ? (
+      <div className="flex max-w-[85%] flex-wrap justify-end gap-1">
+        {attachments.map((attachment) => (
+          <span
+            key={`${attachment.type}:${attachment.id}`}
+            className="bg-surface-secondary text-muted border-border rounded-full border px-2 py-0.5 text-[11px]">
+            {attachment.label ?? `${attachment.type} #${attachment.id}`}
+          </span>
+        ))}
+      </div>
+    ) : null}
     <Expandable
       className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-3 py-2.5 text-sm leading-6"
       maxHeight={USER_MESSAGE_MAX_HEIGHT}

@@ -269,7 +269,7 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
         sessionId,
         draftId: attached ?? null,
         status: "running",
-        reviewUrl: `${dashBaseUrl}/agent?session=${sessionId}`,
+        reviewUrl: `${dashBaseUrl}/feed/drafts?agent=open&session=${sessionId}`,
         next: "Call writing_status with this sessionId to read the draft, or open reviewUrl to approve and publish.",
       };
     })
@@ -309,7 +309,7 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
         pendingApprovals,
         drafts: detail.drafts ?? [],
         lastReply,
-        reviewUrl: `${dashBaseUrl}/agent?session=${sessionId}`,
+        reviewUrl: `${dashBaseUrl}/feed/drafts?agent=open&session=${sessionId}`,
       };
     })
   );
