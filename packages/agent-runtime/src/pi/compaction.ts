@@ -1,8 +1,10 @@
 import {
+  BACKGROUND_CONTEXT,
   compact,
   DEFAULT_COMPACTION_SETTINGS,
   prepareCompaction,
   shouldCompact,
+  withAbortSignal,
 } from "@earendil-works/pi-agent-core";
 import type {
   CompactionPreparation,
@@ -97,8 +99,10 @@ const compactBranch = async (
     models,
     model,
     customInstructions,
-    signal,
-    thinkingLevel
+    thinkingLevel,
+    undefined,
+    undefined,
+    signal ? withAbortSignal(signal, BACKGROUND_CONTEXT) : BACKGROUND_CONTEXT
   );
   if (!compacted.ok) throw compacted.error;
   const result = compacted.value;
@@ -115,6 +119,7 @@ const compactBranch = async (
     retainedTail: result.retainedTail ?? [],
     details: result.details,
     usage: result.usage,
+    fromHook: false,
   };
   await session.appendEntry(entry);
   if (result.usage) {

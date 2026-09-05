@@ -1,4 +1,8 @@
-import { generateBranchSummary } from "@earendil-works/pi-agent-core";
+import {
+  BACKGROUND_CONTEXT,
+  generateBranchSummary,
+  withAbortSignal,
+} from "@earendil-works/pi-agent-core";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import type {
@@ -74,11 +78,13 @@ export const navigatePiSession = async (
   if (options.summarize) {
     const entries = await entriesLeftBehind(session, oldLeafId, entryId);
     if (entries.length > 0) {
-      const generated = await generateBranchSummary(contextEntries(entries), {
-        models,
-        model,
-        signal: signal ?? new AbortController().signal,
-      });
+      const generated = await generateBranchSummary(
+        contextEntries(entries),
+        { models, model },
+        signal
+          ? withAbortSignal(signal, BACKGROUND_CONTEXT)
+          : BACKGROUND_CONTEXT
+      );
       if (!generated.ok) {
         if (generated.error.code === "aborted") return { cancelled: true };
         throw generated.error;
@@ -111,7 +117,8 @@ export const navigatePiSession = async (
       id: session.newEntryId(),
       parentId: newLeafId,
       timestamp: Date.now(),
-      fromId: newLeafId ?? "root",
+      fromId: newLeafId,
+      fromHook: false,
       ...summary,
     };
     await session.appendEntry(entry);

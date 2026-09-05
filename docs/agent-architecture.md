@@ -2,7 +2,7 @@
 
 > Status: as-built
 >
-> Last updated: 2026-09-04
+> Last updated: 2026-09-06
 >
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 >
@@ -72,7 +72,7 @@ The public kind has only the shared content-read tools, no approval tier, web ac
 
 The transcript is a tree. `agent.session_entry.parentId` links a branch and `agent.session.leafEntryId` selects the active leaf. `seq` records persistence order across all branches and is safe because each session has one writer at a time.
 
-`PgSessionStorage` implements the runtime's `SessionTree`; tests use `InMemorySessionTree`. Pi session entries are stored as opaque JSON, and retired entry types are ignored rather than migrated. Kind-specific state uses extension tables instead of nullable columns on the shared session row.
+`PgSessionStorage` implements the runtime's `SessionTree`; tests use `InMemorySessionTree`. The runtime owns the entry types and the context projection; both mirror Pi's so a branch reads exactly as it would under Pi's harness. Session entries are stored as opaque JSON, and retired entry types are ignored rather than migrated. Kind-specific state uses extension tables instead of nullable columns on the shared session row.
 
 ```text
 agent.session            kind, settings and active leaf
@@ -368,7 +368,33 @@ Admin writes are validated against their code definition before persistence. API
 
 Do not add an engine adapter, capability plugin system or provider-neutral handle until a second execution engine creates a concrete requirement.
 
-## 12. Reference map
+## 12. Pi's durable harness
+
+Pi 0.85 ships a second execution path beside the `Agent` class: `createAgentHarness`, a durable operation runtime over its own storage contract. This runtime does not use it. The note below records why, and what an integration would look like, so the next Pi upgrade can re-evaluate instead of re-deriving.
+
+The harness is designed to be host-scheduled. Its lane API reduces to four durable primitives, and each maps onto a seam this runtime already has:
+
+| Harness primitive  | This runtime                                                          |
+| ------------------ | --------------------------------------------------------------------- |
+| `accept`           | `agent.run` creation and workflow start or hook resume under the lock |
+| `drive`            | `runAgentTurnStep`                                                    |
+| `requestAbort`     | The per-run abort-controller workflow                                 |
+| `inspectExecution` | Turn-marker reconciliation against the Workflow World                 |
+
+`drive` returns `settled`, `waiting: retry` with `notBefore`, or `waiting: deferred` with a poll interval, so provider retries and deferred responses become workflow sleeps rather than in-process waits.
+
+What an integration would change:
+
+- Every transition rewrites the complete operation state, so a turn step becomes resumable and `maxRetries = 0` can go.
+- Tool calls get intent, effect and settlement commits, `replay: "safe" | "never"` and invocation-scoped memos; assistant stream frames are persisted for partial recovery.
+- `message_end` carries the entry id, replacing the reserved-id handshake in `runPiTurn`; `LaneSnapshot` with `reduceLaneSnapshot` replaces the coarse and delta stream cursor for reconnect.
+- The approval handshake is unchanged: the `before_tool` hook blocks with `terminate` exactly as the tool gate does now.
+- A Postgres `Storage` and `SessionRepo` must be written; upstream ships only Memory, JSONL and SQLite. `@earendil-works/pi-agent-core/harness/session/testing` exports the conformance suites to validate one. Entries already match Pi's union; values, lists and the harness usage ledger are new tables.
+- Most of `packages/agent-runtime/src/pi/` is replaced by lane calls. `AgentWireEvent` stays the client boundary with a mapper over `HarnessEvent`.
+
+Do not start until all of these hold upstream: the storage format is declared stable with a migration mechanism (its spec marks format 4 as pre-stabilization, changeable in place), `Storage` interface changes appear in the changelog, and the open harness work packages (forks, `watchSession`, remote mutation transport) are closed. Then write the Postgres backend against the conformance suite first and swap `runAgentTurnStep` to `accept` plus `drive` second.
+
+## 13. Reference map
 
 | Concern                               | Location                                                                                              |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------- |

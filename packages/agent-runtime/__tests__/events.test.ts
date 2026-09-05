@@ -191,6 +191,7 @@ describe("foldEvents", () => {
         timestamp: 1_767_225_601_000,
         fromId: "entry-1",
         summary: "A tangent about titles, abandoned.",
+        fromHook: false,
       },
     ];
 

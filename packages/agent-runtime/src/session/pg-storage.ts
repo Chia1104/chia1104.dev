@@ -121,8 +121,10 @@ export class PgSessionStorage implements SessionTree {
  * assigned after the spread so the projected shape never depends on column order.
  *
  * The payload is stored opaquely so an entry type this runtime has not modelled still
- * round-trips. A compaction persisted before `retainedTail` was mandatory reads back with an
- * empty tail, which is how the projection already treated it.
+ * round-trips. Fields that became mandatory after rows were written are defaulted here rather
+ * than migrated: a compaction without `retainedTail` reads back with an empty tail, which is how
+ * the projection already treated it, and a summary without `fromHook` was written by this
+ * runtime, never by a hook.
  */
 const toEntry = (row: EntryRow): SessionEntry => {
   const entry =
@@ -136,6 +138,9 @@ const toEntry = (row: EntryRow): SessionEntry => {
     } as SessionEntry;
   if (entry.type === "compaction" && !Array.isArray(entry.retainedTail)) {
     entry.retainedTail = [];
+  }
+  if (entry.type === "compaction" || entry.type === "branch_summary") {
+    entry.fromHook ??= false;
   }
   return entry;
 };

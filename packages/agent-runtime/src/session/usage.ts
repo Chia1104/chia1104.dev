@@ -21,7 +21,7 @@ export const estimateBranchContextTokens = (
   const lastCompactionIndex = entries.findLastIndex(
     (entry) => entry.type === "compaction"
   );
-  const messages = buildBranchContext(entries).messages;
+  const messages = buildBranchContext(entries);
 
   if (lastCompactionIndex === -1) {
     return estimateContextTokens(messages).tokens;
