@@ -89,9 +89,20 @@ export interface AgentSessionActions {
 
 export type AgentSessionStore = AgentSessionState & AgentSessionActions;
 
+export type AgentToolEvent = Extract<
+  AgentWireEvent,
+  { type: "tool:start" | "tool:end" }
+>;
+
 export interface AgentSessionCallbacks {
   /** Durable host-rendered state changed (e.g. the writing draft); refetch it. */
   onStateChanged?: (event: { scope?: string; revision: number }) => void;
+  /**
+   * A tool call began or settled on the live stream. Lets the host show what the agent is doing
+   * to a record it has on screen; every started call gets a terminal event, and attaching to a
+   * running turn replays it from the start, so a call already in flight is reported too.
+   */
+  onToolEvent?: (event: AgentToolEvent) => void;
   /** Fired after the store re-syncs with the server, whether the turn finished or failed. */
   onTurnEnd?: () => void;
 }
@@ -197,6 +208,7 @@ export const createAgentSessionStore = ({
   kind,
   labels,
   onStateChanged,
+  onToolEvent,
   onTurnEnd,
   queryClient,
   sessionId,
@@ -320,7 +332,9 @@ export const createAgentSessionStore = ({
               return;
             }
             flushView();
-            if (event.type === "state:changed") {
+            if (event.type === "tool:start" || event.type === "tool:end") {
+              onToolEvent?.(event);
+            } else if (event.type === "state:changed") {
               // Kind state (a draft, …) rides on the detail; refresh it while the turn is going.
               refreshDetail.request();
               onStateChanged?.(event);
