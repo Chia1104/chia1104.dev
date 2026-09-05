@@ -210,11 +210,12 @@ const DiscardDialog = ({
           isDisabled={isDisabled}
           isIconOnly
           size="sm"
-          variant="danger-soft">
+          variant="danger-soft"
+          className="size-7">
           {bound ? (
-            <RotateCcw className="size-4" />
+            <RotateCcw className="size-3.5" />
           ) : (
-            <Trash className="size-4" />
+            <Trash className="size-3.5" />
           )}
         </Button>
         <AlertDialog.Backdrop>
@@ -392,7 +393,7 @@ export const DraftActions = ({
           </div>
           {status}
         </Card.Header>
-        <Card.Footer className="shrink-0">
+        <Card.Footer className="shrink-0 self-end">
           <div
             className="flex items-center gap-1"
             role="toolbar"
@@ -407,7 +408,8 @@ export const DraftActions = ({
                 isIconOnly
                 onPress={() => setRevisionsOpen(true)}
                 size="sm"
-                variant="tertiary">
+                variant="tertiary"
+                className="size-7">
                 <History className="size-4" />
               </Button>
             </IconTooltip>
@@ -427,8 +429,9 @@ export const DraftActions = ({
                 isPending={apply.isPending}
                 onPress={() => apply.mutate({ draftId: draft.id })}
                 size="sm"
-                variant="primary">
-                <Upload className="size-4" />
+                variant="primary"
+                className="size-7">
+                <Upload className="size-3.5" />
               </Button>
             </IconTooltip>
           </div>
