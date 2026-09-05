@@ -12,7 +12,9 @@ const MIN_RETRY_MS = 1_000;
 const MAX_RETRY_MS = 30_000;
 
 /**
- * Keeps LISTEN on a dedicated connection and reconnects with backoff after a disconnect.
+ * `LISTEN channel` on a dedicated connection that outlives the server going away: a dropped
+ * connection reconnects with backoff and listens again. A pool connection cannot hold a
+ * LISTEN, and a client without an `error` handler takes the process down with it.
  */
 export const listenChannel = (
   url: string,

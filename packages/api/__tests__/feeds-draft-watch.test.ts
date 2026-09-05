@@ -115,23 +115,36 @@ describe("watchFeedDraft", () => {
     await expect(events.next()).resolves.toMatchObject({ done: true });
   });
 
-  it("replays an apply that happened while disconnected even at the current revision", async () => {
+  it("replays the apply state on a resumed stream, not on a first subscription", async () => {
     state.draft = { ...record(), feedId: 42, appliedRevision: 1 };
-    const controller = new AbortController();
-    const events = await watchFeedDraft(db, {
+
+    const fresh = await watchFeedDraft(db, {
       draftId: 7,
       adminId: "admin",
       afterRevision: 1,
+      pollMs: 1,
+      pingMs: 0,
+    });
+    // The subscriber loaded this state itself; the first event is the idle ping.
+    expect((await fresh.next()).value).toEqual({ type: "ping" });
+    await fresh.return();
+
+    const controller = new AbortController();
+    const resumed = await watchFeedDraft(db, {
+      draftId: 7,
+      adminId: "admin",
+      afterRevision: 1,
+      resumed: true,
       signal: controller.signal,
     });
-    expect((await events.next()).value).toEqual({
+    expect((await resumed.next()).value).toEqual({
       type: "applied",
       draftId: 7,
       revision: 1,
       feedId: 42,
     });
     controller.abort();
-    await events.return();
+    await resumed.return();
   });
 
   it("reports a draft discarded while disconnected and ends the stream", async () => {

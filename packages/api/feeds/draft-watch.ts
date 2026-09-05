@@ -15,6 +15,11 @@ export interface WatchFeedDraftInput {
   adminId: string;
   /** Revisions above this are replayed first. */
   afterRevision: number;
+  /**
+   * A reconnect rather than a first subscription. An apply moves no revision, so a resumed
+   * stream reports the current apply state once more in case it happened while away.
+   */
+  resumed?: boolean;
   /** Wakes the loop as soon as a write lands; without it the loop is the poll alone. */
   bus?: FeedDraftBus;
   signal?: AbortSignal;
@@ -47,15 +52,15 @@ const sleep = (ms: number, signal?: AbortSignal) =>
  */
 async function* tail(
   db: DB,
-  input: WatchFeedDraftInput
+  input: WatchFeedDraftInput,
+  appliedAtStart: number | null
 ): AsyncGenerator<FeedDraftWatchEvent, void, void> {
   const { draftId, signal } = input;
   const pollMs = input.pollMs ?? DEFAULT_POLL_MS;
   const pingMs = input.pingMs ?? DEFAULT_PING_MS;
 
   let cursor = input.afterRevision;
-  // Apply does not advance the revision cursor; replay its current state on every connection.
-  let applied: number | null = null;
+  let applied = appliedAtStart;
   let quietSince = Date.now();
 
   while (!signal?.aborted) {
@@ -122,5 +127,10 @@ export const watchFeedDraft = async (
       message: `Draft ${input.draftId} not found`,
     });
   }
-  return tail(db, input);
+  // A first subscription already holds the applied state it loaded; only a resumed one may
+  // have missed an apply.
+  const appliedAtStart = input.resumed
+    ? null
+    : (initial?.appliedRevision ?? null);
+  return tail(db, input, appliedAtStart);
 };

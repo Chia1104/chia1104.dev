@@ -407,9 +407,10 @@ const withRevisionIds = async function* (
 export const watchFeedDraftRoute = contractOS.feeds["draft:watch"]
   .use(rootWriteGuard)
   .handler(async (opts) => {
-    const resumed = Number(opts.lastEventId);
-    const afterRevision = Number.isInteger(resumed)
-      ? Math.max(opts.input.afterRevision, resumed)
+    const reached = Number(opts.lastEventId);
+    const resumed = Number.isInteger(reached);
+    const afterRevision = resumed
+      ? Math.max(opts.input.afterRevision, reached)
       : opts.input.afterRevision;
     // Ownership fails here as a plain error, before anything streams.
     const events = await withORPCErrors(() =>
@@ -417,6 +418,7 @@ export const watchFeedDraftRoute = contractOS.feeds["draft:watch"]
         draftId: opts.input.draftId,
         adminId: opts.context.caller.adminId,
         afterRevision,
+        resumed,
         bus: opts.context.draftBus,
         signal: opts.signal,
       })
