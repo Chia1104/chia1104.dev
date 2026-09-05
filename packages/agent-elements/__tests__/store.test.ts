@@ -586,23 +586,30 @@ describe("createAgentSessionStore", () => {
     });
   });
 
-  it("forwards state:changed to the host while streaming", async () => {
+  it("forwards state changes immediately but lets turn-end fetch settle a burst", async () => {
     const stream = channel();
     const onStateChanged = vi.fn();
-    const { client } = fakeClient({ chat: async () => stream.iterable });
-    const { store } = makeStore({ client, onStateChanged });
+    const { client, get } = fakeClient({ chat: async () => stream.iterable });
+    const { store, queryClient } = makeStore({ client, onStateChanged });
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
     await store.getState().hydrate();
 
     const prompted = store.getState().prompt("draft it");
     await flush();
-    stream.push({ type: "state:changed", scope: "draft", revision: 3 });
+    for (let revision = 1; revision <= 20; revision++) {
+      stream.push({ type: "state:changed", scope: "draft", revision });
+    }
     await flush();
-    expect(onStateChanged).toHaveBeenCalledWith(
-      expect.objectContaining({ scope: "draft", revision: 3 })
-    );
+    expect(onStateChanged).toHaveBeenCalledTimes(20);
+    expect(invalidate).not.toHaveBeenCalled();
+    expect(get).toHaveBeenCalledTimes(1);
     stream.push({ type: "run:end", reason: "done" });
     stream.close();
     await prompted;
+    expect(get).toHaveBeenCalledTimes(2);
+    expect(invalidate).not.toHaveBeenCalled();
+    store.getState().dispose();
+    queryClient.clear();
   });
 
   it("sends an approval decision as a follow-up turn", async () => {

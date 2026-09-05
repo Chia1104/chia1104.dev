@@ -37,8 +37,9 @@ export const useDraftAutosave = ({
   const baseline = useRef(initial);
   const blocked = useRef(false);
   const pending = useRef<Promise<boolean> | null>(null);
-  const patch = useMutation(orpc.feeds["draft:patch"].mutationOptions());
-  const { mutateAsync } = patch;
+  const { mutateAsync, isPending } = useMutation(
+    orpc.feeds["draft:patch"].mutationOptions()
+  );
   const [slug, type, defaultLocale, mainImage, translations] = useWatch({
     control: form.control,
     name: ["slug", "type", "defaultLocale", "mainImage", "translations"],
@@ -168,7 +169,7 @@ export const useDraftAutosave = ({
     saved,
     issue,
     isDirty,
-    isSaving: patch.isPending,
+    isSaving: isPending,
     flush,
     retry,
     adopt,

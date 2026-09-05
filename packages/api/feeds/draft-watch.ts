@@ -1,122 +1,57 @@
 import type { DB } from "@chia/db/client";
-import {
-  getFeedDraftStatus,
-  listFeedDraftRevisionsSince,
-} from "@chia/db/repos/drafts";
-import type { FeedDraftNotice } from "@chia/db/repos/drafts/notice";
+import { getFeedDraftStatus } from "@chia/db/repos/drafts";
 import { AppError } from "@chia/service-kit/errors";
+
+import type { FeedDraftWatchEvent } from "../orpc/contracts/feeds.contract";
 
 import type { FeedDraftBus } from "./draft-bus";
 
-export type FeedDraftWatchEvent = FeedDraftNotice | { type: "ping" };
-
-export interface WatchFeedDraftInput {
+interface WatchFeedDraftInput {
   draftId: number;
   adminId: string;
-  /** Revisions above this are replayed first. */
-  afterRevision: number;
-  /**
-   * A reconnect rather than a first subscription. An apply moves no revision, so a resumed
-   * stream reports the current apply state once more in case it happened while away.
-   */
-  resumed?: boolean;
-  /** Wakes the loop as soon as a write lands; without it the loop is the poll alone. */
   bus?: FeedDraftBus;
   signal?: AbortSignal;
-  /** How long to wait for a notice before reading the trail anyway. */
-  pollMs?: number;
-  /** Idle time before a `ping` keeps the connection alive. */
-  pingMs?: number;
 }
 
-const DEFAULT_POLL_MS = 5_000;
-const DEFAULT_PING_MS = 30_000;
-
-const sleep = (ms: number, signal?: AbortSignal) =>
-  new Promise<void>((resolve) => {
-    const timer = setTimeout(done, ms);
-    function done() {
-      clearTimeout(timer);
-      signal?.removeEventListener("abort", done);
-      resolve();
-    }
-    if (signal?.aborted) done();
-    else signal?.addEventListener("abort", done, { once: true });
-  });
-
-/**
- * The revision trail is the source of truth and the bus only the wake-up call: every pass
- * reads what the trail holds above the cursor, so a notice that never arrived (a listener
- * reconnecting) costs latency, not events. A coalesced operator save moves its row's
- * revision forward, so it is read again as the newer revision.
- */
-async function* tail(
-  db: DB,
-  input: WatchFeedDraftInput,
-  appliedAtStart: number | null
+/** Keeps a subscription while yielding; bursts coalesce into one pending resync. */
+async function* subscribe(
+  bus: FeedDraftBus,
+  { draftId, signal }: WatchFeedDraftInput
 ): AsyncGenerator<FeedDraftWatchEvent, void, void> {
-  const { draftId, signal } = input;
-  const pollMs = input.pollMs ?? DEFAULT_POLL_MS;
-  const pingMs = input.pingMs ?? DEFAULT_PING_MS;
-
-  let cursor = input.afterRevision;
-  let applied = appliedAtStart;
-  let quietSince = Date.now();
-
-  while (!signal?.aborted) {
-    const draft = await getFeedDraftStatus(db, draftId);
-    if (!draft) {
-      yield { type: "discarded", draftId };
-      return;
+  let dirty = true;
+  let wake: (() => void) | undefined;
+  const unsubscribe = bus.subscribe(draftId, () => {
+    dirty = true;
+    wake?.();
+  });
+  const onAbort = () => wake?.();
+  signal?.addEventListener("abort", onAbort, { once: true });
+  try {
+    while (!signal?.aborted) {
+      if (dirty) {
+        dirty = false;
+        yield { type: "resync" };
+        continue;
+      }
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await new Promise<void>((resolve) => {
+          wake = resolve;
+          timer = setTimeout(resolve, 30_000);
+        });
+      } finally {
+        clearTimeout(timer);
+        wake = undefined;
+      }
+      if (!signal?.aborted && !dirty) yield { type: "ping" };
     }
-
-    let moved = false;
-    for (const row of await listFeedDraftRevisionsSince(db, {
-      draftId,
-      afterRevision: cursor,
-    })) {
-      cursor = row.revision;
-      moved = true;
-      yield {
-        type: "revision",
-        draftId,
-        revision: row.revision,
-        author: row.author,
-        sessionId: row.sessionId,
-        changes: row.changes,
-      };
-    }
-    if (
-      draft.feedId !== null &&
-      draft.appliedRevision !== null &&
-      draft.appliedRevision !== applied
-    ) {
-      applied = draft.appliedRevision;
-      moved = true;
-      yield {
-        type: "applied",
-        draftId,
-        revision: applied,
-        feedId: draft.feedId,
-      };
-    }
-
-    if (moved) {
-      quietSince = Date.now();
-    } else if (Date.now() - quietSince >= pingMs) {
-      quietSince = Date.now();
-      yield { type: "ping" };
-    }
-
-    if (input.bus) {
-      await input.bus.next(draftId, { timeoutMs: pollMs, signal });
-    } else {
-      await sleep(pollMs, signal);
-    }
+  } finally {
+    unsubscribe();
+    signal?.removeEventListener("abort", onAbort);
   }
 }
 
-/** Checks ownership before streaming; a missing draft emits discarded, including on reconnect. */
+/** Authorizes before streaming; the initial resync also detects a deleted draft. */
 export const watchFeedDraft = async (
   db: DB,
   input: WatchFeedDraftInput
@@ -127,10 +62,6 @@ export const watchFeedDraft = async (
       message: `Draft ${input.draftId} not found`,
     });
   }
-  // A first subscription already holds the applied state it loaded; only a resumed one may
-  // have missed an apply.
-  const appliedAtStart = input.resumed
-    ? null
-    : (initial?.appliedRevision ?? null);
-  return tail(db, input, appliedAtStart);
+  if (!input.bus) throw new AppError("SERVICE_UNAVAILABLE");
+  return subscribe(input.bus, input);
 };

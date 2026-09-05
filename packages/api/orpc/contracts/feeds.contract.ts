@@ -1,7 +1,6 @@
 import { asyncIteratorObject, oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { feedDraftNoticeSchema } from "@chia/db/repos/drafts/notice";
 import { locale } from "@chia/db/schema/enums";
 import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import {
@@ -432,28 +431,20 @@ export const restoreFeedDraftRevisionContract = oc
   .input(z.object({ draftId: z.number().int(), revisionId: z.number().int() }))
   .output(feedDraftSchema);
 
-/**
- * What `draft:watch` streams: the notices the draft's writers announce, plus a `ping` so an
- * idle stream keeps its connection. Each event's id is the revision the watcher has reached,
- * which a reconnect hands back as `lastEventId`.
- */
+/** Resync invalidates the draft query; ping only keeps the connection alive. */
 export const feedDraftWatchEventSchema = z.discriminatedUnion("type", [
-  ...feedDraftNoticeSchema.options,
+  z.object({ type: z.literal("resync") }),
   z.object({ type: z.literal("ping") }),
 ]);
 
 export type FeedDraftWatchEvent = z.infer<typeof feedDraftWatchEventSchema>;
 
-/**
- * Tails a draft: revisions above `afterRevision` first, then live writes from the agent, MCP
- * or another editor tab. Ends after `discarded`.
- */
 export const watchFeedDraftContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
-  .input(
-    z.object({
-      draftId: z.number().int(),
-      afterRevision: z.number().int().min(0),
-    })
-  )
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    NOT_FOUND: {},
+    SERVICE_UNAVAILABLE: {},
+  })
+  .input(z.object({ draftId: z.number().int() }))
   .output(asyncIteratorObject(feedDraftWatchEventSchema));

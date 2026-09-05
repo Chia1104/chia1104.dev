@@ -149,6 +149,7 @@
     "@chia/contents": "workspace:*",
     "@chia/i18n": "workspace:*",
     "@chia/ui": "workspace:*",
+    "@chia/utils": "workspace:*",
     "@heroui/react": "catalog:heroui-v3",
     "@orpc/client": "catalog:orpc",
     "@orpc/contract": "catalog:orpc",

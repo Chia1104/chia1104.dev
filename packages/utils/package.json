@@ -75,6 +75,7 @@
   },
   "dependencies": {
     "@t3-oss/env-core": "catalog:env",
+    "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
     "dayjs": "catalog:",
     "es-toolkit": "catalog:",

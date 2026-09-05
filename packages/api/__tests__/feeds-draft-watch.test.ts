@@ -1,200 +1,108 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
-import type { FeedDraftRecord } from "@chia/db/repos/drafts";
+import { getFeedDraftStatus } from "@chia/db/repos/drafts";
 import { AppError } from "@chia/service-kit/errors";
 
 import { FeedDraftBus } from "../feeds/draft-bus";
-
-interface TrailRow {
-  revision: number;
-  author: "operator" | "agent";
-}
-
-/** What the mocked repository answers with: the row itself and its revision trail. */
-interface WatchedDraft {
-  draft: FeedDraftRecord | null;
-  rows: TrailRow[];
-}
-
-const state = vi.hoisted((): WatchedDraft => ({ draft: null, rows: [] }));
+import { watchFeedDraft } from "../feeds/draft-watch";
 
 vi.mock("@chia/db/repos/drafts", () => ({
-  getFeedDraftStatus: vi.fn(async () => state.draft),
-  listFeedDraftRevisionsSince: vi.fn(
-    async (_db: DB, input: { afterRevision: number }) =>
-      state.rows
-        .filter((row) => row.revision > input.afterRevision)
-        .map((row) => ({
-          id: row.revision,
-          draftId: 7,
-          revision: row.revision,
-          author: row.author,
-          sessionId: row.author === "agent" ? "session-1" : null,
-          changes: [{ locale: "en", fields: ["content"] }],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }))
-  ),
+  getFeedDraftStatus: vi.fn(),
 }));
 
-const { watchFeedDraft } = await import("../feeds/draft-watch");
-
-/* SAFETY: every repository read in this suite is mocked. */
+/* SAFETY: all database access is mocked. */
 const db = {} as DB;
-
-const record = (): FeedDraftRecord => ({
-  id: 7,
-  feedId: null,
+const status = {
   userId: "admin",
-  slug: null,
-  type: "post",
-  defaultLocale: "zh-TW",
-  mainImage: null,
+  feedId: null,
   revision: 1,
   appliedRevision: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  translations: {},
-});
+};
+const changed = { type: "discarded", draftId: 7 } as const;
 
-describe("watchFeedDraft", () => {
+const open = (bus = new FeedDraftBus(), signal?: AbortSignal) =>
+  watchFeedDraft(db, { draftId: 7, adminId: "admin", bus, signal });
+
+describe("draft invalidations", () => {
   beforeEach(() => {
-    state.draft = record();
-    state.rows = [];
+    vi.useFakeTimers();
+    vi.mocked(getFeedDraftStatus).mockReset().mockResolvedValue(status);
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it("rejects another owner's draft before opening a stream", async () => {
+    vi.mocked(getFeedDraftStatus).mockResolvedValue({
+      ...status,
+      userId: "other",
+    });
+    await expect(open()).rejects.toBeInstanceOf(AppError);
   });
 
-  it("refuses a draft the caller does not own before streaming anything", async () => {
-    state.draft = { ...record(), userId: "someone-else" };
+  it("requires a bus instead of silently polling", async () => {
     await expect(
-      watchFeedDraft(db, { draftId: 7, adminId: "admin", afterRevision: 0 })
-    ).rejects.toBeInstanceOf(AppError);
+      watchFeedDraft(db, { draftId: 7, adminId: "admin" })
+    ).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
   });
 
-  it("replays the trail above the cursor, then wakes on a bus notice", async () => {
-    state.rows = [
-      { revision: 2, author: "operator" },
-      { revision: 3, author: "agent" },
-    ];
+  it("resyncs on every connection even when the draft was deleted offline", async () => {
+    for (const value of [status, null]) {
+      vi.mocked(getFeedDraftStatus).mockResolvedValue(value);
+      const events = await open();
+      expect((await events.next()).value).toEqual({ type: "resync" });
+      await events.return();
+    }
+  });
+
+  it("coalesces notifications received while the consumer is reading", async () => {
     const bus = new FeedDraftBus();
-    const controller = new AbortController();
-    const events = await watchFeedDraft(db, {
-      draftId: 7,
-      adminId: "admin",
-      afterRevision: 2,
-      bus,
-      signal: controller.signal,
-      pollMs: 10_000,
-    });
-
-    const replayed = await events.next();
-    expect(replayed.value).toMatchObject({
-      type: "revision",
-      revision: 3,
-      author: "agent",
-      sessionId: "session-1",
-    });
-
-    // The loop is now parked on the bus; a write lands and the trail grows.
-    const pending = events.next();
-    state.rows.push({ revision: 4, author: "operator" });
-    bus.publish({
-      type: "revision",
-      draftId: 7,
-      revision: 4,
-      author: "operator",
-      sessionId: null,
-      changes: [],
-    });
-    expect((await pending).value).toMatchObject({
-      type: "revision",
-      revision: 4,
-    });
-
-    controller.abort();
-    await expect(events.next()).resolves.toMatchObject({ done: true });
-  });
-
-  it("replays the apply state on a resumed stream, not on a first subscription", async () => {
-    state.draft = { ...record(), feedId: 42, appliedRevision: 1 };
-
-    const fresh = await watchFeedDraft(db, {
-      draftId: 7,
-      adminId: "admin",
-      afterRevision: 1,
-      pollMs: 1,
-      pingMs: 0,
-    });
-    // The subscriber loaded this state itself; the first event is the idle ping.
-    expect((await fresh.next()).value).toEqual({ type: "ping" });
-    await fresh.return();
-
-    const controller = new AbortController();
-    const resumed = await watchFeedDraft(db, {
-      draftId: 7,
-      adminId: "admin",
-      afterRevision: 1,
-      resumed: true,
-      signal: controller.signal,
-    });
-    expect((await resumed.next()).value).toEqual({
-      type: "applied",
-      draftId: 7,
-      revision: 1,
-      feedId: 42,
-    });
-    controller.abort();
-    await resumed.return();
-  });
-
-  it("reports a draft discarded while disconnected and ends the stream", async () => {
-    state.draft = null;
-    const events = await watchFeedDraft(db, {
-      draftId: 7,
-      adminId: "admin",
-      afterRevision: 3,
-    });
-    expect((await events.next()).value).toEqual({
-      type: "discarded",
-      draftId: 7,
-    });
-    expect((await events.next()).done).toBe(true);
-  });
-
-  it("reports an apply once and ends after a discard", async () => {
-    const events = await watchFeedDraft(db, {
-      draftId: 7,
-      adminId: "admin",
-      afterRevision: 1,
-      pollMs: 1,
-      pingMs: 60_000,
-    });
-
-    state.draft = { ...record(), feedId: 42, appliedRevision: 1 };
-    expect((await events.next()).value).toEqual({
-      type: "applied",
-      draftId: 7,
-      revision: 1,
-      feedId: 42,
-    });
-
-    state.draft = null;
-    expect((await events.next()).value).toEqual({
-      type: "discarded",
-      draftId: 7,
-    });
-    await expect(events.next()).resolves.toMatchObject({ done: true });
-  });
-
-  it("pings an idle stream so the connection stays open", async () => {
-    const events = await watchFeedDraft(db, {
-      draftId: 7,
-      adminId: "admin",
-      afterRevision: 1,
-      pollMs: 1,
-      pingMs: 0,
-    });
-    expect((await events.next()).value).toEqual({ type: "ping" });
+    const events = await open(bus);
+    await events.next();
+    bus.publish(changed);
+    bus.publish(changed);
+    expect((await events.next()).value).toEqual({ type: "resync" });
+    const idle = events.next();
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect((await idle).value).toEqual({ type: "ping" });
+    expect(getFeedDraftStatus).toHaveBeenCalledTimes(1);
     await events.return();
+  });
+
+  it("fans out writes and listener recovery to all local watchers", async () => {
+    const bus = new FeedDraftBus();
+    const streams = await Promise.all([open(bus), open(bus)]);
+    for (const stream of streams) await stream.next();
+    const waiting = streams.map((stream) => stream.next());
+    bus.publish(changed);
+    for (const pending of waiting) {
+      expect((await pending).value).toEqual({ type: "resync" });
+    }
+    bus.resync();
+    for (const stream of streams) {
+      expect((await stream.next()).value).toEqual({ type: "resync" });
+      await stream.return();
+    }
+  });
+
+  it("ignores other drafts and removes subscriptions and timers on abort", async () => {
+    const bus = new FeedDraftBus();
+    const unsubscribe = vi.fn();
+    const subscribe = bus.subscribe.bind(bus);
+    vi.spyOn(bus, "subscribe").mockImplementation((id, listener) => {
+      const remove = subscribe(id, listener);
+      return () => {
+        remove();
+        unsubscribe();
+      };
+    });
+    const controller = new AbortController();
+    const events = await open(bus, controller.signal);
+    await events.next();
+    bus.publish({ ...changed, draftId: 8 });
+    const pending = events.next();
+    controller.abort();
+    expect((await pending).done).toBe(true);
+    expect(unsubscribe).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

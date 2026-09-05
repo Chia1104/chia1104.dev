@@ -549,31 +549,6 @@ export const listFeedDraftRevisions = async (
     .limit(input.limit);
 
 /** Revisions above `afterRevision`, oldest first: what a watcher missed while away. */
-export const listFeedDraftRevisionsSince = async (
-  db: DB,
-  input: { draftId: number; afterRevision: number; limit?: number }
-): Promise<FeedDraftRevisionSummary[]> =>
-  await db
-    .select({
-      id: feedDraftRevisions.id,
-      draftId: feedDraftRevisions.draftId,
-      revision: feedDraftRevisions.revision,
-      author: feedDraftRevisions.author,
-      sessionId: feedDraftRevisions.sessionId,
-      changes: feedDraftRevisions.changes,
-      createdAt: feedDraftRevisions.createdAt,
-      updatedAt: feedDraftRevisions.updatedAt,
-    })
-    .from(feedDraftRevisions)
-    .where(
-      and(
-        eq(feedDraftRevisions.draftId, input.draftId),
-        gt(feedDraftRevisions.revision, input.afterRevision)
-      )
-    )
-    .orderBy(feedDraftRevisions.revision)
-    .limit(input.limit ?? 200);
-
 export const getFeedDraftRevision = async (
   db: DB,
   input: { draftId: number; revisionId: number }

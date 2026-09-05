@@ -1,6 +1,6 @@
 import type { FeedDraftNotice } from "@chia/db/repos/drafts/notice";
 
-type Listener = (notice: FeedDraftNotice) => void;
+type Listener = () => void;
 
 /**
  * In-process fan-out of `feed_draft` notices to open watch streams, keyed by draft. The host
@@ -11,7 +11,7 @@ export class FeedDraftBus {
 
   publish(notice: FeedDraftNotice): void {
     for (const listener of this.listeners.get(notice.draftId) ?? []) {
-      listener(notice);
+      listener();
     }
   }
 
@@ -25,26 +25,10 @@ export class FeedDraftBus {
     };
   }
 
-  /** The next notice for the draft, or `null` once `timeoutMs` passes or `signal` fires. */
-  next(
-    draftId: number,
-    options: { timeoutMs: number; signal?: AbortSignal }
-  ): Promise<FeedDraftNotice | null> {
-    return new Promise((resolve) => {
-      const settle = (notice: FeedDraftNotice | null) => {
-        clearTimeout(timer);
-        unsubscribe();
-        options.signal?.removeEventListener("abort", onAbort);
-        resolve(notice);
-      };
-      const onAbort = () => settle(null);
-      const timer = setTimeout(() => settle(null), options.timeoutMs);
-      const unsubscribe = this.subscribe(draftId, settle);
-      if (options.signal?.aborted) {
-        settle(null);
-        return;
-      }
-      options.signal?.addEventListener("abort", onAbort, { once: true });
-    });
+  /** Resynchronize all active drafts after the database listener reconnects. */
+  resync(): void {
+    for (const listeners of this.listeners.values()) {
+      for (const listener of listeners) listener();
+    }
   }
 }

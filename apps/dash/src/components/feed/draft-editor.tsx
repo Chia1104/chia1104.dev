@@ -5,6 +5,7 @@ import { useCallback, useEffect } from "react";
 
 import { AlertDialog, Button, Chip, Form, Spinner } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ORPCError } from "@orpc/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -60,7 +61,7 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
   );
   const autosave = useDraftAutosave({ initial, form, onSaved, loadLatest });
   const { receive } = autosave;
-  const { data: draft } = useQuery(
+  const { data: draft, error } = useQuery(
     orpc.feeds["draft:get"].queryOptions({
       input: { draftId: initial.id },
       initialData: initial,
@@ -83,27 +84,14 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
       draft.translations[draft.defaultLocale]?.title ?? `Draft #${draft.id}`,
   });
 
-  useDraftWatch(initial.id, initial.revision, (event) => {
-    if (event.type === "discarded") {
+  useEffect(() => {
+    if (error instanceof ORPCError && error.code === "NOT_FOUND") {
       toast.info("This draft was discarded elsewhere.");
       router.replace("/feed/drafts");
-    } else if (event.type === "applied" || event.type === "revision") {
-      const cached = queryClient.getQueryData(
-        orpc.feeds["draft:get"].queryOptions({ input: { draftId: initial.id } })
-          .queryKey
-      );
-      if (
-        event.type === "revision" &&
-        event.revision <= (cached?.revision ?? 0)
-      )
-        return;
-      void queryClient.invalidateQueries({
-        queryKey: orpc.feeds["draft:get"].key({
-          input: { draftId: initial.id },
-        }),
-      });
     }
-  });
+  }, [error, router]);
+
+  useDraftWatch(initial.id);
 
   const conflict =
     autosave.issue?.kind === "conflict" ? autosave.issue.draft : null;

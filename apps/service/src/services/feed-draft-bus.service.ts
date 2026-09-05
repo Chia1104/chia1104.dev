@@ -33,7 +33,10 @@ export const startFeedDraftListener = (signal: AbortSignal): void => {
       signal,
       onError: (error) =>
         console.error("feed_draft listener lost its connection", error),
-      onConnect: () => console.info("feed_draft listener connected"),
+      onConnect: () => {
+        feedDraftBus.resync();
+        console.info("feed_draft listener connected");
+      },
     }
   );
 };

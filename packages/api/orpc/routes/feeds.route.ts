@@ -1,5 +1,3 @@
-import { withEventMeta } from "@orpc/server";
-
 import { ApiKeyScope } from "@chia/auth/apikey";
 import {
   listFeedDraftRevisions,
@@ -46,7 +44,6 @@ import {
   searchPublicFeedsService,
 } from "../../feeds/search";
 import { createFeedService, updateFeedService } from "../../feeds/write";
-import type { FeedDraftWatchEvent } from "../contracts/feeds.contract";
 import { sessionGuard } from "../guards/auth.guard";
 import { callerGuard, tieredRateLimitGuard } from "../guards/caller.guard";
 import { contractOS } from "../utils";
@@ -392,36 +389,15 @@ export const restoreFeedDraftRevisionRoute = contractOS.feeds["draft:restore"]
     )
   );
 
-/** Tags every event with the revision reached, so a reconnect resumes from `lastEventId`. */
-const withRevisionIds = async function* (
-  events: AsyncIterable<FeedDraftWatchEvent>,
-  afterRevision: number
-): AsyncGenerator<FeedDraftWatchEvent, void, void> {
-  let reached = afterRevision;
-  for await (const event of events) {
-    if (event.type === "revision") reached = event.revision;
-    yield withEventMeta(event, { id: String(reached) });
-  }
-};
-
 export const watchFeedDraftRoute = contractOS.feeds["draft:watch"]
   .use(rootWriteGuard)
-  .handler(async (opts) => {
-    const reached = Number(opts.lastEventId);
-    const resumed = Number.isInteger(reached);
-    const afterRevision = resumed
-      ? Math.max(opts.input.afterRevision, reached)
-      : opts.input.afterRevision;
-    // Ownership fails here as a plain error, before anything streams.
-    const events = await withORPCErrors(() =>
+  .handler((opts) =>
+    withORPCErrors(() =>
       watchFeedDraft(opts.context.db, {
         draftId: opts.input.draftId,
         adminId: opts.context.caller.adminId,
-        afterRevision,
-        resumed,
         bus: opts.context.draftBus,
         signal: opts.signal,
       })
-    );
-    return withRevisionIds(events, afterRevision);
-  });
+    )
+  );

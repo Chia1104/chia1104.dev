@@ -60,8 +60,7 @@ export interface BaseOSContext extends ServiceContext {
   /** Typed constructor for kind services, admin views and quota standing. */
   agentFactory?: AgentFactory;
   /**
-   * Live `feed_draft` notices for `feeds.draft:watch`. Absent, a watch still works: it falls
-   * back to polling the revision trail.
+   * Live `feed_draft` invalidations for `feeds.draft:watch`. Required to open a watch.
    */
   draftBus?: FeedDraftBus;
 }

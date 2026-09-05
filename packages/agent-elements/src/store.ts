@@ -11,6 +11,7 @@ import {
   foldEvents,
 } from "@chia/agent-runtime/wire/fold";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import { createQueryInvalidator } from "@chia/utils/query-client";
 
 import type { AgentLabels } from "./labels.ts";
 import { fill, mergeLabels } from "./labels.ts";
@@ -301,6 +302,10 @@ export const createAgentSessionStore = ({
         commitView();
       };
 
+      const refreshDetail = createQueryInvalidator(queryClient, detailKey);
+      own.signal.addEventListener("abort", refreshDetail.dispose, {
+        once: true,
+      });
       let ended = false;
       try {
         await consumeStream(
@@ -320,7 +325,7 @@ export const createAgentSessionStore = ({
             flushView();
             if (event.type === "state:changed") {
               // Kind state (a draft, …) rides on the detail; refresh it while the turn is going.
-              void queryClient.invalidateQueries({ queryKey: detailKey });
+              refreshDetail.request();
               onStateChanged?.(event);
             }
           },
@@ -331,6 +336,8 @@ export const createAgentSessionStore = ({
           set({ failure: failureOf(cause, get().labels) });
         }
       } finally {
+        refreshDetail.dispose();
+        own.signal.removeEventListener("abort", refreshDetail.dispose);
         flushView();
         if (controller === own) controller = null;
       }
