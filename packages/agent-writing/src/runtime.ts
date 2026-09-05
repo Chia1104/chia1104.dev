@@ -8,14 +8,16 @@ import { runPiTurn } from "@chia/agent-runtime/pi/turn";
 import type { RenderedAttachments } from "@chia/agent-runtime/pi/turn";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
-  AgentAttachment,
   AgentSessionSettings,
   AgentTurnExecution,
   AgentTurnMessage,
   AgentUsageListener,
   ToolCallRequest,
 } from "@chia/agent-runtime/types";
-import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type {
+  AgentAttachment,
+  AgentWireEvent,
+} from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";
 import { stableStringify } from "@chia/utils/json";
 import type { JsonValue } from "@chia/utils/json";
@@ -30,7 +32,6 @@ import type { TurnContextDraft } from "./prompts/system.ts";
 import { writingPromptTemplates } from "./prompts/templates.ts";
 import { TOOL_NAMES } from "./tools/registry.ts";
 import { createWritingTools } from "./tools/tool-set.ts";
-import { DRAFT_ATTACHMENT_TYPE } from "./types.ts";
 import type { SessionDraftRef, WritingToolContext } from "./types.ts";
 
 export interface RunWritingTurnOptions<TApproval> {
@@ -140,45 +141,80 @@ const describeSessionDrafts = async (
   return entries.filter((entry) => entry !== null);
 };
 
-/** The block the model reads ahead of the operator's words when they attached drafts. */
-const renderDraftAttachments = async (
+/** Quoted as a fenced block so the model can copy it byte-exact into `oldString`. */
+const quoted = (text: string): string => `"""\n${text}\n"""`;
+
+/** One line, or one block, per attachment; `label` is what the client shows for it. */
+const renderAttachment = async (
+  store: DraftStore,
+  attachment: AgentAttachment
+): Promise<{ text: string; label: string }> => {
+  if (attachment.type === "selection") {
+    const { source, text } = attachment;
+    if (source.type !== "draft") {
+      return {
+        text: `- A selection from a "${source.type}" this agent cannot read; ignore it.`,
+        label: "Selection",
+      };
+    }
+    const range =
+      source.startLine === source.endLine
+        ? `line ${source.startLine}`
+        : `lines ${source.startLine}–${source.endLine}`;
+    const label = `Draft #${source.id} · ${source.locale} · ${range}`;
+    try {
+      const draft = await store.get(source.id);
+      const title = draftTitle(draft);
+      return {
+        text:
+          `- Selected in draft #${draft.id}${title ? ` "${title}"` : ""}, locale ${source.locale}, ${range} ` +
+          `(revision ${draft.revision}; the line numbers are the editor's at the time and may have ` +
+          `shifted, so locate the passage by its text, read the draft before editing and use this ` +
+          `text as \`oldString\`):\n${quoted(text)}`,
+        label,
+      };
+    } catch (error) {
+      if (!(error instanceof DraftNotFoundError)) throw error;
+      return {
+        text: `- Selected in draft #${source.id}, which no longer exists; the operator discarded it:\n${quoted(text)}`,
+        label: `${label} (discarded)`,
+      };
+    }
+  }
+  try {
+    const draft = await store.get(attachment.id);
+    const title = draftTitle(draft);
+    const locales = Object.keys(draft.translations);
+    return {
+      text:
+        `- Draft #${draft.id}${title ? ` "${title}"` : ""}: ` +
+        `${draft.feedId === null ? "a new post" : `feed ${draft.feedId}`}, revision ${draft.revision}, ` +
+        `locales ${locales.length > 0 ? locales.join(", ") : "none"}. Use draftId ${draft.id}.`,
+      label: title ?? `Draft #${draft.id}`,
+    };
+  } catch (error) {
+    if (!(error instanceof DraftNotFoundError)) throw error;
+    return {
+      text: `- Draft #${attachment.id} no longer exists; the operator discarded it.`,
+      label: `Draft #${attachment.id} (discarded)`,
+    };
+  }
+};
+
+/** The block the model reads ahead of the operator's words when they attached anything. */
+const renderAttachments = async (
   store: DraftStore,
   attachments: readonly AgentAttachment[]
 ): Promise<RenderedAttachments> => {
-  const lines: string[] = [];
-  const labelled: AgentAttachment[] = [];
-  for (const attachment of attachments) {
-    if (attachment.type !== DRAFT_ATTACHMENT_TYPE) {
-      lines.push(
-        `- An attachment of type "${attachment.type}" (#${attachment.id}) this agent cannot read; ignore it.`
-      );
-      labelled.push(attachment);
-      continue;
-    }
-    try {
-      const draft = await store.get(attachment.id);
-      const title = draftTitle(draft);
-      const locales = Object.keys(draft.translations);
-      lines.push(
-        `- Draft #${draft.id}${title ? ` "${title}"` : ""}: ` +
-          `${draft.feedId === null ? "a new post" : `feed ${draft.feedId}`}, revision ${draft.revision}, ` +
-          `locales ${locales.length > 0 ? locales.join(", ") : "none"}. Use draftId ${draft.id}.`
-      );
-      labelled.push({ ...attachment, label: title ?? `Draft #${draft.id}` });
-    } catch (error) {
-      if (!(error instanceof DraftNotFoundError)) throw error;
-      lines.push(
-        `- Draft #${attachment.id} no longer exists; the operator discarded it.`
-      );
-      labelled.push({
-        ...attachment,
-        label: `Draft #${attachment.id} (discarded)`,
-      });
-    }
-  }
+  const rendered = await Promise.all(
+    attachments.map((attachment) => renderAttachment(store, attachment))
+  );
   return {
-    text: `The operator attached:\n${lines.join("\n")}`,
-    attachments: labelled,
+    text: `The operator attached:\n${rendered.map((entry) => entry.text).join("\n")}`,
+    attachments: attachments.map((attachment, index) => ({
+      ...attachment,
+      label: rendered[index]?.label,
+    })),
   };
 };
 
@@ -231,7 +267,7 @@ export const runWritingTurn = <TApproval>(
       });
     },
     renderAttachments: (attachments) =>
-      renderDraftAttachments(options.draft, attachments),
+      renderAttachments(options.draft, attachments),
     signal: options.signal,
     promptTemplates: writingPromptTemplates,
     policy: writingPolicy,

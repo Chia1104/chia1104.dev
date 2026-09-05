@@ -2,7 +2,10 @@ import { ORPCError } from "@orpc/client";
 import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 
-import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type {
+  AgentAttachmentInput,
+  AgentWireEvent,
+} from "@chia/agent-runtime/wire/schema";
 
 import { defaultAgentLabels } from "../src/labels.ts";
 import { agentQueryKeys } from "../src/queries.ts";
@@ -495,15 +498,21 @@ describe("createAgentSessionStore", () => {
   it("sends the host context with prompts and commands, own attachments after it", async () => {
     const stream = channel();
     const { client, chat } = fakeClient({ chat: async () => stream.iterable });
-    const context = [{ type: "draft", id: 7 }];
-    const { store } = makeStore({ client, context: () => context });
+    const context: AgentAttachmentInput[] = [{ type: "draft", id: 7 }];
+    const sent = vi.fn();
+    const { store } = makeStore({
+      client,
+      context: { attached: () => context, sent },
+    });
     await store.getState().hydrate();
 
+    const selection: AgentAttachmentInput = {
+      type: "selection",
+      text: "Selected words",
+      source: { type: "feed", id: 3, locale: "en", headingPath: "Setup" },
+    };
     const prompted = store.getState().prompt("hello", {
-      attachments: [
-        { type: "draft", id: 7 },
-        { type: "feed", id: 3 },
-      ],
+      attachments: [{ type: "draft", id: 7 }, selection],
     });
     await flush();
     expect(chat).toHaveBeenLastCalledWith(
@@ -511,14 +520,13 @@ describe("createAgentSessionStore", () => {
         action: {
           type: "prompt",
           text: "hello",
-          attachments: [
-            { type: "draft", id: 7 },
-            { type: "feed", id: 3 },
-          ],
+          attachments: [{ type: "draft", id: 7 }, selection],
         },
       }),
       expect.anything()
     );
+    // The host learns the context went out once the server took the prompt, not before.
+    expect(sent).toHaveBeenCalledTimes(1);
     stream.push({ type: "run:end", reason: "done" });
     stream.close();
     await prompted;

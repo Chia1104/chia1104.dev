@@ -3,15 +3,17 @@
 import type { ReactNode } from "react";
 import { useSyncExternalStore } from "react";
 
-import { Disclosure } from "@heroui/react";
-import { Check } from "lucide-react";
+import { Disclosure, Tooltip } from "@heroui/react";
+import { Check, TextQuote } from "lucide-react";
 import { ThinkingOrb } from "thinking-orbs";
 
 import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
+import type { AgentAttachment } from "@chia/agent-runtime/wire/schema";
 import { CopyButton } from "@chia/ui/copy-button";
 import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { attachmentKeyOf, attachmentMetaOf } from "./attachment.ts";
 import { Expandable } from "./expandable.tsx";
 import { useAgentLabels } from "./labels-context.tsx";
 import { Markdown } from "./markdown.tsx";
@@ -80,6 +82,34 @@ const MessageMeta = ({
   );
 };
 
+const CHIP_CLASS =
+  "bg-surface-secondary text-muted border-border inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-0.5 text-[11px]";
+
+/** A selection opens its text on hover; the label alone says where it came from. */
+const AttachmentChip = ({ attachment }: { attachment: AgentAttachment }) => {
+  const label =
+    attachment.label ??
+    (attachment.type === "draft"
+      ? `Draft #${attachment.id}`
+      : attachmentMetaOf(attachment));
+  if (attachment.type !== "selection") {
+    return <span className={CHIP_CLASS}>{label}</span>;
+  }
+  return (
+    <Tooltip delay={300}>
+      <Tooltip.Trigger className={CHIP_CLASS}>
+        <TextQuote className="size-3 shrink-0" />
+        <span className="truncate">{label}</span>
+      </Tooltip.Trigger>
+      <Tooltip.Content className="max-w-sm" placement="top end">
+        <p className="line-clamp-6 text-xs whitespace-pre-wrap">
+          {attachment.text}
+        </p>
+      </Tooltip.Content>
+    </Tooltip>
+  );
+};
+
 export const UserMessage = ({
   actions,
   at,
@@ -100,11 +130,10 @@ export const UserMessage = ({
     {attachments && attachments.length > 0 ? (
       <div className="flex max-w-[85%] flex-wrap justify-end gap-1">
         {attachments.map((attachment) => (
-          <span
-            key={`${attachment.type}:${attachment.id}`}
-            className="bg-surface-secondary text-muted border-border rounded-full border px-2 py-0.5 text-[11px]">
-            {attachment.label ?? `${attachment.type} #${attachment.id}`}
-          </span>
+          <AttachmentChip
+            key={attachmentKeyOf(attachment)}
+            attachment={attachment}
+          />
         ))}
       </div>
     ) : null}

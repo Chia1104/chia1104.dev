@@ -21,7 +21,6 @@ import { writingSkills } from "@chia/agent-writing/prompts/skills";
 import { writingPromptTemplates } from "@chia/agent-writing/prompts/templates";
 import { runWritingTurn } from "@chia/agent-writing/runtime";
 import { createWritingTools } from "@chia/agent-writing/tools/tool-set";
-import { DRAFT_ATTACHMENT_TYPE } from "@chia/agent-writing/types";
 import type { DB } from "@chia/db/client";
 import {
   copyWritingSessionDrafts,
@@ -170,24 +169,36 @@ export const createWritingAgentKind = (
         };
       },
 
+      /**
+       * A draft by reference, or a selection from one. The selection's text is not checked
+       * against the row: the editor sends it before its autosave lands, and the model re-reads
+       * the draft anyway.
+       */
       async attach(caller, db, sessionId, attachments) {
+        const draftIds = new Set<number>();
         for (const attachment of attachments) {
-          if (attachment.type !== DRAFT_ATTACHMENT_TYPE) {
+          if (
+            attachment.type === "selection" &&
+            attachment.source.type !== "draft"
+          ) {
             throw new AppError("BAD_REQUEST", {
-              message: `The writing agent takes no "${attachment.type}" attachments.`,
+              message: `The writing agent takes no "${attachment.source.type}" selections.`,
             });
           }
-          const draft = await getFeedDraft(db, attachment.id);
+          const draftId =
+            attachment.type === "draft" ? attachment.id : attachment.source.id;
+          const draft = await getFeedDraft(db, draftId);
           if (!draft || draft.userId !== caller.userId) {
             throw new AppError("NOT_FOUND", {
-              message: `Unknown draft: ${attachment.id}`,
+              message: `Unknown draft: ${draftId}`,
             });
           }
+          draftIds.add(draftId);
         }
         await touchWritingSessionDrafts(
           db,
           sessionId,
-          attachments.map((attachment) => ({ draftId: attachment.id }))
+          [...draftIds].map((draftId) => ({ draftId }))
         );
       },
     },

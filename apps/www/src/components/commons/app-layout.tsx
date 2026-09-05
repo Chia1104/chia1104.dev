@@ -2,6 +2,7 @@
 
 import type { Locale } from "next-intl";
 
+import { AgentContextProvider } from "@chia/agent-elements/context";
 import ScrollYProgress from "@chia/ui/scroll-y-progess";
 
 import { ChatDock } from "@/components/agent/chat-dock";
@@ -17,7 +18,8 @@ const AppLayout = ({
   children: React.ReactNode;
 }) => {
   return (
-    <>
+    // A page's selection menu files a prompt here; the chat dock's session sends it.
+    <AgentContextProvider>
       <Background />
       {/* `--dock-width` is unset until the dock is open; only then does the page give up room. */}
       <div className="@container/page flex min-h-dvh flex-col pr-[var(--dock-width,0px)] transition-[padding] duration-200 ease-out motion-reduce:transition-none [html[data-dock-resizing]_&]:transition-none">
@@ -29,7 +31,7 @@ const AppLayout = ({
         <Footer locale={locale} />
       </div>
       <ChatDock />
-    </>
+    </AgentContextProvider>
   );
 };
 

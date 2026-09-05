@@ -17,6 +17,7 @@ import DateFormat from "@chia/ui/date-format";
 import { WWW_BASE_URL, getBaseUrl } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 
+import { ArticleSelection } from "@/components/agent/article-selection";
 import { ActionGroup } from "@/components/blog/action-group";
 import {
   RelatedFeeds,
@@ -161,26 +162,28 @@ const Page = async ({
             </div>
           </div>
         </header>
-        <Content
-          content={getContentProps({ content: translation.content })}
-          context={{
-            updatedAt: feed.updatedAt,
-            tocContents: {
-              label: t("otp"),
-              updated: t("last-updated"),
-            },
-            locale,
-            slot: {
-              actions: (
-                <ActionGroup
-                  content={feed.translations[0]?.content}
-                  articleUrl={articleUrl}
-                  className="mb-5 ml-auto flex justify-self-end"
-                />
-              ),
-            },
-          }}
-        />
+        <ArticleSelection feedId={feed.id} locale={dbLocale}>
+          <Content
+            content={getContentProps({ content: translation.content })}
+            context={{
+              updatedAt: feed.updatedAt,
+              tocContents: {
+                label: t("otp"),
+                updated: t("last-updated"),
+              },
+              locale,
+              slot: {
+                actions: (
+                  <ActionGroup
+                    content={feed.translations[0]?.content}
+                    articleUrl={articleUrl}
+                    className="mb-5 ml-auto flex justify-self-end"
+                  />
+                ),
+              },
+            }}
+          />
+        </ArticleSelection>
         <ErrorBoundary>
           <Suspense fallback={<RelatedFeedsSkeleton />}>
             <RelatedFeeds locale={locale} slug={slug} />

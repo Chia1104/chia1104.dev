@@ -11,6 +11,7 @@ import type {
 } from "@chia/agent-runtime/models";
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import { runPiTurn } from "@chia/agent-runtime/pi/turn";
+import type { RenderedAttachments } from "@chia/agent-runtime/pi/turn";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
   AgentSessionSettings,
@@ -18,7 +19,10 @@ import type {
   AgentTurnMessage,
   AgentUsageListener,
 } from "@chia/agent-runtime/types";
-import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type {
+  AgentAttachment,
+  AgentWireEvent,
+} from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";
 
 import { resolvePublicModel } from "./models.ts";
@@ -56,6 +60,62 @@ export interface RunPublicTurnOptions<TApproval> {
   onUsage?: AgentUsageListener;
 }
 
+/** Quoted as a fenced block so the passage reads as the visitor's citation, not their words. */
+const quoted = (text: string): string => `"""\n${text}\n"""`;
+
+/**
+ * The block the model reads ahead of the visitor's words. Only a selection from a published
+ * post is readable; the port decides what is published, so an unreadable id is named and skipped.
+ */
+const renderAttachments = async (
+  content: ContentReadPort,
+  attachments: readonly AgentAttachment[]
+): Promise<RenderedAttachments> => {
+  const rendered = await Promise.all(
+    attachments.map(async (attachment) => {
+      if (
+        attachment.type !== "selection" ||
+        attachment.source.type !== "feed"
+      ) {
+        return {
+          text: `- An attachment this agent cannot read; ignore it.`,
+          label: "Attachment",
+        };
+      }
+      const { source, text } = attachment;
+      const locale = Object.values(Locale).find(
+        (value) => value === source.locale
+      );
+      const post = await content.getPost({ feedId: source.id, locale });
+      const translation =
+        post?.translations.find((entry) => entry.locale === source.locale) ??
+        post?.translations[0];
+      if (!post || !translation) {
+        return {
+          text: `- Selected text from a post this agent cannot read; ignore it.`,
+          label: "Selection",
+        };
+      }
+      const where = source.headingPath ? `, under "${source.headingPath}"` : "";
+      return {
+        text:
+          `- Selected in the post "${translation.title}" (slug \`${post.slug}\`, locale ${source.locale}${where}):\n` +
+          quoted(text),
+        label: source.headingPath
+          ? `${translation.title} · ${source.headingPath}`
+          : translation.title,
+      };
+    })
+  );
+  return {
+    text: `The visitor attached:\n${rendered.map((entry) => entry.text).join("\n")}`,
+    attachments: attachments.map((attachment, index) => ({
+      ...attachment,
+      label: rendered[index]?.label,
+    })),
+  };
+};
+
 export const runPublicTurn = async <TApproval>(
   options: RunPublicTurnOptions<TApproval>
 ): Promise<AgentTurnExecution<TApproval>> => {
@@ -88,6 +148,8 @@ export const runPublicTurn = async <TApproval>(
       profile,
     }),
     volatileContext: () => buildTurnContext({ defaultLocale, now: new Date() }),
+    renderAttachments: (attachments) =>
+      renderAttachments(options.content, attachments),
     signal: options.signal,
     policy: publicPolicy,
     budget: publicTurnBudget,

@@ -276,6 +276,15 @@
       "reset": "重設時間：{time}",
       "ownKey": "使用自己的 API 金鑰時，費用由供應商計算，不會扣除此額度。",
       "done": "完成"
+    },
+    "selection": {
+      "ask": "問這段",
+      "explain": "解釋這一段",
+      "example": "舉個例子",
+      "related": "還有哪些文章談到？",
+      "explainPrompt": "請解釋我選取的這段內容。",
+      "examplePrompt": "請針對我選取的這段內容舉一個具體的例子。",
+      "relatedPrompt": "還有哪些文章談到我選取的這段內容的主題？"
     }
   },
   "settings": {

@@ -25,11 +25,56 @@ const usageSchema = z.object({
   costTotal: z.number().optional(),
 });
 
-export const agentAttachmentSchema = z.object({
-  type: z.string(),
-  id: z.number().int(),
-  label: z.string().optional(),
-});
+/** Bounds a selection so a guest cannot ship a whole post as one prompt. */
+export const SELECTION_TEXT_MAX_CHARS = 4000;
+
+/**
+ * Where selected text came from, precise enough for the kind to find it again: a draft by
+ * line range for the editor, a published post by heading trail for the reader.
+ */
+export const agentSelectionSourceSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("draft"),
+    id: z.number().int(),
+    locale: z.string().min(1),
+    startLine: z.number().int().positive(),
+    endLine: z.number().int().positive(),
+  }),
+  z.object({
+    type: z.literal("feed"),
+    id: z.number().int(),
+    locale: z.string().min(1),
+    /** Heading trail as `search_posts` reports it, e.g. `"Setup > Install"`. */
+    headingPath: z.string().max(400).optional(),
+  }),
+]);
+
+/**
+ * What a prompt hands the agent beside the text: a record by reference, or text the operator
+ * selected on screen with its source. Which of these a kind admits is that kind's policy.
+ */
+export const agentAttachmentInputSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("draft"), id: z.number().int() }),
+  z.object({
+    type: z.literal("selection"),
+    text: z.string().min(1).max(SELECTION_TEXT_MAX_CHARS),
+    source: agentSelectionSourceSchema,
+  }),
+]);
+
+/** The input as persisted and replayed, with the label the kind filled for clients. */
+export const agentAttachmentSchema = z.discriminatedUnion("type", [
+  agentAttachmentInputSchema.options[0].extend({
+    label: z.string().optional(),
+  }),
+  agentAttachmentInputSchema.options[1].extend({
+    label: z.string().optional(),
+  }),
+]);
+
+export type AgentSelectionSource = z.infer<typeof agentSelectionSourceSchema>;
+export type AgentAttachmentInput = z.infer<typeof agentAttachmentInputSchema>;
+export type AgentAttachment = z.infer<typeof agentAttachmentSchema>;
 
 export const agentWireEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("run:start"), sessionId: z.string() }),

@@ -1,6 +1,7 @@
 import { defineHook } from "workflow";
 import * as z from "zod";
 
+import { agentAttachmentInputSchema } from "@chia/agent-runtime/wire/schema";
 import type { KeyId } from "@chia/ai/provider";
 
 /**
@@ -34,12 +35,6 @@ export type EncryptedAgentCredentials = z.infer<
   typeof encryptedAgentCredentialsSchema
 >;
 
-/** What the operator handed the turn beside the text; the kind renders and validates it. */
-export const agentAttachmentPayloadSchema = z.object({
-  type: z.string().min(1),
-  id: z.number().int(),
-});
-
 /** The operator's decision on a gated call, relayed to the model as this turn's message. */
 export const agentOperatorDecisionSchema = z.object({
   toolCallId: z.string(),
@@ -54,7 +49,7 @@ export const agentMessagePayloadSchema = z.object({
   template: z
     .object({ name: z.string(), args: z.array(z.string()).optional() })
     .optional(),
-  attachments: z.array(agentAttachmentPayloadSchema).optional(),
+  attachments: z.array(agentAttachmentInputSchema).optional(),
   decision: agentOperatorDecisionSchema.optional(),
   credentials: encryptedAgentCredentialsSchema.optional(),
 });

@@ -12,13 +12,15 @@ import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
 import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
 import type {
-  AgentAttachment,
   AgentTurnError,
   ThinkingLevel,
   ToolTier,
 } from "@chia/agent-runtime/types";
 import type { OperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
-import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type {
+  AgentAttachment,
+  AgentWireEvent,
+} from "@chia/agent-runtime/wire/schema";
 import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
 import {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type {
   ContentReadPort,
@@ -8,10 +8,30 @@ import { PUBLIC_AGENT_KIND } from "@chia/agent-public/models";
 import type { DB } from "@chia/db/client";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
-import { createPublicAgentKind } from "../src/public";
+import type { AgentKindCaller } from "../src/kind";
 
-/* SAFETY: the public kind keeps no row, so its state methods never touch the handle. */
+const feeds = vi.hoisted(() => ({
+  getFeedById: vi.fn(),
+}));
+
+vi.mock("@chia/db/repos/feeds", () => feeds);
+
+const { createPublicAgentKind } = await import("../src/public");
+
+/* SAFETY: the feed lookup is mocked; nothing else in the kind touches the handle. */
 const db = {} as DB;
+
+const caller: AgentKindCaller =
+  /* SAFETY: `attach` ignores the caller; a guest's selection is scoped by the post's visibility. */ {
+    tier: CallerTier.Guest,
+    userId: "guest",
+  } as AgentKindCaller;
+
+const selectionOf = (feedId: number) => ({
+  type: "selection" as const,
+  text: "Selected words",
+  source: { type: "feed" as const, id: feedId, locale: "en" },
+});
 
 const port: ContentReadPort = {
   searchPosts: () => Promise.resolve([]),
@@ -47,6 +67,41 @@ describe("createPublicAgentKind", () => {
   it("has no state row yet keeps every session visible", async () => {
     await expect(kind.state.load(db, "session-1")).resolves.toEqual({});
     await expect(kind.state.detail(db, "session-1", {})).resolves.toEqual({});
+  });
+
+  it("admits a selection from a published post and nothing else", async () => {
+    feeds.getFeedById.mockResolvedValue({ id: 3 });
+    await expect(
+      kind.state.attach?.(caller, db, "session-1", [selectionOf(3)])
+    ).resolves.toBeUndefined();
+    expect(feeds.getFeedById).toHaveBeenCalledWith(db, {
+      feedId: 3,
+      published: true,
+    });
+
+    feeds.getFeedById.mockResolvedValue(null);
+    await expect(
+      kind.state.attach?.(caller, db, "session-1", [selectionOf(4)])
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+    await expect(
+      kind.state.attach?.(caller, db, "session-1", [{ type: "draft", id: 1 }])
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      kind.state.attach?.(caller, db, "session-1", [
+        {
+          type: "selection",
+          text: "Selected words",
+          source: {
+            type: "draft",
+            id: 1,
+            locale: "en",
+            startLine: 1,
+            endLine: 1,
+          },
+        },
+      ])
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 
   it("has no executor without an execution host", () => {
