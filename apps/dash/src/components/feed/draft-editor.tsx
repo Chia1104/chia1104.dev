@@ -67,6 +67,8 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
       initialData: initial,
       refetchInterval: POLL_INTERVAL_MS,
       refetchOnWindowFocus: true,
+      // A discarded draft answers NOT_FOUND; retrying only delays the redirect below.
+      retry: false,
     })
   );
 

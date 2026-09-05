@@ -586,7 +586,7 @@ describe("createAgentSessionStore", () => {
     });
   });
 
-  it("forwards state changes immediately but lets turn-end fetch settle a burst", async () => {
+  it("refreshes the detail on the first state change and lets turn-end settle the rest", async () => {
     const stream = channel();
     const onStateChanged = vi.fn();
     const { client, get } = fakeClient({ chat: async () => stream.iterable });
@@ -601,13 +601,14 @@ describe("createAgentSessionStore", () => {
     }
     await flush();
     expect(onStateChanged).toHaveBeenCalledTimes(20);
-    expect(invalidate).not.toHaveBeenCalled();
+    expect(invalidate).toHaveBeenCalledTimes(1);
     expect(get).toHaveBeenCalledTimes(1);
     stream.push({ type: "run:end", reason: "done" });
     stream.close();
     await prompted;
     expect(get).toHaveBeenCalledTimes(2);
-    expect(invalidate).not.toHaveBeenCalled();
+    // The trailing refresh is dropped with the stream; `settle` already fetched the detail.
+    expect(invalidate).toHaveBeenCalledTimes(1);
     store.getState().dispose();
     queryClient.clear();
   });

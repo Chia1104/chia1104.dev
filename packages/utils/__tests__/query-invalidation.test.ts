@@ -49,16 +49,19 @@ describe("live query invalidation", () => {
     }
   });
 
-  it("cancels pending refreshes when the consumer leaves", async () => {
+  it("cancels the trailing refresh when the consumer leaves", async () => {
     const client = new QueryClient();
     const invalidate = vi.spyOn(client, "invalidateQueries");
     const refresh = createQueryInvalidator(client, ["session", "s1"]);
     refresh.request();
+    refresh.request();
+    expect(invalidate).toHaveBeenCalledTimes(1);
     refresh.dispose();
     await vi.advanceTimersByTimeAsync(5000);
-    expect(invalidate).not.toHaveBeenCalled();
+    expect(invalidate).toHaveBeenCalledTimes(1);
     client.clear();
   });
+
   it("drops queued work on disposal without cancelling the active query", async () => {
     const client = new QueryClient();
     const pending = Promise.withResolvers<void>();

@@ -35,7 +35,11 @@ export const getQueryClient = () => {
   return (clientQueryClientSingleton ??= createQueryClient());
 };
 
-/** Coalesces live invalidations and retains one refresh after an in-flight request. */
+/**
+ * The first request refreshes at once; a burst inside the window collapses into one trailing
+ * refresh, and one more is kept behind a request still in flight so a write that landed
+ * during it is not missed.
+ */
 export const createQueryInvalidator = (
   queryClient: QueryClient,
   queryKey: QueryKey
@@ -55,7 +59,7 @@ export const createQueryInvalidator = (
   );
   const throttle = new Throttler(() => queue.addItem(queryKey), {
     wait: 1000,
-    leading: false,
+    leading: true,
     trailing: true,
   });
 
