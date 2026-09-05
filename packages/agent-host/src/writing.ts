@@ -30,7 +30,7 @@ import {
   touchWritingSessionDrafts,
 } from "@chia/db/repos/agent";
 import type { WritingAgentSessionState } from "@chia/db/repos/agent";
-import { getFeedDraft } from "@chia/db/repos/drafts";
+import { getFeedDraft, getFeedDrafts } from "@chia/db/repos/drafts";
 import type { FeedDraftRecord } from "@chia/db/repos/drafts";
 import { AppError } from "@chia/service-kit/errors";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
@@ -161,13 +161,12 @@ export const createWritingAgentKind = (
 
       async detail(db, _sessionId, state) {
         // Ownership was checked when the session row was loaded; the drafts are bound to it.
-        const drafts = await Promise.all(
-          state.drafts.map((entry) => getFeedDraft(db, entry.draftId))
+        const drafts = await getFeedDrafts(
+          db,
+          state.drafts.map((entry) => entry.draftId)
         );
         return {
-          drafts: drafts
-            .filter((draft) => draft !== null)
-            .map((draft) => toDraftPayload(draft)),
+          drafts: drafts.map(toDraftPayload),
         };
       },
 

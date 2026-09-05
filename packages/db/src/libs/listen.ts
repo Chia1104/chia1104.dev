@@ -12,9 +12,7 @@ const MIN_RETRY_MS = 1_000;
 const MAX_RETRY_MS = 30_000;
 
 /**
- * `LISTEN channel` on a dedicated connection that outlives the server going away: a dropped
- * connection reconnects with backoff and listens again. A pool connection cannot hold a
- * LISTEN, and a client without an `error` handler takes the process down with it.
+ * Keeps LISTEN on a dedicated connection and reconnects with backoff after a disconnect.
  */
 export const listenChannel = (
   url: string,
@@ -28,10 +26,12 @@ export const listenChannel = (
     if (options.signal.aborted) return;
     attempt += 1;
     const delay = Math.min(MAX_RETRY_MS, MIN_RETRY_MS * 2 ** (attempt - 1));
-    const timer = setTimeout(() => void connect(), delay);
-    options.signal.addEventListener("abort", () => clearTimeout(timer), {
-      once: true,
-    });
+    const cancel = () => clearTimeout(timer);
+    const timer = setTimeout(() => {
+      options.signal.removeEventListener("abort", cancel);
+      void connect();
+    }, delay);
+    options.signal.addEventListener("abort", cancel, { once: true });
   };
 
   const connect = async () => {

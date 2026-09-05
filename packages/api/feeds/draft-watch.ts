@@ -1,9 +1,8 @@
 import type { DB } from "@chia/db/client";
 import {
-  getFeedDraft,
+  getFeedDraftStatus,
   listFeedDraftRevisionsSince,
 } from "@chia/db/repos/drafts";
-import type { FeedDraftRecord } from "@chia/db/repos/drafts";
 import type { FeedDraftNotice } from "@chia/db/repos/drafts/notice";
 import { AppError } from "@chia/service-kit/errors";
 
@@ -48,19 +47,19 @@ const sleep = (ms: number, signal?: AbortSignal) =>
  */
 async function* tail(
   db: DB,
-  input: WatchFeedDraftInput,
-  initial: FeedDraftRecord
+  input: WatchFeedDraftInput
 ): AsyncGenerator<FeedDraftWatchEvent, void, void> {
   const { draftId, signal } = input;
   const pollMs = input.pollMs ?? DEFAULT_POLL_MS;
   const pingMs = input.pingMs ?? DEFAULT_PING_MS;
 
   let cursor = input.afterRevision;
-  let applied = initial.appliedRevision;
+  // Apply does not advance the revision cursor; replay its current state on every connection.
+  let applied: number | null = null;
   let quietSince = Date.now();
 
   while (!signal?.aborted) {
-    const draft = await getFeedDraft(db, draftId);
+    const draft = await getFeedDraftStatus(db, draftId);
     if (!draft) {
       yield { type: "discarded", draftId };
       return;
@@ -112,16 +111,16 @@ async function* tail(
   }
 }
 
-/** Settles ownership before the first event; the stream itself only ends, never errors. */
+/** Checks ownership before streaming; a missing draft emits discarded, including on reconnect. */
 export const watchFeedDraft = async (
   db: DB,
   input: WatchFeedDraftInput
 ): Promise<AsyncGenerator<FeedDraftWatchEvent, void, void>> => {
-  const initial = await getFeedDraft(db, input.draftId);
-  if (!initial || initial.userId !== input.adminId) {
+  const initial = await getFeedDraftStatus(db, input.draftId);
+  if (initial && initial.userId !== input.adminId) {
     throw new AppError("NOT_FOUND", {
       message: `Draft ${input.draftId} not found`,
     });
   }
-  return tail(db, input, initial);
+  return tail(db, input);
 };

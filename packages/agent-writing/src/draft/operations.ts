@@ -37,7 +37,6 @@ export const patchTranslation = (
   },
 });
 
-/** A write presented a revision the draft has already moved past. */
 /** The default locale's title, else the first locale that has one. */
 export const draftTitle = (draft: FeedDraft): string | null => {
   const preferred = draft.translations[draft.defaultLocale]?.title;

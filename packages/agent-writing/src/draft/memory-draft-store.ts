@@ -68,9 +68,7 @@ export class InMemoryDraftStore implements DraftStore {
   list(): Promise<FeedDraftSummary[]> {
     return Promise.resolve(
       [...this.drafts.values()]
-        .map((draft) =>
-          draftSummary(this.observe(draft), this.updatedAt.get(draft.id)!)
-        )
+        .map((draft) => draftSummary(draft, this.updatedAt.get(draft.id)!))
         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
     );
   }

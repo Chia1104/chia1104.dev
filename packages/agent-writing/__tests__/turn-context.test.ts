@@ -11,9 +11,8 @@ const base = {
 
 describe("buildTurnContext drafts", () => {
   it("tells a fresh session how to find a draft", () => {
-    const context = buildTurnContext({ ...base, openDraftCount: 3 });
+    const context = buildTurnContext(base);
 
-    expect(context).toContain("Open drafts: 3");
     expect(context).toContain("Drafts this conversation works on: none yet");
     expect(context).toContain("`open_draft`");
   });

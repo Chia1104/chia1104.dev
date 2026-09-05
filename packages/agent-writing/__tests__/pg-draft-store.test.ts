@@ -104,6 +104,17 @@ const build = () =>
 describe("PgDraftStore", () => {
   beforeEach(reset);
 
+  it("does not mark listed drafts or newer revisions as observed", async () => {
+    const store = build();
+    await store.list();
+    expect(store.observedRevisions.size).toBe(0);
+
+    await store.get(DRAFT_ID);
+    drafts.set(DRAFT_ID, { ...record(DRAFT_ID), revision: 2 });
+    expect(await store.list()).toMatchObject([{ id: DRAFT_ID, revision: 2 }]);
+    expect(store.observedRevisions.get(DRAFT_ID)).toBe(1);
+  });
+
   it("leaves omitted per-locale fields alone when the patch carries explicit undefined keys", async () => {
     const store = build();
     await store.patchTranslation(DRAFT_ID, "en", {

@@ -164,15 +164,13 @@ export const runWritingTurn = <TApproval>(
       instructions: options.instructions,
     }),
     volatileContext: async () => {
-      const [drafts, openDrafts, sessionMemories, lessons] = await Promise.all([
+      const [drafts, sessionMemories, lessons] = await Promise.all([
         describeSessionDrafts(options.draft, options.sessionDrafts ?? []),
-        options.draft.list(),
         options.memory.listBySession(options.agentSessionId),
         options.memory.listActiveLessons(LESSONS_DIGEST_LIMIT),
       ]);
       return buildTurnContext({
         drafts,
-        openDraftCount: openDrafts.length,
         sessionMemories,
         lessons,
         defaultLocale,

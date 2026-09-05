@@ -71,7 +71,7 @@ export interface WebPort {
  * {@link DraftNotFoundError}.
  */
 export interface DraftStore {
-  /** Drafts with unapplied work, newest first. */
+  /** Drafts with unapplied work, newest first. Listing does not mark them as observed. */
   list(): Promise<FeedDraftSummary[]>;
   /** A feed's working draft, created from the feed when there is none; an empty draft for a new post without `feedId`. */
   open(input: { feedId?: number }): Promise<FeedDraft>;

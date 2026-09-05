@@ -16,6 +16,7 @@ const repo = vi.hoisted(() => ({
 
 const drafts = vi.hoisted(() => ({
   getFeedDraft: vi.fn(),
+  getFeedDrafts: vi.fn(),
   listOperatorFeedDraftChanges: vi.fn(async () => []),
   patchFeedDraft: vi.fn(),
 }));
@@ -94,9 +95,7 @@ describe("createWritingAgentKind state", () => {
   });
 
   it("details the drafts the session worked on and drops one that is gone", async () => {
-    drafts.getFeedDraft.mockImplementation(async (_db: DB, id: number) =>
-      id === 7 ? record(7) : null
-    );
+    drafts.getFeedDrafts.mockResolvedValue([record(7)]);
 
     const detail = await kind.state.detail(db, "session-1", {
       sessionId: "session-1",
@@ -107,6 +106,7 @@ describe("createWritingAgentKind state", () => {
     });
 
     expect(detail.drafts?.map((draft) => draft.id)).toEqual([7]);
+    expect(drafts.getFeedDrafts).toHaveBeenCalledWith(db, [7, 8]);
     expect(detail.drafts?.[0]).toMatchObject({
       revision: 3,
       createdAt: "2026-09-05T00:00:00.000Z",

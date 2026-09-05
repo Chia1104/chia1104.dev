@@ -34,8 +34,6 @@ export interface TurnContextDraft {
 export interface TurnContextInput {
   /** Drafts this session has worked on, most recently touched first. */
   drafts: readonly TurnContextDraft[];
-  /** Every open draft, worked on here or not; `list_drafts` names them. */
-  openDraftCount?: number;
   defaultLocale: Locale;
   now: Date;
   /** What this session has already saved, so the model neither repeats itself nor forgets the ids. */
@@ -195,11 +193,6 @@ export const buildTurnContext = (input: TurnContextInput): string => {
 
   lines.push(`- Current time: ${input.now.toISOString()} (UTC)`);
   lines.push(`- Site default locale: ${input.defaultLocale}`);
-  if (input.openDraftCount !== undefined) {
-    lines.push(
-      `- Open drafts: ${input.openDraftCount} (\`list_drafts\` names them)`
-    );
-  }
 
   if (input.drafts.length === 0) {
     lines.push(

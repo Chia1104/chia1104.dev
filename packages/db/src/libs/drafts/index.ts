@@ -138,6 +138,62 @@ const readDraft = async (
 
 export const getFeedDraft = (db: DB, draftId: number) => readDraft(db, draftId);
 
+/** State needed by watch streams, without translation bodies. */
+export const getFeedDraftStatus = async (db: DB, draftId: number) => {
+  const [draft] = await db
+    .select({
+      userId: feedDrafts.userId,
+      feedId: feedDrafts.feedId,
+      revision: feedDrafts.revision,
+      appliedRevision: feedDrafts.appliedRevision,
+    })
+    .from(feedDrafts)
+    .where(eq(feedDrafts.id, draftId));
+  return draft ?? null;
+};
+
+const readDraftTranslations = async (
+  db: DB,
+  drafts: (typeof feedDrafts.$inferSelect)[]
+): Promise<FeedDraftRecord[]> => {
+  if (drafts.length === 0) return [];
+  const rows = await db
+    .select()
+    .from(feedDraftTranslations)
+    .where(
+      inArray(
+        feedDraftTranslations.draftId,
+        drafts.map((draft) => draft.id)
+      )
+    );
+  const translations = new Map<number, typeof rows>();
+  for (const row of rows) {
+    const group = translations.get(row.draftId) ?? [];
+    group.push(row);
+    translations.set(row.draftId, group);
+  }
+  return drafts.map((draft) =>
+    toRecord(draft, translations.get(draft.id) ?? [])
+  );
+};
+
+/** Reads a session's drafts in the requested order, omitting discarded rows. */
+export const getFeedDrafts = async (db: DB, draftIds: readonly number[]) => {
+  if (draftIds.length === 0) return [];
+  const drafts = await db
+    .select()
+    .from(feedDrafts)
+    .where(inArray(feedDrafts.id, [...draftIds]));
+  const byId = new Map(drafts.map((draft) => [draft.id, draft]));
+  return readDraftTranslations(
+    db,
+    draftIds.flatMap((id) => {
+      const draft = byId.get(id);
+      return draft ? [draft] : [];
+    })
+  );
+};
+
 export const getFeedDraftByFeedId = async (db: DB, feedId: number) => {
   const [draft] = await db
     .select({ id: feedDrafts.id })
@@ -163,22 +219,7 @@ export const listOpenFeedDrafts = async (db: DB, userId: string) => {
       )
     )
     .orderBy(desc(feedDrafts.updatedAt));
-  if (drafts.length === 0) return [];
-  const rows = await db
-    .select()
-    .from(feedDraftTranslations)
-    .where(
-      inArray(
-        feedDraftTranslations.draftId,
-        drafts.map((draft) => draft.id)
-      )
-    );
-  return drafts.map((draft) =>
-    toRecord(
-      draft,
-      rows.filter((row) => row.draftId === draft.id)
-    )
-  );
+  return readDraftTranslations(db, drafts);
 };
 
 /**

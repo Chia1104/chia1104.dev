@@ -20,7 +20,7 @@ interface WatchedDraft {
 const state = vi.hoisted((): WatchedDraft => ({ draft: null, rows: [] }));
 
 vi.mock("@chia/db/repos/drafts", () => ({
-  getFeedDraft: vi.fn(async () => state.draft),
+  getFeedDraftStatus: vi.fn(async () => state.draft),
   listFeedDraftRevisionsSince: vi.fn(
     async (_db: DB, input: { afterRevision: number }) =>
       state.rows
@@ -113,6 +113,39 @@ describe("watchFeedDraft", () => {
 
     controller.abort();
     await expect(events.next()).resolves.toMatchObject({ done: true });
+  });
+
+  it("replays an apply that happened while disconnected even at the current revision", async () => {
+    state.draft = { ...record(), feedId: 42, appliedRevision: 1 };
+    const controller = new AbortController();
+    const events = await watchFeedDraft(db, {
+      draftId: 7,
+      adminId: "admin",
+      afterRevision: 1,
+      signal: controller.signal,
+    });
+    expect((await events.next()).value).toEqual({
+      type: "applied",
+      draftId: 7,
+      revision: 1,
+      feedId: 42,
+    });
+    controller.abort();
+    await events.return();
+  });
+
+  it("reports a draft discarded while disconnected and ends the stream", async () => {
+    state.draft = null;
+    const events = await watchFeedDraft(db, {
+      draftId: 7,
+      adminId: "admin",
+      afterRevision: 3,
+    });
+    expect((await events.next()).value).toEqual({
+      type: "discarded",
+      draftId: 7,
+    });
+    expect((await events.next()).done).toBe(true);
   });
 
   it("reports an apply once and ends after a discard", async () => {

@@ -258,6 +258,22 @@ describe("runWritingTurn", () => {
     });
   });
 
+  it("leaves unrelated drafts unobserved when chatting and listing drafts", async () => {
+    fixture.draft.seed({ id: 2, revision: 8 });
+    fixture.setResponses([fauxAssistantMessage("Hello.")]);
+    await fixture.run("Hi");
+    expect(fixture.draft.observedRevisions.has(2)).toBe(false);
+
+    fixture.setResponses([
+      fauxAssistantMessage([fauxToolCall(TOOL_NAMES.listDrafts, {})], {
+        stopReason: "toolUse",
+      }),
+      fauxAssistantMessage("Here are the drafts."),
+    ]);
+    await fixture.run("List the open drafts");
+    expect(fixture.draft.observedRevisions.has(2)).toBe(false);
+  });
+
   it("runs a turn against the provider the settings name", async () => {
     const native = await build({
       providerId: "openai",

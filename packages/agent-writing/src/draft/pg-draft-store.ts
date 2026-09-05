@@ -75,7 +75,7 @@ export class PgDraftStore implements DraftStore {
   async list(): Promise<FeedDraftSummary[]> {
     const records = await this.options.list();
     return records.map((record) =>
-      draftSummary(this.observe(record), record.updatedAt)
+      draftSummary(toFeedDraft(record), record.updatedAt)
     );
   }
 
