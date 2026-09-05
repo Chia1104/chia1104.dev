@@ -1,4 +1,4 @@
-import type { AgentMessage } from "@earendil-works/pi-agent-core";
+import type { AgentMessage, JsonValue } from "@earendil-works/pi-agent-core";
 import type { Usage } from "@earendil-works/pi-ai";
 
 import type { AgentAttachment } from "../types.ts";
@@ -7,7 +7,7 @@ import type { AgentAttachment } from "../types.ts";
  * The persisted session tree, owned here rather than imported from Pi.
  *
  * Discriminants and payload fields match Pi's own entry union, so rows in `agent.session_entry`
- * read back unchanged and Pi's context projection accepts these entries structurally. `label`
+ * read back unchanged and Pi's compaction helpers accept these entries structurally. `label`
  * is the one entry Pi no longer models as a tree node; it stays one here because that is where
  * the rows already live and a navigation label is a tree event.
  */
@@ -42,38 +42,26 @@ export interface CompactionEntry extends SessionEntryBase {
   tokensBefore: number;
   /** Recent messages kept verbatim after the summary. Always an array once persisted. */
   retainedTail: AgentMessage[];
-  details?: unknown;
+  details?: JsonValue;
   usage?: Usage;
+  /** Whether a Pi hook wrote the entry. Always `false` here: the runtime writes every entry itself. */
+  fromHook: boolean;
 }
 
 export interface BranchSummaryEntry extends SessionEntryBase {
   type: "branch_summary";
-  fromId: string;
+  /** The leaf the session moved to when the branch was left; `null` at the root. */
+  fromId: string | null;
   summary: string;
-  details?: unknown;
+  details?: JsonValue;
   usage?: Usage;
-}
-
-export interface ModelChangeEntry extends SessionEntryBase {
-  type: "model_change";
-  provider: string;
-  modelId: string;
-}
-
-export interface ThinkingLevelEntry extends SessionEntryBase {
-  type: "thinking_level_change";
-  thinkingLevel: string;
-}
-
-export interface ActiveToolsEntry extends SessionEntryBase {
-  type: "active_tools_change";
-  activeToolNames: string[];
+  fromHook: boolean;
 }
 
 export interface CustomEntry extends SessionEntryBase {
   type: "custom";
   customType: string;
-  data?: unknown;
+  data?: JsonValue;
 }
 
 export interface LabelEntry extends SessionEntryBase {
@@ -87,9 +75,6 @@ export type ContextEntry =
   | MessageEntry
   | CompactionEntry
   | BranchSummaryEntry
-  | ModelChangeEntry
-  | ThinkingLevelEntry
-  | ActiveToolsEntry
   | CustomEntry;
 
 export type SessionEntry = ContextEntry | LabelEntry;
@@ -105,15 +90,13 @@ const CONTEXT_ENTRY_TYPES: ReadonlySet<string> = new Set<ContextEntry["type"]>([
   "message",
   "compaction",
   "branch_summary",
-  "model_change",
-  "thinking_level_change",
-  "active_tools_change",
   "custom",
 ]);
 
 /**
- * Labels annotate the tree, and rows of retired types (`session_info`, `leaf`) written by
- * earlier Pi releases are skipped rather than failing the whole session.
+ * Labels annotate the tree, and rows of retired types (`session_info`, `leaf`, `model_change`,
+ * `thinking_level_change`, `active_tools_change`) written by earlier Pi releases are skipped
+ * rather than failing the whole session.
  */
 export const isContextEntry = (entry: SessionEntry): entry is ContextEntry =>
   CONTEXT_ENTRY_TYPES.has(entry.type);

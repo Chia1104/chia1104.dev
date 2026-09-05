@@ -273,7 +273,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
         model,
         thinkingLevel,
         tools: bindToolContext(activeTools, toolContext),
-        messages: buildBranchContext(branch).messages,
+        messages: buildBranchContext(branch),
       },
       // Bound to this turn's collection rather than a process-wide default: the collection
       // carries the operator's own credentials, and a default would let a BYOK turn fall back

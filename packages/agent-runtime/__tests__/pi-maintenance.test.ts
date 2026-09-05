@@ -225,6 +225,7 @@ describe("navigatePiSession", () => {
       summary: "The first exchange, condensed.",
       tokensBefore: 10,
       retainedTail: [],
+      fromHook: false,
     });
     await session.appendEntry(user("u3", "c1", "Third question"));
     await session.appendEntry(assistant("a3", "u3", "Third answer"));
@@ -247,7 +248,7 @@ describe("navigatePiSession", () => {
     expect(leaf).toMatchObject({
       type: "branch_summary",
       parentId: null,
-      fromId: "root",
+      fromId: null,
     });
   });
 
