@@ -5,12 +5,11 @@ import { memo } from "react";
 import { Tabs } from "@heroui/react";
 import { Controller, useFormContext } from "react-hook-form";
 
-import type { FormSchema } from "@/store/draft/slices/edit-fields";
-
 import { FEED_TYPE_TABS } from "./constants";
+import type { DraftFormValues } from "./draft-form-schema";
 
 export const FeedTypeTabs = memo(() => {
-  const form = useFormContext<FormSchema>();
+  const form = useFormContext<DraftFormValues>();
 
   return (
     <Controller

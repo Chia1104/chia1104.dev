@@ -34,8 +34,12 @@ const fakeApi = (overrides: object = {}): McpApi =>
     feeds: {
       list: vi.fn(),
       "details-by-id": vi.fn(),
-      create: vi.fn(),
       update: vi.fn(),
+      "draft:list": vi.fn(),
+      "draft:open": vi.fn(),
+      "draft:get": vi.fn(),
+      "draft:patch": vi.fn(),
+      "draft:apply": vi.fn(),
     },
     agent: { sessions: { create: vi.fn(), chat: vi.fn(), get: vi.fn() } },
     ...overrides,
@@ -46,10 +50,14 @@ describe("mcp server", () => {
     const client = await connect(fakeApi());
     const { tools } = await client.listTools();
     expect(tools.map((tool) => tool.name).sort()).toEqual([
-      "create_post",
+      "apply_draft",
+      "get_draft",
       "get_post",
+      "list_drafts",
       "list_posts",
-      "update_post",
+      "open_draft",
+      "set_published",
+      "update_draft",
       "write_post",
       "writing_status",
     ]);
@@ -94,24 +102,37 @@ describe("mcp server", () => {
     });
   });
 
-  it("nests a flat translation body under content for the contract", async () => {
-    const update = vi.fn().mockResolvedValue(undefined);
-    const client = await connect(fakeApi({ feeds: { update } }));
+  it("writes content through the draft and passes the revision it was given", async () => {
+    const patch = vi.fn().mockResolvedValue({ id: 3, revision: 5 });
+    const client = await connect(fakeApi({ feeds: { "draft:patch": patch } }));
 
     await client.callTool({
-      name: "update_post",
+      name: "update_draft",
       arguments: {
-        feedId: 7,
-        published: true,
+        draftId: 3,
+        expectedRevision: 4,
         translations: { en: { title: "Hello", content: "# Hi" } },
       },
     });
 
-    expect(update).toHaveBeenCalledWith({
-      feedId: 7,
-      published: true,
-      translations: { en: { title: "Hello", content: { content: "# Hi" } } },
+    expect(patch).toHaveBeenCalledWith({
+      draftId: 3,
+      expectedRevision: 4,
+      translations: { en: { title: "Hello", content: "# Hi" } },
     });
+  });
+
+  it("publishes through the feed, never the draft", async () => {
+    const update = vi.fn().mockResolvedValue(undefined);
+    const client = await connect(fakeApi({ feeds: { update } }));
+
+    const result = await client.callTool({
+      name: "set_published",
+      arguments: { feedId: 7, published: true },
+    });
+
+    expect(update).toHaveBeenCalledWith({ feedId: 7, published: true });
+    expect(JSON.parse(textOf(result))).toEqual({ feedId: 7, published: true });
   });
 
   it("returns as soon as the writing turn has started and releases the stream", async () => {
@@ -134,29 +155,67 @@ describe("mcp server", () => {
       arguments: { prompt: "Write about pnpm catalogs", title: "catalogs" },
     });
 
-    expect(create).toHaveBeenCalledWith({
-      kind: "writing",
-      title: "catalogs",
-      targetFeedId: undefined,
-    });
+    expect(create).toHaveBeenCalledWith({ kind: "writing", title: "catalogs" });
     expect(chat).toHaveBeenCalledWith({
       kind: "writing",
       sessionId: "s1",
-      action: { type: "prompt", text: "Write about pnpm catalogs" },
+      action: {
+        type: "prompt",
+        text: "Write about pnpm catalogs",
+        attachments: undefined,
+      },
     });
     expect(returned).toHaveBeenCalled();
     expect(JSON.parse(textOf(result))).toMatchObject({
       sessionId: "s1",
+      draftId: null,
       status: "running",
-      reviewUrl: `${DASH}/agent?session=s1`,
+      reviewUrl: `${DASH}/feed/drafts?agent=open&session=s1`,
     });
+  });
+
+  it("hands a post's draft to the agent as an attachment on the prompt", async () => {
+    const returned = vi.fn();
+    const events = {
+      next: vi.fn().mockResolvedValue({
+        done: false,
+        value: { type: "run:start", sessionId: "s1" },
+      }),
+      return: returned,
+    };
+    const open = vi.fn().mockResolvedValue({ id: 9 });
+    const create = vi.fn().mockResolvedValue({ session: { id: "s1" } });
+    const chat = vi.fn().mockResolvedValue(events);
+    const client = await connect(
+      fakeApi({
+        feeds: { "draft:open": open },
+        agent: { sessions: { create, chat, get: vi.fn() } },
+      })
+    );
+
+    const result = await client.callTool({
+      name: "write_post",
+      arguments: { prompt: "Tighten the intro", targetFeedId: 5 },
+    });
+
+    expect(open).toHaveBeenCalledWith({ feedId: 5 });
+    expect(chat).toHaveBeenCalledWith({
+      kind: "writing",
+      sessionId: "s1",
+      action: {
+        type: "prompt",
+        text: "Tighten the intro",
+        attachments: [{ type: "draft", id: 9 }],
+      },
+    });
+    expect(JSON.parse(textOf(result))).toMatchObject({ draftId: 9 });
   });
 
   it("reports awaiting_approval ahead of the run state and the last reply", async () => {
     const get = vi.fn().mockResolvedValue({
       session: { id: "s1", title: "catalogs" },
       run: { id: "r1", status: "waiting" },
-      draft: { feedMeta: { slug: "pnpm-catalogs" }, translations: {} },
+      drafts: [{ id: 9, slug: "pnpm-catalogs", revision: 2, translations: {} }],
       approvals: [
         { toolCallId: "c1", toolName: "commit_draft", status: "pending" },
         { toolCallId: "c0", toolName: "commit_draft", status: "approved" },
@@ -181,7 +240,7 @@ describe("mcp server", () => {
       status: "awaiting_approval",
       pendingApprovals: [{ toolCallId: "c1", toolName: "commit_draft" }],
       lastReply: "Draft is ready.",
-      draft: { feedMeta: { slug: "pnpm-catalogs" } },
+      drafts: [{ id: 9, slug: "pnpm-catalogs" }],
     });
   });
 
@@ -205,7 +264,7 @@ describe("mcp server", () => {
 
     expect(JSON.parse(textOf(result))).toMatchObject({
       status: "idle",
-      draft: null,
+      drafts: [],
       lastReply: null,
     });
   });

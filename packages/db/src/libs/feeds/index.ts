@@ -224,13 +224,7 @@ const queryInfiniteFeeds = async (
         where: {
           locale,
         },
-        columns: withContent
-          ? undefined
-          : {
-              content: false,
-              source: false,
-              unstableSerializedSource: false,
-            },
+        columns: withContent ? undefined : { content: false },
         extras: {
           // Any stored vector counts, including leftovers from an older index key. Per-key state is in `libs/resources/stats.ts`.
           hasEmbedding: (translation, { sql }) =>
@@ -325,8 +319,6 @@ const getFeedDetails = async (
         summary: feedTranslations.summary,
         readTime: feedTranslations.readTime,
         content: feedTranslations.content,
-        source: feedTranslations.source,
-        unstableSerializedSource: feedTranslations.unstableSerializedSource,
         published: feedTranslations.published,
         deleted: feedTranslations.deleted,
         createdAt: feedTranslations.createdAt,
@@ -599,7 +591,6 @@ export const createFeed = withDTO(
         .values({
           slug: dto.slug,
           type: dto.type,
-          contentType: dto.contentType,
           published: dto.published,
           defaultLocale: dto.defaultLocale ?? LocaleEnum.zhTW,
           userId: dto.userId,
@@ -622,8 +613,6 @@ export const createFeed = withDTO(
         summary: translation.summary,
         readTime: translation.readTime,
         content: translation.content,
-        source: translation.source,
-        unstableSerializedSource: translation.unstableSerializedSource,
         // mirrors `feed` so BM25 can filter without a join
         published: feed.published,
         deleted: !!feed.deletedAt,
@@ -664,7 +653,6 @@ export const updateFeed = withDTO(
       .set({
         slug: dto.slug,
         type: dto.type,
-        contentType: dto.contentType,
         published: dto.published,
         defaultLocale: dto.defaultLocale,
         mainImage: dto.mainImage,
@@ -744,24 +732,18 @@ export const upsertContent = withDTO(
     dto: {
       feedTranslationId: number;
       content?: string | null;
-      source?: string | null;
-      unstableSerializedSource?: string | null;
     }
   ) => {
     const [row] = await db
       .update(feedTranslations)
       .set({
         content: dto.content,
-        source: dto.source,
-        unstableSerializedSource: dto.unstableSerializedSource,
         updatedAt: new Date(),
       })
       .where(eq(feedTranslations.id, dto.feedTranslationId))
       .returning({
         feedTranslationId: feedTranslations.id,
         content: feedTranslations.content,
-        source: feedTranslations.source,
-        unstableSerializedSource: feedTranslations.unstableSerializedSource,
       });
 
     return row;

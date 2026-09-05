@@ -26,7 +26,6 @@ const mockFeed = (
   id,
   slug,
   type: "post" as const,
-  contentType: "mdx" as const,
   published: true,
   defaultLocale: locale,
   userId,

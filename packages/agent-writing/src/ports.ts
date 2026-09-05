@@ -1,12 +1,13 @@
-import type { ContentReadPort, PostSnapshot } from "@chia/agent-content/types";
+import type { ContentReadPort } from "@chia/agent-content/types";
 import type { Locale } from "@chia/db/types";
 
 import type {
-  CommitDraftInput,
   CommitDraftResult,
+  DraftChange,
   DraftFeedMeta,
   DraftTranslation,
   FeedDraft,
+  FeedDraftSummary,
   FetchedPage,
   MemoryDetail,
   MemoryHit,
@@ -19,11 +20,12 @@ import type {
 } from "./types.ts";
 
 export type {
-  CommitDraftInput,
   CommitDraftResult,
+  DraftChange,
   DraftFeedMeta,
   DraftTranslation,
   FeedDraft,
+  FeedDraftSummary,
   FetchedPage,
   MemoryDetail,
   MemoryHit,
@@ -43,7 +45,8 @@ export type {
  * Carries no author id: the host builds this port for the configured author.
  */
 export interface ContentPort extends ContentReadPort {
-  commitDraft(input: CommitDraftInput): Promise<CommitDraftResult>;
+  /** Writes the shared draft onto the feed, creating an unpublished one the first time. */
+  applyDraft(input: { draftId: number }): Promise<CommitDraftResult>;
   setPublished(input: {
     feedId: number;
     published: boolean;
@@ -62,23 +65,40 @@ export interface WebPort {
   fetchPage(url: string, signal?: AbortSignal): Promise<FetchedPage>;
 }
 
-/** Staging buffer for one writing session. */
+/**
+ * The author's shared working drafts, addressed by id. Every write goes through the same
+ * compare-and-set row the dashboard editor uses. An unknown or discarded id throws
+ * {@link DraftNotFoundError}.
+ */
 export interface DraftStore {
-  get(sessionId: string): Promise<FeedDraft>;
-  patchFeedMeta(sessionId: string, patch: DraftFeedMeta): Promise<FeedDraft>;
+  /** Drafts with unapplied work, newest first. Listing does not mark them as observed. */
+  list(): Promise<FeedDraftSummary[]>;
+  /** A feed's working draft, created from the feed when there is none; an empty draft for a new post without `feedId`. */
+  open(input: { feedId?: number }): Promise<FeedDraft>;
+  get(draftId: number): Promise<FeedDraft>;
+  patchFeedMeta(draftId: number, patch: DraftFeedMeta): Promise<FeedDraft>;
   patchTranslation(
-    sessionId: string,
+    draftId: number,
     locale: Locale,
     patch: DraftTranslation
   ): Promise<FeedDraft>;
+  /**
+   * Replaces a locale's body. With `expectedRevision`, a draft that moved since that
+   * revision rejects the write with {@link DraftConflictError} instead of overwriting it.
+   */
   setContent(
-    sessionId: string,
+    draftId: number,
     locale: Locale,
-    content: string
+    content: string,
+    expectedRevision?: number
   ): Promise<FeedDraft>;
-  markCommitted(sessionId: string, feedId: number): Promise<FeedDraft>;
-  /** Seeds the buffer from an existing post when a session is opened to edit one. */
-  seedFromPost(sessionId: string, post: PostSnapshot): Promise<FeedDraft>;
+  /** What the operator changed after `afterRevision`, merged per locale. */
+  operatorChangesSince(
+    draftId: number,
+    afterRevision: number
+  ): Promise<DraftChange[]>;
+  /** Highest revision this store returned per draft; the host records them as seen when the turn ends. */
+  readonly observedRevisions: ReadonlyMap<number, number>;
 }
 
 /**

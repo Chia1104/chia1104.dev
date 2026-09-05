@@ -1,5 +1,5 @@
 import type { AgentTool } from "@chia/agent-runtime/types";
-import type { ContentType, FeedType, Locale } from "@chia/db/types";
+import type { FeedType, Locale } from "@chia/db/types";
 import type { ProfileEntryContent } from "@chia/db/validator/profile";
 
 /**
@@ -32,7 +32,6 @@ export interface PostSnapshot {
   feedId: number;
   slug: string;
   type: PostFeedType;
-  contentType: ContentType;
   published: boolean;
   defaultLocale: Locale;
   mainImage?: string | null;

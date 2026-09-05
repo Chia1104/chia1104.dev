@@ -18,8 +18,7 @@ import type { JsonObject } from "@chia/utils/json";
 
 import { timestamps, softDelete } from "../libs/common.schema.ts";
 
-import { feeds } from "./contents.schema.ts";
-import { locale } from "./enums.ts";
+import { feedDrafts } from "./contents.schema.ts";
 import { agentSchema } from "./table.ts";
 import { user } from "./user.schema.ts";
 
@@ -140,46 +139,46 @@ export const agentSessionEntries = agentSchema.table(
 
 export type AgentSessionEntry = InferSelectModel<typeof agentSessionEntries>;
 
-/** Writing-agent extension. Other kinds add sibling tables rather than nullable columns on `session`. */
-export const writingAgentSessions = agentSchema.table(
-  "writing_session",
-  {
-    sessionId: text("session_id")
-      .primaryKey()
-      .references(() => agentSessions.id, { onDelete: "cascade" }),
-    targetFeedId: integer("target_feed_id").references(() => feeds.id, {
-      onDelete: "set null",
-    }),
-    /** Feed-level draft fields (slug/type/published/mainImage/…). */
-    feedMeta: jsonb("feed_meta").$type<JsonObject>().notNull().default({}),
-  },
-  (table) => [
-    index("writing_agent_session_target_feed_idx").on(table.targetFeedId),
-  ]
-);
+/** The writing kind's extension row. The drafts a session works on hang off `writing_session_draft`. */
+export const writingAgentSessions = agentSchema.table("writing_session", {
+  sessionId: text("session_id")
+    .primaryKey()
+    .references(() => agentSessions.id, { onDelete: "cascade" }),
+});
 
 export type WritingAgentSession = InferSelectModel<typeof writingAgentSessions>;
 
-/** Per-locale staging buffer; mirrors `feed_translation` so `commit_draft` maps onto `createFeedSchema.translations`. */
-export const writingAgentDrafts = agentSchema.table(
-  "writing_draft",
+/**
+ * A shared `feed_draft` the session has read or edited. A discarded draft drops its rows, so
+ * a session never points at a draft that no longer exists.
+ */
+export const writingAgentSessionDrafts = agentSchema.table(
+  "writing_session_draft",
   {
     sessionId: text("session_id")
       .notNull()
-      .references(() => agentSessions.id, { onDelete: "cascade" }),
-    locale: locale("locale").notNull(),
-    /** title/excerpt/description/summary. jsonb so adding a field needs no migration. */
-    meta: jsonb("meta").$type<JsonObject>().notNull().default({}),
-    content: text("content"),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
-      .defaultNow()
+      .references(() => writingAgentSessions.sessionId, {
+        onDelete: "cascade",
+      }),
+    draftId: integer("draft_id")
       .notNull()
-      .$onUpdate(() => new Date()),
+      .references(() => feedDrafts.id, { onDelete: "cascade" }),
+    /** Highest draft revision the agent has read; operator revisions above it are reported next turn. */
+    lastSeenRevision: integer("last_seen_revision").notNull().default(0),
+    /** Last time a turn or an attachment touched the draft; orders the session's drafts. */
+    touchedAt: timestamp("touched_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
   },
-  (table) => [primaryKey({ columns: [table.sessionId, table.locale] })]
+  (table) => [
+    primaryKey({ columns: [table.sessionId, table.draftId] }),
+    index("writing_session_draft_draft_idx").on(table.draftId),
+  ]
 );
 
-export type WritingAgentDraft = InferSelectModel<typeof writingAgentDrafts>;
+export type WritingAgentSessionDraft = InferSelectModel<
+  typeof writingAgentSessionDrafts
+>;
 
 export const AGENT_MEMORY_KIND = {
   /** A page the agent read: URL, title, excerpt. Written automatically by `fetch_url`. */

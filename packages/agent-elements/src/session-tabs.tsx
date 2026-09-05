@@ -158,12 +158,12 @@ export const SessionTabs = ({
           <Button
             aria-label={labels.newSession}
             isIconOnly
-            className="shrink-0"
+            className="size-6 shrink-0"
             isPending={isCreating}
             onPress={onCreate}
             size="sm"
             variant="secondary">
-            <Plus className="size-4" />
+            <Plus className="size-3.5" />
           </Button>
           <Tooltip.Content>{labels.newSession}</Tooltip.Content>
         </Tooltip>
@@ -183,7 +183,7 @@ export const SessionTabs = ({
                 <Button
                   render={(props) => <span {...props} />}
                   key={session.id}
-                  className="group/tab h-8 w-40 shrink-0 items-center justify-between rounded-lg pr-0 pl-2 text-xs font-normal"
+                  className="group/tab h-7 w-40 shrink-0 items-center justify-between rounded-lg pr-0 pl-2 text-xs font-normal"
                   onPress={() => onSelect(session.id)}
                   size="sm"
                   variant={isActive ? "tertiary" : "ghost"}>
@@ -200,7 +200,7 @@ export const SessionTabs = ({
                   {actions(
                     session,
                     cn(
-                      "mr-1 opacity-0 transition-opacity group-hover/tab:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100 data-[pressed]:opacity-100",
+                      "mr-1 size-6 opacity-0 transition-opacity group-hover/tab:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100 data-[pressed]:opacity-100",
                       isActive && "opacity-100"
                     )
                   )}
@@ -219,9 +219,9 @@ export const SessionTabs = ({
                 <Button
                   aria-label={labels.moreSessions}
                   isIconOnly
-                  className="text-muted h-8 shrink-0 gap-1 px-2.5 text-xs"
+                  className="text-muted size-6 shrink-0"
                   size="sm"
-                  variant="ghost">
+                  variant="secondary">
                   <Clock className="size-3.5" />
                 </Button>
                 <Tooltip.Content>{labels.moreSessions}</Tooltip.Content>

@@ -9,7 +9,6 @@ import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port
 
 import type { ContentPort, WebPort } from "../src/ports.ts";
 import type {
-  CommitDraftInput,
   CommitDraftResult,
   FetchedPage,
   WebSearchInput,
@@ -24,8 +23,10 @@ export interface FakeContentPortOptions {
 }
 
 export interface FakeContentPort extends ContentPort {
-  readonly commits: CommitDraftInput[];
+  readonly commits: { draftId: number }[];
   readonly publishes: { feedId: number; published: boolean }[];
+  /** Runs after each `applyDraft`, so a test can bind its in-memory draft to the new feed. */
+  onApplied?: (result: CommitDraftResult) => void;
 }
 
 export const createFakeContentPort = (
@@ -35,22 +36,23 @@ export const createFakeContentPort = (
     /* SAFETY: This fixture implements the ContentReadPort methods these tests exercise. */ createFakeContentReadPort(
       options
     ) as ContentReadPort;
-  const commits: CommitDraftInput[] = [];
+  const commits: { draftId: number }[] = [];
   const publishes: { feedId: number; published: boolean }[] = [];
   let nextFeedId = 100;
 
-  return {
+  const port: FakeContentPort = {
     ...read,
     commits,
     publishes,
-    commitDraft: (input) => {
+    applyDraft: (input) => {
       commits.push(input);
-      const feedId = input.feedId ?? nextFeedId++;
+      const feedId = nextFeedId++;
       const result: CommitDraftResult = {
         feedId,
-        slug: input.feedMeta.slug ?? `generated-${feedId}`,
-        created: input.feedId === undefined,
+        slug: `generated-${feedId}`,
+        created: true,
       };
+      port.onApplied?.(result);
       return Promise.resolve(result);
     },
     setPublished: (input) => {
@@ -61,6 +63,7 @@ export const createFakeContentPort = (
       });
     },
   };
+  return port;
 };
 
 export interface FakeWebPortOptions {

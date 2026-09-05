@@ -3,6 +3,7 @@
 import type { FC, ComponentPropsWithoutRef } from "react";
 import { useEffect, useRef } from "react";
 
+import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { useInView, useMotionValue, useSpring } from "motion/react";
 
 import dayjs from "@chia/utils/day";
@@ -30,12 +31,13 @@ const Age: FC<Props> = ({
     once: true,
     margin: "0px",
   });
+  const start = useDebouncedCallback(
+    () => motionValue.set(direction === "down" ? 0 : value),
+    { wait: delay * 1000 }
+  );
   useEffect(() => {
-    if (isInView)
-      setTimeout(() => {
-        motionValue.set(direction === "down" ? 0 : value);
-      }, delay * 1000);
-  }, [motionValue, isInView, delay, value, direction]);
+    if (isInView) start();
+  }, [isInView, start]);
 
   useEffect(() => {
     springValue.on("change", (latest: number) => {

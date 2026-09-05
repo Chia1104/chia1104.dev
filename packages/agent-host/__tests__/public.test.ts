@@ -47,7 +47,6 @@ describe("createPublicAgentKind", () => {
   it("has no state row yet keeps every session visible", async () => {
     await expect(kind.state.load(db, "session-1")).resolves.toEqual({});
     await expect(kind.state.detail(db, "session-1", {})).resolves.toEqual({});
-    expect(kind.state.summary({})).toEqual({});
   });
 
   it("has no executor without an execution host", () => {

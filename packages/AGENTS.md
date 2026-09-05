@@ -35,6 +35,7 @@ Authorization belongs in `service-kit/src/policies`. Bind policies through `runP
 
 - oRPC handlers use `@chia/db/repos/*`, not raw Drizzle.
 - Write logic shared with workflow steps belongs in `api/<domain>/write` and receives lifecycle hooks explicitly.
+- `feed_draft` is the only write path for post content shared by the editor, MCP and the writing agent; `api/feeds/draft` owns open, patch, apply, discard and restore. `feed` changes only through apply or the feed-level `feeds.update`, and only those start indexing. A writing session is not bound to a draft: `agent.writing_session_draft` records the drafts it worked on, and a prompt hands one over as an attachment that the kind's `attach` admits before the turn is queued.
 - Domain and policy failures use `AppError`; its codes mirror oRPC common codes.
 
 ## Core package boundaries
@@ -61,7 +62,7 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before changi
 
 `agent-runtime` exports `./pi/*`, `./session/*` and `./models` for server use only. Browser and SSR bundles may import `./wire/schema` and `./wire/fold`; `./wire/replay` remains server-only because it loads Pi.
 
-`agent-elements` owns live client state in one zustand store per session and server state in TanStack Query. Hosts provide the oRPC client, `QueryClient`, localized labels and kind-specific renderers. Host Tailwind sources must include this package and Streamdown's distributed JavaScript. Every locale must carry the same keys; agent label tests enforce this.
+`agent-elements` owns live client state in one zustand store per session and server state in TanStack Query. Hosts provide the oRPC client, `QueryClient`, localized labels and kind-specific renderers. Host context is a separate store (`./context`) mounted above the pages and the session: pages provide attachable records while mounted, the composer lists them, and the session store attaches the ones the operator has not detached to every prompt and command. Host Tailwind sources must include this package and Streamdown's distributed JavaScript. Every locale must carry the same keys; agent label tests enforce this.
 
 ## Testing
 

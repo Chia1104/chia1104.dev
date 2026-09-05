@@ -92,6 +92,8 @@
   "deleteSessionDescription": "The transcript and its drafts will no longer be available.",
   "save": "Save",
   "dismiss": "Dismiss",
+  "attach": "Attach",
+  "contextDetached": "Not attached: {label}",
   "showMore": "Show more",
   "showLess": "Show less",
   "copy": "Copy",

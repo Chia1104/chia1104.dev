@@ -12,6 +12,7 @@ import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
 import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
 import type {
+  AgentAttachment,
   AgentTurnError,
   ThinkingLevel,
   ToolTier,
@@ -59,6 +60,7 @@ export interface AgentTurnRequest {
   abortController: AgentAbortControllerRef;
   text: string;
   template?: { name: string; args?: string[] };
+  attachments?: AgentAttachment[];
   decision?: OperatorDecision;
   preAuthorizeToolNames?: string[];
   /** Encrypted operator keys; omitted means the house gateway. */
@@ -267,6 +269,7 @@ async function runKindTurn(
     message: {
       text: request.text,
       template: request.template,
+      attachments: request.attachments,
       decision: request.decision,
     },
     signal,

@@ -25,6 +25,18 @@
       "types": "./src/libs/feeds/search.ts",
       "default": "./src/libs/feeds/search.ts"
     },
+    "./repos/drafts": {
+      "types": "./src/libs/drafts/index.ts",
+      "default": "./src/libs/drafts/index.ts"
+    },
+    "./repos/drafts/notice": {
+      "types": "./src/libs/drafts/notice.ts",
+      "default": "./src/libs/drafts/notice.ts"
+    },
+    "./listen": {
+      "types": "./src/libs/listen.ts",
+      "default": "./src/libs/listen.ts"
+    },
     "./repos/resources/chunk": {
       "types": "./src/libs/resources/chunk.ts",
       "default": "./src/libs/resources/chunk.ts"

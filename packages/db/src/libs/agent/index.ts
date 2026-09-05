@@ -9,10 +9,10 @@ import {
   agentSessions,
   agentToolApprovals,
   agentUsageLedger,
-  writingAgentDrafts,
+  writingAgentSessionDrafts,
   writingAgentSessions,
 } from "../../schemas/schema.ts";
-import type { AgentRunStatus, Locale } from "../../schemas/schema.ts";
+import type { AgentRunStatus } from "../../schemas/schema.ts";
 
 export interface InsertAgentSessionDTO {
   id: string;
@@ -403,104 +403,100 @@ export const getAgentSessionEntries = async (db: DB, sessionId: string) =>
 
 export const createWritingAgentSession = async (
   db: DB,
-  input: {
-    sessionId: string;
-    targetFeedId?: number | null;
-    feedMeta?: JsonObject;
-  }
+  input: { sessionId: string }
 ) => {
   const [row] = await db
     .insert(writingAgentSessions)
-    .values({
-      sessionId: input.sessionId,
-      targetFeedId: input.targetFeedId ?? null,
-      feedMeta: input.feedMeta ?? {},
-    })
+    .values({ sessionId: input.sessionId })
     .returning();
   return row;
 };
 
-export const getWritingAgentSession = async (db: DB, sessionId: string) =>
-  await db.query.writingAgentSessions.findFirst({
-    where: { sessionId },
-  });
+export interface WritingAgentSessionDraftState {
+  draftId: number;
+  lastSeenRevision: number;
+  touchedAt: Date;
+}
 
-export const updateWritingAgentSession = async (
+export interface WritingAgentSessionState {
+  sessionId: string;
+  /** Drafts the session has worked on, most recently touched first. */
+  drafts: WritingAgentSessionDraftState[];
+}
+
+export const getWritingAgentSession = async (
   db: DB,
-  sessionId: string,
-  patch: {
-    targetFeedId?: number | null;
-    feedMeta?: JsonObject;
-  }
-) => {
-  const set = {};
-  for (const [key, value] of Object.entries(patch)) {
-    if (value !== undefined) Object.assign(set, { [key]: value });
-  }
-  if (Object.keys(set).length === 0) return;
-  await db
-    .update(writingAgentSessions)
-    .set(set)
+  sessionId: string
+): Promise<WritingAgentSessionState | null> => {
+  const [row] = await db
+    .select({ sessionId: writingAgentSessions.sessionId })
+    .from(writingAgentSessions)
     .where(eq(writingAgentSessions.sessionId, sessionId));
+  if (!row) return null;
+  const drafts = await db
+    .select({
+      draftId: writingAgentSessionDrafts.draftId,
+      lastSeenRevision: writingAgentSessionDrafts.lastSeenRevision,
+      touchedAt: writingAgentSessionDrafts.touchedAt,
+    })
+    .from(writingAgentSessionDrafts)
+    .where(eq(writingAgentSessionDrafts.sessionId, sessionId))
+    .orderBy(desc(writingAgentSessionDrafts.touchedAt));
+  return { sessionId: row.sessionId, drafts };
 };
 
-export const getWritingAgentDrafts = async (db: DB, sessionId: string) =>
-  await db
-    .select()
-    .from(writingAgentDrafts)
-    .where(eq(writingAgentDrafts.sessionId, sessionId));
-
-export const upsertWritingAgentDraft = async (
+/**
+ * Records that the session worked on these drafts now. `lastSeenRevision` only moves up: a
+ * turn that read an older revision than one already recorded must not hide operator edits.
+ */
+export const touchWritingSessionDrafts = async (
   db: DB,
-  input: {
-    sessionId: string;
-    locale: Locale;
-    meta: JsonObject;
-    /** `undefined` leaves the existing body untouched; `null` clears it. */
-    content?: string | null;
-  }
+  sessionId: string,
+  entries: readonly { draftId: number; lastSeenRevision?: number }[]
 ) => {
-  const update =
-    input.content === undefined
-      ? { meta: input.meta }
-      : { meta: input.meta, content: input.content };
-
+  if (entries.length === 0) return;
+  const touchedAt = new Date();
   await db
-    .insert(writingAgentDrafts)
-    .values({
-      sessionId: input.sessionId,
-      locale: input.locale,
-      meta: input.meta,
-      content: input.content ?? null,
-    })
+    .insert(writingAgentSessionDrafts)
+    .values(
+      entries.map((entry) => ({
+        sessionId,
+        draftId: entry.draftId,
+        lastSeenRevision: entry.lastSeenRevision ?? 0,
+        touchedAt,
+      }))
+    )
     .onConflictDoUpdate({
-      target: [writingAgentDrafts.sessionId, writingAgentDrafts.locale],
-      set: update,
+      target: [
+        writingAgentSessionDrafts.sessionId,
+        writingAgentSessionDrafts.draftId,
+      ],
+      set: {
+        lastSeenRevision: sql`greatest(${writingAgentSessionDrafts.lastSeenRevision}, excluded.last_seen_revision)`,
+        touchedAt,
+      },
     });
 };
 
-/** Copies every per-locale draft of `fromSessionId` onto `toSessionId`, which must have none yet. */
-export const copyWritingAgentDrafts = async (
+/** A fork keeps working on the source session's drafts, from the same revisions. */
+export const copyWritingSessionDrafts = async (
   db: DB,
-  fromSessionId: string,
-  toSessionId: string
+  sourceSessionId: string,
+  sessionId: string
 ) => {
-  const rows = await getWritingAgentDrafts(db, fromSessionId);
+  const rows = await db
+    .select({
+      draftId: writingAgentSessionDrafts.draftId,
+      lastSeenRevision: writingAgentSessionDrafts.lastSeenRevision,
+      touchedAt: writingAgentSessionDrafts.touchedAt,
+    })
+    .from(writingAgentSessionDrafts)
+    .where(eq(writingAgentSessionDrafts.sessionId, sourceSessionId));
   if (rows.length === 0) return;
-  await db.insert(writingAgentDrafts).values(
-    rows.map((row) => ({
-      sessionId: toSessionId,
-      locale: row.locale,
-      meta: row.meta,
-      content: row.content,
-    }))
-  );
-};
-
-export const deleteWritingAgentDrafts = async (db: DB, sessionId: string) => {
   await db
-    .delete(writingAgentDrafts)
-    .where(eq(writingAgentDrafts.sessionId, sessionId));
+    .insert(writingAgentSessionDrafts)
+    .values(rows.map((row) => ({ ...row, sessionId })))
+    .onConflictDoNothing();
 };
 
 export const recordAgentApprovalRequests = async (

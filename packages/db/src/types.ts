@@ -14,15 +14,6 @@ export const FeedType = {
 
 export type FeedType = (typeof FeedType)[keyof typeof FeedType];
 
-export const ContentType = {
-  Mdx: "mdx",
-  Notion: "notion",
-  Tiptap: "tiptap",
-  Plate: "plate",
-} as const;
-
-export type ContentType = (typeof ContentType)[keyof typeof ContentType];
-
 export const FeedOrderBy = {
   UpdatedAt: "updatedAt",
   CreatedAt: "createdAt",

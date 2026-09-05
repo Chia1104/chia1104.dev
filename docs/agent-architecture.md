@@ -2,7 +2,7 @@
 
 > Status: as-built
 >
-> Last updated: 2026-09-01
+> Last updated: 2026-09-04
 >
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 >
@@ -59,10 +59,10 @@ The oRPC context receives an `agentFactory` built from eager `minTier` values an
 
 Every agent route resolves a `CallerTier`. Kind and session guards compare that tier with the persisted kind's `minTier` and verify ownership.
 
-| Kind      | Minimum tier | Content visibility                                | Mutable domain state |
-| --------- | ------------ | ------------------------------------------------- | -------------------- |
-| `writing` | `Root`       | Configured author's drafts and published content  | Drafts and memory    |
-| `public`  | `Guest`      | Configured author's published content and profile | None                 |
+| Kind      | Minimum tier | Content visibility                                | Mutable domain state    |
+| --------- | ------------ | ------------------------------------------------- | ----------------------- |
+| `writing` | `Root`       | Configured author's drafts and published content  | Shared draft and memory |
+| `public`  | `Guest`      | Configured author's published content and profile | None                    |
 
 The generic layer does not carry an admin identity. The writing binding reads the configured author when its content port needs it; the public binding never receives that identity or a write-capable port.
 
@@ -79,8 +79,8 @@ agent.session            kind, settings and active leaf
 agent.session_entry      transcript tree nodes
 agent.run                durable run and turn marker
 agent.tool_approval      approval state and audit trail
-agent.writing_session    writing-specific state
-agent.writing_draft      locale-specific staging buffer
+agent.writing_session    the writing kind's extension row
+agent.writing_session_draft  the shared drafts a session has worked on, each with the revision it last saw
 agent.memory             cross-session memory
 agent.kind_config        operator kind overrides
 agent.task_config        operator task overrides
@@ -93,7 +93,7 @@ Server-side conversational state is durable. The client derives its view from se
 | State                                   | Storage                       |
 | --------------------------------------- | ----------------------------- |
 | Transcript and branches                 | Postgres session tree         |
-| Draft and memory                        | Postgres domain tables        |
+| Shared draft and memory                 | Postgres domain tables        |
 | Approvals and run metadata              | Postgres agent tables         |
 | Message inbox, pauses and event streams | Workflow backend              |
 | Client request state                    | TanStack Query                |
@@ -227,6 +227,7 @@ session:compacted · session:rewound · state:changed · error · run:end
 Key invariants:
 
 - `messageId` is the persisted session-entry ID in both live and replayed events.
+- `user` events carry the operator's text and their labelled attachments; the block the model read for those attachments lives only in the persisted message.
 - History and live turns fold through the same `applyEvent` reducer.
 - Compaction changes model context, not visible history; transcript replay still walks the full leaf ancestry.
 - Every started tool receives a terminal event. Replay closes interrupted calls as aborted.
@@ -261,7 +262,7 @@ Navigate, fork and manual compaction are refused while a turn runs or approval i
 
 Maintenance model calls have their own deadline and run inside the lock transaction. Timeout cancels the model call and rolls back all changes. Queries inside the transaction remain sequential because they share one connection.
 
-Kind state is not versioned with transcript entries. Rewinding keeps the current writing draft; forking copies the draft as it exists at fork time, not as it existed at the target entry.
+Kind state is not versioned with transcript entries. Rewinding keeps the current drafts; forking copies the session's draft references, so both sessions keep working on the same shared rows.
 
 Automatic compaction runs only after a successful turn without pending approvals. A compaction failure does not fail the completed turn.
 
@@ -295,16 +296,26 @@ The limit is soft: a call may start while allowance remains and exceed it by at 
 
 The writing kind composes host-owned ports:
 
-| Port          | Responsibility                                |
-| ------------- | --------------------------------------------- |
-| `ContentPort` | Read author content and commit staged drafts. |
-| `WebPort`     | Search and fetch through Firecrawl.           |
-| `MemoryPort`  | Persist and retrieve cross-session memory.    |
-| `DraftStore`  | Stage locale-specific changes before commit.  |
+| Port          | Responsibility                                      |
+| ------------- | --------------------------------------------------- |
+| `ContentPort` | Read author content, apply the draft, publish.      |
+| `WebPort`     | Search and fetch through Firecrawl.                 |
+| `MemoryPort`  | Persist and retrieve cross-session memory.          |
+| `DraftStore`  | Read and write the author's shared drafts with CAS. |
 
 Only commit-tier tools write live feed data and require approval. Draft and memory writes are reversible. Destructive deletion and image upload are not agent tools.
 
 Web search returns snippets; `fetch_url` performs one page scrape and records the page through `MemoryPort`. Host ports receive the turn abort signal. There is no direct outbound fetch in the domain package.
+
+### Shared draft
+
+`feed_draft` is the working copy of one post, shared by the dashboard editor, the MCP tools and the writing agent. A feed has at most one draft; a draft without a feed is a post not yet created. `feed` rows change only when a draft is applied, so draft writes never start feed indexing.
+
+Every write is a compare-and-set on `feed_draft.revision` inside one transaction that locks the row. The editor sends the revision it loaded and resolves a `CONFLICT` by merging its own field edits over the newer draft or adopting it. The agent's `edit_draft_content` re-reads and re-applies an exact-string edit once on conflict; `write_draft_content` is pinned to the revision the turn last observed and fails instead of overwriting an operator edit. `feed_draft_revision` keeps restore points and, per revision, which fields changed; consecutive operator saves coalesce and the trail is capped per draft.
+
+The agent is not bound to a draft. Every draft tool takes a `draftId`: `list_drafts` and `open_draft` find or create one, and the operator hands one over as a prompt attachment (`{ type: "draft", id }`). The kind's `attach` validates attachments under the session lock before the turn is queued; the runtime renders them as the first text block of the persisted user message and labels them on the `user` wire event, so live and replayed transcripts agree. On the client, `@chia/agent-elements/context` is where a host page registers what it has open; the session store attaches those records to every prompt, suggestion and slash command, so the model sees the open draft whichever way the operator started the turn.
+
+`agent.writing_session_draft` records each draft a session has worked on and the highest revision it observed when its turn ended. The next turn's volatile context lists the session's recent drafts and, per draft, operator revisions above that mark as "operator edits since your last turn", so the model re-reads before editing. Discarding a draft deletes it and its session rows; a tool call that still names it gets a not-found error.
 
 ### Memory lifecycle
 
@@ -320,7 +331,7 @@ Every memory write goes through `packages/api/memories/write.ts` and schedules R
 
 Facts and sources reach the model only through visible `search_memory` and `get_memory` tool calls. The volatile context lists bounded identifiers for memories saved in the current session. Active lesson titles are always included because they are standing preferences.
 
-`memoryConsolidationWorkflow` runs after a successful `commit_draft` turn or by dashboard request. It reads operator messages and assistant prose, excludes tool results, and produces at most three pending lessons. Unreviewed model output never becomes a standing prompt instruction.
+`memoryConsolidationWorkflow` runs after a successful `commit_draft` (apply) turn or by dashboard request. It reads operator messages and assistant prose, excludes tool results, and produces at most three pending lessons. Unreviewed model output never becomes a standing prompt instruction.
 
 ### Content visibility
 

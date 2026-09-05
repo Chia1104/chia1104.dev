@@ -90,7 +90,6 @@ export const createPublicAgentKind = (
       create: () => Promise.resolve(),
       load: () => Promise.resolve({}),
       fork: () => Promise.resolve(),
-      summary: () => ({}),
       detail: () => Promise.resolve({}),
     },
 

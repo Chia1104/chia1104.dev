@@ -277,9 +277,10 @@ export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
             aria-label="Inspect embedding status"
             isIconOnly
             size="sm"
-            variant="ghost"
+            variant="secondary"
+            className="size-7"
             onPress={() => setIsOpen(true)}>
-            <ScanSearchIcon className="text-muted-foreground size-4" />
+            <ScanSearchIcon className="size-4" />
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>

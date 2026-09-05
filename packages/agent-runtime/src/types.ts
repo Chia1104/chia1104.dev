@@ -106,9 +106,20 @@ export interface AgentNavigationResult {
   cancelled: boolean;
 }
 
+/**
+ * Something the operator handed the turn beside the text: a draft to work on, later a post or
+ * a memory. The kind renders it for the model and fills `label` for clients.
+ */
+export interface AgentAttachment {
+  type: string;
+  id: number;
+  label?: string;
+}
+
 export interface AgentTurnMessage {
   text: string;
   template?: { name: string; args?: string[] };
+  attachments?: AgentAttachment[];
   /**
    * Operator decision this turn relays after an approval.
    * Announced on the wire before the model runs; the user message is marked as not

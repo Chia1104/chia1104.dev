@@ -3,8 +3,12 @@ import type {
   PostFeedType,
 } from "@chia/agent-content/types";
 import type { AgentTool } from "@chia/agent-runtime/types";
-import type { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
-import type { ContentType, Locale } from "@chia/db/types";
+import type {
+  AgentMemoryKind,
+  AgentMemoryStatus,
+  FeedDraftChange,
+} from "@chia/db/schema";
+import type { Locale } from "@chia/db/types";
 
 import type { ContentPort, DraftStore, MemoryPort, WebPort } from "./ports.ts";
 
@@ -12,7 +16,7 @@ import type { ContentPort, DraftStore, MemoryPort, WebPort } from "./ports.ts";
  * Tool tiers, increasing blast radius:
  * - `read`: observation and outbound fetches
  * - `draft`: reversible staging the blog never sees
- * - `commit`: writes to `feed` / `feed_translation` / `content`; needs approval
+ * - `commit`: applies the draft to `feed` / `feed_translation` or publishes; needs approval
  */
 export type WritingToolTier = (typeof WRITING_TOOL_TIERS)[number];
 
@@ -23,7 +27,6 @@ export const WRITING_TOOL_TIERS = ["read", "draft", "commit"] as const;
  */
 export interface WritingToolContext extends ContentToolContext {
   agentSessionId: string;
-  targetFeedId?: number;
   content: ContentPort;
   web: WebPort;
   draft: DraftStore;
@@ -32,34 +35,62 @@ export interface WritingToolContext extends ContentToolContext {
 
 export type WritingTool = AgentTool<WritingToolContext>;
 
-/** Per-locale draft fields. Mirrors `feed_translation` plus the MDX body. */
+/** Per-locale draft fields. Mirrors `feed_draft_translation`; `undefined` leaves a field alone, `null` clears it. */
 export interface DraftTranslation {
-  title?: string;
+  title?: string | null;
   excerpt?: string | null;
   description?: string | null;
   summary?: string | null;
-  content?: string;
+  content?: string | null;
 }
 
-/**
- * Feed-level draft fields. `tagSlugs` is recorded but not committed: there is no tag write
- * path, so `commit_draft` drops it.
- */
+/** Feed-level draft fields. */
 export interface DraftFeedMeta {
-  slug?: string;
+  slug?: string | null;
   type?: PostFeedType;
-  contentType?: ContentType;
   defaultLocale?: Locale;
   mainImage?: string | null;
-  tagSlugs?: string[];
 }
 
+/** The shared working draft as the agent sees it; the same row the dashboard editor writes. */
 export interface FeedDraft {
-  feedMeta: DraftFeedMeta;
+  id: number;
+  /** `null` until the draft has been applied once. */
+  feedId: number | null;
+  /** Compare-and-set counter; every write bumps it. */
+  revision: number;
+  slug: string | null;
+  type: PostFeedType;
+  defaultLocale: Locale;
+  mainImage: string | null;
   translations: Partial<Record<Locale, DraftTranslation>>;
-  /** Set once `commit_draft` has run, so a second commit updates instead of creating. */
-  committedFeedId?: number;
 }
+
+/** Which fields the operator touched since the agent last looked; `locale` is absent for feed-level fields. */
+export type DraftChange = FeedDraftChange;
+
+/** One line per draft, for `list_drafts` and the turn context. */
+export interface FeedDraftSummary {
+  id: number;
+  feedId: number | null;
+  revision: number;
+  slug: string | null;
+  type: PostFeedType;
+  defaultLocale: Locale;
+  /** The default locale's title, else the first locale that has one. */
+  title: string | null;
+  locales: Locale[];
+  updatedAt: string;
+}
+
+/** A draft the session has worked on and the revision its last turn saw. */
+export interface SessionDraftRef {
+  draftId: number;
+  lastSeenRevision: number;
+}
+
+/** The attachment type a prompt uses to hand the agent a draft. */
+export const DRAFT_ATTACHMENT_TYPE = "draft";
 
 export interface FetchedPage {
   url: string;
@@ -126,12 +157,6 @@ export interface MemoryDetail extends MemorySummary {
   content: string;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface CommitDraftInput {
-  feedId?: number;
-  feedMeta: DraftFeedMeta;
-  translations: Partial<Record<Locale, DraftTranslation>>;
 }
 
 export interface CommitDraftResult {

@@ -492,6 +492,58 @@ describe("createAgentSessionStore", () => {
     await commanded;
   });
 
+  it("sends the host context with prompts and commands, own attachments after it", async () => {
+    const stream = channel();
+    const { client, chat } = fakeClient({ chat: async () => stream.iterable });
+    const context = [{ type: "draft", id: 7 }];
+    const { store } = makeStore({ client, context: () => context });
+    await store.getState().hydrate();
+
+    const prompted = store.getState().prompt("hello", {
+      attachments: [
+        { type: "draft", id: 7 },
+        { type: "feed", id: 3 },
+      ],
+    });
+    await flush();
+    expect(chat).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        action: {
+          type: "prompt",
+          text: "hello",
+          attachments: [
+            { type: "draft", id: 7 },
+            { type: "feed", id: 3 },
+          ],
+        },
+      }),
+      expect.anything()
+    );
+    stream.push({ type: "run:end", reason: "done" });
+    stream.close();
+    await prompted;
+
+    const second = channel();
+    chat.mockImplementation(async () => second.iterable);
+    const commanded = store.getState().command("outline", [], "/outline");
+    await flush();
+    expect(chat).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        action: {
+          type: "command",
+          name: "outline",
+          args: [],
+          text: "/outline",
+          attachments: [{ type: "draft", id: 7 }],
+        },
+      }),
+      expect.anything()
+    );
+    second.push({ type: "run:end", reason: "done" });
+    second.close();
+    await commanded;
+  });
+
   it("throttles a burst of deltas into few view commits, boundaries at once", async () => {
     const stream = channel();
     const { client } = fakeClient({ chat: async () => stream.iterable });
@@ -534,23 +586,31 @@ describe("createAgentSessionStore", () => {
     });
   });
 
-  it("forwards state:changed to the host while streaming", async () => {
+  it("refreshes the detail on the first state change and lets turn-end settle the rest", async () => {
     const stream = channel();
     const onStateChanged = vi.fn();
-    const { client } = fakeClient({ chat: async () => stream.iterable });
-    const { store } = makeStore({ client, onStateChanged });
+    const { client, get } = fakeClient({ chat: async () => stream.iterable });
+    const { store, queryClient } = makeStore({ client, onStateChanged });
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
     await store.getState().hydrate();
 
     const prompted = store.getState().prompt("draft it");
     await flush();
-    stream.push({ type: "state:changed", scope: "draft", revision: 3 });
+    for (let revision = 1; revision <= 20; revision++) {
+      stream.push({ type: "state:changed", scope: "draft", revision });
+    }
     await flush();
-    expect(onStateChanged).toHaveBeenCalledWith(
-      expect.objectContaining({ scope: "draft", revision: 3 })
-    );
+    expect(onStateChanged).toHaveBeenCalledTimes(20);
+    expect(invalidate).toHaveBeenCalledTimes(1);
+    expect(get).toHaveBeenCalledTimes(1);
     stream.push({ type: "run:end", reason: "done" });
     stream.close();
     await prompted;
+    expect(get).toHaveBeenCalledTimes(2);
+    // The trailing refresh is dropped with the stream; `settle` already fetched the detail.
+    expect(invalidate).toHaveBeenCalledTimes(1);
+    store.getState().dispose();
+    queryClient.clear();
   });
 
   it("sends an approval decision as a follow-up turn", async () => {

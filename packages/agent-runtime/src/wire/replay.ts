@@ -61,11 +61,15 @@ export const entriesToWireEvents = (
     const message = entry.message;
 
     if (message.role === "user") {
-      const text = contentToText(message.content);
+      // With attachments the first text block is their rendering; the operator's words are last.
+      const text = entry.attachments?.length
+        ? (textParts(message.content).at(-1) ?? "")
+        : contentToText(message.content);
       events.push({
         type: "user",
         messageId: entry.id,
         text,
+        attachments: entry.attachments,
         at: message.timestamp,
         origin: isOperatorDecisionText(text) ? "operator-decision" : undefined,
       });
@@ -147,15 +151,18 @@ export const entriesToWireEvents = (
   return events;
 };
 
-const contentToText = (
+const textParts = (
   content: string | readonly { type: string; text?: string }[]
-): string => {
+): string[] => {
   const text = z.string().safeParse(content).data;
-  if (text !== undefined) return text;
+  if (text !== undefined) return [text];
   return z
     .array(z.object({ type: z.string(), text: z.string().optional() }))
     .parse(content)
     .filter((part) => part.type === "text")
-    .map((part) => part.text ?? "")
-    .join("");
+    .map((part) => part.text ?? "");
 };
+
+const contentToText = (
+  content: string | readonly { type: string; text?: string }[]
+): string => textParts(content).join("");

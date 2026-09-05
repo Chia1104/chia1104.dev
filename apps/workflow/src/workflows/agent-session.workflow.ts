@@ -6,6 +6,7 @@ import type { OperatorDecision } from "@chia/agent-runtime/wire/operator-decisio
 import {
   AGENT_END_SENTINEL,
   agentAbortControllerRefSchema,
+  agentAttachmentPayloadSchema,
   agentApprovalHook,
   agentApprovalToken,
   agentMessageHook,
@@ -42,6 +43,7 @@ export const requestSchema = z.object({
     template: z
       .object({ name: z.string(), args: z.array(z.string()).optional() })
       .optional(),
+    attachments: z.array(agentAttachmentPayloadSchema).optional(),
     preAuthorizeToolNames: z.array(z.string()).optional(),
     credentials: encryptedAgentCredentialsSchema.optional(),
   }),
@@ -136,6 +138,7 @@ const driveSession = async ({
       abortController,
       text: currentMessage.text,
       template: currentMessage.template,
+      attachments: currentMessage.attachments,
       preAuthorizeToolNames: currentMessage.preAuthorizeToolNames,
       credentials,
     });

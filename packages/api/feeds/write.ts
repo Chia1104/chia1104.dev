@@ -5,7 +5,7 @@ import {
   upsertContent,
   upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
-import { ContentType, Locale } from "@chia/db/types";
+import { Locale } from "@chia/db/types";
 import type { FeedType, Locale as LocaleType } from "@chia/db/types";
 import { AppError } from "@chia/service-kit/errors";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
@@ -19,12 +19,6 @@ import type { FeedHooks } from "../orpc/utils";
  * the feed unindexed. A caller with no indexer passes `{}`.
  */
 
-export interface FeedContentInput {
-  content?: string | null;
-  source?: string | null;
-  unstableSerializedSource?: string | null;
-}
-
 /** `title` is required on create — `feed_translation.title` is `NOT NULL`. */
 export interface CreateFeedTranslationInput {
   title: string;
@@ -32,7 +26,8 @@ export interface CreateFeedTranslationInput {
   description?: string | null;
   summary?: string | null;
   readTime?: number | null;
-  content?: FeedContentInput;
+  /** MDX body. `undefined` leaves the stored body alone on update. */
+  content?: string | null;
 }
 
 export type UpdateFeedTranslationInput = Partial<CreateFeedTranslationInput>;
@@ -48,7 +43,6 @@ export interface CreateFeedServiceInput {
   adminId: string;
   slug: string;
   type: StorableFeedType;
-  contentType?: ContentType;
   defaultLocale?: LocaleType;
   mainImage?: string | null;
   published?: boolean;
@@ -84,7 +78,6 @@ export const createFeedService = async (
     type: input.type,
     userId: input.adminId,
     published: input.published ?? false,
-    contentType: input.contentType ?? ContentType.Mdx,
     defaultLocale,
     mainImage: input.mainImage ?? null,
     createdAt: input.createdAt,
@@ -94,10 +87,7 @@ export const createFeedService = async (
         ...translation,
         locale:
           /* SAFETY: The producer contract guarantees this value satisfies LocaleType. */ locale as LocaleType,
-        content: translation.content?.content ?? null,
-        source: translation.content?.source ?? null,
-        unstableSerializedSource:
-          translation.content?.unstableSerializedSource ?? null,
+        content: translation.content ?? null,
       })
     ),
   });
@@ -113,7 +103,6 @@ export const createFeedService = async (
 export interface UpdateFeedServiceInput {
   feedId: number;
   type?: StorableFeedType;
-  contentType?: ContentType;
   defaultLocale?: LocaleType;
   mainImage?: string | null;
   published?: boolean;
@@ -131,7 +120,6 @@ export const updateFeedService = async (
     feedId: input.feedId,
     type: input.type,
     published: input.published,
-    contentType: input.contentType,
     defaultLocale: input.defaultLocale,
     mainImage: input.mainImage,
     createdAt: input.createdAt,
@@ -163,13 +151,10 @@ export const updateFeedService = async (
       if (!translationData) continue;
       translationsData.push(translationData);
 
-      const content = translation.content;
-      if (content && translationData.id) {
+      if (translation.content !== undefined && translationData.id) {
         const contentData = await upsertContent(db, {
           feedTranslationId: translationData.id,
-          content: content.content ?? null,
-          source: content.source ?? null,
-          unstableSerializedSource: content.unstableSerializedSource ?? null,
+          content: translation.content,
         });
         if (contentData) contentsData.push(contentData);
       }
