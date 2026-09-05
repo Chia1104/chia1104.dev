@@ -26,8 +26,6 @@ import { orpc } from "@/libs/orpc/client";
 import type { DraftView } from "./draft-editor";
 import { RevisionsDrawer } from "./revisions-drawer";
 
-const WRITING_AGENT_KIND = "writing";
-
 const errorMessage = (cause: unknown) =>
   cause instanceof Error ? cause.message : "Something went wrong.";
 
@@ -246,15 +244,6 @@ export const DraftActions = ({
     })
   );
 
-  const openAgent = useMutation(
-    orpc.agent.sessions.create.mutationOptions({
-      onSuccess: (detail) => {
-        router.push(`/agent?session=${detail.session.id}`);
-      },
-      onError: (error) => toast.error(errorMessage(error)),
-    })
-  );
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -277,15 +266,7 @@ export const DraftActions = ({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
-            isPending={openAgent.isPending}
-            onPress={() =>
-              openAgent.mutate({
-                kind: WRITING_AGENT_KIND,
-                draftId: draft.id,
-                title:
-                  draft.translations[draft.defaultLocale]?.title ?? undefined,
-              })
-            }
+            onPress={() => router.push("/agent")}
             size="sm"
             variant="secondary">
             <Bot className="size-4" />

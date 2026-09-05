@@ -1,6 +1,8 @@
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import type { Usage } from "@earendil-works/pi-ai";
 
+import type { AgentAttachment } from "../types.ts";
+
 /**
  * The persisted session tree, owned here rather than imported from Pi.
  *
@@ -27,6 +29,11 @@ export interface SessionEntryBase {
 export interface MessageEntry extends SessionEntryBase {
   type: "message";
   message: AgentMessage;
+  /**
+   * User messages only. The rendered attachments are the first text block of `message`, the
+   * operator's own words the last; replay shows the words and these as chips.
+   */
+  attachments?: AgentAttachment[];
 }
 
 export interface CompactionEntry extends SessionEntryBase {

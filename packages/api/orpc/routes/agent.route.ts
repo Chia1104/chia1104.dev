@@ -130,6 +130,7 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
         service.prompt(caller, {
           sessionId: opts.input.sessionId,
           text: action.text,
+          attachments: action.attachments,
         })
       );
     } else if (action.type === "command") {

@@ -25,12 +25,20 @@ const usageSchema = z.object({
   costTotal: z.number().optional(),
 });
 
+export const agentAttachmentSchema = z.object({
+  type: z.string(),
+  id: z.number().int(),
+  label: z.string().optional(),
+});
+
 export const agentWireEventSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("run:start"), sessionId: z.string() }),
   z.object({
     type: z.literal("user"),
     messageId: z.string(),
+    /** What the operator typed; what they attached is `attachments`, rendered for the model separately. */
     text: z.string(),
+    attachments: z.array(agentAttachmentSchema).optional(),
     /** Epoch ms. Optional only so streams written before it existed still parse. */
     at: z.number().optional(),
     /**

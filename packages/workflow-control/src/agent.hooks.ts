@@ -35,12 +35,19 @@ export type EncryptedAgentCredentials = z.infer<
   typeof encryptedAgentCredentialsSchema
 >;
 
+/** What the operator handed the turn beside the text; the kind renders and validates it. */
+export const agentAttachmentPayloadSchema = z.object({
+  type: z.string().min(1),
+  id: z.number().int(),
+});
+
 export const agentMessagePayloadSchema = z.object({
   /** `"/end"` closes the session's run. */
   text: z.string(),
   template: z
     .object({ name: z.string(), args: z.array(z.string()).optional() })
     .optional(),
+  attachments: z.array(agentAttachmentPayloadSchema).optional(),
   /** Pre-authorised for this turn only. */
   preAuthorizeToolNames: z.array(z.string()).optional(),
   credentials: encryptedAgentCredentialsSchema.optional(),

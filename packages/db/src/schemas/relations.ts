@@ -10,6 +10,7 @@ import {
   agentSessions,
   agentToolApprovals,
   agentUsageLedger,
+  writingAgentSessionDrafts,
   writingAgentSessions,
 } from "./agent.schema.ts";
 import { apikey } from "./apikey.schema.ts";
@@ -55,6 +56,7 @@ const schema = {
   agentRuns,
   agentSessionEntries,
   writingAgentSessions,
+  writingAgentSessionDrafts,
   agentToolApprovals,
   agentMemories,
   agentKindConfigs,
@@ -140,9 +142,9 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.feedDrafts.id,
       to: r.feedDraftRevisions.draftId,
     }),
-    writingSessions: r.many.writingAgentSessions({
+    writingSessionDrafts: r.many.writingAgentSessionDrafts({
       from: r.feedDrafts.id,
-      to: r.writingAgentSessions.draftId,
+      to: r.writingAgentSessionDrafts.draftId,
     }),
   },
   feedDraftTranslations: {
@@ -252,8 +254,18 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.writingAgentSessions.sessionId,
       to: r.agentSessions.id,
     }),
+    drafts: r.many.writingAgentSessionDrafts({
+      from: r.writingAgentSessions.sessionId,
+      to: r.writingAgentSessionDrafts.sessionId,
+    }),
+  },
+  writingAgentSessionDrafts: {
+    writingSession: r.one.writingAgentSessions({
+      from: r.writingAgentSessionDrafts.sessionId,
+      to: r.writingAgentSessions.sessionId,
+    }),
     draft: r.one.feedDrafts({
-      from: r.writingAgentSessions.draftId,
+      from: r.writingAgentSessionDrafts.draftId,
       to: r.feedDrafts.id,
     }),
   },
@@ -295,6 +307,8 @@ export const agentSessionsRelations = relations.agentSessions;
 export const agentRunsRelations = relations.agentRuns;
 export const agentSessionEntriesRelations = relations.agentSessionEntries;
 export const writingAgentSessionsRelations = relations.writingAgentSessions;
+export const writingAgentSessionDraftsRelations =
+  relations.writingAgentSessionDrafts;
 export const agentToolApprovalsRelations = relations.agentToolApprovals;
 export const agentMemoriesRelations = relations.agentMemories;
 export const agentUsageLedgerRelations = relations.agentUsageLedger;

@@ -7,6 +7,7 @@ import type {
   DraftFeedMeta,
   DraftTranslation,
   FeedDraft,
+  FeedDraftSummary,
   FetchedPage,
   MemoryDetail,
   MemoryHit,
@@ -24,6 +25,7 @@ export type {
   DraftFeedMeta,
   DraftTranslation,
   FeedDraft,
+  FeedDraftSummary,
   FetchedPage,
   MemoryDetail,
   MemoryHit,
@@ -64,26 +66,39 @@ export interface WebPort {
 }
 
 /**
- * The session's shared working draft. Bound to one draft when constructed; every write goes
- * through the same compare-and-set row the dashboard editor uses.
+ * The author's shared working drafts, addressed by id. Every write goes through the same
+ * compare-and-set row the dashboard editor uses. An unknown or discarded id throws
+ * {@link DraftNotFoundError}.
  */
 export interface DraftStore {
-  get(): Promise<FeedDraft>;
-  patchFeedMeta(patch: DraftFeedMeta): Promise<FeedDraft>;
-  patchTranslation(locale: Locale, patch: DraftTranslation): Promise<FeedDraft>;
+  /** Drafts with unapplied work, newest first. */
+  list(): Promise<FeedDraftSummary[]>;
+  /** A feed's working draft, created from the feed when there is none; an empty draft for a new post without `feedId`. */
+  open(input: { feedId?: number }): Promise<FeedDraft>;
+  get(draftId: number): Promise<FeedDraft>;
+  patchFeedMeta(draftId: number, patch: DraftFeedMeta): Promise<FeedDraft>;
+  patchTranslation(
+    draftId: number,
+    locale: Locale,
+    patch: DraftTranslation
+  ): Promise<FeedDraft>;
   /**
    * Replaces a locale's body. With `expectedRevision`, a draft that moved since that
    * revision rejects the write with {@link DraftConflictError} instead of overwriting it.
    */
   setContent(
+    draftId: number,
     locale: Locale,
     content: string,
     expectedRevision?: number
   ): Promise<FeedDraft>;
   /** What the operator changed after `afterRevision`, merged per locale. */
-  operatorChangesSince(afterRevision: number): Promise<DraftChange[]>;
-  /** Highest revision this store has returned; the host records it as seen when the turn ends. */
-  readonly lastObservedRevision: number;
+  operatorChangesSince(
+    draftId: number,
+    afterRevision: number
+  ): Promise<DraftChange[]>;
+  /** Highest revision this store returned per draft; the host records them as seen when the turn ends. */
+  readonly observedRevisions: ReadonlyMap<number, number>;
 }
 
 /**

@@ -65,8 +65,6 @@ export interface AgentKindService {
     caller: AgentServiceCaller,
     input: {
       title?: string;
-      targetFeedId?: number;
-      draftId?: number;
       model?: AgentModelRef;
       thinkingLevel?: string;
       autoApprove?: string[];
@@ -104,6 +102,7 @@ export interface AgentKindService {
       sessionId: string;
       text: string;
       template?: { name: string; args?: string[] };
+      attachments?: { type: string; id: number }[];
       preAuthorizeToolNames?: string[];
     }
   ): Promise<AgentStreamCursor & { startedRun: boolean }>;

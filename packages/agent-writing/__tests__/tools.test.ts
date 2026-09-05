@@ -5,6 +5,8 @@ import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
 import { commitDraftTool } from "../src/tools/commit.tool.ts";
 import {
   editDraftContentTool,
+  listDraftsTool,
+  openDraftTool,
   patchDraftMetaTool,
   writeDraftContentTool,
 } from "../src/tools/draft.tool.ts";
@@ -24,11 +26,14 @@ type TestContext = WritingToolContext & {
   memory: InMemoryMemoryPort;
 };
 
+/** Every draft tool addresses the store's first draft. */
+const DRAFT_ID = 1;
+
 const createContext = (): TestContext => ({
   agentSessionId: SESSION_ID,
   content: createFakeContentPort(),
   web: createFakeWebPort(),
-  draft: new InMemoryDraftStore(),
+  draft: new InMemoryDraftStore([{ id: DRAFT_ID }]),
   memory: new InMemoryMemoryPort(SESSION_ID),
 });
 
@@ -202,7 +207,7 @@ describe("draft slug handling", () => {
 
     const result = await patchDraftMetaTool.execute(
       "call-1",
-      { slug: "Embedding RAG Architecture" },
+      { draftId: DRAFT_ID, slug: "Embedding RAG Architecture" },
       undefined,
       undefined,
       context
@@ -219,19 +224,21 @@ describe("draft slug handling", () => {
     await expect(
       patchDraftMetaTool.execute(
         "call-1",
-        { slug: "Embedding 與 RAG 架構" },
+        { draftId: DRAFT_ID, slug: "Embedding 與 RAG 架構" },
         undefined,
         undefined,
         context
       )
     ).rejects.toThrow("must be an English/ASCII phrase");
-    await expect(context.draft.get()).resolves.toMatchObject({ slug: null });
+    await expect(context.draft.get(DRAFT_ID)).resolves.toMatchObject({
+      slug: null,
+    });
   });
 
   it("requires an explicit slug before creating a feed", async () => {
     const context = createContext();
-    await context.draft.patchFeedMeta({ defaultLocale: "en" });
-    await context.draft.patchTranslation("en", {
+    await context.draft.patchFeedMeta(DRAFT_ID, { defaultLocale: "en" });
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
       title: "Embedding RAG architecture",
       content: "## Architecture",
     });
@@ -239,7 +246,7 @@ describe("draft slug handling", () => {
     await expect(
       commitDraftTool.execute(
         "call-1",
-        { confirmation: "Create the staged post." },
+        { draftId: DRAFT_ID, confirmation: "Create the staged post." },
         undefined,
         undefined,
         context
@@ -250,54 +257,110 @@ describe("draft slug handling", () => {
 
   it("re-applies an exact edit once when the operator saved in between", async () => {
     const context = createContext();
-    await context.draft.patchTranslation("en", {
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
       content: "## Title\n\nFirst paragraph.\n\nSecond paragraph.",
     });
     const store = context.draft;
     const originalSet = store.setContent.bind(store);
     let interleaved = false;
-    store.setContent = (locale, content, expectedRevision) => {
+    store.setContent = (draftId, locale, content, expectedRevision) => {
       if (!interleaved) {
         interleaved = true;
-        store.operatorEdit("en", {
+        store.operatorEdit(DRAFT_ID, "en", {
           content:
             "## Title\n\nFirst paragraph.\n\nSecond paragraph.\n\nOperator note.",
         });
       }
-      return originalSet(locale, content, expectedRevision);
+      return originalSet(draftId, locale, content, expectedRevision);
     };
 
     const result = await editDraftContentTool.execute(
       "call-1",
-      { locale: "en", oldString: "First paragraph.", newString: "Rewritten." },
+      {
+        draftId: DRAFT_ID,
+        locale: "en",
+        oldString: "First paragraph.",
+        newString: "Rewritten.",
+      },
       undefined,
       undefined,
       context
     );
 
     expect(result.details).toMatchObject({ replacements: 1 });
-    expect((await context.draft.get()).translations.en?.content).toBe(
+    expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
       "## Title\n\nRewritten.\n\nSecond paragraph.\n\nOperator note."
     );
   });
 
   it("refuses a whole-body write over an operator edit the model has not read", async () => {
     const context = createContext();
-    await context.draft.patchTranslation("en", { content: "## Old" });
-    context.draft.operatorEdit("en", { content: "## Operator version" });
+    await context.draft.patchTranslation(DRAFT_ID, "en", { content: "## Old" });
+    context.draft.operatorEdit(DRAFT_ID, "en", {
+      content: "## Operator version",
+    });
 
     await expect(
       writeDraftContentTool.execute(
         "call-1",
-        { locale: "en", content: "## Model version" },
+        { draftId: DRAFT_ID, locale: "en", content: "## Model version" },
         undefined,
         undefined,
         context
       )
     ).rejects.toThrow("someone else changed it");
-    expect((await context.draft.get()).translations.en?.content).toBe(
+    expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
       "## Operator version"
     );
+  });
+
+  it("names a discarded draft instead of writing into the void", async () => {
+    const context = createContext();
+    context.draft.discard(DRAFT_ID);
+
+    await expect(
+      writeDraftContentTool.execute(
+        "call-1",
+        { draftId: DRAFT_ID, locale: "en", content: "## Body" },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow("does not exist or was discarded");
+  });
+
+  it("lists open drafts with the id the other tools take, and opens a post's draft once", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation(DRAFT_ID, "en", { title: "First" });
+
+    const listed = await listDraftsTool.execute(
+      "call-1",
+      {},
+      undefined,
+      undefined,
+      context
+    );
+    expect(listed.details).toMatchObject({
+      drafts: [{ id: DRAFT_ID, title: "First", locales: ["en"] }],
+    });
+
+    const opened = await openDraftTool.execute(
+      "call-2",
+      { feedId: 42 },
+      undefined,
+      undefined,
+      context
+    );
+    const again = await openDraftTool.execute(
+      "call-3",
+      { feedId: 42 },
+      undefined,
+      undefined,
+      context
+    );
+    expect(opened.details).toMatchObject({ feedId: 42 });
+    expect(again.details).toEqual(opened.details);
+    expect(await context.draft.list()).toHaveLength(2);
   });
 
   it("does not expose the obsolete slugify tool", () => {

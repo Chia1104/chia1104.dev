@@ -79,7 +79,8 @@ agent.session            kind, settings and active leaf
 agent.session_entry      transcript tree nodes
 agent.run                durable run and turn marker
 agent.tool_approval      approval state and audit trail
-agent.writing_session    the shared draft a session edits and the revision it last saw
+agent.writing_session    the writing kind's extension row
+agent.writing_session_draft  the shared drafts a session has worked on, each with the revision it last saw
 agent.memory             cross-session memory
 agent.kind_config        operator kind overrides
 agent.task_config        operator task overrides
@@ -226,6 +227,7 @@ session:compacted · session:rewound · state:changed · error · run:end
 Key invariants:
 
 - `messageId` is the persisted session-entry ID in both live and replayed events.
+- `user` events carry the operator's text and their labelled attachments; the block the model read for those attachments lives only in the persisted message.
 - History and live turns fold through the same `applyEvent` reducer.
 - Compaction changes model context, not visible history; transcript replay still walks the full leaf ancestry.
 - Every started tool receives a terminal event. Replay closes interrupted calls as aborted.
@@ -260,7 +262,7 @@ Navigate, fork and manual compaction are refused while a turn runs or approval i
 
 Maintenance model calls have their own deadline and run inside the lock transaction. Timeout cancels the model call and rolls back all changes. Queries inside the transaction remain sequential because they share one connection.
 
-Kind state is not versioned with transcript entries. Rewinding keeps the current draft; forking binds the new session to the same shared draft rather than copying it.
+Kind state is not versioned with transcript entries. Rewinding keeps the current drafts; forking copies the session's draft references, so both sessions keep working on the same shared rows.
 
 Automatic compaction runs only after a successful turn without pending approvals. A compaction failure does not fail the completed turn.
 
@@ -299,7 +301,7 @@ The writing kind composes host-owned ports:
 | `ContentPort` | Read author content, apply the draft, publish.      |
 | `WebPort`     | Search and fetch through Firecrawl.                 |
 | `MemoryPort`  | Persist and retrieve cross-session memory.          |
-| `DraftStore`  | Read and write the session's shared draft with CAS. |
+| `DraftStore`  | Read and write the author's shared drafts with CAS. |
 
 Only commit-tier tools write live feed data and require approval. Draft and memory writes are reversible. Destructive deletion and image upload are not agent tools.
 
@@ -311,7 +313,9 @@ Web search returns snippets; `fetch_url` performs one page scrape and records th
 
 Every write is a compare-and-set on `feed_draft.revision` inside one transaction that locks the row. The editor sends the revision it loaded and resolves a `CONFLICT` by merging its own field edits over the newer draft or adopting it. The agent's `edit_draft_content` re-reads and re-applies an exact-string edit once on conflict; `write_draft_content` is pinned to the revision the turn last observed and fails instead of overwriting an operator edit. `feed_draft_revision` keeps restore points and, per revision, which fields changed; consecutive operator saves coalesce and the trail is capped per draft.
 
-`agent.writing_session.lastSeenRevision` records the highest revision the agent observed when its turn ended. The next turn's volatile context lists operator revisions above it as "operator edits since your last turn", so the model re-reads before editing. Discarding an unbound draft deletes it and leaves the session's `draftId` null; the next turn opens a fresh draft.
+The agent is not bound to a draft. Every draft tool takes a `draftId`: `list_drafts` and `open_draft` find or create one, and the operator hands one over as a prompt attachment (`{ type: "draft", id }`). The kind's `attach` validates attachments under the session lock before the turn is queued; the runtime renders them as the first text block of the persisted user message and labels them on the `user` wire event, so live and replayed transcripts agree.
+
+`agent.writing_session_draft` records each draft a session has worked on and the highest revision it observed when its turn ended. The next turn's volatile context lists the session's recent drafts and, per draft, operator revisions above that mark as "operator edits since your last turn", so the model re-reads before editing. Discarding a draft deletes it and its session rows; a tool call that still names it gets a not-found error.
 
 ### Memory lifecycle
 

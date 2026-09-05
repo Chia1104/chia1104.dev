@@ -227,34 +227,47 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
           .int()
           .optional()
           .describe(
-            "Edit this existing post's draft instead of starting a new one"
+            "Hand the agent this existing post's draft instead of letting it start a new one"
           ),
         draftId: z
           .number()
           .int()
           .optional()
-          .describe("Continue an existing draft, e.g. one from open_draft"),
+          .describe(
+            "Hand the agent an existing draft, e.g. one from open_draft"
+          ),
       },
     },
     guarded(async ({ prompt, title, targetFeedId, draftId }) => {
+      // The agent is not bound to a draft; a post or draft named here rides on the prompt.
+      const attached =
+        draftId ??
+        (targetFeedId === undefined
+          ? undefined
+          : (await api.feeds["draft:open"]({ feedId: targetFeedId })).id);
       const detail = await api.agent.sessions.create({
         kind: WRITING_KIND,
         title,
-        targetFeedId,
-        draftId,
       });
       const sessionId = detail.session.id;
       const events = await api.agent.sessions.chat({
         kind: WRITING_KIND,
         sessionId,
-        action: { type: "prompt", text: prompt },
+        action: {
+          type: "prompt",
+          text: prompt,
+          attachments:
+            attached === undefined
+              ? undefined
+              : [{ type: "draft", id: attached }],
+        },
       });
       // The turn is durable once accepted; the first event proves it and the stream can go.
       await events.next();
       await events.return?.();
       return {
         sessionId,
-        draftId: detail.draft?.id ?? null,
+        draftId: attached ?? null,
         status: "running",
         reviewUrl: `${dashBaseUrl}/agent?session=${sessionId}`,
         next: "Call writing_status with this sessionId to read the draft, or open reviewUrl to approve and publish.",
@@ -267,7 +280,7 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
     {
       title: "Check a writing session",
       description:
-        "Where a writing-agent session stands: running, awaiting_approval, or idle once the turn is done, with its draft and the agent's last reply.",
+        "Where a writing-agent session stands: running, awaiting_approval, or idle once the turn is done, with the drafts it worked on and the agent's last reply.",
       inputSchema: { sessionId: z.string().min(1) },
       annotations: { readOnlyHint: true },
     },
@@ -294,7 +307,7 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
         title: detail.session.title,
         status,
         pendingApprovals,
-        draft: detail.draft ?? null,
+        drafts: detail.drafts ?? [],
         lastReply,
         reviewUrl: `${dashBaseUrl}/agent?session=${sessionId}`,
       };

@@ -21,15 +21,18 @@ import { writingSkills } from "@chia/agent-writing/prompts/skills";
 import { writingPromptTemplates } from "@chia/agent-writing/prompts/templates";
 import { runWritingTurn } from "@chia/agent-writing/runtime";
 import { createWritingTools } from "@chia/agent-writing/tools/tool-set";
+import { DRAFT_ATTACHMENT_TYPE } from "@chia/agent-writing/types";
 import type { DB } from "@chia/db/client";
 import {
+  copyWritingSessionDrafts,
   createWritingAgentSession,
   getWritingAgentSession,
-  updateWritingAgentSession,
+  touchWritingSessionDrafts,
 } from "@chia/db/repos/agent";
 import type { WritingAgentSessionState } from "@chia/db/repos/agent";
 import { getFeedDraft } from "@chia/db/repos/drafts";
 import type { FeedDraftRecord } from "@chia/db/repos/drafts";
+import { AppError } from "@chia/service-kit/errors";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
@@ -37,7 +40,7 @@ import { AGENT_TASK_IDS, resolveAgentTask } from "./tasks";
 
 /**
  * Binds `@chia/agent-writing` to the host: author-visibility content port, Firecrawl web port,
- * the shared `feed_draft` store, memory port, and the `agent.writing_session` row.
+ * the shared `feed_draft` store, memory port, and the `agent.writing_session` rows.
  */
 
 type WritingAgentKind = AgentKindDefinition<
@@ -58,17 +61,15 @@ interface WritingExecutionHost {
 }
 
 export interface CreateWritingAgentKindOptions {
-  /**
-   * Get-or-create the shared draft a session edits: a feed's working draft, an existing
-   * draft by id, or a fresh empty one.
-   */
+  /** Get-or-create a shared draft: a feed's working draft, or a fresh empty one. */
   openDraft(options: {
     db: DB;
     adminId: string;
     sessionId: string;
     feedId?: number;
-    draftId?: number;
   }): Promise<FeedDraftRecord>;
+  /** The author's drafts with unapplied work, newest first. */
+  listDrafts(options: { db: DB; adminId: string }): Promise<FeedDraftRecord[]>;
   execution?: WritingExecutionHost;
 }
 
@@ -140,48 +141,55 @@ export const createWritingAgentKind = (
     },
 
     state: {
-      async create(caller, db, sessionId, input) {
-        const draft = await host.openDraft({
-          db,
-          adminId: caller.adminId,
-          sessionId,
-          feedId: input.targetFeedId,
-          draftId: input.draftId,
-        });
-        await createWritingAgentSession(db, { sessionId, draftId: draft.id });
+      async create(_caller, db, sessionId) {
+        await createWritingAgentSession(db, { sessionId });
       },
 
-      async load(db, sessionId) {
-        return (await getWritingAgentSession(db, sessionId)) ?? null;
+      load(db, sessionId) {
+        return getWritingAgentSession(db, sessionId);
       },
 
-      /** The draft is shared, not copied: both sessions keep editing the same working copy. */
+      /** The drafts are shared, not copied: the fork keeps working on the same rows. */
       async fork(db, sourceSessionId, sessionId) {
         const source = await getWritingAgentSession(db, sourceSessionId);
         if (!source) {
           throw new Error(`Writing session ${sourceSessionId} has no state`);
         }
-        await createWritingAgentSession(db, {
-          sessionId,
-          draftId: source.draftId,
-        });
-        await updateWritingAgentSession(db, sessionId, {
-          lastSeenRevision: source.lastSeenRevision,
-        });
-      },
-
-      summary(state) {
-        return {
-          draftId: state.draftId,
-          targetFeedId: state.draft?.feedId ?? null,
-        };
+        await createWritingAgentSession(db, { sessionId });
+        await copyWritingSessionDrafts(db, sourceSessionId, sessionId);
       },
 
       async detail(db, _sessionId, state) {
-        if (state.draftId === null) return {};
-        // Ownership was checked when the session row was loaded; the draft is bound to it.
-        const draft = await getFeedDraft(db, state.draftId);
-        return draft ? { draft: toDraftPayload(draft) } : {};
+        // Ownership was checked when the session row was loaded; the drafts are bound to it.
+        const drafts = await Promise.all(
+          state.drafts.map((entry) => getFeedDraft(db, entry.draftId))
+        );
+        return {
+          drafts: drafts
+            .filter((draft) => draft !== null)
+            .map((draft) => toDraftPayload(draft)),
+        };
+      },
+
+      async attach(caller, db, sessionId, attachments) {
+        for (const attachment of attachments) {
+          if (attachment.type !== DRAFT_ATTACHMENT_TYPE) {
+            throw new AppError("BAD_REQUEST", {
+              message: `The writing agent takes no "${attachment.type}" attachments.`,
+            });
+          }
+          const draft = await getFeedDraft(db, attachment.id);
+          if (!draft || draft.userId !== caller.userId) {
+            throw new AppError("NOT_FOUND", {
+              message: `Unknown draft: ${attachment.id}`,
+            });
+          }
+        }
+        await touchWritingSessionDrafts(
+          db,
+          sessionId,
+          attachments.map((attachment) => ({ draftId: attachment.id }))
+        );
       },
     },
 
@@ -196,24 +204,16 @@ export const createWritingAgentKind = (
             committed = true;
           },
         });
-
-        // A discarded draft leaves the session without one; the turn opens a fresh draft.
-        let draftId = context.state.draftId;
-        if (draftId === null) {
-          const draft = await host.openDraft({
-            db: context.db,
-            adminId,
-            sessionId: context.row.id,
-          });
-          draftId = draft.id;
-          await updateWritingAgentSession(context.db, context.row.id, {
-            draftId,
-            lastSeenRevision: 0,
-          });
-        }
         const draft = new PgDraftStore(context.db, {
-          draftId,
           sessionId: context.row.id,
+          open: ({ feedId }) =>
+            host.openDraft({
+              db: context.db,
+              adminId,
+              sessionId: context.row.id,
+              feedId,
+            }),
+          list: () => host.listDrafts({ db: context.db, adminId }),
         });
 
         // The compaction task may be pinned to a house model; the session's own is only resolved
@@ -244,7 +244,7 @@ export const createWritingAgentKind = (
           content,
           web: execution.createWebPort(),
           draft,
-          lastSeenRevision: context.state.lastSeenRevision,
+          sessionDrafts: context.state.drafts,
           memory: execution.createMemoryPort({
             db: context.db,
             sessionId: context.row.id,
@@ -260,12 +260,16 @@ export const createWritingAgentKind = (
           onUsage: context.onUsage,
         });
 
-        // Operator edits the model has already been shown are not reported again next turn.
-        if (draft.lastObservedRevision > context.state.lastSeenRevision) {
-          await updateWritingAgentSession(context.db, context.row.id, {
-            lastSeenRevision: draft.lastObservedRevision,
-          });
-        }
+        // Every draft the turn read or wrote is the session's now, seen up to that revision, so
+        // operator edits the model has already been shown are not reported again next turn.
+        await touchWritingSessionDrafts(
+          context.db,
+          context.row.id,
+          [...draft.observedRevisions].map(([draftId, lastSeenRevision]) => ({
+            draftId,
+            lastSeenRevision,
+          }))
+        );
 
         // After the turn ends: `runPiTurn` appends every entry before it resolves.
         if (turn.status === "done" && committed) {

@@ -12,7 +12,7 @@ import { webToolRenderers } from "@chia/agent-elements/renderers/web";
 import { SessionModelPicker } from "@chia/agent-elements/session-model-picker";
 import { Thread } from "@chia/agent-elements/thread";
 
-import { DraftAttachments } from "./draft-attachments";
+import { SessionDrafts } from "./session-drafts";
 
 /** Gateway first: house account, no setup. BYOK providers follow. */
 const PROVIDER_ORDER = ["vercel-ai-gateway", "openai", "anthropic"];
@@ -30,7 +30,7 @@ const SUGGESTIONS = [
 ];
 
 export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
-  const draft = useSessionDetail().data?.draft;
+  const drafts = useSessionDetail().data?.drafts ?? [];
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const localCommands = useMemo(
     () => [
@@ -60,7 +60,9 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
         }
       />
       <Composer
-        attachments={draft ? <DraftAttachments draft={draft} /> : undefined}
+        attachments={
+          drafts.length > 0 ? <SessionDrafts drafts={drafts} /> : undefined
+        }
         localCommands={localCommands}
         placeholder="Ask the writing agent…"
         toolbar={

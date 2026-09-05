@@ -13,22 +13,23 @@ import type { Locale } from "@chia/db/types";
  * `expectedRevision` is refused with the current row.
  */
 const now = new Date("2026-09-04T00:00:00Z");
-let draft: FeedDraftRecord;
+let drafts: Map<number, FeedDraftRecord>;
+const record = (id: number, feedId: number | null = null): FeedDraftRecord => ({
+  id,
+  feedId,
+  userId: "author",
+  slug: null,
+  type: "post",
+  defaultLocale: "zh-TW",
+  mainImage: null,
+  revision: 1,
+  appliedRevision: null,
+  createdAt: now,
+  updatedAt: now,
+  translations: {},
+});
 const reset = () => {
-  draft = {
-    id: 7,
-    feedId: null,
-    userId: "author",
-    slug: null,
-    type: "post",
-    defaultLocale: "zh-TW",
-    mainImage: null,
-    revision: 1,
-    appliedRevision: null,
-    createdAt: now,
-    updatedAt: now,
-    translations: {},
-  };
+  drafts = new Map([[7, record(7)]]);
 };
 reset();
 
@@ -38,9 +39,14 @@ const defined = <T extends object>(patch: T) =>
   );
 
 vi.mock("@chia/db/repos/drafts", () => ({
-  getFeedDraft: vi.fn(async () => ({ ...draft })),
+  getFeedDraft: vi.fn(async (_db: DB, draftId: number) => {
+    const draft = drafts.get(draftId);
+    return draft ? { ...draft } : null;
+  }),
   listOperatorFeedDraftChanges: vi.fn(async () => []),
   patchFeedDraft: vi.fn(async (_db: DB, input: PatchFeedDraftInput) => {
+    const draft = drafts.get(input.draftId);
+    if (!draft) return { status: "not_found" };
     if (
       input.expectedRevision !== undefined &&
       input.expectedRevision !== draft.revision
@@ -61,29 +67,46 @@ vi.mock("@chia/db/repos/drafts", () => ({
         ...defined(patch ?? {}),
       };
     }
-    draft = {
+    const next = {
       ...draft,
       ...defined(input.meta ?? {}),
       translations,
       revision: draft.revision + 1,
     };
-    return { status: "ok", draft: { ...draft } };
+    drafts.set(input.draftId, next);
+    return { status: "ok", draft: { ...next } };
   }),
 }));
 
 const { PgDraftStore } = await import("../src/draft/pg-draft-store.ts");
-const { DraftConflictError } = await import("../src/draft/operations.ts");
+const { DraftConflictError, DraftNotFoundError } =
+  await import("../src/draft/operations.ts");
 
 // SAFETY: every repo function is mocked above and never touches the handle.
 const db = {} as DB;
-const options = { draftId: 7, sessionId: "session-1" };
+const DRAFT_ID = 7;
+
+const build = () =>
+  new PgDraftStore(db, {
+    sessionId: "session-1",
+    list: async () => [...drafts.values()],
+    open: async ({ feedId }) => {
+      const existing = [...drafts.values()].find(
+        (draft) => feedId !== undefined && draft.feedId === feedId
+      );
+      if (existing) return existing;
+      const created = record(drafts.size + 100, feedId ?? null);
+      drafts.set(created.id, created);
+      return created;
+    },
+  });
 
 describe("PgDraftStore", () => {
   beforeEach(reset);
 
   it("leaves omitted per-locale fields alone when the patch carries explicit undefined keys", async () => {
-    const store = new PgDraftStore(db, options);
-    await store.patchTranslation("en", {
+    const store = build();
+    await store.patchTranslation(DRAFT_ID, "en", {
       title: "Title",
       excerpt: "Excerpt",
       description: "Description",
@@ -91,7 +114,7 @@ describe("PgDraftStore", () => {
     });
 
     // Exactly what `patch_draft_meta` sends: every per-locale key present, most undefined.
-    const next = await store.patchTranslation("en", {
+    const next = await store.patchTranslation(DRAFT_ID, "en", {
       title: "New title",
       excerpt: undefined,
       description: undefined,
@@ -107,10 +130,12 @@ describe("PgDraftStore", () => {
   });
 
   it("clears a field on null and keeps the body across metadata patches", async () => {
-    const store = new PgDraftStore(db, options);
-    await store.setContent("en", "## Body");
-    await store.patchTranslation("en", { title: "T", excerpt: "E" });
-    const next = await store.patchTranslation("en", { excerpt: null });
+    const store = build();
+    await store.setContent(DRAFT_ID, "en", "## Body");
+    await store.patchTranslation(DRAFT_ID, "en", { title: "T", excerpt: "E" });
+    const next = await store.patchTranslation(DRAFT_ID, "en", {
+      excerpt: null,
+    });
 
     expect(next.translations.en?.excerpt).toBeNull();
     expect(next.translations.en?.title).toBe("T");
@@ -118,9 +143,9 @@ describe("PgDraftStore", () => {
   });
 
   it("merges feed-level metadata the same way", async () => {
-    const store = new PgDraftStore(db, options);
-    await store.patchFeedMeta({ slug: "a-slug", type: "post" });
-    const next = await store.patchFeedMeta({
+    const store = build();
+    await store.patchFeedMeta(DRAFT_ID, { slug: "a-slug", type: "post" });
+    const next = await store.patchFeedMeta(DRAFT_ID, {
       slug: undefined,
       type: undefined,
       defaultLocale: "en",
@@ -134,14 +159,39 @@ describe("PgDraftStore", () => {
   });
 
   it("refuses a body write pinned to a revision the draft has moved past", async () => {
-    const store = new PgDraftStore(db, options);
-    const read = await store.get();
-    draft = { ...draft, revision: read.revision + 1 };
+    const store = build();
+    const read = await store.get(DRAFT_ID);
+    const current = drafts.get(DRAFT_ID);
+    if (!current) throw new Error("fixture draft missing");
+    drafts.set(DRAFT_ID, { ...current, revision: read.revision + 1 });
 
     await expect(
-      store.setContent("en", "## Stale", read.revision)
+      store.setContent(DRAFT_ID, "en", "## Stale", read.revision)
     ).rejects.toBeInstanceOf(DraftConflictError);
     // The conflict response still tells the store where the draft is now.
-    expect(store.lastObservedRevision).toBe(read.revision + 1);
+    expect(store.observedRevisions.get(DRAFT_ID)).toBe(read.revision + 1);
+  });
+
+  it("tracks the revision it saw per draft and names a draft that is gone", async () => {
+    const store = build();
+    const opened = await store.open({ feedId: 42 });
+    await store.setContent(opened.id, "en", "## Body");
+    await store.get(DRAFT_ID);
+
+    expect([...store.observedRevisions]).toEqual([
+      [opened.id, 2],
+      [DRAFT_ID, 1],
+    ]);
+    await expect(store.open({ feedId: 42 })).resolves.toMatchObject({
+      id: opened.id,
+    });
+
+    drafts.delete(DRAFT_ID);
+    await expect(store.get(DRAFT_ID)).rejects.toBeInstanceOf(
+      DraftNotFoundError
+    );
+    await expect(
+      store.setContent(DRAFT_ID, "en", "## Body")
+    ).rejects.toBeInstanceOf(DraftNotFoundError);
   });
 });

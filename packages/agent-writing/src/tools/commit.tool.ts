@@ -3,7 +3,13 @@ import type { Locale } from "@chia/db/types";
 import type { WritingTool } from "../types.ts";
 
 import { TOOL_NAMES, labelOf } from "./registry.ts";
-import { Type, defineTool, jsonBlock, textResult } from "./schema.ts";
+import {
+  DraftIdSchema,
+  Type,
+  defineTool,
+  jsonBlock,
+  textResult,
+} from "./schema.ts";
 
 /**
  * The only tools that touch published data. Sequential: applying and publishing in the same
@@ -15,10 +21,11 @@ export const commitDraftTool = defineTool({
   name: TOOL_NAMES.commitDraft,
   label: labelOf(TOOL_NAMES.commitDraft),
   description:
-    "Apply the shared draft to the database as an UNPUBLISHED post (or update the post the " +
-    "draft is already bound to). Requires human approval. This does NOT publish; use " +
-    "`set_published` for that.",
+    "Apply a draft to the database as an UNPUBLISHED post (or update the post the draft is " +
+    "already bound to). Requires human approval. This does NOT publish; use `set_published` " +
+    "for that.",
   parameters: Type.Object({
+    draftId: DraftIdSchema,
     confirmation: Type.String({
       description:
         "One sentence stating what you are committing, shown to the operator in the approval prompt.",
@@ -27,7 +34,7 @@ export const commitDraftTool = defineTool({
   }),
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
-    const draft = await context.draft.get();
+    const draft = await context.draft.get(params.draftId);
     // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
     const locales = Object.keys(draft.translations) as Locale[];
 
@@ -62,7 +69,7 @@ export const commitDraftTool = defineTool({
     return textResult(
       `${result.created ? "Created" : "Updated"} feed ${result.feedId} at slug \`${result.slug}\`, ` +
         `still unpublished.\n\n${jsonBlock(result)}`,
-      { ...result, confirmation: params.confirmation }
+      { ...result, draftId: draft.id, confirmation: params.confirmation }
     );
   },
 });
@@ -71,10 +78,13 @@ export const setPublishedTool = defineTool({
   name: TOOL_NAMES.setPublished,
   label: labelOf(TOOL_NAMES.setPublished),
   description:
-    "Publish or unpublish the post this draft is bound to. Requires human approval. Publishing " +
-    "makes the post publicly visible and triggers reading-time, search-index and embedding jobs. " +
-    "Commit first.",
+    "Publish or unpublish a post. Requires human approval. Publishing makes the post publicly " +
+    "visible and triggers reading-time, search-index and embedding jobs. A draft has to be " +
+    "committed first; `commit_draft` returns the post's feedId.",
   parameters: Type.Object({
+    feedId: Type.Integer({
+      description: "The post, as `commit_draft` or `list_posts` reported it.",
+    }),
     published: Type.Boolean({
       description: "`true` to publish, `false` to withdraw.",
     }),
@@ -86,16 +96,8 @@ export const setPublishedTool = defineTool({
   }),
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
-    const draft = await context.draft.get();
-
-    if (draft.feedId === null) {
-      throw new Error(
-        "This draft has not been committed to a post yet. Run commit_draft first."
-      );
-    }
-
     const result = await context.content.setPublished({
-      feedId: draft.feedId,
+      feedId: params.feedId,
       published: params.published,
     });
 

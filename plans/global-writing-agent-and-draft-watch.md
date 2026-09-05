@@ -10,17 +10,17 @@
 
 ## 0. 已確認的決策
 
-| 項目 | 決定 |
-| --- | --- |
-| Agent 與 draft 的關係 | 全域。session 不綁 draft，改記錄「碰過哪些 draft、各自看到哪個 revision」 |
-| 交付 draft 給 agent | prompt 附件 `{ type: "draft", id }`，非 session 建立參數 |
-| 即時串流 transport | oRPC event iterator（SSE 語意），不上 WebSocket。契約與 bus 設計成之後可換 `@orpc/server/crossws` |
-| 變更事件來源 | Postgres `pg_notify` 在 draft 寫入交易內發出；service 一個帶重連的 LISTEN client |
-| service replica | 目前單一 replica；in-process bus 即可，但 NOTIFY 設計本身多 replica 安全 |
-| 串流粒度 | 每次工具呼叫（draft row 變動）一次，不做逐字 |
-| Dash 呈現 | 與 www 相同：上排 header 放按鈕，agent 以右側 drawer 呈現；composer 顯示目前 draft |
-| Agent 工具 | 新增 `list_drafts`、`open_draft`；不給 `discard` |
-| `sessions.create` | 移除 `targetFeedId` 與 `draftId` |
+| 項目                  | 決定                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------- |
+| Agent 與 draft 的關係 | 全域。session 不綁 draft，改記錄「碰過哪些 draft、各自看到哪個 revision」                         |
+| 交付 draft 給 agent   | prompt 附件 `{ type: "draft", id }`，非 session 建立參數                                          |
+| 即時串流 transport    | oRPC event iterator（SSE 語意），不上 WebSocket。契約與 bus 設計成之後可換 `@orpc/server/crossws` |
+| 變更事件來源          | Postgres `pg_notify` 在 draft 寫入交易內發出；service 一個帶重連的 LISTEN client                  |
+| service replica       | 目前單一 replica；in-process bus 即可，但 NOTIFY 設計本身多 replica 安全                          |
+| 串流粒度              | 每次工具呼叫（draft row 變動）一次，不做逐字                                                      |
+| Dash 呈現             | 與 www 相同：上排 header 放按鈕，agent 以右側 drawer 呈現；composer 顯示目前 draft                |
+| Agent 工具            | 新增 `list_drafts`、`open_draft`；不給 `discard`                                                  |
+| `sessions.create`     | 移除 `targetFeedId` 與 `draftId`                                                                  |
 
 本計劃選定但未經確認的預設（實作時若不同意再改）：
 
@@ -80,9 +80,21 @@
     open(input: { feedId?: number }): Promise<FeedDraft>;
     get(draftId: number): Promise<FeedDraft>;
     patchFeedMeta(draftId: number, patch: DraftFeedMeta): Promise<FeedDraft>;
-    patchTranslation(draftId: number, locale: Locale, patch: DraftTranslation): Promise<FeedDraft>;
-    setContent(draftId: number, locale: Locale, content: string, expectedRevision?: number): Promise<FeedDraft>;
-    operatorChangesSince(draftId: number, afterRevision: number): Promise<DraftChange[]>;
+    patchTranslation(
+      draftId: number,
+      locale: Locale,
+      patch: DraftTranslation
+    ): Promise<FeedDraft>;
+    setContent(
+      draftId: number,
+      locale: Locale,
+      content: string,
+      expectedRevision?: number
+    ): Promise<FeedDraft>;
+    operatorChangesSince(
+      draftId: number,
+      afterRevision: number
+    ): Promise<DraftChange[]>;
     /** 本 turn 每份 draft 最後看到的 revision；host 在 turn 結束寫回。 */
     readonly observedRevisions: ReadonlyMap<number, number>;
   }
@@ -171,14 +183,25 @@
   ```ts
   export const FEED_DRAFT_CHANNEL = "feed_draft";
   export const feedDraftNoticeSchema = z.discriminatedUnion("type", [
-    z.object({ type: z.literal("revision"), draftId, revision, author, sessionId: z.string().nullable(), changes: feedDraftChangeSchema.array() }),
+    z.object({
+      type: z.literal("revision"),
+      draftId,
+      revision,
+      author,
+      sessionId: z.string().nullable(),
+      changes: feedDraftChangeSchema.array(),
+    }),
     z.object({ type: z.literal("applied"), draftId, revision, feedId }),
     z.object({ type: z.literal("discarded"), draftId }),
   ]);
-  export const notifyFeedDraft = (tx, notice) => tx.execute(sql`select pg_notify(${FEED_DRAFT_CHANNEL}, ${JSON.stringify(notice)})`);
+  export const notifyFeedDraft = (tx, notice) =>
+    tx.execute(
+      sql`select pg_notify(${FEED_DRAFT_CHANNEL}, ${JSON.stringify(notice)})`
+    );
   ```
 
   Payload 只帶欄位清單不帶內容（NOTIFY 上限 8 KB）。
+
 - `src/libs/drafts/index.ts`：`patchFeedDraft`／`replaceFeedDraft` 在交易內、`recordRevision` 之後呼叫 `notifyFeedDraft`（每次 revision bump 都發，與 operator 合併紀錄無關）；`markFeedDraftApplied` 發 `applied`；`deleteFeedDraft` 發 `discarded`。`restoreFeedDraftRevisionService` 走 `replaceFeedDraft` 自然涵蓋。
 - `src/libs/drafts/listen.ts`（新）：`listenFeedDraft(url, onNotice, { signal })`
   - 專用 `pg.Client`，`keepAlive: true`，掛 `error` 與 `end` handler。
@@ -202,11 +225,17 @@
   ```ts
   export const watchFeedDraftContract = oc
     .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
-    .input(z.object({ draftId: z.number().int(), afterRevision: z.number().int().min(0) }))
+    .input(
+      z.object({
+        draftId: z.number().int(),
+        afterRevision: z.number().int().min(0),
+      })
+    )
     .output(asyncIteratorObject(feedDraftNoticeSchema));
   ```
 
   Router key `draft:watch`，`router.contract.ts` 與 `router.ts` 同步。
+
 - `packages/api/orpc/routes/feeds.route.ts` handler（`rootWriteGuard`）：
   1. `getFeedDraft` 驗證歸屬，否則 `NOT_FOUND`。
   2. 起點 = `max(afterRevision, lastEventId)`；`lastEventId` 由 oRPC 在重連時帶入 `opts.lastEventId`。
@@ -263,6 +292,14 @@ pnpm turbo run test --filter @chia/db --filter @chia/agent-runtime --filter @chi
 2. Phase 2：兩個分頁開同一 draft，一邊打字另一邊 1 秒內更新；agent turn 寫入時 editor 立即刷新且 presence chip 亮；重啟本機 Postgres 後 service log 顯示重連並持續收到通知。
 3. Phase 3：任何頁面按 header 按鈕開 drawer；在 `/feed/draft/:id` 開 drawer 時 composer 顯示該 draft chip，送出後 thread 的 user 訊息顯示附件。
 
+### 2.5 為何不把通知走 workflow World stream
+
+- World stream 是 per run，只能在 step 內用 `getWritable` 寫。editor 與 MCP 的寫入發生在 service，沒有 run 可寫；要走 workflow 每次自動儲存都得多一趟 `workflowControl` → 單一 replica 的 workflow process → step，延遲與耦合都不划算。
+- service 讀 World stream 用的是 world-postgres 內建的 LISTEN client，那正是 2026-08-28 資料庫重啟後死掉的那個；`createWorld` 只能注入 `pool`，注不進自己的 listener，所以掛在它上面等於繼承問題而不是解決。
+- draft 已有自己的 durable log（`feed_draft_revision`），不需要 World 的持久化與 replay。
+- 真正可共用的是「帶重連的 LISTEN 工具」：`packages/db/src/libs/drafts/listen.ts` 寫成泛用的 `listenChannel(url, channel, onNotice, { signal })`，之後若要替 world-postgres 包一層 poll fallback 也能沿用。
+- 保底：`draft:watch` generator 在 bus 靜默時每 5 秒查一次 `feed_draft.revision`，LISTEN 掛掉時退化成 server 端 polling 而非斷訊。
+
 ## 3. 風險與注意
 
 - **附件渲染與 transcript 投影**（1.2）：渲染文字若不進 durable entry，`projectMessages` 必須能再渲染；否則直接存渲染結果。實作前先看 `packages/agent-runtime/src/session/` 的投影點再定。
@@ -275,11 +312,11 @@ pnpm turbo run test --filter @chia/db --filter @chia/agent-runtime --filter @chi
 
 ## 4. 工時估計
 
-| Phase | 估計 |
-| --- | --- |
-| 1 全域 agent | 1.5 天 |
-| 2 bus + watch + editor | 1 天 |
-| 3 drawer + composer 附件 | 1 天 |
+| Phase                    | 估計   |
+| ------------------------ | ------ |
+| 1 全域 agent             | 1.5 天 |
+| 2 bus + watch + editor   | 1 天   |
+| 3 drawer + composer 附件 | 1 天   |
 
 ## 5. 之後可做、本計劃不做
 

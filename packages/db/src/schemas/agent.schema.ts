@@ -139,24 +139,46 @@ export const agentSessionEntries = agentSchema.table(
 
 export type AgentSessionEntry = InferSelectModel<typeof agentSessionEntries>;
 
-/** The writing kind's extension row: which shared `feed_draft` the session edits. */
-export const writingAgentSessions = agentSchema.table(
-  "writing_session",
-  {
-    sessionId: text("session_id")
-      .primaryKey()
-      .references(() => agentSessions.id, { onDelete: "cascade" }),
-    /** `null` after the operator discards the draft; the next turn opens a fresh one. */
-    draftId: integer("draft_id").references(() => feedDrafts.id, {
-      onDelete: "set null",
-    }),
-    /** Highest draft revision the agent has read; operator revisions above it are reported next turn. */
-    lastSeenRevision: integer("last_seen_revision").notNull().default(0),
-  },
-  (table) => [index("writing_agent_session_draft_idx").on(table.draftId)]
-);
+/** The writing kind's extension row. The drafts a session works on hang off `writing_session_draft`. */
+export const writingAgentSessions = agentSchema.table("writing_session", {
+  sessionId: text("session_id")
+    .primaryKey()
+    .references(() => agentSessions.id, { onDelete: "cascade" }),
+});
 
 export type WritingAgentSession = InferSelectModel<typeof writingAgentSessions>;
+
+/**
+ * A shared `feed_draft` the session has read or edited. A discarded draft drops its rows, so
+ * a session never points at a draft that no longer exists.
+ */
+export const writingAgentSessionDrafts = agentSchema.table(
+  "writing_session_draft",
+  {
+    sessionId: text("session_id")
+      .notNull()
+      .references(() => writingAgentSessions.sessionId, {
+        onDelete: "cascade",
+      }),
+    draftId: integer("draft_id")
+      .notNull()
+      .references(() => feedDrafts.id, { onDelete: "cascade" }),
+    /** Highest draft revision the agent has read; operator revisions above it are reported next turn. */
+    lastSeenRevision: integer("last_seen_revision").notNull().default(0),
+    /** Last time a turn or an attachment touched the draft; orders the session's drafts. */
+    touchedAt: timestamp("touched_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.sessionId, table.draftId] }),
+    index("writing_session_draft_draft_idx").on(table.draftId),
+  ]
+);
+
+export type WritingAgentSessionDraft = InferSelectModel<
+  typeof writingAgentSessionDrafts
+>;
 
 export const AGENT_MEMORY_KIND = {
   /** A page the agent read: URL, title, excerpt. Written automatically by `fetch_url`. */

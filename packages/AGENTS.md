@@ -35,7 +35,7 @@ Authorization belongs in `service-kit/src/policies`. Bind policies through `runP
 
 - oRPC handlers use `@chia/db/repos/*`, not raw Drizzle.
 - Write logic shared with workflow steps belongs in `api/<domain>/write` and receives lifecycle hooks explicitly.
-- `feed_draft` is the only write path for post content shared by the editor, MCP and the writing agent; `api/feeds/draft` owns open, patch, apply, discard and restore. `feed` changes only through apply or the feed-level `feeds.update`, and only those start indexing.
+- `feed_draft` is the only write path for post content shared by the editor, MCP and the writing agent; `api/feeds/draft` owns open, patch, apply, discard and restore. `feed` changes only through apply or the feed-level `feeds.update`, and only those start indexing. A writing session is not bound to a draft: `agent.writing_session_draft` records the drafts it worked on, and a prompt hands one over as an attachment that the kind's `attach` admits before the turn is queued.
 - Domain and policy failures use `AppError`; its codes mirror oRPC common codes.
 
 ## Core package boundaries

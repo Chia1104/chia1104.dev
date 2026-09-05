@@ -10,6 +10,7 @@ import type {
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
+  AgentAttachment,
   AgentPolicy,
   AgentSessionDefaults,
   AgentSessionSettings,
@@ -102,15 +103,13 @@ export interface AgentKindCaller extends Caller {
 
 export interface AgentCreateSessionInput {
   title?: string;
-  targetFeedId?: number;
-  draftId?: number;
   model?: AgentModelRef;
   thinkingLevel?: string;
   autoApprove?: string[];
   runtimeConfig?: JsonObject;
 }
 
-/** The writing agent's shared draft, as the contract's `draft` field carries it. */
+/** A shared draft the writing agent works on, as the contract's `drafts` field carries it. */
 export interface AgentDraftPayload {
   id: number;
   feedId: number | null;
@@ -156,22 +155,25 @@ export interface AgentKindState<TState> {
    */
   fork(db: DB, sourceSessionId: string, sessionId: string): Promise<void>;
   /**
-   * Kind-owned fields of the session summary. The contract still carries the writing agent's
-   * `targetFeedId`; a kind with nothing to add returns `{}`.
-   */
-  summary(state: TState): {
-    draftId?: number | null;
-    targetFeedId?: number | null;
-  };
-  /**
    * Kind-owned fields of the session detail. The contract still carries the writing agent's
-   * `draft`; a kind with nothing to add returns `{}`.
+   * `drafts`; a kind with nothing to add returns `{}`.
    */
   detail(
     db: DB,
     sessionId: string,
     state: TState
-  ): Promise<{ draft?: AgentDraftPayload; state?: unknown }>;
+  ): Promise<{ drafts?: AgentDraftPayload[]; state?: unknown }>;
+  /**
+   * Admits a prompt's attachments before the turn is enqueued: refuses a type the kind does
+   * not take or a record the caller does not own, and records the rest against the session.
+   * A kind without it accepts no attachments.
+   */
+  attach?(
+    caller: AgentKindCaller,
+    db: DB,
+    sessionId: string,
+    attachments: readonly AgentAttachment[]
+  ): Promise<void>;
 }
 
 export type AgentModels = ReturnType<typeof createAgentModels>;

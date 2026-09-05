@@ -77,15 +77,21 @@ export const agentModelRefSchema = z.object({
   modelId: z.string().min(1),
 });
 
+/**
+ * What a prompt hands the agent beside the text. `type` is kind policy: the writing agent takes
+ * `draft`; a kind refuses what it cannot read.
+ */
+export const agentAttachmentInputSchema = z.object({
+  type: z.string().min(1),
+  id: z.number().int(),
+});
+
 export const agentSessionSummarySchema = z.object({
   id: z.string(),
   title: z.string().nullable(),
   kind: z.string(),
   modelId: z.string().nullable().optional(),
   thinkingLevel: thinkingLevelSchema.nullable().optional(),
-  /** Writing-agent extension: the shared draft the session edits and the feed it is bound to. */
-  draftId: z.number().nullable().optional(),
-  targetFeedId: z.number().nullable().optional(),
   forkedFromSessionId: z.string().nullable().optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
@@ -108,8 +114,8 @@ export const agentSessionDetailSchema = z.object({
   configVersion: z.number().int().positive().optional(),
   /** Optional runtime-owned state for kinds that do not have a dedicated public contract yet. */
   state: z.unknown().optional(),
-  /** Writing-agent state: the shared working draft. Other kinds expose their own state contract. */
-  draft: feedDraftSchema.optional(),
+  /** Writing-agent state: the shared drafts this session has worked on, most recent first. */
+  drafts: z.array(feedDraftSchema).optional(),
   /**
    * Live durable run, or `null`. `running` is a turn executing; `waiting` is parked on a
    * message or approval hook.
@@ -178,10 +184,6 @@ export const createAgentSessionContract = oc
       /** Agent kind is required because creation has no stored session to dispatch from. */
       kind: z.string().min(1),
       title: z.string().max(200).optional(),
-      /** Opens this post's working draft so the agent edits rather than starts fresh. */
-      targetFeedId: z.number().int().optional(),
-      /** Binds the session to an existing draft, e.g. one open in the editor. */
-      draftId: z.number().int().optional(),
       model: agentModelRefSchema.optional(),
       thinkingLevel: thinkingLevelSchema.optional(),
       autoApprove: z.array(toolTierSchema).optional(),
@@ -254,6 +256,8 @@ export const chatAgentContract = oc
         z.object({
           type: z.literal("prompt"),
           text: z.string().min(1),
+          /** Records the kind validates and hands the model beside the text, e.g. a draft. */
+          attachments: z.array(agentAttachmentInputSchema).max(4).optional(),
         }),
         z.object({
           type: z.literal("command"),

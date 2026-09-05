@@ -69,6 +69,29 @@ export interface FeedDraft {
 /** Which fields the operator touched since the agent last looked; `locale` is absent for feed-level fields. */
 export type DraftChange = FeedDraftChange;
 
+/** One line per draft, for `list_drafts` and the turn context. */
+export interface FeedDraftSummary {
+  id: number;
+  feedId: number | null;
+  revision: number;
+  slug: string | null;
+  type: PostFeedType;
+  defaultLocale: Locale;
+  /** The default locale's title, else the first locale that has one. */
+  title: string | null;
+  locales: Locale[];
+  updatedAt: string;
+}
+
+/** A draft the session has worked on and the revision its last turn saw. */
+export interface SessionDraftRef {
+  draftId: number;
+  lastSeenRevision: number;
+}
+
+/** The attachment type a prompt uses to hand the agent a draft. */
+export const DRAFT_ATTACHMENT_TYPE = "draft";
+
 export interface FetchedPage {
   url: string;
   title?: string;
