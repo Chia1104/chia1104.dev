@@ -2,62 +2,38 @@
 
 import { memo, useId } from "react";
 
-import { useFormContext } from "react-hook-form";
-
-import { EmbeddingDrawer } from "@/components/rag/embedding-drawer";
-import type { EmbeddingResource } from "@/components/rag/embedding-drawer";
+import { Disclosure } from "@heroui/react";
 
 import { DefaultLocaleField } from "./default-locale-field";
-import { DeleteButton } from "./delete-button";
 import { DescriptionField } from "./description-field";
-import type { DraftFormValues } from "./draft-form-schema";
 import { FeedTypeTabs } from "./feed-type-tabs";
 import { LocaleTabs } from "./locale-tabs";
-import { MetaChip } from "./meta-chip";
-import type { MetaChipProps } from "./meta-chip";
 import { SlugField } from "./slug-field";
 import { TitleField } from "./title-field";
 
-export const MetadataFields = memo(
-  ({
-    feedId,
-    meta,
-    resources,
-  }: {
-    feedId?: number;
-    meta?: MetaChipProps;
-    resources?: EmbeddingResource[];
-  }) => {
-    const id = useId();
-    const form = useFormContext<DraftFormValues>();
+export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
+  const id = useId();
 
-    return (
-      <div className="flex w-full flex-col gap-5">
-        <div className="flex items-center justify-between">
-          <FeedTypeTabs />
-          {feedId ? (
-            <div className="flex items-center gap-2">
-              <MetaChip {...meta} />
-              <EmbeddingDrawer feedId={feedId} resources={resources ?? []} />
-              <DeleteButton
-                feedId={feedId}
-                type={form.watch("type")}
-                deleted={!!meta?.deleted}
-              />
-            </div>
-          ) : null}
-        </div>
-
-        <SlugField isBound={feedId !== undefined} />
-
-        <DefaultLocaleField />
-
-        <LocaleTabs />
-
-        <TitleField id={id} />
-
-        <DescriptionField id={id} />
-      </div>
-    );
-  }
-);
+  return (
+    <div className="flex w-full flex-col gap-5">
+      <LocaleTabs />
+      <TitleField id={id} />
+      <Disclosure className="border-border rounded-xl border">
+        <Disclosure.Heading>
+          <Disclosure.Trigger className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium">
+            Content settings
+            <Disclosure.Indicator />
+          </Disclosure.Trigger>
+        </Disclosure.Heading>
+        <Disclosure.Content>
+          <Disclosure.Body className="flex flex-col gap-5 px-2">
+            <FeedTypeTabs />
+            <SlugField isBound={feedId !== undefined} />
+            <DefaultLocaleField />
+            <DescriptionField id={id} />
+          </Disclosure.Body>
+        </Disclosure.Content>
+      </Disclosure>
+    </div>
+  );
+});

@@ -1,8 +1,7 @@
 "use client";
 
-import { Button, Chip, Drawer, Spinner } from "@heroui/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { Button, Card, Chip, Drawer, Spinner } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
 
 import dayjs from "@chia/utils/day";
 
@@ -25,31 +24,21 @@ export const RevisionsDrawer = ({
   draftId,
   isOpen,
   onOpenChange,
-  onRestored,
+  onRestore,
+  isRestoring,
+  isDisabled,
 }: {
   draftId: number;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onRestored: (draft: RouterOutputs["feeds"]["draft:restore"]) => void;
+  onRestore: (revisionId: number) => void;
+  isRestoring: boolean;
+  isDisabled: boolean;
 }) => {
-  const queryClient = useQueryClient();
   const revisions = useQuery(
     orpc.feeds["draft:revisions"].queryOptions({
       input: { draftId },
       enabled: isOpen,
-    })
-  );
-  const restore = useMutation(
-    orpc.feeds["draft:restore"].mutationOptions({
-      onSuccess: async (draft) => {
-        onRestored(draft);
-        onOpenChange(false);
-        await queryClient.invalidateQueries({
-          queryKey: orpc.feeds["draft:revisions"].key({ input: { draftId } }),
-        });
-      },
-      onError: (error) =>
-        toast.error(error instanceof Error ? error.message : "Restore failed"),
     })
   );
 
@@ -68,39 +57,40 @@ export const RevisionsDrawer = ({
           ) : (
             <ul className="flex flex-col gap-2">
               {(revisions.data?.items ?? []).map((revision, index) => (
-                <li
-                  key={revision.id}
-                  className="border-border flex items-center justify-between gap-3 rounded-xl border p-3">
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs">
-                        r{revision.revision}
-                      </span>
-                      <Chip
-                        color={
-                          revision.author === "agent" ? "accent" : "default"
-                        }
+                <li key={revision.id}>
+                  <Card className="flex-row items-center justify-between gap-3 p-3">
+                    <Card.Header className="min-w-0 gap-1">
+                      <div className="flex items-center gap-2">
+                        <Card.Title className="font-mono text-xs">
+                          r{revision.revision}
+                        </Card.Title>
+                        <Chip
+                          color={
+                            revision.author === "agent" ? "accent" : "default"
+                          }
+                          size="sm"
+                          variant="soft">
+                          <Chip.Label>{revision.author}</Chip.Label>
+                        </Chip>
+                        <span className="text-muted text-xs">
+                          {dayjs(revision.updatedAt).format("MMM D, HH:mm")}
+                        </span>
+                      </div>
+                      <Card.Description className="truncate text-xs">
+                        {changeSummary(revision) || "no field changes"}
+                      </Card.Description>
+                    </Card.Header>
+                    <Card.Footer className="shrink-0">
+                      <Button
+                        isDisabled={index === 0 || isDisabled}
+                        isPending={isRestoring}
+                        onPress={() => onRestore(revision.id)}
                         size="sm"
-                        variant="soft">
-                        <Chip.Label>{revision.author}</Chip.Label>
-                      </Chip>
-                      <span className="text-muted text-xs">
-                        {dayjs(revision.updatedAt).format("MMM D, HH:mm")}
-                      </span>
-                    </div>
-                    <p className="text-muted truncate text-xs">
-                      {changeSummary(revision) || "no field changes"}
-                    </p>
-                  </div>
-                  <Button
-                    isDisabled={index === 0 || restore.isPending}
-                    onPress={() =>
-                      restore.mutate({ draftId, revisionId: revision.id })
-                    }
-                    size="sm"
-                    variant="secondary">
-                    Restore
-                  </Button>
+                        variant="secondary">
+                        Restore
+                      </Button>
+                    </Card.Footer>
+                  </Card>
                 </li>
               ))}
             </ul>
