@@ -34,7 +34,7 @@ Data fetching runs in the browser through `src/libs/orpc/client.ts` with the Bet
 
 The post editor edits `feed_draft`, never the feed: autosave is a compare-and-set on the draft revision, changes from the agent, MCP or another tab arrive over `feeds.draft:watch` with a slow poll as the fallback, and only Apply writes the feed. Feed-level switches (published, date, delete) call `feeds.update` directly.
 
-The writing agent is a drawer the workspace layout mounts for the operator, not a page. The editor publishes the draft it has open through `components/agent/current-draft`, and the composer sends it as a prompt attachment; the agent is otherwise unbound and picks drafts through its own tools.
+The writing agent is a drawer the workspace layout mounts for the operator, not a page. The layout mounts `AgentContextProvider` from `@chia/agent-elements/context`; a page provides the records it has open (the editor provides its draft) and every prompt, suggestion and slash command from the drawer carries them as attachments unless the operator detaches one. The agent is otherwise unbound and picks drafts through its own tools.
 
 What a signed-in person may see comes from `dashboard.access`, never the `role` column: an `operator` is the configured admin id and gets the `(operator)` route group, whose server layout redirects everyone else; a `member` gets the overview and general settings. Guests are refused at the workspace layout.
 

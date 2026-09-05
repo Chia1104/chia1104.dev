@@ -12,9 +12,9 @@ import {
   useState,
 } from "react";
 
-import { Alert, Button, CloseButton, TextArea } from "@heroui/react";
+import { Alert, Button, Chip, CloseButton, TextArea } from "@heroui/react";
 import { BorderBeam } from "border-beam";
-import { ArrowUp, Square, X } from "lucide-react";
+import { ArrowUp, Paperclip, Square, X } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
@@ -25,6 +25,7 @@ import {
 } from "./composer-draft.ts";
 import type { ComposerDraft } from "./composer-draft.ts";
 import { ContextUsage } from "./context-usage.tsx";
+import { contextKeyOf, useAgentContext } from "./context.tsx";
 import { useAgentLabels } from "./labels-context.tsx";
 import { fill } from "./labels.ts";
 import {
@@ -46,7 +47,7 @@ import {
 } from "./slash-command.ts";
 import type { SlashMenuItem, SlashToken } from "./slash-command.ts";
 import { SlashMenu } from "./slash-menu.tsx";
-import type { AgentAttachmentInput, ComposerSeed } from "./store.ts";
+import type { ComposerSeed } from "./store.ts";
 import type { AgentCapabilities } from "./types.ts";
 
 /** Tallest the input grows before it scrolls, in px (~eight lines). */
@@ -57,10 +58,8 @@ export interface ComposerProps {
   placeholder?: string;
   /** Left of send. Defaults to the model picker; pass `null` for none. */
   toolbar?: ReactNode;
-  /** Stacked above the input. Compose from `ComposerAttachment` rows. */
+  /** Stacked above the input. Compose from `ComposerContext` and `ComposerAttachment` rows. */
   attachments?: ReactNode;
-  /** Sent with the next plain prompt; slash commands carry none. */
-  pendingAttachments?: readonly AgentAttachmentInput[];
   /** Tucked under the input. Defaults to `ComposerStatus`; pass `null` for none. */
   footer?: ReactNode;
   /** Client-only commands that act on the composer UI instead of starting an agent turn. */
@@ -135,6 +134,54 @@ export const ComposerAttachment = ({
         </Button>
       ) : null}
     </div>
+  );
+};
+
+/**
+ * One row per record the host provides through `AgentContextProvider`. Dismissing a row keeps
+ * the record out of what is sent until the operator attaches it again or the page withdraws it.
+ */
+export const ComposerContext = () => {
+  const labels = useAgentLabels();
+  const items = useAgentContext((state) => state.items);
+  const detached = useAgentContext((state) => state.detached);
+  const setAttached = useAgentContext((state) => state.setAttached);
+  return (
+    <>
+      {items.map((item) => {
+        const key = contextKeyOf(item);
+        const attached = !detached.includes(key);
+        return (
+          <ComposerAttachment
+            key={key}
+            className={attached ? undefined : "text-muted"}
+            icon={<Paperclip />}
+            label={
+              attached
+                ? item.label
+                : fill(labels.contextDetached, { label: item.label })
+            }
+            meta={
+              <Chip size="sm" variant="soft">
+                <Chip.Label>#{item.id}</Chip.Label>
+              </Chip>
+            }
+            action={
+              attached ? null : (
+                <Button
+                  className="h-6 p-1 text-[11px]"
+                  onPress={() => setAttached(key, true)}
+                  size="sm"
+                  variant="ghost">
+                  {labels.attach}
+                </Button>
+              )
+            }
+            onDismiss={attached ? () => setAttached(key, false) : undefined}
+          />
+        );
+      })}
+    </>
   );
 };
 
@@ -315,7 +362,6 @@ const ComposerEditor = ({
   className,
   footer = <ComposerStatus />,
   localCommands,
-  pendingAttachments,
   placeholder,
   seed,
   toolbar,
@@ -469,9 +515,7 @@ const ComposerEditor = ({
       return;
     }
 
-    await submit(value, () =>
-      prompt(value, { attachments: pendingAttachments })
-    );
+    await submit(value, () => prompt(value));
   });
 
   const onMenuAction = (item: SlashMenuItem) => {

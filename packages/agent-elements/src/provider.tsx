@@ -6,6 +6,7 @@ import { createContext, use, useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "zustand";
 
+import { attachedContext, useAgentContextStore } from "./context.tsx";
 import { AgentLabelsProvider } from "./labels-context.tsx";
 import type { AgentLabels } from "./labels.ts";
 import {
@@ -76,6 +77,7 @@ export const AgentSessionProvider = ({
   sessionId,
 }: AgentSessionProviderProps) => {
   const queryClient = useQueryClient();
+  const contextStore = useAgentContextStore();
   // Callbacks are read through a ref so a new closure from the host never recreates the store.
   const callbacks = useRef<AgentProviderCallbacks>({});
   callbacks.current = { onForked, onStateChanged, onTurnEnd };
@@ -88,6 +90,9 @@ export const AgentSessionProvider = ({
       sessionId,
       kind,
       labels,
+      context: contextStore
+        ? () => attachedContext(contextStore.getState())
+        : undefined,
       onStateChanged: (event) => callbacks.current.onStateChanged?.(event),
       onTurnEnd: () => callbacks.current.onTurnEnd?.(),
     });

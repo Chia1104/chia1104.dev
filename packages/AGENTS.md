@@ -62,7 +62,7 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before changi
 
 `agent-runtime` exports `./pi/*`, `./session/*` and `./models` for server use only. Browser and SSR bundles may import `./wire/schema` and `./wire/fold`; `./wire/replay` remains server-only because it loads Pi.
 
-`agent-elements` owns live client state in one zustand store per session and server state in TanStack Query. Hosts provide the oRPC client, `QueryClient`, localized labels and kind-specific renderers. Host Tailwind sources must include this package and Streamdown's distributed JavaScript. Every locale must carry the same keys; agent label tests enforce this.
+`agent-elements` owns live client state in one zustand store per session and server state in TanStack Query. Hosts provide the oRPC client, `QueryClient`, localized labels and kind-specific renderers. Host context is a separate store (`./context`) mounted above the pages and the session: pages provide attachable records while mounted, the composer lists them, and the session store attaches the ones the operator has not detached to every prompt and command. Host Tailwind sources must include this package and Streamdown's distributed JavaScript. Every locale must carry the same keys; agent label tests enforce this.
 
 ## Testing
 

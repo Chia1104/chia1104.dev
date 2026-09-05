@@ -311,7 +311,7 @@ Web search 只回 snippets；`fetch_url` 抓取單一頁面，並透過 `MemoryP
 
 每次寫入都是對 `feed_draft.revision` 的 compare-and-set，在同一個鎖住該列的 transaction 內完成。編輯器帶著它載入時的 revision，遇到 `CONFLICT` 時把自己改過的欄位合併到較新的 draft 上，或直接採用較新的版本。Agent 的 `edit_draft_content` 在衝突時重讀並重套一次精確字串替換；`write_draft_content` 釘在該 turn 最後觀察到的 revision，寧可失敗也不覆蓋 operator 的修改。`feed_draft_revision` 保存 restore points 與每個 revision 改了哪些欄位；連續的 operator 儲存會合併，且每份 draft 有上限。
 
-Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts` 與 `open_draft` 負責找到或建立，operator 則以 prompt 附件（`{ type: "draft", id }`）交付。Kind 的 `attach` 在 session lock 內、turn 入列前驗證附件；runtime 把附件渲染成持久化 user message 的第一個 text block，並在 `user` wire event 上標上 label，live 與 replay 的 transcript 因此一致。
+Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts` 與 `open_draft` 負責找到或建立，operator 則以 prompt 附件（`{ type: "draft", id }`）交付。Kind 的 `attach` 在 session lock 內、turn 入列前驗證附件；runtime 把附件渲染成持久化 user message 的第一個 text block，並在 `user` wire event 上標上 label，live 與 replay 的 transcript 因此一致。Client 端由 `@chia/agent-elements/context` 讓 host 頁面登記目前開啟的記錄；session store 會把這些記錄附在每一則 prompt、建議提問與 slash command 上，operator 不論從哪個入口起 turn，model 都看得到開啟中的 draft。
 
 `agent.writing_session_draft` 記錄 session 處理過的每份 draft，以及 turn 結束時觀察到的最高 revision。下一個 turn 的 volatile context 列出 session 最近的 drafts，並逐份把高於該 revision 的 operator revisions 列成「operator edits since your last turn」，讓 model 先重讀再編輯。丟棄 draft 會刪除它與 session 的對應列；仍指名它的 tool call 會收到 not-found 錯誤。
 

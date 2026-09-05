@@ -264,6 +264,7 @@ export const chatAgentContract = oc
           name: z.string().min(1).max(100),
           args: z.array(z.string()).max(32),
           text: z.string().min(1),
+          attachments: z.array(agentAttachmentInputSchema).max(4).optional(),
         }),
         z.object({
           type: z.literal("approve"),

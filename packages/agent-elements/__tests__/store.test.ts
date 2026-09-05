@@ -492,6 +492,58 @@ describe("createAgentSessionStore", () => {
     await commanded;
   });
 
+  it("sends the host context with prompts and commands, own attachments after it", async () => {
+    const stream = channel();
+    const { client, chat } = fakeClient({ chat: async () => stream.iterable });
+    const context = [{ type: "draft", id: 7 }];
+    const { store } = makeStore({ client, context: () => context });
+    await store.getState().hydrate();
+
+    const prompted = store.getState().prompt("hello", {
+      attachments: [
+        { type: "draft", id: 7 },
+        { type: "feed", id: 3 },
+      ],
+    });
+    await flush();
+    expect(chat).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        action: {
+          type: "prompt",
+          text: "hello",
+          attachments: [
+            { type: "draft", id: 7 },
+            { type: "feed", id: 3 },
+          ],
+        },
+      }),
+      expect.anything()
+    );
+    stream.push({ type: "run:end", reason: "done" });
+    stream.close();
+    await prompted;
+
+    const second = channel();
+    chat.mockImplementation(async () => second.iterable);
+    const commanded = store.getState().command("outline", [], "/outline");
+    await flush();
+    expect(chat).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        action: {
+          type: "command",
+          name: "outline",
+          args: [],
+          text: "/outline",
+          attachments: [{ type: "draft", id: 7 }],
+        },
+      }),
+      expect.anything()
+    );
+    second.push({ type: "run:end", reason: "done" });
+    second.close();
+    await commanded;
+  });
+
   it("throttles a burst of deltas into few view commits, boundaries at once", async () => {
     const stream = channel();
     const { client } = fakeClient({ chat: async () => stream.iterable });

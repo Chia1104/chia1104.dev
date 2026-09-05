@@ -37,6 +37,10 @@
       "types": "./src/provider.tsx",
       "default": "./src/provider.tsx"
     },
+    "./context": {
+      "types": "./src/context.tsx",
+      "default": "./src/context.tsx"
+    },
     "./chat": {
       "types": "./src/chat.tsx",
       "default": "./src/chat.tsx"

@@ -1,12 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
-import { Button, Chip } from "@heroui/react";
-import { Paperclip } from "lucide-react";
-
-import { Composer, ComposerAttachment } from "@chia/agent-elements/composer";
+import { Composer, ComposerContext } from "@chia/agent-elements/composer";
+import { contextKeyOf, useAgentContext } from "@chia/agent-elements/context";
 import { EmptyState } from "@chia/agent-elements/empty-state";
 import { useSessionDetail } from "@chia/agent-elements/provider";
 import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
@@ -15,7 +13,6 @@ import { webToolRenderers } from "@chia/agent-elements/renderers/web";
 import { SessionModelPicker } from "@chia/agent-elements/session-model-picker";
 import { Thread } from "@chia/agent-elements/thread";
 
-import { useCurrentDraft } from "./current-draft";
 import { SessionDrafts } from "./session-drafts";
 
 /** Gateway first: house account, no setup. BYOK providers follow. */
@@ -33,50 +30,14 @@ const SUGGESTIONS = [
   "Review the draft I have open and tighten the writing.",
 ];
 
-/** The draft open in the editor, attached to the next message unless the operator drops it. */
-const CurrentDraftAttachment = ({
-  attached,
-  onChange,
-}: {
-  attached: boolean;
-  onChange: (attached: boolean) => void;
-}) => {
-  const current = useCurrentDraft();
-  if (!current) return null;
-  const label = current.title ?? `Draft #${current.id}`;
-  return (
-    <ComposerAttachment
-      icon={<Paperclip />}
-      label={attached ? `Attach: ${label}` : `Not attached: ${label}`}
-      meta={
-        <Chip size="sm" variant="soft">
-          <Chip.Label>#{current.id}</Chip.Label>
-        </Chip>
-      }
-      action={
-        attached ? null : (
-          <Button
-            onPress={() => onChange(true)}
-            size="sm"
-            variant="ghost"
-            className="h-6 p-1 text-[11px]">
-            Attach
-          </Button>
-        )
-      }
-      onDismiss={attached ? () => onChange(false) : undefined}
-    />
-  );
-};
-
 export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
   const drafts = useSessionDetail().data?.drafts ?? [];
-  const current = useCurrentDraft();
-  const [attachCurrent, setAttachCurrent] = useState(true);
-  // A different draft in the editor is offered afresh, whatever happened to the last one.
-  useEffect(() => {
-    setAttachCurrent(true);
-  }, [current?.id]);
+  // The page's own records are listed by the composer; the session's other drafts follow.
+  const context = useAgentContext((state) => state.items);
+  const onScreen = new Set(context.map(contextKeyOf));
+  const otherDrafts = drafts.filter(
+    (draft) => !onScreen.has(contextKeyOf({ type: "draft", id: draft.id }))
+  );
 
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const localCommands = useMemo(
@@ -88,10 +49,6 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
       },
     ],
     []
-  );
-  const pendingAttachments = useMemo(
-    () => (current && attachCurrent ? [{ type: "draft", id: current.id }] : []),
-    [attachCurrent, current]
   );
 
   return (
@@ -112,20 +69,14 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
       />
       <Composer
         attachments={
-          current || drafts.length > 0 ? (
+          context.length > 0 || otherDrafts.length > 0 ? (
             <>
-              <CurrentDraftAttachment
-                attached={attachCurrent}
-                onChange={setAttachCurrent}
-              />
-              <SessionDrafts
-                drafts={drafts.filter((draft) => draft.id !== current?.id)}
-              />
+              <ComposerContext />
+              <SessionDrafts drafts={otherDrafts} />
             </>
           ) : undefined
         }
         localCommands={localCommands}
-        pendingAttachments={pendingAttachments}
         placeholder="Ask the writing agent…"
         toolbar={
           <SessionModelPicker

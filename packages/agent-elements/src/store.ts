@@ -101,7 +101,25 @@ export interface AgentSessionStoreOptions extends AgentSessionCallbacks {
   sessionId: string;
   kind?: string;
   labels?: Partial<AgentLabels>;
+  /** What the host has on screen, read as each prompt or command is sent. */
+  context?: () => readonly AgentAttachmentInput[];
 }
+
+/** Host context first, then the call's own; a record named twice goes once. */
+const attachmentsOf = (
+  context: readonly AgentAttachmentInput[],
+  own: readonly AgentAttachmentInput[] | undefined
+): AgentAttachmentInput[] | undefined => {
+  const seen = new Set<string>();
+  const merged: AgentAttachmentInput[] = [];
+  for (const item of [...context, ...(own ?? [])]) {
+    const key = `${item.type}:${item.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push({ type: item.type, id: item.id });
+  }
+  return merged.length > 0 ? merged : undefined;
+};
 
 /** Shortest gap between view commits while deltas stream (~two frames). */
 export const VIEW_FLUSH_MS = 32;
@@ -174,6 +192,7 @@ export const foldDetail = (detail: AgentSessionDetail): AgentViewState => {
 
 export const createAgentSessionStore = ({
   client,
+  context,
   kind,
   labels,
   onStateChanged,
@@ -408,9 +427,10 @@ export const createAgentSessionStore = ({
       prompt: async (text, options) => {
         set({ pendingPrompt: text, failure: null });
         try {
-          const attachments = options?.attachments?.length
-            ? [...options.attachments]
-            : undefined;
+          const attachments = attachmentsOf(
+            context?.() ?? [],
+            options?.attachments
+          );
           await run((signal) =>
             client.sessions.chat(
               { ...scoped, action: { type: "prompt", text, attachments } },
@@ -427,9 +447,13 @@ export const createAgentSessionStore = ({
         const text = displayText ?? formatSlashCommand(name, args);
         set({ pendingPrompt: text, failure: null });
         try {
+          const attachments = attachmentsOf(context?.() ?? [], undefined);
           await run((signal) =>
             client.sessions.chat(
-              { ...scoped, action: { type: "command", name, args, text } },
+              {
+                ...scoped,
+                action: { type: "command", name, args, text, attachments },
+              },
               { signal }
             )
           );

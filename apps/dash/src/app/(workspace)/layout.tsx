@@ -4,6 +4,7 @@ import { Suspense, ViewTransition } from "react";
 
 import { Separator } from "@heroui/react";
 
+import { AgentContextProvider } from "@chia/agent-elements/context";
 import {
   SidebarInset,
   SidebarProvider,
@@ -30,35 +31,40 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const access = await getAccess();
   const operator = access.data?.level === "operator";
 
+  // Pages provide what they have open (the editor's draft) and the drawer sends it.
   return (
     <ViewTransition>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <header className="bg-sidebar border-sidebar-border flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-            <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger />
-              <Separator orientation="vertical" />
-              <NavBreadcrumbs />
-            </div>
-            {operator ? (
-              <div className="ml-auto flex items-center px-4">
-                {/* Reads `?agent`; the boundary keeps the rest of the shell static. */}
-                <Suspense>
-                  <AgentDrawerTrigger />
-                </Suspense>
+      <AgentContextProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <header className="bg-sidebar border-sidebar-border flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+              <div className="flex min-w-0 flex-1 items-center gap-2 px-4">
+                <SidebarTrigger className="shrink-0" />
+                <Separator className="shrink-0" orientation="vertical" />
+                <div className="min-w-0 overflow-x-auto">
+                  <NavBreadcrumbs />
+                </div>
               </div>
+              {operator ? (
+                <div className="ml-auto flex shrink-0 items-center px-4">
+                  {/* Reads `?agent`; the boundary keeps the rest of the shell static. */}
+                  <Suspense>
+                    <AgentDrawerTrigger />
+                  </Suspense>
+                </div>
+              ) : null}
+            </header>
+            {children}
+            {operator ? (
+              <Suspense>
+                <AgentDrawer />
+              </Suspense>
             ) : null}
-          </header>
-          {children}
-          {operator ? (
-            <Suspense>
-              <AgentDrawer />
-            </Suspense>
-          ) : null}
-          <Footer className="mt-auto" />
-        </SidebarInset>
-      </SidebarProvider>
+            <Footer className="mt-auto" />
+          </SidebarInset>
+        </SidebarProvider>
+      </AgentContextProvider>
     </ViewTransition>
   );
 }

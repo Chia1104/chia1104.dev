@@ -9,12 +9,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { useProvideAgentContext } from "@chia/agent-elements/context";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 import dayjs from "@chia/utils/day";
 
 import { orpc } from "@/libs/orpc/client";
-
-import { setCurrentDraft } from "../agent/current-draft";
 
 import { DraftActions } from "./draft-actions";
 import { draftFormSchema } from "./draft-form-schema";
@@ -76,15 +75,13 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
     [draft, receive, autosave.isDirty, autosave.isSaving]
   );
 
-  const currentTitle = draft.translations[draft.defaultLocale]?.title ?? null;
-  useEffect(() => {
-    setCurrentDraft({
-      id: draft.id,
-      title: currentTitle,
-      feedId: draft.feedId,
-    });
-    return () => setCurrentDraft(null);
-  }, [currentTitle, draft.feedId, draft.id]);
+  // The agent drawer lists this draft and sends it with every prompt while the editor is open.
+  useProvideAgentContext({
+    type: "draft",
+    id: draft.id,
+    label:
+      draft.translations[draft.defaultLocale]?.title ?? `Draft #${draft.id}`,
+  });
 
   useDraftWatch(initial.id, initial.revision, (event) => {
     if (event.type === "discarded") {
