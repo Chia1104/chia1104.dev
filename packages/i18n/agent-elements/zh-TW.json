@@ -92,6 +92,8 @@
   "deleteSessionDescription": "對話紀錄與其中的草稿將無法再存取。",
   "save": "儲存",
   "dismiss": "關閉",
+  "attach": "附加",
+  "contextDetached": "未附加：{label}",
   "showMore": "展開",
   "showLess": "收合",
   "copy": "複製",

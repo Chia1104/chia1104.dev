@@ -23,6 +23,10 @@ vi.mock("@chia/workflow-control/agent-hooks", async () => {
       id: z.string(),
       runId: z.string(),
     }),
+    agentAttachmentPayloadSchema: z.object({
+      type: z.string(),
+      id: z.number().int(),
+    }),
     agentApprovalHook: { create: mocks.createApprovalHook },
     agentApprovalToken: (sessionId: string, toolCallId: string) =>
       `agent:approve:${sessionId}:${toolCallId}`,
@@ -105,6 +109,7 @@ describe("agentSessionWorkflow", () => {
       abortController: { id: "abort-1", runId: "abort-run-1" },
       text: "first",
       template: undefined,
+      attachments: undefined,
       preAuthorizeToolNames: undefined,
       credentials: { anthropic: "initial" },
     });
@@ -115,6 +120,7 @@ describe("agentSessionWorkflow", () => {
       abortController: { id: "abort-1", runId: "abort-run-1" },
       text: "/translate zh-TW",
       template: { name: "translate", args: ["zh-TW"] },
+      attachments: undefined,
       preAuthorizeToolNames: undefined,
       credentials: { openai: "rotated" },
     });

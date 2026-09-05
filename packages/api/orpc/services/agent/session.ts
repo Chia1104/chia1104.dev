@@ -129,7 +129,6 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
       kind: row.kind,
       modelId: settings.modelId,
       thinkingLevel: settings.thinkingLevel,
-      ...definition.state.summary(row.state),
       forkedFromSessionId: row.forkedFromSessionId,
       createdAt: row.createdAt.getTime(),
       updatedAt: row.updatedAt.getTime(),

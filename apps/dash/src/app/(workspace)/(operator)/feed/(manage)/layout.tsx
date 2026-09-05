@@ -5,22 +5,36 @@ import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Button, Skeleton } from "@heroui/react";
+import { useMutation } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
 import SearchFeed from "@/components/feed/search-feed";
+import { orpc } from "@/libs/orpc/client";
 
 const FeedTabs = dynamic(() => import("@/components/feed/feed-tabs"), {
   ssr: false,
   loading: () => <Skeleton className="h-10 w-[290px] rounded-full" />,
 });
 
+/** A new post starts as an empty draft on the server, so the agent can be invited into it at once. */
 const CreateFeedButton = () => {
   const router = useRouter();
+  const open = useMutation(
+    orpc.feeds["draft:open"].mutationOptions({
+      onSuccess: (draft) => router.push(`/feed/draft/${draft.id}`),
+      onError: (error) =>
+        toast.error(
+          error instanceof Error ? error.message : "Could not create"
+        ),
+    })
+  );
 
   return (
     <Button
+      isPending={open.isPending}
       variant="primary"
-      onPress={() => router.push(`/feed/create?token=${crypto.randomUUID()}`)}>
+      onPress={() => open.mutate({})}>
       <Plus className="size-4" />
       Create Feed
     </Button>

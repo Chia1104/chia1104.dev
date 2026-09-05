@@ -5,15 +5,12 @@ import { memo, useId } from "react";
 import { Label, ListBox, Select } from "@heroui/react";
 import { Controller, useFormContext } from "react-hook-form";
 
-import { useEditFields } from "@/store/draft";
-import type { FormSchema } from "@/store/draft/slices/edit-fields";
-
 import { SUPPORTED_LOCALES } from "./constants";
+import type { DraftFormValues } from "./draft-form-schema";
 
 export const DefaultLocaleField = memo(() => {
   const id = useId();
-  const form = useFormContext<FormSchema>();
-  const { disabled } = useEditFields();
+  const form = useFormContext<DraftFormValues>();
 
   return (
     <Controller
@@ -30,7 +27,6 @@ export const DefaultLocaleField = memo(() => {
                 field.onChange(key);
               }
             }}
-            isDisabled={disabled}
             isInvalid={fieldState.invalid}
             placeholder="Select default locale">
             <Select.Trigger>

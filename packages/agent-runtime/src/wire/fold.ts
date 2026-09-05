@@ -1,4 +1,4 @@
-import type { AgentErrorKind, ToolTier } from "../types.ts";
+import type { AgentAttachment, AgentErrorKind, ToolTier } from "../types.ts";
 
 import type { AgentWireEvent } from "./schema.ts";
 
@@ -19,6 +19,8 @@ export interface TextMessageView {
   kind: "user" | "assistant";
   messageId: string;
   text: string;
+  /** User messages only. */
+  attachments?: AgentAttachment[];
   thinking?: string;
   /** Epoch ms; unset while an assistant message is still streaming. */
   at?: number;
@@ -80,6 +82,7 @@ export const applyEvent = (
         kind: "user",
         messageId: event.messageId,
         text: event.text,
+        attachments: event.attachments,
         at: event.at,
         streaming: false,
       });

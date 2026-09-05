@@ -18,16 +18,12 @@ import { toast } from "sonner";
 import { SupportedTools } from "@chia/ai/types";
 
 import { generateAIContentMeta } from "@/resources/ai.resource";
-import { useEditFields } from "@/store/draft";
-import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
-export const SlugField = memo(() => {
+import type { DraftFormValues } from "./draft-form-schema";
+
+export const SlugField = memo(({ isBound }: { isBound: boolean }) => {
   const id = useId();
-  const form = useFormContext<FormSchema>();
-  const { disabled, mode } = useEditFields();
-
-  const isFieldDisabled = disabled || mode === "edit";
-  const showDescription = mode === "create";
+  const form = useFormContext<DraftFormValues>();
 
   const activeLocale = form.watch("activeLocale");
   const title = form.watch(`translations.${activeLocale}.title`);
@@ -46,9 +42,10 @@ export const SlugField = memo(() => {
           <InputGroup fullWidth>
             <InputGroup.Input
               id={`${id}-slug`}
-              disabled={isFieldDisabled}
+              disabled={isBound}
               placeholder="slug"
               {...field}
+              value={field.value ?? ""}
             />
             <InputGroup.Suffix>
               <Button
@@ -57,7 +54,7 @@ export const SlugField = memo(() => {
                 variant="secondary"
                 isIconOnly
                 aria-label="generate slug"
-                isDisabled={isFieldDisabled}
+                isDisabled={isBound}
                 isPending={generateSlugMutation.isPending}
                 onPress={() =>
                   generateSlugMutation.mutate(
@@ -84,7 +81,7 @@ export const SlugField = memo(() => {
             </InputGroup.Suffix>
           </InputGroup>
           <FieldError>{error?.message}</FieldError>
-          {showDescription && (
+          {!isBound && (
             <Description>
               The slug will be generated based on the title (cannot be changed
               after creation)

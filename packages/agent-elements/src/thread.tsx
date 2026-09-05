@@ -50,6 +50,7 @@ type ThreadRow =
       key: string;
       messageId: string;
       text: string;
+      attachments?: TextMessageView["attachments"];
       gapAfter: RowGap;
       at?: number;
     }
@@ -97,6 +98,7 @@ const buildRows = (
         key: `u:${item.messageId}`,
         messageId: item.messageId,
         text: item.text,
+        attachments: item.attachments,
         gapAfter: "group",
         at: item.at,
       });
@@ -224,6 +226,7 @@ const ThreadRowContent = ({
           />
         }
         at={row.at}
+        attachments={row.attachments}
         text={row.text}
       />
     );
@@ -521,13 +524,13 @@ const ThreadViewport = ({
       </ScrollShadow>
       {!following && hasContent ? (
         // Positioned by a wrapper so the tooltip anchors to the button's real box.
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2">
           <Tooltip delay={300}>
             <Tooltip.Trigger>
               <Button
                 isIconOnly
                 aria-label={jumpLabel}
-                className="rounded-full shadow-md"
+                className="size-7 rounded-full shadow-md"
                 size="sm"
                 variant="secondary"
                 onPress={() => scroll("latest")}>

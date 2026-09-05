@@ -1,7 +1,9 @@
 import type { InferSelectModel } from "drizzle-orm";
 import {
+  bigserial,
   index,
   integer,
+  jsonb,
   primaryKey,
   serial,
   text,
@@ -10,9 +12,9 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { timestamps, softDelete } from "../libs/common.schema.ts";
-import { ContentType } from "../types.ts";
 
-import { locale, feedType, contentType } from "./enums.ts";
+import { locale, feedType } from "./enums.ts";
+import type { FeedType, Locale } from "./enums.ts";
 import { pgTable } from "./table.ts";
 import { user } from "./user.schema.ts";
 
@@ -67,7 +69,6 @@ const baseFeedsColumns = {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   type: feedType("type").notNull(),
-  contentType: contentType("content_type").notNull().default(ContentType.Mdx),
   published: boolean("published").default(false).notNull(),
   defaultLocale: locale("default_locale").notNull().default("zh-TW"),
   ...timestamps,
@@ -87,7 +88,7 @@ export const feeds = pgTable("feed", baseFeedsColumns, (table) => [
   index("feed_deleted_at_idx").on(table.deletedAt),
 ]);
 
-/** Translation prose. `resource_chunk` mirrors `published` / `deleted` / `locale` from here. */
+/** Translation prose (MDX). `resource_chunk` mirrors `published` / `deleted` / `locale` from here. */
 export const feedTranslations = pgTable(
   "feed_translation",
   {
@@ -103,8 +104,6 @@ export const feedTranslations = pgTable(
     readTime: integer("read_time"),
 
     content: text("content"),
-    source: text("source"),
-    unstableSerializedSource: text("unstable_serialized_source"),
 
     /** Mirrored from `feed`; the source of truth for chunk visibility. */
     published: boolean("published").notNull().default(false),
@@ -120,6 +119,118 @@ export const feedTranslations = pgTable(
     index("feed_translation_feed_id_idx").on(table.feedId),
     index("feed_translation_locale_idx").on(table.locale),
     index("feed_translation_title_idx").on(table.title),
+  ]
+);
+
+/**
+ * The working copy of one post, shared by the dashboard editor and the writing agent. `feed`
+ * only changes when a draft is applied, so draft writes never start feed indexing. `revision`
+ * is the compare-and-set counter every write must present.
+ */
+export const feedDrafts = pgTable(
+  "feed_draft",
+  {
+    id: serial("id").primaryKey(),
+    /** `null` until the draft is applied for the first time. One working draft per feed. */
+    feedId: integer("feed_id").references(() => feeds.id, {
+      onDelete: "cascade",
+    }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    /** `null` until an English/ASCII slug is chosen; required to apply a new post. */
+    slug: text("slug"),
+    type: feedType("type").notNull().default("post"),
+    defaultLocale: locale("default_locale").notNull().default("zh-TW"),
+    mainImage: text("main_image"),
+    revision: integer("revision").notNull().default(1),
+    /** The revision last applied to `feed`; `null` when never applied. */
+    appliedRevision: integer("applied_revision"),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("feed_draft_feed_id_idx").on(table.feedId),
+    index("feed_draft_user_id_idx").on(table.userId),
+    index("feed_draft_updated_at_idx").on(table.updatedAt),
+  ]
+);
+
+/** Per-locale draft fields; mirrors `feed_translation` minus the indexer-owned `read_time`. */
+export const feedDraftTranslations = pgTable(
+  "feed_draft_translation",
+  {
+    draftId: integer("draft_id")
+      .notNull()
+      .references(() => feedDrafts.id, { onDelete: "cascade" }),
+    locale: locale("locale").notNull(),
+    /** Nullable while drafting; required to apply. */
+    title: text("title"),
+    excerpt: text("excerpt"),
+    description: text("description"),
+    summary: text("summary"),
+    content: text("content"),
+    ...timestamps,
+  },
+  (table) => [primaryKey({ columns: [table.draftId, table.locale] })]
+);
+
+export const FEED_DRAFT_AUTHOR = {
+  Operator: "operator",
+  Agent: "agent",
+} as const;
+
+export type FeedDraftAuthor =
+  (typeof FEED_DRAFT_AUTHOR)[keyof typeof FEED_DRAFT_AUTHOR];
+
+/** Which fields one revision touched; `locale` is absent for feed-level fields. */
+export interface FeedDraftChange {
+  locale?: Locale;
+  fields: string[];
+}
+
+export interface FeedDraftTranslationSnapshot {
+  title: string | null;
+  excerpt: string | null;
+  description: string | null;
+  summary: string | null;
+  content: string | null;
+}
+
+/** The editable half of a draft, as stored on a revision and restored from it. */
+export interface FeedDraftSnapshot {
+  slug: string | null;
+  type: FeedType;
+  defaultLocale: Locale;
+  mainImage: string | null;
+  translations: Partial<Record<Locale, FeedDraftTranslationSnapshot>>;
+}
+
+/**
+ * Restore points and the change trail the agent reads to learn what the operator edited.
+ * Consecutive operator saves coalesce into one row; the table is capped per draft.
+ */
+export const feedDraftRevisions = pgTable(
+  "feed_draft_revision",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    draftId: integer("draft_id")
+      .notNull()
+      .references(() => feedDrafts.id, { onDelete: "cascade" }),
+    /** `feed_draft.revision` after this write. */
+    revision: integer("revision").notNull(),
+    author: text("author").$type<FeedDraftAuthor>().notNull(),
+    /** The writing session that made an `agent` revision. */
+    sessionId: text("session_id"),
+    changes: jsonb("changes").$type<FeedDraftChange[]>().notNull().default([]),
+    /** The whole draft after this write, so restore is a replace. */
+    snapshot: jsonb("snapshot").$type<FeedDraftSnapshot>().notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("feed_draft_revision_draft_revision_idx").on(
+      table.draftId,
+      table.revision
+    ),
   ]
 );
 
@@ -160,5 +271,10 @@ export const feedsToTags = pgTable(
 export type Asset = InferSelectModel<typeof assets>;
 export type Feed = InferSelectModel<typeof feeds>;
 export type FeedTranslation = InferSelectModel<typeof feedTranslations>;
+export type FeedDraft = InferSelectModel<typeof feedDrafts>;
+export type FeedDraftTranslation = InferSelectModel<
+  typeof feedDraftTranslations
+>;
+export type FeedDraftRevision = InferSelectModel<typeof feedDraftRevisions>;
 export type Tag = InferSelectModel<typeof tags>;
 export type TagTranslation = InferSelectModel<typeof tagTranslations>;

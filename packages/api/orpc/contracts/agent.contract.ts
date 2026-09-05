@@ -2,8 +2,8 @@ import { asyncIteratorObject, oc } from "@orpc/contract";
 import * as z from "zod";
 
 import { agentWireEventSchema } from "@chia/agent-runtime/wire/schema";
-import { locale } from "@chia/db/schema/enums";
 
+import { feedDraftSchema } from "./feeds.contract";
 import { withMetaSchema } from "./shared";
 
 /** Kind-specific fields stay optional; the runtime selected by `agent.session.kind` owns their validation. */
@@ -77,41 +77,24 @@ export const agentModelRefSchema = z.object({
   modelId: z.string().min(1),
 });
 
+/**
+ * What a prompt hands the agent beside the text. `type` is kind policy: the writing agent takes
+ * `draft`; a kind refuses what it cannot read.
+ */
+export const agentAttachmentInputSchema = z.object({
+  type: z.string().min(1),
+  id: z.number().int(),
+});
+
 export const agentSessionSummarySchema = z.object({
   id: z.string(),
   title: z.string().nullable(),
   kind: z.string(),
   modelId: z.string().nullable().optional(),
   thinkingLevel: thinkingLevelSchema.nullable().optional(),
-  /** Writing-agent extension retained for the current dashboard. Other kinds omit it. */
-  targetFeedId: z.number().nullable().optional(),
   forkedFromSessionId: z.string().nullable().optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
-});
-
-const draftTranslationSchema = z.object({
-  title: z.string().optional(),
-  excerpt: z.string().nullish(),
-  description: z.string().nullish(),
-  summary: z.string().nullish(),
-  content: z.string().optional(),
-});
-
-export const agentDraftSchema = z.object({
-  feedMeta: z.object({
-    slug: z.string().optional(),
-    type: z.string().optional(),
-    contentType: z.string().optional(),
-    defaultLocale: z.enum(locale.enumValues).optional(),
-    mainImage: z.string().nullish(),
-    tagSlugs: z.array(z.string()).optional(),
-  }),
-  translations: z.partialRecord(
-    z.enum(locale.enumValues),
-    draftTranslationSchema
-  ),
-  committedFeedId: z.number().optional(),
 });
 
 export const agentSessionDetailSchema = z.object({
@@ -131,8 +114,8 @@ export const agentSessionDetailSchema = z.object({
   configVersion: z.number().int().positive().optional(),
   /** Optional runtime-owned state for kinds that do not have a dedicated public contract yet. */
   state: z.unknown().optional(),
-  /** Writing-agent state. Other kinds expose their own state contract. */
-  draft: agentDraftSchema.optional(),
+  /** Writing-agent state: the shared drafts this session has worked on, most recent first. */
+  drafts: z.array(feedDraftSchema).optional(),
   /**
    * Live durable run, or `null`. `running` is a turn executing; `waiting` is parked on a
    * message or approval hook.
@@ -201,8 +184,6 @@ export const createAgentSessionContract = oc
       /** Agent kind is required because creation has no stored session to dispatch from. */
       kind: z.string().min(1),
       title: z.string().max(200).optional(),
-      /** Seeds the draft buffer from this post so the agent edits rather than starts fresh. */
-      targetFeedId: z.number().int().optional(),
       model: agentModelRefSchema.optional(),
       thinkingLevel: thinkingLevelSchema.optional(),
       autoApprove: z.array(toolTierSchema).optional(),
@@ -275,12 +256,15 @@ export const chatAgentContract = oc
         z.object({
           type: z.literal("prompt"),
           text: z.string().min(1),
+          /** Records the kind validates and hands the model beside the text, e.g. a draft. */
+          attachments: z.array(agentAttachmentInputSchema).max(4).optional(),
         }),
         z.object({
           type: z.literal("command"),
           name: z.string().min(1).max(100),
           args: z.array(z.string()).max(32),
           text: z.string().min(1),
+          attachments: z.array(agentAttachmentInputSchema).max(4).optional(),
         }),
         z.object({
           type: z.literal("approve"),
@@ -454,4 +438,4 @@ export const listAgentCapabilitiesContract = oc
 export type AgentModelInfo = z.infer<typeof agentModelInfoSchema>;
 export type AgentSessionDetail = z.infer<typeof agentSessionDetailSchema>;
 export type AgentSessionSummary = z.infer<typeof agentSessionSummarySchema>;
-export type AgentDraftPayload = z.infer<typeof agentDraftSchema>;
+export type AgentDraftPayload = z.infer<typeof feedDraftSchema>;

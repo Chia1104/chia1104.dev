@@ -19,6 +19,7 @@ import type { SessionTree } from "../session/tree.ts";
 import { bindToolContext, resolveToolContext } from "../tools.ts";
 import type { ToolContextSource } from "../tools.ts";
 import type {
+  AgentAttachment,
   AgentPolicy,
   AgentSessionSettings,
   AgentTool,
@@ -85,6 +86,13 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   approvedToolCallIds?: ReadonlySet<string>;
   preAuthorizedToolNames?: ReadonlySet<string>;
   message: AgentTurnMessage;
+  /**
+   * Turns the message's attachments into the text block the model reads ahead of the
+   * operator's words, and labels them for clients. Required when a message carries any.
+   */
+  renderAttachments?: (
+    attachments: readonly AgentAttachment[]
+  ) => Promise<RenderedAttachments>;
   onEvent: (event: AgentWireEvent) => void;
   toApproval: (request: ApprovalRequest) => TApproval;
   /** Persists the whole batch atomically, or rejects without leaving partial rows. */
@@ -94,9 +102,24 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   onUsage?: AgentUsageListener;
 }
 
+export interface RenderedAttachments {
+  text: string;
+  attachments: AgentAttachment[];
+}
+
 const volatileMessage = (text: string): AgentMessage => ({
   role: "user",
   content: [{ type: "text", text }],
+  timestamp: Date.now(),
+});
+
+/** The operator's message as persisted: rendered attachments first, their own words last. */
+const attachedPrompt = (rendered: string, text: string): AgentMessage => ({
+  role: "user",
+  content: [
+    { type: "text", text: rendered },
+    { type: "text", text },
+  ],
   timestamp: Date.now(),
 });
 
@@ -139,6 +162,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   approvedToolCallIds,
   preAuthorizedToolNames,
   message,
+  renderAttachments,
   onEvent,
   toApproval,
   persistApprovals,
@@ -218,6 +242,29 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       budget.maxDurationMs
     );
     unsubscribers.push(() => clearTimeout(deadline));
+
+    /**
+     * Rendered before the model runs and persisted with the user message, so the transcript
+     * carries what the model was shown. A render failure fails the turn as `internal`: the
+     * model must not act on a message whose attachments it cannot see.
+     */
+    let rendered: RenderedAttachments | undefined;
+    if (message.attachments && message.attachments.length > 0) {
+      try {
+        if (!renderAttachments) {
+          throw new Error("This agent kind does not accept attachments.");
+        }
+        rendered = await renderAttachments(message.attachments);
+      } catch (error) {
+        failTurn(
+          {
+            kind: "internal",
+            message: "The message's attachments could not be rendered.",
+          },
+          error
+        );
+      }
+    }
 
     let revision = 0;
     agent = new Agent({
@@ -315,6 +362,9 @@ export const runPiTurn = async <TContext extends object, TApproval>({
             timestamp: Date.now(),
             message: event.message,
           };
+          if (rendered && event.message.role === "user") {
+            entry.attachments = rendered.attachments;
+          }
           reservedEntryId = undefined;
           try {
             await session.appendEntry(entry);
@@ -371,6 +421,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       type: "user",
       messageId: userEntryId,
       text: message.text,
+      attachments: rendered?.attachments,
       at: Date.now(),
       origin: message.decision ? "operator-decision" : undefined,
     });
@@ -381,7 +432,13 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     let aborted = signal?.aborted ?? false;
     if (!aborted) {
       try {
-        await agent.prompt(promptText(message, promptTemplates));
+        const text = promptText(message, promptTemplates);
+        // A host failure raised before the run (unrenderable attachments) skips the model.
+        if (!hostFailure) {
+          await (rendered
+            ? agent.prompt(attachedPrompt(rendered.text, text))
+            : agent.prompt(text));
+        }
         // Pi resolves provider failures as an assistant message rather than throwing: `error`
         // carries the provider's text (post-retry), `aborted` means the run's controller fired.
         if (hostFailure) failure = hostFailure;

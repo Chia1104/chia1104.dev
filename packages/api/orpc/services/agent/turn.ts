@@ -93,9 +93,26 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         }
         await assertCanStartTurn(tx, caller);
 
+        // Admitted before the turn is queued, so a bad attachment fails this request rather
+        // than the turn.
+        if (input.attachments && input.attachments.length > 0) {
+          if (!definition.state.attach) {
+            throw new AppError("BAD_REQUEST", {
+              message: `Agent kind "${definition.kind}" takes no attachments.`,
+            });
+          }
+          await definition.state.attach(
+            caller,
+            tx,
+            input.sessionId,
+            input.attachments
+          );
+        }
+
         const message = {
           text: input.text,
           template: input.template,
+          attachments: input.attachments,
           preAuthorizeToolNames: input.preAuthorizeToolNames,
           credentials: host.credentials.read(caller.context.headers),
         };

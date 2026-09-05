@@ -6,6 +6,7 @@ import { agentFactory } from "../agents/factory";
 import { env } from "../env";
 import { workflowControl } from "../repos/workflow-control.repo";
 import { memoryHooks } from "../services/agent-memory-indexing.service";
+import { feedDraftBus } from "../services/feed-draft-bus.service";
 import { feedHooks } from "../services/feed-indexing.service";
 
 /** Guard config from env; built once and reused on every request. */
@@ -43,4 +44,5 @@ export const createORPCContext = (c: Context<HonoContext>): BaseOSContext => ({
   },
   workflow: workflowControl,
   agentFactory,
+  draftBus: feedDraftBus,
 });

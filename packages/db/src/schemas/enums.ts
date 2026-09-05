@@ -7,19 +7,5 @@ export type Role = InferEnum<typeof roles>;
 export const feedType = pgEnum("feed_type", ["post", "note"]);
 export type FeedType = InferEnum<typeof feedType>;
 
-export const contentType = pgEnum("content_type", [
-  /**
-   * @default
-   */
-  "mdx",
-  /**
-   * @todo
-   */
-  "notion",
-  "tiptap",
-  "plate",
-]);
-export type ContentType = InferEnum<typeof contentType>;
-
 export const locale = pgEnum("locale", ["en", "zh-TW"]);
 export type Locale = InferEnum<typeof locale>;

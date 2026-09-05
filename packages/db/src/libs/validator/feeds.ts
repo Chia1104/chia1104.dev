@@ -79,30 +79,10 @@ export type UpdateFeedTranslationDTO = z.infer<
   typeof updateFeedTranslationSchema
 >;
 
-/** Body columns on `feed_translation`; a separate schema because callers write the body independently of metadata. */
-const contentColumns = {
-  content: true,
-  source: true,
-  unstableSerializedSource: true,
-} as const;
-
-export const insertContentSchema =
-  createInsertSchema(feedTranslations).pick(contentColumns);
-
-export const updateContentSchema =
-  createUpdateSchema(feedTranslations).pick(contentColumns);
-
-export type InsertContentDTO = z.infer<typeof insertContentSchema>;
-export type UpdateContentDTO = z.infer<typeof updateContentSchema>;
-
 export const feedSchema = createSelectSchema(feeds).extend(internalDateFields);
 
 export const feedTranslationSchema =
   createSelectSchema(feedTranslations).extend(internalDateFields);
 
-export const contentSchema =
-  createSelectSchema(feedTranslations).pick(contentColumns);
-
 export type FeedDTO = z.infer<typeof feedSchema>;
 export type FeedTranslationDTO = z.infer<typeof feedTranslationSchema>;
-export type ContentDTO = z.infer<typeof contentSchema>;

@@ -29,6 +29,8 @@ import { createFakeContentPort, createFakeWebPort } from "./fixtures.ts";
 import type { FakeContentPort, FakeWebPort } from "./fixtures.ts";
 
 const SESSION_ID = "session-1";
+/** The one draft every fixture session works on. */
+const DRAFT_ID = 1;
 
 interface Fixture {
   events: AgentWireEvent[];
@@ -44,6 +46,7 @@ interface Fixture {
     options?: {
       signal?: AbortSignal;
       onEvent?: (event: AgentWireEvent) => void;
+      attachments?: { type: string; id: number }[];
     }
   ) => Promise<AgentTurnExecution<ApprovalRequest>>;
 }
@@ -77,7 +80,6 @@ const build = async (
         feedId: 1,
         slug: "existing-post",
         type: "post",
-        contentType: "mdx",
         published: true,
         defaultLocale: "en",
         translations: [
@@ -93,7 +95,7 @@ const build = async (
     tags: [{ slug: "typescript", names: { en: "TypeScript" } }],
   });
   const web = createFakeWebPort();
-  const draft = new InMemoryDraftStore();
+  const draft = new InMemoryDraftStore([{ id: DRAFT_ID }]);
   const memory = new InMemoryMemoryPort(SESSION_ID);
   const events: AgentWireEvent[] = [];
 
@@ -121,8 +123,9 @@ const build = async (
         content,
         web,
         draft,
+        sessionDrafts: [{ draftId: DRAFT_ID, lastSeenRevision: 0 }],
         memory,
-        message: { text },
+        message: { text, attachments: options?.attachments },
         onEvent: (event) => {
           events.push(event);
           options?.onEvent?.(event);
@@ -255,6 +258,22 @@ describe("runWritingTurn", () => {
     });
   });
 
+  it("leaves unrelated drafts unobserved when chatting and listing drafts", async () => {
+    fixture.draft.seed({ id: 2, revision: 8 });
+    fixture.setResponses([fauxAssistantMessage("Hello.")]);
+    await fixture.run("Hi");
+    expect(fixture.draft.observedRevisions.has(2)).toBe(false);
+
+    fixture.setResponses([
+      fauxAssistantMessage([fauxToolCall(TOOL_NAMES.listDrafts, {})], {
+        stopReason: "toolUse",
+      }),
+      fauxAssistantMessage("Here are the drafts."),
+    ]);
+    await fixture.run("List the open drafts");
+    expect(fixture.draft.observedRevisions.has(2)).toBe(false);
+  });
+
   it("runs a turn against the provider the settings name", async () => {
     const native = await build({
       providerId: "openai",
@@ -275,6 +294,7 @@ describe("runWritingTurn", () => {
       fauxAssistantMessage(
         [
           fauxToolCall(TOOL_NAMES.writeDraftContent, {
+            draftId: DRAFT_ID,
             locale: "en",
             content: "## Hello\n\nSome body text.",
           }),
@@ -286,7 +306,7 @@ describe("runWritingTurn", () => {
 
     await fixture.run("Draft something");
 
-    const draft = await fixture.draft.get(SESSION_ID);
+    const draft = await fixture.draft.get(DRAFT_ID);
     expect(draft.translations.en?.content).toBe("## Hello\n\nSome body text.");
     expect(fixture.content.commits).toHaveLength(0);
 
@@ -299,10 +319,12 @@ describe("runWritingTurn", () => {
       fauxAssistantMessage(
         [
           fauxToolCall(TOOL_NAMES.writeDraftContent, {
+            draftId: DRAFT_ID,
             locale: "en",
             content: "## Post\n\nBody.",
           }),
           fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+            draftId: DRAFT_ID,
             locale: "en",
             title: "A post",
             slug: "a-post",
@@ -313,6 +335,7 @@ describe("runWritingTurn", () => {
       fauxAssistantMessage(
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
+            draftId: DRAFT_ID,
             confirmation: "Committing the English post.",
           }),
         ],
@@ -346,10 +369,12 @@ describe("runWritingTurn", () => {
       fauxAssistantMessage(
         [
           fauxToolCall(TOOL_NAMES.writeDraftContent, {
+            draftId: DRAFT_ID,
             locale: "en",
             content: "## Post\n\nBody.",
           }),
           fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+            draftId: DRAFT_ID,
             locale: "en",
             title: "A post",
             slug: "a-post",
@@ -361,6 +386,7 @@ describe("runWritingTurn", () => {
       fauxAssistantMessage(
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
+            draftId: DRAFT_ID,
             confirmation: "Committing the English post.",
           }),
         ],
@@ -372,8 +398,9 @@ describe("runWritingTurn", () => {
     await approved.run("Write and commit a post");
 
     expect(approved.content.commits).toHaveLength(1);
-    expect(approved.content.commits[0]).toMatchObject({
-      feedMeta: { slug: "a-post", defaultLocale: "en" },
+    expect(await approved.draft.get(DRAFT_ID)).toMatchObject({
+      slug: "a-post",
+      defaultLocale: "en",
     });
     expect(approved.events.some((e) => e.type === "approval:request")).toBe(
       false
@@ -386,10 +413,12 @@ describe("runWritingTurn", () => {
       fauxAssistantMessage(
         [
           fauxToolCall(TOOL_NAMES.writeDraftContent, {
+            draftId: DRAFT_ID,
             locale: "en",
             content: "## Post\n\nBody.",
           }),
           fauxToolCall(TOOL_NAMES.commitDraft, {
+            draftId: DRAFT_ID,
             confirmation: "Committing.",
           }),
         ],
@@ -452,7 +481,7 @@ describe("runWritingTurn", () => {
   });
 
   it("sends the draft state as a volatile last message, not in the system prompt or transcript", async () => {
-    await fixture.draft.patchFeedMeta(SESSION_ID, { slug: "hello-world" });
+    await fixture.draft.patchFeedMeta(DRAFT_ID, { slug: "hello-world" });
     const seen: Context[] = [];
     fixture.setResponses([
       (context) => {
@@ -476,7 +505,7 @@ describe("runWritingTurn", () => {
       expect(last?.role).toBe("user");
       const text = JSON.stringify(last?.content);
       expect(text).toContain("# Current session");
-      expect(text).toContain("Draft slug: hello-world");
+      expect(text).toContain("slug hello-world");
       expect(text).toMatch(/Current time: \d{4}-\d{2}-\d{2}T/);
     }
     // Both requests share one system prompt: the cacheable prefix is stable across hops.
@@ -485,6 +514,38 @@ describe("runWritingTurn", () => {
     const persisted = JSON.stringify(await fixture.session.getBranch());
     expect(persisted).not.toContain("# Current session");
     expect(fixture.events.filter((e) => e.type === "user")).toHaveLength(1);
+  });
+
+  it("renders an attached draft ahead of the operator's words and labels it on the wire", async () => {
+    await fixture.draft.patchTranslation(DRAFT_ID, "zh-TW", {
+      title: "Hello world",
+    });
+    const seen: Context[] = [];
+    fixture.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("Reading it now.");
+      },
+    ]);
+
+    await fixture.run("Tighten the intro", {
+      attachments: [{ type: "draft", id: DRAFT_ID }],
+    });
+
+    const prompt = seen[0]?.messages.find((m) => m.role === "user");
+    const blocks = JSON.stringify(prompt?.content);
+    expect(blocks).toContain(`Draft #${DRAFT_ID} \\"Hello world\\"`);
+    expect(blocks).toContain("Tighten the intro");
+    expect(fixture.events.find((e) => e.type === "user")).toMatchObject({
+      text: "Tighten the intro",
+      attachments: [{ type: "draft", id: DRAFT_ID, label: "Hello world" }],
+    });
+    // The persisted entry carries the labelled attachments beside the two-block message.
+    const [entry] = await fixture.session.getBranch();
+    expect(entry).toMatchObject({
+      type: "message",
+      attachments: [{ type: "draft", id: DRAFT_ID, label: "Hello world" }],
+    });
   });
 
   it("reports a provider failure as a classified error instead of a silent done", async () => {

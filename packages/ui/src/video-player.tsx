@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 
 import { Button, Slider, Spinner } from "@heroui/react";
+import { useDebouncer } from "@tanstack/react-pacer";
 import {
   Maximize,
   Minimize,
@@ -20,6 +21,9 @@ export interface VideoPlayerProps {
   className?: string;
 }
 
+/** How long the controls stay after the pointer settles while playing. */
+const CONTROLS_HIDE_MS = 3000;
+
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
@@ -29,7 +33,6 @@ function formatTime(seconds: number): string {
 export const VideoPlayer = ({ src, poster, className }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -39,21 +42,14 @@ export const VideoPlayer = ({ src, poster, className }: VideoPlayerProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showControls, setShowControls] = useState(true);
 
-  const scheduleHide = useCallback(() => {
-    if (hideTimer.current) clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => setShowControls(false), 3000);
-  }, []);
+  const hide = useDebouncer(() => setShowControls(false), {
+    wait: CONTROLS_HIDE_MS,
+  });
 
   const revealControls = useCallback(() => {
     setShowControls(true);
-    scheduleHide();
-  }, [scheduleHide]);
-
-  useEffect(() => {
-    return () => {
-      if (hideTimer.current) clearTimeout(hideTimer.current);
-    };
-  }, []);
+    hide.maybeExecute();
+  }, [hide]);
 
   useEffect(() => {
     const onFullscreenChange = () =>
@@ -115,18 +111,18 @@ export const VideoPlayer = ({ src, poster, className }: VideoPlayerProps) => {
         className="w-full"
         onPlay={() => {
           setIsPlaying(true);
-          scheduleHide();
+          hide.maybeExecute();
         }}
         onPause={() => {
           setIsPlaying(false);
           setShowControls(true);
-          if (hideTimer.current) clearTimeout(hideTimer.current);
+          hide.cancel();
         }}
         onEnded={() => {
           setIsPlaying(false);
           setCurrentTime(0);
           setShowControls(true);
-          if (hideTimer.current) clearTimeout(hideTimer.current);
+          hide.cancel();
         }}
         onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime ?? 0)}
         onLoadedMetadata={() => {

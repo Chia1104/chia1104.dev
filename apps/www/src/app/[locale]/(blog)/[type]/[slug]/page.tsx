@@ -168,13 +168,9 @@ const Page = async ({
           </div>
         </header>
         <Content
-          content={getContentProps({
-            contentType: feed.contentType,
-            content: translation.content,
-          })}
+          content={getContentProps({ content: translation.content })}
           context={{
             updatedAt: feed.updatedAt,
-            type: feed.contentType,
             tocContents: {
               label: t("otp"),
               updated: t("last-updated"),

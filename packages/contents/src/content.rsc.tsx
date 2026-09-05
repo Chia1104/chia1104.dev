@@ -1,7 +1,6 @@
 import { DocsBody } from "fumadocs-ui/page";
 import type { MDXContent } from "mdx/types";
 
-import { ContentType } from "@chia/db/types";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import FeedContent from "./content";
@@ -27,23 +26,13 @@ export const Content = async (props: {
   context?: Partial<ContentContextProps>;
 }) => {
   const { content, ...rest } = await props.content;
-
-  switch (rest.type) {
-    case ContentType.Mdx: {
-      if (props.context?.type !== ContentType.Mdx) {
-        throw new Error(`Content context must be for MDX, not ${rest.type}`);
-      }
-      return (
-        <FeedContent {...rest} {...props.context}>
-          <MDXBody
-            MDXContent={
-              /* SAFETY: The producer contract guarantees this value satisfies MDXContent. */ content as MDXContent
-            }
-          />
-        </FeedContent>
-      );
-    }
-    default:
-      return null;
-  }
+  return (
+    <FeedContent {...rest} {...props.context}>
+      <MDXBody
+        MDXContent={
+          /* SAFETY: `compileMDX` returns the compiled MDX body component. */ content as MDXContent
+        }
+      />
+    </FeedContent>
+  );
 };

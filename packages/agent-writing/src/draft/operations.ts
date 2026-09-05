@@ -1,20 +1,29 @@
 import type { Locale } from "@chia/db/types";
-import { mergeDefined } from "@chia/utils/object";
+import { mergeDefined, omitUndefined } from "@chia/utils/object";
 
-import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
+import type {
+  DraftFeedMeta,
+  DraftTranslation,
+  FeedDraft,
+  FeedDraftSummary,
+} from "../types.ts";
 
-export const emptyDraft = (): FeedDraft => ({
-  feedMeta: {},
+export const emptyDraft = (overrides: Partial<FeedDraft> = {}): FeedDraft => ({
+  id: 0,
+  feedId: null,
+  revision: 1,
+  slug: null,
+  type: "post",
+  defaultLocale: "zh-TW",
+  mainImage: null,
   translations: {},
+  ...overrides,
 });
 
 export const patchFeedMeta = (
   draft: FeedDraft,
   patch: DraftFeedMeta
-): FeedDraft => ({
-  ...draft,
-  feedMeta: mergeDefined(draft.feedMeta, patch),
-});
+): FeedDraft => ({ ...draft, ...omitUndefined(patch) });
 
 export const patchTranslation = (
   draft: FeedDraft,
@@ -28,11 +37,52 @@ export const patchTranslation = (
   },
 });
 
-export const setContent = (
+/** The default locale's title, else the first locale that has one. */
+export const draftTitle = (draft: FeedDraft): string | null => {
+  const preferred = draft.translations[draft.defaultLocale]?.title;
+  if (preferred) return preferred;
+  for (const translation of Object.values(draft.translations)) {
+    if (translation.title) return translation.title;
+  }
+  return null;
+};
+
+export const draftSummary = (
   draft: FeedDraft,
-  locale: Locale,
-  content: string
-): FeedDraft => patchTranslation(draft, locale, { content });
+  updatedAt: Date
+): FeedDraftSummary => ({
+  id: draft.id,
+  feedId: draft.feedId,
+  revision: draft.revision,
+  slug: draft.slug,
+  type: draft.type,
+  defaultLocale: draft.defaultLocale,
+  title: draftTitle(draft),
+  // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
+  locales: Object.keys(draft.translations) as Locale[],
+  updatedAt: updatedAt.toISOString(),
+});
+
+export class DraftNotFoundError extends Error {
+  constructor(readonly draftId: number) {
+    super(
+      `Draft ${draftId} does not exist or was discarded. Call list_drafts to see what is open.`
+    );
+    this.name = "DraftNotFoundError";
+  }
+}
+
+export class DraftConflictError extends Error {
+  constructor(
+    readonly expectedRevision: number,
+    readonly currentRevision: number
+  ) {
+    super(
+      `The draft is at revision ${currentRevision}, not ${expectedRevision}: someone else changed it. Read it again before writing.`
+    );
+    this.name = "DraftConflictError";
+  }
+}
 
 export class EditNotAppliedError extends Error {
   constructor(

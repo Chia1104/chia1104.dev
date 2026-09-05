@@ -13,15 +13,10 @@ import {
   TOCEmpty,
 } from "fumadocs-ui/components/toc/clerk";
 
-import { ContentType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
 
 import { ContentContext, useContent } from "./content.context";
-import type {
-  BaseProps,
-  BasePropsWithType,
-  ContentContextProps,
-} from "./types";
+import type { BaseProps, ContentContextProps } from "./types";
 
 const ContentProvider = ({
   children,
@@ -32,15 +27,12 @@ const ContentProvider = ({
 
 const MDXInlineTOC = () => {
   const content = useContent();
-  if (content.type === ContentType.Mdx) {
-    return (
-      <InlineTOC
-        items={content.toc}
-        className="bg-surface rounded-2xl border-none"
-      />
-    );
-  }
-  return null;
+  return (
+    <InlineTOC
+      items={content.toc}
+      className="bg-surface rounded-2xl border-none"
+    />
+  );
 };
 
 const TOCItems = () => {
@@ -63,7 +55,6 @@ const ContentTOC = () => {
   const content = useContent();
   const contentRef = useRef<HTMLDivElement>(null);
 
-  if (content.type !== ContentType.Mdx) return null;
   return (
     <TOCProvider toc={content.toc}>
       <ScrollShadow
@@ -78,14 +69,6 @@ const ContentTOC = () => {
       </ScrollShadow>
     </TOCProvider>
   );
-};
-
-const MDXTableOfContents = () => {
-  const content = useContent();
-  if (content.type === ContentType.Mdx) {
-    return <ContentTOC />;
-  }
-  return null;
 };
 
 const MdxContent = (props: BaseProps) => {
@@ -106,7 +89,7 @@ const MdxContent = (props: BaseProps) => {
               {content.tocContents?.label ?? "On this page"}
             </Card.Header>
             <Card.Content className="gap-1 pt-0 pl-0">
-              <MDXTableOfContents />
+              <ContentTOC />
             </Card.Content>
             {props.updatedAt || props.slot?.tocFooter ? (
               <Card.Footer className="flex flex-col">
@@ -133,20 +116,10 @@ const MdxContent = (props: BaseProps) => {
   );
 };
 
-const Content = ({ type, ...props }: BasePropsWithType) => {
-  switch (type) {
-    case "mdx": {
-      return <MdxContent {...props} />;
-    }
-    default:
-      return null;
-  }
-};
-
 const Index = (props: ContentContextProps) => {
   return (
     <ContentProvider {...props}>
-      <Content {...props} />
+      <MdxContent {...props} />
     </ContentProvider>
   );
 };

@@ -3,7 +3,8 @@ import type { Skill } from "@earendil-works/pi-agent-core";
 import type { ToolTier } from "@chia/agent-runtime/types";
 import type { Locale } from "@chia/db/types";
 
-import type { FeedDraft, MemorySummary } from "../types.ts";
+import { draftTitle } from "../draft/operations.ts";
+import type { DraftChange, FeedDraft, MemorySummary } from "../types.ts";
 
 /**
  * Prompt assembly split by churn: `buildSystemPrompt` is the cached prefix for a session;
@@ -21,9 +22,18 @@ export interface SystemPromptInput {
   instructions?: string;
 }
 
-export interface TurnContextInput {
+export interface TurnContextDraft {
   draft: FeedDraft;
-  targetFeedId?: number;
+  /**
+   * What the operator edited in the dashboard since the agent last looked. The draft is
+   * shared, so the model must re-read before editing anything listed here.
+   */
+  operatorChanges?: readonly DraftChange[];
+}
+
+export interface TurnContextInput {
+  /** Drafts this session has worked on, most recently touched first. */
+  drafts: readonly TurnContextDraft[];
   defaultLocale: Locale;
   now: Date;
   /** What this session has already saved, so the model neither repeats itself nor forgets the ids. */
@@ -67,22 +77,27 @@ initiative.
 
 # How work flows
 
-You never edit the live blog directly. You edit a **staging draft** attached to this
-conversation, and the operator promotes it when they are satisfied:
+You never edit the live blog directly. You edit **shared drafts** that the operator also
+edits in the dashboard editor, and the operator promotes a draft when they are satisfied:
 
-1. **Load the rules.** \`read_skill\` for every skill whose description matches the task —
+1. **Pick the draft.** Every draft tool takes a \`draftId\`. The operator usually attaches
+   the draft to their message, and the session context below lists the drafts this
+   conversation has worked on. Otherwise \`list_drafts\` shows what is open and
+   \`open_draft\` opens an existing post's draft or starts a new post. Never guess an id,
+   and never open a second draft for a post that already has one.
+2. **Load the rules.** \`read_skill\` for every skill whose description matches the task —
    \`mdx-authoring\` before any body, the locale's tone skill before any prose, \`seo-metadata\`
    before any title/excerpt/description/summary. The skills index below lists what exists; it
    is not the content.
-2. **Ground yourself.** \`search_posts\` before writing anything new — the worst outcome is a
+3. **Ground yourself.** \`search_posts\` before writing anything new — the worst outcome is a
    near-duplicate of an existing post. \`list_posts\` shows drafts in flight too. \`get_post\` to
    match established voice and structure; \`list_tags\` before proposing a new tag.
    \`search_memory\` once before researching: facts verified and pages read in earlier
    sessions are there, and a hit saves a search and a fetch.
-3. **Draft.** \`write_draft_content\` for a first version, \`edit_draft_content\` for revisions.
+4. **Draft.** \`write_draft_content\` for a first version, \`edit_draft_content\` for revisions.
    Set metadata with \`patch_draft_meta\`; its result echoes the merged fields, so trust it
    rather than re-reading.
-4. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
+5. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
    explicit approval every time.
 
 # Rules
@@ -97,7 +112,8 @@ conversation, and the operator promotes it when they are satisfied:
   API signature, a figure — \`save_memory\` it with the URL, so the next session does not
   re-research it. Record the conclusion, not the page.
 - **Read before editing.** \`edit_draft_content\` needs byte-exact \`oldString\`. Guessing wastes
-  a turn and risks matching the wrong place.
+  a turn and risks matching the wrong place. The operator may have edited a draft since your
+  last turn; the session context lists what they touched, per draft.
 - **Prefer editing to rewriting.** Once the operator has reviewed prose, replacing the whole
   body throws that review away. Make targeted edits.
 - **Match the existing voice.** This is one person's blog with a consistent register.
@@ -128,47 +144,64 @@ export const buildSystemPrompt = (input: SystemPromptInput): string => {
   return sections.join("\n\n");
 };
 
+const draftLines = ({ draft, operatorChanges }: TurnContextDraft): string[] => {
+  // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
+  const locales = Object.keys(draft.translations) as Locale[];
+  const title = draftTitle(draft);
+  const lines = [
+    `  - Draft #${draft.id}${title ? ` "${oneLine(title, MEMORY_TITLE_MAX_CHARS)}"` : ""}: ` +
+      `${draft.feedId === null ? "new post, not yet committed" : `feed ${draft.feedId}`}, ` +
+      `revision ${draft.revision}, slug ${draft.slug ?? "(not set)"}, type ${draft.type}, ` +
+      `default locale ${draft.defaultLocale}`,
+  ];
+  if (locales.length === 0) {
+    lines.push("    - no locales yet — the draft is empty");
+  }
+  for (const locale of locales) {
+    const translation = draft.translations[locale];
+    const body = translation?.content ?? "";
+    const missing = (
+      ["title", "excerpt", "description", "summary"] as const
+    ).filter((field) => !translation?.[field]);
+    lines.push(
+      `    - ${locale}: ${body.length === 0 ? "no body" : `${body.split("\n").length} lines`}` +
+        (missing.length > 0
+          ? `, missing ${missing.join("/")}`
+          : ", metadata complete")
+    );
+  }
+  if (operatorChanges && operatorChanges.length > 0) {
+    lines.push(
+      "    - Operator edits since your last turn (read again before editing these): " +
+        operatorChanges
+          .map(
+            (change) =>
+              `${change.locale ? `${change.locale}: ` : "feed-level: "}${change.fields.join(", ")}`
+          )
+          .join("; ")
+    );
+  }
+  return lines;
+};
+
 /**
  * Inline draft state and clock so the model does not spend a tool round-trip to orient, and
  * has an anchor for "today".
  */
 export const buildTurnContext = (input: TurnContextInput): string => {
-  // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
-  const locales = Object.keys(input.draft.translations) as Locale[];
   const lines: string[] = ["# Current session"];
 
   lines.push(`- Current time: ${input.now.toISOString()} (UTC)`);
-  lines.push(
-    input.targetFeedId === undefined &&
-      input.draft.committedFeedId === undefined
-      ? "- Editing: a new post, not yet committed to the database."
-      : `- Editing: existing feed ${input.draft.committedFeedId ?? input.targetFeedId}.`
-  );
-
   lines.push(`- Site default locale: ${input.defaultLocale}`);
-  lines.push(
-    `- Draft default locale: ${input.draft.feedMeta.defaultLocale ?? "(not set)"}`
-  );
-  lines.push(`- Draft slug: ${input.draft.feedMeta.slug ?? "(not set)"}`);
-  lines.push(`- Draft type: ${input.draft.feedMeta.type ?? "(not set)"}`);
 
-  if (locales.length === 0) {
-    lines.push("- Draft locales: none — the draft is empty.");
+  if (input.drafts.length === 0) {
+    lines.push(
+      "- Drafts this conversation works on: none yet. Use the draft the operator attached, " +
+        "`list_drafts` to pick an open one, or `open_draft`."
+    );
   } else {
-    lines.push("- Draft locales:");
-    for (const locale of locales) {
-      const translation = input.draft.translations[locale];
-      const body = translation?.content ?? "";
-      const missing = (
-        ["title", "excerpt", "description", "summary"] as const
-      ).filter((field) => !translation?.[field]);
-      lines.push(
-        `  - ${locale}: ${body.length === 0 ? "no body" : `${body.split("\n").length} lines`}` +
-          (missing.length > 0
-            ? `, missing ${missing.join("/")}`
-            : ", metadata complete")
-      );
-    }
+    lines.push("- Drafts this conversation works on, most recent first:");
+    for (const entry of input.drafts) lines.push(...draftLines(entry));
   }
 
   if (input.sessionMemories && input.sessionMemories.length > 0) {

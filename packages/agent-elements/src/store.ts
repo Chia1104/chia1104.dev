@@ -11,6 +11,7 @@ import {
   foldEvents,
 } from "@chia/agent-runtime/wire/fold";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import { createQueryInvalidator } from "@chia/utils/query-client";
 
 import type { AgentLabels } from "./labels.ts";
 import { fill, mergeLabels } from "./labels.ts";
@@ -54,6 +55,16 @@ export interface AgentSessionState {
   failure: string | null;
 }
 
+/** What a prompt hands the agent beside the text; the kind decides what it accepts. */
+export interface AgentAttachmentInput {
+  type: string;
+  id: number;
+}
+
+export interface PromptOptions {
+  attachments?: readonly AgentAttachmentInput[];
+}
+
 export interface AgentSessionActions {
   /** Loads the server-owned transcript and rejoins a turn that is still running. */
   hydrate: () => Promise<void>;
@@ -61,7 +72,7 @@ export interface AgentSessionActions {
   replaceDetail: (detail: AgentSessionDetail) => void;
   seedComposer: (text: string) => void;
   /** Rejects when the request itself fails; stream failures land in `failure`. */
-  prompt: (text: string) => Promise<void>;
+  prompt: (text: string, options?: PromptOptions) => Promise<void>;
   command: (name: string, args: string[], text?: string) => Promise<void>;
   approve: (
     toolCallId: string,
@@ -91,7 +102,25 @@ export interface AgentSessionStoreOptions extends AgentSessionCallbacks {
   sessionId: string;
   kind?: string;
   labels?: Partial<AgentLabels>;
+  /** What the host has on screen, read as each prompt or command is sent. */
+  context?: () => readonly AgentAttachmentInput[];
 }
+
+/** Host context first, then the call's own; a record named twice goes once. */
+const attachmentsOf = (
+  context: readonly AgentAttachmentInput[],
+  own: readonly AgentAttachmentInput[] | undefined
+): AgentAttachmentInput[] | undefined => {
+  const seen = new Set<string>();
+  const merged: AgentAttachmentInput[] = [];
+  for (const item of [...context, ...(own ?? [])]) {
+    const key = `${item.type}:${item.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push({ type: item.type, id: item.id });
+  }
+  return merged.length > 0 ? merged : undefined;
+};
 
 /** Shortest gap between view commits while deltas stream (~two frames). */
 export const VIEW_FLUSH_MS = 32;
@@ -164,6 +193,7 @@ export const foldDetail = (detail: AgentSessionDetail): AgentViewState => {
 
 export const createAgentSessionStore = ({
   client,
+  context,
   kind,
   labels,
   onStateChanged,
@@ -186,7 +216,7 @@ export const createAgentSessionStore = ({
     const detailKey = agentQueryKeys.session(scoped);
 
     const fetchDetail = () =>
-      queryClient.fetchQuery({ ...detailQuery, staleTime: 0 });
+      queryClient.query({ ...detailQuery, staleTime: 0 });
 
     const sleep = (ms: number) =>
       new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -272,6 +302,7 @@ export const createAgentSessionStore = ({
         commitView();
       };
 
+      const refreshDetail = createQueryInvalidator(queryClient, detailKey);
       let ended = false;
       try {
         await consumeStream(
@@ -291,7 +322,7 @@ export const createAgentSessionStore = ({
             flushView();
             if (event.type === "state:changed") {
               // Kind state (a draft, …) rides on the detail; refresh it while the turn is going.
-              void queryClient.invalidateQueries({ queryKey: detailKey });
+              refreshDetail.request();
               onStateChanged?.(event);
             }
           },
@@ -302,6 +333,7 @@ export const createAgentSessionStore = ({
           set({ failure: failureOf(cause, get().labels) });
         }
       } finally {
+        refreshDetail.dispose();
         flushView();
         if (controller === own) controller = null;
       }
@@ -395,12 +427,16 @@ export const createAgentSessionStore = ({
         }
       },
 
-      prompt: async (text) => {
+      prompt: async (text, options) => {
         set({ pendingPrompt: text, failure: null });
         try {
+          const attachments = attachmentsOf(
+            context?.() ?? [],
+            options?.attachments
+          );
           await run((signal) =>
             client.sessions.chat(
-              { ...scoped, action: { type: "prompt", text } },
+              { ...scoped, action: { type: "prompt", text, attachments } },
               { signal }
             )
           );
@@ -414,9 +450,13 @@ export const createAgentSessionStore = ({
         const text = displayText ?? formatSlashCommand(name, args);
         set({ pendingPrompt: text, failure: null });
         try {
+          const attachments = attachmentsOf(context?.() ?? [], undefined);
           await run((signal) =>
             client.sessions.chat(
-              { ...scoped, action: { type: "command", name, args, text } },
+              {
+                ...scoped,
+                action: { type: "command", name, args, text, attachments },
+              },
               { signal }
             )
           );

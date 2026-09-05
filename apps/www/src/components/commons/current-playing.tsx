@@ -13,6 +13,7 @@ import {
 
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
+import { useInterval } from "usehooks-ts";
 
 import {
   HoverCard,
@@ -48,6 +49,9 @@ interface Props extends ExtendsProps {
     typeof orpc.spotify.playing.queryOptions<CurrentPlayingResponse>
   >[0];
 }
+
+/** Local progress advances between polls; the next poll corrects any drift. */
+const PROGRESS_TICK_MS = 1000;
 
 const ProgressContext = createContext<
   [number, Dispatch<SetStateAction<number>>] | undefined
@@ -94,21 +98,18 @@ const useProgressTracking = (
     }
   }, [isPlaying, isFetching, isSuccess, progressMs, setProgress]);
 
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    const interval = setInterval(() => {
+  useInterval(
+    () => {
       setProgress((prev) => {
         if (prev < durationMs) {
-          return prev + 1000;
+          return prev + PROGRESS_TICK_MS;
         }
         void refetch();
         return 0;
       });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isPlaying, durationMs, refetch, setProgress]);
+    },
+    isPlaying ? PROGRESS_TICK_MS : null
+  );
 };
 
 const useImageColorExtraction = (

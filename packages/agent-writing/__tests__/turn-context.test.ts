@@ -4,10 +4,80 @@ import { emptyDraft } from "../src/draft/operations.ts";
 import { buildTurnContext } from "../src/prompts/system.ts";
 
 const base = {
-  draft: emptyDraft(),
+  drafts: [],
   defaultLocale: "zh-TW" as const,
   now: new Date("2026-08-27T00:00:00Z"),
 };
+
+describe("buildTurnContext drafts", () => {
+  it("tells a fresh session how to find a draft", () => {
+    const context = buildTurnContext(base);
+
+    expect(context).toContain("Drafts this conversation works on: none yet");
+    expect(context).toContain("`open_draft`");
+  });
+
+  it("describes each draft the session works on, with the id the tools take", () => {
+    const context = buildTurnContext({
+      ...base,
+      drafts: [
+        {
+          draft: emptyDraft({
+            id: 12,
+            feedId: 5,
+            revision: 7,
+            slug: "hello-world",
+            defaultLocale: "en",
+            translations: {
+              en: { title: "Hello", content: "a\nb\nc" },
+              "zh-TW": { content: null },
+            },
+          }),
+        },
+        { draft: emptyDraft({ id: 13 }) },
+      ],
+    });
+
+    expect(context).toContain(
+      '  - Draft #12 "Hello": feed 5, revision 7, slug hello-world, type post, default locale en'
+    );
+    expect(context).toContain(
+      "    - en: 3 lines, missing excerpt/description/summary"
+    );
+    expect(context).toContain(
+      "    - zh-TW: no body, missing title/excerpt/description/summary"
+    );
+    expect(context).toContain("  - Draft #13: new post, not yet committed");
+    expect(context).toContain("    - no locales yet");
+  });
+});
+
+describe("buildTurnContext operator edits", () => {
+  it("lists what the operator changed per draft so the model re-reads before editing", () => {
+    const context = buildTurnContext({
+      ...base,
+      drafts: [
+        {
+          draft: emptyDraft({ id: 1 }),
+          operatorChanges: [
+            { locale: "en", fields: ["content", "title"] },
+            { fields: ["slug"] },
+          ],
+        },
+      ],
+    });
+
+    expect(context).toContain(
+      "Operator edits since your last turn (read again before editing these): en: content, title; feed-level: slug"
+    );
+    expect(
+      buildTurnContext({
+        ...base,
+        drafts: [{ draft: emptyDraft({ id: 1 }), operatorChanges: [] }],
+      })
+    ).not.toContain("Operator edits");
+  });
+});
 
 describe("buildTurnContext memories", () => {
   it("omits the section when the session has saved nothing", () => {
