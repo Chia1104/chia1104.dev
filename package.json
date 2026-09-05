@@ -107,7 +107,7 @@
     "node": ">=22",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@12.1.0",
+  "packageManager": "pnpm@12.3.4",
   "manypkg": {
     "ignoredRules": [
       "ROOT_HAS_PROD_DEPENDENCIES"
