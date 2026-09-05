@@ -303,9 +303,6 @@ export const createAgentSessionStore = ({
       };
 
       const refreshDetail = createQueryInvalidator(queryClient, detailKey);
-      own.signal.addEventListener("abort", refreshDetail.dispose, {
-        once: true,
-      });
       let ended = false;
       try {
         await consumeStream(
@@ -337,7 +334,6 @@ export const createAgentSessionStore = ({
         }
       } finally {
         refreshDetail.dispose();
-        own.signal.removeEventListener("abort", refreshDetail.dispose);
         flushView();
         if (controller === own) controller = null;
       }

@@ -548,7 +548,6 @@ export const listFeedDraftRevisions = async (
     .orderBy(desc(feedDraftRevisions.revision))
     .limit(input.limit);
 
-/** Revisions above `afterRevision`, oldest first: what a watcher missed while away. */
 export const getFeedDraftRevision = async (
   db: DB,
   input: { draftId: number; revisionId: number }
