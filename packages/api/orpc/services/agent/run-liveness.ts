@@ -4,7 +4,10 @@ import {
 } from "@chia/agent-host/execution";
 import type { AgentTurnMarker } from "@chia/agent-host/execution";
 import type { DB } from "@chia/db/client";
-import { completeAgentRun, listRunningAgentRuns } from "@chia/db/repos/agent";
+import {
+  completeAgentRunIfUnbound,
+  listRunningAgentRuns,
+} from "@chia/db/repos/agent";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type { AgentRunHost } from "../agent.factory";
@@ -55,9 +58,9 @@ export const isRunLease = (row: AgentRunRef): boolean =>
 export const RUN_LEASE_TTL_MS = 60_000;
 
 /**
- * `running` is a turn step executing; `waiting` is parked on a message or approval hook;
- * `null` means no live run. The SDK's own status cannot tell the first two apart — a parked
- * run is `running` too — so the turn marker decides.
+ * `running` is a turn step executing; `waiting` is a live run whose turn has ended and whose
+ * row is about to be closed; `null` means no live run. The SDK's own status cannot tell the
+ * first two apart, so the turn marker decides.
  */
 export const runStateOf = async (
   runs: AgentRunHost,
@@ -101,7 +104,15 @@ export const reconcileRunningAgentTurns = async (
       turn: readAgentTurnMarker(row.metadata),
     });
     if (state?.status === "running") continue;
-    await completeAgentRun(db, row.id, "failed");
+    // Conditional on the id this verdict was read against: an executor that claimed the lease
+    // since bound its real run id, and that run is alive and must not be closed from here.
+    const wasClosed = await completeAgentRunIfUnbound(
+      db,
+      row.id,
+      row.externalRunId,
+      "failed"
+    );
+    if (!wasClosed) continue;
     // Like `completeAgentRunStep`: a dead run must not leave its controller parked until its TTL.
     const controller = readAgentAbortControllerRef(row.metadata);
     if (controller) await signalAgentAbort(workflow, controller.id, "run lost");

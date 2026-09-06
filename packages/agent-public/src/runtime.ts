@@ -32,6 +32,7 @@ export interface RunPublicTurnOptions<TApproval> {
   session: SessionTree;
   settings: AgentSessionSettings;
   agentSessionId: string;
+  agentRunId?: string;
   /** Built by the host with `public` visibility; the tools cannot widen it. */
   content: ContentReadPort;
   /** Published rows only; rendered into the system prompt once per turn. */
@@ -39,8 +40,8 @@ export interface RunPublicTurnOptions<TApproval> {
   instructions?: string;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
-  approvedToolCallIds?: ReadonlySet<string>;
-  preAuthorizedToolNames?: ReadonlySet<string>;
+  approvedApprovalKeys?: ReadonlySet<string>;
+  consumeApproval?: (key: string) => Promise<void>;
   signal?: AbortSignal;
   models?: Models;
   /** Keys the caller holds; must match how `models` was built. */
@@ -50,7 +51,7 @@ export interface RunPublicTurnOptions<TApproval> {
   compactionModel?: Model<Api>;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
-  persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
+  persistApproval: (approval: TApproval) => Promise<void>;
   flushEvents?: () => Promise<void>;
   onUsage?: AgentUsageListener;
 }
@@ -74,6 +75,7 @@ export const runPublicTurn = async <TApproval>(
 
   return runPiTurn({
     agentSessionId: options.agentSessionId,
+    agentRunId: options.agentRunId,
     session: options.session,
     settings: options.settings,
     model,
@@ -89,12 +91,12 @@ export const runPublicTurn = async <TApproval>(
     signal: options.signal,
     policy: publicPolicy,
     budget: publicTurnBudget,
-    approvedToolCallIds: options.approvedToolCallIds,
-    preAuthorizedToolNames: options.preAuthorizedToolNames,
+    approvedApprovalKeys: options.approvedApprovalKeys,
+    consumeApproval: options.consumeApproval,
     message: options.message,
     onEvent: options.onEvent,
     toApproval: options.toApproval,
-    persistApprovals: options.persistApprovals,
+    persistApproval: options.persistApproval,
     flushEvents: options.flushEvents,
     onUsage: options.onUsage,
   });

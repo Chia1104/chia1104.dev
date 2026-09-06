@@ -103,7 +103,6 @@ export interface AgentKindService {
       text: string;
       template?: { name: string; args?: string[] };
       attachments?: { type: string; id: number }[];
-      preAuthorizeToolNames?: string[];
     }
   ): Promise<AgentStreamCursor & { startedRun: boolean }>;
 

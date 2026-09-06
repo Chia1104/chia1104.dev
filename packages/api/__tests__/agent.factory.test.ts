@@ -17,7 +17,6 @@ const credentials = {
 };
 const runs = {
   get: vi.fn(),
-  hasHook: vi.fn(),
 };
 
 const factoryOf = (

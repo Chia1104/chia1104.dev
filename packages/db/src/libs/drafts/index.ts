@@ -138,6 +138,10 @@ const readDraft = async (
 
 export const getFeedDraft = (db: DB, draftId: number) => readDraft(db, draftId);
 
+/** The draft under `FOR UPDATE`, so a compare-and-set on its revision holds until the transaction ends. */
+export const getFeedDraftForUpdate = (tx: Tx, draftId: number) =>
+  readDraft(tx, draftId, true);
+
 /** State needed by watch streams, without translation bodies. */
 export const getFeedDraftStatus = async (db: DB, draftId: number) => {
   const [draft] = await db

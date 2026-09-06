@@ -13,6 +13,9 @@ import type {
   Models,
 } from "@earendil-works/pi-ai";
 
+import { stableStringify } from "@chia/utils/json";
+import type { JsonValue } from "@chia/utils/json";
+
 import { buildBranchContext } from "../session/context.ts";
 import type { MessageEntry, NewSessionEntry } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";
@@ -47,6 +50,8 @@ import { createPiTurnBudget } from "./turn-budget.ts";
 
 export interface RunPiTurnOptions<TContext extends object, TApproval> {
   agentSessionId: string;
+  /** The durable run this turn belongs to; logged beside failures so a stall can be traced. */
+  agentRunId?: string;
   session: SessionTree;
   settings: AgentSessionSettings;
   model: Model<Api>;
@@ -83,8 +88,15 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   policy: AgentPolicy;
   /** See {@link AgentTurnBudget}; crossing it ends the turn as `budget_exhausted`. */
   budget: AgentTurnBudget;
-  approvedToolCallIds?: ReadonlySet<string>;
-  preAuthorizedToolNames?: ReadonlySet<string>;
+  /**
+   * What an approval is granted for, as the tool gate defines it. Defaults to the tool name
+   * and its exact arguments.
+   */
+  approvalKeyOf?: (request: ToolCallRequest) => string | Promise<string>;
+  /** Approval keys the operator granted and no call has spent. */
+  approvedApprovalKeys?: ReadonlySet<string>;
+  /** Spends one of `approvedApprovalKeys` durably before the call runs. */
+  consumeApproval?: (key: string) => Promise<void>;
   message: AgentTurnMessage;
   /**
    * Turns the message's attachments into the text block the model reads ahead of the
@@ -95,8 +107,8 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   ) => Promise<RenderedAttachments>;
   onEvent: (event: AgentWireEvent) => void;
   toApproval: (request: ApprovalRequest) => TApproval;
-  /** Persists the whole batch atomically, or rejects without leaving partial rows. */
-  persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
+  /** Persists the request after a successful turn, or rejects without leaving a row. */
+  persistApproval: (approval: TApproval) => Promise<void>;
   flushEvents?: () => Promise<void>;
   /** Every provider call of the turn, its auto-compaction included; see {@link AgentUsageListener}. */
   onUsage?: AgentUsageListener;
@@ -112,6 +124,13 @@ const volatileMessage = (text: string): AgentMessage => ({
   content: [{ type: "text", text }],
   timestamp: Date.now(),
 });
+
+/** The tool and its exact arguments: an approval is good for that call and nothing else. */
+const defaultApprovalKey = (request: ToolCallRequest): string =>
+  `${request.toolName}:${stableStringify(
+    // SAFETY: tool arguments passed their registered TypeBox schema, so they are plain JSON.
+    (request.input ?? null) as JsonValue
+  )}`;
 
 /** The operator's message as persisted: rendered attachments first, their own words last. */
 const attachedPrompt = (rendered: string, text: string): AgentMessage => ({
@@ -146,6 +165,7 @@ const promptText = (
  */
 export const runPiTurn = async <TContext extends object, TApproval>({
   agentSessionId,
+  agentRunId,
   session,
   settings,
   model,
@@ -159,13 +179,14 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   promptTemplates = [],
   policy,
   budget,
-  approvedToolCallIds,
-  preAuthorizedToolNames,
+  approvalKeyOf = defaultApprovalKey,
+  approvedApprovalKeys,
+  consumeApproval,
   message,
   renderAttachments,
   onEvent,
   toApproval,
-  persistApprovals,
+  persistApproval,
   flushEvents,
   onUsage,
 }: RunPiTurnOptions<TContext, TApproval>): Promise<
@@ -206,8 +227,9 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     const gate = createPiToolCallGate({
       policy,
       autoApprove: settings.autoApprove,
-      approvedToolCallIds,
-      preAuthorizedToolNames,
+      approvalKeyOf,
+      approvedKeys: approvedApprovalKeys,
+      consumeApproval,
       // Announced at once so the approval card replaces the tool card while the model is still
       // writing its hand-back.
       onRequest: (request) =>
@@ -300,7 +322,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
           input: args,
         };
         try {
-          return turnBudget.handle(request) ?? gate.handle(request);
+          return turnBudget.handle(request) ?? (await gate.handle(request));
         } catch (error) {
           failTurn(errorOfThrown(error));
           return { block: true, reason: "This turn is being stopped." };
@@ -462,19 +484,19 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     // it.
     if (!failure && signal?.aborted) aborted = true;
 
-    let approvals: TApproval[] = [];
-    if (!failure && !aborted && gate.requests.length > 0) {
+    let approval: TApproval | undefined;
+    if (!failure && !aborted && gate.request) {
       try {
-        const pending = gate.requests.map(toApproval);
-        await persistApprovals(pending);
-        approvals = pending;
+        const pending = toApproval(gate.request);
+        await persistApproval(pending);
+        approval = pending;
       } catch (error) {
         failure = errorOfThrown(error);
         failureCause = error;
       }
     }
 
-    if (!failure && !aborted && approvals.length === 0) {
+    if (!failure && !aborted && approval === undefined) {
       try {
         const summariser = compactionModel ?? model;
         const compacted = await compactSessionIfNeeded(
@@ -497,6 +519,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       // The wire carries the kind alone; the detail and what threw stay in the log.
       console.error("Agent turn failed", {
         sessionId: agentSessionId,
+        runId: agentRunId,
         kind: failure.kind,
         message: failure.message,
         cause: failureCause,
@@ -508,13 +531,13 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       ? "error"
       : aborted
         ? "aborted"
-        : approvals.length > 0
+        : approval !== undefined
           ? "awaiting_approval"
           : "done";
 
     onEvent({ type: "run:end", reason: status });
 
-    return { status, approvals, error: failure };
+    return { status, approval, error: failure };
   } finally {
     try {
       for (const unsubscribe of unsubscribers) unsubscribe();

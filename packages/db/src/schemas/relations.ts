@@ -278,6 +278,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.agentToolApprovals.decidedBy,
       to: r.user.id,
     }),
+    relayRun: r.one.agentRuns({
+      from: r.agentToolApprovals.relayRunId,
+      to: r.agentRuns.id,
+    }),
   },
   agentMemories: {
     session: r.one.agentSessions({

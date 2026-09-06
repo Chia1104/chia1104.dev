@@ -6,7 +6,7 @@ import {
   fauxText,
   fauxToolCall,
 } from "@earendil-works/pi-ai/providers/faux";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
@@ -47,6 +47,8 @@ interface Fixture {
       signal?: AbortSignal;
       onEvent?: (event: AgentWireEvent) => void;
       attachments?: { type: string; id: number }[];
+      approvedApprovalKeys?: ReadonlySet<string>;
+      consumeApproval?: (key: string) => Promise<void>;
     }
   ) => Promise<AgentTurnExecution<ApprovalRequest>>;
 }
@@ -132,7 +134,9 @@ const build = async (
         },
         models,
         toApproval: (approval) => approval,
-        persistApprovals: async () => undefined,
+        persistApproval: async () => undefined,
+        approvedApprovalKeys: options?.approvedApprovalKeys,
+        consumeApproval: options?.consumeApproval,
         signal: options?.signal,
       }),
   };
@@ -347,9 +351,7 @@ describe("runWritingTurn", () => {
     const result = await fixture.run("Write and commit a post");
 
     expect(fixture.content.commits).toHaveLength(0);
-    expect(result.approvals.map((request) => request.toolName)).toEqual([
-      TOOL_NAMES.commitDraft,
-    ]);
+    expect(result.approval?.toolName).toBe(TOOL_NAMES.commitDraft);
 
     const request = fixture.events.find((e) => e.type === "approval:request");
     expect(request).toMatchObject({
@@ -404,6 +406,195 @@ describe("runWritingTurn", () => {
     });
     expect(approved.events.some((e) => e.type === "approval:request")).toBe(
       false
+    );
+  });
+
+  it("keys a commit approval to the draft revision the operator saw and spends it on the re-issued call", async () => {
+    fixture.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+            draftId: DRAFT_ID,
+            locale: "en",
+            content: "## Post\n\nBody.",
+          }),
+          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+            draftId: DRAFT_ID,
+            locale: "en",
+            title: "A post",
+            slug: "a-post",
+            defaultLocale: "en",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.commitDraft, {
+            draftId: DRAFT_ID,
+            confirmation: "Committing the English post.",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Waiting for your approval."),
+    ]);
+    const gated = await fixture.run("Write and commit a post");
+    const revision = (await fixture.draft.get(DRAFT_ID)).revision;
+    expect(gated.approval?.key).toBe(
+      `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${revision}`
+    );
+
+    // The relay turn re-issues the call under a new id; the key is what the approval matches.
+    const consumeApproval = vi.fn(async () => undefined);
+    fixture.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.commitDraft, {
+            draftId: DRAFT_ID,
+            confirmation: "Committing as approved.",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Committed."),
+    ]);
+    const relayed = await fixture.run("Approved.", {
+      approvedApprovalKeys: new Set([gated.approval!.key]),
+      consumeApproval,
+    });
+
+    expect(relayed.status).toBe("done");
+    expect(fixture.content.commits).toHaveLength(1);
+    expect(consumeApproval).toHaveBeenCalledExactlyOnceWith(
+      gated.approval!.key
+    );
+  });
+
+  it("commits the approved revision even when the editor saves between the gate and the apply", async () => {
+    fixture.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+            draftId: DRAFT_ID,
+            locale: "en",
+            title: "A post",
+            slug: "a-post",
+            defaultLocale: "en",
+          }),
+          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+            draftId: DRAFT_ID,
+            locale: "en",
+            content: "## Post\n\nBody.",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Staged."),
+    ]);
+    await fixture.run("Stage a post");
+    const approvedRevision = (await fixture.draft.get(DRAFT_ID)).revision;
+
+    // Reads in order: the volatile context, the gate's key, then the tool. The editor saves
+    // right after the gate read the revision it matched.
+    const store = fixture.draft;
+    const originalGet = store.get.bind(store);
+    let reads = 0;
+    store.get = async (draftId) => {
+      const draft = await originalGet(draftId);
+      reads += 1;
+      if (reads === 2) {
+        store.operatorEdit(DRAFT_ID, "en", { content: "## Post\n\nEdited." });
+      }
+      return draft;
+    };
+    fixture.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.commitDraft, {
+            draftId: DRAFT_ID,
+            confirmation: "Committing as approved.",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Committed."),
+    ]);
+    await fixture.run("Approved.", {
+      approvedApprovalKeys: new Set([
+        `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approvedRevision}`,
+      ]),
+      consumeApproval: async () => undefined,
+    });
+
+    // The apply is pinned to the approved revision, not the one the tool read afterwards;
+    // the apply service refuses it when the row no longer matches.
+    expect((await originalGet(DRAFT_ID)).revision).toBe(approvedRevision + 1);
+    expect(fixture.content.commits).toEqual([
+      { draftId: DRAFT_ID, expectedRevision: approvedRevision },
+    ]);
+  });
+
+  it("gates a commit again when the draft moved past the approved revision", async () => {
+    fixture.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+            draftId: DRAFT_ID,
+            locale: "en",
+            title: "A post",
+            slug: "a-post",
+            defaultLocale: "en",
+          }),
+          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+            draftId: DRAFT_ID,
+            locale: "en",
+            content: "## Post\n\nBody.",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Staged."),
+    ]);
+    await fixture.run("Stage a post");
+    const approvedRevision = (await fixture.draft.get(DRAFT_ID)).revision;
+
+    // The model "improves" the draft on its way back to the approved commit.
+    const consumeApproval = vi.fn(async () => undefined);
+    fixture.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+            draftId: DRAFT_ID,
+            locale: "en",
+            content: "## Post\n\nA body the operator never saw.",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.commitDraft, {
+            draftId: DRAFT_ID,
+            confirmation: "Committing.",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Waiting again."),
+    ]);
+    const result = await fixture.run("Approved.", {
+      approvedApprovalKeys: new Set([
+        `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approvedRevision}`,
+      ]),
+      consumeApproval,
+    });
+
+    expect(fixture.content.commits).toHaveLength(0);
+    expect(consumeApproval).not.toHaveBeenCalled();
+    expect(result.status).toBe("awaiting_approval");
+    expect(result.approval?.key).toBe(
+      `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approvedRevision + 1}`
     );
   });
 

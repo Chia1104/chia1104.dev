@@ -45,8 +45,14 @@ export type {
  * Carries no author id: the host builds this port for the configured author.
  */
 export interface ContentPort extends ContentReadPort {
-  /** Writes the shared draft onto the feed, creating an unpublished one the first time. */
-  applyDraft(input: { draftId: number }): Promise<CommitDraftResult>;
+  /**
+   * Writes the shared draft onto the feed, creating an unpublished one the first time. Applies
+   * exactly `expectedRevision`: a draft that moved since is refused, never committed unseen.
+   */
+  applyDraft(input: {
+    draftId: number;
+    expectedRevision: number;
+  }): Promise<CommitDraftResult>;
   setPublished(input: {
     feedId: number;
     published: boolean;

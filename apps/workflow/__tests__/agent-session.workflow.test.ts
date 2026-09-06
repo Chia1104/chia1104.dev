@@ -3,9 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   closeStreams: vi.fn(),
   completeRun: vi.fn(),
-  createApprovalHook: vi.fn(),
-  createMessageHook: vi.fn(),
-  getConflict: vi.fn(),
   runTurn: vi.fn(),
 }));
 
@@ -17,123 +14,169 @@ vi.mock("../src/steps/agent-turn.step", () => ({
 
 vi.mock("@chia/workflow-control/agent-hooks", async () => {
   const z = await import("zod");
+  const decision = z.object({
+    toolCallId: z.string(),
+    toolName: z.string(),
+    approved: z.boolean(),
+    comment: z.string().optional(),
+  });
   return {
-    AGENT_END_SENTINEL: "/end",
     agentAbortControllerRefSchema: z.object({
       id: z.string(),
       runId: z.string(),
     }),
-    agentAttachmentPayloadSchema: z.object({
-      type: z.string(),
-      id: z.number().int(),
-    }),
-    agentApprovalHook: { create: mocks.createApprovalHook },
-    agentApprovalToken: (sessionId: string, toolCallId: string) =>
-      `agent:approve:${sessionId}:${toolCallId}`,
-    agentMessageHook: { create: mocks.createMessageHook },
-    agentMessageToken: (sessionId: string) => `agent:msg:${sessionId}`,
-    encryptedAgentCredentialsSchema: z.object({
-      openai: z.string().optional(),
-      anthropic: z.string().optional(),
+    agentMessagePayloadSchema: z.object({
+      text: z.string(),
+      template: z
+        .object({ name: z.string(), args: z.array(z.string()).optional() })
+        .optional(),
+      attachments: z
+        .array(z.object({ type: z.string(), id: z.number().int() }))
+        .optional(),
+      decision: decision.optional(),
+      credentials: z
+        .object({
+          openai: z.string().optional(),
+          anthropic: z.string().optional(),
+        })
+        .optional(),
     }),
   };
 });
 
 import { agentSessionWorkflow } from "../src/workflows/agent-session.workflow";
 
-interface Message {
-  text: string;
-  template?: { name: string; args?: string[] };
-  credentials?: { openai?: string; anthropic?: string };
-}
-
-const messageHook = (queue: Message[]) => ({
-  getConflict: mocks.getConflict,
-  then<TResult1 = Message>(
-    onFulfilled?: ((value: Message) => TResult1 | PromiseLike<TResult1>) | null
-  ): PromiseLike<TResult1> {
-    const next = queue.shift();
-    if (!next) return Promise.reject(new Error("Message hook queue exhausted"));
-    return Promise.resolve(next).then(onFulfilled);
-  },
-});
+const abortController = { id: "abort-1", runId: "abort-run-1" };
 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.closeStreams.mockResolvedValue(undefined);
   mocks.completeRun.mockResolvedValue(undefined);
-  mocks.getConflict.mockResolvedValue(null);
-  mocks.runTurn.mockResolvedValue({
-    status: "done",
-    approvals: [],
-    error: undefined,
-  });
+  mocks.runTurn.mockResolvedValue({ status: "done", error: undefined });
 });
 
 describe("agentSessionWorkflow", () => {
-  it("registers its durable inbox before the first turn and drains queued turns in order", async () => {
-    mocks.createMessageHook.mockReturnValue(
-      messageHook([
-        {
+  it("runs exactly one turn, then closes the run row and its streams", async () => {
+    await expect(
+      agentSessionWorkflow({
+        sessionId: "session-1",
+        runId: "run-1",
+        userId: "user-1",
+        abortController,
+        message: {
           text: "/translate zh-TW",
           template: { name: "translate", args: ["zh-TW"] },
-          credentials: { openai: "rotated" },
+          attachments: [{ type: "draft", id: 7 }],
+          credentials: { anthropic: "initial" },
         },
-        { text: "/end" },
-      ])
+      })
+    ).resolves.toEqual({ sessionId: "session-1", status: "done" });
+
+    expect(mocks.runTurn).toHaveBeenCalledExactlyOnceWith({
+      sessionId: "session-1",
+      runId: "run-1",
+      userId: "user-1",
+      abortController,
+      text: "/translate zh-TW",
+      template: { name: "translate", args: ["zh-TW"] },
+      attachments: [{ type: "draft", id: 7 }],
+      decision: undefined,
+      credentials: { anthropic: "initial" },
+    });
+    expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
+      "run-1",
+      abortController,
+      "completed"
     );
+    expect(mocks.closeStreams).toHaveBeenCalledOnce();
+  });
+
+  it("ends the run when the turn stops on a gated call; the decision arrives as its own run", async () => {
+    mocks.runTurn.mockResolvedValue({
+      status: "awaiting_approval",
+      approval: {
+        toolCallId: "call-1",
+        toolName: "commit_draft",
+        approvalKey: "commit_draft:7@3",
+      },
+      error: undefined,
+    });
 
     await expect(
       agentSessionWorkflow({
         sessionId: "session-1",
         runId: "run-1",
         userId: "user-1",
-        abortController: { id: "abort-1", runId: "abort-run-1" },
-        firstMessage: {
-          text: "first",
-          credentials: { anthropic: "initial" },
-        },
+        abortController,
+        message: { text: "commit it" },
       })
-    ).resolves.toEqual({ sessionId: "session-1", turns: 2 });
-
-    expect(mocks.createMessageHook).toHaveBeenCalledWith({
-      token: "agent:msg:session-1",
-    });
-    expect(mocks.getConflict.mock.invocationCallOrder[0]).toBeLessThan(
-      mocks.runTurn.mock.invocationCallOrder[0]!
-    );
-    expect(mocks.runTurn).toHaveBeenNthCalledWith(1, {
-      sessionId: "session-1",
-      runId: "run-1",
-      userId: "user-1",
-      abortController: { id: "abort-1", runId: "abort-run-1" },
-      text: "first",
-      template: undefined,
-      attachments: undefined,
-      preAuthorizeToolNames: undefined,
-      credentials: { anthropic: "initial" },
-    });
-    expect(mocks.runTurn).toHaveBeenNthCalledWith(2, {
-      sessionId: "session-1",
-      runId: "run-1",
-      userId: "user-1",
-      abortController: { id: "abort-1", runId: "abort-run-1" },
-      text: "/translate zh-TW",
-      template: { name: "translate", args: ["zh-TW"] },
-      attachments: undefined,
-      preAuthorizeToolNames: undefined,
-      credentials: { openai: "rotated" },
-    });
+    ).resolves.toEqual({ sessionId: "session-1", status: "awaiting_approval" });
     expect(mocks.completeRun).toHaveBeenCalledWith(
       "run-1",
-      { id: "abort-1", runId: "abort-run-1" },
+      abortController,
       "completed"
     );
-    expect(mocks.closeStreams).toHaveBeenCalledOnce();
+
+    // The relay is a fresh run carrying the recorded decision; nothing is parked between.
+    await agentSessionWorkflow({
+      sessionId: "session-1",
+      runId: "run-2",
+      userId: "user-1",
+      abortController: { id: "abort-2", runId: "abort-run-2" },
+      message: {
+        text: "Operator decision: approved commit_draft",
+        decision: {
+          toolCallId: "call-1",
+          toolName: "commit_draft",
+          approved: true,
+          comment: "go",
+        },
+        credentials: { openai: "fresh" },
+      },
+    });
+
+    expect(mocks.runTurn).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        runId: "run-2",
+        decision: {
+          toolCallId: "call-1",
+          toolName: "commit_draft",
+          approved: true,
+          comment: "go",
+        },
+        credentials: { openai: "fresh" },
+      })
+    );
   });
 
-  it("marks the run failed and closes its streams when a turn step throws", async () => {
-    mocks.createMessageHook.mockReturnValue(messageHook([]));
+  it("records the turn's outcome on the run row: failed for an error, cancelled for an abort", async () => {
+    for (const [outcome, status] of [
+      ["error", "failed"],
+      ["aborted", "cancelled"],
+    ] as const) {
+      mocks.completeRun.mockClear();
+      mocks.runTurn.mockResolvedValueOnce({
+        status: outcome,
+        error: undefined,
+      });
+
+      await agentSessionWorkflow({
+        sessionId: "session-1",
+        runId: "run-1",
+        userId: "user-1",
+        abortController,
+        message: { text: "first" },
+      });
+
+      expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
+        "run-1",
+        abortController,
+        status
+      );
+    }
+  });
+
+  it("marks the run failed and closes its streams when the turn step throws", async () => {
     mocks.runTurn.mockRejectedValue(new Error("process died mid-step"));
 
     await expect(
@@ -141,40 +184,16 @@ describe("agentSessionWorkflow", () => {
         sessionId: "session-1",
         runId: "run-1",
         userId: "user-1",
-        abortController: { id: "abort-1", runId: "abort-run-1" },
-        firstMessage: { text: "first" },
+        abortController,
+        message: { text: "first" },
       })
     ).rejects.toThrow("process died mid-step");
 
     expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
       "run-1",
-      { id: "abort-1", runId: "abort-run-1" },
+      abortController,
       "failed"
     );
     expect(mocks.closeStreams).toHaveBeenCalledOnce();
-  });
-
-  it("refuses to execute when another workflow already owns the session inbox", async () => {
-    mocks.getConflict.mockResolvedValue({ runId: "existing-run" });
-    mocks.createMessageHook.mockReturnValue(messageHook([]));
-
-    await expect(
-      agentSessionWorkflow({
-        sessionId: "session-1",
-        runId: "run-1",
-        userId: "user-1",
-        abortController: { id: "abort-1", runId: "abort-run-1" },
-        firstMessage: { text: "first" },
-      })
-    ).rejects.toThrow(
-      "Agent session session-1 is already driven by workflow run existing-run."
-    );
-    expect(mocks.runTurn).not.toHaveBeenCalled();
-    // Its own row was written ahead of it by `prompt`; it must not stay active.
-    expect(mocks.completeRun).toHaveBeenCalledWith(
-      "run-1",
-      { id: "abort-1", runId: "abort-run-1" },
-      "failed"
-    );
   });
 });

@@ -131,8 +131,8 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
   const session = new InMemorySessionTree("session-1");
   const events: AgentWireEvent[] = [];
   const context: TestContext = { calls: [] };
-  const persistApprovals = vi.fn(
-    async (_approvals: readonly string[]): Promise<void> => undefined
+  const persistApproval = vi.fn(
+    async (_approval: string): Promise<void> => undefined
   );
 
   const options: RunPiTurnOptions<TestContext, string> = {
@@ -155,7 +155,7 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
     message: { text: "Hello" },
     onEvent: (event) => events.push(event),
     toApproval: (approval) => approval.toolCallId,
-    persistApprovals,
+    persistApproval,
   };
 
   return {
@@ -163,7 +163,7 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
     session,
     events,
     context,
-    persistApprovals,
+    persistApproval,
     options,
     types: () =>
       events

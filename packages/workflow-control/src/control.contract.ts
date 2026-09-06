@@ -2,7 +2,6 @@ import * as z from "zod";
 
 import {
   agentAbortControllerRefSchema,
-  agentApprovalPayloadSchema,
   agentMessagePayloadSchema,
 } from "./agent.hooks";
 
@@ -11,7 +10,7 @@ const agentSessionRequestSchema = z.object({
   runId: z.string(),
   userId: z.string(),
   abortController: agentAbortControllerRefSchema,
-  firstMessage: agentMessagePayloadSchema,
+  message: agentMessagePayloadSchema,
 });
 
 export const workflowControlCommandSchema = z.discriminatedUnion("type", [
@@ -22,17 +21,6 @@ export const workflowControlCommandSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("agent-session:start"),
     request: agentSessionRequestSchema,
-  }),
-  z.object({
-    type: z.literal("agent-message:resume"),
-    sessionId: z.string(),
-    payload: agentMessagePayloadSchema,
-  }),
-  z.object({
-    type: z.literal("agent-approval:resume"),
-    sessionId: z.string(),
-    toolCallId: z.string(),
-    payload: agentApprovalPayloadSchema,
   }),
   z.object({
     type: z.literal("agent-abort:resume"),

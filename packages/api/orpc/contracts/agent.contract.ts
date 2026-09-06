@@ -117,8 +117,8 @@ export const agentSessionDetailSchema = z.object({
   /** Writing-agent state: the shared drafts this session has worked on, most recent first. */
   drafts: z.array(feedDraftSchema).optional(),
   /**
-   * Live durable run, or `null`. `running` is a turn executing; `waiting` is parked on a
-   * message or approval hook.
+   * Live durable run, or `null`. `running` is a turn executing; `waiting` is a run whose
+   * turn ended and whose row is about to close.
    */
   run: z
     .object({
