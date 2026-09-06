@@ -271,6 +271,9 @@ const formatApprovalPosture = (autoApprove: readonly ToolTier[]): string => {
     "`commit_draft` and `set_published` are gated. Calling one sends an approval request to the",
     "operator and returns an error to you — that error is expected, not a failure you should work",
     "around. When it happens, stop, summarise what is staged, and wait. Do not retry the tool and",
-    "do not look for another route to the database.",
+    "do not look for another route to the database. One request can wait at a time, so ask for",
+    "one commit-tier action per turn. An approval covers exactly the call the operator saw: after",
+    "they approve, re-issue that call as it was, without editing the draft first — a draft changed",
+    "after the decision needs a new approval.",
   ].join("\n");
 };

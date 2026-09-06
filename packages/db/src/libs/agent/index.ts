@@ -181,7 +181,7 @@ export const transferAgentOwnership = async (
   });
 };
 
-/** Replaces the session's active run in one transaction. The workflow backend allows one message hook per session. */
+/** Replaces the session's active run in one transaction: a session drives one run at a time. */
 export const createAgentRun = async (
   db: DB,
   input: {
@@ -234,6 +234,44 @@ export const patchAgentRunMetadata = async (
     })
     .where(eq(agentRuns.id, runId));
 };
+
+/**
+ * The executor's claim on a turn: under the session lock, the run must still be the active
+ * one, then its workflow run id is bound and the marker written in one transaction. `false`
+ * means the run was cancelled, failed or replaced since it was started, and the step must not
+ * execute anything.
+ */
+export const claimAgentRunTurn = async (
+  db: DB,
+  input: {
+    sessionId: string;
+    runId: string;
+    externalRunId: string;
+    turnKey: string;
+    marker: JsonObject;
+  }
+): Promise<boolean> =>
+  withAgentSessionLock(db, input.sessionId, async (tx) => {
+    const [run] = await tx
+      .select({ status: agentRuns.status })
+      .from(agentRuns)
+      .where(
+        and(
+          eq(agentRuns.id, input.runId),
+          eq(agentRuns.sessionId, input.sessionId)
+        )
+      )
+      .for("update");
+    if (run?.status !== "active") return false;
+    await tx
+      .update(agentRuns)
+      .set({
+        externalRunId: input.externalRunId,
+        metadata: sql`${agentRuns.metadata} || ${JSON.stringify({ [input.turnKey]: input.marker })}::jsonb`,
+      })
+      .where(eq(agentRuns.id, input.runId));
+    return true;
+  });
 
 /** Points a run row written ahead of its workflow at the run the workflow backend then created. */
 export const bindAgentRunExternalId = async (
@@ -318,6 +356,31 @@ export const completeAgentRun = async (
     .update(agentRuns)
     .set({ status, endedAt: new Date() })
     .where(eq(agentRuns.id, runId));
+};
+
+/**
+ * Closes an active run only while it still carries `externalRunId`, the value a reader based
+ * its verdict on. A lease the executor bound meanwhile no longer matches, so the run it now
+ * drives is left alone. Returns whether the row was closed.
+ */
+export const completeAgentRunIfUnbound = async (
+  db: DB,
+  runId: string,
+  externalRunId: string,
+  status: Exclude<AgentRunStatus, "active">
+): Promise<boolean> => {
+  const rows = await db
+    .update(agentRuns)
+    .set({ status, endedAt: new Date() })
+    .where(
+      and(
+        eq(agentRuns.id, runId),
+        eq(agentRuns.externalRunId, externalRunId),
+        eq(agentRuns.status, "active")
+      )
+    )
+    .returning({ id: agentRuns.id });
+  return rows.length > 0;
 };
 
 export interface InsertAgentSessionEntryDTO {
@@ -499,33 +562,41 @@ export const copyWritingSessionDrafts = async (
     .onConflictDoNothing();
 };
 
-export const recordAgentApprovalRequests = async (
+export const recordAgentApprovalRequest = async (
   db: DB,
-  inputs: readonly {
+  input: {
     sessionId: string;
     toolCallId: string;
     toolName: string;
+    approvalKey: string;
     args?: JsonObject;
-  }[]
+  }
 ) => {
-  if (inputs.length === 0) return;
-
   await db
     .insert(agentToolApprovals)
-    .values(
-      inputs.map((input) => ({
-        sessionId: input.sessionId,
-        toolCallId: input.toolCallId,
-        toolName: input.toolName,
-        args: input.args ?? null,
-      }))
-    )
+    .values({
+      sessionId: input.sessionId,
+      toolCallId: input.toolCallId,
+      toolName: input.toolName,
+      approvalKey: input.approvalKey,
+      args: input.args ?? null,
+    })
     // First request wins; a re-issued gated call must not overwrite an existing decision.
     .onConflictDoNothing({
       target: [agentToolApprovals.sessionId, agentToolApprovals.toolCallId],
     });
 };
 
+export const getAgentApproval = async (
+  db: DB,
+  sessionId: string,
+  toolCallId: string
+) =>
+  await db.query.agentToolApprovals.findFirst({
+    where: { sessionId, toolCallId },
+  });
+
+/** Records the decision on a pending request. `undefined` when there is none: a decision is never rewritten. */
 export const decideAgentApproval = async (
   db: DB,
   input: {
@@ -547,28 +618,74 @@ export const decideAgentApproval = async (
     .where(
       and(
         eq(agentToolApprovals.sessionId, input.sessionId),
-        eq(agentToolApprovals.toolCallId, input.toolCallId)
+        eq(agentToolApprovals.toolCallId, input.toolCallId),
+        eq(agentToolApprovals.status, "pending")
       )
     )
     .returning();
   return row;
 };
 
-/** Tool call ids approved for this session, for seeding the permission gate on resume. */
-export const getApprovedAgentToolCallIds = async (
+/** Names the run that relays a decision; written in the transaction that records the decision. */
+export const setAgentApprovalRelayRun = async (
+  db: DB,
+  input: { sessionId: string; toolCallId: string; relayRunId: string }
+) => {
+  await db
+    .update(agentToolApprovals)
+    .set({ relayRunId: input.relayRunId })
+    .where(
+      and(
+        eq(agentToolApprovals.sessionId, input.sessionId),
+        eq(agentToolApprovals.toolCallId, input.toolCallId)
+      )
+    );
+};
+
+export const getAgentRun = async (db: DB, runId: string) =>
+  await db.query.agentRuns.findFirst({ where: { id: runId } });
+
+/** Approval keys granted on this session that no call has spent; seeds the permission gate. */
+export const listUnspentAgentApprovalKeys = async (
   db: DB,
   sessionId: string
 ) => {
   const rows = await db
-    .select({ toolCallId: agentToolApprovals.toolCallId })
+    .select({ approvalKey: agentToolApprovals.approvalKey })
     .from(agentToolApprovals)
     .where(
       and(
         eq(agentToolApprovals.sessionId, sessionId),
-        eq(agentToolApprovals.status, "approved")
+        eq(agentToolApprovals.status, "approved"),
+        isNull(agentToolApprovals.consumedAt)
       )
     );
-  return rows.map((row) => row.toolCallId);
+  return rows.map((row) => row.approvalKey);
+};
+
+/** Spends every unspent approval for `approvalKey`; throws when there is none, so the call stays blocked. */
+export const consumeAgentApproval = async (
+  db: DB,
+  sessionId: string,
+  approvalKey: string
+) => {
+  const rows = await db
+    .update(agentToolApprovals)
+    .set({ consumedAt: new Date() })
+    .where(
+      and(
+        eq(agentToolApprovals.sessionId, sessionId),
+        eq(agentToolApprovals.approvalKey, approvalKey),
+        eq(agentToolApprovals.status, "approved"),
+        isNull(agentToolApprovals.consumedAt)
+      )
+    )
+    .returning({ toolCallId: agentToolApprovals.toolCallId });
+  if (rows.length === 0) {
+    throw new Error(
+      `No unspent approval for "${approvalKey}" on agent session ${sessionId}.`
+    );
+  }
 };
 
 export const getAgentApprovals = async (db: DB, sessionId: string) =>

@@ -90,14 +90,14 @@ agent.quota_config       quota and running-turn limits
 
 Server-side conversational state is durable. The client derives its view from server detail and wire events:
 
-| State                                   | Storage                       |
-| --------------------------------------- | ----------------------------- |
-| Transcript and branches                 | Postgres session tree         |
-| Shared draft and memory                 | Postgres domain tables        |
-| Approvals and run metadata              | Postgres agent tables         |
-| Message inbox, pauses and event streams | Workflow backend              |
-| Client request state                    | TanStack Query                |
-| Client live turn state                  | One zustand store per session |
+| State                                     | Storage                       |
+| ----------------------------------------- | ----------------------------- |
+| Transcript and branches                   | Postgres session tree         |
+| Shared draft and memory                   | Postgres domain tables        |
+| Approvals and run metadata                | Postgres agent tables         |
+| Turn runs, abort pauses and event streams | Workflow backend              |
+| Client request state                      | TanStack Query                |
+| Client live turn state                    | One zustand store per session |
 
 ## 4. One turn
 
@@ -111,16 +111,12 @@ sequenceDiagram
     participant RT as runPiTurn
     participant PG as Postgres
 
-    UI->>API: prompt
+    UI->>API: prompt or approve
     API->>SVC: validate caller, session and quota
-    alt active workflow
-        SVC->>WF: resume message hook
-    else no active workflow
-        SVC->>PG: create agent.run
-        SVC->>WF: start workflow
-    end
+    SVC->>PG: create agent.run
+    SVC->>WF: start workflow
     SVC-->>UI: run id and stream cursor
-    WF->>STEP: execute queued turn
+    WF->>STEP: execute the turn
     STEP->>RT: kind.runTurn
     RT->>PG: append session entries
     RT-->>UI: durable AgentWireEvents
@@ -129,13 +125,13 @@ sequenceDiagram
 
 ### Durable driver
 
-Each session workflow owns one deterministic `agentMessageHook`. `getConflict()` registers it before the first turn and prevents two active workflows from owning the same session inbox. Resumed hook payloads are durable workflow events consumed in order.
+Every turn is its own workflow run. A prompt and an operator's decision on a gated call each start a run that executes one `runAgentTurnStep` and ends; nothing parks between turns, a run's journal is one turn long, and the session's conversation lives entirely in Postgres. Workflow functions handle orchestration only; database, provider, timer and network operations stay inside steps. `runAgentTurnStep` has `maxRetries = 0` because a turn may already have appended entries or performed an approved side effect. Provider retries stay inside Pi; retrying a failed turn requires a new user message.
 
-A message submitted during a running turn waits for the current turn and approval handshake to finish. Enqueue is refused while approval is undecided, while a new workflow has not registered its hook, or for the reserved `/end` sentinel.
+One turn at a time. A prompt is refused while a turn is running: admission checks quota and the running cap, and a turn run behind this one would execute after its cost landed without being checked again. It is also refused while an approval is undecided.
 
-One workflow may drive up to 200 turns. Workflow functions handle orchestration only; database, provider, timer and network operations stay inside steps. `runAgentTurnStep` has `maxRetries = 0` because a turn may already have appended entries or performed an approved side effect. Provider retries stay inside Pi; retrying a failed turn requires a new user message.
+Acceptance commits before the workflow is told. The new run row is the record, written under the session lock as the session's lease; delivery follows outside the lock transaction, because a workflow command cannot be rolled back. `createAgentRun` closes the session's previous run row, and a previous run still alive in the World is cancelled. A start the workflow service refused before executing fails the row; a start whose result is unknown keeps the lease, because the workflow may be running. The step then claims its run under the session lock: the row must still be the session's active run, then the marker is written and the workflow run id bound in one transaction, so a bind the service could not write is repaired by the executor and abort and reconcile find the run. A run cancelled, failed or replaced meanwhile executes nothing. Reconciliation closes a dead run only while it still carries the workflow run id the verdict was read against, so a lease the executor claimed in between is left alone. A step that throws leaves its marker running, because the run ends and closes the row. The row records the turn's outcome: `failed` for an error or a thrown step, `cancelled` for an abort, `completed` otherwise; the executor's claim is recorded on the marker, so a closed row also says whether the model ever ran. A bind that fails is followed by an abort on the id only that request holds; the row is failed only once the turn was seen to end, otherwise the lease keeps the session blocked.
 
-Starts, hook resumes and cancellations cross the authenticated `WorkflowControl` contract from `service` to the single workflow process. Status and stream reads use the shared World storage. See [workflow deployment](./workflow-deployment.md).
+Starts, abort resumes and cancellations cross the authenticated `WorkflowControl` contract from `service` to the single workflow process. Status and stream reads use the shared World storage. See [workflow deployment](./workflow-deployment.md).
 
 ### Runtime lifecycle
 
@@ -180,7 +176,7 @@ Budget checks run before approval checks, so a refused call cannot create an app
 
 ### Durable approval handshake
 
-Approval never waits on an in-memory promise. A gated call ends the current turn and resumes through the workflow later.
+Approval never waits on an in-memory promise or a parked run. A gated call ends the turn and its run; the operator's decision starts a run of its own.
 
 ```mermaid
 sequenceDiagram
@@ -193,25 +189,27 @@ sequenceDiagram
     M->>G: gated tool call
     G-->>M: blocked tool result
     G->>DB: persist request at successful turn end
-    WF->>WF: wait on approval hook
+    WF->>WF: run ends
     U->>DB: persist decision
-    U->>WF: resume hook
+    U->>WF: start relay run
     WF->>M: operator-decision relay turn
     M->>G: reissue call
-    G-->>M: allow pre-authorized tool
+    G-->>M: allow, spending the approval
 ```
 
-A call is allowed when its tier needs no approval, the session auto-approves that tier, the call ID was approved, or the tool is pre-authorized for the relay turn. Decisions are written before the hook resumes. Rejections also create a relay turn so the model can respond to the operator's comment.
+A call is allowed when its tier needs no approval, the session auto-approves that tier, or an unspent approval exists for its approval key. The key is the kind's identity for the call, never the call id, because the re-issued call carries a new one. The writing kind pins `commit_draft` to the draft revision the operator saw and `set_published` to the feed and target state, so a call for another draft, or for a draft edited after the decision, is gated again. An approval is spent durably before the call runs and is good for exactly one call. The revision it was granted for travels with the call: `commit_draft` applies that revision and the apply service locks the draft row and checks it in the transaction that writes the feed, so a draft that moved between the decision and the write is refused with `CONFLICT`. Under session auto-approve the call commits the revision it read itself, under the same lock.
 
-Requests are persisted as one batch only after the provider turn succeeds. A failed turn leaves no undecided rows and never parks the workflow on an unresolvable hook. Relay messages are marked as operator decisions so clients render them as notices rather than user-authored prompts.
+A decision is written once, on a pending row, in the transaction that writes the relay run's row and names that run on the decision. `approve` on a decided row delivers the recorded decision again only when its relay run never executed, that is the row closed with the marker still unclaimed; a relay the executor claimed, whatever it ended as, or whose fate is still unknown, starts nothing. Rejections also create a relay turn so the model can respond to the operator's comment.
+
+One request per turn: a second gated call in the same turn is refused without being recorded, so one decision answers one request. The request is persisted only after the provider turn succeeds; a failed turn leaves no undecided rows. Relay messages are marked as operator decisions so clients render them as notices rather than user-authored prompts.
 
 The live stream may announce a request before persistence so the UI can render it promptly, but the card remains locked until `run:end{awaiting_approval}` or a reloaded pending row confirms it. Any other terminal state retracts the tentative request.
 
 ### Abort path
 
-Cancelling a workflow run does not interrupt a step already executing. Each session run therefore has a small durable abort-controller workflow parked on a hook. The turn step subscribes to its stream and passes the resulting `AbortSignal` to Pi and host ports.
+Cancelling a workflow run does not interrupt a step already executing. Each turn run therefore has a small durable abort-controller workflow parked on a hook. The turn step subscribes to its stream and passes the resulting `AbortSignal` to Pi and host ports.
 
-Abort resumes the controller, waits for the turn's `run:end` within a deadline, then cancels the session workflow and marks its run row. Partial assistant output is persisted as aborted; approvals and compaction do not run. A later prompt starts a new workflow over the existing transcript.
+Abort resumes the controller, waits for the turn's `run:end` within a deadline, then cancels the run and marks its row. Partial assistant output is persisted as aborted; approvals and compaction do not run.
 
 ## 6. Events, streaming and reconnect
 
@@ -233,6 +231,7 @@ Key invariants:
 - Every started tool receives a terminal event. Replay closes interrupted calls as aborted.
 - Wire errors expose only a classified kind; provider and host details stay in server logs.
 - `tool:end.details` is clipped before durable storage; the model reads the original tool content.
+- A durable stream write that fails is logged and does not fail the turn: its entries and side effects are already durable, and a client that misses the event reloads the session.
 
 Each run has a coarse event stream and a batched delta stream. Coarse events flush pending deltas first. A turn cursor records both stream positions so reconnecting does not append old deltas to a transcript already loaded from Postgres.
 
@@ -246,7 +245,7 @@ The server is authoritative. On mount, the client loads `agent.sessions.get`; if
 - The first coarse and delta stream positions for the turn.
 - A `running` marker.
 
-While running, `get` replays only entries through `seqBefore` and `attach` supplies later events. This split prevents duplicates during refresh. The marker is maintained by acceptance and the turn step because the Workflow SDK reports hook-waiting and step-running workflows with the same status.
+While running, `get` replays only entries through `seqBefore` and `attach` supplies later events. This split prevents duplicates during refresh. The marker is maintained by acceptance and the turn step because the Workflow SDK reports a run winding down and a step executing with the same status.
 
 ## 7. Compaction, navigation and forks
 
@@ -260,7 +259,7 @@ Maintenance operates on the session tree without constructing an `Agent`.
 
 Navigate, fork and manual compaction are refused while a turn runs or approval is pending. They serialize with prompt and approval acceptance through one per-session Postgres advisory lock. A new `agent.run` row is created before the workflow starts, so maintenance sees the lease immediately.
 
-Maintenance model calls have their own deadline and run inside the lock transaction. Timeout cancels the model call and rolls back all changes. Queries inside the transaction remain sequential because they share one connection.
+Maintenance model calls have their own deadline and run inside the lock transaction. Timeout cancels the model call and rolls back all changes except the usage ledger row, which is written on a connection outside the transaction because the call was billed. Queries inside the transaction remain sequential because they share one connection.
 
 Kind state is not versioned with transcript entries. Rewinding keeps the current drafts; forking copies the session's draft references, so both sessions keep working on the same shared rows.
 
@@ -374,12 +373,12 @@ Pi 0.85 ships a second execution path beside the `Agent` class: `createAgentHarn
 
 The harness is designed to be host-scheduled. Its lane API reduces to four durable primitives, and each maps onto a seam this runtime already has:
 
-| Harness primitive  | This runtime                                                          |
-| ------------------ | --------------------------------------------------------------------- |
-| `accept`           | `agent.run` creation and workflow start or hook resume under the lock |
-| `drive`            | `runAgentTurnStep`                                                    |
-| `requestAbort`     | The per-run abort-controller workflow                                 |
-| `inspectExecution` | Turn-marker reconciliation against the Workflow World                 |
+| Harness primitive  | This runtime                                               |
+| ------------------ | ---------------------------------------------------------- |
+| `accept`           | `agent.run` creation under the lock and the workflow start |
+| `drive`            | `runAgentTurnStep`                                         |
+| `requestAbort`     | The per-run abort-controller workflow                      |
+| `inspectExecution` | Turn-marker reconciliation against the Workflow World      |
 
 `drive` returns `settled`, `waiting: retry` with `notBefore`, or `waiting: deferred` with a poll interval, so provider retries and deferred responses become workflow sleeps rather than in-process waits.
 

@@ -20,6 +20,7 @@ import type { FakeContentPort, FakeWebPort } from "./fixtures.ts";
 const SESSION_ID = "session-1";
 
 type TestContext = WritingToolContext & {
+  approvedDraftRevisions: Map<string, number>;
   content: FakeContentPort;
   web: FakeWebPort;
   draft: InMemoryDraftStore;
@@ -35,6 +36,7 @@ const createContext = (): TestContext => ({
   web: createFakeWebPort(),
   draft: new InMemoryDraftStore([{ id: DRAFT_ID }]),
   memory: new InMemoryMemoryPort(SESSION_ID),
+  approvedDraftRevisions: new Map<string, number>(),
 });
 
 describe("webSearchTool", () => {
@@ -233,6 +235,40 @@ describe("draft slug handling", () => {
     await expect(context.draft.get(DRAFT_ID)).resolves.toMatchObject({
       slug: null,
     });
+  });
+
+  it("applies the revision it read when no approval pinned one, and the pinned one otherwise", async () => {
+    const context = createContext();
+    await context.draft.patchFeedMeta(DRAFT_ID, {
+      defaultLocale: "en",
+      slug: "a-post",
+    });
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
+      title: "A post",
+      content: "## Body",
+    });
+    const current = (await context.draft.get(DRAFT_ID)).revision;
+
+    await commitDraftTool.execute(
+      "call-auto",
+      { draftId: DRAFT_ID, confirmation: "Commit." },
+      undefined,
+      undefined,
+      context
+    );
+    context.approvedDraftRevisions.set("call-approved", current - 1);
+    await commitDraftTool.execute(
+      "call-approved",
+      { draftId: DRAFT_ID, confirmation: "Commit." },
+      undefined,
+      undefined,
+      context
+    );
+
+    expect(context.content.commits).toEqual([
+      { draftId: DRAFT_ID, expectedRevision: current },
+      { draftId: DRAFT_ID, expectedRevision: current - 1 },
+    ]);
   });
 
   it("requires an explicit slug before creating a feed", async () => {

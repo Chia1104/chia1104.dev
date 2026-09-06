@@ -185,6 +185,8 @@ export type AgentModels = ReturnType<typeof createAgentModels>;
 export interface AgentTurnContext<TState, TConfig extends object, TApproval> {
   db: DB;
   row: AgentSession;
+  /** The durable run executing this turn. */
+  runId: string;
   state: TState;
   config: TConfig;
   settings: AgentSessionSettings;
@@ -196,13 +198,15 @@ export interface AgentTurnContext<TState, TConfig extends object, TApproval> {
   house: AgentModelRef;
   message: AgentTurnMessage;
   signal: AbortSignal;
-  approvedToolCallIds: ReadonlySet<string>;
-  preAuthorizedToolNames: ReadonlySet<string>;
+  /** Approval keys the operator granted on this session that no call has spent. */
+  approvedApprovalKeys: ReadonlySet<string>;
+  /** Spends one of them durably before the call runs. */
+  consumeApproval: (key: string) => Promise<void>;
   onEvent: (event: AgentWireEvent) => void;
   flushEvents: () => Promise<void>;
   onUsage: AgentUsageListener;
   toApproval: (request: ApprovalRequest) => TApproval;
-  persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
+  persistApproval: (approval: TApproval) => Promise<void>;
 }
 
 /**

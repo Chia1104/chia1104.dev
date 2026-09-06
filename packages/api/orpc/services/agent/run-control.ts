@@ -1,29 +1,12 @@
-import {
-  AGENT_DELTA_NAMESPACE,
-  AGENT_TURN_KEY,
-} from "@chia/agent-host/execution";
-import type {
-  AgentStreamPosition,
-  AgentTurnMarker,
-} from "@chia/agent-host/execution";
+import { AGENT_DELTA_NAMESPACE } from "@chia/agent-host/execution";
+import type { AgentStreamPosition } from "@chia/agent-host/execution";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
-import type { DB } from "@chia/db/client";
-import {
-  getAgentSessionLastSeq,
-  patchAgentRunMetadata,
-} from "@chia/db/repos/agent";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type { AgentRunHost } from "../agent.factory";
 import type { AgentStreamCursor } from "../agent.service";
 
 import { isRunLive } from "./run-liveness";
-
-interface ClaimableAgentTurn {
-  id: string;
-  activeRunId: string | null;
-  turn: AgentTurnMarker | undefined;
-}
 
 const cursorOf = (
   runId: string,
@@ -37,75 +20,37 @@ const cursorOf = (
 /** A cursor at a known stream position, used for the first turn of a newly started run. */
 export const agentStreamCursor = cursorOf;
 
-/**
- * Captures and claims the next turn before its workflow hook is resumed. Reading both
- * tails and writing the marker are one operation so callers cannot resume a hook with a
- * cursor they forgot to claim.
- */
-export const claimNextAgentTurn = async (
-  runs: AgentRunHost,
-  db: DB,
-  row: ClaimableAgentTurn,
-  runId: string
-): Promise<AgentStreamCursor> => {
-  const run = runs.get(runId);
-  const [coarseTail, deltaTail] = await Promise.all([
-    run.getReadable().getTailIndex(),
-    run.getReadable({ namespace: AGENT_DELTA_NAMESPACE }).getTailIndex(),
-  ]);
-  const position: AgentStreamPosition = {
-    streamIndex: coarseTail + 1,
-    deltaStreamIndex: deltaTail + 1,
-  };
-
-  if (row.activeRunId && !row.turn?.running) {
-    await patchAgentRunMetadata(db, row.activeRunId, {
-      [AGENT_TURN_KEY]: {
-        seqBefore: await getAgentSessionLastSeq(db, row.id),
-        ...position,
-        running: true,
-      } satisfies AgentTurnMarker,
-    });
-  }
-
-  return cursorOf(runId, position);
-};
-
-/** `createHook()` registers after the workflow starts; this turns that startup race into a retryable response. */
-export const isAgentHookReady = async (
-  runs: AgentRunHost,
-  token: string
-): Promise<boolean> => {
-  try {
-    return await runs.hasHook(token);
-  } catch {
-    return false;
-  }
-};
-
 const ABORT_SETTLE_TIMEOUT_MS = 10_000;
 
-/** Waits for a stopped turn to persist its terminal event before the run is cancelled. */
+/**
+ * Waits for a stopped turn to persist its terminal event before the run is cancelled.
+ * `true` when the turn ended or the run closed its streams; `false` when the deadline passed
+ * or the stream dropped, in which case the step may still be executing.
+ */
 export const waitForAgentTurnEnd = async (
   runs: AgentRunHost,
   runId: string,
   startIndex: number
-): Promise<void> => {
+): Promise<boolean> => {
   const reader = runs
     .get(runId)
     .getReadable<AgentWireEvent>({ startIndex })
     .getReader();
-  const deadline = setTimeout(
-    () => void reader.cancel().catch(() => undefined),
-    ABORT_SETTLE_TIMEOUT_MS
-  );
+  // Cancelling the reader resolves the pending read as `done`, which must not pass for the
+  // run closing its stream.
+  let expired = false;
+  const deadline = setTimeout(() => {
+    expired = true;
+    void reader.cancel().catch(() => undefined);
+  }, ABORT_SETTLE_TIMEOUT_MS);
   try {
     while (true) {
       const { done, value } = await reader.read();
-      if (done || value?.type === "run:end") return;
+      if (done) return !expired;
+      if (value?.type === "run:end") return true;
     }
   } catch {
-    // A dropped stream has nothing more to tell; cancellation proceeds as before.
+    return false;
   } finally {
     clearTimeout(deadline);
     await reader.cancel().catch(() => undefined);

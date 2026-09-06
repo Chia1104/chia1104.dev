@@ -1,0 +1,2 @@
+ALTER TABLE "agent"."tool_approval" ADD COLUMN "relay_run_id" text;--> statement-breakpoint
+ALTER TABLE "agent"."tool_approval" ADD CONSTRAINT "tool_approval_relay_run_id_run_id_fkey" FOREIGN KEY ("relay_run_id") REFERENCES "agent"."run"("id") ON DELETE SET NULL;

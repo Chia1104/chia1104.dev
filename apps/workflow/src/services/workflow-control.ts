@@ -3,10 +3,6 @@ import { getRun, start } from "workflow/api";
 import {
   agentAbortHook,
   agentAbortToken,
-  agentApprovalHook,
-  agentApprovalToken,
-  agentMessageHook,
-  agentMessageToken,
 } from "@chia/workflow-control/agent-hooks";
 import type { WorkflowControlCommand } from "@chia/workflow-control/contract";
 import type { WorkflowControlResult } from "@chia/workflow-control/contract";
@@ -26,20 +22,6 @@ export const executeLocalWorkflowCommand = async (
         await import("../workflows/agent-session.workflow");
       const run = await start(agentSessionWorkflow, [command.request]);
       return { type: "started", runId: run.runId };
-    }
-    case "agent-message:resume": {
-      await agentMessageHook.resume(
-        agentMessageToken(command.sessionId),
-        command.payload
-      );
-      return { type: "completed" };
-    }
-    case "agent-approval:resume": {
-      await agentApprovalHook.resume(
-        agentApprovalToken(command.sessionId, command.toolCallId),
-        command.payload
-      );
-      return { type: "completed" };
     }
     case "agent-abort:resume": {
       await agentAbortHook.resume(

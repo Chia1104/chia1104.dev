@@ -23,7 +23,7 @@ export interface FakeContentPortOptions {
 }
 
 export interface FakeContentPort extends ContentPort {
-  readonly commits: { draftId: number }[];
+  readonly commits: { draftId: number; expectedRevision: number }[];
   readonly publishes: { feedId: number; published: boolean }[];
   /** Runs after each `applyDraft`, so a test can bind its in-memory draft to the new feed. */
   onApplied?: (result: CommitDraftResult) => void;
@@ -36,7 +36,7 @@ export const createFakeContentPort = (
     /* SAFETY: This fixture implements the ContentReadPort methods these tests exercise. */ createFakeContentReadPort(
       options
     ) as ContentReadPort;
-  const commits: { draftId: number }[] = [];
+  const commits: { draftId: number; expectedRevision: number }[] = [];
   const publishes: { feedId: number; published: boolean }[] = [];
   let nextFeedId = 100;
 

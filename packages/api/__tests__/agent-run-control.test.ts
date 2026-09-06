@@ -1,21 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
-import { createFakeRuns, getRun, resetWorkflowMocks } from "@chia/test/mocks/workflow";
+import {
+  createFakeRuns,
+  getRun,
+  resetWorkflowMocks,
+} from "@chia/test/mocks/workflow";
 
 const runs = createFakeRuns();
 
 const repo = vi.hoisted(() => ({
   completeAgentRun: vi.fn(),
-  getAgentSessionLastSeq: vi.fn(),
   listRunningAgentRuns: vi.fn(),
-  patchAgentRunMetadata: vi.fn(),
 }));
 
 vi.mock("@chia/db/repos/agent", () => repo);
-
-const db =
-  /* SAFETY: every repository operation in this suite is mocked. */ {} as never;
 
 const workflowReadable = <T>(stream: ReadableStream<T>, tailIndex = -1) =>
   Object.assign(stream, { getTailIndex: async () => tailIndex });
@@ -32,52 +31,53 @@ describe("agent run control", () => {
     resetWorkflowMocks();
   });
 
-  it("claims both durable stream tails as one cursor and marker", async () => {
-    const getReadable = vi.fn((options?: { namespace?: string }) =>
-      workflowReadable(
-        new ReadableStream({ start: (controller) => controller.close() }),
-        options?.namespace ? 6 : 3
-      )
-    );
-    getRun.mockReturnValue({ getReadable });
-    repo.getAgentSessionLastSeq.mockResolvedValue(42);
-    repo.patchAgentRunMetadata.mockResolvedValue(undefined);
-
-    const { claimNextAgentTurn } =
+  it("reports a turn as ended when its run:end arrives or the run closes its stream", async () => {
+    const { waitForAgentTurnEnd } =
       await import("../orpc/services/agent/run-control");
-    const cursor = await claimNextAgentTurn(
-      runs,
-      db,
-      {
-        id: "session-1",
-        activeRunId: "run-1",
-        turn: {
-          seqBefore: 0,
-          streamIndex: 0,
-          deltaStreamIndex: 0,
-          running: false,
-        },
-      },
-      "workflow-1"
+    const ended = (events: AgentWireEvent[]) =>
+      workflowReadable(
+        new ReadableStream<AgentWireEvent>({
+          start: (controller) => {
+            for (const event of events) controller.enqueue(event);
+            controller.close();
+          },
+        })
+      );
+
+    getRun.mockReturnValue({
+      getReadable: vi.fn(() => ended([{ type: "run:end", reason: "aborted" }])),
+    });
+    await expect(waitForAgentTurnEnd(runs, "workflow-1", 0)).resolves.toBe(
+      true
     );
 
-    expect(cursor).toEqual({
-      runId: "workflow-1",
-      startIndex: 4,
-      deltaStartIndex: 7,
-    });
-    expect(repo.patchAgentRunMetadata).toHaveBeenCalledExactlyOnceWith(
-      db,
-      "run-1",
-      {
-        turn: {
-          seqBefore: 42,
-          streamIndex: 4,
-          deltaStreamIndex: 7,
-          running: true,
-        },
-      }
+    getRun.mockReturnValue({ getReadable: vi.fn(() => ended([])) });
+    await expect(waitForAgentTurnEnd(runs, "workflow-1", 0)).resolves.toBe(
+      true
     );
+  });
+
+  it("does not mistake its own deadline for the turn ending", async () => {
+    vi.useFakeTimers();
+    try {
+      const { waitForAgentTurnEnd } =
+        await import("../orpc/services/agent/run-control");
+      // A stream that never yields: the step is still executing.
+      getRun.mockReturnValue({
+        getReadable: vi.fn(() =>
+          workflowReadable(
+            new ReadableStream<AgentWireEvent>({ start: () => undefined })
+          )
+        ),
+      });
+
+      const pending = waitForAgentTurnEnd(runs, "workflow-1", 0);
+      await vi.advanceTimersByTimeAsync(10_000);
+
+      await expect(pending).resolves.toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("merges batched deltas with coarse events", async () => {

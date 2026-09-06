@@ -144,7 +144,6 @@ describe("runPiTurn compaction", () => {
 
     await expect(fixture.run()).resolves.toEqual({
       status: "done",
-      approvals: [],
       error: undefined,
     });
     expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(

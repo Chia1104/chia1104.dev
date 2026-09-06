@@ -1,4 +1,5 @@
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
+import * as z from "zod";
 
 import { createAgentModels, NO_ACCESS } from "@chia/agent-runtime/models";
 import type { AgentModelAccess } from "@chia/agent-runtime/models";
@@ -12,9 +13,12 @@ import type {
   AgentTurnExecution,
   AgentTurnMessage,
   AgentUsageListener,
+  ToolCallRequest,
 } from "@chia/agent-runtime/types";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";
+import { stableStringify } from "@chia/utils/json";
+import type { JsonValue } from "@chia/utils/json";
 
 import { DraftNotFoundError, draftTitle } from "./draft/operations.ts";
 import { resolveWritingModel } from "./models.ts";
@@ -24,6 +28,7 @@ import { writingSkills } from "./prompts/skills.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import type { TurnContextDraft } from "./prompts/system.ts";
 import { writingPromptTemplates } from "./prompts/templates.ts";
+import { TOOL_NAMES } from "./tools/registry.ts";
 import { createWritingTools } from "./tools/tool-set.ts";
 import { DRAFT_ATTACHMENT_TYPE } from "./types.ts";
 import type { SessionDraftRef, WritingToolContext } from "./types.ts";
@@ -32,6 +37,7 @@ export interface RunWritingTurnOptions<TApproval> {
   session: SessionTree;
   settings: AgentSessionSettings;
   agentSessionId: string;
+  agentRunId?: string;
   content: ContentPort;
   web: WebPort;
   draft: DraftStore;
@@ -44,8 +50,8 @@ export interface RunWritingTurnOptions<TApproval> {
   instructions?: string;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
-  approvedToolCallIds?: ReadonlySet<string>;
-  preAuthorizedToolNames?: ReadonlySet<string>;
+  approvedApprovalKeys?: ReadonlySet<string>;
+  consumeApproval?: (key: string) => Promise<void>;
   signal?: AbortSignal;
   models?: Models;
   /** Keys the caller holds; must match how `models` was built. */
@@ -53,10 +59,54 @@ export interface RunWritingTurnOptions<TApproval> {
   compactionModel?: Model<Api>;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
-  persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
+  persistApproval: (approval: TApproval) => Promise<void>;
   flushEvents?: () => Promise<void>;
   onUsage?: AgentUsageListener;
 }
+
+/**
+ * What the operator approves when they approve a commit-tier call. `commit_draft` is pinned to
+ * the draft revision they looked at, so a draft edited after the decision, by them or by the
+ * model on its way back, is gated again instead of committed unseen. A discarded draft still
+ * keys, and the call itself reports it missing.
+ *
+ * The revision the key was read from is also the revision that call may commit, so it is
+ * recorded in `approvedDraftRevisions` under the call's id for `commit_draft` to apply.
+ */
+export const writingApprovalKeyOf =
+  (store: DraftStore, approvedDraftRevisions: Map<string, number>) =>
+  async (request: ToolCallRequest): Promise<string> => {
+    const args = commitArgsSchema.safeParse(request.input).data ?? {};
+    switch (request.toolName) {
+      case TOOL_NAMES.commitDraft: {
+        const draftId = args.draftId;
+        try {
+          const draft = await store.get(draftId ?? Number.NaN);
+          approvedDraftRevisions.set(request.toolCallId, draft.revision);
+          return `${request.toolName}:${draftId}@${draft.revision}`;
+        } catch (error) {
+          if (error instanceof DraftNotFoundError) {
+            return `${request.toolName}:${draftId}@missing`;
+          }
+          throw error;
+        }
+      }
+      case TOOL_NAMES.setPublished:
+        return `${request.toolName}:${args.feedId}:${args.published}`;
+      default:
+        return `${request.toolName}:${stableStringify(
+          // SAFETY: tool arguments passed their registered TypeBox schema, so they are plain JSON.
+          (request.input ?? null) as JsonValue
+        )}`;
+    }
+  };
+
+/** The arguments the approval key reads; `confirmation` is prose for the operator and does not identify the call. */
+const commitArgsSchema = z.object({
+  draftId: z.number().int().optional(),
+  feedId: z.number().int().optional(),
+  published: z.boolean().optional(),
+});
 
 /**
  * Active lessons shown on every request. Twenty one-line titles is ~600 tokens; the operator
@@ -137,16 +187,19 @@ export const runWritingTurn = <TApproval>(
 ): Promise<AgentTurnExecution<TApproval>> => {
   const defaultLocale = options.defaultLocale ?? Locale.zhTW;
   const models = options.models ?? createAgentModels();
+  const approvedDraftRevisions = new Map<string, number>();
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
     content: options.content,
     web: options.web,
     draft: options.draft,
     memory: options.memory,
+    approvedDraftRevisions,
   };
 
   return runPiTurn({
     agentSessionId: options.agentSessionId,
+    agentRunId: options.agentRunId,
     session: options.session,
     settings: options.settings,
     model: resolveWritingModel(
@@ -183,12 +236,13 @@ export const runWritingTurn = <TApproval>(
     promptTemplates: writingPromptTemplates,
     policy: writingPolicy,
     budget: writingTurnBudget,
-    approvedToolCallIds: options.approvedToolCallIds,
-    preAuthorizedToolNames: options.preAuthorizedToolNames,
+    approvalKeyOf: writingApprovalKeyOf(options.draft, approvedDraftRevisions),
+    approvedApprovalKeys: options.approvedApprovalKeys,
+    consumeApproval: options.consumeApproval,
     message: options.message,
     onEvent: options.onEvent,
     toApproval: options.toApproval,
-    persistApprovals: options.persistApprovals,
+    persistApproval: options.persistApproval,
     flushEvents: options.flushEvents,
     onUsage: options.onUsage,
   });

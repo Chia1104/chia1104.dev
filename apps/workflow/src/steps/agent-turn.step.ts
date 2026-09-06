@@ -22,14 +22,17 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
 import {
+  claimAgentRunTurn,
   completeAgentRun,
+  consumeAgentApproval,
   getAgentSession,
   getAgentSessionLastSeq,
-  getApprovedAgentToolCallIds,
+  listUnspentAgentApprovalKeys,
   patchAgentRunMetadata,
-  recordAgentApprovalRequests,
+  recordAgentApprovalRequest,
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
+import type { AgentRunStatus } from "@chia/db/schema";
 import type { JsonObject } from "@chia/utils/json";
 import type {
   AgentAbortControllerRef,
@@ -62,7 +65,6 @@ export interface AgentTurnRequest {
   template?: { name: string; args?: string[] };
   attachments?: AgentAttachment[];
   decision?: OperatorDecision;
-  preAuthorizeToolNames?: string[];
   /** Encrypted operator keys; omitted means the house gateway. */
   credentials?: EncryptedAgentCredentials;
 }
@@ -70,12 +72,14 @@ export interface AgentTurnRequest {
 export interface AgentApprovalRequestSnapshot {
   toolCallId: string;
   toolName: string;
+  approvalKey: string;
   args?: JsonObject;
 }
 
 export interface AgentTurnOutcome {
   status: "done" | "awaiting_approval" | "aborted" | "error";
-  approvals: AgentApprovalRequestSnapshot[];
+  /** The gated call the workflow parks on; present exactly when `status` is `awaiting_approval`. */
+  approval?: AgentApprovalRequestSnapshot;
   error?: AgentTurnError;
 }
 
@@ -162,8 +166,24 @@ export const runAgentTurnStep = async (
     streamIndex: coarseTail + 1,
     deltaStreamIndex: deltaTail + 1,
     running: true,
+    claimed: true,
   };
-  await patchAgentRunMetadata(db, request.runId, { [AGENT_TURN_KEY]: marker });
+  // One transaction under the session lock: the run must still be the session's active one,
+  // then the marker lands and the workflow run id is bound. The executor is the one party that
+  // always holds both ids, so a `prompt` whose bind failed after the start is repaired here. A
+  // run that was cancelled, failed or replaced meanwhile executes nothing.
+  const claimed = await claimAgentRunTurn(db, {
+    sessionId: request.sessionId,
+    runId: request.runId,
+    externalRunId: workflowRunId,
+    turnKey: AGENT_TURN_KEY,
+    marker,
+  });
+  if (!claimed) {
+    throw new FatalError(
+      `Agent run ${request.runId} no longer holds session ${request.sessionId}.`
+    );
+  }
 
   const clearMarker = () =>
     patchAgentRunMetadata(db, request.runId, {
@@ -187,8 +207,8 @@ export const runAgentTurnStep = async (
     return outcome;
   } catch (error) {
     abort.dispose();
-    // The handler's error is the one that matters; a failed cleanup must not replace it.
-    await clearMarker().catch(() => undefined);
+    // A thrown step ends the run and `completeAgentRunStep` closes the row. The marker is not
+    // cleared here so the session never reads as idle while the run is still winding down.
     throw error;
   }
 };
@@ -231,8 +251,8 @@ async function runKindTurn(
   });
   const session = await repo.openById(request.sessionId);
 
-  const approvedToolCallIds = new Set(
-    await getApprovedAgentToolCallIds(db, request.sessionId)
+  const approvedApprovalKeys = new Set(
+    await listUnspentAgentApprovalKeys(db, request.sessionId)
   );
 
   /**
@@ -251,6 +271,7 @@ async function runKindTurn(
   return await definition.runTurn({
     db,
     row,
+    runId: request.runId,
     state,
     config,
     settings: {
@@ -273,8 +294,8 @@ async function runKindTurn(
       decision: request.decision,
     },
     signal,
-    approvedToolCallIds,
-    preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
+    approvedApprovalKeys,
+    consumeApproval: (key) => consumeAgentApproval(db, request.sessionId, key),
     onEvent: writer.push,
     flushEvents: writer.flush,
     onUsage: (report) =>
@@ -289,20 +310,18 @@ async function runKindTurn(
     toApproval: (approval): AgentApprovalRequestSnapshot => ({
       toolCallId: approval.toolCallId,
       toolName: approval.toolName,
+      approvalKey: approval.key,
       // SAFETY: tool arguments passed their registered TypeBox schema before execution.
       args: approval.args as JsonObject | undefined,
     }),
-    persistApprovals: async (approvals) => {
-      await recordAgentApprovalRequests(
-        db,
-        approvals.map((approval) => ({
-          sessionId: request.sessionId,
-          toolCallId: approval.toolCallId,
-          toolName: approval.toolName,
-          args: approval.args,
-        }))
-      );
-    },
+    persistApproval: (approval) =>
+      recordAgentApprovalRequest(db, {
+        sessionId: request.sessionId,
+        toolCallId: approval.toolCallId,
+        toolName: approval.toolName,
+        approvalKey: approval.approvalKey,
+        args: approval.args,
+      }),
   });
 }
 
@@ -361,7 +380,17 @@ const createEventWriter = (holdEnd?: Promise<unknown>): EventWriter => {
     },
     async flush() {
       flushDeltas();
-      await Promise.allSettled(inFlight);
+      // A lost write does not fail the turn: its side effects and entries are already durable
+      // and a client that misses the event reloads the session. It is logged so a stall can be traced.
+      const lost = (await Promise.allSettled(inFlight)).filter(
+        (result) => result.status === "rejected"
+      );
+      if (lost.length > 0) {
+        console.error("Agent stream writes failed", {
+          count: lost.length,
+          cause: lost[0]?.reason,
+        });
+      }
       coarse.releaseLock();
       deltas.releaseLock();
     },
@@ -384,7 +413,7 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
 export const completeAgentRunStep = async (
   runId: string,
   abortController: AgentAbortControllerRef,
-  status: "completed" | "failed"
+  status: Exclude<AgentRunStatus, "active">
 ): Promise<void> => {
   "use step";
 

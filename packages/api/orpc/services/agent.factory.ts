@@ -33,7 +33,6 @@ export interface AgentRunHandle {
 
 export interface AgentRunHost {
   get(runId: string): AgentRunHandle;
-  hasHook(token: string): Promise<boolean>;
 }
 
 export interface AgentServiceHost {

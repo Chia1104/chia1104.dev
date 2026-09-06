@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createFakeRuns, getRun, resetWorkflowMocks } from "@chia/test/mocks/workflow";
+import {
+  createFakeRuns,
+  getRun,
+  resetWorkflowMocks,
+} from "@chia/test/mocks/workflow";
 
 const runs = createFakeRuns();
 
@@ -12,7 +16,7 @@ const runs = createFakeRuns();
 
 const repo = vi.hoisted(() => ({
   listRunningAgentRuns: vi.fn(),
-  completeAgentRun: vi.fn(),
+  completeAgentRunIfUnbound: vi.fn(),
 }));
 const abort = vi.hoisted(() => ({ signalAgentAbort: vi.fn() }));
 
@@ -41,7 +45,13 @@ const row = (overrides: {
   status: "active" as const,
   externalRunId: overrides.externalRunId,
   metadata: {
-    turn: { seqBefore: 0, streamIndex: 0, deltaStreamIndex: 0, running: true },
+    turn: {
+      seqBefore: 0,
+      streamIndex: 0,
+      deltaStreamIndex: 0,
+      running: true,
+      claimed: false,
+    },
     ...(overrides.abortController && {
       abortController: overrides.abortController,
     }),
@@ -61,7 +71,7 @@ describe("reconcileRunningAgentTurns", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetWorkflowMocks();
-    repo.completeAgentRun.mockResolvedValue(undefined);
+    repo.completeAgentRunIfUnbound.mockResolvedValue(true);
     abort.signalAgentAbort.mockResolvedValue(true);
   });
 
@@ -86,9 +96,10 @@ describe("reconcileRunningAgentTurns", () => {
       userId: "user-1",
       turnKey: "turn",
     });
-    expect(repo.completeAgentRun).toHaveBeenCalledExactlyOnceWith(
+    expect(repo.completeAgentRunIfUnbound).toHaveBeenCalledExactlyOnceWith(
       db,
       "run-dead",
+      "wf-dead",
       "failed"
     );
     expect(abort.signalAgentAbort).toHaveBeenCalledExactlyOnceWith(
@@ -115,10 +126,34 @@ describe("reconcileRunningAgentTurns", () => {
       reconcileRunningAgentTurns(db, runs, workflow, "user-1")
     ).resolves.toBe(1);
 
-    expect(repo.completeAgentRun).toHaveBeenCalledExactlyOnceWith(
+    expect(repo.completeAgentRunIfUnbound).toHaveBeenCalledExactlyOnceWith(
       db,
+      "lease-old",
       "lease-old",
       "failed"
     );
+  });
+
+  it("leaves a lease alone that the executor claimed after the snapshot was read", async () => {
+    const { RUN_LEASE_TTL_MS, reconcileRunningAgentTurns } =
+      await import("../orpc/services/agent/run-liveness");
+    liveRuns([]);
+    repo.listRunningAgentRuns.mockResolvedValue([
+      row({
+        id: "lease-old",
+        externalRunId: "lease-old",
+        startedAt: new Date(Date.now() - RUN_LEASE_TTL_MS - 1),
+        abortController: { id: "abort-old", runId: "abort-run" },
+      }),
+    ]);
+    // Between the snapshot and the close the step bound its real run id, so the conditional
+    // close misses: the run it now drives stays active and its controller stays armed.
+    repo.completeAgentRunIfUnbound.mockResolvedValue(false);
+
+    await expect(
+      reconcileRunningAgentTurns(db, runs, workflow, "user-1")
+    ).resolves.toBe(0);
+
+    expect(abort.signalAgentAbort).not.toHaveBeenCalled();
   });
 });

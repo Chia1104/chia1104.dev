@@ -172,7 +172,8 @@ export interface AgentTurnBudget {
 
 export interface AgentTurnExecution<TApproval> {
   status: "done" | "awaiting_approval" | "aborted" | "error";
-  approvals: TApproval[];
+  /** The one gated call the turn stopped on; set exactly when `status` is `awaiting_approval`. */
+  approval?: TApproval;
   error?: AgentTurnError;
 }
 

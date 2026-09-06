@@ -27,6 +27,7 @@ const createContext = (): WritingToolContext & {
   web: createFakeWebPort(),
   draft: new InMemoryDraftStore(),
   memory: new InMemoryMemoryPort(SESSION_ID),
+  approvedDraftRevisions: new Map(),
 });
 
 describe("memory tools", () => {

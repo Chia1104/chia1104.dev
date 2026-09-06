@@ -22,7 +22,7 @@ describe("runPiTurn", () => {
 
     const result = await fixture.run({ flushEvents });
 
-    expect(result).toEqual({ status: "done", approvals: [], error: undefined });
+    expect(result).toEqual({ status: "done", error: undefined });
     expect(fixture.types()).toEqual([
       "run:start",
       "user",
@@ -106,14 +106,14 @@ describe("runPiTurn", () => {
     expect(startIds).toEqual([branch[1]?.id, branch[3]?.id]);
   });
 
-  it("announces approval requests as they are refused and persists them atomically at the end", async () => {
+  it("announces the first gated call, refuses a second without recording it, and persists one request at the end", async () => {
     const fixture = build();
-    fixture.persistApprovals.mockImplementation(async () => {
+    fixture.persistApproval.mockImplementation(async () => {
       // The client has already been told, so the card can replace the tool while the model is
       // still writing; the durable request is the one thing that waits for the turn to succeed.
       expect(
         fixture.events.filter((event) => event.type === "approval:request")
-      ).toHaveLength(2);
+      ).toHaveLength(1);
     });
     fixture.faux.setResponses([
       fauxAssistantMessage(
@@ -129,24 +129,77 @@ describe("runPiTurn", () => {
     const result = await fixture.run();
 
     expect(fixture.context.calls).toEqual([]);
-    expect(fixture.persistApprovals).toHaveBeenCalledOnce();
-    expect(fixture.persistApprovals).toHaveBeenCalledWith(["call-1", "call-2"]);
+    expect(fixture.persistApproval).toHaveBeenCalledExactlyOnceWith("call-1");
     expect(result).toEqual({
       status: "awaiting_approval",
-      approvals: ["call-1", "call-2"],
+      approval: "call-1",
       error: undefined,
     });
+    // The workflow parks on one hook, so only the first request may exist as a durable row.
     expect(
       fixture.events
         .filter((event) => event.type === "approval:request")
         .map((event) => event.toolCallId)
-    ).toEqual(["call-1", "call-2"]);
-    // The refusal reaches the model as an error tool result that tells it to stop.
+    ).toEqual(["call-1"]);
+    // Both refusals reach the model as error tool results; the second says why it was not sent.
     const refusals = (await fixture.branch())
       .map(messageOf)
       .filter((message) => message?.role === "toolResult");
     expect(refusals).toHaveLength(2);
     expect(refusals.every((message) => message?.isError)).toBe(true);
+    expect(JSON.stringify(refusals[1]?.content)).toMatch(/already waiting/);
+  });
+
+  it("spends an approval on exactly one matching call and gates the next", async () => {
+    const fixture = build();
+    const consumeApproval = vi.fn(async () => undefined);
+    fixture.faux.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall("publish", { slug: "hello" }, { id: "call-1" }),
+          fauxToolCall("publish", { slug: "hello" }, { id: "call-2" }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Published once."),
+    ]);
+
+    const result = await fixture.run({
+      approvedApprovalKeys: new Set(['publish:{"slug":"hello"}']),
+      consumeApproval,
+    });
+
+    // The first call ran on the approval and spent it; the identical second call is gated.
+    expect(fixture.context.calls).toEqual(["publish"]);
+    expect(consumeApproval).toHaveBeenCalledExactlyOnceWith(
+      'publish:{"slug":"hello"}'
+    );
+    expect(result).toMatchObject({
+      status: "awaiting_approval",
+      approval: "call-2",
+    });
+  });
+
+  it("keeps a call blocked when its approval cannot be spent", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "hello" }, "call-1"),
+      fauxAssistantMessage("Could not publish."),
+    ]);
+
+    const result = await fixture.run({
+      approvedApprovalKeys: new Set(['publish:{"slug":"hello"}']),
+      consumeApproval: async () => {
+        throw new Error("database unavailable");
+      },
+    });
+
+    expect(fixture.context.calls).toEqual([]);
+    // Not a new request either: the approval still stands for the next turn.
+    expect(result).toEqual({ status: "done", error: undefined });
+    expect(
+      fixture.events.some((event) => event.type === "approval:request")
+    ).toBe(false);
   });
 
   it("relays an operator decision before the model runs and marks its own message as synthesised", async () => {
@@ -227,7 +280,6 @@ describe("runPiTurn", () => {
 
     expect(result).toEqual({
       status: "error",
-      approvals: [],
       error: { kind: "internal", message: "Unknown prompt template: nope" },
     });
     expect(fixture.faux.state.callCount).toBe(0);
@@ -249,7 +301,6 @@ describe("runPiTurn", () => {
 
     await expect(fixture.run()).resolves.toEqual({
       status: "error",
-      approvals: [],
       error: { kind: "auth", message: "401 Unauthorized: invalid x-api-key" },
     });
     expect(fixture.events.slice(-2)).toEqual([
@@ -325,7 +376,6 @@ describe("runPiTurn", () => {
       })
     ).resolves.toEqual({
       status: "error",
-      approvals: [],
       error: { kind: "internal", message: "draft store down" },
     });
     expect(fixture.events.slice(-2)).toEqual([
@@ -337,7 +387,7 @@ describe("runPiTurn", () => {
   it("terminalizes and flushes when approval persistence fails", async () => {
     const fixture = build();
     const flushEvents = vi.fn(async () => undefined);
-    fixture.persistApprovals.mockRejectedValue(
+    fixture.persistApproval.mockRejectedValue(
       new Error("database unavailable")
     );
     fixture.faux.setResponses([
@@ -347,7 +397,6 @@ describe("runPiTurn", () => {
 
     await expect(fixture.run({ flushEvents })).resolves.toEqual({
       status: "error",
-      approvals: [],
       error: { kind: "internal", message: "database unavailable" },
     });
     expect(fixture.events).toContainEqual(
@@ -411,10 +460,9 @@ describe("runPiTurn", () => {
 
     await expect(fixture.run()).resolves.toEqual({
       status: "error",
-      approvals: [],
       error: { kind: "rate_limited", message: "503 overloaded" },
     });
-    expect(fixture.persistApprovals).not.toHaveBeenCalled();
+    expect(fixture.persistApproval).not.toHaveBeenCalled();
     expect(fixture.events).toContainEqual(
       expect.objectContaining({
         type: "approval:request",

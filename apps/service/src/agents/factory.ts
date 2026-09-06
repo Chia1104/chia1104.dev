@@ -1,4 +1,4 @@
-import { getHookByToken, getRun } from "workflow/api";
+import { getRun } from "workflow/api";
 
 import { createAgentFactory } from "@chia/api/orpc/services/agent.factory";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
@@ -26,6 +26,5 @@ export const agentFactory = createAgentFactory({
   },
   runs: {
     get: getRun,
-    hasHook: async (token) => Boolean(await getHookByToken(token)),
   },
 });

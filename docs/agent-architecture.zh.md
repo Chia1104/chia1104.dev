@@ -90,14 +90,14 @@ agent.quota_config       quota 與 running-turn limits
 
 Server-side conversational state 都能持久化；client view 則由 server detail 與 wire events 推導：
 
-| State                                | 儲存位置                        |
-| ------------------------------------ | ------------------------------- |
-| Transcript 與 branches               | Postgres session tree           |
-| 共用 draft 與 memory                 | Postgres domain tables          |
-| Approvals 與 run metadata            | Postgres agent tables           |
-| Message inbox、pauses、event streams | Workflow backend                |
-| Client request state                 | TanStack Query                  |
-| Client live turn state               | 每個 session 一個 zustand store |
+| State                                  | 儲存位置                        |
+| -------------------------------------- | ------------------------------- |
+| Transcript 與 branches                 | Postgres session tree           |
+| 共用 draft 與 memory                   | Postgres domain tables          |
+| Approvals 與 run metadata              | Postgres agent tables           |
+| Turn runs、abort pauses、event streams | Workflow backend                |
+| Client request state                   | TanStack Query                  |
+| Client live turn state                 | 每個 session 一個 zustand store |
 
 ## 4. 一個 turn
 
@@ -111,16 +111,12 @@ sequenceDiagram
     participant RT as runPiTurn
     participant PG as Postgres
 
-    UI->>API: prompt
+    UI->>API: prompt 或 approve
     API->>SVC: 驗證 caller、session、quota
-    alt 已有 active workflow
-        SVC->>WF: resume message hook
-    else 沒有 active workflow
-        SVC->>PG: create agent.run
-        SVC->>WF: start workflow
-    end
+    SVC->>PG: create agent.run
+    SVC->>WF: start workflow
     SVC-->>UI: run id 與 stream cursor
-    WF->>STEP: execute queued turn
+    WF->>STEP: execute the turn
     STEP->>RT: kind.runTurn
     RT->>PG: append session entries
     RT-->>UI: durable AgentWireEvents
@@ -129,13 +125,15 @@ sequenceDiagram
 
 ### Durable driver
 
-每個 session workflow 擁有一個 deterministic `agentMessageHook`。`getConflict()` 在第一個 turn 前註冊它，並避免兩個 active workflow 同時擁有同一個 inbox。Resume hook 的 payload 是 durable workflow event，依順序逐一消費。
+每個 turn 都是自己的 workflow run。Prompt 與 operator 對 gated call 的決定各自啟動一個 run，執行一次 `runAgentTurnStep` 後結束；turn 之間沒有任何東西停等，run 的 journal 只有一個 turn 長，session 的對話完整存在 Postgres。
 
-Running turn 期間送入的訊息會等待目前 turn 與 approval handshake 結束。Approval 未決、新 workflow 尚未註冊 hook，或文字是保留的 `/end` sentinel 時，enqueue 會被拒絕。
+一次只跑一個 turn。Turn 執行中送入的 prompt 會被拒絕：admission 在此檢查 quota 與 running cap，排在後面的 turn 會在前一個 turn 費用入帳後才執行，卻不會再被檢查。Approval 未決時同樣拒絕。
 
-一個 workflow 最多驅動 200 turns。Workflow function 只負責 orchestration；DB、provider、timer 與 network 操作留在 steps。`runAgentTurnStep` 設 `maxRetries = 0`，因為 turn 可能已寫入 entry 或執行核准過的 side effect。Provider retry 留在 Pi；失敗的 turn 只能由新訊息重新嘗試。
+Acceptance 先 commit，再通知 workflow。新的 run row 就是紀錄，在 session lock 下寫入作為 session 的 lease；交付在 lock transaction 之外進行，因為 workflow command 無法 rollback。`createAgentRun` 會關閉 session 前一個 run row，World 裡仍存活的前一個 run 也會被 cancel。Workflow service 在執行前拒絕的 start 會把 row 標為 failed；結果不明的 start 保留 lease，因為 workflow 可能已在執行。接著 step 在 session lock 下 claim 自己的 run：row 必須仍是 session 的 active run，marker 寫入與 workflow run id 綁定在同一個交易完成，所以 service 寫不進去的綁定由 executor 修復，abort 與 reconcile 都能找到該 run。中途被 cancel、failed 或取代的 run 不會執行任何東西。Reconcile 只在 run 仍帶著判斷當時讀到的 workflow run id 時才關閉它，所以 executor 在這之間 claim 走的 lease 不會被誤關。Step 拋錯時 marker 保持 running，因為 run 會結束並關閉 row。Row 記錄的是 turn 的結果：error 或 step 拋錯為 `failed`、abort 為 `cancelled`、其餘為 `completed`；executor 的 claim 也記在 marker 上，所以已關閉的 row 也能說出模型有沒有跑過。綁定失敗後會用只有該請求持有的 id 送出 abort；只有確認 turn 已結束才把 row 標為 failed，否則 lease 繼續擋住 session。
 
-Start、hook resume 與 cancel 透過 authenticated `WorkflowControl` contract 從 `service` 送到單一 workflow process。Status 與 stream read 直接使用共用 World storage。詳見 [Workflow deployment](./workflow-deployment.md)。
+Workflow function 只負責 orchestration；DB、provider、timer 與 network 操作留在 steps。`runAgentTurnStep` 設 `maxRetries = 0`，因為 turn 可能已寫入 entry 或執行核准過的 side effect。Provider retry 留在 Pi；失敗的 turn 只能由新訊息重新嘗試。
+
+Start、abort resume 與 cancel 透過 authenticated `WorkflowControl` contract 從 `service` 送到單一 workflow process。Status 與 stream read 直接使用共用 World storage。詳見 [Workflow deployment](./workflow-deployment.md)。
 
 ### Runtime lifecycle
 
@@ -180,7 +178,7 @@ Budget check 在 approval check 前執行，因此被 budget 拒絕的呼叫不�
 
 ### Durable approval handshake
 
-Approval 不依賴 in-memory promise。需要核准的呼叫會結束目前 turn，之後再透過 workflow resume。
+Approval 不依賴 in-memory promise，也不停在 run 上。需要核准的呼叫會結束該 turn 與它的 run；operator 的決定會啟動自己的 run。
 
 ```mermaid
 sequenceDiagram
@@ -193,25 +191,27 @@ sequenceDiagram
     M->>G: gated tool call
     G-->>M: blocked tool result
     G->>DB: turn 成功結束時持久化 request
-    WF->>WF: wait on approval hook
+    WF->>WF: run 結束
     U->>DB: persist decision
-    U->>WF: resume hook
+    U->>WF: start relay run
     WF->>M: operator-decision relay turn
     M->>G: reissue call
-    G-->>M: allow pre-authorized tool
+    G-->>M: allow，並花掉這筆 approval
 ```
 
-以下情況可放行：tier 不需核准、session auto-approves 該 tier、call ID 已核准，或 tool 在 relay turn 被 pre-authorize。Decision 先寫入 DB，再 resume hook。Reject 也會建立 relay turn，讓模型回應 operator comment。
+以下情況可放行：tier 不需核准、session auto-approves 該 tier，或該呼叫的 approval key 有一筆尚未花掉的 approval。Key 是 kind 定義的呼叫身分，不是 call id，因為重發的呼叫會帶新的 id。Writing kind 把 `commit_draft` 綁到 operator 看到的 draft revision，把 `set_published` 綁到 feed 與目標狀態，所以換一份 draft，或 draft 在決定後被改過，都會重新被 gate。Approval 在呼叫執行前先持久化為已花掉，且只能用於一次呼叫。批准時綁定的 revision 會跟著該呼叫走：`commit_draft` 提交的就是那個 revision，apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對，決定與寫入之間被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的 revision，同樣在該鎖之下。
 
-Requests 只在 provider turn 成功後一次持久化。失敗的 turn 不留下 undecided rows，也不會讓 workflow 等待無法 resume 的 hook。Relay message 帶有 operator-decision marker，client 會顯示為 notice，而不是使用者輸入。
+Decision 只寫一次，寫在 pending row 上，與 relay run 的 row 在同一個交易，並把該 run 記在 decision 上。對已決定的 row 再呼叫 `approve`，只有在 relay run 關閉時 marker 仍未被 claim（從未執行）才會重送紀錄中的 decision；executor claim 過的 relay 不論結果如何，以及結果不明的 relay，都不會啟動任何東西。Reject 也會建立 relay turn，讓模型回應 operator comment。
+
+每個 turn 只有一筆 request：同一 turn 的第二個 gated call 會被拒絕且不記錄，一個決定只回答一筆 request。Request 只在 provider turn 成功後持久化；失敗的 turn 不留下 undecided rows。Relay message 帶有 operator-decision marker，client 會顯示為 notice，而不是使用者輸入。
 
 Live stream 可以在持久化前先公告 request，讓 UI 及早顯示；但 approval card 必須等 `run:end{awaiting_approval}` 或重新載入的 pending row 確認後才能操作。其他 terminal state 會撤回這筆暫時 request。
 
 ### Abort 路徑
 
-取消 workflow run 無法中斷已執行的 step，因此每個 session run 另有一個停在 hook 上的小型 durable abort-controller workflow。Turn step 訂閱它的 stream，將 `AbortSignal` 傳給 Pi 與 host ports。
+取消 workflow run 無法中斷已執行的 step，因此每個 turn run 另有一個停在 hook 上的小型 durable abort-controller workflow。Turn step 訂閱它的 stream，將 `AbortSignal` 傳給 Pi 與 host ports。
 
-Abort 先 resume controller，在 deadline 內等待該 turn 的 `run:end`，再取消 session workflow 並更新 run row。部分 assistant output 會以 aborted 狀態持久化；approval 與 compaction 不執行。下一個 prompt 會在既有 transcript 上建立新 workflow。
+Abort 先 resume controller，在 deadline 內等待該 turn 的 `run:end`，再取消 run 並更新 row。部分 assistant output 會以 aborted 狀態持久化；approval 與 compaction 不執行。
 
 ## 6. Events、streaming 與 reconnect
 
@@ -233,6 +233,7 @@ session:compacted · session:rewound · state:changed · error · run:end
 - 每個開始的 tool 都有 terminal event；replay 會把中斷的 call 關閉為 aborted。
 - Wire error 只暴露分類；provider 與 host 細節留在 server log。
 - `tool:end.details` 在 durable storage 前先截短；模型讀取的是原始 tool content。
+- Durable stream 寫入失敗只會記錄 log，不會讓 turn 失敗：entries 與 side effects 已經持久化，漏掉事件的 client 重新載入 session 即可。
 
 每個 run 有 coarse event stream 與 batched delta stream。Coarse event 發出前先 flush pending deltas。Turn cursor 同時記錄兩條 stream 的位置，避免 reconnect 時把舊 delta 接到已從 Postgres 載入的 transcript。
 
@@ -246,7 +247,7 @@ Server 是權威來源。Client mount 時先讀 `agent.sessions.get`；若 sessi
 - 該 turn 的第一個 coarse 與 delta stream position。
 - `running` marker。
 
-Turn 執行中，`get` 只 replay 到 `seqBefore`，`attach` 提供後續 events，因此 refresh 不會產生重複訊息。Marker 由 acceptance 與 turn step 維護，因為 Workflow SDK 無法區分停在 hook 與正在執行 step 的 run。
+Turn 執行中，`get` 只 replay 到 `seqBefore`，`attach` 提供後續 events，因此 refresh 不會產生重複訊息。Marker 由 acceptance 與 turn step 維護，因為 Workflow SDK 無法區分正在收尾與正在執行 step 的 run。
 
 ## 7. Compaction、navigation 與 fork
 
@@ -260,7 +261,7 @@ Maintenance 直接操作 session tree，不建立 `Agent`。
 
 Turn 執行中或 approval 未決時，navigate、fork 與手動 compaction 都會被拒絕。這些操作與 prompt、approval acceptance 共用 per-session Postgres advisory lock。新 `agent.run` row 在 workflow 啟動前建立，maintenance 能立即看到 lease。
 
-Maintenance 的 model call 有獨立 deadline，並在 lock transaction 中執行。Timeout 會取消 model call 並 rollback。Transaction 共用單一 connection，因此內部查詢必須循序執行。
+Maintenance 的 model call 有獨立 deadline，並在 lock transaction 中執行。Timeout 會取消 model call 並 rollback，只有 usage ledger row 例外：它寫在 transaction 之外的 connection 上，因為那次呼叫已經計費。Transaction 共用單一 connection，因此內部查詢必須循序執行。
 
 Kind state 不隨 transcript entries 版本化。Rewind 保留目前的 drafts；fork 複製 session 的 draft 參照，兩個 session 繼續處理同一批共用列。
 
@@ -372,12 +373,12 @@ Pi 0.85 在 `Agent` class 之外另有一條執行路徑：`createAgentHarness`�
 
 Harness 本身就是為 host 排程設計的。Lane API 收斂成四個 durable primitive，每一個都對得上本 runtime 既有的 seam：
 
-| Harness primitive  | 本 runtime                                             |
-| ------------------ | ------------------------------------------------------ |
-| `accept`           | 在 lock 下建立 `agent.run` 並啟動 workflow 或喚醒 hook |
-| `drive`            | `runAgentTurnStep`                                     |
-| `requestAbort`     | 每個 run 的 abort-controller workflow                  |
-| `inspectExecution` | 對 Workflow World 做 turn-marker reconcile             |
+| Harness primitive  | 本 runtime                                 |
+| ------------------ | ------------------------------------------ |
+| `accept`           | 在 lock 下建立 `agent.run` 並啟動 workflow |
+| `drive`            | `runAgentTurnStep`                         |
+| `requestAbort`     | 每個 run 的 abort-controller workflow      |
+| `inspectExecution` | 對 Workflow World 做 turn-marker reconcile |
 
 `drive` 回傳 `settled`、帶 `notBefore` 的 `waiting: retry`，或帶 poll 間隔的 `waiting: deferred`，因此 provider retry 與 deferred response 會變成 workflow sleep，而不是 process 內的等待。
 

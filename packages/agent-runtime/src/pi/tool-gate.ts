@@ -22,6 +22,8 @@ export interface ApprovalRequest {
   toolName: string;
   tier: ToolTier;
   args: unknown;
+  /** What an approval of this request is good for; see {@link PiToolCallGateOptions.approvalKeyOf}. */
+  key: string;
 }
 
 export interface PiToolCallGateOptions {
@@ -29,15 +31,19 @@ export interface PiToolCallGateOptions {
   /** Tiers the operator pre-approved for the whole session. */
   autoApprove: readonly ToolTier[];
   /**
-   * Tool call ids already approved. Populated from `agent.tool_approval` when a turn is resumed
-   * after a decision, so the re-issued call goes through.
+   * Identity of a gated call as far as an approval is concerned. An approval granted for one
+   * request lets through exactly one later call with the same key, so the key must cover
+   * everything the operator decided on: the tool, its target and the state they looked at.
+   * The re-issued call carries a new tool call id, which is why the id cannot be the key.
    */
-  approvedToolCallIds?: ReadonlySet<string>;
+  approvalKeyOf: (request: ToolCallRequest) => string | Promise<string>;
+  /** Keys the operator approved that no call has spent yet. */
+  approvedKeys?: ReadonlySet<string>;
   /**
-   * Tool names pre-authorised for this turn only. The "run and commit" affordance, so the
-   * common path avoids burning a turn on the refusal handshake.
+   * Spends an approval before its call runs, so a turn that dies after the call cannot spend
+   * it again. A rejection keeps the call blocked and the approval unspent.
    */
-  preAuthorizedToolNames?: ReadonlySet<string>;
+  consumeApproval?: (key: string) => Promise<void>;
   /**
    * Called the moment a call is refused, before the model has even seen the refusal. Lets the
    * host announce the request while the turn is still streaming; persistence still waits for
@@ -47,41 +53,66 @@ export interface PiToolCallGateOptions {
 }
 
 export interface PiToolCallGate {
-  handle: (event: ToolCallRequest) => ToolCallRefusal | undefined;
-  /** Requests raised during the turn, in order. Drives `run:end{awaiting_approval}`. */
-  readonly requests: readonly ApprovalRequest[];
+  handle: (event: ToolCallRequest) => Promise<ToolCallRefusal | undefined>;
+  /**
+   * The request this turn raised, if any. One per turn: the workflow parks on exactly one
+   * approval hook, so a second gated call is refused without being recorded.
+   */
+  readonly request: ApprovalRequest | undefined;
 }
 
 export const createPiToolCallGate = (
   options: PiToolCallGateOptions
 ): PiToolCallGate => {
-  const requests: ApprovalRequest[] = [];
-  const approved = options.approvedToolCallIds ?? new Set<string>();
-  const preAuthorized = options.preAuthorizedToolNames ?? new Set<string>();
+  let request: ApprovalRequest | undefined;
+  const approved = new Set(options.approvedKeys);
 
   return {
-    requests,
-    handle(event) {
+    get request() {
+      return request;
+    },
+    async handle(event) {
       const toolName = event.toolName;
       const tier = options.policy.tierOf(toolName);
 
       if (!options.policy.requiresApproval(tier)) return undefined;
+      if (options.autoApprove.includes(tier)) return undefined;
 
-      if (
-        options.autoApprove.includes(tier) ||
-        approved.has(event.toolCallId) ||
-        preAuthorized.has(toolName)
-      ) {
-        return undefined;
+      const key = await options.approvalKeyOf(event);
+      if (approved.has(key)) {
+        // Spent for this turn whatever happens next: a second identical call must be gated
+        // again even when the durable spend below fails.
+        approved.delete(key);
+        try {
+          await options.consumeApproval?.(key);
+          return undefined;
+        } catch {
+          return {
+            block: true,
+            reason:
+              `\`${toolName}\` was approved but the approval could not be recorded as used. ` +
+              `Stop here and tell the operator; do not retry this tool.`,
+          };
+        }
       }
 
-      const request: ApprovalRequest = {
+      if (request) {
+        return {
+          block: true,
+          reason:
+            `\`${toolName}\` needs human approval, and \`${request.toolName}\` is already waiting for the operator's decision. ` +
+            `Only one request can wait at a time. Stop here and summarise what you are about to do; ` +
+            `ask for this one after the operator decides.`,
+        };
+      }
+
+      request = {
         toolCallId: event.toolCallId,
         toolName,
         tier,
         args: event.input,
+        key,
       };
-      requests.push(request);
       options.onRequest?.(request);
 
       return {
