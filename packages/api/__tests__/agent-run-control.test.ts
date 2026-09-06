@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
-import { createFakeRuns, getRun, resetWorkflowMocks } from "@chia/test/mocks/workflow";
+import {
+  createFakeRuns,
+  getRun,
+  resetWorkflowMocks,
+} from "@chia/test/mocks/workflow";
 
 const runs = createFakeRuns();
 
@@ -45,7 +49,7 @@ describe("agent run control", () => {
 
     const { claimNextAgentTurn } =
       await import("../orpc/services/agent/run-control");
-    const cursor = await claimNextAgentTurn(
+    const claim = await claimNextAgentTurn(
       runs,
       db,
       {
@@ -56,16 +60,19 @@ describe("agent run control", () => {
           streamIndex: 0,
           deltaStreamIndex: 0,
           running: false,
+          claimId: null,
         },
       },
       "workflow-1"
     );
 
-    expect(cursor).toEqual({
+    expect(claim.cursor).toEqual({
       runId: "workflow-1",
       startIndex: 4,
       deltaStartIndex: 7,
     });
+    expect(claim.claimId).toEqual(expect.any(String));
+    // The claim is named on the marker, so a release can be scoped to this claim alone.
     expect(repo.patchAgentRunMetadata).toHaveBeenCalledExactlyOnceWith(
       db,
       "run-1",
@@ -75,6 +82,7 @@ describe("agent run control", () => {
           streamIndex: 4,
           deltaStreamIndex: 7,
           running: true,
+          claimId: claim.claimId,
         },
       }
     );

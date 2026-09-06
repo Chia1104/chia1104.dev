@@ -235,18 +235,30 @@ export const patchAgentRunMetadata = async (
     .where(eq(agentRuns.id, runId));
 };
 
-/** Flips `metadata[turnKey].running` off, keeping the cursors: a claimed turn whose delivery failed. */
+/**
+ * Flips `metadata[turnKey].running` off, keeping the cursors, for the claim named by
+ * `claimId` only. A step that started since rewrote the marker without the claim, so the
+ * release is then a no-op. Returns whether the claim was still there.
+ */
 export const releaseAgentRunTurn = async (
   db: DB,
   runId: string,
-  turnKey: string
-) => {
-  await db
+  turnKey: string,
+  claimId: string
+): Promise<boolean> => {
+  const rows = await db
     .update(agentRuns)
     .set({
       metadata: sql`jsonb_set(${agentRuns.metadata}, ${`{${turnKey},running}`}::text[], 'false'::jsonb)`,
     })
-    .where(eq(agentRuns.id, runId));
+    .where(
+      and(
+        eq(agentRuns.id, runId),
+        sql`${agentRuns.metadata} #>> ${`{${turnKey},claimId}`}::text[] = ${claimId}`
+      )
+    )
+    .returning({ id: agentRuns.id });
+  return rows.length > 0;
 };
 
 /** Points a run row written ahead of its workflow at the run the workflow backend then created. */

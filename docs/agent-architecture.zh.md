@@ -133,9 +133,9 @@ sequenceDiagram
 
 一次只跑一個 turn。Turn 執行中送入的 prompt 會被拒絕：admission 在此檢查 quota 與 running cap，排在 running turn 後面的訊息會在該 turn 費用入帳後才執行，卻不會再被檢查。Approval 未決、新 workflow 尚未註冊 hook，或文字是保留的 `/end` sentinel 時，enqueue 同樣會被拒絕。
 
-Acceptance 先 commit，再通知 workflow。新的 run row 或已 claim 的 turn marker 就是紀錄；交付在 lock transaction 之外進行，因為 workflow command 無法 rollback。交付失敗會釋放 claim 或將 run row 標為 failed。Process 在 commit 與交付之間死亡會留下 claim，由 abort 清除。
+Acceptance 先 commit，再通知 workflow。新的 run row 或已 claim 的 turn marker 就是紀錄；交付在 lock transaction 之外進行，因為 workflow command 無法 rollback。每個 claim 都帶 `claimId`，step 覆寫 marker 時不帶它。Workflow service 在執行前拒絕的交付會依 id 釋放該 claim；其他失敗都是結果不明，hook 可能已經 resume，所以 claim 保留，由 operator 的 abort 收尾。Workflow 已啟動但 run row 綁定失敗時，會用只有該請求持有的 id 送出 abort 並 cancel，並把所有 id 寫進 log。
 
-一個 workflow 最多驅動 200 turns。Workflow function 只負責 orchestration；DB、provider、timer 與 network 操作留在 steps。`runAgentTurnStep` 設 `maxRetries = 0`，因為 turn 可能已寫入 entry 或執行核准過的 side effect。Provider retry 留在 Pi；失敗的 turn 只能由新訊息重新嘗試。
+一個 workflow 最多驅動 200 turns，relay turn 也計入。達到上限後 workflow 不再接下一個 prompt 並結束；進行中的 approval handshake 仍會完成，所以上限可能被該 handshake 所需的 turn 超過。之後的 prompt 會在同一份 transcript 上建立新 workflow。Workflow function 只負責 orchestration；DB、provider、timer 與 network 操作留在 steps。`runAgentTurnStep` 設 `maxRetries = 0`，因為 turn 可能已寫入 entry 或執行核准過的 side effect。Provider retry 留在 Pi；失敗的 turn 只能由新訊息重新嘗試。
 
 Start、hook resume 與 cancel 透過 authenticated `WorkflowControl` contract 從 `service` 送到單一 workflow process。Status 與 stream read 直接使用共用 World storage。詳見 [Workflow deployment](./workflow-deployment.md)。
 
@@ -203,7 +203,7 @@ sequenceDiagram
     G-->>M: allow，並花掉這筆 approval
 ```
 
-以下情況可放行：tier 不需核准、session auto-approves 該 tier，或該呼叫的 approval key 有一筆尚未花掉的 approval。Key 是 kind 定義的呼叫身分，不是 call id，因為重發的呼叫會帶新的 id。Writing kind 把 `commit_draft` 綁到 operator 看到的 draft revision，把 `set_published` 綁到 feed 與目標狀態，所以換一份 draft，或 draft 在決定後被改過，都會重新被 gate。Approval 在呼叫執行前先持久化為已花掉，且只能用於一次呼叫。
+以下情況可放行：tier 不需核准、session auto-approves 該 tier，或該呼叫的 approval key 有一筆尚未花掉的 approval。Key 是 kind 定義的呼叫身分，不是 call id，因為重發的呼叫會帶新的 id。Writing kind 把 `commit_draft` 綁到 operator 看到的 draft revision，把 `set_published` 綁到 feed 與目標狀態，所以換一份 draft，或 draft 在決定後被改過，都會重新被 gate。Approval 在呼叫執行前先持久化為已花掉，且只能用於一次呼叫。批准時綁定的 revision 會跟著該呼叫走：`commit_draft` 提交的就是那個 revision，apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對，決定與寫入之間被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的 revision，同樣在該鎖之下。
 
 Decision 只寫一次，寫在 pending row 上，然後才 resume hook。對已決定的 row 再呼叫 `approve`，只要 run 仍在等待，就會重送紀錄中的 decision，絕不改寫。Reject 也會建立 relay turn，讓模型回應 operator comment。
 

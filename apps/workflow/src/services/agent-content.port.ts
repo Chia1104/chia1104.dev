@@ -37,7 +37,11 @@ export const createAgentContentPort = (
     async applyDraft(input) {
       const result = await applyFeedDraftService(
         db,
-        { draftId: input.draftId, adminId },
+        {
+          draftId: input.draftId,
+          expectedRevision: input.expectedRevision,
+          adminId,
+        },
         feedHooks
       );
       onCommitted?.();

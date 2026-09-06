@@ -37,6 +37,12 @@ const cursorOf = (
 /** A cursor at a known stream position, used for the first turn of a newly started run. */
 export const agentStreamCursor = cursorOf;
 
+export interface AgentTurnClaim {
+  cursor: AgentStreamCursor;
+  /** Names the marker written here; `null` when the row already reported a running turn. */
+  claimId: string | null;
+}
+
 /**
  * Captures and claims the next turn before its workflow hook is resumed. Reading both
  * tails and writing the marker are one operation so callers cannot resume a hook with a
@@ -47,7 +53,7 @@ export const claimNextAgentTurn = async (
   db: DB,
   row: ClaimableAgentTurn,
   runId: string
-): Promise<AgentStreamCursor> => {
+): Promise<AgentTurnClaim> => {
   const run = runs.get(runId);
   const [coarseTail, deltaTail] = await Promise.all([
     run.getReadable().getTailIndex(),
@@ -58,17 +64,20 @@ export const claimNextAgentTurn = async (
     deltaStreamIndex: deltaTail + 1,
   };
 
+  let claimId: string | null = null;
   if (row.activeRunId && !row.turn?.running) {
+    claimId = crypto.randomUUID();
     await patchAgentRunMetadata(db, row.activeRunId, {
       [AGENT_TURN_KEY]: {
         seqBefore: await getAgentSessionLastSeq(db, row.id),
         ...position,
         running: true,
+        claimId,
       } satisfies AgentTurnMarker,
     });
   }
 
-  return cursorOf(runId, position);
+  return { cursor: cursorOf(runId, position), claimId };
 };
 
 /** `createHook()` registers after the workflow starts; this turns that startup race into a retryable response. */

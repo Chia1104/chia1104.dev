@@ -4,6 +4,7 @@ import {
   deleteFeedDraft,
   getFeedDraft,
   getFeedDraftByFeedId,
+  getFeedDraftForUpdate,
   getFeedDraftRevision,
   markFeedDraftApplied,
   patchFeedDraft,
@@ -191,13 +192,50 @@ export interface ApplyFeedDraftResult {
 /**
  * Writes the draft onto `feed` and `feed_translation`, creating an unpublished feed the first
  * time. Publishing is a separate feed write. The draft stays open as the working copy.
+ *
+ * With `expectedRevision`, the draft row is locked and its revision checked in the same
+ * transaction that writes the feed, so what lands is the revision the caller approved and
+ * nothing written since. Feed hooks run after that transaction commits.
  */
 export const applyFeedDraftService = async (
   db: DB,
-  input: { draftId: number; adminId: string },
+  input: { draftId: number; adminId: string; expectedRevision?: number },
   hooks: FeedHooks
 ): Promise<ApplyFeedDraftResult> => {
-  const draft = await requireDraft(db, input.draftId, input.adminId);
+  const changed: number[] = [];
+  const deferred: FeedHooks = {
+    onFeedChanged: async (feedID) => {
+      changed.push(feedID);
+    },
+  };
+  const result = await db.transaction(async (tx) => {
+    const locked = await getFeedDraftForUpdate(tx, input.draftId);
+    if (!locked || locked.userId !== input.adminId) {
+      throw new AppError("NOT_FOUND", {
+        message: `Draft ${input.draftId} not found`,
+      });
+    }
+    if (
+      input.expectedRevision !== undefined &&
+      locked.revision !== input.expectedRevision
+    ) {
+      throw new AppError("CONFLICT", {
+        message: `Draft ${input.draftId} is at revision ${locked.revision}, not ${input.expectedRevision}: it changed after it was approved. Read it again and ask for approval of the current revision.`,
+        data: { revision: locked.revision },
+      });
+    }
+    return applyLockedDraft(tx, locked, input.adminId, deferred);
+  });
+  for (const feedID of changed) await hooks.onFeedChanged?.(feedID);
+  return result;
+};
+
+const applyLockedDraft = async (
+  db: DB,
+  draft: FeedDraftRecord,
+  adminId: string,
+  hooks: FeedHooks
+): Promise<ApplyFeedDraftResult> => {
   // SAFETY: translations are keyed by Locale.
   const locales = Object.keys(draft.translations) as Locale[];
 
@@ -251,7 +289,7 @@ export const applyFeedDraftService = async (
     const created = await createFeedService(
       db,
       {
-        adminId: input.adminId,
+        adminId,
         slug: draft.slug,
         type: draft.type,
         defaultLocale: draft.defaultLocale,

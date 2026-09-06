@@ -224,6 +224,56 @@ describe("agentSessionWorkflow", () => {
     });
   });
 
+  it("stops taking prompts at the turn cap but lets an approval handshake in progress finish", async () => {
+    // Prompts beyond what the cap consumes must remain unread: the run ends instead.
+    const queue = [{ text: "one more" }, { text: "/end" }];
+    mocks.createMessageHook.mockReturnValue(messageHook(queue));
+    let calls = 0;
+    mocks.runTurn.mockImplementation(async () => {
+      calls += 1;
+      // The 200th turn gates a call; its relay is turn 201.
+      if (calls === 200) {
+        return {
+          status: "awaiting_approval",
+          approval: {
+            toolCallId: "call-200",
+            toolName: "commit_draft",
+            approvalKey: "commit_draft:7@1",
+          },
+          error: undefined,
+        };
+      }
+      return { status: "done", error: undefined };
+    });
+    mocks.createApprovalHook.mockReturnValue(
+      Promise.resolve({ approved: true, comment: undefined })
+    );
+    // 199 queued prompts fill the run up to the gated turn.
+    for (let index = 0; index < 199; index += 1) {
+      queue.unshift({ text: `prompt ${index}` });
+    }
+
+    await expect(
+      agentSessionWorkflow({
+        sessionId: "session-1",
+        runId: "run-1",
+        userId: "user-1",
+        abortController: { id: "abort-1", runId: "abort-run-1" },
+        firstMessage: { text: "first" },
+      })
+    ).resolves.toEqual({ sessionId: "session-1", turns: 201 });
+
+    expect(mocks.runTurn.mock.calls[200]?.[0]).toMatchObject({
+      decision: { toolCallId: "call-200", approved: true },
+    });
+    expect(queue.map((message) => message.text)).toEqual(["one more", "/end"]);
+    expect(mocks.completeRun).toHaveBeenCalledWith(
+      "run-1",
+      { id: "abort-1", runId: "abort-run-1" },
+      "completed"
+    );
+  });
+
   it("marks the run failed and closes its streams when a turn step throws", async () => {
     mocks.createMessageHook.mockReturnValue(messageHook([]));
     mocks.runTurn.mockRejectedValue(new Error("process died mid-step"));

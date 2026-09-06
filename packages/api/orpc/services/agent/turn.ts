@@ -19,7 +19,8 @@ import {
   releaseAgentRunTurn,
   withAgentSessionLock,
 } from "@chia/db/repos/agent";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, isAppError } from "@chia/service-kit/errors";
+import type { AppErrorCode } from "@chia/service-kit/errors";
 import {
   AGENT_END_SENTINEL,
   agentApprovalToken,
@@ -80,8 +81,9 @@ type Admission =
   | {
       kind: "resume";
       cursor: AgentStreamCursor;
-      /** The run whose marker was claimed; released if delivery fails. */
+      /** The run whose marker was claimed; released if the workflow refused the delivery. */
       activeRunId: string | null;
+      claimId: string | null;
     }
   | {
       kind: "start";
@@ -89,6 +91,18 @@ type Admission =
       abortController: AgentAbortControllerRef;
       position: AgentStreamPosition;
     };
+
+/**
+ * Whether the workflow service rejected the command before executing it. Only then is it
+ * known that nothing was accepted; a timeout, a dropped response or a failure inside the
+ * service may have resumed the hook, and the claim must stay until the step overwrites it
+ * or the operator aborts.
+ */
+const deliveryRefused = (code: AppErrorCode | null): boolean =>
+  code === "BAD_REQUEST" ||
+  code === "UNAUTHORIZED" ||
+  code === "FORBIDDEN" ||
+  code === "UNPROCESSABLE_CONTENT";
 
 /** Durable turn admission, workflow hooks and live transport for one agent kind. */
 export const createAgentTurnOperations = <TState, TConfig extends object>(
@@ -112,16 +126,34 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
   };
 
   /**
-   * Undoes a claim whose hook resume failed, so the session does not report a turn that never
-   * started. A process that dies between commit and delivery leaves the claim in place; abort
-   * clears it.
+   * Compensates a delivery that failed. A refused command never reached the hook, so the
+   * claim is released, by its id so a step that has since started is left alone. Any other
+   * failure is ambiguous: the claim stays, the ids are logged, and the operator's abort is
+   * the way out if the step never starts.
    */
-  const releaseClaim = async (db: DB, activeRunId: string | null) => {
-    if (activeRunId) {
-      await releaseAgentRunTurn(db, activeRunId, AGENT_TURN_KEY).catch(
-        () => undefined
-      );
+  const settleFailedDelivery = async (
+    db: DB,
+    sessionId: string,
+    admission: { activeRunId: string | null; claimId: string | null },
+    code: AppErrorCode | null
+  ) => {
+    if (deliveryRefused(code)) {
+      if (admission.activeRunId && admission.claimId) {
+        await releaseAgentRunTurn(
+          db,
+          admission.activeRunId,
+          AGENT_TURN_KEY,
+          admission.claimId
+        ).catch(() => undefined);
+      }
+      return;
     }
+    console.error("Agent turn delivery is unresolved; the claim is kept", {
+      sessionId,
+      runId: admission.activeRunId,
+      claimId: admission.claimId,
+      code,
+    });
   };
 
   return {
@@ -204,7 +236,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
               });
             }
 
-            const cursor = await claimNextAgentTurn(
+            const claim = await claimNextAgentTurn(
               host.runs,
               tx,
               row,
@@ -212,8 +244,9 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
             );
             return {
               kind: "resume",
-              cursor,
+              cursor: claim.cursor,
               activeRunId: row.activeRunId,
+              claimId: claim.claimId,
               message,
             };
           }
@@ -232,6 +265,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
             seqBefore: await getAgentSessionLastSeq(tx, row.id),
             ...position,
             running: true,
+            claimId: null,
           };
           await createAgentRun(tx, {
             id: runId,
@@ -256,7 +290,12 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         try {
           await workflow.resumeAgentMessage(input.sessionId, admission.message);
         } catch (error) {
-          await releaseClaim(db, admission.activeRunId);
+          await settleFailedDelivery(
+            db,
+            input.sessionId,
+            admission,
+            isAppError(error) ? error.code : null
+          );
           throw error;
         }
         return { ...admission.cursor, startedRun: false };
@@ -280,7 +319,32 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         );
         throw error;
       }
-      await bindAgentRunExternalId(db, admission.runId, workflowRunId);
+      try {
+        await bindAgentRunExternalId(db, admission.runId, workflowRunId);
+      } catch (error) {
+        // The workflow is running while the row still carries its lease id, so abort could not
+        // find it. Stop it now, on the id only this request knows, and leave every id in the log.
+        await signalAgentAbort(
+          workflow,
+          admission.abortController.id,
+          "run failed to bind"
+        );
+        const cancelled = await workflow
+          .cancelRun(workflowRunId)
+          .then(() => true)
+          .catch(() => false);
+        await completeAgentRun(db, admission.runId, "failed").catch(
+          () => undefined
+        );
+        console.error("Agent run could not be bound to its workflow run", {
+          sessionId: input.sessionId,
+          runId: admission.runId,
+          workflowRunId,
+          cancelled,
+          cause: error,
+        });
+        throw error;
+      }
       return {
         ...agentStreamCursor(workflowRunId, admission.position),
         startedRun: true,
@@ -364,6 +428,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         ): Promise<{
           cursor: AgentStreamCursor;
           activeRunId: string | null;
+          claimId: string | null;
           decision: RecordedDecision & {
             credentials?: EncryptedAgentCredentials;
           };
@@ -399,15 +464,16 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
             };
           }
 
-          const cursor = await claimNextAgentTurn(
+          const claim = await claimNextAgentTurn(
             host.runs,
             tx,
             row,
             row.workflowRunId
           );
           return {
-            cursor,
+            cursor: claim.cursor,
             activeRunId: row.activeRunId,
+            claimId: claim.claimId,
             decision: {
               ...decision,
               credentials: host.credentials.read(caller.context.headers),
@@ -424,7 +490,12 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           admission.decision
         );
       } catch (error) {
-        await releaseClaim(db, admission.activeRunId);
+        await settleFailedDelivery(
+          db,
+          input.sessionId,
+          admission,
+          isAppError(error) ? error.code : null
+        );
         throw error;
       }
       return admission.cursor;

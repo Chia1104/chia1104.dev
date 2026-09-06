@@ -33,8 +33,11 @@ export const commitDraftTool = defineTool({
     }),
   }),
   executionMode: "sequential",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+  async execute(toolCallId, params, _signal, _onUpdate, context) {
     const draft = await context.draft.get(params.draftId);
+    // The approved revision when the operator decided on this call; otherwise the one just read.
+    const expectedRevision =
+      context.approvedDraftRevisions.get(toolCallId) ?? draft.revision;
     // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
     const locales = Object.keys(draft.translations) as Locale[];
 
@@ -64,7 +67,10 @@ export const commitDraftTool = defineTool({
       );
     }
 
-    const result = await context.content.applyDraft({ draftId: draft.id });
+    const result = await context.content.applyDraft({
+      draftId: draft.id,
+      expectedRevision,
+    });
 
     return textResult(
       `${result.created ? "Created" : "Updated"} feed ${result.feedId} at slug \`${result.slug}\`, ` +

@@ -164,6 +164,7 @@ export const runAgentTurnStep = async (
     streamIndex: coarseTail + 1,
     deltaStreamIndex: deltaTail + 1,
     running: true,
+    claimId: null,
   };
   await patchAgentRunMetadata(db, request.runId, { [AGENT_TURN_KEY]: marker });
 

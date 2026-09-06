@@ -50,7 +50,11 @@ export const requestSchema = z.object({
 
 type Request = z.input<typeof requestSchema>;
 
-/** A session past this should be forked. */
+/**
+ * Turns one run drives, relay turns included. At the cap the run stops taking the next
+ * prompt and ends; an approval handshake in progress still completes, because breaking out
+ * would park a persisted request with no hook to resume. A session past this should be forked.
+ */
 const MAX_TURNS_PER_RUN = 200;
 
 export const agentSessionWorkflow = async (request: Request) => {

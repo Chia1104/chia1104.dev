@@ -46,6 +46,7 @@ vi.mock("@chia/agent-host/quota", () => quota);
 vi.mock("../orpc/services/agent/abort", () => abort);
 
 import type { DB } from "@chia/db/client";
+import { AppError } from "@chia/service-kit/errors";
 
 import { createAgentTurnOperations } from "../orpc/services/agent/turn";
 
@@ -59,6 +60,7 @@ const db =
 let lockHeld = false;
 
 const workflow = {
+  cancelRun: vi.fn(),
   resumeAgentMessage: vi.fn(),
   resumeAgentApproval: vi.fn(),
   startAgentSession: vi.fn(),
@@ -120,6 +122,7 @@ const session = (overrides: {
     streamIndex: 0,
     deltaStreamIndex: 0,
     running: overrides.running ?? false,
+    claimId: null,
   },
 });
 
@@ -146,6 +149,8 @@ beforeEach(() => {
   workflow.resumeAgentMessage.mockResolvedValue(undefined);
   workflow.resumeAgentApproval.mockResolvedValue(undefined);
   workflow.startAgentSession.mockResolvedValue("wf-2");
+  repo.bindAgentRunExternalId.mockResolvedValue(undefined);
+  repo.completeAgentRun.mockResolvedValue(undefined);
 });
 
 describe("agent turn admission", () => {
@@ -160,26 +165,42 @@ describe("agent turn admission", () => {
     expect(repo.patchAgentRunMetadata).not.toHaveBeenCalled();
   });
 
-  it("claims the turn under the lock, commits, then resumes the hook; a failed resume releases the claim", async () => {
+  it("claims the turn under the lock, commits, then resumes the hook; a refused resume releases that claim by id", async () => {
     liveRun("running");
     loadOwnedSession.mockResolvedValue(session({ running: false }));
     workflow.resumeAgentMessage.mockImplementation(async () => {
       expect(lockHeld).toBe(false);
-      throw new Error("workflow unreachable");
+      throw new AppError("UNAUTHORIZED", { message: "bad control token" });
     });
 
     await expect(
       turns.prompt(caller, { sessionId: "session-1", text: "next" })
-    ).rejects.toThrow("workflow unreachable");
+    ).rejects.toThrow("bad control token");
 
-    expect(repo.patchAgentRunMetadata).toHaveBeenCalledWith(
+    const claimId = repo.patchAgentRunMetadata.mock.calls[0]?.[2].turn.claimId;
+    expect(claimId).toEqual(expect.any(String));
+    expect(repo.releaseAgentRunTurn).toHaveBeenCalledExactlyOnceWith(
       db,
       "run-1",
-      expect.objectContaining({
-        turn: expect.objectContaining({ running: true }),
-      })
+      "turn",
+      claimId
     );
-    expect(repo.releaseAgentRunTurn).toHaveBeenCalledWith(db, "run-1", "turn");
+  });
+
+  it("keeps the claim when the delivery result is unknown", async () => {
+    liveRun("running");
+    loadOwnedSession.mockResolvedValue(session({ running: false }));
+    // A dropped response: the hook may well have resumed and the step may be running.
+    workflow.resumeAgentMessage.mockRejectedValue(
+      new AppError("INTERNAL_SERVER_ERROR", { message: "socket hang up" })
+    );
+
+    await expect(
+      turns.prompt(caller, { sessionId: "session-1", text: "next" })
+    ).rejects.toThrow("socket hang up");
+
+    expect(repo.patchAgentRunMetadata).toHaveBeenCalledOnce();
+    expect(repo.releaseAgentRunTurn).not.toHaveBeenCalled();
   });
 
   it("writes the run row as the lease, starts the workflow after the commit and binds the run id", async () => {
@@ -223,6 +244,28 @@ describe("agent turn admission", () => {
       expect.any(String)
     );
     expect(repo.bindAgentRunExternalId).not.toHaveBeenCalled();
+  });
+
+  it("aborts and cancels a started workflow whose run row could not be bound", async () => {
+    liveRun("completed");
+    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
+    repo.bindAgentRunExternalId.mockRejectedValue(new Error("db gone"));
+    workflow.cancelRun.mockResolvedValue(undefined);
+
+    await expect(
+      turns.prompt(caller, { sessionId: "session-1", text: "first" })
+    ).rejects.toThrow("db gone");
+
+    const runId = repo.createAgentRun.mock.calls[0]?.[1].id;
+    // The row still carries its lease id, so abort could not find the run: stop it on the
+    // id this request holds.
+    expect(abort.signalAgentAbort).toHaveBeenCalledWith(
+      workflow,
+      "abort-1",
+      expect.any(String)
+    );
+    expect(workflow.cancelRun).toHaveBeenCalledExactlyOnceWith("wf-2");
+    expect(repo.completeAgentRun).toHaveBeenCalledWith(db, runId, "failed");
   });
 
   it("records a pending decision once and delivers it after the commit", async () => {

@@ -471,6 +471,70 @@ describe("runWritingTurn", () => {
     );
   });
 
+  it("commits the approved revision even when the editor saves between the gate and the apply", async () => {
+    fixture.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+            draftId: DRAFT_ID,
+            locale: "en",
+            title: "A post",
+            slug: "a-post",
+            defaultLocale: "en",
+          }),
+          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+            draftId: DRAFT_ID,
+            locale: "en",
+            content: "## Post\n\nBody.",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Staged."),
+    ]);
+    await fixture.run("Stage a post");
+    const approvedRevision = (await fixture.draft.get(DRAFT_ID)).revision;
+
+    // Reads in order: the volatile context, the gate's key, then the tool. The editor saves
+    // right after the gate read the revision it matched.
+    const store = fixture.draft;
+    const originalGet = store.get.bind(store);
+    let reads = 0;
+    store.get = async (draftId) => {
+      const draft = await originalGet(draftId);
+      reads += 1;
+      if (reads === 2) {
+        store.operatorEdit(DRAFT_ID, "en", { content: "## Post\n\nEdited." });
+      }
+      return draft;
+    };
+    fixture.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.commitDraft, {
+            draftId: DRAFT_ID,
+            confirmation: "Committing as approved.",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Committed."),
+    ]);
+    await fixture.run("Approved.", {
+      approvedApprovalKeys: new Set([
+        `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approvedRevision}`,
+      ]),
+      consumeApproval: async () => undefined,
+    });
+
+    // The apply is pinned to the approved revision, not the one the tool read afterwards;
+    // the apply service refuses it when the row no longer matches.
+    expect((await originalGet(DRAFT_ID)).revision).toBe(approvedRevision + 1);
+    expect(fixture.content.commits).toEqual([
+      { draftId: DRAFT_ID, expectedRevision: approvedRevision },
+    ]);
+  });
+
   it("gates a commit again when the draft moved past the approved revision", async () => {
     fixture.setResponses([
       fauxAssistantMessage(

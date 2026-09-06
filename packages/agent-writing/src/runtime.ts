@@ -69,9 +69,12 @@ export interface RunWritingTurnOptions<TApproval> {
  * the draft revision they looked at, so a draft edited after the decision, by them or by the
  * model on its way back, is gated again instead of committed unseen. A discarded draft still
  * keys, and the call itself reports it missing.
+ *
+ * The revision the key was read from is also the revision that call may commit, so it is
+ * recorded in `approvedDraftRevisions` under the call's id for `commit_draft` to apply.
  */
 export const writingApprovalKeyOf =
-  (store: DraftStore) =>
+  (store: DraftStore, approvedDraftRevisions: Map<string, number>) =>
   async (request: ToolCallRequest): Promise<string> => {
     const args = commitArgsSchema.safeParse(request.input).data ?? {};
     switch (request.toolName) {
@@ -79,6 +82,7 @@ export const writingApprovalKeyOf =
         const draftId = args.draftId;
         try {
           const draft = await store.get(draftId ?? Number.NaN);
+          approvedDraftRevisions.set(request.toolCallId, draft.revision);
           return `${request.toolName}:${draftId}@${draft.revision}`;
         } catch (error) {
           if (error instanceof DraftNotFoundError) {
@@ -183,12 +187,14 @@ export const runWritingTurn = <TApproval>(
 ): Promise<AgentTurnExecution<TApproval>> => {
   const defaultLocale = options.defaultLocale ?? Locale.zhTW;
   const models = options.models ?? createAgentModels();
+  const approvedDraftRevisions = new Map<string, number>();
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
     content: options.content,
     web: options.web,
     draft: options.draft,
     memory: options.memory,
+    approvedDraftRevisions,
   };
 
   return runPiTurn({
@@ -230,7 +236,7 @@ export const runWritingTurn = <TApproval>(
     promptTemplates: writingPromptTemplates,
     policy: writingPolicy,
     budget: writingTurnBudget,
-    approvalKeyOf: writingApprovalKeyOf(options.draft),
+    approvalKeyOf: writingApprovalKeyOf(options.draft, approvedDraftRevisions),
     approvedApprovalKeys: options.approvedApprovalKeys,
     consumeApproval: options.consumeApproval,
     message: options.message,
