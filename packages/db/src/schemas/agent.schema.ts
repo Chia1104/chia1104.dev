@@ -336,6 +336,13 @@ export const agentToolApprovals = agentSchema.table(
     decidedAt: timestamp("decided_at", { withTimezone: true, mode: "date" }),
     /** When an approved call ran on this approval; set before the call executes. */
     consumedAt: timestamp("consumed_at", { withTimezone: true, mode: "date" }),
+    /**
+     * The run that relays this decision to the model, written with the decision. A decided
+     * request whose relay run never executed may be delivered again; one that did may not.
+     */
+    relayRunId: text("relay_run_id").references(() => agentRuns.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),

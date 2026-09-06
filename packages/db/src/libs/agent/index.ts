@@ -626,6 +626,25 @@ export const decideAgentApproval = async (
   return row;
 };
 
+/** Names the run that relays a decision; written in the transaction that records the decision. */
+export const setAgentApprovalRelayRun = async (
+  db: DB,
+  input: { sessionId: string; toolCallId: string; relayRunId: string }
+) => {
+  await db
+    .update(agentToolApprovals)
+    .set({ relayRunId: input.relayRunId })
+    .where(
+      and(
+        eq(agentToolApprovals.sessionId, input.sessionId),
+        eq(agentToolApprovals.toolCallId, input.toolCallId)
+      )
+    );
+};
+
+export const getAgentRun = async (db: DB, runId: string) =>
+  await db.query.agentRuns.findFirst({ where: { id: runId } });
+
 /** Approval keys granted on this session that no call has spent; seeds the permission gate. */
 export const listUnspentAgentApprovalKeys = async (
   db: DB,

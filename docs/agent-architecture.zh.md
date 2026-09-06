@@ -201,7 +201,7 @@ sequenceDiagram
 
 以下情況可放行：tier 不需核准、session auto-approves 該 tier，或該呼叫的 approval key 有一筆尚未花掉的 approval。Key 是 kind 定義的呼叫身分，不是 call id，因為重發的呼叫會帶新的 id。Writing kind 把 `commit_draft` 綁到 operator 看到的 draft revision，把 `set_published` 綁到 feed 與目標狀態，所以換一份 draft，或 draft 在決定後被改過，都會重新被 gate。Approval 在呼叫執行前先持久化為已花掉，且只能用於一次呼叫。批准時綁定的 revision 會跟著該呼叫走：`commit_draft` 提交的就是那個 revision，apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對，決定與寫入之間被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的 revision，同樣在該鎖之下。
 
-Decision 只寫一次，寫在 pending row 上，與 relay run 的 row 在同一個交易；對已決定的 row 再呼叫 `approve` 不會啟動任何東西。Reject 也會建立 relay turn，讓模型回應 operator comment。
+Decision 只寫一次，寫在 pending row 上，與 relay run 的 row 在同一個交易，並把該 run 記在 decision 上。對已決定的 row 再呼叫 `approve`，只有在 relay run 從未執行（被拒絕，或在 step claim 前就被關閉）時才會重送紀錄中的 decision；已執行或結果不明的 relay 不會啟動任何東西。Reject 也會建立 relay turn，讓模型回應 operator comment。
 
 每個 turn 只有一筆 request：同一 turn 的第二個 gated call 會被拒絕且不記錄，一個決定只回答一筆 request。Request 只在 provider turn 成功後持久化；失敗的 turn 不留下 undecided rows。Relay message 帶有 operator-decision marker，client 會顯示為 notice，而不是使用者輸入。
 

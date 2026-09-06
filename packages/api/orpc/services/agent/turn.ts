@@ -16,9 +16,12 @@ import {
   createAgentRun,
   decideAgentApproval,
   getAgentApproval,
+  getAgentRun,
   getAgentSessionLastSeq,
+  setAgentApprovalRelayRun,
   withAgentSessionLock,
 } from "@chia/db/repos/agent";
+import type { AgentRunStatus } from "@chia/db/schema";
 import { AppError, isAppError } from "@chia/service-kit/errors";
 import type { AppErrorCode } from "@chia/service-kit/errors";
 import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-hooks";
@@ -77,6 +80,20 @@ interface AcceptedTurn {
   /** A live run of the session that was not executing a turn; cancelled once replaced. */
   staleWorkflowRunId: string | null;
 }
+
+/** An operator's decision as the approval row records it. */
+interface RecordedDecision {
+  approved: boolean;
+  comment?: string;
+}
+
+/**
+ * A relay run that never reached the model: refused by the workflow service, or closed by
+ * reconciliation or the operator before its step could claim it. An executed turn completes
+ * its row; a lease whose fate is unknown is still `active`.
+ */
+const relayNeverRan = (status: AgentRunStatus): boolean =>
+  status === "failed" || status === "cancelled";
 
 /**
  * Whether the workflow service rejected the command before executing it. Only then is it
@@ -150,7 +167,8 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
 
   /**
    * Writes the run row under the session lock, then starts the run. `admit` runs inside the
-   * lock and returns the turn's message, or `null` when there is nothing to start.
+   * lock and returns the turn's message, or `null` when there is nothing to start; `bind`
+   * runs in the same transaction once the run row exists.
    */
   const startTurn = async (
     outer: AgentServiceCaller,
@@ -159,7 +177,10 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
       tx: DB,
       caller: AgentServiceCaller,
       row: OwnedSession<TState, TConfig>
-    ) => Promise<AgentMessagePayload | null>
+    ) => Promise<{
+      message: AgentMessagePayload;
+      bind?: (tx: DB, runId: string) => Promise<void>;
+    } | null>
   ): Promise<AgentStreamCursor | null> => {
     const db = outer.context.db;
     const workflow = outer.context.workflow;
@@ -176,8 +197,9 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           });
         }
 
-        const message = await admit(tx, caller, row);
-        if (!message) return null;
+        const admitted = await admit(tx, caller, row);
+        if (!admitted) return null;
+        const { message } = admitted;
 
         // One turn at a time: quota and the running cap were checked here, and a turn run
         // behind this one would execute after its cost landed without being checked again.
@@ -216,6 +238,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
             },
           },
         });
+        await admitted.bind?.(tx, runId);
         return {
           runId,
           abortController,
@@ -320,10 +343,12 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           }
 
           return {
-            text: input.text,
-            template: input.template,
-            attachments: input.attachments,
-            credentials: host.credentials.read(caller.context.headers),
+            message: {
+              text: input.text,
+              template: input.template,
+              attachments: input.attachments,
+              credentials: host.credentials.read(caller.context.headers),
+            },
           };
         }
       );
@@ -398,7 +423,9 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
 
     /**
      * Records the decision on the pending request and starts the run that relays it. A
-     * decision is written once; a request already decided starts nothing and returns `null`.
+     * decision is written once. A request already decided is delivered again only when its
+     * relay run never executed: the recorded decision, whatever this call says. A relay run
+     * that ran, or whose fate is still unknown, starts nothing.
      */
     approve: (outer, input) =>
       startTurn(outer, input.sessionId, async (tx, caller) => {
@@ -407,28 +434,49 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           input.sessionId,
           input.toolCallId
         );
-        if (existing?.status !== "pending") return null;
+        if (!existing) return null;
 
-        await assertCanStartTurn(tx, caller);
-        const decided = await decideAgentApproval(tx, {
-          sessionId: input.sessionId,
-          toolCallId: input.toolCallId,
-          approved: input.approved,
-          comment: input.comment,
-          decidedBy: caller.userId,
-        });
-        if (!decided) return null;
+        let decision: RecordedDecision;
+        if (existing.status === "pending") {
+          await assertCanStartTurn(tx, caller);
+          const decided = await decideAgentApproval(tx, {
+            sessionId: input.sessionId,
+            toolCallId: input.toolCallId,
+            approved: input.approved,
+            comment: input.comment,
+            decidedBy: caller.userId,
+          });
+          if (!decided) return null;
+          decision = { approved: input.approved, comment: input.comment };
+        } else {
+          const relay = existing.relayRunId
+            ? await getAgentRun(tx, existing.relayRunId)
+            : null;
+          if (!relay || !relayNeverRan(relay.status)) return null;
+          await assertCanStartTurn(tx, caller);
+          decision = {
+            approved: existing.status === "approved",
+            comment: existing.comment ?? undefined,
+          };
+        }
 
-        const decision = {
+        const relayed = {
           toolCallId: existing.toolCallId,
           toolName: existing.toolName,
-          approved: input.approved,
-          comment: input.comment,
+          ...decision,
         };
         return {
-          text: formatOperatorDecision(decision),
-          decision,
-          credentials: host.credentials.read(caller.context.headers),
+          message: {
+            text: formatOperatorDecision(relayed),
+            decision: relayed,
+            credentials: host.credentials.read(caller.context.headers),
+          },
+          bind: (db, runId) =>
+            setAgentApprovalRelayRun(db, {
+              sessionId: input.sessionId,
+              toolCallId: input.toolCallId,
+              relayRunId: runId,
+            }),
         };
       }),
   };

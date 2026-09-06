@@ -20,8 +20,10 @@ const repo = vi.hoisted(() => ({
   createAgentRun: vi.fn(),
   decideAgentApproval: vi.fn(),
   getAgentApproval: vi.fn(),
+  getAgentRun: vi.fn(),
   getAgentSessionLastSeq: vi.fn(async () => 4),
   listRunningAgentRuns: vi.fn(async () => []),
+  setAgentApprovalRelayRun: vi.fn(async () => undefined),
   withAgentSessionLock: vi.fn(),
 }));
 const quota = vi.hoisted(() => ({
@@ -144,6 +146,7 @@ beforeEach(() => {
   repo.listRunningAgentRuns.mockResolvedValue([]);
   repo.bindAgentRunExternalId.mockResolvedValue(undefined);
   repo.completeAgentRun.mockResolvedValue(undefined);
+  repo.setAgentApprovalRelayRun.mockResolvedValue(undefined);
   undecidedApprovals.mockResolvedValue([]);
   workflow.startAgentSession.mockResolvedValue("wf-2");
   workflow.cancelRun.mockResolvedValue(undefined);
@@ -340,7 +343,79 @@ describe("agent turn admission", () => {
     );
   });
 
-  it("starts nothing for a request already decided", async () => {
+  it("names the relay run on the decision in the same transaction", async () => {
+    liveRun("completed");
+    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
+    repo.getAgentApproval.mockResolvedValue({
+      status: "pending",
+      toolCallId: "call-1",
+      toolName: "commit_draft",
+      comment: null,
+    });
+    repo.decideAgentApproval.mockResolvedValue({ status: "approved" });
+    repo.setAgentApprovalRelayRun.mockImplementation(async () => {
+      expect(lockHeld).toBe(true);
+    });
+
+    await turns.approve(caller, {
+      sessionId: "session-1",
+      toolCallId: "call-1",
+      approved: true,
+    });
+
+    expect(repo.setAgentApprovalRelayRun).toHaveBeenCalledExactlyOnceWith(db, {
+      sessionId: "session-1",
+      toolCallId: "call-1",
+      relayRunId: createdRunId(),
+    });
+  });
+
+  it("delivers a recorded decision again when its relay run was refused, without rewriting it", async () => {
+    liveRun("completed");
+    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
+    repo.getAgentApproval.mockResolvedValue({
+      status: "rejected",
+      toolCallId: "call-1",
+      toolName: "commit_draft",
+      comment: "not yet",
+      relayRunId: "run-refused",
+    });
+    repo.getAgentRun.mockResolvedValue({ id: "run-refused", status: "failed" });
+
+    // The retry says "approve"; the row says "rejected" and the row wins.
+    const cursor = await turns.approve(caller, {
+      sessionId: "session-1",
+      toolCallId: "call-1",
+      approved: true,
+    });
+
+    expect(cursor).toEqual({
+      runId: "wf-2",
+      startIndex: 0,
+      deltaStartIndex: 0,
+    });
+    expect(repo.decideAgentApproval).not.toHaveBeenCalled();
+    expect(workflow.startAgentSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.objectContaining({
+          decision: {
+            toolCallId: "call-1",
+            toolName: "commit_draft",
+            approved: false,
+            comment: "not yet",
+          },
+        }),
+      })
+    );
+    // The new relay run replaces the refused one on the row.
+    expect(repo.setAgentApprovalRelayRun).toHaveBeenCalledWith(db, {
+      sessionId: "session-1",
+      toolCallId: "call-1",
+      relayRunId: createdRunId(),
+    });
+  });
+
+  it("starts nothing for a decision whose relay run executed or is still unresolved", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
     repo.getAgentApproval.mockResolvedValue({
@@ -348,15 +423,19 @@ describe("agent turn admission", () => {
       toolCallId: "call-1",
       toolName: "commit_draft",
       comment: "go",
+      relayRunId: "run-relay",
     });
 
-    await expect(
-      turns.approve(caller, {
-        sessionId: "session-1",
-        toolCallId: "call-1",
-        approved: false,
-      })
-    ).resolves.toBeNull();
+    for (const status of ["completed", "active"]) {
+      repo.getAgentRun.mockResolvedValue({ id: "run-relay", status });
+      await expect(
+        turns.approve(caller, {
+          sessionId: "session-1",
+          toolCallId: "call-1",
+          approved: false,
+        })
+      ).resolves.toBeNull();
+    }
 
     expect(repo.decideAgentApproval).not.toHaveBeenCalled();
     expect(repo.createAgentRun).not.toHaveBeenCalled();
