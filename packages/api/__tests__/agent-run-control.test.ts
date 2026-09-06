@@ -88,6 +88,55 @@ describe("agent run control", () => {
     );
   });
 
+  it("reports a turn as ended when its run:end arrives or the run closes its stream", async () => {
+    const { waitForAgentTurnEnd } =
+      await import("../orpc/services/agent/run-control");
+    const ended = (events: AgentWireEvent[]) =>
+      workflowReadable(
+        new ReadableStream<AgentWireEvent>({
+          start: (controller) => {
+            for (const event of events) controller.enqueue(event);
+            controller.close();
+          },
+        })
+      );
+
+    getRun.mockReturnValue({
+      getReadable: vi.fn(() => ended([{ type: "run:end", reason: "aborted" }])),
+    });
+    await expect(waitForAgentTurnEnd(runs, "workflow-1", 0)).resolves.toBe(
+      true
+    );
+
+    getRun.mockReturnValue({ getReadable: vi.fn(() => ended([])) });
+    await expect(waitForAgentTurnEnd(runs, "workflow-1", 0)).resolves.toBe(
+      true
+    );
+  });
+
+  it("does not mistake its own deadline for the turn ending", async () => {
+    vi.useFakeTimers();
+    try {
+      const { waitForAgentTurnEnd } =
+        await import("../orpc/services/agent/run-control");
+      // A stream that never yields: the step is still executing.
+      getRun.mockReturnValue({
+        getReadable: vi.fn(() =>
+          workflowReadable(
+            new ReadableStream<AgentWireEvent>({ start: () => undefined })
+          )
+        ),
+      });
+
+      const pending = waitForAgentTurnEnd(runs, "workflow-1", 0);
+      await vi.advanceTimersByTimeAsync(10_000);
+
+      await expect(pending).resolves.toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("merges batched deltas with coarse events", async () => {
     let coarseController!: ReadableStreamDefaultController<AgentWireEvent>;
     let deltaController!: ReadableStreamDefaultController<AgentWireEvent[]>;

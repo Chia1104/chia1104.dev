@@ -22,7 +22,7 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
 import {
-  bindAgentRunExternalId,
+  claimAgentRunTurn,
   completeAgentRun,
   consumeAgentApproval,
   getAgentSession,
@@ -173,10 +173,22 @@ export const runAgentTurnStep = async (
     running: true,
     claimId: null,
   };
-  await patchAgentRunMetadata(db, request.runId, { [AGENT_TURN_KEY]: marker });
-  // The executor is the one party that always knows both ids: a `prompt` whose bind failed
-  // after the start is repaired here, so abort and reconcile find this run.
-  await bindAgentRunExternalId(db, request.runId, workflowRunId);
+  // One transaction under the session lock: the run must still be the session's active one,
+  // then the marker lands and the workflow run id is bound. The executor is the one party that
+  // always holds both ids, so a `prompt` whose bind failed after the start is repaired here. A
+  // run that was cancelled, failed or replaced meanwhile executes nothing.
+  const claimed = await claimAgentRunTurn(db, {
+    sessionId: request.sessionId,
+    runId: request.runId,
+    externalRunId: workflowRunId,
+    turnKey: AGENT_TURN_KEY,
+    marker,
+  });
+  if (!claimed) {
+    throw new FatalError(
+      `Agent run ${request.runId} no longer holds session ${request.sessionId}.`
+    );
+  }
 
   const clearMarker = () =>
     patchAgentRunMetadata(db, request.runId, {
@@ -202,8 +214,9 @@ export const runAgentTurnStep = async (
     return outcome;
   } catch (error) {
     abort.dispose();
-    // The handler's error is the one that matters; a failed cleanup must not replace it.
-    await clearMarker().catch(() => undefined);
+    // A thrown step ends the workflow, and the marker stays running until `completeAgentRunStep`
+    // or reconciliation closes the row: cleared here, admission would accept a prompt into a
+    // hook nobody reads.
     throw error;
   }
 };

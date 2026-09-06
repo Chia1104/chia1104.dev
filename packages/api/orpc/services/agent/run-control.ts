@@ -108,14 +108,18 @@ export const waitForAgentTurnEnd = async (
     .get(runId)
     .getReadable<AgentWireEvent>({ startIndex })
     .getReader();
-  const deadline = setTimeout(
-    () => void reader.cancel().catch(() => undefined),
-    ABORT_SETTLE_TIMEOUT_MS
-  );
+  // Cancelling the reader resolves the pending read as `done`, which must not pass for the
+  // run closing its stream.
+  let expired = false;
+  const deadline = setTimeout(() => {
+    expired = true;
+    void reader.cancel().catch(() => undefined);
+  }, ABORT_SETTLE_TIMEOUT_MS);
   try {
     while (true) {
       const { done, value } = await reader.read();
-      if (done || value?.type === "run:end") return true;
+      if (done) return !expired;
+      if (value?.type === "run:end") return true;
     }
   } catch {
     return false;

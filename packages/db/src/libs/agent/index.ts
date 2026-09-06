@@ -261,6 +261,44 @@ export const releaseAgentRunTurn = async (
   return rows.length > 0;
 };
 
+/**
+ * The executor's claim on a turn: under the session lock, the run must still be the active
+ * one, then its workflow run id is bound and the marker written in one transaction. `false`
+ * means the run was cancelled, failed or replaced since it was started, and the step must not
+ * execute anything.
+ */
+export const claimAgentRunTurn = async (
+  db: DB,
+  input: {
+    sessionId: string;
+    runId: string;
+    externalRunId: string;
+    turnKey: string;
+    marker: JsonObject;
+  }
+): Promise<boolean> =>
+  withAgentSessionLock(db, input.sessionId, async (tx) => {
+    const [run] = await tx
+      .select({ status: agentRuns.status })
+      .from(agentRuns)
+      .where(
+        and(
+          eq(agentRuns.id, input.runId),
+          eq(agentRuns.sessionId, input.sessionId)
+        )
+      )
+      .for("update");
+    if (run?.status !== "active") return false;
+    await tx
+      .update(agentRuns)
+      .set({
+        externalRunId: input.externalRunId,
+        metadata: sql`${agentRuns.metadata} || ${JSON.stringify({ [input.turnKey]: input.marker })}::jsonb`,
+      })
+      .where(eq(agentRuns.id, input.runId));
+    return true;
+  });
+
 /** Points a run row written ahead of its workflow at the run the workflow backend then created. */
 export const bindAgentRunExternalId = async (
   db: DB,
