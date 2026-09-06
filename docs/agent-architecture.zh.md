@@ -129,7 +129,7 @@ sequenceDiagram
 
 一次只跑一個 turn。Turn 執行中送入的 prompt 會被拒絕：admission 在此檢查 quota 與 running cap，排在後面的 turn 會在前一個 turn 費用入帳後才執行，卻不會再被檢查。Approval 未決時同樣拒絕。
 
-Acceptance 先 commit，再通知 workflow。新的 run row 就是紀錄，在 session lock 下寫入作為 session 的 lease；交付在 lock transaction 之外進行，因為 workflow command 無法 rollback。`createAgentRun` 會關閉 session 前一個 run row，World 裡仍存活的前一個 run 也會被 cancel。Workflow service 在執行前拒絕的 start 會把 row 標為 failed；結果不明的 start 保留 lease，因為 workflow 可能已在執行。接著 step 在 session lock 下 claim 自己的 run：row 必須仍是 session 的 active run，marker 寫入與 workflow run id 綁定在同一個交易完成，所以 service 寫不進去的綁定由 executor 修復，abort 與 reconcile 都能找到該 run。中途被 cancel、failed 或取代的 run 不會執行任何東西。Reconcile 只在 run 仍帶著判斷當時讀到的 workflow run id 時才關閉它，所以 executor 在這之間 claim 走的 lease 不會被誤關。Step 拋錯時 marker 保持 running，因為 run 會結束並關閉 row。綁定失敗後會用只有該請求持有的 id 送出 abort；只有確認 turn 已結束才把 row 標為 failed，否則 lease 繼續擋住 session。
+Acceptance 先 commit，再通知 workflow。新的 run row 就是紀錄，在 session lock 下寫入作為 session 的 lease；交付在 lock transaction 之外進行，因為 workflow command 無法 rollback。`createAgentRun` 會關閉 session 前一個 run row，World 裡仍存活的前一個 run 也會被 cancel。Workflow service 在執行前拒絕的 start 會把 row 標為 failed；結果不明的 start 保留 lease，因為 workflow 可能已在執行。接著 step 在 session lock 下 claim 自己的 run：row 必須仍是 session 的 active run，marker 寫入與 workflow run id 綁定在同一個交易完成，所以 service 寫不進去的綁定由 executor 修復，abort 與 reconcile 都能找到該 run。中途被 cancel、failed 或取代的 run 不會執行任何東西。Reconcile 只在 run 仍帶著判斷當時讀到的 workflow run id 時才關閉它，所以 executor 在這之間 claim 走的 lease 不會被誤關。Step 拋錯時 marker 保持 running，因為 run 會結束並關閉 row。Row 記錄的是 turn 的結果：error 或 step 拋錯為 `failed`、abort 為 `cancelled`、其餘為 `completed`；executor 的 claim 也記在 marker 上，所以已關閉的 row 也能說出模型有沒有跑過。綁定失敗後會用只有該請求持有的 id 送出 abort；只有確認 turn 已結束才把 row 標為 failed，否則 lease 繼續擋住 session。
 
 Workflow function 只負責 orchestration；DB、provider、timer 與 network 操作留在 steps。`runAgentTurnStep` 設 `maxRetries = 0`，因為 turn 可能已寫入 entry 或執行核准過的 side effect。Provider retry 留在 Pi；失敗的 turn 只能由新訊息重新嘗試。
 
@@ -201,7 +201,7 @@ sequenceDiagram
 
 以下情況可放行：tier 不需核准、session auto-approves 該 tier，或該呼叫的 approval key 有一筆尚未花掉的 approval。Key 是 kind 定義的呼叫身分，不是 call id，因為重發的呼叫會帶新的 id。Writing kind 把 `commit_draft` 綁到 operator 看到的 draft revision，把 `set_published` 綁到 feed 與目標狀態，所以換一份 draft，或 draft 在決定後被改過，都會重新被 gate。Approval 在呼叫執行前先持久化為已花掉，且只能用於一次呼叫。批准時綁定的 revision 會跟著該呼叫走：`commit_draft` 提交的就是那個 revision，apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對，決定與寫入之間被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的 revision，同樣在該鎖之下。
 
-Decision 只寫一次，寫在 pending row 上，與 relay run 的 row 在同一個交易，並把該 run 記在 decision 上。對已決定的 row 再呼叫 `approve`，只有在 relay run 從未執行（被拒絕，或在 step claim 前就被關閉）時才會重送紀錄中的 decision；已執行或結果不明的 relay 不會啟動任何東西。Reject 也會建立 relay turn，讓模型回應 operator comment。
+Decision 只寫一次，寫在 pending row 上，與 relay run 的 row 在同一個交易，並把該 run 記在 decision 上。對已決定的 row 再呼叫 `approve`，只有在 relay run 關閉時 marker 仍未被 claim（從未執行）才會重送紀錄中的 decision；executor claim 過的 relay 不論結果如何，以及結果不明的 relay，都不會啟動任何東西。Reject 也會建立 relay turn，讓模型回應 operator comment。
 
 每個 turn 只有一筆 request：同一 turn 的第二個 gated call 會被拒絕且不記錄，一個決定只回答一筆 request。Request 只在 provider turn 成功後持久化；失敗的 turn 不留下 undecided rows。Relay message 帶有 operator-decision marker，client 會顯示為 notice，而不是使用者輸入。
 

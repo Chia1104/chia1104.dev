@@ -149,6 +149,33 @@ describe("agentSessionWorkflow", () => {
     );
   });
 
+  it("records the turn's outcome on the run row: failed for an error, cancelled for an abort", async () => {
+    for (const [outcome, status] of [
+      ["error", "failed"],
+      ["aborted", "cancelled"],
+    ] as const) {
+      mocks.completeRun.mockClear();
+      mocks.runTurn.mockResolvedValueOnce({
+        status: outcome,
+        error: undefined,
+      });
+
+      await agentSessionWorkflow({
+        sessionId: "session-1",
+        runId: "run-1",
+        userId: "user-1",
+        abortController,
+        message: { text: "first" },
+      });
+
+      expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
+        "run-1",
+        abortController,
+        status
+      );
+    }
+  });
+
   it("marks the run failed and closes its streams when the turn step throws", async () => {
     mocks.runTurn.mockRejectedValue(new Error("process died mid-step"));
 

@@ -1,4 +1,7 @@
-import { AGENT_TURN_KEY } from "@chia/agent-host/execution";
+import {
+  AGENT_TURN_KEY,
+  readAgentTurnMarker,
+} from "@chia/agent-host/execution";
 import type {
   AgentStreamPosition,
   AgentTurnMarker,
@@ -24,6 +27,7 @@ import {
 import type { AgentRunStatus } from "@chia/db/schema";
 import { AppError, isAppError } from "@chia/service-kit/errors";
 import type { AppErrorCode } from "@chia/service-kit/errors";
+import type { JsonObject } from "@chia/utils/json";
 import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-hooks";
 import type {
   AgentMessagePayload,
@@ -87,13 +91,27 @@ interface RecordedDecision {
   comment?: string;
 }
 
+type AdmitTurn<TState, TConfig extends object> = (
+  tx: DB,
+  caller: AgentServiceCaller,
+  row: OwnedSession<TState, TConfig>
+) => Promise<{
+  message: AgentMessagePayload;
+  bind?: (tx: DB, runId: string) => Promise<void>;
+} | null>;
+
 /**
- * A relay run that never reached the model: refused by the workflow service, or closed by
- * reconciliation or the operator before its step could claim it. An executed turn completes
- * its row; a lease whose fate is unknown is still `active`.
+ * A relay run that never reached the model: closed without the executor ever claiming it,
+ * whether refused by the workflow service or closed by reconciliation or the operator first.
+ * A turn that ran and then failed or was aborted carries the claim; a lease whose fate is
+ * unknown is still `active`.
  */
-const relayNeverRan = (status: AgentRunStatus): boolean =>
-  status === "failed" || status === "cancelled";
+const relayNeverRan = (run: {
+  status: AgentRunStatus;
+  metadata: JsonObject;
+}): boolean =>
+  (run.status === "failed" || run.status === "cancelled") &&
+  readAgentTurnMarker(run.metadata)?.claimed !== true;
 
 /**
  * Whether the workflow service rejected the command before executing it. Only then is it
@@ -166,26 +184,17 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
   };
 
   /**
-   * Writes the run row under the session lock, then starts the run. `admit` runs inside the
-   * lock and returns the turn's message, or `null` when there is nothing to start; `bind`
-   * runs in the same transaction once the run row exists.
+   * The lock transaction: the checks `admit` makes, the run row as the session's lease, and
+   * `bind` once that row exists. `null` when there is nothing to start.
    */
-  const startTurn = async (
+  const admitTurn = async (
     outer: AgentServiceCaller,
     sessionId: string,
-    admit: (
-      tx: DB,
-      caller: AgentServiceCaller,
-      row: OwnedSession<TState, TConfig>
-    ) => Promise<{
-      message: AgentMessagePayload;
-      bind?: (tx: DB, runId: string) => Promise<void>;
-    } | null>
-  ): Promise<AgentStreamCursor | null> => {
-    const db = outer.context.db;
-    const workflow = outer.context.workflow;
-    const accepted = await withAgentSessionLock(
-      db,
+    abortController: AgentAbortControllerRef,
+    admit: AdmitTurn<TState, TConfig>
+  ): Promise<AcceptedTurn | null> =>
+    withAgentSessionLock(
+      outer.context.db,
       sessionId,
       async (tx): Promise<AcceptedTurn | null> => {
         const caller = sessions.withDb(outer, tx);
@@ -211,9 +220,6 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           });
         }
 
-        // A parked controller that outlives a refused admission expires on its TTL, so
-        // starting it before the commit costs nothing that the database has to know about.
-        const abortController = await startAgentAbortController(workflow);
         const runId = crypto.randomUUID();
         const position: AgentStreamPosition = {
           streamIndex: 0,
@@ -223,6 +229,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           seqBefore: await getAgentSessionLastSeq(tx, row.id),
           ...position,
           running: true,
+          claimed: false,
         };
         await createAgentRun(tx, {
           id: runId,
@@ -248,7 +255,33 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         };
       }
     );
-    if (!accepted) return null;
+
+  /**
+   * Writes the run row under the session lock, then starts the run. `admit` runs inside the
+   * lock and returns the turn's message, or `null` when there is nothing to start; `bind`
+   * runs in the same transaction once the run row exists.
+   */
+  const startTurn = async (
+    outer: AgentServiceCaller,
+    sessionId: string,
+    admit: AdmitTurn<TState, TConfig>
+  ): Promise<AgentStreamCursor | null> => {
+    const db = outer.context.db;
+    const workflow = outer.context.workflow;
+    // Started before the lock: a remote call must not hold the session's advisory lock and a
+    // pool connection for its timeout. An admission that then refuses closes it again.
+    const abortController = await startAgentAbortController(workflow);
+    let accepted: AcceptedTurn | null;
+    try {
+      accepted = await admitTurn(outer, sessionId, abortController, admit);
+    } catch (error) {
+      await signalAgentAbort(workflow, abortController.id, "admission refused");
+      throw error;
+    }
+    if (!accepted) {
+      await signalAgentAbort(workflow, abortController.id, "nothing to start");
+      return null;
+    }
 
     // The row it drove is closed by `createAgentRun`; the run itself would otherwise sit in
     // the World until it ends on its own.
@@ -452,7 +485,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           const relay = existing.relayRunId
             ? await getAgentRun(tx, existing.relayRunId)
             : null;
-          if (!relay || !relayNeverRan(relay.status)) return null;
+          if (!relay || !relayNeverRan(relay)) return null;
           await assertCanStartTurn(tx, caller);
           decision = {
             approved: existing.status === "approved",

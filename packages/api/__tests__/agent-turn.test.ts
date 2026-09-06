@@ -121,6 +121,7 @@ const session = (overrides: {
     streamIndex: 0,
     deltaStreamIndex: 0,
     running: overrides.running ?? false,
+    claimed: overrides.running ?? false,
   },
 });
 
@@ -162,6 +163,26 @@ describe("agent turn admission", () => {
     ).rejects.toMatchObject({ code: "CONFLICT" });
     expect(repo.createAgentRun).not.toHaveBeenCalled();
     expect(workflow.startAgentSession).not.toHaveBeenCalled();
+    // The controller was started ahead of the lock; a refusal closes it rather than leaving
+    // it parked until its TTL.
+    expect(abort.signalAgentAbort).toHaveBeenCalledWith(
+      workflow,
+      "abort-1",
+      expect.any(String)
+    );
+  });
+
+  it("starts the abort controller before taking the session lock", async () => {
+    liveRun("completed");
+    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
+    abort.startAgentAbortController.mockImplementationOnce(async () => {
+      expect(lockHeld).toBe(false);
+      return { id: "abort-1", runId: "abort-run-1" };
+    });
+
+    await turns.prompt(caller, { sessionId: "session-1", text: "first" });
+
+    expect(abort.startAgentAbortController).toHaveBeenCalledOnce();
   });
 
   it("refuses a prompt while an approval is undecided", async () => {
@@ -380,7 +401,20 @@ describe("agent turn admission", () => {
       comment: "not yet",
       relayRunId: "run-refused",
     });
-    repo.getAgentRun.mockResolvedValue({ id: "run-refused", status: "failed" });
+    // Refused before any executor claimed it: the lease marker never became a claim.
+    repo.getAgentRun.mockResolvedValue({
+      id: "run-refused",
+      status: "failed",
+      metadata: {
+        turn: {
+          seqBefore: 0,
+          streamIndex: 0,
+          deltaStreamIndex: 0,
+          running: true,
+          claimed: false,
+        },
+      },
+    });
 
     // The retry says "approve"; the row says "rejected" and the row wins.
     const cursor = await turns.approve(caller, {
@@ -425,9 +459,25 @@ describe("agent turn admission", () => {
       comment: "go",
       relayRunId: "run-relay",
     });
+    const claimed = {
+      turn: {
+        seqBefore: 0,
+        streamIndex: 0,
+        deltaStreamIndex: 0,
+        running: false,
+        claimed: true,
+      },
+    };
 
-    for (const status of ["completed", "active"]) {
-      repo.getAgentRun.mockResolvedValue({ id: "run-relay", status });
+    // Completed, still a lease, failed after the executor ran it, aborted while it ran: none
+    // may be delivered again, because the model has heard or may yet hear the decision.
+    for (const run of [
+      { status: "completed", metadata: claimed },
+      { status: "active", metadata: {} },
+      { status: "failed", metadata: claimed },
+      { status: "cancelled", metadata: claimed },
+    ]) {
+      repo.getAgentRun.mockResolvedValue({ id: "run-relay", ...run });
       await expect(
         turns.approve(caller, {
           sessionId: "session-1",

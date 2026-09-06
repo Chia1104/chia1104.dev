@@ -32,6 +32,7 @@ import {
   recordAgentApprovalRequest,
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
+import type { AgentRunStatus } from "@chia/db/schema";
 import type { JsonObject } from "@chia/utils/json";
 import type {
   AgentAbortControllerRef,
@@ -165,6 +166,7 @@ export const runAgentTurnStep = async (
     streamIndex: coarseTail + 1,
     deltaStreamIndex: deltaTail + 1,
     running: true,
+    claimed: true,
   };
   // One transaction under the session lock: the run must still be the session's active one,
   // then the marker lands and the workflow run id is bound. The executor is the one party that
@@ -411,7 +413,7 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
 export const completeAgentRunStep = async (
   runId: string,
   abortController: AgentAbortControllerRef,
-  status: "completed" | "failed"
+  status: Exclude<AgentRunStatus, "active">
 ): Promise<void> => {
   "use step";
 

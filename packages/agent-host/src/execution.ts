@@ -17,6 +17,11 @@ export interface AgentStreamPosition extends JsonObject {
 export interface AgentTurnMarker extends AgentStreamPosition {
   seqBefore: number;
   running: boolean;
+  /**
+   * Whether the executor claimed the run and began the turn. The service writes `false` with
+   * the lease; a run that closed with this still `false` never reached the model.
+   */
+  claimed: boolean;
 }
 
 const agentTurnMarkerSchema = z.object({
@@ -24,6 +29,7 @@ const agentTurnMarkerSchema = z.object({
   streamIndex: z.number(),
   deltaStreamIndex: z.number(),
   running: z.boolean(),
+  claimed: z.boolean().default(false),
 });
 
 export const readAgentTurnMarker = (metadata: JsonObject) =>

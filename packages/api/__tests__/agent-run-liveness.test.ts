@@ -45,7 +45,13 @@ const row = (overrides: {
   status: "active" as const,
   externalRunId: overrides.externalRunId,
   metadata: {
-    turn: { seqBefore: 0, streamIndex: 0, deltaStreamIndex: 0, running: true },
+    turn: {
+      seqBefore: 0,
+      streamIndex: 0,
+      deltaStreamIndex: 0,
+      running: true,
+      claimed: false,
+    },
     ...(overrides.abortController && {
       abortController: overrides.abortController,
     }),

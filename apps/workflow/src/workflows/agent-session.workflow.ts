@@ -43,9 +43,11 @@ export const agentSessionWorkflow = async (request: Request) => {
 
   /**
    * Closed in `finally` whichever way the turn ends. Without it, a thrown step leaves the
-   * `agent.run` row active: invisible to World reads, but counted by anything that trusts the row.
+   * `agent.run` row active: invisible to World reads, but counted by anything that trusts the
+   * row. The row records the turn's outcome: `failed` for an error or a thrown step,
+   * `cancelled` for an abort, which is also what the service writes when it stops the turn.
    */
-  let status: "completed" | "failed" = "failed";
+  let status: "completed" | "failed" | "cancelled" = "failed";
   try {
     const outcome = await runAgentTurnStep({
       sessionId,
@@ -58,7 +60,12 @@ export const agentSessionWorkflow = async (request: Request) => {
       decision: message.decision,
       credentials: message.credentials,
     });
-    status = "completed";
+    status =
+      outcome.status === "error"
+        ? "failed"
+        : outcome.status === "aborted"
+          ? "cancelled"
+          : "completed";
     return { sessionId, status: outcome.status };
   } finally {
     await completeAgentRunStep(runId, abortController, status);

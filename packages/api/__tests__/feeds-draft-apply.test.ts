@@ -114,6 +114,34 @@ describe("applyFeedDraftService", () => {
     expect(onFeedChanged).toHaveBeenCalledExactlyOnceWith(5);
   });
 
+  it("reports the committed apply even when the feed hook fails afterwards", async () => {
+    repo.getFeedDraftForUpdate.mockResolvedValue(draft(3));
+    const onFeedChanged = vi.fn(async () => {
+      throw new Error("indexing service down");
+    });
+    write.updateFeedService.mockImplementation(
+      async (_db: DB, _input: UpdateFeedServiceInput, hooks: FeedHooks) => {
+        await hooks.onFeedChanged?.(5);
+        return { id: 5, slug: "a-post" };
+      }
+    );
+    const errors = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    await expect(
+      applyFeedDraftService(
+        db,
+        { draftId: 7, adminId: "admin", expectedRevision: 3 },
+        { onFeedChanged }
+      )
+    ).resolves.toEqual({ feedId: 5, slug: "a-post", created: false });
+
+    expect(onFeedChanged).toHaveBeenCalledOnce();
+    expect(errors).toHaveBeenCalledOnce();
+    errors.mockRestore();
+  });
+
   it("applies whatever revision is current when none was approved", async () => {
     repo.getFeedDraftForUpdate.mockResolvedValue(draft(9));
 

@@ -226,7 +226,19 @@ export const applyFeedDraftService = async (
     }
     return applyLockedDraft(tx, locked, input.adminId, deferred);
   });
-  for (const feedID of changed) await hooks.onFeedChanged?.(feedID);
+  // The feed is committed; a hook that cannot start indexing does not unmake that, so the
+  // caller hears the truth and the index catches up on the next apply or publish.
+  for (const feedID of changed) {
+    try {
+      await hooks.onFeedChanged?.(feedID);
+    } catch (error) {
+      console.error("Feed change hook failed after the draft was applied", {
+        draftId: input.draftId,
+        feedID,
+        cause: error,
+      });
+    }
+  }
   return result;
 };
 
