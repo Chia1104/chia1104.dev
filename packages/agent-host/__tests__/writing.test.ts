@@ -151,7 +151,6 @@ describe("createWritingAgentKind runTurn", () => {
     );
     const done: AgentTurnExecution<never> = {
       status: "done",
-      approvals: [],
       error: undefined,
     };
     runtime.runWritingTurn.mockImplementation(async (options) => {

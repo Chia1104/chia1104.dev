@@ -23,11 +23,12 @@ import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
 import {
   completeAgentRun,
+  consumeAgentApproval,
   getAgentSession,
   getAgentSessionLastSeq,
-  getApprovedAgentToolCallIds,
+  listUnspentAgentApprovalKeys,
   patchAgentRunMetadata,
-  recordAgentApprovalRequests,
+  recordAgentApprovalRequest,
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import type { JsonObject } from "@chia/utils/json";
@@ -62,7 +63,6 @@ export interface AgentTurnRequest {
   template?: { name: string; args?: string[] };
   attachments?: AgentAttachment[];
   decision?: OperatorDecision;
-  preAuthorizeToolNames?: string[];
   /** Encrypted operator keys; omitted means the house gateway. */
   credentials?: EncryptedAgentCredentials;
 }
@@ -70,12 +70,14 @@ export interface AgentTurnRequest {
 export interface AgentApprovalRequestSnapshot {
   toolCallId: string;
   toolName: string;
+  approvalKey: string;
   args?: JsonObject;
 }
 
 export interface AgentTurnOutcome {
   status: "done" | "awaiting_approval" | "aborted" | "error";
-  approvals: AgentApprovalRequestSnapshot[];
+  /** The gated call the workflow parks on; present exactly when `status` is `awaiting_approval`. */
+  approval?: AgentApprovalRequestSnapshot;
   error?: AgentTurnError;
 }
 
@@ -231,8 +233,8 @@ async function runKindTurn(
   });
   const session = await repo.openById(request.sessionId);
 
-  const approvedToolCallIds = new Set(
-    await getApprovedAgentToolCallIds(db, request.sessionId)
+  const approvedApprovalKeys = new Set(
+    await listUnspentAgentApprovalKeys(db, request.sessionId)
   );
 
   /**
@@ -251,6 +253,7 @@ async function runKindTurn(
   return await definition.runTurn({
     db,
     row,
+    runId: request.runId,
     state,
     config,
     settings: {
@@ -273,8 +276,8 @@ async function runKindTurn(
       decision: request.decision,
     },
     signal,
-    approvedToolCallIds,
-    preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
+    approvedApprovalKeys,
+    consumeApproval: (key) => consumeAgentApproval(db, request.sessionId, key),
     onEvent: writer.push,
     flushEvents: writer.flush,
     onUsage: (report) =>
@@ -289,20 +292,18 @@ async function runKindTurn(
     toApproval: (approval): AgentApprovalRequestSnapshot => ({
       toolCallId: approval.toolCallId,
       toolName: approval.toolName,
+      approvalKey: approval.key,
       // SAFETY: tool arguments passed their registered TypeBox schema before execution.
       args: approval.args as JsonObject | undefined,
     }),
-    persistApprovals: async (approvals) => {
-      await recordAgentApprovalRequests(
-        db,
-        approvals.map((approval) => ({
-          sessionId: request.sessionId,
-          toolCallId: approval.toolCallId,
-          toolName: approval.toolName,
-          args: approval.args,
-        }))
-      );
-    },
+    persistApproval: (approval) =>
+      recordAgentApprovalRequest(db, {
+        sessionId: request.sessionId,
+        toolCallId: approval.toolCallId,
+        toolName: approval.toolName,
+        approvalKey: approval.approvalKey,
+        args: approval.args,
+      }),
   });
 }
 
@@ -361,7 +362,17 @@ const createEventWriter = (holdEnd?: Promise<unknown>): EventWriter => {
     },
     async flush() {
       flushDeltas();
-      await Promise.allSettled(inFlight);
+      // A lost write does not fail the turn: its side effects and entries are already durable
+      // and a client that misses the event reloads the session. It is logged so a stall can be traced.
+      const lost = (await Promise.allSettled(inFlight)).filter(
+        (result) => result.status === "rejected"
+      );
+      if (lost.length > 0) {
+        console.error("Agent stream writes failed", {
+          count: lost.length,
+          cause: lost[0]?.reason,
+        });
+      }
       coarse.releaseLock();
       deltas.releaseLock();
     },

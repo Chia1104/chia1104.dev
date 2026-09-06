@@ -131,7 +131,9 @@ sequenceDiagram
 
 每個 session workflow 擁有一個 deterministic `agentMessageHook`。`getConflict()` 在第一個 turn 前註冊它，並避免兩個 active workflow 同時擁有同一個 inbox。Resume hook 的 payload 是 durable workflow event，依順序逐一消費。
 
-Running turn 期間送入的訊息會等待目前 turn 與 approval handshake 結束。Approval 未決、新 workflow 尚未註冊 hook，或文字是保留的 `/end` sentinel 時，enqueue 會被拒絕。
+一次只跑一個 turn。Turn 執行中送入的 prompt 會被拒絕：admission 在此檢查 quota 與 running cap，排在 running turn 後面的訊息會在該 turn 費用入帳後才執行，卻不會再被檢查。Approval 未決、新 workflow 尚未註冊 hook，或文字是保留的 `/end` sentinel 時，enqueue 同樣會被拒絕。
+
+Acceptance 先 commit，再通知 workflow。新的 run row 或已 claim 的 turn marker 就是紀錄；交付在 lock transaction 之外進行，因為 workflow command 無法 rollback。交付失敗會釋放 claim 或將 run row 標為 failed。Process 在 commit 與交付之間死亡會留下 claim，由 abort 清除。
 
 一個 workflow 最多驅動 200 turns。Workflow function 只負責 orchestration；DB、provider、timer 與 network 操作留在 steps。`runAgentTurnStep` 設 `maxRetries = 0`，因為 turn 可能已寫入 entry 或執行核准過的 side effect。Provider retry 留在 Pi；失敗的 turn 只能由新訊息重新嘗試。
 
@@ -198,12 +200,14 @@ sequenceDiagram
     U->>WF: resume hook
     WF->>M: operator-decision relay turn
     M->>G: reissue call
-    G-->>M: allow pre-authorized tool
+    G-->>M: allow，並花掉這筆 approval
 ```
 
-以下情況可放行：tier 不需核准、session auto-approves 該 tier、call ID 已核准，或 tool 在 relay turn 被 pre-authorize。Decision 先寫入 DB，再 resume hook。Reject 也會建立 relay turn，讓模型回應 operator comment。
+以下情況可放行：tier 不需核准、session auto-approves 該 tier，或該呼叫的 approval key 有一筆尚未花掉的 approval。Key 是 kind 定義的呼叫身分，不是 call id，因為重發的呼叫會帶新的 id。Writing kind 把 `commit_draft` 綁到 operator 看到的 draft revision，把 `set_published` 綁到 feed 與目標狀態，所以換一份 draft，或 draft 在決定後被改過，都會重新被 gate。Approval 在呼叫執行前先持久化為已花掉，且只能用於一次呼叫。
 
-Requests 只在 provider turn 成功後一次持久化。失敗的 turn 不留下 undecided rows，也不會讓 workflow 等待無法 resume 的 hook。Relay message 帶有 operator-decision marker，client 會顯示為 notice，而不是使用者輸入。
+Decision 只寫一次，寫在 pending row 上，然後才 resume hook。對已決定的 row 再呼叫 `approve`，只要 run 仍在等待，就會重送紀錄中的 decision，絕不改寫。Reject 也會建立 relay turn，讓模型回應 operator comment。
+
+每個 turn 只有一筆 request：workflow 只會停在一個 approval hook 上，所以同一 turn 的第二個 gated call 會被拒絕且不記錄。Request 只在 provider turn 成功後持久化。失敗的 turn 不留下 undecided rows，也不會讓 workflow 等待無法 resume 的 hook。Relay message 帶有 operator-decision marker，client 會顯示為 notice，而不是使用者輸入。
 
 Live stream 可以在持久化前先公告 request，讓 UI 及早顯示；但 approval card 必須等 `run:end{awaiting_approval}` 或重新載入的 pending row 確認後才能操作。其他 terminal state 會撤回這筆暫時 request。
 
@@ -233,6 +237,7 @@ session:compacted · session:rewound · state:changed · error · run:end
 - 每個開始的 tool 都有 terminal event；replay 會把中斷的 call 關閉為 aborted。
 - Wire error 只暴露分類；provider 與 host 細節留在 server log。
 - `tool:end.details` 在 durable storage 前先截短；模型讀取的是原始 tool content。
+- Durable stream 寫入失敗只會記錄 log，不會讓 turn 失敗：entries 與 side effects 已經持久化，漏掉事件的 client 重新載入 session 即可。
 
 每個 run 有 coarse event stream 與 batched delta stream。Coarse event 發出前先 flush pending deltas。Turn cursor 同時記錄兩條 stream 的位置，避免 reconnect 時把舊 delta 接到已從 Postgres 載入的 transcript。
 
@@ -260,7 +265,7 @@ Maintenance 直接操作 session tree，不建立 `Agent`。
 
 Turn 執行中或 approval 未決時，navigate、fork 與手動 compaction 都會被拒絕。這些操作與 prompt、approval acceptance 共用 per-session Postgres advisory lock。新 `agent.run` row 在 workflow 啟動前建立，maintenance 能立即看到 lease。
 
-Maintenance 的 model call 有獨立 deadline，並在 lock transaction 中執行。Timeout 會取消 model call 並 rollback。Transaction 共用單一 connection，因此內部查詢必須循序執行。
+Maintenance 的 model call 有獨立 deadline，並在 lock transaction 中執行。Timeout 會取消 model call 並 rollback，只有 usage ledger row 例外：它寫在 transaction 之外的 connection 上，因為那次呼叫已經計費。Transaction 共用單一 connection，因此內部查詢必須循序執行。
 
 Kind state 不隨 transcript entries 版本化。Rewind 保留目前的 drafts；fork 複製 session 的 draft 參照，兩個 session 繼續處理同一批共用列。
 

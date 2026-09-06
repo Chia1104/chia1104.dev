@@ -131,7 +131,9 @@ sequenceDiagram
 
 Each session workflow owns one deterministic `agentMessageHook`. `getConflict()` registers it before the first turn and prevents two active workflows from owning the same session inbox. Resumed hook payloads are durable workflow events consumed in order.
 
-A message submitted during a running turn waits for the current turn and approval handshake to finish. Enqueue is refused while approval is undecided, while a new workflow has not registered its hook, or for the reserved `/end` sentinel.
+One turn at a time. A prompt is refused while a turn is running: admission checks quota and the running cap, and a message queued behind a running turn would execute after that turn's cost landed without being checked again. Enqueue is also refused while approval is undecided, while a new workflow has not registered its hook, or for the reserved `/end` sentinel.
+
+Acceptance commits before the workflow is told. The new run row or the claimed turn marker is the record; delivery follows outside the lock transaction, because a workflow command cannot be rolled back. A failed delivery releases the claim or fails the run row. A process that dies between commit and delivery leaves the claim in place, and abort clears it.
 
 One workflow may drive up to 200 turns. Workflow functions handle orchestration only; database, provider, timer and network operations stay inside steps. `runAgentTurnStep` has `maxRetries = 0` because a turn may already have appended entries or performed an approved side effect. Provider retries stay inside Pi; retrying a failed turn requires a new user message.
 
@@ -198,12 +200,14 @@ sequenceDiagram
     U->>WF: resume hook
     WF->>M: operator-decision relay turn
     M->>G: reissue call
-    G-->>M: allow pre-authorized tool
+    G-->>M: allow, spending the approval
 ```
 
-A call is allowed when its tier needs no approval, the session auto-approves that tier, the call ID was approved, or the tool is pre-authorized for the relay turn. Decisions are written before the hook resumes. Rejections also create a relay turn so the model can respond to the operator's comment.
+A call is allowed when its tier needs no approval, the session auto-approves that tier, or an unspent approval exists for its approval key. The key is the kind's identity for the call, never the call id, because the re-issued call carries a new one. The writing kind pins `commit_draft` to the draft revision the operator saw and `set_published` to the feed and target state, so a call for another draft, or for a draft edited after the decision, is gated again. An approval is spent durably before the call runs and is good for exactly one call.
 
-Requests are persisted as one batch only after the provider turn succeeds. A failed turn leaves no undecided rows and never parks the workflow on an unresolvable hook. Relay messages are marked as operator decisions so clients render them as notices rather than user-authored prompts.
+A decision is written once, on a pending row, before the hook resumes. `approve` on a decided row redelivers the recorded decision while the run still waits on it and never rewrites it. Rejections also create a relay turn so the model can respond to the operator's comment.
+
+One request per turn: the workflow parks on exactly one approval hook, so a second gated call in the same turn is refused without being recorded. The request is persisted only after the provider turn succeeds. A failed turn leaves no undecided rows and never parks the workflow on an unresolvable hook. Relay messages are marked as operator decisions so clients render them as notices rather than user-authored prompts.
 
 The live stream may announce a request before persistence so the UI can render it promptly, but the card remains locked until `run:end{awaiting_approval}` or a reloaded pending row confirms it. Any other terminal state retracts the tentative request.
 
@@ -233,6 +237,7 @@ Key invariants:
 - Every started tool receives a terminal event. Replay closes interrupted calls as aborted.
 - Wire errors expose only a classified kind; provider and host details stay in server logs.
 - `tool:end.details` is clipped before durable storage; the model reads the original tool content.
+- A durable stream write that fails is logged and does not fail the turn: its entries and side effects are already durable, and a client that misses the event reloads the session.
 
 Each run has a coarse event stream and a batched delta stream. Coarse events flush pending deltas first. A turn cursor records both stream positions so reconnecting does not append old deltas to a transcript already loaded from Postgres.
 
@@ -260,7 +265,7 @@ Maintenance operates on the session tree without constructing an `Agent`.
 
 Navigate, fork and manual compaction are refused while a turn runs or approval is pending. They serialize with prompt and approval acceptance through one per-session Postgres advisory lock. A new `agent.run` row is created before the workflow starts, so maintenance sees the lease immediately.
 
-Maintenance model calls have their own deadline and run inside the lock transaction. Timeout cancels the model call and rolls back all changes. Queries inside the transaction remain sequential because they share one connection.
+Maintenance model calls have their own deadline and run inside the lock transaction. Timeout cancels the model call and rolls back all changes except the usage ledger row, which is written on a connection outside the transaction because the call was billed. Queries inside the transaction remain sequential because they share one connection.
 
 Kind state is not versioned with transcript entries. Rewinding keeps the current drafts; forking copies the session's draft references, so both sessions keep working on the same shared rows.
 

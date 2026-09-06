@@ -43,7 +43,7 @@ export interface AgentSessionStartRequest {
 export interface AgentMessagePayload {
   text: string;
   template?: { name: string; args?: string[] };
-  preAuthorizeToolNames?: string[];
+  attachments?: { type: string; id: number }[];
   credentials?: EncryptedAgentCredentials;
 }
 

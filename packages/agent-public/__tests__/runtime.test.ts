@@ -115,7 +115,7 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
         onEvent: (event) => events.push(event),
         models,
         toApproval: (approval) => approval,
-        persistApprovals: async () => undefined,
+        persistApproval: async () => undefined,
       }),
   };
 };
@@ -143,7 +143,7 @@ describe("runPublicTurn", () => {
     const result = await fixture.run("Is there a post about TypeScript?");
 
     expect(result.status).toBe("done");
-    expect(result.approvals).toEqual([]);
+    expect(result.approval).toBeUndefined();
     const ends = fixture.events.filter((event) => event.type === "tool:end");
     expect(ends).toMatchObject([
       {

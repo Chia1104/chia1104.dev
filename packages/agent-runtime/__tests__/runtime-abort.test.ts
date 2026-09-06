@@ -23,10 +23,9 @@ describe("runPiTurn abort", () => {
 
     await expect(fixture.run({ signal: controller.signal })).resolves.toEqual({
       status: "aborted",
-      approvals: [],
       error: undefined,
     });
-    expect(fixture.persistApprovals).not.toHaveBeenCalled();
+    expect(fixture.persistApproval).not.toHaveBeenCalled();
     expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
       false
     );
@@ -127,10 +126,9 @@ describe("runPiTurn abort", () => {
 
     expect(result).toEqual({
       status: "aborted",
-      approvals: [],
       error: undefined,
     });
-    expect(fixture.persistApprovals).not.toHaveBeenCalled();
+    expect(fixture.persistApproval).not.toHaveBeenCalled();
     expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
       false
     );

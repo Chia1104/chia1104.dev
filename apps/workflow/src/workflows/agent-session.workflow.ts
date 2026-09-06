@@ -44,7 +44,6 @@ export const requestSchema = z.object({
       .object({ name: z.string(), args: z.array(z.string()).optional() })
       .optional(),
     attachments: z.array(agentAttachmentPayloadSchema).optional(),
-    preAuthorizeToolNames: z.array(z.string()).optional(),
     credentials: encryptedAgentCredentialsSchema.optional(),
   }),
 });
@@ -139,19 +138,20 @@ const driveSession = async ({
       text: currentMessage.text,
       template: currentMessage.template,
       attachments: currentMessage.attachments,
-      preAuthorizeToolNames: currentMessage.preAuthorizeToolNames,
       credentials,
     });
     currentMessage = null;
 
     /**
      * A step cannot suspend (`createHook` is workflow-only; pi's tools run inside the step).
-     * Park until the operator decides, then run one more turn with the approval on record.
+     * Park until the operator decides, then relay the decision in one more turn. The decision
+     * is on record before the hook resumes and the step seeds the gate from it, so an approved
+     * call goes through and a rejected one is gated again. That relay turn can gate another
+     * call; breaking out instead would park the run on the message hook while the persisted
+     * request has no hook to resume.
      */
-    while (outcome.status === "awaiting_approval") {
-      const gated = outcome.approvals[0];
-      if (!gated) break;
-
+    while (outcome.status === "awaiting_approval" && outcome.approval) {
+      const gated = outcome.approval;
       const decision = await agentApprovalHook.create({
         token: agentApprovalToken(sessionId, gated.toolCallId),
       });
@@ -164,22 +164,6 @@ const driveSession = async ({
         comment: decision.comment,
       };
 
-      if (!decision.approved) {
-        turns += 1;
-        // This turn can gate another tool. Breaking would park the run on the
-        // message hook while the persisted approval has no hook to resume.
-        outcome = await runAgentTurnStep({
-          sessionId,
-          runId,
-          userId,
-          abortController,
-          text: formatOperatorDecision(relayed),
-          decision: relayed,
-          credentials,
-        });
-        continue;
-      }
-
       turns += 1;
       outcome = await runAgentTurnStep({
         sessionId,
@@ -188,8 +172,6 @@ const driveSession = async ({
         abortController,
         text: formatOperatorDecision(relayed),
         decision: relayed,
-        // The approval is already persisted, so the gate lets this call through.
-        preAuthorizeToolNames: [gated.toolName],
         credentials,
       });
     }

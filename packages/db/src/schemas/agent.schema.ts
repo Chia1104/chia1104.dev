@@ -310,7 +310,9 @@ export type AgentQuotaConfig = InferSelectModel<typeof agentQuotaConfigs>;
 export type AgentApprovalStatus = "pending" | "approved" | "rejected";
 
 /**
- * Durable tier-3 approval, keyed by `toolCallId`. Survives process restart so reconnects and audit still see the decision.
+ * Durable commit-tier approval, keyed by the call that raised it. Survives process restart so
+ * reconnects and audit still see the decision. An approval is spent by exactly one later call
+ * whose `approvalKey` matches; the re-issued call carries a new `toolCallId`.
  */
 export const agentToolApprovals = agentSchema.table(
   "tool_approval",
@@ -320,6 +322,8 @@ export const agentToolApprovals = agentSchema.table(
       .references(() => agentSessions.id, { onDelete: "cascade" }),
     toolCallId: text("tool_call_id").notNull(),
     toolName: text("tool_name").notNull(),
+    /** The kind's identity for the call: tool, target and the state the operator saw. */
+    approvalKey: text("approval_key").notNull(),
     args: jsonb("args").$type<JsonObject>(),
     status: text("status")
       .$type<AgentApprovalStatus>()
@@ -330,6 +334,8 @@ export const agentToolApprovals = agentSchema.table(
       onDelete: "set null",
     }),
     decidedAt: timestamp("decided_at", { withTimezone: true, mode: "date" }),
+    /** When an approved call ran on this approval; set before the call executes. */
+    consumedAt: timestamp("consumed_at", { withTimezone: true, mode: "date" }),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),

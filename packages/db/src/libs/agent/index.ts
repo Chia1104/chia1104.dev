@@ -235,6 +235,20 @@ export const patchAgentRunMetadata = async (
     .where(eq(agentRuns.id, runId));
 };
 
+/** Flips `metadata[turnKey].running` off, keeping the cursors: a claimed turn whose delivery failed. */
+export const releaseAgentRunTurn = async (
+  db: DB,
+  runId: string,
+  turnKey: string
+) => {
+  await db
+    .update(agentRuns)
+    .set({
+      metadata: sql`jsonb_set(${agentRuns.metadata}, ${`{${turnKey},running}`}::text[], 'false'::jsonb)`,
+    })
+    .where(eq(agentRuns.id, runId));
+};
+
 /** Points a run row written ahead of its workflow at the run the workflow backend then created. */
 export const bindAgentRunExternalId = async (
   db: DB,
@@ -499,33 +513,41 @@ export const copyWritingSessionDrafts = async (
     .onConflictDoNothing();
 };
 
-export const recordAgentApprovalRequests = async (
+export const recordAgentApprovalRequest = async (
   db: DB,
-  inputs: readonly {
+  input: {
     sessionId: string;
     toolCallId: string;
     toolName: string;
+    approvalKey: string;
     args?: JsonObject;
-  }[]
+  }
 ) => {
-  if (inputs.length === 0) return;
-
   await db
     .insert(agentToolApprovals)
-    .values(
-      inputs.map((input) => ({
-        sessionId: input.sessionId,
-        toolCallId: input.toolCallId,
-        toolName: input.toolName,
-        args: input.args ?? null,
-      }))
-    )
+    .values({
+      sessionId: input.sessionId,
+      toolCallId: input.toolCallId,
+      toolName: input.toolName,
+      approvalKey: input.approvalKey,
+      args: input.args ?? null,
+    })
     // First request wins; a re-issued gated call must not overwrite an existing decision.
     .onConflictDoNothing({
       target: [agentToolApprovals.sessionId, agentToolApprovals.toolCallId],
     });
 };
 
+export const getAgentApproval = async (
+  db: DB,
+  sessionId: string,
+  toolCallId: string
+) =>
+  await db.query.agentToolApprovals.findFirst({
+    where: { sessionId, toolCallId },
+  });
+
+/** Records the decision on a pending request. `undefined` when there is none: a decision is never rewritten. */
 export const decideAgentApproval = async (
   db: DB,
   input: {
@@ -547,28 +569,55 @@ export const decideAgentApproval = async (
     .where(
       and(
         eq(agentToolApprovals.sessionId, input.sessionId),
-        eq(agentToolApprovals.toolCallId, input.toolCallId)
+        eq(agentToolApprovals.toolCallId, input.toolCallId),
+        eq(agentToolApprovals.status, "pending")
       )
     )
     .returning();
   return row;
 };
 
-/** Tool call ids approved for this session, for seeding the permission gate on resume. */
-export const getApprovedAgentToolCallIds = async (
+/** Approval keys granted on this session that no call has spent; seeds the permission gate. */
+export const listUnspentAgentApprovalKeys = async (
   db: DB,
   sessionId: string
 ) => {
   const rows = await db
-    .select({ toolCallId: agentToolApprovals.toolCallId })
+    .select({ approvalKey: agentToolApprovals.approvalKey })
     .from(agentToolApprovals)
     .where(
       and(
         eq(agentToolApprovals.sessionId, sessionId),
-        eq(agentToolApprovals.status, "approved")
+        eq(agentToolApprovals.status, "approved"),
+        isNull(agentToolApprovals.consumedAt)
       )
     );
-  return rows.map((row) => row.toolCallId);
+  return rows.map((row) => row.approvalKey);
+};
+
+/** Spends every unspent approval for `approvalKey`; throws when there is none, so the call stays blocked. */
+export const consumeAgentApproval = async (
+  db: DB,
+  sessionId: string,
+  approvalKey: string
+) => {
+  const rows = await db
+    .update(agentToolApprovals)
+    .set({ consumedAt: new Date() })
+    .where(
+      and(
+        eq(agentToolApprovals.sessionId, sessionId),
+        eq(agentToolApprovals.approvalKey, approvalKey),
+        eq(agentToolApprovals.status, "approved"),
+        isNull(agentToolApprovals.consumedAt)
+      )
+    )
+    .returning({ toolCallId: agentToolApprovals.toolCallId });
+  if (rows.length === 0) {
+    throw new Error(
+      `No unspent approval for "${approvalKey}" on agent session ${sessionId}.`
+    );
+  }
 };
 
 export const getAgentApprovals = async (db: DB, sessionId: string) =>

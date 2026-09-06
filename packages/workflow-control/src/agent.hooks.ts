@@ -48,8 +48,6 @@ export const agentMessagePayloadSchema = z.object({
     .object({ name: z.string(), args: z.array(z.string()).optional() })
     .optional(),
   attachments: z.array(agentAttachmentPayloadSchema).optional(),
-  /** Pre-authorised for this turn only. */
-  preAuthorizeToolNames: z.array(z.string()).optional(),
   credentials: encryptedAgentCredentialsSchema.optional(),
 });
 

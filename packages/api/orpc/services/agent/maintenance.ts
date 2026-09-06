@@ -108,9 +108,14 @@ export const createAgentMaintenanceOperations = <
     return entry;
   };
 
-  /** Builds only the model and session dependencies a tree mutation needs. */
+  /**
+   * Builds only the model and session dependencies a tree mutation needs. `ledger` is a
+   * connection outside the lock transaction: a model call that is then rolled back was still
+   * billed, so its usage row must survive the rollback.
+   */
   const maintenanceFor = async (
     caller: AgentServiceCaller,
+    ledger: DB,
     row: OwnedSession<TState, TConfig>,
     signal: AbortSignal
   ) => {
@@ -124,7 +129,7 @@ export const createAgentMaintenanceOperations = <
     const access = accessOf(credentials);
     const { defaults: house } = await loadKindConfig(db, definition);
     const onUsage: AgentUsageListener = (report) =>
-      recordAgentUsage(db, {
+      recordAgentUsage(ledger, {
         userId: caller.userId,
         sessionId: row.id,
         kind: definition.kind,
@@ -171,7 +176,12 @@ export const createAgentMaintenanceOperations = <
         "compact",
         async (caller, row, db) => {
           const deadline = AbortSignal.timeout(MAINTENANCE_DEADLINE_MS);
-          const maintenance = await maintenanceFor(caller, row, deadline);
+          const maintenance = await maintenanceFor(
+            caller,
+            outer.context.db,
+            row,
+            deadline
+          );
           if (!canCompactBranch(await maintenance.session.getBranch())) {
             throw nothingToCompact();
           }
@@ -198,7 +208,12 @@ export const createAgentMaintenanceOperations = <
           if (input.summarize) await assertWithinAgentQuota(db, caller);
 
           const deadline = AbortSignal.timeout(MAINTENANCE_DEADLINE_MS);
-          const maintenance = await maintenanceFor(caller, row, deadline);
+          const maintenance = await maintenanceFor(
+            caller,
+            outer.context.db,
+            row,
+            deadline
+          );
           await requireEntry(maintenance.session, input.entryId);
           const result = await maintenance.navigate(input.entryId, {
             summarize: input.summarize,

@@ -65,7 +65,6 @@ beforeEach(() => {
   mocks.getConflict.mockResolvedValue(null);
   mocks.runTurn.mockResolvedValue({
     status: "done",
-    approvals: [],
     error: undefined,
   });
 });
@@ -110,7 +109,6 @@ describe("agentSessionWorkflow", () => {
       text: "first",
       template: undefined,
       attachments: undefined,
-      preAuthorizeToolNames: undefined,
       credentials: { anthropic: "initial" },
     });
     expect(mocks.runTurn).toHaveBeenNthCalledWith(2, {
@@ -121,7 +119,6 @@ describe("agentSessionWorkflow", () => {
       text: "/translate zh-TW",
       template: { name: "translate", args: ["zh-TW"] },
       attachments: undefined,
-      preAuthorizeToolNames: undefined,
       credentials: { openai: "rotated" },
     });
     expect(mocks.completeRun).toHaveBeenCalledWith(
@@ -130,6 +127,101 @@ describe("agentSessionWorkflow", () => {
       "completed"
     );
     expect(mocks.closeStreams).toHaveBeenCalledOnce();
+  });
+
+  it("parks on the gated call's approval hook and relays the decision as one more turn", async () => {
+    mocks.createMessageHook.mockReturnValue(messageHook([{ text: "/end" }]));
+    mocks.runTurn
+      .mockResolvedValueOnce({
+        status: "awaiting_approval",
+        approval: {
+          toolCallId: "call-1",
+          toolName: "commit_draft",
+          approvalKey: "commit_draft:7@3",
+        },
+        error: undefined,
+      })
+      .mockResolvedValueOnce({ status: "done", error: undefined });
+    mocks.createApprovalHook.mockReturnValue(
+      Promise.resolve({
+        approved: true,
+        comment: "go",
+        credentials: { openai: "fresh" },
+      })
+    );
+
+    await expect(
+      agentSessionWorkflow({
+        sessionId: "session-1",
+        runId: "run-1",
+        userId: "user-1",
+        abortController: { id: "abort-1", runId: "abort-run-1" },
+        firstMessage: { text: "commit it" },
+      })
+    ).resolves.toEqual({ sessionId: "session-1", turns: 2 });
+
+    expect(mocks.createApprovalHook).toHaveBeenCalledExactlyOnceWith({
+      token: "agent:approve:session-1:call-1",
+    });
+    // No pre-authorisation crosses the step boundary: the persisted decision seeds the gate.
+    expect(mocks.runTurn).toHaveBeenNthCalledWith(2, {
+      sessionId: "session-1",
+      runId: "run-1",
+      userId: "user-1",
+      abortController: { id: "abort-1", runId: "abort-run-1" },
+      text: expect.stringContaining("commit_draft"),
+      decision: {
+        toolCallId: "call-1",
+        toolName: "commit_draft",
+        approved: true,
+        comment: "go",
+      },
+      credentials: { openai: "fresh" },
+    });
+  });
+
+  it("keeps relaying while each relay turn gates another call", async () => {
+    mocks.createMessageHook.mockReturnValue(messageHook([{ text: "/end" }]));
+    const gated = (toolCallId: string) => ({
+      status: "awaiting_approval" as const,
+      approval: {
+        toolCallId,
+        toolName: "set_published",
+        approvalKey: `set_published:${toolCallId}`,
+      },
+      error: undefined,
+    });
+    mocks.runTurn
+      .mockResolvedValueOnce(gated("call-1"))
+      .mockResolvedValueOnce(gated("call-2"))
+      .mockResolvedValueOnce({ status: "done", error: undefined });
+    mocks.createApprovalHook.mockImplementation(
+      ({ token }: { token: string }) =>
+        Promise.resolve({
+          approved: token.endsWith("call-1"),
+          comment: undefined,
+        })
+    );
+
+    await expect(
+      agentSessionWorkflow({
+        sessionId: "session-1",
+        runId: "run-1",
+        userId: "user-1",
+        abortController: { id: "abort-1", runId: "abort-run-1" },
+        firstMessage: { text: "publish both" },
+      })
+    ).resolves.toEqual({ sessionId: "session-1", turns: 3 });
+
+    expect(
+      mocks.createApprovalHook.mock.calls.map(([arg]) => arg.token)
+    ).toEqual([
+      "agent:approve:session-1:call-1",
+      "agent:approve:session-1:call-2",
+    ]);
+    expect(mocks.runTurn.mock.calls[2]?.[0]).toMatchObject({
+      decision: { toolCallId: "call-2", approved: false },
+    });
   });
 
   it("marks the run failed and closes its streams when a turn step throws", async () => {
