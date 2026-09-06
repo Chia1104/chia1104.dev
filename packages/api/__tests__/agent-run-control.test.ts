@@ -11,15 +11,10 @@ const runs = createFakeRuns();
 
 const repo = vi.hoisted(() => ({
   completeAgentRun: vi.fn(),
-  getAgentSessionLastSeq: vi.fn(),
   listRunningAgentRuns: vi.fn(),
-  patchAgentRunMetadata: vi.fn(),
 }));
 
 vi.mock("@chia/db/repos/agent", () => repo);
-
-const db =
-  /* SAFETY: every repository operation in this suite is mocked. */ {} as never;
 
 const workflowReadable = <T>(stream: ReadableStream<T>, tailIndex = -1) =>
   Object.assign(stream, { getTailIndex: async () => tailIndex });
@@ -34,58 +29,6 @@ describe("agent run control", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetWorkflowMocks();
-  });
-
-  it("claims both durable stream tails as one cursor and marker", async () => {
-    const getReadable = vi.fn((options?: { namespace?: string }) =>
-      workflowReadable(
-        new ReadableStream({ start: (controller) => controller.close() }),
-        options?.namespace ? 6 : 3
-      )
-    );
-    getRun.mockReturnValue({ getReadable });
-    repo.getAgentSessionLastSeq.mockResolvedValue(42);
-    repo.patchAgentRunMetadata.mockResolvedValue(undefined);
-
-    const { claimNextAgentTurn } =
-      await import("../orpc/services/agent/run-control");
-    const claim = await claimNextAgentTurn(
-      runs,
-      db,
-      {
-        id: "session-1",
-        activeRunId: "run-1",
-        turn: {
-          seqBefore: 0,
-          streamIndex: 0,
-          deltaStreamIndex: 0,
-          running: false,
-          claimId: null,
-        },
-      },
-      "workflow-1"
-    );
-
-    expect(claim.cursor).toEqual({
-      runId: "workflow-1",
-      startIndex: 4,
-      deltaStartIndex: 7,
-    });
-    expect(claim.claimId).toEqual(expect.any(String));
-    // The claim is named on the marker, so a release can be scoped to this claim alone.
-    expect(repo.patchAgentRunMetadata).toHaveBeenCalledExactlyOnceWith(
-      db,
-      "run-1",
-      {
-        turn: {
-          seqBefore: 42,
-          streamIndex: 4,
-          deltaStreamIndex: 7,
-          running: true,
-          claimId: claim.claimId,
-        },
-      }
-    );
   });
 
   it("reports a turn as ended when its run:end arrives or the run closes its stream", async () => {

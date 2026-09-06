@@ -64,12 +64,6 @@ export interface AgentTurnRequest {
   template?: { name: string; args?: string[] };
   attachments?: AgentAttachment[];
   decision?: OperatorDecision;
-  /**
-   * The run takes no further prompt after this turn. Unless the turn ends gated, its marker is
-   * left running so the session cannot accept a prompt into a hook nobody will read before
-   * `completeAgentRunStep` closes the row.
-   */
-  final?: boolean;
   /** Encrypted operator keys; omitted means the house gateway. */
   credentials?: EncryptedAgentCredentials;
 }
@@ -171,7 +165,6 @@ export const runAgentTurnStep = async (
     streamIndex: coarseTail + 1,
     deltaStreamIndex: deltaTail + 1,
     running: true,
-    claimId: null,
   };
   // One transaction under the session lock: the run must still be the session's active one,
   // then the marker lands and the workflow run id is bound. The executor is the one party that
@@ -208,15 +201,12 @@ export const runAgentTurnStep = async (
       writer
     );
     abort.dispose();
-    if (!request.final || outcome.status === "awaiting_approval") {
-      await clearMarker();
-    }
+    await clearMarker();
     return outcome;
   } catch (error) {
     abort.dispose();
-    // A thrown step ends the workflow, and the marker stays running until `completeAgentRunStep`
-    // or reconciliation closes the row: cleared here, admission would accept a prompt into a
-    // hook nobody reads.
+    // A thrown step ends the run and `completeAgentRunStep` closes the row. The marker is not
+    // cleared here so the session never reads as idle while the run is still winding down.
     throw error;
   }
 };

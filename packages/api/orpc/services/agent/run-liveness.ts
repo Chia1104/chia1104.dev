@@ -58,9 +58,9 @@ export const isRunLease = (row: AgentRunRef): boolean =>
 export const RUN_LEASE_TTL_MS = 60_000;
 
 /**
- * `running` is a turn step executing; `waiting` is parked on a message or approval hook;
- * `null` means no live run. The SDK's own status cannot tell the first two apart — a parked
- * run is `running` too — so the turn marker decides.
+ * `running` is a turn step executing; `waiting` is a live run whose turn has ended and whose
+ * row is about to be closed; `null` means no live run. The SDK's own status cannot tell the
+ * first two apart, so the turn marker decides.
  */
 export const runStateOf = async (
   runs: AgentRunHost,

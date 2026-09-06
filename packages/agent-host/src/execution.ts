@@ -17,12 +17,6 @@ export interface AgentStreamPosition extends JsonObject {
 export interface AgentTurnMarker extends AgentStreamPosition {
   seqBefore: number;
   running: boolean;
-  /**
-   * Set by the service when it claims the next turn ahead of resuming the hook; the step
-   * overwrites the marker with `null`. A release names the claim it undoes, so a late
-   * compensation cannot touch a turn the step has since started.
-   */
-  claimId: string | null;
 }
 
 const agentTurnMarkerSchema = z.object({
@@ -30,7 +24,6 @@ const agentTurnMarkerSchema = z.object({
   streamIndex: z.number(),
   deltaStreamIndex: z.number(),
   running: z.boolean(),
-  claimId: z.string().nullable().default(null),
 });
 
 export const readAgentTurnMarker = (metadata: JsonObject) =>

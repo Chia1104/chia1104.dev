@@ -101,8 +101,8 @@ vi.mock("@chia/api/orpc/guards/captcha.guard", async () => {
 });
 
 vi.mock("workflow/api", async () => {
-  const { getHookByToken, getRun } = await import("@chia/test/mocks/workflow");
-  return { getRun, getHookByToken };
+  const { getRun } = await import("@chia/test/mocks/workflow");
+  return { getRun };
 });
 
 vi.mock("../src/services/feed-indexing.service", () => ({

@@ -14,14 +14,10 @@ export const getRun: Mock = vi.fn(() => ({
   cancel: vi.fn(async () => undefined),
 }));
 
-export const getHookByToken: Mock = vi.fn(async () => null);
-
 export const createFakeRuns = () => ({
   get: getRun,
-  hasHook: async (token: string) => Boolean(await getHookByToken(token)),
 });
 
 export const resetWorkflowMocks = () => {
   getRun.mockClear();
-  getHookByToken.mockClear();
 };

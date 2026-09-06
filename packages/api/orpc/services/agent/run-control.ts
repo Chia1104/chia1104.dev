@@ -1,29 +1,12 @@
-import {
-  AGENT_DELTA_NAMESPACE,
-  AGENT_TURN_KEY,
-} from "@chia/agent-host/execution";
-import type {
-  AgentStreamPosition,
-  AgentTurnMarker,
-} from "@chia/agent-host/execution";
+import { AGENT_DELTA_NAMESPACE } from "@chia/agent-host/execution";
+import type { AgentStreamPosition } from "@chia/agent-host/execution";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
-import type { DB } from "@chia/db/client";
-import {
-  getAgentSessionLastSeq,
-  patchAgentRunMetadata,
-} from "@chia/db/repos/agent";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type { AgentRunHost } from "../agent.factory";
 import type { AgentStreamCursor } from "../agent.service";
 
 import { isRunLive } from "./run-liveness";
-
-interface ClaimableAgentTurn {
-  id: string;
-  activeRunId: string | null;
-  turn: AgentTurnMarker | undefined;
-}
 
 const cursorOf = (
   runId: string,
@@ -36,61 +19,6 @@ const cursorOf = (
 
 /** A cursor at a known stream position, used for the first turn of a newly started run. */
 export const agentStreamCursor = cursorOf;
-
-export interface AgentTurnClaim {
-  cursor: AgentStreamCursor;
-  /** Names the marker written here; `null` when the row already reported a running turn. */
-  claimId: string | null;
-}
-
-/**
- * Captures and claims the next turn before its workflow hook is resumed. Reading both
- * tails and writing the marker are one operation so callers cannot resume a hook with a
- * cursor they forgot to claim.
- */
-export const claimNextAgentTurn = async (
-  runs: AgentRunHost,
-  db: DB,
-  row: ClaimableAgentTurn,
-  runId: string
-): Promise<AgentTurnClaim> => {
-  const run = runs.get(runId);
-  const [coarseTail, deltaTail] = await Promise.all([
-    run.getReadable().getTailIndex(),
-    run.getReadable({ namespace: AGENT_DELTA_NAMESPACE }).getTailIndex(),
-  ]);
-  const position: AgentStreamPosition = {
-    streamIndex: coarseTail + 1,
-    deltaStreamIndex: deltaTail + 1,
-  };
-
-  let claimId: string | null = null;
-  if (row.activeRunId && !row.turn?.running) {
-    claimId = crypto.randomUUID();
-    await patchAgentRunMetadata(db, row.activeRunId, {
-      [AGENT_TURN_KEY]: {
-        seqBefore: await getAgentSessionLastSeq(db, row.id),
-        ...position,
-        running: true,
-        claimId,
-      } satisfies AgentTurnMarker,
-    });
-  }
-
-  return { cursor: cursorOf(runId, position), claimId };
-};
-
-/** `createHook()` registers after the workflow starts; this turns that startup race into a retryable response. */
-export const isAgentHookReady = async (
-  runs: AgentRunHost,
-  token: string
-): Promise<boolean> => {
-  try {
-    return await runs.hasHook(token);
-  } catch {
-    return false;
-  }
-};
 
 const ABORT_SETTLE_TIMEOUT_MS = 10_000;
 

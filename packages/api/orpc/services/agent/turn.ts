@@ -8,6 +8,7 @@ import {
   assertBelowRunningTurnCap,
   assertWithinAgentQuota,
 } from "@chia/agent-host/quota";
+import { formatOperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
 import type { DB } from "@chia/db/client";
 import {
   bindAgentRunExternalId,
@@ -16,20 +17,11 @@ import {
   decideAgentApproval,
   getAgentApproval,
   getAgentSessionLastSeq,
-  releaseAgentRunTurn,
   withAgentSessionLock,
 } from "@chia/db/repos/agent";
 import { AppError, isAppError } from "@chia/service-kit/errors";
 import type { AppErrorCode } from "@chia/service-kit/errors";
-import {
-  AGENT_END_SENTINEL,
-  agentApprovalToken,
-  agentMessageToken,
-} from "@chia/workflow-control/agent-hooks";
-import type {
-  AgentAbortControllerRef,
-  EncryptedAgentCredentials,
-} from "@chia/workflow-control/agent-hooks";
+import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-hooks";
 import type {
   AgentMessagePayload,
   WorkflowControlClient,
@@ -50,8 +42,6 @@ import {
 import {
   agentStreamCursor,
   cancelLiveAgentRun,
-  claimNextAgentTurn,
-  isAgentHookReady,
   streamAgentRunEvents,
   waitForAgentTurnEnd,
 } from "./run-control";
@@ -68,38 +58,31 @@ type TurnService = Pick<
   "prompt" | "attach" | "stream" | "abort" | "approve"
 >;
 
-/** An operator's decision as the approval row records it. */
-interface RecordedDecision {
-  approved: boolean;
-  comment?: string;
+type OwnedSession<TState, TConfig extends object> = NonNullable<
+  Awaited<
+    ReturnType<AgentSessionOperations<TState, TConfig>["loadOwnedSession"]>
+  >
+>;
+
+/**
+ * What the lock transaction accepted: a run row written as the session's lease, to be bound
+ * to the workflow run once it exists. Delivery happens after the commit, because a workflow
+ * command cannot be rolled back and the row is the record of what was accepted.
+ */
+interface AcceptedTurn {
+  runId: string;
+  abortController: AgentAbortControllerRef;
+  position: AgentStreamPosition;
+  message: AgentMessagePayload;
+  /** A live run of the session that was not executing a turn; cancelled once replaced. */
+  staleWorkflowRunId: string | null;
 }
 
 /**
- * What the lock transaction decided. Delivery to the workflow happens after it commits: the
- * database is the record of what was accepted, and a workflow command cannot be rolled back.
- * A `resume` is the parked run's next turn, already claimed on its marker; a `start` is a run
- * row written as the session's lease, to be bound to the workflow run once it exists.
- */
-type Admission =
-  | {
-      kind: "resume";
-      cursor: AgentStreamCursor;
-      /** The run whose marker was claimed; released if the workflow refused the delivery. */
-      activeRunId: string | null;
-      claimId: string | null;
-    }
-  | {
-      kind: "start";
-      runId: string;
-      abortController: AgentAbortControllerRef;
-      position: AgentStreamPosition;
-    };
-
-/**
  * Whether the workflow service rejected the command before executing it. Only then is it
- * known that nothing was accepted; a timeout, a dropped response or a failure inside the
- * service may have resumed the hook, and the claim must stay until the step overwrites it
- * or the operator aborts.
+ * known that no run started; a timeout, a dropped response or a failure inside the service
+ * may have started one, and the lease row must stay until the executor claims it or its
+ * TTL passes.
  */
 const deliveryRefused = (code: AppErrorCode | null): boolean =>
   code === "BAD_REQUEST" ||
@@ -107,7 +90,7 @@ const deliveryRefused = (code: AppErrorCode | null): boolean =>
   code === "FORBIDDEN" ||
   code === "UNPROCESSABLE_CONTENT";
 
-/** Durable turn admission, workflow hooks and live transport for one agent kind. */
+/** Durable turn admission and live transport for one agent kind. */
 export const createAgentTurnOperations = <TState, TConfig extends object>(
   definition: AgentKindDefinition<TState, TConfig>,
   sessions: AgentSessionOperations<TState, TConfig>,
@@ -129,41 +112,10 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
   };
 
   /**
-   * Compensates a delivery that failed. A refused command never reached the hook, so the
-   * claim is released, by its id so a step that has since started is left alone. Any other
-   * failure is ambiguous: the claim stays, the ids are logged, and the operator's abort is
-   * the way out if the step never starts.
-   */
-  const settleFailedDelivery = async (
-    db: DB,
-    sessionId: string,
-    admission: { activeRunId: string | null; claimId: string | null },
-    code: AppErrorCode | null
-  ) => {
-    if (deliveryRefused(code)) {
-      if (admission.activeRunId && admission.claimId) {
-        await releaseAgentRunTurn(
-          db,
-          admission.activeRunId,
-          AGENT_TURN_KEY,
-          admission.claimId
-        ).catch(() => undefined);
-      }
-      return;
-    }
-    console.error("Agent turn delivery is unresolved; the claim is kept", {
-      sessionId,
-      runId: admission.activeRunId,
-      claimId: admission.claimId,
-      code,
-    });
-  };
-
-  /**
    * A workflow that started while its row still carries the lease id, so `abort` could not
    * find it. Stops it on the id only this request holds, and fails the row only once the turn
-   * was seen to end; otherwise the lease keeps the session blocked and the first turn step
-   * binds the real id, so the operator's abort can finish the job.
+   * was seen to end; otherwise the lease keeps the session blocked and the turn step binds the
+   * real id, so the operator's abort can finish the job.
    */
   const settleUnboundRun = async (
     db: DB,
@@ -196,31 +148,152 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
     });
   };
 
-  return {
-    /** Accepts a message under the session lock, then queues or starts its durable run. */
-    async prompt(outer, input) {
-      const db = outer.context.db;
-      const admission = await withAgentSessionLock(
-        db,
-        input.sessionId,
-        async (tx): Promise<Admission & { message: AgentMessagePayload }> => {
-          const caller = sessions.withDb(outer, tx);
-          const row = await sessions.loadOwnedSession(caller, input.sessionId);
-          // The guard resolved the session already; a miss under the lock means it was just deleted.
-          if (!row) {
-            throw new AppError("NOT_FOUND", {
-              message: `Unknown agent session: ${input.sessionId}`,
-            });
-          }
+  /**
+   * Writes the run row under the session lock, then starts the run. `admit` runs inside the
+   * lock and returns the turn's message, or `null` when there is nothing to start.
+   */
+  const startTurn = async (
+    outer: AgentServiceCaller,
+    sessionId: string,
+    admit: (
+      tx: DB,
+      caller: AgentServiceCaller,
+      row: OwnedSession<TState, TConfig>
+    ) => Promise<AgentMessagePayload | null>
+  ): Promise<AgentStreamCursor | null> => {
+    const db = outer.context.db;
+    const workflow = outer.context.workflow;
+    const accepted = await withAgentSessionLock(
+      db,
+      sessionId,
+      async (tx): Promise<AcceptedTurn | null> => {
+        const caller = sessions.withDb(outer, tx);
+        const row = await sessions.loadOwnedSession(caller, sessionId);
+        // The guard resolved the session already; a miss under the lock means it was just deleted.
+        if (!row) {
+          throw new AppError("NOT_FOUND", {
+            message: `Unknown agent session: ${sessionId}`,
+          });
+        }
 
-          if (input.text === AGENT_END_SENTINEL) {
-            throw new AppError("BAD_REQUEST", {
-              message: `"${AGENT_END_SENTINEL}" is reserved; it ends the session's run.`,
-            });
-          }
+        const message = await admit(tx, caller, row);
+        if (!message) return null;
+
+        // One turn at a time: quota and the running cap were checked here, and a turn run
+        // behind this one would execute after its cost landed without being checked again.
+        const state = await runStateOf(host.runs, row);
+        if (state?.status === "running") {
+          throw new AppError("CONFLICT", {
+            message:
+              "A turn is still running. Wait for it to finish or stop it before sending another message.",
+          });
+        }
+
+        // A parked controller that outlives a refused admission expires on its TTL, so
+        // starting it before the commit costs nothing that the database has to know about.
+        const abortController = await startAgentAbortController(workflow);
+        const runId = crypto.randomUUID();
+        const position: AgentStreamPosition = {
+          streamIndex: 0,
+          deltaStreamIndex: 0,
+        };
+        const turn: AgentTurnMarker = {
+          seqBefore: await getAgentSessionLastSeq(tx, row.id),
+          ...position,
+          running: true,
+        };
+        await createAgentRun(tx, {
+          id: runId,
+          sessionId,
+          harnessKind: "workflow",
+          externalRunId: runId,
+          metadata: {
+            agentKind: definition.kind,
+            [AGENT_TURN_KEY]: turn,
+            [AGENT_ABORT_CONTROLLER_KEY]: {
+              id: abortController.id,
+              runId: abortController.runId,
+            },
+          },
+        });
+        return {
+          runId,
+          abortController,
+          position,
+          message,
+          staleWorkflowRunId: state ? row.workflowRunId : null,
+        };
+      }
+    );
+    if (!accepted) return null;
+
+    // The row it drove is closed by `createAgentRun`; the run itself would otherwise sit in
+    // the World until it ends on its own.
+    if (accepted.staleWorkflowRunId) {
+      await cancelLiveAgentRun(
+        host.runs,
+        workflow,
+        accepted.staleWorkflowRunId
+      ).catch(() => undefined);
+    }
+
+    let workflowRunId;
+    try {
+      workflowRunId = await workflow.startAgentSession({
+        sessionId,
+        runId: accepted.runId,
+        userId: outer.userId,
+        abortController: accepted.abortController,
+        message: accepted.message,
+      });
+    } catch (error) {
+      const code = isAppError(error) ? error.code : null;
+      if (deliveryRefused(code)) {
+        await completeAgentRun(db, accepted.runId, "failed");
+        await signalAgentAbort(
+          workflow,
+          accepted.abortController.id,
+          "run failed to start"
+        );
+      } else {
+        // The workflow may have started. The lease row keeps the session blocked; the turn
+        // step binds the real run id onto it, after which abort and reconcile see the run,
+        // and an unbound lease is closed once its TTL passes.
+        console.error("Agent run start is unresolved; the lease is kept", {
+          sessionId,
+          runId: accepted.runId,
+          code,
+        });
+      }
+      throw error;
+    }
+    try {
+      await bindAgentRunExternalId(db, accepted.runId, workflowRunId);
+    } catch (error) {
+      await settleUnboundRun(
+        db,
+        workflow,
+        sessionId,
+        accepted.runId,
+        workflowRunId,
+        accepted.abortController,
+        error
+      );
+      throw error;
+    }
+    return agentStreamCursor(workflowRunId, accepted.position);
+  };
+
+  return {
+    /** Accepts a message under the session lock, then starts its durable run. */
+    async prompt(outer, input) {
+      const cursor = await startTurn(
+        outer,
+        input.sessionId,
+        async (tx, caller) => {
           await assertCanStartTurn(tx, caller);
 
-          // Admitted before the turn is queued, so a bad attachment fails this request rather
+          // Admitted before the run starts, so a bad attachment fails this request rather
           // than the turn.
           if (input.attachments && input.attachments.length > 0) {
             if (!definition.state.attach) {
@@ -236,13 +309,6 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
             );
           }
 
-          const message: AgentMessagePayload = {
-            text: input.text,
-            template: input.template,
-            attachments: input.attachments,
-            credentials: host.credentials.read(caller.context.headers),
-          };
-
           const outstanding = await sessions.undecidedApprovals(
             tx,
             input.sessionId
@@ -253,142 +319,20 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
             });
           }
 
-          const state = await runStateOf(host.runs, row);
-          // One turn at a time: quota and the running cap are checked here, and a turn queued
-          // behind a running one would run after that turn's cost landed without being checked.
-          if (state?.status === "running") {
-            throw new AppError("CONFLICT", {
-              message:
-                "A turn is still running. Wait for it to finish or stop it before sending another message.",
-            });
-          }
-
-          if (state && row.workflowRunId) {
-            if (
-              !(await isAgentHookReady(
-                host.runs,
-                agentMessageToken(input.sessionId)
-              ))
-            ) {
-              throw new AppError("CONFLICT", {
-                message:
-                  "The session's run is still starting up. Retry in a moment.",
-              });
-            }
-
-            const claim = await claimNextAgentTurn(
-              host.runs,
-              tx,
-              row,
-              row.workflowRunId
-            );
-            return {
-              kind: "resume",
-              cursor: claim.cursor,
-              activeRunId: row.activeRunId,
-              claimId: claim.claimId,
-              message,
-            };
-          }
-
-          // A parked controller that outlives a refused admission expires on its TTL, so
-          // starting it before the commit costs nothing that the database has to know about.
-          const abortController = await startAgentAbortController(
-            caller.context.workflow
-          );
-          const runId = crypto.randomUUID();
-          const position: AgentStreamPosition = {
-            streamIndex: 0,
-            deltaStreamIndex: 0,
+          return {
+            text: input.text,
+            template: input.template,
+            attachments: input.attachments,
+            credentials: host.credentials.read(caller.context.headers),
           };
-          const turn: AgentTurnMarker = {
-            seqBefore: await getAgentSessionLastSeq(tx, row.id),
-            ...position,
-            running: true,
-            claimId: null,
-          };
-          await createAgentRun(tx, {
-            id: runId,
-            sessionId: input.sessionId,
-            harnessKind: "workflow",
-            externalRunId: runId,
-            metadata: {
-              agentKind: definition.kind,
-              [AGENT_TURN_KEY]: turn,
-              [AGENT_ABORT_CONTROLLER_KEY]: {
-                id: abortController.id,
-                runId: abortController.runId,
-              },
-            },
-          });
-          return { kind: "start", runId, abortController, position, message };
         }
       );
-
-      const workflow = outer.context.workflow;
-      if (admission.kind === "resume") {
-        try {
-          await workflow.resumeAgentMessage(input.sessionId, admission.message);
-        } catch (error) {
-          await settleFailedDelivery(
-            db,
-            input.sessionId,
-            admission,
-            isAppError(error) ? error.code : null
-          );
-          throw error;
-        }
-        return { ...admission.cursor, startedRun: false };
-      }
-
-      let workflowRunId;
-      try {
-        workflowRunId = await workflow.startAgentSession({
-          sessionId: input.sessionId,
-          runId: admission.runId,
-          userId: outer.userId,
-          abortController: admission.abortController,
-          firstMessage: admission.message,
+      if (!cursor) {
+        throw new AppError("NOT_FOUND", {
+          message: `Unknown agent session: ${input.sessionId}`,
         });
-      } catch (error) {
-        const code = isAppError(error) ? error.code : null;
-        if (deliveryRefused(code)) {
-          await completeAgentRun(db, admission.runId, "failed");
-          await signalAgentAbort(
-            workflow,
-            admission.abortController.id,
-            "run failed to start"
-          );
-        } else {
-          // The workflow may have started. The lease row keeps the session blocked; the first
-          // turn step binds the real run id onto it, after which abort and reconcile see the
-          // run, and an unbound lease is closed once its TTL passes.
-          console.error("Agent run start is unresolved; the lease is kept", {
-            sessionId: input.sessionId,
-            runId: admission.runId,
-            code,
-          });
-        }
-        throw error;
       }
-      try {
-        await bindAgentRunExternalId(db, admission.runId, workflowRunId);
-      } catch (error) {
-        await settleUnboundRun(
-          db,
-          workflow,
-          input.sessionId,
-          admission.runId,
-          workflowRunId,
-          admission.abortController,
-          error
-        );
-        throw error;
-      }
-      return {
-        ...agentStreamCursor(workflowRunId, admission.position),
-        startedRun: true,
-      };
+      return { ...cursor, startedRun: true };
     },
 
     async attach(caller, input) {
@@ -453,92 +397,39 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
     },
 
     /**
-     * Records the decision under the session lock, then resumes the parked run. The row is the
-     * record: a decision whose delivery failed is redelivered as recorded, whatever this call
-     * says, for as long as the run still waits on it.
+     * Records the decision on the pending request and starts the run that relays it. A
+     * decision is written once; a request already decided starts nothing and returns `null`.
      */
-    async approve(outer, input) {
-      const db = outer.context.db;
-      const token = agentApprovalToken(input.sessionId, input.toolCallId);
-      const admission = await withAgentSessionLock(
-        db,
-        input.sessionId,
-        async (
-          tx
-        ): Promise<{
-          cursor: AgentStreamCursor;
-          activeRunId: string | null;
-          claimId: string | null;
-          decision: RecordedDecision & {
-            credentials?: EncryptedAgentCredentials;
-          };
-        } | null> => {
-          const caller = sessions.withDb(outer, tx);
-          const row = await sessions.loadOwnedSession(caller, input.sessionId);
-          if (!row?.workflowRunId) return null;
-
-          const existing = await getAgentApproval(
-            tx,
-            input.sessionId,
-            input.toolCallId
-          );
-          if (!existing) return null;
-
-          let decision: RecordedDecision;
-          if (existing.status === "pending") {
-            await assertCanStartTurn(tx, caller);
-            const decided = await decideAgentApproval(tx, {
-              sessionId: input.sessionId,
-              toolCallId: input.toolCallId,
-              approved: input.approved,
-              comment: input.comment,
-              decidedBy: caller.userId,
-            });
-            if (!decided) return null;
-            decision = { approved: input.approved, comment: input.comment };
-          } else {
-            if (!(await isAgentHookReady(host.runs, token))) return null;
-            decision = {
-              approved: existing.status === "approved",
-              comment: existing.comment ?? undefined,
-            };
-          }
-
-          const claim = await claimNextAgentTurn(
-            host.runs,
-            tx,
-            row,
-            row.workflowRunId
-          );
-          return {
-            cursor: claim.cursor,
-            activeRunId: row.activeRunId,
-            claimId: claim.claimId,
-            decision: {
-              ...decision,
-              credentials: host.credentials.read(caller.context.headers),
-            },
-          };
-        }
-      );
-      if (!admission) return null;
-
-      try {
-        await outer.context.workflow.resumeAgentApproval(
+    approve: (outer, input) =>
+      startTurn(outer, input.sessionId, async (tx, caller) => {
+        const existing = await getAgentApproval(
+          tx,
           input.sessionId,
-          input.toolCallId,
-          admission.decision
+          input.toolCallId
         );
-      } catch (error) {
-        await settleFailedDelivery(
-          db,
-          input.sessionId,
-          admission,
-          isAppError(error) ? error.code : null
-        );
-        throw error;
-      }
-      return admission.cursor;
-    },
+        if (existing?.status !== "pending") return null;
+
+        await assertCanStartTurn(tx, caller);
+        const decided = await decideAgentApproval(tx, {
+          sessionId: input.sessionId,
+          toolCallId: input.toolCallId,
+          approved: input.approved,
+          comment: input.comment,
+          decidedBy: caller.userId,
+        });
+        if (!decided) return null;
+
+        const decision = {
+          toolCallId: existing.toolCallId,
+          toolName: existing.toolName,
+          approved: input.approved,
+          comment: input.comment,
+        };
+        return {
+          text: formatOperatorDecision(decision),
+          decision,
+          credentials: host.credentials.read(caller.context.headers),
+        };
+      }),
   };
 };

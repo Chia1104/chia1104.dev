@@ -181,7 +181,7 @@ export const transferAgentOwnership = async (
   });
 };
 
-/** Replaces the session's active run in one transaction. The workflow backend allows one message hook per session. */
+/** Replaces the session's active run in one transaction: a session drives one run at a time. */
 export const createAgentRun = async (
   db: DB,
   input: {
@@ -233,32 +233,6 @@ export const patchAgentRunMetadata = async (
       metadata: sql`${agentRuns.metadata} || ${JSON.stringify(patch)}::jsonb`,
     })
     .where(eq(agentRuns.id, runId));
-};
-
-/**
- * Flips `metadata[turnKey].running` off, keeping the cursors, for the claim named by
- * `claimId` only. A step that started since rewrote the marker without the claim, so the
- * release is then a no-op. Returns whether the claim was still there.
- */
-export const releaseAgentRunTurn = async (
-  db: DB,
-  runId: string,
-  turnKey: string,
-  claimId: string
-): Promise<boolean> => {
-  const rows = await db
-    .update(agentRuns)
-    .set({
-      metadata: sql`jsonb_set(${agentRuns.metadata}, ${`{${turnKey},running}`}::text[], 'false'::jsonb)`,
-    })
-    .where(
-      and(
-        eq(agentRuns.id, runId),
-        sql`${agentRuns.metadata} #>> ${`{${turnKey},claimId}`}::text[] = ${claimId}`
-      )
-    )
-    .returning({ id: agentRuns.id });
-  return rows.length > 0;
 };
 
 /**

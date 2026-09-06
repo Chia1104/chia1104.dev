@@ -37,19 +37,19 @@ export interface AgentSessionStartRequest {
   runId: string;
   userId: string;
   abortController: AgentAbortControllerRef;
-  firstMessage: AgentMessagePayload;
+  message: AgentMessagePayload;
 }
 
 export interface AgentMessagePayload {
   text: string;
   template?: { name: string; args?: string[] };
   attachments?: { type: string; id: number }[];
-  credentials?: EncryptedAgentCredentials;
-}
-
-export interface AgentApprovalPayload {
-  approved: boolean;
-  comment?: string;
+  decision?: {
+    toolCallId: string;
+    toolName: string;
+    approved: boolean;
+    comment?: string;
+  };
   credentials?: EncryptedAgentCredentials;
 }
 
@@ -102,21 +102,6 @@ export const createWorkflowControlClient = ({
       return startedRunId(
         await execute({ type: "agent-session:start", request })
       );
-    },
-    async resumeAgentMessage(sessionId: string, payload: AgentMessagePayload) {
-      await execute({ type: "agent-message:resume", sessionId, payload });
-    },
-    async resumeAgentApproval(
-      sessionId: string,
-      toolCallId: string,
-      payload: AgentApprovalPayload
-    ) {
-      await execute({
-        type: "agent-approval:resume",
-        sessionId,
-        toolCallId,
-        payload,
-      });
     },
     async resumeAgentAbort(controllerId: string, reason: string) {
       await execute({
