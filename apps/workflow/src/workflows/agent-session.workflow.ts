@@ -142,6 +142,7 @@ const driveSession = async ({
       text: currentMessage.text,
       template: currentMessage.template,
       attachments: currentMessage.attachments,
+      final: turns >= MAX_TURNS_PER_RUN,
       credentials,
     });
     currentMessage = null;
@@ -176,6 +177,7 @@ const driveSession = async ({
         abortController,
         text: formatOperatorDecision(relayed),
         decision: relayed,
+        final: turns >= MAX_TURNS_PER_RUN,
         credentials,
       });
     }

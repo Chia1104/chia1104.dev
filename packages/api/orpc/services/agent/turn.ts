@@ -30,7 +30,10 @@ import type {
   AgentAbortControllerRef,
   EncryptedAgentCredentials,
 } from "@chia/workflow-control/agent-hooks";
-import type { AgentMessagePayload } from "@chia/workflow-control/client";
+import type {
+  AgentMessagePayload,
+  WorkflowControlClient,
+} from "@chia/workflow-control/client";
 
 import type { AgentServiceHost } from "../agent.factory";
 import type {
@@ -153,6 +156,43 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
       runId: admission.activeRunId,
       claimId: admission.claimId,
       code,
+    });
+  };
+
+  /**
+   * A workflow that started while its row still carries the lease id, so `abort` could not
+   * find it. Stops it on the id only this request holds, and fails the row only once the turn
+   * was seen to end; otherwise the lease keeps the session blocked and the first turn step
+   * binds the real id, so the operator's abort can finish the job.
+   */
+  const settleUnboundRun = async (
+    db: DB,
+    workflow: WorkflowControlClient,
+    sessionId: string,
+    runId: string,
+    workflowRunId: string,
+    abortController: AgentAbortControllerRef,
+    cause: unknown
+  ) => {
+    const signalled = await signalAgentAbort(
+      workflow,
+      abortController.id,
+      "run failed to bind"
+    );
+    const ended =
+      signalled && (await waitForAgentTurnEnd(host.runs, workflowRunId, 0));
+    if (ended) {
+      await cancelLiveAgentRun(host.runs, workflow, workflowRunId).catch(
+        () => undefined
+      );
+      await completeAgentRun(db, runId, "failed").catch(() => undefined);
+    }
+    console.error("Agent run could not be bound to its workflow run", {
+      sessionId,
+      runId,
+      workflowRunId,
+      stopped: ended,
+      cause,
     });
   };
 
@@ -311,38 +351,38 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           firstMessage: admission.message,
         });
       } catch (error) {
-        await completeAgentRun(db, admission.runId, "failed");
-        await signalAgentAbort(
-          workflow,
-          admission.abortController.id,
-          "run failed to start"
-        );
+        const code = isAppError(error) ? error.code : null;
+        if (deliveryRefused(code)) {
+          await completeAgentRun(db, admission.runId, "failed");
+          await signalAgentAbort(
+            workflow,
+            admission.abortController.id,
+            "run failed to start"
+          );
+        } else {
+          // The workflow may have started. The lease row keeps the session blocked; the first
+          // turn step binds the real run id onto it, after which abort and reconcile see the
+          // run, and an unbound lease is closed once its TTL passes.
+          console.error("Agent run start is unresolved; the lease is kept", {
+            sessionId: input.sessionId,
+            runId: admission.runId,
+            code,
+          });
+        }
         throw error;
       }
       try {
         await bindAgentRunExternalId(db, admission.runId, workflowRunId);
       } catch (error) {
-        // The workflow is running while the row still carries its lease id, so abort could not
-        // find it. Stop it now, on the id only this request knows, and leave every id in the log.
-        await signalAgentAbort(
+        await settleUnboundRun(
+          db,
           workflow,
-          admission.abortController.id,
-          "run failed to bind"
-        );
-        const cancelled = await workflow
-          .cancelRun(workflowRunId)
-          .then(() => true)
-          .catch(() => false);
-        await completeAgentRun(db, admission.runId, "failed").catch(
-          () => undefined
-        );
-        console.error("Agent run could not be bound to its workflow run", {
-          sessionId: input.sessionId,
-          runId: admission.runId,
+          input.sessionId,
+          admission.runId,
           workflowRunId,
-          cancelled,
-          cause: error,
-        });
+          admission.abortController,
+          error
+        );
         throw error;
       }
       return {

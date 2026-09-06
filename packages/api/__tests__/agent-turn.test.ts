@@ -227,14 +227,16 @@ describe("agent turn admission", () => {
     expect(repo.bindAgentRunExternalId).toHaveBeenCalledWith(db, runId, "wf-2");
   });
 
-  it("fails the lease row and closes its controller when the workflow cannot be started", async () => {
+  it("fails the lease row and closes its controller when the workflow service refused the start", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
-    workflow.startAgentSession.mockRejectedValue(new Error("no runner"));
+    workflow.startAgentSession.mockRejectedValue(
+      new AppError("UNAUTHORIZED", { message: "bad control token" })
+    );
 
     await expect(
       turns.prompt(caller, { sessionId: "session-1", text: "first" })
-    ).rejects.toThrow("no runner");
+    ).rejects.toThrow("bad control token");
 
     const runId = repo.createAgentRun.mock.calls[0]?.[1].id;
     expect(repo.completeAgentRun).toHaveBeenCalledWith(db, runId, "failed");
@@ -246,7 +248,22 @@ describe("agent turn admission", () => {
     expect(repo.bindAgentRunExternalId).not.toHaveBeenCalled();
   });
 
-  it("aborts and cancels a started workflow whose run row could not be bound", async () => {
+  it("keeps the lease when the start's result is unknown, since the workflow may be running", async () => {
+    liveRun("completed");
+    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
+    workflow.startAgentSession.mockRejectedValue(
+      new AppError("INTERNAL_SERVER_ERROR", { message: "socket hang up" })
+    );
+
+    await expect(
+      turns.prompt(caller, { sessionId: "session-1", text: "first" })
+    ).rejects.toThrow("socket hang up");
+
+    expect(repo.completeAgentRun).not.toHaveBeenCalled();
+    expect(abort.signalAgentAbort).not.toHaveBeenCalled();
+  });
+
+  it("stops a started workflow whose row could not be bound, and fails the row only once the turn ended", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
     repo.bindAgentRunExternalId.mockRejectedValue(new Error("db gone"));
@@ -258,7 +275,7 @@ describe("agent turn admission", () => {
 
     const runId = repo.createAgentRun.mock.calls[0]?.[1].id;
     // The row still carries its lease id, so abort could not find the run: stop it on the
-    // id this request holds.
+    // id this request holds, wait for the turn to end, then cancel and close the row.
     expect(abort.signalAgentAbort).toHaveBeenCalledWith(
       workflow,
       "abort-1",
@@ -266,6 +283,21 @@ describe("agent turn admission", () => {
     );
     expect(workflow.cancelRun).toHaveBeenCalledExactlyOnceWith("wf-2");
     expect(repo.completeAgentRun).toHaveBeenCalledWith(db, runId, "failed");
+  });
+
+  it("leaves the lease blocking the session when the abort cannot be delivered", async () => {
+    liveRun("completed");
+    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
+    repo.bindAgentRunExternalId.mockRejectedValue(new Error("db gone"));
+    abort.signalAgentAbort.mockResolvedValueOnce(false);
+
+    await expect(
+      turns.prompt(caller, { sessionId: "session-1", text: "first" })
+    ).rejects.toThrow("db gone");
+
+    // The executor may still be running: nothing may report the session idle.
+    expect(workflow.cancelRun).not.toHaveBeenCalled();
+    expect(repo.completeAgentRun).not.toHaveBeenCalled();
   });
 
   it("records a pending decision once and delivers it after the commit", async () => {

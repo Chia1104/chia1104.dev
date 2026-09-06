@@ -133,7 +133,7 @@ sequenceDiagram
 
 一次只跑一個 turn。Turn 執行中送入的 prompt 會被拒絕：admission 在此檢查 quota 與 running cap，排在 running turn 後面的訊息會在該 turn 費用入帳後才執行，卻不會再被檢查。Approval 未決、新 workflow 尚未註冊 hook，或文字是保留的 `/end` sentinel 時，enqueue 同樣會被拒絕。
 
-Acceptance 先 commit，再通知 workflow。新的 run row 或已 claim 的 turn marker 就是紀錄；交付在 lock transaction 之外進行，因為 workflow command 無法 rollback。每個 claim 都帶 `claimId`，step 覆寫 marker 時不帶它。Workflow service 在執行前拒絕的交付會依 id 釋放該 claim；其他失敗都是結果不明，hook 可能已經 resume，所以 claim 保留，由 operator 的 abort 收尾。Workflow 已啟動但 run row 綁定失敗時，會用只有該請求持有的 id 送出 abort 並 cancel，並把所有 id 寫進 log。
+Acceptance 先 commit，再通知 workflow。新的 run row 或已 claim 的 turn marker 就是紀錄；交付在 lock transaction 之外進行，因為 workflow command 無法 rollback。每個 claim 都帶 `claimId`，step 覆寫 marker 時不帶它。Workflow service 在執行前拒絕的交付會依 id 釋放該 claim；其他失敗都是結果不明，hook 可能已經 resume，所以 claim 保留，由 operator 的 abort 收尾。Start 結果不明時保留 lease row，因為 workflow 可能已在執行。Turn step 每個 turn 都會把 workflow run id 綁回自己的 row，所以 service 寫不進去的綁定由 executor 修復，abort 與 reconcile 都能找到該 run。綁定失敗後會用只有該請求持有的 id 送出 abort；只有確認 turn 已結束才把 row 標為 failed，否則 lease 繼續擋住 session。Run 的最後一個 turn 結束時 step 會保留 running marker，避免 admission 在 row 關閉前把訊息 resume 進一個 workflow 不會再讀的 hook。
 
 一個 workflow 最多驅動 200 turns，relay turn 也計入。達到上限後 workflow 不再接下一個 prompt 並結束；進行中的 approval handshake 仍會完成，所以上限可能被該 handshake 所需的 turn 超過。之後的 prompt 會在同一份 transcript 上建立新 workflow。Workflow function 只負責 orchestration；DB、provider、timer 與 network 操作留在 steps。`runAgentTurnStep` 設 `maxRetries = 0`，因為 turn 可能已寫入 entry 或執行核准過的 side effect。Provider retry 留在 Pi；失敗的 turn 只能由新訊息重新嘗試。
 

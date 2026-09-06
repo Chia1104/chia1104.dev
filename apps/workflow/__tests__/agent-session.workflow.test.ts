@@ -109,6 +109,7 @@ describe("agentSessionWorkflow", () => {
       text: "first",
       template: undefined,
       attachments: undefined,
+      final: false,
       credentials: { anthropic: "initial" },
     });
     expect(mocks.runTurn).toHaveBeenNthCalledWith(2, {
@@ -119,6 +120,7 @@ describe("agentSessionWorkflow", () => {
       text: "/translate zh-TW",
       template: { name: "translate", args: ["zh-TW"] },
       attachments: undefined,
+      final: false,
       credentials: { openai: "rotated" },
     });
     expect(mocks.completeRun).toHaveBeenCalledWith(
@@ -176,6 +178,7 @@ describe("agentSessionWorkflow", () => {
         approved: true,
         comment: "go",
       },
+      final: false,
       credentials: { openai: "fresh" },
     });
   });
@@ -263,8 +266,13 @@ describe("agentSessionWorkflow", () => {
       })
     ).resolves.toEqual({ sessionId: "session-1", turns: 201 });
 
+    // The 200th turn and its relay are the run's last: the step keeps their marker running so
+    // admission cannot slip a prompt into the hook before the row is closed.
+    expect(mocks.runTurn.mock.calls[198]?.[0]).toMatchObject({ final: false });
+    expect(mocks.runTurn.mock.calls[199]?.[0]).toMatchObject({ final: true });
     expect(mocks.runTurn.mock.calls[200]?.[0]).toMatchObject({
       decision: { toolCallId: "call-200", approved: true },
+      final: true,
     });
     expect(queue.map((message) => message.text)).toEqual(["one more", "/end"]);
     expect(mocks.completeRun).toHaveBeenCalledWith(

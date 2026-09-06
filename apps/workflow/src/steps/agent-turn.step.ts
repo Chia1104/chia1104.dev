@@ -22,6 +22,7 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
 import {
+  bindAgentRunExternalId,
   completeAgentRun,
   consumeAgentApproval,
   getAgentSession,
@@ -63,6 +64,12 @@ export interface AgentTurnRequest {
   template?: { name: string; args?: string[] };
   attachments?: AgentAttachment[];
   decision?: OperatorDecision;
+  /**
+   * The run takes no further prompt after this turn. Unless the turn ends gated, its marker is
+   * left running so the session cannot accept a prompt into a hook nobody will read before
+   * `completeAgentRunStep` closes the row.
+   */
+  final?: boolean;
   /** Encrypted operator keys; omitted means the house gateway. */
   credentials?: EncryptedAgentCredentials;
 }
@@ -167,6 +174,9 @@ export const runAgentTurnStep = async (
     claimId: null,
   };
   await patchAgentRunMetadata(db, request.runId, { [AGENT_TURN_KEY]: marker });
+  // The executor is the one party that always knows both ids: a `prompt` whose bind failed
+  // after the start is repaired here, so abort and reconcile find this run.
+  await bindAgentRunExternalId(db, request.runId, workflowRunId);
 
   const clearMarker = () =>
     patchAgentRunMetadata(db, request.runId, {
@@ -186,7 +196,9 @@ export const runAgentTurnStep = async (
       writer
     );
     abort.dispose();
-    await clearMarker();
+    if (!request.final || outcome.status === "awaiting_approval") {
+      await clearMarker();
+    }
     return outcome;
   } catch (error) {
     abort.dispose();

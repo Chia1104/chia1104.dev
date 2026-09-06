@@ -94,12 +94,16 @@ export const isAgentHookReady = async (
 
 const ABORT_SETTLE_TIMEOUT_MS = 10_000;
 
-/** Waits for a stopped turn to persist its terminal event before the run is cancelled. */
+/**
+ * Waits for a stopped turn to persist its terminal event before the run is cancelled.
+ * `true` when the turn ended or the run closed its streams; `false` when the deadline passed
+ * or the stream dropped, in which case the step may still be executing.
+ */
 export const waitForAgentTurnEnd = async (
   runs: AgentRunHost,
   runId: string,
   startIndex: number
-): Promise<void> => {
+): Promise<boolean> => {
   const reader = runs
     .get(runId)
     .getReadable<AgentWireEvent>({ startIndex })
@@ -111,10 +115,10 @@ export const waitForAgentTurnEnd = async (
   try {
     while (true) {
       const { done, value } = await reader.read();
-      if (done || value?.type === "run:end") return;
+      if (done || value?.type === "run:end") return true;
     }
   } catch {
-    // A dropped stream has nothing more to tell; cancellation proceeds as before.
+    return false;
   } finally {
     clearTimeout(deadline);
     await reader.cancel().catch(() => undefined);
