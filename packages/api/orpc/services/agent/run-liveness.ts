@@ -4,7 +4,10 @@ import {
 } from "@chia/agent-host/execution";
 import type { AgentTurnMarker } from "@chia/agent-host/execution";
 import type { DB } from "@chia/db/client";
-import { completeAgentRun, listRunningAgentRuns } from "@chia/db/repos/agent";
+import {
+  completeAgentRunIfUnbound,
+  listRunningAgentRuns,
+} from "@chia/db/repos/agent";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type { AgentRunHost } from "../agent.factory";
@@ -101,7 +104,15 @@ export const reconcileRunningAgentTurns = async (
       turn: readAgentTurnMarker(row.metadata),
     });
     if (state?.status === "running") continue;
-    await completeAgentRun(db, row.id, "failed");
+    // Conditional on the id this verdict was read against: an executor that claimed the lease
+    // since bound its real run id, and that run is alive and must not be closed from here.
+    const wasClosed = await completeAgentRunIfUnbound(
+      db,
+      row.id,
+      row.externalRunId,
+      "failed"
+    );
+    if (!wasClosed) continue;
     // Like `completeAgentRunStep`: a dead run must not leave its controller parked until its TTL.
     const controller = readAgentAbortControllerRef(row.metadata);
     if (controller) await signalAgentAbort(workflow, controller.id, "run lost");

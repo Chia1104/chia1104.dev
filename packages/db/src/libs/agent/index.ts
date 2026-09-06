@@ -384,6 +384,31 @@ export const completeAgentRun = async (
     .where(eq(agentRuns.id, runId));
 };
 
+/**
+ * Closes an active run only while it still carries `externalRunId`, the value a reader based
+ * its verdict on. A lease the executor bound meanwhile no longer matches, so the run it now
+ * drives is left alone. Returns whether the row was closed.
+ */
+export const completeAgentRunIfUnbound = async (
+  db: DB,
+  runId: string,
+  externalRunId: string,
+  status: Exclude<AgentRunStatus, "active">
+): Promise<boolean> => {
+  const rows = await db
+    .update(agentRuns)
+    .set({ status, endedAt: new Date() })
+    .where(
+      and(
+        eq(agentRuns.id, runId),
+        eq(agentRuns.externalRunId, externalRunId),
+        eq(agentRuns.status, "active")
+      )
+    )
+    .returning({ id: agentRuns.id });
+  return rows.length > 0;
+};
+
 export interface InsertAgentSessionEntryDTO {
   id: string;
   sessionId: string;
