@@ -25,6 +25,7 @@ import type { DraftView } from "./draft-values";
 import { EditFields } from "./edit-fields";
 import { useDraftAutosave } from "./use-draft-autosave";
 import { useDraftWatch } from "./use-draft-watch";
+import { useLeaveGuard } from "./use-leave-guard";
 
 const DraftForm = ({ initial }: { initial: DraftView }) => {
   const router = useRouter();
@@ -92,6 +93,10 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
 
   useDraftWatch(initial.id);
   const activity = useDraftActivity(initial.id);
+  const leave = useLeaveGuard({
+    isSynced: autosave.isSynced,
+    flush: autosave.flush,
+  });
 
   const conflict =
     autosave.issue?.kind === "conflict" ? autosave.issue.draft : null;
@@ -109,7 +114,7 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
     </span>
   ) : autosave.isDirty ? (
     <span className="text-muted text-xs">
-      Unsaved changes · autosaves after typing
+      Unsaved changes · kept in this browser, autosaves after typing
     </span>
   ) : (
     <span className="text-muted text-xs">
@@ -189,6 +194,37 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
                   onPress={() => void autosave.keepMine()}
                   variant="primary">
                   Keep my edits
+                </Button>
+              </AlertDialog.Footer>
+            </AlertDialog.Dialog>
+          </AlertDialog.Container>
+        </AlertDialog.Backdrop>
+      </AlertDialog>
+      <AlertDialog isOpen={leave.blockedHref !== null}>
+        <AlertDialog.Backdrop isKeyboardDismissDisabled>
+          <AlertDialog.Container>
+            <AlertDialog.Dialog className="sm:max-w-[440px]">
+              <AlertDialog.Header>
+                <AlertDialog.Icon status="warning" />
+                <AlertDialog.Heading>
+                  Leave with unsaved changes?
+                </AlertDialog.Heading>
+              </AlertDialog.Header>
+              <AlertDialog.Body>
+                <p>
+                  {autosave.issue?.kind === "conflict"
+                    ? "The draft changed elsewhere and your edits are not saved yet."
+                    : "The draft could not be saved."}{" "}
+                  Your edits stay in this browser and come back when you reopen
+                  the draft.
+                </p>
+              </AlertDialog.Body>
+              <AlertDialog.Footer>
+                <Button onPress={leave.stay} variant="tertiary">
+                  Stay
+                </Button>
+                <Button onPress={leave.leave} variant="danger">
+                  Leave
                 </Button>
               </AlertDialog.Footer>
             </AlertDialog.Dialog>

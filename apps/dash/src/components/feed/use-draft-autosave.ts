@@ -11,10 +11,13 @@ import type { UseFormReturn } from "react-hook-form";
 import { orpc } from "@/libs/orpc/client";
 
 import type { DraftFormValues } from "./draft-form-schema";
+import { draftSnapshotStore, readDraftSnapshot } from "./draft-snapshot";
 import { applyPatch, diffValues, toValues } from "./draft-values";
 import type { DraftView } from "./draft-values";
 
-const AUTOSAVE_WAIT_MS = 1000;
+const AUTOSAVE_WAIT_MS = 3000;
+/** Continuous typing still reaches the server this often. */
+const AUTOSAVE_MAX_WAIT_MS = 15_000;
 
 export const useDraftAutosave = ({
   initial,
@@ -33,10 +36,13 @@ export const useDraftAutosave = ({
     | { kind: "error"; message: string }
     | null
   >(null);
+  // Read before the first persist effect can touch the store, so the snapshot is never dropped unseen.
+  const [restored, setRestored] = useState(() => readDraftSnapshot(initial.id));
   // Async callers share the acknowledged revision before React commits the next render.
   const baseline = useRef(initial);
   const blocked = useRef(false);
   const pending = useRef<Promise<boolean> | null>(null);
+  const kept = useRef(false);
   const { mutateAsync, isPending } = useMutation(
     orpc.feeds["draft:patch"].mutationOptions()
   );
@@ -131,6 +137,71 @@ export const useDraftAutosave = ({
     else scheduled.cancel();
   }, [changes, isDirty, issue, scheduled]);
 
+  useEffect(() => {
+    if (!isDirty || issue) return;
+    const timer = setTimeout(() => void flush(), AUTOSAVE_MAX_WAIT_MS);
+    return () => clearTimeout(timer);
+  }, [flush, isDirty, issue]);
+
+  // Leaving the tab saves at once; the request may not finish, and the snapshot below covers that.
+  useEffect(() => {
+    const flushNow = () => {
+      if (
+        blocked.current ||
+        !diffValues(form.getValues(), toValues(baseline.current))
+      )
+        return;
+      scheduled.cancel();
+      void flush();
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") flushNow();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pagehide", flushNow);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pagehide", flushNow);
+    };
+  }, [flush, form, scheduled]);
+
+  // Only this tab's own transition back to clean drops the snapshot; another tab may be mid-edit.
+  useEffect(() => {
+    const { keep, drop } = draftSnapshotStore.getState();
+    if (isDirty) {
+      const patch = diffValues(form.getValues(), toValues(saved));
+      if (patch) keep(initial.id, { revision: saved.revision, patch });
+      kept.current = true;
+    } else if (kept.current) {
+      drop(initial.id);
+      kept.current = false;
+    }
+  }, [changes, form, initial.id, isDirty, saved]);
+
+  // Edits made against the current revision resume; edits against an older one are a conflict.
+  useEffect(() => {
+    if (!restored) return;
+    setRestored(null);
+    const activeLocale = form.getValues("activeLocale");
+    if (restored.revision === initial.revision) {
+      form.reset({
+        ...applyPatch(toValues(initial), restored.patch),
+        activeLocale,
+      });
+      void flush();
+      return;
+    }
+    draftSnapshotStore.getState().drop(initial.id);
+    if (restored.revision < initial.revision) {
+      form.reset({
+        ...applyPatch(toValues(initial), restored.patch),
+        activeLocale,
+      });
+      blocked.current = true;
+      setIssue({ kind: "conflict", draft: initial });
+    }
+  }, [flush, form, initial, restored]);
+
   const receive = useCallback(
     (next: DraftView) => {
       if (
@@ -170,6 +241,7 @@ export const useDraftAutosave = ({
     issue,
     isDirty,
     isSaving: isPending,
+    isSynced: !isDirty && !isPending && issue === null,
     flush,
     retry,
     adopt,
