@@ -182,7 +182,7 @@ export const ModelPicker = ({
       </Popover.Trigger>
 
       <Popover.Content
-        className="bg-surface/70 max-w-104 min-w-80 p-0 backdrop-blur-sm"
+        className="bg-surface/70 w-72 max-w-[calc(100vw-1.5rem)] p-0 backdrop-blur-sm"
         placement="top start">
         <Popover.Dialog className="flex flex-col p-0">
           <div className="flex min-h-0">
@@ -227,9 +227,12 @@ export const ModelPicker = ({
                   fullWidth
                   onChange={setQuery}
                   value={query}>
-                  <SearchField.Group>
+                  <SearchField.Group className="h-8 min-h-8">
                     <SearchField.SearchIcon />
-                    <SearchField.Input placeholder={labels.searchModels} />
+                    <SearchField.Input
+                      className="text-xs"
+                      placeholder={labels.searchModels}
+                    />
                     <SearchField.ClearButton />
                   </SearchField.Group>
                 </SearchField>
@@ -238,7 +241,7 @@ export const ModelPicker = ({
                 aria-label={labels.modelPicker}
                 // Focuses the selected model on open, which also scrolls it into view.
                 autoFocus
-                className="max-h-64 overflow-y-auto px-1.5 pb-1.5"
+                className="max-h-52 overflow-y-auto px-1 pb-1"
                 disallowEmptySelection
                 onSelectionChange={(keys) => {
                   const key = [...keys][0];
@@ -258,7 +261,7 @@ export const ModelPicker = ({
                   }
                 }}
                 renderEmptyState={() => (
-                  <p className="text-muted px-3 py-6 text-center text-xs">
+                  <p className="text-muted px-2 py-4 text-center text-xs">
                     {labels.noModels}
                   </p>
                 )}
@@ -270,7 +273,7 @@ export const ModelPicker = ({
                 selectionMode="single">
                 {fallback && query.trim() === "" ? (
                   <ListBox.Item
-                    className="py-2"
+                    className="min-h-8 px-2 py-1.5 text-xs"
                     id={FALLBACK_KEY}
                     textValue={fallback.label}>
                     <span className="text-muted truncate">
@@ -284,13 +287,13 @@ export const ModelPicker = ({
                   return (
                     <ListBox.Item
                       key={keyOf(model)}
-                      className="py-2"
+                      className="min-h-8 px-2 py-1.5 text-xs"
                       id={keyOf(model)}
                       isDisabled={model.requiresApiKey}
                       textValue={model.name}>
                       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <span className="truncate">{model.name}</span>
-                        <span className="text-muted flex items-center gap-1.5 text-xs">
+                        <span className="text-muted flex items-center gap-1 text-[10px]">
                           <ProviderMark
                             className="size-3"
                             icons={providerIcons}
@@ -311,7 +314,7 @@ export const ModelPicker = ({
           </div>
 
           {showSlider ? (
-            <div className="border-border border-t px-4 py-3">
+            <div className="border-border border-t px-3 py-2">
               <ThinkingSlider
                 isDisabled={isPending}
                 onChange={(next) => onThinkingLevelChange?.(next)}

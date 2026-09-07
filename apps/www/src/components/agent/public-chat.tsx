@@ -24,11 +24,9 @@ import { Locale } from "@/libs/utils/i18n";
 import { useSettingsStore } from "@/stores/settings/store";
 
 import { AccountMenu } from "./account-menu";
-import { ApiKeyDialog } from "./api-key-dialog";
 import { ComingSoon } from "./coming-soon";
 import { HumanCheck } from "./human-check";
 import { PUBLIC_AGENT_KIND } from "./kind";
-import { UsageMeter } from "./usage-meter";
 
 /** House first: no setup. BYOK providers follow once the visitor registers a key. */
 const PROVIDER_ORDER = ["vercel-ai-gateway", "openai", "anthropic"];
@@ -209,7 +207,7 @@ const PublicChatSessions = () => {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="border-border flex min-w-0 items-center gap-3 px-4 py-2">
+      <div className="border-border flex min-w-0 shrink-0 items-center gap-2 px-3 py-1.5">
         <SessionTabs
           activeId={selectedSessionId}
           className="min-w-0 flex-1"
@@ -233,6 +231,7 @@ const PublicChatSessions = () => {
           sessions={sessions}
           visible={3}
         />
+        {session.data && <AccountMenu user={session.data.user} />}
       </div>
       {selectedSessionId ? (
         <AgentSessionProvider
@@ -247,7 +246,7 @@ const PublicChatSessions = () => {
           onTurnEnd={onTurnEnd}
           sessionId={selectedSessionId}>
           <Thread
-            className="px-4"
+            className="px-3"
             empty={
               <EmptyState
                 description={t("emptyDescription")}
@@ -266,13 +265,6 @@ const PublicChatSessions = () => {
                 onOpenChange={setModelPickerOpen}
                 providerOrder={PROVIDER_ORDER}
               />
-            }
-            footer={
-              <div className="flex items-center gap-2 p-1">
-                <ApiKeyDialog />
-                <UsageMeter />
-                {session.data && <AccountMenu user={session.data.user} />}
-              </div>
             }
           />
         </AgentSessionProvider>

@@ -228,7 +228,7 @@ export const SessionTabs = ({
               </Tooltip>
             </Popover.Trigger>
             <Popover.Content
-              className="bg-surface/70 w-80 p-0 backdrop-blur-sm"
+              className="bg-surface/70 w-72 max-w-[calc(100vw-1.5rem)] p-0 backdrop-blur-sm"
               placement="bottom end">
               <Popover.Dialog className="flex flex-col p-0">
                 <div className="border-border border-b p-2">
@@ -238,14 +238,17 @@ export const SessionTabs = ({
                     fullWidth
                     onChange={setQuery}
                     value={query}>
-                    <SearchField.Group>
+                    <SearchField.Group className="h-8 min-h-8">
                       <SearchField.SearchIcon />
-                      <SearchField.Input placeholder={labels.searchSessions} />
+                      <SearchField.Input
+                        className="text-xs"
+                        placeholder={labels.searchSessions}
+                      />
                       <SearchField.ClearButton />
                     </SearchField.Group>
                   </SearchField>
                 </div>
-                <ScrollShadow className="max-h-80 p-1.5">
+                <ScrollShadow className="max-h-64 p-1">
                   {matches.length === 0 ? (
                     <p className="text-muted px-3 py-6 text-center text-xs">
                       {labels.noSessions}
@@ -259,14 +262,14 @@ export const SessionTabs = ({
                             key={session.id}
                             className="group/row flex items-center gap-1">
                             <Button
-                              className="h-auto min-w-0 flex-1 justify-start px-2.5 py-2 text-left"
+                              className="h-auto min-w-0 flex-1 justify-start px-2 py-1.5 text-left"
                               onPress={() => pick(session.id)}
                               size="sm"
                               variant={
                                 session.id === activeId ? "tertiary" : "ghost"
                               }>
                               <span className="flex min-w-0 flex-col gap-0.5">
-                                <span className="text-foreground truncate text-sm font-normal">
+                                <span className="text-foreground truncate text-xs font-normal">
                                   {session.title ?? labels.untitledSession}
                                 </span>
                                 <span className="text-muted flex items-center gap-1 text-[11px]">
@@ -342,14 +345,18 @@ const SessionActions = ({
       variant="ghost">
       <Ellipsis className="size-3.5" />
     </Button>
-    <Dropdown.Popover className="min-w-36" placement="bottom end">
+    <Dropdown.Popover className="min-w-32 p-1" placement="bottom end">
       <Dropdown.Menu
+        className="p-0"
         aria-label={labels.sessionActions}
         onAction={(key) => {
           if (key === "rename" || key === "delete") onAction(key);
         }}>
         {withRename ? (
-          <Dropdown.Item id="rename" textValue={labels.renameSession}>
+          <Dropdown.Item
+            className="min-h-7 gap-2 px-2 py-1 text-xs"
+            id="rename"
+            textValue={labels.renameSession}>
             <Pencil className="size-3.5" />
             {labels.renameSession}
           </Dropdown.Item>
@@ -357,6 +364,7 @@ const SessionActions = ({
         {withDelete ? (
           <Dropdown.Item
             id="delete"
+            className="min-h-7 gap-2 px-2 py-1 text-xs"
             textValue={labels.deleteSession}
             variant="danger">
             <Trash2 className="size-3.5" />
