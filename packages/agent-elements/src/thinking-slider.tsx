@@ -65,7 +65,7 @@ export const ThinkingSlider = ({
         }
         step={1}
         value={index}>
-        <Slider.Track className="relative">
+        <Slider.Track className="relative h-4 border-x-[8px]">
           <Slider.Fill className="bg-accent" />
           {THINKING_LEVELS.map((level, stop) => (
             <span
@@ -78,7 +78,7 @@ export const ThinkingSlider = ({
               style={{ left: `${(stop / last) * 100}%` }}
             />
           ))}
-          <Slider.Thumb className="border-accent" />
+          <Slider.Thumb className="border-accent w-5 after:h-2.5 after:w-4" />
         </Slider.Track>
       </Slider>
     </div>

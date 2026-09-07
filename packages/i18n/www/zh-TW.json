@@ -218,12 +218,17 @@
       "github": "使用 GitHub 繼續",
       "google": "使用 Google 繼續",
       "account": "帳號",
-      "signOut": "登出"
+      "signOut": "登出",
+      "guest": "訪客",
+      "signedIn": "已登入",
+      "guestDescription": "登入以保留並同步對話。",
+      "apiKeys": "API 金鑰",
+      "usage": "用量與額度"
     },
     "apiKey": {
       "open": "使用自己的 API key",
-      "title": "使用自己的 API key",
-      "description": "金鑰會加密存放在這個瀏覽器的 cookie，只會送給該供應商。Vercel AI Gateway 金鑰可使用所有模型，供應商金鑰可使用該供應商的模型。用自己的金鑰不會計入免費額度。",
+      "title": "API 金鑰",
+      "description": "使用自己的金鑰解鎖更多模型，費用由供應商計算。",
       "provider": "供應商",
       "label": "API key",
       "save": "儲存金鑰",
@@ -232,13 +237,40 @@
       "configured": "已儲存",
       "revoke": "移除",
       "revoked": "已移除金鑰。",
-      "revokeFailed": "金鑰無法移除。"
+      "revokeFailed": "金鑰無法移除。",
+      "loading": "正在讀取金鑰設定…",
+      "loadFailed": "無法讀取已儲存的金鑰。",
+      "retry": "重試",
+      "gatewayHint": "Vercel AI Gateway 可使用多家供應商的模型。",
+      "vendorHint": "使用 {provider} 的模型",
+      "removeProvider": "移除 {provider} 金鑰",
+      "replacement": "新的 API key",
+      "placeholder": "貼上你的 API key",
+      "show": "顯示金鑰",
+      "hide": "隱藏金鑰",
+      "replace": "更換金鑰",
+      "privacy": "加密存於此瀏覽器，透過本站服務使用。不跨裝置同步，也不扣免費額度。",
+      "done": "取消"
     },
     "humanCheck": {
       "title": "先做個小驗證",
       "description": "確認你不是機器人，接下來一週助理就是你的了。",
       "starting": "正在建立你的工作階段…",
       "failed": "驗證沒有通過，請再試一次。"
+    },
+    "usageDialog": {
+      "title": "用量與額度",
+      "description": "查看本週免費額度的使用狀況。",
+      "loading": "正在讀取用量…",
+      "failed": "無法讀取用量。",
+      "retry": "重試",
+      "unlimited": "無額度限制",
+      "unlimitedDescription": "你的帳戶不受每週免費額度限制。",
+      "noAllowance": "此帳戶目前沒有免費額度。",
+      "weekly": "本週已使用",
+      "reset": "重設時間：{time}",
+      "ownKey": "使用自己的 API 金鑰時，費用由供應商計算，不會扣除此額度。",
+      "done": "完成"
     }
   },
   "settings": {

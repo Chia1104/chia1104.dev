@@ -53,8 +53,8 @@ export const ChatDrawer = () => {
         <Drawer.Content placement={isMobile ? "bottom" : "right"}>
           <Drawer.Dialog
             className={cn(
-              "flex flex-col p-0",
-              isMobile ? "h-[92svh] pt-4" : "h-full w-full max-w-xl"
+              "flex min-h-0 flex-col overflow-hidden p-0",
+              isMobile ? "h-full max-h-[85dvh] pt-4" : "h-full w-full max-w-xl"
             )}>
             {isMobile ? <Drawer.Handle /> : null}
             <Drawer.Body className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">

@@ -218,12 +218,17 @@
       "github": "Continue with GitHub",
       "google": "Continue with Google",
       "account": "Account",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "guest": "Guest",
+      "signedIn": "Signed in",
+      "guestDescription": "Sign in to keep your conversations.",
+      "apiKeys": "API keys",
+      "usage": "Usage & allowance"
     },
     "apiKey": {
       "open": "Use your own API key",
-      "title": "Use your own API key",
-      "description": "Each key is encrypted into a cookie on this browser and sent only to that provider. A Vercel AI Gateway key unlocks every model; a vendor key unlocks that vendor's. Calls on your own key do not count against the free allowance.",
+      "title": "API keys",
+      "description": "Bring your own key to use more models, billed to your provider.",
       "provider": "Provider",
       "label": "API key",
       "save": "Save key",
@@ -232,13 +237,40 @@
       "configured": "Saved",
       "revoke": "Remove",
       "revoked": "Key removed.",
-      "revokeFailed": "The key could not be removed."
+      "revokeFailed": "The key could not be removed.",
+      "loading": "Loading saved keys…",
+      "loadFailed": "Saved keys could not be loaded.",
+      "retry": "Retry",
+      "gatewayHint": "Vercel AI Gateway gives you access to models across providers.",
+      "vendorHint": "Use {provider} models",
+      "removeProvider": "Remove {provider} key",
+      "replacement": "New API key",
+      "placeholder": "Paste your API key",
+      "show": "Show API key",
+      "hide": "Hide API key",
+      "replace": "Replace key",
+      "privacy": "Encrypted in this browser, used through our service. Does not sync or use your free allowance.",
+      "done": "Cancel"
     },
     "humanCheck": {
       "title": "One quick check",
       "description": "Confirm you're human and the assistant is yours for the week.",
       "starting": "Starting your session…",
       "failed": "That didn't go through. Try the check again."
+    },
+    "usageDialog": {
+      "title": "Usage & allowance",
+      "description": "Your free allowance for this week.",
+      "loading": "Loading usage…",
+      "failed": "Usage could not be loaded.",
+      "retry": "Retry",
+      "unlimited": "Unlimited",
+      "unlimitedDescription": "Your account has no weekly allowance limit.",
+      "noAllowance": "No free allowance is available for this account.",
+      "weekly": "Weekly usage",
+      "reset": "Resets {time}",
+      "ownKey": "Calls made with your own API key are billed by the provider and do not count toward this allowance.",
+      "done": "Done"
     }
   },
   "settings": {

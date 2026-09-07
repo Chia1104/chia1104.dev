@@ -11,6 +11,7 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  Spinner,
 } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
@@ -51,12 +52,17 @@ const keysQueryKey = ["agent", "keys"] as const;
  * refetches so the models that key unlocks stop asking for one. A gateway key opens every
  * model; a vendor key opens that vendor's, on the vendor's own API.
  */
-export const ApiKeyDialog = () => {
+interface ApiKeyDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
   const t = useTranslations("chbot.apiKey");
   const queryClient = useQueryClient();
-  const [isOpen, setOpen] = useState(false);
   const [provider, setProvider] = useState<KeyId>(GATEWAY_KEY_ID);
   const [apiKey, setApiKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
 
   const keys = useQuery({
     queryKey: keysQueryKey,
@@ -74,9 +80,11 @@ export const ApiKeyDialog = () => {
     ]);
 
   const save = useMutation({
-    mutationFn: () => signKey(provider, apiKey.trim()),
+    mutationFn: ({ provider: id, key }: { provider: KeyId; key: string }) =>
+      signKey(id, key),
     onSuccess: async () => {
       setApiKey("");
+      setShowKey(false);
       toast.success(t("saved"));
       await refresh();
     },
@@ -92,83 +100,202 @@ export const ApiKeyDialog = () => {
     onError: () => toast.error(t("revokeFailed")),
   });
 
+  const busy = save.isPending || revoke.isPending;
+  const selectedConfigured = configured.has(provider);
+
   return (
-    <Modal isOpen={isOpen} onOpenChange={setOpen}>
-      <Button
-        aria-label={t("open")}
-        isIconOnly
-        size="sm"
-        variant="ghost"
-        className="size-5 p-1">
-        <span aria-hidden className="i-mdi-key-outline size-3" />
-      </Button>
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={(open) => {
+        if (busy) return;
+        onOpenChange(open);
+        if (!open) {
+          setApiKey("");
+          setShowKey(false);
+          save.reset();
+          revoke.reset();
+        }
+      }}>
       <Modal.Backdrop>
-        <Modal.Container placement="center">
-          <Modal.Dialog className="sm:max-w-[400px]">
-            <Modal.CloseTrigger />
-            <Modal.Header>
+        <Modal.Container placement="center" scroll="inside">
+          <Modal.Dialog className="gap-3 p-4 sm:max-w-[400px]">
+            <Modal.CloseTrigger isDisabled={busy} />
+            <Modal.Header className="pb-1">
               <Modal.Heading>{t("title")}</Modal.Heading>
             </Modal.Header>
-            <Modal.Body className="flex flex-col gap-4">
-              <p className="text-muted text-sm">{t("description")}</p>
+            <Modal.Body className="flex flex-col gap-3">
+              <p className="text-muted text-sm leading-relaxed">
+                {t("description")}
+              </p>
+              {keys.isPending ? (
+                <div
+                  className="text-muted flex items-center gap-2 text-sm"
+                  role="status">
+                  <Spinner size="sm" />
+                  {t("loading")}
+                </div>
+              ) : keys.isError ? (
+                <div className="bg-danger-soft flex items-center justify-between gap-3 rounded-xl p-3">
+                  <p className="text-danger text-sm" role="alert">
+                    {t("loadFailed")}
+                  </p>
+                  <Button
+                    className="h-8 min-h-8 px-3 text-xs"
+                    size="sm"
+                    variant="tertiary"
+                    onPress={() => void keys.refetch()}>
+                    {t("retry")}
+                  </Button>
+                </div>
+              ) : null}
               <RadioGroup
+                isDisabled={busy || !keys.isSuccess}
                 name="agent-api-key-provider"
                 onChange={(next) => {
-                  if (isKeyId(next)) setProvider(next);
+                  if (!isKeyId(next)) return;
+                  setProvider(next);
+                  setApiKey("");
+                  setShowKey(false);
+                  save.reset();
+                  revoke.reset();
                 }}
                 variant="secondary"
+                orientation="horizontal"
+                className="grid grid-cols-3 gap-2"
                 value={provider}>
-                <Label>{t("provider")}</Label>
+                <Label className="text-muted col-span-3 mb-1 text-xs">
+                  {t("provider")}
+                </Label>
                 {KEY_IDS.map((id) => (
-                  <Radio key={id} value={id}>
-                    <Radio.Content className="flex w-full items-center gap-2">
-                      <Radio.Control>
+                  <Radio
+                    key={id}
+                    value={id}
+                    aria-label={KEY_LABELS[id]}
+                    className="border-border data-[selected=true]:border-accent/60 data-[selected=true]:bg-accent-soft/40 min-w-0 rounded-lg border px-2 py-2">
+                    <Radio.Content className="flex w-full items-center justify-center gap-1.5">
+                      <Radio.Control className="size-3 shrink-0">
                         <Radio.Indicator />
                       </Radio.Control>
-                      <span className="flex-1 text-sm">{KEY_LABELS[id]}</span>
-                      {configured.has(id) ? (
-                        <>
-                          <Chip size="sm" variant="soft">
-                            <Chip.Label className="text-xs">
-                              {t("configured")}
-                            </Chip.Label>
-                          </Chip>
-                          <Button
-                            aria-label={t("revoke")}
-                            isPending={
-                              revoke.isPending && revoke.variables === id
-                            }
-                            onPress={() => revoke.mutate(id)}
-                            size="sm"
-                            variant="ghost">
-                            {t("revoke")}
-                          </Button>
-                        </>
+                      <span className="text-xs font-medium">
+                        {id === GATEWAY_KEY_ID ? "Gateway" : KEY_LABELS[id]}
+                      </span>
+                      {keys.isSuccess && configured.has(id) ? (
+                        <span
+                          aria-label={t("configured")}
+                          className="bg-success size-1.5 shrink-0 rounded-full"
+                        />
                       ) : null}
                     </Radio.Content>
                   </Radio>
                 ))}
               </RadioGroup>
-              <TextField>
-                <Label htmlFor="agent-api-key">{t("label")}</Label>
-                <Input
-                  autoComplete="off"
-                  id="agent-api-key"
-                  onChange={(event) => setApiKey(event.target.value)}
-                  placeholder="sk-…"
-                  type="password"
-                  value={apiKey}
-                  variant="secondary"
+              <p className="text-muted -mt-1 text-xs leading-relaxed">
+                {provider === GATEWAY_KEY_ID
+                  ? t("gatewayHint")
+                  : t("vendorHint", { provider: KEY_LABELS[provider] })}
+              </p>
+              <form
+                id="agent-api-key-form"
+                className="flex flex-col gap-3"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (busy || !keys.isSuccess || !apiKey.trim()) return;
+                  save.mutate({ provider, key: apiKey.trim() });
+                }}>
+                <TextField isDisabled={busy || !keys.isSuccess}>
+                  <Label htmlFor="agent-api-key">
+                    {selectedConfigured ? t("replacement") : t("label")}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      autoComplete="off"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      className="h-8 min-h-8 w-full min-w-0 pr-9 font-mono text-sm"
+                      id="agent-api-key"
+                      onChange={(event) => setApiKey(event.target.value)}
+                      placeholder={t("placeholder")}
+                      type={showKey ? "text" : "password"}
+                      value={apiKey}
+                      variant="secondary"
+                    />
+                    <Button
+                      type="button"
+                      className="text-muted absolute top-1/2 right-0.5 size-7 min-h-7 -translate-y-1/2"
+                      aria-label={showKey ? t("hide") : t("show")}
+                      aria-pressed={showKey}
+                      isIconOnly
+                      isDisabled={busy}
+                      onPress={() => setShowKey((value) => !value)}
+                      variant="ghost">
+                      <span
+                        aria-hidden
+                        className={
+                          showKey
+                            ? "i-mdi-eye-off-outline size-4"
+                            : "i-mdi-eye-outline size-4"
+                        }
+                      />
+                    </Button>
+                  </div>
+                </TextField>
+                {save.isError || revoke.isError ? (
+                  <p role="alert" className="text-danger text-sm">
+                    {save.isError ? t("failed") : t("revokeFailed")}
+                  </p>
+                ) : null}
+                {save.isSuccess ? (
+                  <p role="status" className="text-success text-sm">
+                    {t("saved")}
+                  </p>
+                ) : null}
+              </form>
+              {keys.isSuccess && selectedConfigured ? (
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <Chip size="sm" variant="soft">
+                    <Chip.Label>{t("configured")}</Chip.Label>
+                  </Chip>
+                  <Button
+                    aria-label={t("removeProvider", {
+                      provider: KEY_LABELS[provider],
+                    })}
+                    isDisabled={busy}
+                    isPending={revoke.isPending}
+                    onPress={() => revoke.mutate(provider)}
+                    size="sm"
+                    variant="ghost"
+                    className="text-danger h-8 min-h-8 px-3 text-xs">
+                    {t("revoke")}
+                  </Button>
+                </div>
+              ) : null}
+              <p className="text-muted flex gap-2 text-xs leading-relaxed">
+                <span
+                  aria-hidden
+                  className="i-mdi-lock-outline mt-0.5 size-4 shrink-0"
                 />
-              </TextField>
-              <Button
-                isDisabled={apiKey.trim() === ""}
-                isPending={save.isPending}
-                onPress={() => save.mutate()}
-                size="sm">
-                {t("save")}
-              </Button>
+                {t("privacy")}
+              </p>
             </Modal.Body>
+            <Modal.Footer>
+              <Button
+                className="h-8 min-h-8 px-3 text-xs"
+                slot="close"
+                isDisabled={busy}
+                variant="ghost"
+                size="sm">
+                {t("done")}
+              </Button>
+              <Button
+                className="h-8 min-h-8 px-3 text-xs"
+                form="agent-api-key-form"
+                type="submit"
+                size="sm"
+                isDisabled={busy || !keys.isSuccess || apiKey.trim() === ""}
+                isPending={save.isPending}>
+                {selectedConfigured ? t("replace") : t("save")}
+              </Button>
+            </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>
