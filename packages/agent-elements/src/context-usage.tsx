@@ -105,15 +105,15 @@ export const ContextUsage = () => {
       </Popover.Trigger>
 
       <Popover.Content
-        className="bg-surface/70 w-80 p-0 backdrop-blur-sm"
-        offset={10}
+        className="bg-surface/70 w-64 max-w-[calc(100vw-1.5rem)] p-0 backdrop-blur-sm"
+        offset={6}
         placement="top end">
-        <Popover.Dialog className="p-4">
-          <div className="flex items-baseline justify-between gap-4">
-            <Popover.Heading className="text-sm font-medium">
+        <Popover.Dialog className="p-3">
+          <div className="flex items-baseline justify-between gap-2">
+            <Popover.Heading className="text-xs font-medium">
               {labels.contextWindow}
             </Popover.Heading>
-            <span className="text-muted shrink-0 text-xs tabular-nums">
+            <span className="text-muted shrink-0 text-[11px] tabular-nums">
               {percentage}% · {formatCompactTokens(contextTokens)}/
               {formatCompactTokens(current.contextWindow)}
             </span>
@@ -121,7 +121,7 @@ export const ContextUsage = () => {
 
           <ProgressBar
             aria-label={labels.contextWindow}
-            className="mt-3"
+            className="mt-2"
             color={tone}
             size="sm"
             value={visualPercentage}>
@@ -130,14 +130,14 @@ export const ContextUsage = () => {
             </ProgressBar.Track>
           </ProgressBar>
 
-          <div className="mt-4 flex items-baseline justify-between gap-4 text-xs">
+          <div className="mt-3 flex items-baseline justify-between gap-2 text-xs">
             <span className="text-muted">{labels.totalProcessed}</span>
             <span className="font-medium tabular-nums">
               {formatCompactTokens(detail.stats.totalTokens)}
             </span>
           </div>
 
-          <p className="text-muted mt-4 text-xs leading-5">
+          <p className="text-muted mt-3 text-[11px] leading-relaxed">
             {fill(labels.contextCompactsAutomatically, {
               model: current.name,
             })}{" "}
