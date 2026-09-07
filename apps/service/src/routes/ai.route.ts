@@ -30,6 +30,7 @@ import { errorGenerator } from "@chia/utils/server";
 import { env } from "../env";
 import { ai, AI_AUTH_TOKEN, providerCookieName } from "../guards/ai.guard";
 import { verifyAuth } from "../guards/auth.guard";
+import { resolveCaller } from "../guards/caller.guard";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 import { errorResponse } from "../utils/error.util";
 
@@ -47,11 +48,8 @@ const contentModel = HOUSE_MODELS.content;
 const keyCookieScope = () => ({ domain: getCookieDomain({ env }), path: "/" });
 
 const api = new Hono<HonoContext>()
-  .use(
-    rateLimiterGuard({
-      prefix: "rate-limiter:ai",
-    })
-  )
+  .use(resolveCaller())
+  .use(rateLimiterGuard("ai"))
   .use(timeout(env.TIMEOUT_MS))
   /**
    * Registered before the signed-in gate so a guest on the public site can bring their own

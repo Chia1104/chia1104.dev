@@ -14,7 +14,7 @@ import {
   getSpotifyPlaylistService,
 } from "../../spotify/playback";
 import { adminGuard } from "../guards/admin.guard";
-import { callerGuard, tieredRateLimitGuard } from "../guards/caller.guard";
+import { callerGuard } from "../guards/caller.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { contractOS } from "../utils";
 
@@ -25,13 +25,14 @@ export const getSpotifyPlaylistRoute = contractOS.spotify.playlist
       scopes: [ApiKeyScope.SpotifyRead],
     })
   )
-  .use(tieredRateLimitGuard({ prefix: "rate-limiter:spotify" }))
+  .use(rateLimitGuard("spotify"))
   .handler(async (opts) => {
     return await getSpotifyPlaylistService(opts.input.playlistId);
   });
 
 export const getSpotifyNowPlayingRoute = contractOS.spotify.playing
-  .use(rateLimitGuard({ prefix: "rate-limiter:spotify" }))
+  .use(callerGuard())
+  .use(rateLimitGuard("spotify"))
   .handler(async (opts) => {
     try {
       return await getSpotifyNowPlayingService(opts.context.db);

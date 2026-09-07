@@ -10,6 +10,7 @@ import {
   createORPCContext,
   withErrorReporting,
 } from "../factories/orpc.factory";
+import { resolveCaller } from "../guards/caller.guard";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 
 /**
@@ -41,11 +42,8 @@ const api = new Hono<HonoContext>()
   .use((c, next) =>
     isUntimedProcedure(c.req.path) ? next() : requestTimeout(c, next)
   )
-  .use(
-    rateLimiterGuard({
-      prefix: "rate-limiter:rpc",
-    })
-  )
+  .use(resolveCaller())
+  .use(rateLimiterGuard("rpc"))
   .use("/*", async (c, next) => {
     const { matched, response } = await handler.handle(c.req.raw, {
       prefix: "/api/v1/rpc",

@@ -10,7 +10,7 @@ import { AppError } from "../errors";
 import type { VerifiedApiKey } from "./apikey.policy";
 import { apiKeyPolicy, missingApiKeyScope } from "./apikey.policy";
 import { sessionPolicy } from "./session.policy";
-import type { Policy } from "./types";
+import type { Policy, PolicyResult } from "./types";
 import { allow, deny } from "./types";
 
 /** How much the caller has proven, ordered so tiers can be compared. */
@@ -72,13 +72,44 @@ const tierForApiKey = (apiKey: VerifiedApiKey, adminId: string): CallerTier =>
     ? CallerTier.Root
     : CallerTier.ApiKey;
 
-/** Resolves the caller's tier. Credentials are independent and the highest wins. */
-export const callerPolicy = (
-  options: CallerPolicyOptions = {}
-): Policy<{ caller: Caller }> => {
+/** Applies `minTier` and the key scopes to an already-graded caller. */
+const admit = (
+  caller: Caller,
+  options: CallerPolicyOptions
+): PolicyResult<{ caller: Caller; session?: Session }> => {
   const { minTier = CallerTier.Anonymous } = options;
 
+  if (caller.apiKey && caller.tier < CallerTier.Root) {
+    const missing = missingApiKeyScope(caller.apiKey, options.scopes);
+    if (missing) {
+      return deny(missing);
+    }
+  }
+
+  if (caller.tier < minTier) {
+    return deny(
+      new AppError(
+        caller.tier === CallerTier.Anonymous ? "UNAUTHORIZED" : "FORBIDDEN"
+      )
+    );
+  }
+
+  // The session rides along so `sessionPolicy` and `adminPolicy` downstream skip `getSession`.
+  return allow({ caller, session: caller.session });
+};
+
+/**
+ * Resolves the caller's tier. Credentials are independent and the highest wins. A caller
+ * already on the context is graded, not re-verified.
+ */
+export const callerPolicy = (
+  options: CallerPolicyOptions = {}
+): Policy<{ caller: Caller; session?: Session }> => {
   return async (context) => {
+    if (context.caller) {
+      return admit(context.caller, options);
+    }
+
     const adminId = getAdminId();
     const caller: Caller = { tier: CallerTier.Anonymous, adminId };
 
@@ -96,13 +127,6 @@ export const callerPolicy = (
       caller.tier = caller.apiKey
         ? tierForApiKey(caller.apiKey, adminId)
         : CallerTier.ApiKey;
-
-      if (caller.apiKey && caller.tier < CallerTier.Root) {
-        const missing = missingApiKeyScope(caller.apiKey, options.scopes);
-        if (missing) {
-          return deny(missing);
-        }
-      }
     }
 
     if (hasSessionCredential(context.headers, context.session)) {
@@ -120,14 +144,6 @@ export const callerPolicy = (
       }
     }
 
-    if (caller.tier < minTier) {
-      return deny(
-        new AppError(
-          caller.tier === CallerTier.Anonymous ? "UNAUTHORIZED" : "FORBIDDEN"
-        )
-      );
-    }
-
-    return allow({ caller });
+    return admit(caller, options);
   };
 };

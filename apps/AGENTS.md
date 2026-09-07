@@ -58,7 +58,7 @@ Keep these boundaries under `src/`:
 - `routes/` mounts HTTP surfaces.
 - `factories/orpc.factory.ts` is the only place that builds the oRPC context.
 - `agents/` contains host bindings and dynamic agent-kind loaders; business logic belongs in `packages/api`.
-- `guards/` binds shared policies to Hono.
+- `guards/` binds shared policies to Hono. `rate-limits.ts` holds the budget of each HTTP mount; procedure budgets stay in `@chia/api/orpc/rate-limits`.
 - `mcp/` builds the MCP server over an in-process router client. Tools are adapters over oRPC procedures and hold no business logic; content writes go through `feeds.draft:*`, `write_post` returns once the durable turn has started and review stays in dash.
 - `services/` orchestrates host-side ports; `repos/` owns remote access. Table access belongs in `@chia/db/repos`.
 

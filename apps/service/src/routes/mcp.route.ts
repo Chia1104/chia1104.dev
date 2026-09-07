@@ -8,6 +8,7 @@ import {
   createORPCContext,
   withErrorReporting,
 } from "../factories/orpc.factory";
+import { resolveCaller } from "../guards/caller.guard";
 import { verifyOperator } from "../guards/operator.guard";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 
@@ -16,7 +17,8 @@ import { rateLimiterGuard } from "../guards/rate-limiter.guard";
  * answer. No `timeout()`: a tool call is bounded by the procedure behind it.
  */
 const api = new Hono<HonoContext>()
-  .use(rateLimiterGuard({ prefix: "rate-limiter:mcp" }))
+  .use(resolveCaller())
+  .use(rateLimiterGuard("mcp"))
   .use(verifyOperator())
   .all("/", async (c) => {
     const [{ createMcpServer }, { StreamableHTTPTransport }] =
