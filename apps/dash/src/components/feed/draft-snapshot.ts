@@ -52,6 +52,7 @@ export const draftSnapshotStore = createStore<DraftSnapshotState>()(
     }),
     {
       name: "chia.dash.draft-snapshots",
+      version: 1,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ entries: state.entries }),
     }

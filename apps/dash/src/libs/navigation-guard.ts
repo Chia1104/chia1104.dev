@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useEffectEvent, useMemo } from "react";
 
 /** Resolves to `false` to keep the operator on the current page. */
 export type NavigationGuard = (href: string) => Promise<boolean>;
@@ -21,8 +21,10 @@ export const confirmNavigation = (href: string): Promise<boolean> =>
  */
 export const useNavigationGuard = (guard: NavigationGuard) => {
   const router = useRouter();
+  const ask = useEffectEvent(guard);
   useEffect(() => {
-    current = guard;
+    const mounted: NavigationGuard = (href) => ask(href);
+    current = mounted;
     const onClick = (event: MouseEvent) => {
       if (
         event.defaultPrevented ||
@@ -47,16 +49,16 @@ export const useNavigationGuard = (guard: NavigationGuard) => {
         return;
       event.preventDefault();
       const url = new URL(anchor.href);
-      void guard(anchor.href).then((allowed) => {
+      void mounted(anchor.href).then((allowed) => {
         if (allowed) router.push(url.pathname + url.search + url.hash);
       });
     };
     document.addEventListener("click", onClick, true);
     return () => {
       document.removeEventListener("click", onClick, true);
-      if (current === guard) current = null;
+      if (current === mounted) current = null;
     };
-  }, [guard, router]);
+  }, [router]);
 };
 
 /** Next's router behind the guard. Without a guard, or on the same pathname, it pushes at once. */

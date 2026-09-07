@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 
 import { ORPCError } from "@orpc/client";
 import { useDebouncer } from "@tanstack/react-pacer";
@@ -36,8 +42,6 @@ export const useDraftAutosave = ({
     | { kind: "error"; message: string }
     | null
   >(null);
-  // Read before the first persist effect can touch the store, so the snapshot is never dropped unseen.
-  const [restored, setRestored] = useState(() => readDraftSnapshot(initial.id));
   // Async callers share the acknowledged revision before React commits the next render.
   const baseline = useRef(initial);
   const blocked = useRef(false);
@@ -50,13 +54,13 @@ export const useDraftAutosave = ({
     control: form.control,
     name: ["slug", "type", "defaultLocale", "mainImage", "translations"],
   });
-  const changes = JSON.stringify(
-    diffValues(
-      { slug, type, defaultLocale, mainImage, translations },
-      toValues(saved)
-    )
+  const patch = diffValues(
+    { slug, type, defaultLocale, mainImage, translations },
+    toValues(saved)
   );
-  const isDirty = changes !== "null";
+  const changes = JSON.stringify(patch);
+  const isDirty = patch !== null;
+  const paused = issue !== null;
 
   const acknowledge = useCallback(
     (next: DraftView) => {
@@ -133,27 +137,27 @@ export const useDraftAutosave = ({
     wait: AUTOSAVE_WAIT_MS,
   });
   useEffect(() => {
-    if (isDirty && !issue) scheduled.maybeExecute();
+    if (isDirty && !paused) scheduled.maybeExecute();
     else scheduled.cancel();
-  }, [changes, isDirty, issue, scheduled]);
+  }, [changes, isDirty, paused, scheduled]);
 
   useEffect(() => {
-    if (!isDirty || issue) return;
+    if (!isDirty || paused) return;
     const timer = setTimeout(() => void flush(), AUTOSAVE_MAX_WAIT_MS);
     return () => clearTimeout(timer);
-  }, [flush, isDirty, issue]);
+  }, [flush, isDirty, paused]);
 
   // Leaving the tab saves at once; the request may not finish, and the snapshot below covers that.
+  const flushNow = useEffectEvent(() => {
+    if (
+      blocked.current ||
+      !diffValues(form.getValues(), toValues(baseline.current))
+    )
+      return;
+    scheduled.cancel();
+    void flush();
+  });
   useEffect(() => {
-    const flushNow = () => {
-      if (
-        blocked.current ||
-        !diffValues(form.getValues(), toValues(baseline.current))
-      )
-        return;
-      scheduled.cancel();
-      void flush();
-    };
     const onVisibilityChange = () => {
       if (document.visibilityState === "hidden") flushNow();
     };
@@ -163,44 +167,45 @@ export const useDraftAutosave = ({
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("pagehide", flushNow);
     };
-  }, [flush, form, scheduled]);
+  }, []);
 
   // Only this tab's own transition back to clean drops the snapshot; another tab may be mid-edit.
-  useEffect(() => {
+  const persist = useEffectEvent(() => {
     const { keep, drop } = draftSnapshotStore.getState();
-    if (isDirty) {
-      const patch = diffValues(form.getValues(), toValues(saved));
-      if (patch) keep(initial.id, { revision: saved.revision, patch });
+    if (patch) {
+      keep(initial.id, { revision: saved.revision, patch });
       kept.current = true;
     } else if (kept.current) {
       drop(initial.id);
       kept.current = false;
     }
-  }, [changes, form, initial.id, isDirty, saved]);
+  });
+  useEffect(() => persist(), [changes]);
 
   // Edits made against the current revision resume; edits against an older one are a conflict.
-  useEffect(() => {
-    if (!restored) return;
-    setRestored(null);
+  const restore = useEffectEvent(() => {
+    const snapshot = readDraftSnapshot(initial.id);
+    if (!snapshot) return;
     const activeLocale = form.getValues("activeLocale");
-    if (restored.revision === initial.revision) {
+    if (snapshot.revision === initial.revision) {
       form.reset({
-        ...applyPatch(toValues(initial), restored.patch),
+        ...applyPatch(toValues(initial), snapshot.patch),
         activeLocale,
       });
       void flush();
       return;
     }
     draftSnapshotStore.getState().drop(initial.id);
-    if (restored.revision < initial.revision) {
+    if (snapshot.revision < initial.revision) {
       form.reset({
-        ...applyPatch(toValues(initial), restored.patch),
+        ...applyPatch(toValues(initial), snapshot.patch),
         activeLocale,
       });
       blocked.current = true;
       setIssue({ kind: "conflict", draft: initial });
     }
-  }, [flush, form, initial, restored]);
+  });
+  useEffect(() => restore(), []);
 
   const receive = useCallback(
     (next: DraftView) => {
@@ -241,7 +246,7 @@ export const useDraftAutosave = ({
     issue,
     isDirty,
     isSaving: isPending,
-    isSynced: !isDirty && !isPending && issue === null,
+    isSynced: !isDirty && !isPending && !paused,
     flush,
     retry,
     adopt,

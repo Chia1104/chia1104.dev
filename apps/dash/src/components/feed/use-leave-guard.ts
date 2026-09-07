@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useNavigationGuard } from "@/libs/navigation-guard";
 
@@ -19,15 +19,11 @@ export const useLeaveGuard = ({
   const router = useRouter();
   const [blockedHref, setBlockedHref] = useState<string | null>(null);
 
-  const guard = useCallback(
-    async (href: string) => {
-      if (isSynced || (await flush())) return true;
-      setBlockedHref(href);
-      return false;
-    },
-    [flush, isSynced]
-  );
-  useNavigationGuard(guard);
+  useNavigationGuard(async (href) => {
+    if (isSynced || (await flush())) return true;
+    setBlockedHref(href);
+    return false;
+  });
 
   useEffect(() => {
     if (isSynced) return;
