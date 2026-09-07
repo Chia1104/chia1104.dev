@@ -45,7 +45,8 @@ import {
 } from "../../feeds/search";
 import { createFeedService, updateFeedService } from "../../feeds/write";
 import { sessionGuard } from "../guards/auth.guard";
-import { callerGuard, tieredRateLimitGuard } from "../guards/caller.guard";
+import { callerGuard } from "../guards/caller.guard";
+import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { contractOS } from "../utils";
 
 // `publicReadGuard` has no floor: a browser never holds an API key, but one that is sent must
@@ -58,7 +59,7 @@ const keyedReadGuard = callerGuard({
   scopes: [ApiKeyScope.FeedsRead],
 });
 const sessionReadGuard = callerGuard({ minTier: CallerTier.Session });
-const readRateLimit = tieredRateLimitGuard({ prefix: "rate-limiter:feeds" });
+const readRateLimit = rateLimitGuard("feeds");
 
 export const getFeedsRoute = contractOS.feeds.list
   .use(publicReadGuard)

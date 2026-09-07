@@ -18,13 +18,13 @@ Wire contracts live in `api/orpc/contracts/*.contract.ts`; handlers live in `api
 
 ### Authorization
 
-Authorization belongs in `service-kit/src/policies`. Bind policies through `runPolicy` for oRPC or `toHonoMiddleware` for Hono. Guards contain transport binding, not duplicated authorization logic. API keys carry scopes from `@chia/auth/apikey`; a guard that admits `CallerTier.ApiKey` states the scopes it needs, and a key sent without them is refused even where a browser would pass. `operator:root` on a key the configured admin owns lifts it to `CallerTier.Root`; agent guards then take the user from the key.
+Authorization belongs in `service-kit/src/policies`. Bind policies through `runPolicy` for oRPC or `toHonoMiddleware` for Hono. Guards contain transport binding, not duplicated authorization logic. Procedure rate-limit budgets live in `api/orpc/rate-limits.ts`, keyed by route family and caller tier; a tier the family does not list is uncounted, so `Root` is unlimited unless named. Mount-level budgets belong to the hosting app. The Hono mount resolves the caller once and puts it on `ServiceContext.caller`; `callerPolicy` grades a pre-resolved caller instead of re-verifying credentials. API keys carry scopes from `@chia/auth/apikey`; a guard that admits `CallerTier.ApiKey` states the scopes it needs, and a key sent without them is refused even where a browser would pass. `operator:root` on a key the configured admin owns lifts it to `CallerTier.Root`; agent guards then take the user from the key.
 
 ### Context injection
 
 `packages/api` reads no environment variables and holds no host state. `BaseOSContext` supplies:
 
-- `config`: rate limits and AI key material.
+- `config`: AI key material.
 - `workflow`: the `@chia/workflow-control` client.
 - `hooks`: optional feed and memory lifecycle hooks.
 - `agentFactory`: optional per-kind bindings, dynamic definition loaders and credential handling.

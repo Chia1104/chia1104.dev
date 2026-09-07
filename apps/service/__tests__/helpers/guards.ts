@@ -1,18 +1,23 @@
+import { os } from "@orpc/server";
 import { createMiddleware } from "hono/factory";
 import { vi } from "vitest";
 
+import type { CallerContext } from "@chia/api/orpc/guards/caller.guard";
 import { baseOS } from "@chia/api/orpc/utils";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
-const FAKE_API_KEY = {
-  id: "test-api-key-id",
-  userId: "test-user-id",
-  enabled: true,
-};
+const FAKE_API_KEY =
+  /* SAFETY: This fixture implements the VerifiedApiKey members the routes read. */ {
+    id: "test-api-key-id",
+    userId: "test-user-id",
+    enabled: true,
+  } as never;
 
 export const orpcRateLimitGuard = vi.fn(() =>
   baseOS.middleware(({ next }) => next())
 );
+
+export const orpcCallerOS = os.$context<CallerContext>();
 
 /** Same value as `LOCAL_ADMIN_ID` in `setup.ts` (`getAdminId()` under test). */
 export const TEST_ADMIN_ID = "test-local-admin-id";
@@ -74,13 +79,15 @@ export const orpcCallerGuard = vi.fn((options: { minTier?: CallerTier } = {}) =>
     })
 );
 
-export const orpcTieredRateLimitGuard = vi.fn(() =>
-  baseOS.middleware(({ next }) => next())
-);
-
 export const orpcCaptchaGuard = baseOS.middleware(({ next }) => next());
 
-export const rateLimiterGuard = vi.fn(() =>
+export const rateLimiterGuard = vi.fn((_name?: string) =>
+  createMiddleware(async (_c, next) => {
+    await next();
+  })
+);
+
+export const resolveCaller = vi.fn(() =>
   createMiddleware(async (_c, next) => {
     await next();
   })

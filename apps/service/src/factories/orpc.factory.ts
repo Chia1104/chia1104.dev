@@ -11,10 +11,6 @@ import { feedHooks } from "../services/feed-indexing.service";
 
 /** Guard config from env; built once and reused on every request. */
 const config: ORPCConfig = {
-  rateLimit: {
-    windowMs: env.RATELIMIT_WINDOW_MS,
-    limit: env.RATELIMIT_MAX,
-  },
   aiAuthPrivateKey: env.AI_AUTH_PRIVATE_KEY,
 };
 

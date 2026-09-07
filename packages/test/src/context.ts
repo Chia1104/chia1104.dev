@@ -3,7 +3,7 @@ import type { TestSession } from "./session";
 export interface StructuralContext {
   headers: Headers;
   clientIP: string;
-  config: { rateLimit: { windowMs: number; limit: number } };
+  config: { aiAuthPrivateKey?: string };
   db: Record<string, never>;
   session: TestSession | null;
 }
@@ -19,7 +19,7 @@ export const contextOf = <TContext = StructuralContext>(
   /* SAFETY: This fixture implements the context members exercised by oRPC tests. */ ({
     headers: new Headers(),
     clientIP: "127.0.0.1",
-    config: { rateLimit: { windowMs: 60_000, limit: 100 } },
+    config: {},
     db: {},
     session,
     ...extra,

@@ -5,6 +5,7 @@ import { isUrl } from "@chia/utils/is";
 import request from "@chia/utils/request";
 
 import type { LinkPreview } from "../contracts/toolings.contract";
+import { callerGuard } from "../guards/caller.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { contractOS } from "../utils";
 
@@ -16,7 +17,8 @@ const absolutize = (value: string | null | undefined, origin: string) => {
 };
 
 export const linkPreviewRoute = contractOS.toolings["link-preview"]
-  .use(rateLimitGuard({ prefix: "rate-limiter:toolings" }))
+  .use(callerGuard())
+  .use(rateLimitGuard("toolings"))
   .handler(async (opts) => {
     const url = new URL(opts.input.href);
     const cacheKey = `link-preview:${url.toString()}`;

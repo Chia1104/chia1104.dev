@@ -22,11 +22,6 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().min(1),
     SENTRY_DSN: z.string().optional(),
     ZEABUR_SERVICE_ID: z.string().optional(),
-    RATELIMIT_WINDOW_MS: z
-      .number()
-      .optional()
-      .default(15 * 60000),
-    RATELIMIT_MAX: z.number().optional().default(87),
     AI_AUTH_PUBLIC_KEY: z.string().optional(),
     AI_AUTH_PRIVATE_KEY: z.string().optional(),
     IP_DENY_LIST: z.string().optional(),
@@ -53,12 +48,6 @@ export const env = createEnv({
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     SENTRY_DSN: process.env.SENTRY_DSN,
     ZEABUR_SERVICE_ID: process.env.ZEABUR_SERVICE_ID,
-    RATELIMIT_WINDOW_MS: process.env.RATELIMIT_WINDOW_MS
-      ? Number(process.env.RATELIMIT_WINDOW_MS)
-      : undefined,
-    RATELIMIT_MAX: process.env.RATELIMIT_MAX
-      ? Number(process.env.RATELIMIT_MAX)
-      : undefined,
     AI_AUTH_PUBLIC_KEY: process.env.AI_AUTH_PUBLIC_KEY,
     AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
     IP_DENY_LIST: process.env.IP_DENY_LIST,
