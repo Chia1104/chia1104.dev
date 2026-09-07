@@ -376,7 +376,7 @@ export const DraftActions = ({
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <Card className="bg-background/95 sticky top-0 z-20 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
+      <Card className="sticky top-0 z-20 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
         <Card.Header className="min-w-0 gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <Card.Title className="text-base font-semibold">

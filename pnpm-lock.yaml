@@ -881,6 +881,9 @@ importers:
       '@tanstack/react-query':
         specifier: catalog:tanstack
         version: 5.102.8(react@19.2.8)
+      '@tanstack/react-virtual':
+        specifier: catalog:tanstack
+        version: 3.14.10(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       ai:
         specifier: catalog:ai
         version: 7.0.92(zod@4.5.4)
