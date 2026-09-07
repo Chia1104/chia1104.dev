@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { Button, Chip, Drawer } from "@heroui/react";
@@ -9,6 +9,7 @@ import { FileText, PencilLine } from "lucide-react";
 import { ComposerAttachment } from "@chia/agent-elements/composer";
 
 import { DrawerPanel } from "@/components/commons/drawer-panel";
+import { useGuardedRouter } from "@/libs/navigation-guard";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
 type AgentDraft = NonNullable<
@@ -48,7 +49,7 @@ const MetaField = ({
 );
 
 const DraftBody = ({ draft }: { draft: AgentDraft }) => {
-  const router = useRouter();
+  const router = useGuardedRouter();
   const searchParams = useSearchParams();
   // SAFETY: `translations` is a `Partial<Record<Locale, …>>`; `Object.entries` widens its keys to
   // `string` and drops nothing else, so the pairs are exactly the locale-keyed entries.

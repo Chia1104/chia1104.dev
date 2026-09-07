@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
 import {
@@ -25,6 +24,8 @@ import {
   useSidebar,
 } from "@chia/ui/sidebar";
 
+import { useGuardedRouter } from "@/libs/navigation-guard";
+
 export function NavUser({
   user,
 }: {
@@ -36,7 +37,7 @@ export function NavUser({
 }) {
   const { open, isMobile } = useSidebar();
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
+  const router = useGuardedRouter();
   return (
     <SidebarMenu>
       <SidebarMenuItem>
