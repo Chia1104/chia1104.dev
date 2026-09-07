@@ -55,6 +55,8 @@ export const draftSnapshotStore = createStore<DraftSnapshotState>()(
       version: 1,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ entries: state.entries }),
+      // Snapshots are short-lived; ones written under another schema are discarded, not converted.
+      migrate: () => ({ entries: [] }),
     }
   )
 );
