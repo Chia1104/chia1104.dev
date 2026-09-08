@@ -1,6 +1,6 @@
 import { unauthorized } from "next/navigation";
 import type { ReactNode } from "react";
-import { Suspense, ViewTransition } from "react";
+import { ViewTransition } from "react";
 
 import { Separator } from "@heroui/react";
 
@@ -11,10 +11,7 @@ import {
   SidebarTrigger,
 } from "@chia/ui/sidebar";
 
-import {
-  AgentDrawer,
-  AgentDrawerTrigger,
-} from "@/components/agent/agent-drawer";
+import { AgentDock, AgentDockTrigger } from "@/components/agent/agent-dock";
 import { AppSidebar } from "@/components/commons/app-sidebar";
 import Footer from "@/components/commons/footer";
 import { NavBreadcrumbs } from "@/components/commons/nav-breadcrumbs";
@@ -27,11 +24,11 @@ export default async function Layout({ children }: { children: ReactNode }) {
   if (!session.data || session.data.user.isAnonymous) {
     unauthorized();
   }
-  // The writing agent is the operator's; a member never sees the trigger or the drawer.
+  // The writing agent is the operator's; a member never sees the trigger or the dock.
   const access = await getAccess();
   const operator = access.data?.level === "operator";
 
-  // Pages provide what they have open (the editor's draft) and the drawer sends it.
+  // Pages provide what they have open (the editor's draft) and the dock sends it.
   return (
     <ViewTransition>
       <AgentContextProvider>
@@ -48,21 +45,15 @@ export default async function Layout({ children }: { children: ReactNode }) {
               </div>
               {operator ? (
                 <div className="ml-auto flex shrink-0 items-center px-4">
-                  {/* Reads `?agent`; the boundary keeps the rest of the shell static. */}
-                  <Suspense>
-                    <AgentDrawerTrigger />
-                  </Suspense>
+                  <AgentDockTrigger />
                 </div>
               ) : null}
             </header>
             {children}
-            {operator ? (
-              <Suspense>
-                <AgentDrawer />
-              </Suspense>
-            ) : null}
             <Footer className="mt-auto" />
           </SidebarInset>
+          {/* Sibling of the inset, so the docked agent takes width from the page instead of covering it. */}
+          {operator ? <AgentDock /> : null}
         </SidebarProvider>
       </AgentContextProvider>
     </ViewTransition>

@@ -91,7 +91,7 @@ export const SessionTabs = ({
   onRename,
   onSelect,
   sessions,
-  visible = 8,
+  visible = 3,
 }: SessionTabsProps) => {
   const labels = { ...defaultAgentLabels, ...overrides };
   const [open, setOpen] = useState(false);

@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect } from "react";
 
 import { Button, Spinner } from "@heroui/react";
@@ -16,6 +15,7 @@ import agentLabels from "@chia/i18n/agent-elements/en-US.json";
 
 import { client, orpc } from "@/libs/orpc/client";
 
+import { useAgentDock } from "./dock-store";
 import { draftActivityStore, trackDraftToolEvent } from "./draft-activity";
 import { WritingSession } from "./writing-session";
 
@@ -24,11 +24,8 @@ const WRITING_AGENT_KIND = "writing";
 const errorMessage = (cause: unknown) =>
   cause instanceof Error ? cause.message : "Something went wrong.";
 
-/** The writing sessions and the active one, sized by whatever mounts it (the agent drawer). */
+/** The writing sessions and the active one, sized by whatever mounts it (the agent dock). */
 export const AgentPanel = () => {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
   const listOptions = orpc.agent.sessions.list.queryOptions({
@@ -36,17 +33,14 @@ export const AgentPanel = () => {
   });
   const sessionsQuery = useQuery(listOptions);
   const sessions = sessionsQuery.data?.items ?? [];
-  const selectedSessionId =
-    searchParams.get("session") ?? sessions.at(0)?.id ?? null;
-
-  const selectSession = useCallback(
-    (sessionId: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("session", sessionId);
-      router.replace(`${pathname}?${params.toString()}`);
-    },
-    [pathname, router, searchParams]
-  );
+  // A conversation the operator has since deleted elsewhere falls back to the newest one.
+  const storedSessionId = useAgentDock((state) => state.sessionId);
+  const selectSession = useAgentDock((state) => state.setSessionId);
+  const selectedSessionId = sessions.some(
+    (session) => session.id === storedSessionId
+  )
+    ? storedSessionId
+    : (sessions.at(0)?.id ?? null);
 
   const invalidateSessions = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: listOptions.queryKey });
@@ -159,11 +153,7 @@ export const AgentPanel = () => {
         });
         if (sessionId === selectedSessionId) {
           const next = sessions.find((session) => session.id !== sessionId);
-          const params = new URLSearchParams(searchParams.toString());
-          if (next) params.set("session", next.id);
-          else params.delete("session");
-          const query = params.toString();
-          router.replace(query ? `${pathname}?${query}` : pathname);
+          selectSession(next?.id ?? null);
         }
         await queryClient.invalidateQueries({ queryKey: listOptions.queryKey });
       },

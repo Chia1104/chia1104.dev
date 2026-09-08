@@ -51,7 +51,7 @@ export const AccountMenu = ({ user }: { user: Session["user"] }) => {
       const result = await authClient.signIn.social(
         {
           provider,
-          callbackURL: `${window.location.origin}${window.location.pathname}?chat=true`,
+          callbackURL: `${window.location.origin}${window.location.pathname}`,
         },
         { headers: { [X_CAPTCHA_RESPONSE]: captchaToken } }
       );

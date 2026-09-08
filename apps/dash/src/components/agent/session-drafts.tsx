@@ -228,12 +228,9 @@ export const SessionDrafts = ({ drafts }: { drafts: AgentDraft[] }) => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const selected = drafts.find((draft) => draft.id === selectedId) ?? null;
 
-  const openInEditor = (draftId: number) => {
-    // Read on press rather than through `useSearchParams`, which would re-render the drawer on every URL change.
-    const params = new URLSearchParams(window.location.search);
-    params.set("agent", "open");
-    router.push(`/feed/draft/${draftId}?${params.toString()}`);
-  };
+  // The dock carries its own state across the jump, so the editor's URL stays a plain link.
+  const openInEditor = (draftId: number) =>
+    router.push(`/feed/draft/${draftId}`);
 
   return (
     <>

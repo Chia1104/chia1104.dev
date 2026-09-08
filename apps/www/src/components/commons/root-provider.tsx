@@ -8,7 +8,6 @@ import type { useMessages, Timezone } from "next-intl";
 import type { Locale } from "next-intl";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { getQueryClient } from "@chia/utils/query-client";
 
@@ -25,26 +24,24 @@ const RootProvider = ({
 }) => {
   const [queryClient] = useState(() => getQueryClient());
   return (
-    <NuqsAdapter>
-      <NextIntlClientProvider
-        messages={messages}
-        timeZone={timeZone}
-        locale={locale}>
-        <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-          <FDProvider
-            theme={{
-              enabled: true,
-            }}
-            search={{
-              enabled: false,
-            }}>
-            <QueryClientProvider client={queryClient}>
-              {children}
-            </QueryClientProvider>
-          </FDProvider>
-        </ThemeProvider>
-      </NextIntlClientProvider>
-    </NuqsAdapter>
+    <NextIntlClientProvider
+      messages={messages}
+      timeZone={timeZone}
+      locale={locale}>
+      <ThemeProvider defaultTheme="system" enableSystem attribute="class">
+        <FDProvider
+          theme={{
+            enabled: true,
+          }}
+          search={{
+            enabled: false,
+          }}>
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        </FDProvider>
+      </ThemeProvider>
+    </NextIntlClientProvider>
   );
 };
 

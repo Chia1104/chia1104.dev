@@ -33,10 +33,19 @@ declare namespace __next_route_internal_types__ {
 
   type StaticRoutes = 
     | `/about` // /about
+    | `/api/v1/health` // ../../../src/app/api/(v1)/v1/health/route.ts
   type DynamicRoutes<T extends string = string> = 
+    | `/${SafeSlug<T>}` // ../../../src/app/[locale]/page.tsx
+    | `/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(blog)/[type]/page.tsx
+    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(blog)/[type]/[slug]/page.tsx
+    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}/llm.md` // ../../../src/app/[locale]/(blog)/[type]/[slug]/llm.md/route.ts
+    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}/og` // ../../../src/app/[locale]/(blog)/[type]/[slug]/og/route.ts
     | `/${SafeSlug<T>}/about` // /[locale]/about
+    | `/${SafeSlug<T>}/contact` // ../../../src/app/[locale]/contact/page.tsx
+    | `/${SafeSlug<T>}/email` // ../../../src/app/[locale]/@modal/(.)email/page.tsx
     | `/${SafeSlug<T>}/note/${SafeSlug<T>}` // /[locale]/note/[slug]
     | `/${SafeSlug<T>}/post/${SafeSlug<T>}` // /[locale]/post/[slug]
+    | `/${SafeSlug<T>}/projects` // ../../../src/app/[locale]/projects/page.tsx
     | `/note/${SafeSlug<T>}` // /note/[slug]
     | `/post/${SafeSlug<T>}` // /post/[slug]
 
@@ -159,22 +168,6 @@ declare module 'next/form' {
     /**
      * `action` can be either a `string` or a function.
      * - If `action` is a string, it will be interpreted as a path or URL to navigate to when the form is submitted.
-     *   The path will be prefetched when the form becomes visible.
-     * - If `action` is a function, it will be called when the form is submitted. See the [React docs](https://react.dev/reference/react-dom/components/form#props) for more.
-     */
-    action: __next_route_internal_types__.RouteImpl<RouteInferType> | ((formData: FormData) => void)
-  } & FormRestProps
-
-  export default function Form<RouteType>(props: FormProps<RouteType>): JSX.Element
-}
-docs](https://react.dev/reference/react-dom/components/form#props) for more.
-     */
-    action: __next_route_internal_types__.RouteImpl<RouteInferType> | ((formData: FormData) => void)
-  } & FormRestProps
-
-  export default function Form<RouteType>(props: FormProps<RouteType>): JSX.Element
-}
-e interpreted as a path or URL to navigate to when the form is submitted.
      *   The path will be prefetched when the form becomes visible.
      * - If `action` is a function, it will be called when the form is submitted. See the [React docs](https://react.dev/reference/react-dom/components/form#props) for more.
      */
