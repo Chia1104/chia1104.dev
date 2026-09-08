@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useCallback, useEffect } from "react";
 
 import { Button, Spinner } from "@heroui/react";
@@ -25,7 +26,12 @@ const errorMessage = (cause: unknown) =>
   cause instanceof Error ? cause.message : "Something went wrong.";
 
 /** The writing sessions and the active one, sized by whatever mounts it (the agent dock). */
-export const AgentPanel = () => {
+export const AgentPanel = ({
+  headerActions,
+}: {
+  /** The host's controls for the panel itself, shown beside the session tabs. */
+  headerActions?: ReactNode;
+}) => {
   const queryClient = useQueryClient();
 
   const listOptions = orpc.agent.sessions.list.queryOptions({
@@ -225,13 +231,16 @@ export const AgentPanel = () => {
         onToolEvent={onToolEvent}
         onTurnEnd={invalidateSessions}
         sessionId={selectedSessionId}>
-        <WritingSession tabs={tabs} />
+        <WritingSession actions={headerActions} tabs={tabs} />
       </AgentSessionProvider>
     );
   }
   return (
     <>
-      <div className="flex min-w-0 items-center gap-3 px-4 py-3">{tabs}</div>
+      <div className="flex h-12 min-w-0 shrink-0 items-center gap-3 px-3.5">
+        {tabs}
+        {headerActions}
+      </div>
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
         <span className="bg-surface-secondary flex size-12 items-center justify-center rounded-full">
           <Bot className="size-6" />

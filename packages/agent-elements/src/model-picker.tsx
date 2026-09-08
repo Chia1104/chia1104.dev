@@ -227,7 +227,7 @@ export const ModelPicker = ({
                   fullWidth
                   onChange={setQuery}
                   value={query}>
-                  <SearchField.Group className="h-8 min-h-8">
+                  <SearchField.Group>
                     <SearchField.SearchIcon />
                     <SearchField.Input
                       className="text-xs"
@@ -273,7 +273,7 @@ export const ModelPicker = ({
                 selectionMode="single">
                 {fallback && query.trim() === "" ? (
                   <ListBox.Item
-                    className="min-h-8 px-2 py-1.5 text-xs"
+                    className="text-xs"
                     id={FALLBACK_KEY}
                     textValue={fallback.label}>
                     <span className="text-muted truncate">
@@ -287,7 +287,7 @@ export const ModelPicker = ({
                   return (
                     <ListBox.Item
                       key={keyOf(model)}
-                      className="min-h-8 px-2 py-1.5 text-xs"
+                      className="text-xs"
                       id={keyOf(model)}
                       isDisabled={model.requiresApiKey}
                       textValue={model.name}>

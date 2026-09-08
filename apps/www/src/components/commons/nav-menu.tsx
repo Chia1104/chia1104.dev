@@ -185,9 +185,9 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
   return (
     <nav
       data-testid="nav-menu"
-      className="c-bg-third fixed top-0 right-[var(--chat-dock-width,0px)] left-0 z-50 flex h-[75px] items-center justify-center transition-[right] duration-200 ease-out motion-reduce:transition-none">
+      className="c-bg-third fixed top-0 right-(--dock-width,0px) left-0 z-50 flex h-15.75 items-center justify-center transition-[right] duration-200 ease-out motion-reduce:transition-none [html[data-dock-resizing]_&]:transition-none">
       <div className="container flex w-full justify-between px-5">
-        <div className="flex w-1/5 items-center text-2xl">
+        <div className="flex w-1/5 items-center text-xl font-semibold tracking-tight">
           <Link
             href="/"
             scroll
@@ -221,10 +221,10 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
                           href={path}
                           data-testid={`nav-link-${pathKey}`}>
                           <span className="relative px-[10px] py-[5px]">
-                            <p className="hidden md:block">
+                            <p className="page-md:block hidden">
                               {tRoutes(nameKey)}
                             </p>
-                            <div className="block md:hidden">{icon}</div>
+                            <div className="page-md:hidden block">{icon}</div>
                           </span>
                         </Link>
                         <Tabs.Indicator />

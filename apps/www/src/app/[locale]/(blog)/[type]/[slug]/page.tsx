@@ -22,7 +22,6 @@ import {
   RelatedFeeds,
   RelatedFeedsSkeleton,
 } from "@/components/blog/related-feeds";
-import TocFooterMeta from "@/components/blog/toc-footer-meta";
 import WrittenBy from "@/components/blog/written-by";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
@@ -127,12 +126,7 @@ const Page = async ({
             </ViewTransition>
           </div>
           <p>{feed.translations[0]?.description}</p>
-          <ActionGroup
-            content={feed.translations[0]?.content}
-            articleUrl={articleUrl}
-            className="mt-5 flex justify-end lg:hidden"
-          />
-          <div className="mt-5 flex flex-col items-start lg:flex-row lg:items-center lg:justify-between">
+          <div className="mt-5 flex items-center justify-between ">
             <div className="not-prose flex items-center gap-2">
               <Avatar>
                 <Avatar.Image src={Meta.avatar} />
@@ -140,7 +134,7 @@ const Page = async ({
                   <span>{Meta.name.charAt(0)}</span>
                 </Avatar.Fallback>
               </Avatar>
-              <span>{Meta.name}</span>
+              <span className="page-sm:block hidden">{Meta.name}</span>
             </div>
             <div
               id="feed-meta"
@@ -177,22 +171,11 @@ const Page = async ({
             },
             locale,
             slot: {
-              afterLastUpdate: (
-                <TocFooterMeta
-                  readTimeText={
-                    feed.translations[0]?.readTime
-                      ? t("read-with-minutes", {
-                          minutes: feed.translations[0]?.readTime,
-                        })
-                      : undefined
-                  }
-                />
-              ),
-              tocFooter: (
+              actions: (
                 <ActionGroup
                   content={feed.translations[0]?.content}
                   articleUrl={articleUrl}
-                  className="mt-5 hidden self-end md:flex"
+                  className="mb-5 ml-auto flex justify-self-end"
                 />
               ),
             },

@@ -21,8 +21,8 @@ const ListItem = ({
             className
           )}
           {...props}>
-          <div className="text-sm leading-none font-medium">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug">
+          <div className="text-base leading-tight font-medium">{title}</div>
+          <p className="text-muted line-clamp-2 text-sm leading-snug">
             {!(children instanceof Function) && children}
           </p>
         </Link>

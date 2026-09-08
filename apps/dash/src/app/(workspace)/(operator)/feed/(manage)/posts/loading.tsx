@@ -5,7 +5,7 @@ import FeedSkeleton from "@/components/feed/skeleton";
 const Loading = () => {
   return (
     <ViewTransition>
-      <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="page-md:grid-cols-2 grid w-full grid-cols-1 gap-5">
         <FeedSkeleton />
       </div>
     </ViewTransition>

@@ -65,7 +65,7 @@ const unwrap = async <T,>(
 
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <>
-    <dt className="text-muted-foreground">{label}</dt>
+    <dt className="text-muted">{label}</dt>
     <dd className="truncate">{value}</dd>
   </>
 );
@@ -103,7 +103,7 @@ const BanDialog = ({
               <Modal.Heading>Ban this user?</Modal.Heading>
             </Modal.Header>
             <Modal.Body className="flex flex-col gap-4">
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted text-sm">
                 Every session is signed out and sign-in is refused until the ban
                 ends. The reason is shown to them.
               </p>
@@ -196,7 +196,7 @@ const ConfirmDialog = ({
             <Modal.Heading>{title}</Modal.Heading>
           </Modal.Header>
           <Modal.Body>
-            <p className="text-muted-foreground text-sm">{body}</p>
+            <p className="text-muted text-sm">{body}</p>
           </Modal.Body>
           <Modal.Footer>
             <Button isDisabled={isPending} variant="ghost" onPress={onCancel}>
@@ -335,9 +335,7 @@ const UserDetailView = ({
         </Avatar>
         <div className="flex min-w-0 flex-col gap-1">
           <span className="truncate text-base font-semibold">{user.name}</span>
-          <span className="text-muted-foreground truncate text-xs">
-            {user.email}
-          </span>
+          <span className="text-muted truncate text-xs">{user.email}</span>
           <div className="flex flex-wrap gap-1">
             <RoleChip role={user.role} />
             <UserStateChip
@@ -357,7 +355,7 @@ const UserDetailView = ({
         <Card className="w-full" variant="secondary">
           <Card.Content className="flex flex-col gap-1 py-3 text-xs">
             <span className="font-medium">Banned</span>
-            <span className="text-muted-foreground">
+            <span className="text-muted">
               {user.banReason ?? "No reason recorded"}
               {" · "}
               {user.banExpires

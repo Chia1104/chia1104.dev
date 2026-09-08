@@ -120,7 +120,7 @@ export const ConfigFields = <TValues extends FieldValues>({
   const entries = propertiesOf(schema);
   if (entries.length === 0) {
     return (
-      <p className="text-muted-foreground text-xs">
+      <p className="text-muted text-xs">
         This agent has no configuration of its own.
       </p>
     );
@@ -256,7 +256,7 @@ export const ConfigFields = <TValues extends FieldValues>({
                   );
                 default:
                   return (
-                    <p className="text-muted-foreground text-xs">
+                    <p className="text-muted text-xs">
                       <span className="font-medium">{label}</span> has a shape
                       this form does not render ({type ?? "unknown"}); edit it
                       in code.

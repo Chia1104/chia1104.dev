@@ -20,7 +20,7 @@ const LocaleSelector = (props: ButtonProps) => {
       <Button size="sm" variant="tertiary" isIconOnly {...props}>
         <span className="i-mdi-translate size-3" />
       </Button>
-      <Dropdown.Popover>
+      <Dropdown.Popover className="min-w-40">
         <Dropdown.Menu>
           {Object.values(Locale).map((locale) => (
             <Dropdown.Item key={locale} onPress={() => changeLocale(locale)}>

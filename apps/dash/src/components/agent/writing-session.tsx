@@ -30,7 +30,14 @@ const SUGGESTIONS = [
   "Review the draft I have open and tighten the writing.",
 ];
 
-export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
+export const WritingSession = ({
+  tabs,
+  actions,
+}: {
+  tabs: ReactNode;
+  /** The host's controls for the panel itself, after the tabs. */
+  actions?: ReactNode;
+}) => {
   const drafts = useSessionDetail().data?.drafts ?? [];
   // The page's own records are listed by the composer; the session's other drafts follow.
   const context = useAgentContext((state) => state.items);
@@ -53,8 +60,9 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
 
   return (
     <>
-      <header className="flex min-w-0 items-center gap-3 px-3.5 py-2.5 pt-0 sm:pt-2.5">
+      <header className="flex h-12 min-w-0 shrink-0 items-center gap-3 px-3.5">
         {tabs}
+        {actions}
       </header>
 
       <Thread

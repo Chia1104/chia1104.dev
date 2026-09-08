@@ -57,14 +57,14 @@ const ImageItem: FC<{
 const Gallery = () => {
   return (
     <div className="not-prose grid w-full grid-cols-2 gap-2">
-      <span className="col-span-2 sm:col-span-1">
+      <span className="page-sm:col-span-1 col-span-2">
         <ImageItem
           src={images[4].src}
           alt={images[4].alt}
-          className="aspect-2/1 sm:aspect-square"
+          className="page-sm:aspect-square aspect-2/1"
         />
       </span>
-      <div className="col-span-2 grid w-full grid-cols-2 gap-2 sm:col-span-1">
+      <div className="page-sm:col-span-1 col-span-2 grid w-full grid-cols-2 gap-2">
         <span>
           <ImageItem
             src={images[0].src}

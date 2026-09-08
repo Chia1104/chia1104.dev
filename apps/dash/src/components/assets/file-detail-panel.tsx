@@ -22,10 +22,10 @@ interface FileDetailPanelProps {
 
 function FileTypeIcon({ path }: { path: string }) {
   if (isFileType(path, "image"))
-    return <FileImage className="text-muted-foreground size-4 shrink-0" />;
+    return <FileImage className="text-muted size-4 shrink-0" />;
   if (isFileType(path, "video"))
-    return <FileVideo className="text-muted-foreground size-4 shrink-0" />;
-  return <File className="text-muted-foreground size-4 shrink-0" />;
+    return <FileVideo className="text-muted size-4 shrink-0" />;
+  return <File className="text-muted size-4 shrink-0" />;
 }
 
 export const FileDetailPanel = ({
@@ -36,15 +36,13 @@ export const FileDetailPanel = ({
   onDelete,
 }: FileDetailPanelProps) => {
   return (
-    <div className="border-border flex flex-col gap-4 border-t pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-4">
+    <div className="border-border page-md:border-t-0 page-md:border-l page-md:pt-0 page-md:pl-4 flex flex-col gap-4 border-t pt-4">
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <FileTypeIcon path={selectedPath} />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{fileName}</p>
-            <p className="text-muted-foreground truncate text-xs">
-              {selectedPath}
-            </p>
+            <p className="text-muted truncate text-xs">{selectedPath}</p>
           </div>
         </div>
         <Button

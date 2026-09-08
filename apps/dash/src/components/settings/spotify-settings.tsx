@@ -205,7 +205,7 @@ export const SpotifySettings = () => {
         </Card.Header>
         <Card.Content className="relative space-y-5">
           {currentAccount ? (
-            <div className="border-border bg-surface-secondary/50 flex flex-col gap-4 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="border-border bg-surface-secondary/50 page-sm:flex-row page-sm:items-center page-sm:justify-between flex flex-col gap-4 rounded-2xl border p-4">
               <div className="flex min-w-0 items-center gap-3">
                 <Avatar>
                   <Avatar.Image

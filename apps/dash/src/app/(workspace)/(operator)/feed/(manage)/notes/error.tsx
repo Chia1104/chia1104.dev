@@ -22,7 +22,7 @@ const Error = ({
       <ErrorBoundary>
         <div className="flex min-h-[400px] w-full flex-col items-center justify-center gap-4">
           <h2 className="text-2xl font-bold">Something went wrong!</h2>
-          <p className="text-muted-foreground">
+          <p className="text-muted">
             {error.message || "Failed to load notes"}
           </p>
           <Button variant="primary" onPress={reset}>

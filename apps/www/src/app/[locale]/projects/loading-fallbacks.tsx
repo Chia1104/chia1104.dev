@@ -1,4 +1,4 @@
-import Card from "@chia/ui/card";
+import { FeatureCard } from "@/components/commons/feature-card";
 
 const loadingCards = Array.from({ length: 4 }, (_, card) => `repo-${card}`);
 
@@ -13,7 +13,7 @@ export const ContributionsChartFallback = () => (
 );
 
 export const LoadingCard = () => (
-  <Card className="relative flex h-full min-h-[442px] flex-col">
+  <FeatureCard className="relative flex h-full min-h-[442px] flex-col gap-0 p-0">
     <div className="c-bg-primary not-prose aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-t-2xl" />
     <div className="flex flex-1 flex-col p-4 pt-0">
       <div className="c-bg-primary mt-5 h-5 w-1/2 animate-pulse rounded-full" />
@@ -23,11 +23,11 @@ export const LoadingCard = () => (
         <span className="c-bg-primary h-4 w-1/4 animate-pulse rounded" />
       </div>
     </div>
-  </Card>
+  </FeatureCard>
 );
 
 export const RepoListFallback = () => (
-  <div className="mt-4 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+  <div className="page-md:grid-cols-2 mt-4 grid w-full grid-cols-1 gap-4">
     {loadingCards.map((card) => (
       <LoadingCard key={card} />
     ))}

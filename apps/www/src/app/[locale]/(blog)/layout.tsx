@@ -14,7 +14,7 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
   const dbLocale = dbLocaleResolver(locale);
 
   return (
-    <div className="not-prose z-20 mb-5 flex items-center gap-4 md:mb-10">
+    <div className="not-prose page-md:mb-10 z-20 mb-5 flex items-center gap-4">
       <NavigationMenu>
         <NavigationMenuList className="gap-5">
           <FeedNavigation
@@ -49,7 +49,7 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
 const Layout = async ({ children }: LayoutProps<"/[locale]">) => {
   const locale = await getLocale();
   return (
-    <section className="prose dark:prose-invert mt-10 flex min-h-[calc(100vh-140px)] w-full min-w-full flex-col items-start justify-start md:mt-20">
+    <section className="prose dark:prose-invert page-md:mt-20 mt-10 flex min-h-[calc(100vh-140px)] w-full min-w-full flex-col items-start justify-start">
       <div className="z-30">
         <Navigation locale={locale} />
       </div>

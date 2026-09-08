@@ -21,10 +21,7 @@ export const FileTreeDrawer = ({
   children,
 }: FileTreeDrawerProps) => {
   return (
-    <Drawer.Backdrop
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      className="md:hidden">
+    <Drawer.Backdrop isOpen={isOpen} onOpenChange={onOpenChange}>
       <Drawer.Content placement="bottom">
         <Drawer.Dialog>
           <Drawer.Handle />
@@ -40,7 +37,7 @@ export const FileTreeDrawer = ({
               fullWidth
               className="relative mb-3">
               <div className="relative">
-                <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
+                <Search className="text-muted pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
                 <Input placeholder="Search files..." className="pl-8" />
               </div>
             </TextField>

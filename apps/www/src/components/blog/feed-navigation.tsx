@@ -56,11 +56,11 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
     switch (type) {
       case FeedType.Note:
         return {
-          ul: "md:grid-cols-2",
+          ul: "page-md:grid-cols-2",
         };
       case FeedType.Post:
         return {
-          ul: "lg:grid-cols-[.75fr_1fr]",
+          ul: "page-lg:grid-cols-[.75fr_1fr]",
         };
       default:
         return {
@@ -86,7 +86,7 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
       <NavigationMenuContent>
         <ul
           className={cn(
-            "grid w-[300px] gap-3 p-4 pb-0 md:w-[500px] lg:w-[600px]",
+            "page-md:w-[500px] page-lg:w-[600px] grid w-[300px] gap-3 p-4 pb-0",
             hasFeeds ? getStyles().ul : "max-w-[300px]"
           )}>
           {hasFeeds ? (
@@ -98,10 +98,10 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
                       <Link
                         className="from-default/50 to-default text-default-foreground flex size-full flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-none select-none focus:shadow-md"
                         href={`${getLinkPrefix()}/${feed.slug}`}>
-                        <div className="mt-4 mb-2 line-clamp-2 text-lg font-medium">
+                        <div className="mt-4 mb-2 line-clamp-2 text-base font-semibold">
                           {feed.translations[0]?.title}
                         </div>
-                        <p className="line-clamp-3 text-sm leading-tight">
+                        <p className="text-muted line-clamp-3 text-sm leading-snug">
                           {feed.translations[0]?.description}
                         </p>
                       </Link>

@@ -19,10 +19,10 @@ const AppLayout = ({
   return (
     <>
       <Background />
-      {/* `--chat-dock-width` is 0 until the dock is open; only then does the page give up room. */}
-      <div className="flex min-h-dvh flex-col pr-[var(--chat-dock-width,0px)] transition-[padding] duration-200 ease-out motion-reduce:transition-none">
+      {/* `--dock-width` is unset until the dock is open; only then does the page give up room. */}
+      <div className="@container/page flex min-h-dvh flex-col pr-[var(--dock-width,0px)] transition-[padding] duration-200 ease-out motion-reduce:transition-none [html[data-dock-resizing]_&]:transition-none">
         <NavMenu locale={locale} />
-        <ScrollYProgress className="fixed top-0 z-999 w-[calc(100%-var(--chat-dock-width,0px))]" />
+        <ScrollYProgress className="fixed top-0 z-999 w-[calc(100%-var(--dock-width,0px))]" />
         <main data-testid="main-content" className="main container">
           {children}
         </main>

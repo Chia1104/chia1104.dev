@@ -18,13 +18,10 @@ import { useSettingsStore } from "@/stores/settings/store";
 
 /** Mounted only while chat is enabled so a disabled chat never swallows the shortcut. */
 const ContactCMD = () => {
-  const isOpen = useChatDockStore((state) => state.isOpen);
-  const setOpen = useChatDockStore((state) => state.setOpen);
+  const toggle = useChatDockStore((state) => state.toggle);
   useCMD(false, {
     cmd: "i",
-    onKeyDown: () => {
-      setOpen(!isOpen);
-    },
+    onKeyDown: toggle,
   });
   return null;
 };

@@ -21,7 +21,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
   return (
     <ViewTransition>
       <section className="flex min-h-screen w-full justify-center">
-        <div className="w-full max-w-4xl px-4 py-8 md:px-6 lg:px-8">
+        <div className="page-md:px-6 page-lg:px-8 w-full max-w-4xl px-4 py-8">
           <EditDraft draftId={Number(parsed.data.id)} />
         </div>
       </section>

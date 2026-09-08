@@ -8,10 +8,8 @@
   "exports": {
     "./preset.css": "./preset.css",
     "./animations.css": "./animations.css",
-    "./shadcn-ui.css": "./shadcn-ui.css",
     "./novel.css": "./novel.css",
-    "./colors.css": "./colors.css",
-    "./typography.css": "./typography.css"
+    "./colors.css": "./colors.css"
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache",
@@ -21,7 +19,6 @@
     "@chiastack/tsconfig": "catalog:chiastack",
     "@egoist/tailwindcss-icons": "catalog:tailwindcss",
     "@iconify/json": "catalog:tailwindcss",
-    "@tailwindcss/typography": "catalog:tailwindcss",
     "tailwindcss": "catalog:tailwindcss",
     "tw-animate-css": "catalog:tailwindcss",
     "typescript": "catalog:"

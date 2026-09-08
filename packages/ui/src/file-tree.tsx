@@ -171,7 +171,7 @@ function getFileIcon(filename: string) {
     return <FileText className="size-4 text-slate-500" />;
   }
 
-  return <File className="text-muted-foreground size-4" />;
+  return <File className="text-muted size-4" />;
 }
 
 export function buildFileTree(
@@ -367,7 +367,7 @@ const TreeNodeComponent = ({
       <span className="shrink-0">{getFileIcon(node.name)}</span>
       <span className="truncate">{node.name}</span>
       {node.size !== undefined && (
-        <span className="text-muted-foreground ml-auto shrink-0 text-[10px] tabular-nums">
+        <span className="text-muted ml-auto shrink-0 text-[10px] tabular-nums">
           {formatBytes(node.size)}
         </span>
       )}
@@ -543,12 +543,12 @@ export function FileTree({
               variant="ghost"
               size="sm"
               onPress={isExpanded ? collapseAll : expandAll}
-              className="text-muted-foreground hover:text-foreground">
+              className="text-muted hover:text-foreground">
               <ChevronsUpDown className="size-3" />
               {isExpanded ? "Collapse" : "Expand"}
             </Button>
           </div>
-          <div className="text-muted-foreground px-1 text-[10px]">
+          <div className="text-muted px-1 text-[10px]">
             {totalFolders} {totalFolders === 1 ? "folder" : "folders"},{" "}
             {totalFiles} {totalFiles === 1 ? "file" : "files"}
           </div>

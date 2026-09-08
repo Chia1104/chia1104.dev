@@ -22,7 +22,7 @@ const STATE_META = {
     label: "Only has a vector from an older index key",
     className: "bg-warning",
   },
-  missing: { label: "No vector at all", className: "bg-muted-foreground" },
+  missing: { label: "No vector at all", className: "bg-muted" },
 } satisfies Record<ChunkState, { label: string; className: string }>;
 
 export const StateDot = ({
@@ -65,7 +65,7 @@ export const CoverageBar = ({
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
-      <div className="text-muted-foreground flex items-center justify-between text-xs">
+      <div className="text-muted flex items-center justify-between text-xs">
         <span>
           {counts.current} / {counts.total} chunks embedded
         </span>
@@ -130,7 +130,7 @@ export const IndexKeyLine = ({
   indexVersion: string;
   className?: string;
 }) => (
-  <p className={cn("text-muted-foreground font-mono text-xs", className)}>
+  <p className={cn("text-muted font-mono text-xs", className)}>
     {model} · {indexVersion}
   </p>
 );

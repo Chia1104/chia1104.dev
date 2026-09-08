@@ -324,14 +324,14 @@ const ComposerToolbar = memo(
             isPending={abort.isPending}
             onPress={() => abort.mutate()}
             size="sm"
-            className="size-7 rounded-full"
+            className="rounded-full"
             variant="danger-soft">
             <Square className="size-3.5 fill-current" />
           </Button>
         ) : (
           <Button
             aria-label={labels.send}
-            className="size-7 rounded-full"
+            className="rounded-full"
             isDisabled={!canPrompt || isEmpty}
             isIconOnly
             onPress={onSend}

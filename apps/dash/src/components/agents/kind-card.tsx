@@ -150,7 +150,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
             </Chip>
             <OverriddenChip isOverridden={overridden} />
             {kind.updatedAt !== null ? (
-              <span className="text-muted-foreground ml-auto text-xs">
+              <span className="text-muted ml-auto text-xs">
                 updated {formatDate(kind.updatedAt)}
               </span>
             ) : null}
@@ -164,7 +164,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
           <section className="flex flex-col gap-4">
             <div>
               <h3 className="text-sm font-medium">New session defaults</h3>
-              <p className="text-muted-foreground text-xs">
+              <p className="text-muted text-xs">
                 Copied onto a session when it is created. Sessions that already
                 exist keep their own settings.
               </p>
@@ -198,7 +198,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
                     value={field.value ?? code.thinkingLevel}
                   />
                   <div className="flex h-7 items-center justify-between">
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-muted text-xs">
                       Default: {code.thinkingLevel}
                     </span>
                     {field.value !== null ? (
@@ -272,7 +272,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
           <section className="flex flex-col gap-4">
             <div>
               <h3 className="text-sm font-medium">Configuration</h3>
-              <p className="text-muted-foreground text-xs">
+              <p className="text-muted text-xs">
                 Read on every turn, so a change reaches every session from its
                 next message.
               </p>

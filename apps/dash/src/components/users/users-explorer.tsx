@@ -155,7 +155,7 @@ export const UsersExplorer = () => {
           onChange={(value) => void setParams({ q: value.trim() || null })}
           value={params.q}>
           <div className="relative">
-            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
+            <SearchIcon className="text-muted pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
             <Input className="pl-8" placeholder="Search name or email..." />
           </div>
         </TextField>
@@ -232,7 +232,7 @@ export const UsersExplorer = () => {
                             <span className="truncate text-sm font-medium">
                               {user.name}
                             </span>
-                            <span className="text-muted-foreground truncate text-xs">
+                            <span className="text-muted truncate text-xs">
                               {user.email}
                             </span>
                           </div>
@@ -248,7 +248,7 @@ export const UsersExplorer = () => {
                         />
                       </Table.Cell>
                       <Table.Cell className="flex items-center">
-                        <span className="text-muted-foreground text-xs">
+                        <span className="text-muted text-xs">
                           {formatDateTime(user.createdAt)}
                         </span>
                       </Table.Cell>

@@ -86,8 +86,8 @@ export const FileExplorer = () => {
             onBrowse={() => setIsDrawerOpen(true)}
           />
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="hidden min-w-0 md:block">
+          <div className="page-md:grid-cols-2 grid grid-cols-1 gap-4">
+            <div className="page-md:block hidden min-w-0">
               <FileTreePanel
                 objects={objects}
                 filteredObjects={filteredObjects}
@@ -108,9 +108,9 @@ export const FileExplorer = () => {
               />
             ) : (
               <>
-                <div className="flex flex-col items-center justify-center gap-3 py-12 text-center md:hidden">
-                  <FolderOpen className="text-muted-foreground size-10 opacity-30" />
-                  <p className="text-muted-foreground text-sm">
+                <div className="page-md:hidden flex flex-col items-center justify-center gap-3 py-12 text-center">
+                  <FolderOpen className="text-muted size-10 opacity-30" />
+                  <p className="text-muted text-sm">
                     Tap Browse to explore your files
                   </p>
                   <Button
@@ -121,8 +121,8 @@ export const FileExplorer = () => {
                   </Button>
                 </div>
                 {objects && objects.length > 0 && (
-                  <div className="hidden items-center justify-center md:flex">
-                    <div className="text-muted-foreground flex flex-col items-center gap-2 opacity-30">
+                  <div className="page-md:flex hidden items-center justify-center">
+                    <div className="text-muted flex flex-col items-center gap-2 opacity-30">
                       <Info className="size-10" />
                       <p className="text-sm">Select a file to view details</p>
                     </div>

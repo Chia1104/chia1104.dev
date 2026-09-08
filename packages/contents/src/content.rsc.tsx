@@ -12,10 +12,7 @@ export const MDXBody = (props: {
 }) => {
   return (
     <DocsBody
-      className={cn(
-        props.className,
-        "prose dark:prose-invert w-full min-w-full lg:w-[70%] lg:min-w-[70%]"
-      )}>
+      className={cn(props.className, "prose dark:prose-invert w-full min-w-0")}>
       <props.MDXContent />
     </DocsBody>
   );
@@ -24,6 +21,7 @@ export const MDXBody = (props: {
 export const Content = async (props: {
   content: GetContentPropsReturn;
   context?: Partial<ContentContextProps>;
+  className?: string;
 }) => {
   const { content, ...rest } = await props.content;
   return (
@@ -32,6 +30,7 @@ export const Content = async (props: {
         MDXContent={
           /* SAFETY: `compileMDX` returns the compiled MDX body component. */ content as MDXContent
         }
+        className={props.className}
       />
     </FeedContent>
   );

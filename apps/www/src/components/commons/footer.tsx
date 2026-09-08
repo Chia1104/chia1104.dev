@@ -42,7 +42,7 @@ const Copyright: FC<{ className?: string }> = ({ className }) => {
   return (
     <span className={className}>
       © <DateFormat date={undefined} format="YYYY" locale={locale} />{" "}
-      <span className="font-bold">{meta.name}</span>
+      <span className="font-medium">{meta.name}</span>
     </span>
   );
 };
@@ -51,7 +51,7 @@ const Logo = () => {
   return (
     <SwooshText
       text="Chia1104"
-      className="text-md w-fit text-start md:text-xl"
+      className="page-md:text-xl w-fit text-start text-base"
       distance={{
         alpha: 7,
         beta: 12,
@@ -85,17 +85,19 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
       <div className="z-40 container mb-10 flex w-full justify-between px-10">
         <CurrentPlaying
           className="bg-white dark:bg-black"
-          hoverCardContentClassName="bg-white/30 dark:bg-black/30 backdrop-blur-lg"
+          experimental={{
+            displayBackgroundColorFromImage: true,
+          }}
         />
-        <div className="flex justify-end md:w-1/3 md:justify-start">
+        <div className="page-md:w-1/3 page-md:justify-start flex justify-end">
           <HugeThanks />
         </div>
       </div>
       <div className="z-20 container flex w-full px-10">
-        <div className="hidden min-h-full w-1/3 flex-col items-start justify-between md:flex">
+        <div className="page-md:flex hidden min-h-full w-1/3 flex-col items-start justify-between">
           <Logo />
           <div className="flex flex-col gap-5">
-            <div className="mt-auto hidden items-center gap-2 md:flex">
+            <div className="page-md:flex mt-auto hidden items-center gap-2">
               <ThemeSelector
                 enableCMD
                 label={t("label")}
@@ -107,6 +109,11 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
                 buttonProps={{
                   variant: "tertiary",
                 }}
+                dropdownProps={{
+                  popover: {
+                    className: "min-w-40",
+                  },
+                }}
               />
               <LocaleSelector />
               <Settings />
@@ -114,8 +121,8 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
             <Copyright />
           </div>
         </div>
-        <div className="flex w-1/2 flex-col items-start md:w-1/3">
-          <p className="mb-3 ml-2 text-lg font-bold">{tNav("pages")}</p>
+        <div className="page-md:w-1/3 flex w-1/2 flex-col items-start">
+          <p className="mb-3 ml-2 text-base font-semibold">{tNav("pages")}</p>
           <Tabs
             aria-label={tNav("pages")}
             className="w-fit"
@@ -143,8 +150,8 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
             </Tabs.ListContainer>
           </Tabs>
         </div>
-        <div className="flex w-1/2 flex-col items-start gap-1 md:w-1/3">
-          <p className="mb-3 ml-2 text-lg font-bold">{tNav("contact")}</p>
+        <div className="page-md:w-1/3 flex w-1/2 flex-col items-start gap-1">
+          <p className="mb-3 ml-2 text-base font-semibold">{tNav("contact")}</p>
           <div className="flex flex-col items-start gap-2">
             {Object.entries(contact).map(([_key, { name, icon, link }]) => (
               <Button key={link} variant="ghost" size="sm">
@@ -160,10 +167,10 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
           </div>
         </div>
       </div>
-      <div className="z-20 container mt-5 flex w-full items-center justify-between px-10 md:hidden">
+      <div className="page-md:hidden z-20 container mt-5 flex w-full items-center justify-between px-10">
         <Logo />
-        <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2 md:hidden">
+        <div className="page-sm:flex-row page-sm:items-center flex flex-col items-end gap-2">
+          <div className="page-md:hidden flex items-center gap-2">
             <ThemeSelector
               label=""
               themeLabel={{
@@ -173,6 +180,11 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
               }}
               buttonProps={{
                 variant: "tertiary",
+              }}
+              dropdownProps={{
+                popover: {
+                  className: "min-w-40",
+                },
               }}
             />
             <LocaleSelector />

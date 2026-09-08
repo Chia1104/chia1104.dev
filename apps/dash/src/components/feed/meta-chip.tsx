@@ -15,9 +15,9 @@ export const MetaChip = ({ embedding, deleted, published }: MetaChipProps) => (
     <Tooltip delay={500}>
       <Tooltip.Trigger>
         {Object.values(embedding ?? {}).some(Boolean) ? (
-          <BoxesIcon className="text-primary size-4" />
+          <BoxesIcon className="text-accent size-4" />
         ) : (
-          <BoxesIcon className="text-muted-foreground size-4" />
+          <BoxesIcon className="text-muted size-4" />
         )}
       </Tooltip.Trigger>
       <Tooltip.Content>
@@ -26,7 +26,7 @@ export const MetaChip = ({ embedding, deleted, published }: MetaChipProps) => (
             {value ? (
               <CircleCheck className="text-success size-2.5" />
             ) : (
-              <Circle className="text-muted-foreground size-2.5" />
+              <Circle className="text-muted size-2.5" />
             )}
             <span className="text-xs">{locale}</span>
           </div>
@@ -47,7 +47,7 @@ export const MetaChip = ({ embedding, deleted, published }: MetaChipProps) => (
     ) : published ? (
       <CircleCheck className="text-success size-4" />
     ) : (
-      <Circle className="text-muted-foreground size-4" />
+      <Circle className="text-muted size-4" />
     )}
   </Chip>
 );

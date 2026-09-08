@@ -58,7 +58,7 @@ const FIELD_VARIANT = "secondary";
 
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <>
-    <dt className="text-muted-foreground">{label}</dt>
+    <dt className="text-muted">{label}</dt>
     <dd className="truncate">{value}</dd>
   </>
 );
@@ -93,7 +93,7 @@ const ConfirmDialog = ({
             <Modal.Heading>{title}</Modal.Heading>
           </Modal.Header>
           <Modal.Body>
-            <p className="text-muted-foreground text-sm">{body}</p>
+            <p className="text-muted text-sm">{body}</p>
           </Modal.Body>
           <Modal.Footer>
             <Button isDisabled={isPending} variant="ghost" onPress={onCancel}>
@@ -178,7 +178,7 @@ const ApiKeyForm = ({
                   </Checkbox.Control>
                   <div className="flex flex-col gap-0.5">
                     <span className="font-mono text-xs">{scope}</span>
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-muted text-xs">
                       {SCOPE_HINT[scope]}
                     </span>
                   </div>

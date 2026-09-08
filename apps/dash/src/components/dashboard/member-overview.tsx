@@ -33,7 +33,7 @@ export const MemberOverview = () => {
   const percent = fraction === null ? null : Math.round(fraction * 100);
 
   return (
-    <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+    <div className="page-md:grid-cols-2 grid w-full grid-cols-1 gap-4">
       <Card className="w-full">
         <Card.Header>
           <Card.Title className="text-sm">Profile</Card.Title>
@@ -45,12 +45,10 @@ export const MemberOverview = () => {
           </Avatar>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="truncate text-sm font-medium">{user?.name}</span>
-            <span className="text-muted-foreground truncate text-xs">
-              {user?.email}
-            </span>
+            <span className="text-muted truncate text-xs">{user?.email}</span>
           </div>
           <Link
-            className="text-muted-foreground hover:text-foreground text-sm"
+            className="text-muted hover:text-foreground text-sm"
             href="/settings">
             Edit
           </Link>
@@ -69,7 +67,7 @@ export const MemberOverview = () => {
           {usage.error ? (
             <p className="text-danger text-sm">{usage.error.message}</p>
           ) : !standing || percent === null ? (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted text-sm">
               No weekly allowance applies to your account.
             </p>
           ) : (
@@ -78,18 +76,18 @@ export const MemberOverview = () => {
                 color={percent >= 100 ? "danger" : "accent"}
                 size="sm"
                 value={percent}>
-                <Label className="text-muted-foreground text-xs font-normal">
+                <Label className="text-muted text-xs font-normal">
                   {formatUsd(standing.usedMicros / MICROS_PER_USD)} of{" "}
                   {formatUsd((standing.limitMicros ?? 0) / MICROS_PER_USD)}
                 </Label>
-                <ProgressBar.Output className="text-muted-foreground text-xs font-normal">
+                <ProgressBar.Output className="text-muted text-xs font-normal">
                   {percent}%
                 </ProgressBar.Output>
                 <ProgressBar.Track>
                   <ProgressBar.Fill />
                 </ProgressBar.Track>
               </ProgressBar>
-              <span className="text-muted-foreground text-xs">
+              <span className="text-muted text-xs">
                 Resets {formatDateTime(standing.period.end)} (
                 {standing.timeZone})
               </span>

@@ -7,7 +7,7 @@ import { Button, Drawer, Spinner } from "@heroui/react";
 import { Bot } from "lucide-react";
 import { useMediaQuery } from "usehooks-ts";
 
-import { cn } from "@chia/ui/utils/cn.util";
+import { DockActions, DockShell } from "@chia/ui/dock";
 
 import { DrawerPanel } from "@/components/commons/drawer-panel";
 
@@ -28,17 +28,24 @@ const AgentPanel = dynamic(
 
 /** Wide enough to give up a column; under this the agent opens over the page instead. */
 const DOCK_QUERY = "(min-width: 1280px)";
-const DOCK_WIDTH = "w-[26rem]";
+const DEFAULT_WIDTH = 416;
+/** The sidebar sits inside the page; this keeps the editor beside it usable. */
+const PAGE_MIN_WIDTH = 640;
+const DOCK_LABELS = {
+  maximize: "Maximize the writing agent",
+  restore: "Restore the writing agent",
+  close: "Close the writing agent",
+};
 
 export const AgentDockTrigger = () => {
-  const isOpen = useAgentDock((state) => state.isOpen);
-  const setOpen = useAgentDock((state) => state.setOpen);
+  const isOpen = useAgentDock((state) => state.mode !== "closed");
+  const toggle = useAgentDock((state) => state.toggle);
   return (
     <Button
       aria-expanded={isOpen}
       aria-label="Writing agent"
       isIconOnly
-      onPress={() => setOpen(!isOpen)}
+      onPress={toggle}
       size="sm"
       variant={isOpen ? "secondary" : "ghost"}>
       <Bot className="size-4" />
@@ -51,9 +58,10 @@ export const AgentDockTrigger = () => {
  * a drawer over the page on anything narrower.
  */
 export const AgentDock = () => {
-  const isOpen = useAgentDock((state) => state.isOpen);
-  const setOpen = useAgentDock((state) => state.setOpen);
+  const mode = useAgentDock((state) => state.mode);
+  const setMode = useAgentDock((state) => state.setMode);
   const isDocked = useMediaQuery(DOCK_QUERY, { initializeWithValue: false });
+  const isOpen = mode !== "closed";
 
   useEffect(() => {
     void agentDockStore.persist.rehydrate();
@@ -61,7 +69,9 @@ export const AgentDock = () => {
 
   if (!isDocked) {
     return (
-      <Drawer.Backdrop isOpen={isOpen} onOpenChange={setOpen}>
+      <Drawer.Backdrop
+        isOpen={isOpen}
+        onOpenChange={(open) => setMode(open ? "open" : "closed")}>
         <DrawerPanel
           className="flex flex-col p-0"
           classNames={{
@@ -81,23 +91,27 @@ export const AgentDock = () => {
        * The row gives up the width and the panel itself is pinned to the viewport, the same split
        * the sidebar uses. An overlay that locks the page's scroll cannot drag a fixed panel with it.
        */}
-      <div
-        className={cn(
-          "shrink-0 transition-[width] duration-200 ease-out motion-reduce:transition-none",
-          isOpen ? DOCK_WIDTH : "w-0"
-        )}
-      />
-      <aside
-        aria-label="Writing agent"
-        className={cn(
-          // `bg-overlay` is the drawer's own surface, so the panel reads the same either way.
-          "bg-overlay fixed inset-y-0 right-0 z-20 overflow-hidden transition-[width] duration-200 ease-out motion-reduce:transition-none",
-          isOpen ? `${DOCK_WIDTH} border-border border-l` : "w-0"
-        )}>
-        <div className={cn("flex h-full flex-col", DOCK_WIDTH)}>
-          {isOpen ? <AgentPanel /> : null}
-        </div>
-      </aside>
+      <div className="w-(--dock-width,0px) shrink-0 transition-[width] duration-200 ease-out motion-reduce:transition-none [html[data-dock-resizing]_&]:transition-none" />
+      <DockShell
+        defaultWidth={DEFAULT_WIDTH}
+        label="Writing agent"
+        mode={mode}
+        onModeChange={setMode}
+        pageMinWidth={PAGE_MIN_WIDTH}
+        resizeLabel="Resize the writing agent"
+        storageKey="chia.dash.agent-dock.width">
+        {isOpen ? (
+          <AgentPanel
+            headerActions={
+              <DockActions
+                labels={DOCK_LABELS}
+                mode={mode}
+                onModeChange={setMode}
+              />
+            }
+          />
+        ) : null}
+      </DockShell>
     </>
   );
 };

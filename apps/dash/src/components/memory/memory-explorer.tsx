@@ -169,7 +169,7 @@ const PendingLessons = () => {
               key={lesson.id}
               className="border-border flex flex-col gap-2 rounded-lg border p-3">
               <p className="text-sm font-medium">{lesson.title}</p>
-              <p className="text-muted-foreground text-xs">{lesson.preview}</p>
+              <p className="text-muted text-xs">{lesson.preview}</p>
               <div className="flex items-center gap-2">
                 <Button
                   isPending={
@@ -192,7 +192,7 @@ const PendingLessons = () => {
                   Archive
                 </Button>
                 {lesson.sessionId ? (
-                  <span className="text-muted-foreground ml-auto font-mono text-xs">
+                  <span className="text-muted ml-auto font-mono text-xs">
                     from {lesson.sessionId.slice(0, 8)}…
                   </span>
                 ) : null}
@@ -269,7 +269,7 @@ const DeleteConfirm = ({
             <Modal.Heading>Delete this memory?</Modal.Heading>
           </Modal.Header>
           <Modal.Body>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted text-sm">
               It leaves the index on the next run and the agent can no longer
               find it. Archive instead if you may want it back.
             </p>
@@ -359,7 +359,7 @@ const MemoryEditor = ({
         <StatusChip status={memory.status} />
         {memory.sourceUrl ? (
           <a
-            className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs"
+            className="text-muted hover:text-foreground flex items-center gap-1 text-xs"
             href={memory.sourceUrl}
             rel="noreferrer noopener"
             target="_blank">
@@ -370,11 +370,11 @@ const MemoryEditor = ({
       </div>
 
       <dl className="grid grid-cols-2 gap-2 text-xs">
-        <dt className="text-muted-foreground">Session</dt>
+        <dt className="text-muted">Session</dt>
         <dd className="truncate font-mono">{memory.sessionId ?? "—"}</dd>
-        <dt className="text-muted-foreground">Created</dt>
+        <dt className="text-muted">Created</dt>
         <dd>{formatDate(memory.createdAt)}</dd>
-        <dt className="text-muted-foreground">Updated</dt>
+        <dt className="text-muted">Updated</dt>
         <dd>{formatDate(memory.updatedAt)}</dd>
       </dl>
 
@@ -429,7 +429,7 @@ const MemoryEditor = ({
       ) : (
         <>
           <div className="flex flex-col gap-1">
-            <span className="text-muted-foreground text-xs">Content</span>
+            <span className="text-muted text-xs">Content</span>
             <Card variant="tertiary" className="rounded-md p-3">
               <Card.Content>
                 <Markdown text={memory.content} />
@@ -590,7 +590,7 @@ export const MemoryExplorer = () => {
           onChange={(value) => void setParams({ q: value.trim() || null })}
           value={params.q}>
           <div className="relative">
-            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
+            <SearchIcon className="text-muted pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
             <Input className="pl-8" placeholder="Search title and content..." />
           </div>
         </TextField>
@@ -685,14 +685,14 @@ export const MemoryExplorer = () => {
                       </Button>
                     </Table.Cell>
                     <Table.Cell>
-                      <span className="text-muted-foreground line-clamp-1 max-w-80 text-xs">
+                      <span className="text-muted line-clamp-1 max-w-80 text-xs">
                         {memory.preview}
                       </span>
                     </Table.Cell>
                     <Table.Cell>
                       {memory.sourceUrl ? (
                         <a
-                          className="text-muted-foreground hover:text-foreground text-xs"
+                          className="text-muted hover:text-foreground text-xs"
                           href={memory.sourceUrl}
                           rel="noreferrer noopener"
                           target="_blank">
@@ -703,7 +703,7 @@ export const MemoryExplorer = () => {
                       )}
                     </Table.Cell>
                     <Table.Cell>
-                      <span className="text-muted-foreground text-xs">
+                      <span className="text-muted text-xs">
                         {formatDate(memory.updatedAt)}
                       </span>
                     </Table.Cell>

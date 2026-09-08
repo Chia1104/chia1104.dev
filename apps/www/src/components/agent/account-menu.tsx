@@ -110,7 +110,7 @@ export const AccountMenu = ({ user }: { user: Session["user"] }) => {
               fullWidth
               variant="ghost"
               size="sm"
-              className="h-8 min-h-8 justify-start gap-2 px-2 text-xs"
+              className="justify-start gap-2 px-2"
               onPress={() => openPanel("keys")}>
               <span
                 aria-hidden
@@ -126,7 +126,7 @@ export const AccountMenu = ({ user }: { user: Session["user"] }) => {
               fullWidth
               variant="ghost"
               size="sm"
-              className="h-8 min-h-8 justify-start gap-2 px-2 text-xs"
+              className="justify-start gap-2 px-2"
               onPress={() => openPanel("usage")}>
               <span
                 aria-hidden
@@ -142,7 +142,7 @@ export const AccountMenu = ({ user }: { user: Session["user"] }) => {
               <Button
                 fullWidth
                 size="sm"
-                className="h-8 min-h-8 justify-start gap-2 px-2 text-xs"
+                className="justify-start gap-2 px-2"
                 isPending={isPending}
                 onPress={user.isAnonymous ? () => openPanel("signIn") : signOut}
                 variant="ghost">
@@ -183,7 +183,6 @@ export const AccountMenu = ({ user }: { user: Session["user"] }) => {
                   isPending={isPending}
                   onPress={() => signIn("github")}
                   size="sm"
-                  className="h-8 min-h-8 px-3 text-xs"
                   variant="outline">
                   <svg
                     aria-hidden
@@ -200,7 +199,6 @@ export const AccountMenu = ({ user }: { user: Session["user"] }) => {
                   isPending={isPending}
                   onPress={() => signIn("google")}
                   size="sm"
-                  className="h-8 min-h-8 px-3 text-xs"
                   variant="outline">
                   <svg
                     aria-hidden
