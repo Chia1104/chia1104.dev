@@ -9,7 +9,7 @@ import type { Monitors, Monitor } from "@chia/api/betterstack/types";
 
 export const LoadingFallback = () => {
   return (
-    <Chip className="text-default-500 border-none px-0" color="default">
+    <Chip className="text-muted border-none px-0" color="default">
       <Skeleton className="h-4 w-20 rounded-full" />
     </Chip>
   );
@@ -17,7 +17,7 @@ export const LoadingFallback = () => {
 
 export const ErrorFallback = () => {
   return (
-    <Chip className="text-default-500 border-none px-0" color="danger">
+    <Chip className="text-muted border-none px-0" color="danger">
       Service Error
     </Chip>
   );
@@ -109,7 +109,7 @@ export const StatusChip = ({ status }: { status: Monitors }) => {
   return (
     <Tooltip>
       <Tooltip.Trigger>
-        <Chip className="text-default-500 border-none" color={current.color}>
+        <Chip className="text-muted border-none" color={current.color}>
           <Link
             href="https://status.chia1104.dev/"
             target="_blank"
@@ -124,7 +124,7 @@ export const StatusChip = ({ status }: { status: Monitors }) => {
             <li key={monitor.id} className="flex flex-col gap-1">
               <span>{monitor.attributes.pronounceable_name}</span>
               <Chip
-                className="text-default-500 border-none"
+                className="text-muted border-none"
                 color={getColorAndLabel(monitor).color}>
                 {getColorAndLabel(monitor).label}
               </Chip>

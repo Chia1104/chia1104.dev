@@ -54,7 +54,7 @@ export const ApiKeysExplorer = () => {
   return (
     <div className="flex w-full flex-col gap-6">
       <div className="flex flex-wrap items-center gap-3">
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted text-xs">
           Send a key as <span className="font-mono">x-ch-api-key</span>. It only
           opens the routes its scopes name.
         </p>
@@ -111,7 +111,7 @@ export const ApiKeysExplorer = () => {
                           <span className="truncate text-sm font-medium">
                             {item.name ?? "Untitled"}
                           </span>
-                          <span className="text-muted-foreground truncate font-mono text-xs">
+                          <span className="text-muted truncate font-mono text-xs">
                             {item.start ?? "ch_"}…
                           </span>
                         </div>
@@ -124,14 +124,14 @@ export const ApiKeysExplorer = () => {
                       <KeyStateChip state={stateOf(item)} />
                     </Table.Cell>
                     <Table.Cell>
-                      <span className="text-muted-foreground text-xs">
+                      <span className="text-muted text-xs">
                         {item.lastRequest
                           ? formatDateTime(item.lastRequest)
                           : "Never"}
                       </span>
                     </Table.Cell>
                     <Table.Cell>
-                      <span className="text-muted-foreground text-xs">
+                      <span className="text-muted text-xs">
                         {formatDateTime(item.createdAt)}
                       </span>
                     </Table.Cell>

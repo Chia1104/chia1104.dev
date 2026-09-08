@@ -158,9 +158,7 @@ const SearchForm = ({ isOpen, onOpenChange }: SearchFormProps) => {
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium">{hit.title}</p>
               {hit.excerpt && (
-                <p className="text-muted-foreground line-clamp-2 text-xs">
-                  {hit.excerpt}
-                </p>
+                <p className="text-muted line-clamp-2 text-xs">{hit.excerpt}</p>
               )}
             </div>
           </CommandItem>

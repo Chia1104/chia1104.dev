@@ -109,7 +109,7 @@ export const UserMessage = ({
       </div>
     ) : null}
     <Expandable
-      className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-3 py-2.5 text-sm leading-6"
+      className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-2 py-1.5 text-sm leading-6"
       maxHeight={USER_MESSAGE_MAX_HEIGHT}
       toggleClassName="-mb-1 justify-end pt-1">
       <div className="whitespace-pre-wrap">{text}</div>

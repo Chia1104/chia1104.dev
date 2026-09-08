@@ -42,7 +42,7 @@ const Copyright: FC<{ className?: string }> = ({ className }) => {
   return (
     <span className={className}>
       © <DateFormat date={undefined} format="YYYY" locale={locale} />{" "}
-      <span className="font-bold">{meta.name}</span>
+      <span className="font-medium">{meta.name}</span>
     </span>
   );
 };
@@ -51,7 +51,7 @@ const Logo = () => {
   return (
     <SwooshText
       text="Chia1104"
-      className="text-md page-md:text-xl w-fit text-start"
+      className="page-md:text-xl w-fit text-start text-base"
       distance={{
         alpha: 7,
         beta: 12,
@@ -85,7 +85,9 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
       <div className="z-40 container mb-10 flex w-full justify-between px-10">
         <CurrentPlaying
           className="bg-white dark:bg-black"
-          hoverCardContentClassName="bg-white/30 dark:bg-black/30 backdrop-blur-lg"
+          experimental={{
+            displayBackgroundColorFromImage: true,
+          }}
         />
         <div className="page-md:w-1/3 page-md:justify-start flex justify-end">
           <HugeThanks />
@@ -115,7 +117,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
           </div>
         </div>
         <div className="page-md:w-1/3 flex w-1/2 flex-col items-start">
-          <p className="mb-3 ml-2 text-lg font-bold">{tNav("pages")}</p>
+          <p className="mb-3 ml-2 text-base font-semibold">{tNav("pages")}</p>
           <Tabs
             aria-label={tNav("pages")}
             className="w-fit"
@@ -144,7 +146,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
           </Tabs>
         </div>
         <div className="page-md:w-1/3 flex w-1/2 flex-col items-start gap-1">
-          <p className="mb-3 ml-2 text-lg font-bold">{tNav("contact")}</p>
+          <p className="mb-3 ml-2 text-base font-semibold">{tNav("contact")}</p>
           <div className="flex flex-col items-start gap-2">
             {Object.entries(contact).map(([_key, { name, icon, link }]) => (
               <Button key={link} variant="ghost" size="sm">

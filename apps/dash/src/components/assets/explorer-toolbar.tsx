@@ -33,7 +33,7 @@ export const ExplorerToolbar = ({
         onChange={onSearchChange}
         className="page-md:block relative hidden min-w-0 flex-1">
         <div className="relative">
-          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
+          <Search className="text-muted pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
           <Input placeholder="Search files..." className="pl-8" />
         </div>
       </TextField>

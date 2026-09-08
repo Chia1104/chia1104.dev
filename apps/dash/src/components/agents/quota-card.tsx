@@ -89,7 +89,7 @@ export const QuotaCard = ({ quota }: { quota: QuotaAdmin }) => {
             <Card.Title className="text-base">Weekly allowance</Card.Title>
             <OverriddenChip isOverridden={overridden} />
             {quota.updatedAt !== null ? (
-              <span className="text-muted-foreground ml-auto text-xs">
+              <span className="text-muted ml-auto text-xs">
                 updated {formatDate(quota.updatedAt)}
               </span>
             ) : null}

@@ -11,18 +11,13 @@ import {
   useTransition,
 } from "react";
 
+import { ProgressBar, Tooltip } from "@heroui/react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { useInterval } from "usehooks-ts";
 
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@chia/ui/hover-card";
 import Image from "@chia/ui/image";
 import Marquee from "@chia/ui/marquee";
-import { Progress } from "@chia/ui/progress";
 import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 import { getBrightness } from "@chia/ui/utils/get-brightness";
@@ -35,7 +30,7 @@ type CurrentPlayingResponse = RouterOutputs["spotify"]["playing"];
 
 interface ExtendsProps {
   className?: string;
-  hoverCardContentClassName?: string;
+  tooltipContentClassName?: string;
   experimental?: {
     displayBackgroundColorFromImage?: boolean;
   };
@@ -146,11 +141,17 @@ const getTextColorClass = (
   return isLight ? "text-dark" : "text-light";
 };
 
-const ProgressBar = ({ durationMs }: { durationMs: number }) => {
+const TrackProgress = ({ durationMs }: { durationMs: number }) => {
   const [progress] = useProgressContext();
   const percentage = (progress / (durationMs || 1)) * 100;
 
-  return <Progress value={percentage} className="h-1" />;
+  return (
+    <ProgressBar aria-label="Playback progress" size="sm" value={percentage}>
+      <ProgressBar.Track className="c-bg-gradient-yellow-to-pink">
+        <ProgressBar.Fill className="c-bg-gradient-purple-to-pink" />
+      </ProgressBar.Track>
+    </ProgressBar>
+  );
 };
 
 const AlbumImage = ({
@@ -198,7 +199,7 @@ const SongTitle = ({
     <h4
       className={cn(
         "mt-0 mb-2",
-        shouldUseMarquee ? "text-md" : "line-clamp-1 text-lg",
+        shouldUseMarquee ? "text-base" : "line-clamp-1 text-lg",
         textColorClass
       )}>
       {name}
@@ -248,7 +249,7 @@ const Card = ({
   isFetching,
   refetch,
   className,
-  hoverCardContentClassName,
+  tooltipContentClassName,
   experimental,
 }: UseQueryResult<CurrentPlayingResponse, Error> & ExtendsProps) => {
   const enableColorExtraction =
@@ -281,33 +282,31 @@ const Card = ({
       : undefined;
 
   return (
-    <HoverCard>
-      <HoverCardTrigger asChild className="prose dark:prose-invert z-10">
-        <div
-          data-testid="current-playing"
-          className={cn(
-            "c-bg-third border-secondary/50 not-prose relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
-            className
-          )}>
-          <span className="i-mdi-spotify size-5 text-[#1DB954]" />
-          {isLoading ? (
-            <div className="c-bg-primary h-5 w-20 animate-pulse rounded-full" />
-          ) : (
-            <PlayingLink data={data} />
-          )}
-        </div>
-      </HoverCardTrigger>
+    <Tooltip delay={300}>
+      <Tooltip.Trigger
+        data-testid="current-playing"
+        className={cn(
+          "c-bg-third border-default/50 prose dark:prose-invert not-prose relative z-10 line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
+          className
+        )}>
+        <span className="i-mdi-spotify size-5 text-[#1DB954]" />
+        {isLoading ? (
+          <div className="c-bg-primary h-5 w-20 animate-pulse rounded-full" />
+        ) : (
+          <PlayingLink data={data} />
+        )}
+      </Tooltip.Trigger>
       {data && (
-        <HoverCardContent
+        <Tooltip.Content
           style={{ backgroundColor }}
           className={cn(
-            "border-secondary/50 not-prose z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
+            "border-default/50 not-prose z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
             isError &&
               "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54/0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54/0.3)]",
             enableColorExtraction && !isPending
               ? "backdrop-blur-lg"
               : "c-bg-third",
-            hoverCardContentClassName
+            tooltipContentClassName
           )}>
           <div className="flex items-center gap-5">
             <AlbumImage data={data} onLoad={handleImageLoad} />
@@ -329,17 +328,17 @@ const Card = ({
               </p>
             </div>
           </div>
-          {isSuccess && <ProgressBar durationMs={data.item.duration_ms} />}
-        </HoverCardContent>
+          {isSuccess && <TrackProgress durationMs={data.item.duration_ms} />}
+        </Tooltip.Content>
       )}
-    </HoverCard>
+    </Tooltip>
   );
 };
 
 export const LoadingSkeleton = ({ className }: { className?: string }) => (
   <div
     className={cn(
-      "c-bg-third border-secondary/50 not-prose relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
+      "c-bg-third border-default/50 not-prose relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
       className
     )}>
     <span className="i-mdi-spotify size-5 text-[#1DB954]" />
@@ -364,7 +363,7 @@ export const CurrentPlaying = ({
   children,
   queryOptions,
   className,
-  hoverCardContentClassName,
+  tooltipContentClassName,
   experimental,
 }: Props) => {
   const result = useQuery(
@@ -388,7 +387,7 @@ export const CurrentPlaying = ({
       <Card
         {...result}
         className={className}
-        hoverCardContentClassName={hoverCardContentClassName}
+        tooltipContentClassName={tooltipContentClassName}
         experimental={experimental}
       />
     </ProgressProvider>

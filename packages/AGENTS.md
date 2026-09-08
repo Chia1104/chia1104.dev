@@ -47,6 +47,8 @@ Authorization belongs in `service-kit/src/policies`. Bind policies through `runP
 - `kv`: shared Keyv adapters, the Drizzle cache and rate-limiter integration.
 - `ai`: embeddings, chunking, content tools, provider model creation and API-key crypto. Keep provider SDKs lazily imported. `@chia/ai/provider` is the only definition of the vendors, the keys a caller may bring (each vendor or the gateway) and their cookie names; `@chia/ai/house-models` is the only place a house-billed model id is written, keyed by role. `@chia/ai/env` owns `EMBEDDING_PROVIDER`, `EMBEDDING_API_KEY` and `OLLAMA_BASE_URL`.
 - `meta`: site metadata authored in Pkl, generated as `meta.json`.
+- `themes`: HeroUI tokens are the only colour tokens; shadcn names (`primary`, `card`, `popover`, `muted-foreground`, `destructive`, `ring`) do not exist. `base.css` holds the font tokens, the token map, the Fumadocs `--color-fd-*` mapping, the compact HeroUI density overrides, the prose heading scale and base resets; `default.css` and `cyan.css` assign HeroUI colour, radius, sidebar and chart tokens only. Density is set once there through HeroUI BEM classes; call sites choose `size` and must not restate control heights in `className`. UI text follows the same scale as prose: `text-xl` section titles, `text-lg` card titles, `text-base` list titles, `text-sm text-muted` meta, weight 600 for headings and 500 for titles.
+- `ui`: HeroUI is the component library. Remaining radix/shadcn components exist only where HeroUI has no equivalent (`cmd`, `navigation-menu`, `sidebar`, `field`, `dialog`, `sheet`, `empty`); do not add new ones.
 
 ## Agent packages
 

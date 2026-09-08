@@ -36,7 +36,7 @@ export const CopyButton = ({
           isIconOnly
           size="sm"
           {...props}
-          className={cn("text-default-600", props.className)}
+          className={cn("text-muted", props.className)}
           onPress={(e) => {
             copy(content);
             onCopy?.(e);

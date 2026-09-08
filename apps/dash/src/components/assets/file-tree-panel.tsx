@@ -36,10 +36,10 @@ export const FileTreePanel = ({
   if (filteredObjects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-        <Search className="text-muted-foreground size-8 opacity-30" />
+        <Search className="text-muted size-8 opacity-30" />
         <div>
           <p className="text-foreground text-sm font-medium">No results</p>
-          <p className="text-muted-foreground text-xs">
+          <p className="text-muted text-xs">
             No files match &ldquo;{search}&rdquo;
           </p>
         </div>

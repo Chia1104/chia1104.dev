@@ -123,9 +123,7 @@ export function LoginForm(props: FormProps) {
           </SubmitForm>
           <span className="flex items-center gap-2">
             <Separator className="flex-1" />
-            <span className="text-muted-foreground text-sm">
-              Or continue with
-            </span>
+            <span className="text-muted text-sm">Or continue with</span>
             <Separator className="flex-1" />
           </span>
           <Fieldset.Actions className="flex flex-col gap-2">

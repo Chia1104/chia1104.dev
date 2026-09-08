@@ -30,7 +30,7 @@ export const ComingSoon = () => {
         <Chip color="accent" size="sm" variant="soft">
           <Chip.Label>{t("badge")}</Chip.Label>
         </Chip>
-        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+        <h2 className="text-foreground text-xl font-semibold tracking-tight">
           {t("title")}
         </h2>
         <p className="text-muted max-w-[38ch] text-sm leading-relaxed">

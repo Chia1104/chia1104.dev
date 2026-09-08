@@ -96,7 +96,7 @@ const ChunkTable = ({ chunks }: { chunks: ResourceStatus["chunks"] }) => (
                 <Table.Cell>{chunk.kind}</Table.Cell>
                 <Table.Cell>{chunk.chunkIndex}</Table.Cell>
                 <Table.Cell>
-                  <span className="text-muted-foreground line-clamp-1 text-xs">
+                  <span className="text-muted line-clamp-1 text-xs">
                     {chunk.headingPath ?? "—"}
                   </span>
                 </Table.Cell>
@@ -302,7 +302,7 @@ export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
           </Drawer.Header>
           <Drawer.Body className="flex flex-col gap-6">
             {resources.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted text-sm">
                 This feed has no translations to index.
               </p>
             ) : (

@@ -4,8 +4,6 @@ import { useLayoutEffect, useRef } from "react";
 
 import { ListBox } from "@heroui/react";
 
-import { cn } from "@chia/ui/utils/cn.util";
-
 import type { AgentLabels } from "./labels.ts";
 import type { SlashMenuItem } from "./slash-command.ts";
 
@@ -58,10 +56,9 @@ export const SlashMenu = ({
           <ListBox.Item
             key={item.id}
             ref={item.id === activeId ? activeOptionRef : undefined}
-            className={cn(
-              "min-h-8 gap-3 px-2.5 py-1.5",
-              item.id === activeId && "bg-surface-secondary"
-            )}
+            className={
+              item.id === activeId ? "bg-surface-secondary" : undefined
+            }
             id={item.id}
             onHoverStart={() => onActiveChange(item.id)}
             textValue={`${item.label} ${item.description}`}>

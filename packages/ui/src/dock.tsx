@@ -201,7 +201,7 @@ export const DockShell = ({
           aria-valuemax={maxWidth}
           aria-valuemin={minWidth}
           aria-valuenow={width}
-          className="hover:bg-accent focus-visible:bg-accent absolute inset-y-0 left-0 w-1.5 cursor-col-resize touch-none transition-colors outline-none"
+          className="hover:bg-default focus-visible:bg-default absolute inset-y-0 left-0 w-1.5 cursor-col-resize touch-none transition-colors outline-none"
           onDoubleClick={() => setWidth(defaultWidth)}
           onKeyDown={onKeyDown}
           onPointerCancel={onPointerUp}

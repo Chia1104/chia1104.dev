@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState, useRef } from "react";
 
-import { Button } from "@heroui/react";
+import { Button, ProgressBar } from "@heroui/react";
 import { Modal } from "@heroui/react";
 import { Spinner } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,7 +19,6 @@ import {
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { Progress } from "@chia/ui/progress";
 import { cn } from "@chia/ui/utils/cn.util";
 import { useFormRules } from "@chia/ui/utils/use-form-rules";
 
@@ -352,10 +351,10 @@ export function UploadAssets({
 
   const getFileTypeIcon = useCallback((type: string) => {
     if (type === "application/pdf") {
-      return <FileText className="text-muted-foreground size-4" />;
+      return <FileText className="text-muted size-4" />;
     }
     if (type.startsWith("video/")) {
-      return <FileVideo className="text-muted-foreground size-4" />;
+      return <FileVideo className="text-muted size-4" />;
     }
     return null;
   }, []);
@@ -380,7 +379,7 @@ export function UploadAssets({
                       variant="ghost"
                       size="sm"
                       onPress={handleClear}
-                      className="text-muted-foreground">
+                      className="text-muted">
                       Clear All
                     </Button>
                   )}
@@ -396,8 +395,8 @@ export function UploadAssets({
                     className={cn(
                       "border-border rounded-lg border-2 border-dashed p-6 transition-colors",
                       isDragging
-                        ? "border-primary bg-primary/5"
-                        : "hover:border-primary/50"
+                        ? "border-accent bg-accent/5"
+                        : "hover:border-accent/50"
                     )}>
                     <input
                       ref={fileInputRef}
@@ -414,20 +413,20 @@ export function UploadAssets({
                       <Upload
                         className={cn(
                           "size-8 transition-colors",
-                          isDragging ? "text-primary" : "text-muted-foreground"
+                          isDragging ? "text-accent" : "text-muted"
                         )}
                       />
                       <div className="text-center">
                         <p
                           className={cn(
                             "text-sm font-medium transition-colors",
-                            isDragging && "text-primary"
+                            isDragging && "text-accent"
                           )}>
                           {isDragging
                             ? "Drop files here to upload"
                             : "Click or drag files here to upload"}
                         </p>
-                        <p className="text-muted-foreground text-xs">
+                        <p className="text-muted text-xs">
                           Image (max 10MB) · PDF (max 50MB) · Video (max 500MB)
                         </p>
                       </div>
@@ -436,9 +435,7 @@ export function UploadAssets({
 
                   {stats.total > 0 && (
                     <div className="flex items-center gap-4 text-sm">
-                      <span className="text-muted-foreground">
-                        Total: {stats.total}
-                      </span>
+                      <span className="text-muted">Total: {stats.total}</span>
                       {stats.success > 0 && (
                         <span className="text-success">
                           Success: {stats.success}
@@ -450,7 +447,7 @@ export function UploadAssets({
                         </span>
                       )}
                       {(stats.uploading > 0 || stats.pending > 0) && (
-                        <span className="text-muted-foreground">
+                        <span className="text-muted">
                           Uploading: {stats.uploading + stats.pending}
                         </span>
                       )}
@@ -487,7 +484,7 @@ export function UploadAssets({
                                   <X className="size-4" />
                                 </Button>
                               </div>
-                              <div className="text-muted-foreground mt-1 flex items-center gap-2 text-xs">
+                              <div className="text-muted mt-1 flex items-center gap-2 text-xs">
                                 <span>{formatFileSize(item.size)}</span>
                                 {item.status === "uploading" && (
                                   <span>• {item.progress}%</span>
@@ -498,7 +495,11 @@ export function UploadAssets({
 
                           {item.status === "uploading" && (
                             <div className="mt-2">
-                              <Progress value={item.progress} />
+                              <ProgressBar
+                                aria-label="Upload progress"
+                                size="sm"
+                                value={item.progress}
+                              />
                             </div>
                           )}
 

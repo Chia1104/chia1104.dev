@@ -70,7 +70,7 @@ export const ContextUsage = () => {
       <Popover.Trigger>
         <Button
           aria-label={`${labels.contextWindow}: ${percentage}%`}
-          className="size-7 rounded-full p-1"
+          className="rounded-full p-1"
           isIconOnly
           size="sm"
           variant="ghost">

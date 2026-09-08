@@ -52,7 +52,7 @@ export function FeedSearchDialog({ locale }: FeedSearchDialogProps) {
           {query.trim().length >= 2 ? (
             <FeedSearch query={query} locale={locale} onSelect={close} />
           ) : (
-            <p className="text-muted-foreground px-4 py-6 text-center text-sm">
+            <p className="text-muted px-4 py-6 text-center text-sm">
               {t("search-hint")}
             </p>
           )}

@@ -59,7 +59,7 @@ export const AgentAdmin = () => {
         <section className="flex flex-col gap-4">
           <div>
             <h2 className="text-lg font-semibold">Agents</h2>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted text-xs">
               One card per registered agent kind.
             </p>
           </div>
@@ -71,14 +71,14 @@ export const AgentAdmin = () => {
         <section className="flex flex-col gap-4">
           <div>
             <h2 className="text-lg font-semibold">Tasks</h2>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted text-xs">
               The one-shot model calls that run beside a session — naming it,
               compacting it, learning from it.
             </p>
           </div>
           {[...groups.entries()].map(([kind, list]) => (
             <div key={kind ?? "shared"} className="flex flex-col gap-3">
-              <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+              <h3 className="text-muted text-xs font-medium tracking-wide uppercase">
                 {labelOfKind(kind)}
               </h3>
               {list.map((task) => (
@@ -95,7 +95,7 @@ export const AgentAdmin = () => {
         <section className="flex flex-col gap-4">
           <div>
             <h2 className="text-lg font-semibold">Usage quota</h2>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted text-xs">
               How much house spend a signed-in visitor may run up per week. You
               are never limited.
             </p>

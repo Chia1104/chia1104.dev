@@ -213,7 +213,7 @@ const PublicChatSessions = ({ headerActions }: PublicChatProps) => {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="border-border flex min-w-0 shrink-0 items-center gap-2 px-3 py-1.5">
+      <div className="border-border flex h-15.75 min-w-0 shrink-0 items-center gap-2 px-3 py-1.5">
         <SessionTabs
           activeId={selectedSessionId}
           className="min-w-0 flex-1"

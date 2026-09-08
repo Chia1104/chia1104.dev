@@ -8,7 +8,6 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
 
 import { FeedType } from "@chia/db/types";
-import CHCard from "@chia/ui/card";
 import DateFormat from "@chia/ui/date-format";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 import dayjs from "@chia/utils/day";
@@ -29,16 +28,12 @@ interface Props {
 
 const Empty = memo(() => {
   return (
-    <CHCard
-      className="prose dark:prose-invert page-sm:px-4 flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12"
-      wrapperProps={{
-        className: "w-full",
-      }}>
+    <Card className="prose dark:prose-invert page-sm:px-4 flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12">
       <h3>Currently no feeds available</h3>
       <div className="not-prose">
         <Logo classNames={{ root: "size-20" }} />
       </div>
-    </CHCard>
+    </Card>
   );
 });
 
@@ -124,7 +119,7 @@ const FeedItem = memo(
                       </Tooltip.Content>
                     </Tooltip>
                   ) : (
-                    <span className="text-muted-foreground flex-1 text-xs italic">
+                    <span className="text-muted flex-1 text-xs italic">
                       — Not translated
                     </span>
                   )}

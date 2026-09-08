@@ -137,7 +137,7 @@ const DeleteConfirm = ({
             <Modal.Heading>Delete this entry?</Modal.Heading>
           </Modal.Header>
           <Modal.Body>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted text-sm">
               It disappears from the profile. Unpublish instead if you may want
               it back.
             </p>
@@ -241,7 +241,7 @@ const EntryDrawer = ({
         </Drawer.Body>
         {entry ? (
           <Drawer.Footer className="justify-between">
-            <span className="text-muted-foreground text-xs">
+            <span className="text-muted text-xs">
               updated {formatDate(entry.updatedAt)}
             </span>
             <Button
@@ -346,7 +346,7 @@ export const ProfileManager = () => {
         </Button>
       </div>
 
-      <p className="text-muted-foreground text-xs">{KIND_HINT[kind]}</p>
+      <p className="text-muted text-xs">{KIND_HINT[kind]}</p>
 
       <Table>
         <Table.Content
@@ -390,7 +390,7 @@ export const ProfileManager = () => {
                     </Button>
                   </Table.Cell>
                   <Table.Cell>
-                    <span className="text-muted-foreground line-clamp-1 max-w-80 text-xs">
+                    <span className="text-muted line-clamp-1 max-w-80 text-xs">
                       {detailOf(entry)}
                     </span>
                   </Table.Cell>
@@ -409,7 +409,7 @@ export const ProfileManager = () => {
                     <PublishedSwitch entry={entry} />
                   </Table.Cell>
                   <Table.Cell>
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-muted text-xs">
                       {formatDate(entry.updatedAt)}
                     </span>
                   </Table.Cell>
