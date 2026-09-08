@@ -237,7 +237,7 @@ export const AgentPanel = ({
   }
   return (
     <>
-      <div className="flex min-w-0 items-center gap-3 px-4 py-3">
+      <div className="flex h-12 min-w-0 shrink-0 items-center gap-3 px-3.5">
         {tabs}
         {headerActions}
       </div>

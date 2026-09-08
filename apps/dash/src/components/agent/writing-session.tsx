@@ -60,7 +60,7 @@ export const WritingSession = ({
 
   return (
     <>
-      <header className="flex min-w-0 items-center gap-3 px-3.5 py-2.5 pt-0 sm:pt-2.5">
+      <header className="flex h-12 min-w-0 shrink-0 items-center gap-3 px-3.5">
         {tabs}
         {actions}
       </header>

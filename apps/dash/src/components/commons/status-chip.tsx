@@ -5,7 +5,72 @@ import { useMemo } from "react";
 
 import { Chip, Skeleton, Tooltip } from "@heroui/react";
 
-import type { Monitors, Monitor } from "@chia/api/betterstack/types";
+import type {
+  Monitor,
+  MonitorStatus,
+  Monitors,
+} from "@chia/api/betterstack/types";
+
+const STATUS_PRIORITY = [
+  "down",
+  "pending",
+  "maintenance",
+  "paused",
+  "validating",
+  "up",
+] as const satisfies readonly MonitorStatus[];
+
+const monitorLabel = (status: MonitorStatus) => {
+  switch (status) {
+    case "up":
+      return { label: "Service Up", color: "success" } as const;
+    case "down":
+      return { label: "Service Down", color: "danger" } as const;
+    case "pending":
+      return { label: "Service Pending", color: "warning" } as const;
+    case "maintenance":
+      return { label: "Service Maintenance", color: "default" } as const;
+    case "paused":
+      return { label: "Service Paused", color: "default" } as const;
+    case "validating":
+      return { label: "Service Validating", color: "warning" } as const;
+  }
+};
+
+const aggregateLabel = (
+  status: MonitorStatus | "unknown",
+  monitors: Monitor[]
+) => {
+  switch (status) {
+    case "up":
+      return { label: "All services are up", color: "success" } as const;
+    case "down":
+      return { label: "Some services are down", color: "danger" } as const;
+    case "pending":
+      return { label: "Some services are pending", color: "warning" } as const;
+    case "maintenance":
+      return {
+        label: "Some services are in maintenance",
+        color: "default",
+      } as const;
+    case "paused":
+      return {
+        label: monitors.every(
+          (monitor) => monitor.attributes.status === "paused"
+        )
+          ? "All services are paused"
+          : "Some services are paused",
+        color: "default",
+      } as const;
+    case "validating":
+      return {
+        label: "Some services are validating",
+        color: "warning",
+      } as const;
+    default:
+      return { label: "Unknown", color: "default" } as const;
+  }
+};
 
 export const LoadingFallback = () => {
   return (
@@ -25,86 +90,21 @@ export const ErrorFallback = () => {
 
 export const StatusChip = ({ status }: { status: Monitors }) => {
   const serviceStatus = useMemo(() => {
-    const allUp = status.data.every(
-      (monitor) => monitor.attributes.status === "up"
-    );
-
-    // find down first, then pending, then maintenance
-    const errorService =
-      status.data.find((monitor) => monitor.attributes.status === "down") ||
-      status.data.find((monitor) => monitor.attributes.status === "pending") ||
-      status.data.find(
-        (monitor) => monitor.attributes.status === "maintenance"
-      );
-
-    if (allUp) {
-      return "up";
-    } else if (errorService) {
-      return errorService.attributes.status;
-    } else {
+    if (status.data.length === 0) {
       return "unknown";
     }
+
+    return (
+      STATUS_PRIORITY.find((priority) =>
+        status.data.some((monitor) => monitor.attributes.status === priority)
+      ) ?? "unknown"
+    );
   }, [status]);
 
-  const getColorAndLabel = (status: Monitor) => {
-    switch (status.attributes.status) {
-      case "up":
-        return {
-          label: "Service Up",
-          color: "success",
-        } as const;
-      case "down":
-        return {
-          label: "Service Down",
-          color: "danger",
-        } as const;
-      case "pending":
-        return {
-          label: "Service Pending",
-          color: "warning",
-        } as const;
-      case "maintenance":
-        return {
-          label: "Service Maintenance",
-          color: "default",
-        } as const;
-      default:
-        return {
-          label: "Unknown",
-          color: "default",
-        } as const;
-    }
-  };
-
-  const current = useMemo(() => {
-    switch (serviceStatus) {
-      case "up":
-        return {
-          label: "All services are up",
-          color: "success",
-        } as const;
-      case "down":
-        return {
-          label: "Some services are down",
-          color: "danger",
-        } as const;
-      case "pending":
-        return {
-          label: "Some services are pending",
-          color: "warning",
-        } as const;
-      case "maintenance":
-        return {
-          label: "Some services are in maintenance",
-          color: "default",
-        } as const;
-      default:
-        return {
-          label: "Unknown",
-          color: "default",
-        } as const;
-    }
-  }, [serviceStatus]);
+  const current = useMemo(
+    () => aggregateLabel(serviceStatus, status.data),
+    [serviceStatus, status.data]
+  );
 
   return (
     <Tooltip>
@@ -120,16 +120,17 @@ export const StatusChip = ({ status }: { status: Monitors }) => {
       </Tooltip.Trigger>
       <Tooltip.Content className="min-w-48">
         <ul className="flex flex-col gap-3 p-3">
-          {status.data.map((monitor) => (
-            <li key={monitor.id} className="flex flex-col gap-1">
-              <span>{monitor.attributes.pronounceable_name}</span>
-              <Chip
-                className="text-muted border-none"
-                color={getColorAndLabel(monitor).color}>
-                {getColorAndLabel(monitor).label}
-              </Chip>
-            </li>
-          ))}
+          {status.data.map((monitor) => {
+            const item = monitorLabel(monitor.attributes.status);
+            return (
+              <li key={monitor.id} className="flex flex-col gap-1">
+                <span>{monitor.attributes.pronounceable_name}</span>
+                <Chip className="text-muted border-none" color={item.color}>
+                  {item.label}
+                </Chip>
+              </li>
+            );
+          })}
         </ul>
       </Tooltip.Content>
     </Tooltip>
