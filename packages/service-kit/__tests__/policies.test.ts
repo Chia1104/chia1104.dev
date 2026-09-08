@@ -4,7 +4,10 @@ import { serviceContextOf } from "@chia/test/context";
 import { sessionOf } from "@chia/test/session";
 
 import type { ServiceContext } from "../src/context";
+import type { Caller } from "../src/policies/caller.policy";
+import { CallerTier } from "../src/policies/caller.policy";
 import { captchaPolicy } from "../src/policies/captcha.policy";
+import type { RateLimitContext } from "../src/policies/rate-limit.policy";
 import { rateLimitPolicy } from "../src/policies/rate-limit.policy";
 import { sessionPolicy } from "../src/policies/session.policy";
 
@@ -101,12 +104,29 @@ describe("sessionPolicy", () => {
 });
 
 describe("rateLimitPolicy", () => {
-  const policy = (kv?: ReturnType<typeof makeKv>) =>
-    rateLimitPolicy({ windowMs: 60_000, limit: 2, prefix: "test" })(
-      makeContext({
-        kv: /* SAFETY: This fixture implements the never members exercised by this case. */ kv as never,
-      })
-    );
+  const anonymous: Caller = { tier: CallerTier.Anonymous, adminId: "admin-1" };
+  const root: Caller = { tier: CallerTier.Root, adminId: "admin-1" };
+
+  const budget = { windowMs: 60_000, limit: { [CallerTier.Anonymous]: 2 } };
+
+  const contextFor = (caller: Caller, kv?: ReturnType<typeof makeKv>) =>
+    serviceContextOf<RateLimitContext>({
+      caller,
+      kv: /* SAFETY: This fixture implements the never members exercised by this case. */ kv as never,
+    });
+
+  const policy = (kv?: ReturnType<typeof makeKv>, caller: Caller = anonymous) =>
+    rateLimitPolicy({ ...budget, prefix: "test" })(contextFor(caller, kv));
+
+  it("never counts a tier the budget does not name", async () => {
+    const kv = makeKv();
+
+    const result = await policy(kv, root);
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.headers).toBeUndefined();
+    expect(kv.set).not.toHaveBeenCalled();
+  });
 
   it("fails open when there is no store rather than locking callers out", async () => {
     const result = await policy(undefined);
@@ -145,19 +165,11 @@ describe("rateLimitPolicy", () => {
   it("namespaces counters by prefix so route families do not share a budget", async () => {
     const kv = makeKv();
 
-    await rateLimitPolicy({ windowMs: 60_000, limit: 1, prefix: "a" })(
-      makeContext({
-        kv: /* SAFETY: This fixture implements the never members exercised by this case. */ kv as never,
-      })
-    );
-    const other = await rateLimitPolicy({
-      windowMs: 60_000,
-      limit: 1,
-      prefix: "b",
-    })(
-      makeContext({
-        kv: /* SAFETY: This fixture implements the never members exercised by this case. */ kv as never,
-      })
+    const one = { windowMs: 60_000, limit: { [CallerTier.Anonymous]: 1 } };
+
+    await rateLimitPolicy({ ...one, prefix: "a" })(contextFor(anonymous, kv));
+    const other = await rateLimitPolicy({ ...one, prefix: "b" })(
+      contextFor(anonymous, kv)
     );
 
     expect(other.ok).toBe(true);
@@ -249,6 +261,29 @@ describe("callerPolicy", () => {
       withSession(session("user", true))
     );
     expect(!result.ok && result.error.code).toBe("FORBIDDEN");
+  });
+
+  it("grades a pre-resolved caller without touching credentials", async () => {
+    const { callerPolicy, CallerTier } =
+      await import("../src/policies/caller.policy");
+    const getSession = vi.fn();
+    const caller: Caller = { tier: CallerTier.Guest, adminId: ADMIN_ID };
+    const context = makeContext({
+      caller,
+      headers: new Headers({ Cookie: "session_token=abc" }),
+      auth: /* SAFETY: This fixture implements the better-auth surface the policy calls. */ {
+        api: { getSession },
+      } as never,
+    });
+
+    const admitted = await callerPolicy()(context);
+    expect(admitted.ok && admitted.patch?.caller).toBe(caller);
+
+    const refused = await callerPolicy({ minTier: CallerTier.Session })(
+      context
+    );
+    expect(!refused.ok && refused.error.code).toBe("FORBIDDEN");
+    expect(getSession).not.toHaveBeenCalled();
   });
 });
 

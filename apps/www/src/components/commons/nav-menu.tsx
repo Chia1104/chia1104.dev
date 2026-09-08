@@ -185,7 +185,7 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
   return (
     <nav
       data-testid="nav-menu"
-      className="c-bg-third fixed top-0 z-50 flex h-[75px] w-screen items-center justify-center">
+      className="c-bg-third fixed top-0 right-[var(--chat-dock-width,0px)] left-0 z-50 flex h-[75px] items-center justify-center transition-[right] duration-200 ease-out motion-reduce:transition-none">
       <div className="container flex w-full justify-between px-5">
         <div className="flex w-1/5 items-center text-2xl">
           <Link

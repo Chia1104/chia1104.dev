@@ -15,11 +15,6 @@ import type { AgentFactory } from "./services/agent.factory";
  * `packages/api` parses no env of its own.
  */
 export interface ORPCConfig {
-  rateLimit: {
-    windowMs: number;
-    /** Budget for an anonymous caller. Higher tiers multiply it — see `TIER_MULTIPLIER`. */
-    limit: number;
-  };
   /** Private half of the keypair the AI provider-key cookies are encrypted with. */
   aiAuthPrivateKey?: string;
 }

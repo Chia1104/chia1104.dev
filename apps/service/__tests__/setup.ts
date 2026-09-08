@@ -62,6 +62,11 @@ vi.mock("../src/guards/rate-limiter.guard", async () => {
   };
 });
 
+vi.mock("../src/guards/caller.guard", async () => {
+  const mocks = await import("./helpers/guards");
+  return { resolveCaller: mocks.resolveCaller };
+});
+
 vi.mock("../src/guards/auth.guard", async () => {
   const mocks = await import("./helpers/guards");
   return {
@@ -91,7 +96,7 @@ vi.mock("@chia/api/orpc/guards/caller.guard", async () => {
   const mocks = await import("./helpers/guards");
   return {
     callerGuard: mocks.orpcCallerGuard,
-    tieredRateLimitGuard: mocks.orpcTieredRateLimitGuard,
+    callerOS: mocks.orpcCallerOS,
   };
 });
 

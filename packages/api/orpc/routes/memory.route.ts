@@ -6,7 +6,6 @@ import { AppError } from "@chia/service-kit/errors";
 
 import { removeMemoryService, updateMemoryService } from "../../memories/write";
 import { adminGuard } from "../guards/admin.guard";
-import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { contractOS } from "../utils";
 
 /**
@@ -100,7 +99,6 @@ export const approveLessonRoute = contractOS.memory["lesson:approve"]
 /** Starts a reflection run over one session. Fire-and-forget from the writing turn; the dashboard awaits the run id. */
 export const consolidateMemoryRoute = contractOS.memory.consolidate
   .use(adminGuard())
-  .use(rateLimitGuard({ prefix: "rate-limiter:memory-consolidate" }))
   .handler((opts) =>
     withORPCErrors(async () => ({
       runId: await opts.context.workflow.startMemoryConsolidation(

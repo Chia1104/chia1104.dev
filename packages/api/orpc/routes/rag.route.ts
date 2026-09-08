@@ -16,6 +16,8 @@ import {
 } from "@chia/db/repos/resources/stats";
 import { RESOURCE_INDEX_RUN_SCOPE } from "@chia/db/schema";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
+import type { Caller } from "@chia/service-kit/policies/caller.policy";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import {
   currentIndexKey,
@@ -26,6 +28,7 @@ import {
 } from "../../resources/index-run";
 import type { IndexRunCaller } from "../../resources/index-run";
 import { adminGuard } from "../guards/admin.guard";
+import { callerGuard } from "../guards/caller.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { contractOS } from "../utils";
 
@@ -41,6 +44,16 @@ const callerOf = (opts: {
   adminId: opts.context.adminId,
   userId: opts.context.session.user.id,
 });
+
+/** A Root key has no session; the operator acting through it is the admin. */
+const bulkCallerOf = (caller: Caller): IndexRunCaller => ({
+  adminId: caller.adminId,
+  userId: caller.session?.user.id ?? caller.adminId,
+});
+
+/** Root only, and budgeted even then; see `rag-bulk` in the registry. */
+const bulkGuard = callerGuard({ minTier: CallerTier.Root });
+const bulkRateLimit = rateLimitGuard("rag-bulk");
 
 export const getRagOverviewRoute = contractOS.rag.overview
   .use(adminGuard())
@@ -180,7 +193,6 @@ export const previewReindexAllRoute = contractOS.rag["reindex:all:preview"]
 
 export const indexResourceRoute = contractOS.rag["resource:index"]
   .use(adminGuard())
-  .use(rateLimitGuard({ prefix: "rate-limiter:rag-index" }))
   .handler((opts) =>
     withORPCErrors(async () => {
       const { db, workflow } = opts.context;
@@ -202,7 +214,6 @@ export const indexResourceRoute = contractOS.rag["resource:index"]
 
 export const indexFeedRoute = contractOS.rag["feed:index"]
   .use(adminGuard())
-  .use(rateLimitGuard({ prefix: "rate-limiter:rag-index" }))
   .handler((opts) =>
     withORPCErrors(async () => {
       const { db, workflow } = opts.context;
@@ -218,23 +229,16 @@ export const indexFeedRoute = contractOS.rag["feed:index"]
     })
   );
 
-/** Two per hour: a full reindex is the one action here with an unbounded bill. */
 export const reindexAllRoute = contractOS.rag["reindex:all"]
-  .use(adminGuard())
-  .use(
-    rateLimitGuard({
-      prefix: "rate-limiter:rag-bulk",
-      limit: 2,
-      windowMs: 3_600_000,
-    })
-  )
+  .use(bulkGuard)
+  .use(bulkRateLimit)
   .handler((opts) =>
     withORPCErrors(async () => {
       const { db, workflow } = opts.context;
       const handle = await triggerIndexRun(
         db,
         workflow,
-        callerOf(opts),
+        bulkCallerOf(opts.context.caller),
         { scope: RESOURCE_INDEX_RUN_SCOPE.All },
         () =>
           workflow.startResourceReindex({ onlyMissing: opts.input.onlyMissing })
@@ -245,14 +249,8 @@ export const reindexAllRoute = contractOS.rag["reindex:all"]
   );
 
 export const pruneEmbeddingsRoute = contractOS.rag["embeddings:prune"]
-  .use(adminGuard())
-  .use(
-    rateLimitGuard({
-      prefix: "rate-limiter:rag-bulk",
-      limit: 2,
-      windowMs: 3_600_000,
-    })
-  )
+  .use(bulkGuard)
+  .use(bulkRateLimit)
   .handler((opts) =>
     withORPCErrors(async () => {
       const key = currentIndexKey();

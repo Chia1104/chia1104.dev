@@ -4,7 +4,6 @@ import "@/styles/globals.css";
 import "react-medium-image-zoom/dist/styles.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { Suspense } from "react";
 
 import {
   getLocale,
@@ -16,7 +15,6 @@ import {
 import meta from "@chia/meta";
 import { WWW_BASE_URL } from "@chia/utils/config";
 
-import { ChatDrawer } from "@/components/agent/chat-drawer";
 import AppLayout from "@/components/commons/app-layout";
 import AppPlugins from "@/components/commons/app-plugins";
 import RootLayout from "@/components/commons/root-layout";
@@ -83,10 +81,6 @@ const Layout = async ({
         <AppLayout locale={locale}>
           {children}
           {modal}
-          {/* Reads `?chat`; static pages need the boundary to prerender. */}
-          <Suspense>
-            <ChatDrawer />
-          </Suspense>
         </AppLayout>
         <AppPlugins />
       </RootProvider>

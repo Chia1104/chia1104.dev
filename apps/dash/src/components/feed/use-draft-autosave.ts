@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 
 import { ORPCError } from "@orpc/client";
 import { useDebouncer } from "@tanstack/react-pacer";
@@ -11,10 +17,13 @@ import type { UseFormReturn } from "react-hook-form";
 import { orpc } from "@/libs/orpc/client";
 
 import type { DraftFormValues } from "./draft-form-schema";
+import { draftSnapshotStore, readDraftSnapshot } from "./draft-snapshot";
 import { applyPatch, diffValues, toValues } from "./draft-values";
 import type { DraftView } from "./draft-values";
 
-const AUTOSAVE_WAIT_MS = 1000;
+const AUTOSAVE_WAIT_MS = 3000;
+/** Continuous typing still reaches the server this often. */
+const AUTOSAVE_MAX_WAIT_MS = 15_000;
 
 export const useDraftAutosave = ({
   initial,
@@ -37,6 +46,7 @@ export const useDraftAutosave = ({
   const baseline = useRef(initial);
   const blocked = useRef(false);
   const pending = useRef<Promise<boolean> | null>(null);
+  const kept = useRef(false);
   const { mutateAsync, isPending } = useMutation(
     orpc.feeds["draft:patch"].mutationOptions()
   );
@@ -44,13 +54,13 @@ export const useDraftAutosave = ({
     control: form.control,
     name: ["slug", "type", "defaultLocale", "mainImage", "translations"],
   });
-  const changes = JSON.stringify(
-    diffValues(
-      { slug, type, defaultLocale, mainImage, translations },
-      toValues(saved)
-    )
+  const patch = diffValues(
+    { slug, type, defaultLocale, mainImage, translations },
+    toValues(saved)
   );
-  const isDirty = changes !== "null";
+  const changes = JSON.stringify(patch);
+  const isDirty = patch !== null;
+  const paused = issue !== null;
 
   const acknowledge = useCallback(
     (next: DraftView) => {
@@ -127,9 +137,75 @@ export const useDraftAutosave = ({
     wait: AUTOSAVE_WAIT_MS,
   });
   useEffect(() => {
-    if (isDirty && !issue) scheduled.maybeExecute();
+    if (isDirty && !paused) scheduled.maybeExecute();
     else scheduled.cancel();
-  }, [changes, isDirty, issue, scheduled]);
+  }, [changes, isDirty, paused, scheduled]);
+
+  useEffect(() => {
+    if (!isDirty || paused) return;
+    const timer = setTimeout(() => void flush(), AUTOSAVE_MAX_WAIT_MS);
+    return () => clearTimeout(timer);
+  }, [flush, isDirty, paused]);
+
+  // Leaving the tab saves at once; the request may not finish, and the snapshot below covers that.
+  const flushNow = useEffectEvent(() => {
+    if (
+      blocked.current ||
+      !diffValues(form.getValues(), toValues(baseline.current))
+    )
+      return;
+    scheduled.cancel();
+    void flush();
+  });
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") flushNow();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pagehide", flushNow);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pagehide", flushNow);
+    };
+  }, []);
+
+  // Only this tab's own transition back to clean drops the snapshot; another tab may be mid-edit.
+  const persist = useEffectEvent(() => {
+    const { keep, drop } = draftSnapshotStore.getState();
+    if (patch) {
+      keep(initial.id, { revision: saved.revision, patch });
+      kept.current = true;
+    } else if (kept.current) {
+      drop(initial.id);
+      kept.current = false;
+    }
+  });
+  useEffect(() => persist(), [changes]);
+
+  // Edits made against the current revision resume; edits against an older one are a conflict.
+  const restore = useEffectEvent(() => {
+    const snapshot = readDraftSnapshot(initial.id);
+    if (!snapshot) return;
+    const activeLocale = form.getValues("activeLocale");
+    if (snapshot.revision === initial.revision) {
+      form.reset({
+        ...applyPatch(toValues(initial), snapshot.patch),
+        activeLocale,
+      });
+      void flush();
+      return;
+    }
+    draftSnapshotStore.getState().drop(initial.id);
+    if (snapshot.revision < initial.revision) {
+      form.reset({
+        ...applyPatch(toValues(initial), snapshot.patch),
+        activeLocale,
+      });
+      blocked.current = true;
+      setIssue({ kind: "conflict", draft: initial });
+    }
+  });
+  useEffect(() => restore(), []);
 
   const receive = useCallback(
     (next: DraftView) => {
@@ -170,6 +246,7 @@ export const useDraftAutosave = ({
     issue,
     isDirty,
     isSaving: isPending,
+    isSynced: !isDirty && !isPending && !paused,
     flush,
     retry,
     adopt,

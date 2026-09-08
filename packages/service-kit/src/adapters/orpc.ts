@@ -45,9 +45,12 @@ export const withORPCErrors = async <T>(run: () => Promise<T>): Promise<T> => {
  *     next({ context: await runPolicy(sessionPolicy(), context) })
  *   );
  */
-export const runPolicy = async <TPatch extends object>(
-  policy: Policy<TPatch, ServiceContext>,
-  context: ServiceContext
+export const runPolicy = async <
+  TPatch extends object,
+  TContext extends ServiceContext = ServiceContext,
+>(
+  policy: Policy<TPatch, TContext>,
+  context: TContext
 ): Promise<TPatch> => {
   const result = await policy(context);
 

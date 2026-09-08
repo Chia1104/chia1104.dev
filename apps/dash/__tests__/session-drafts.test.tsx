@@ -2,17 +2,13 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 const navigation = vi.hoisted(() => ({ push: vi.fn() }));
-vi.mock("next/navigation", () => ({
-  useRouter: () => navigation,
-  useSearchParams: () =>
-    new URLSearchParams("agent=open&session=older-session"),
-}));
+vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
 
 const { SessionDrafts } =
   await import("../src/components/agent/session-drafts");
 
 describe("SessionDrafts", () => {
-  it("keeps the selected conversation when opening its draft in the editor", async () => {
+  it("opens the draft the operator picked in the editor", async () => {
     render(
       <SessionDrafts
         drafts={[
@@ -44,8 +40,6 @@ describe("SessionDrafts", () => {
     fireEvent.click(
       await screen.findByRole("button", { name: "Open in editor" })
     );
-    expect(navigation.push).toHaveBeenCalledWith(
-      "/feed/draft/7?agent=open&session=older-session"
-    );
+    expect(navigation.push).toHaveBeenCalledWith("/feed/draft/7");
   });
 });

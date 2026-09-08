@@ -1,12 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
-
 import { GoogleTagManager } from "@next/third-parties/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { useQueryState } from "nuqs";
 import { Toaster as ST } from "sonner";
 
 import { useCMD } from "@chia/ui/cmd";
@@ -16,15 +13,17 @@ import useTheme from "@chia/ui/utils/use-theme";
 
 import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
+import { useChatDockStore } from "@/stores/chat-dock/store";
 import { useSettingsStore } from "@/stores/settings/store";
 
 /** Mounted only while chat is enabled so a disabled chat never swallows the shortcut. */
 const ContactCMD = () => {
-  const [isOpen, setIsOpen] = useQueryState("chat");
+  const isOpen = useChatDockStore((state) => state.isOpen);
+  const setOpen = useChatDockStore((state) => state.setOpen);
   useCMD(false, {
     cmd: "i",
     onKeyDown: () => {
-      setIsOpen(isOpen ? null : "true");
+      setOpen(!isOpen);
     },
   });
   return null;
@@ -57,11 +56,7 @@ const AppPlugins = () => {
           }}
         />
       )}
-      {aiEnabled && (
-        <Suspense>
-          <ContactCMD />
-        </Suspense>
-      )}
+      {aiEnabled && <ContactCMD />}
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       {env.NEXT_PUBLIC_ENV === "production" && (
         <>

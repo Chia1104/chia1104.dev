@@ -18,13 +18,17 @@ interface MutableContext {
  *
  * Use when policy options depend on the request; otherwise {@link toHonoMiddleware}.
  */
-export const applyPolicy = async <TEnv extends Env, TPatch extends object>(
+export const applyPolicy = async <
+  TEnv extends Env,
+  TPatch extends object,
+  TContext extends ServiceContext = ServiceContext,
+>(
   c: Context<TEnv>,
-  policy: Policy<TPatch, ServiceContext>
+  policy: Policy<TPatch, TContext>
 ): Promise<Response | undefined> => {
   // Context is invariant in TEnv; every service env's Variables is a superset of ServiceContext.
-  // @ts-expect-error The runtime Variables contract is a superset of ServiceContext.
-  const serviceContext: ServiceContext = c.var;
+  // @ts-expect-error The runtime Variables contract is a superset of TContext.
+  const serviceContext: TContext = c.var;
   const result = await policy(serviceContext);
 
   if (!result.ok) {

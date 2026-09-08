@@ -20,6 +20,8 @@ vi.mock("@/libs/orpc/client", () => ({
 }));
 const { useDraftAutosave } =
   await import("../src/components/feed/use-draft-autosave");
+const { draftSnapshotStore, readDraftSnapshot } =
+  await import("../src/components/feed/draft-snapshot");
 
 const initial: DraftView = {
   id: 7,
@@ -43,7 +45,7 @@ const initial: DraftView = {
   updatedAt: "2026-09-05T00:00:00Z",
 };
 
-const setup = () => {
+const setup = (draft: DraftView = initial) => {
   const queryClient = new QueryClient({
     defaultOptions: { mutations: { retry: false } },
   });
@@ -52,11 +54,11 @@ const setup = () => {
   const hook = renderHook(
     () => {
       const form = useForm<DraftFormValues>({
-        defaultValues: { ...toValues(initial), activeLocale: "en" },
+        defaultValues: { ...toValues(draft), activeLocale: "en" },
       });
       return {
         form,
-        ...useDraftAutosave({ initial, form, onSaved, loadLatest }),
+        ...useDraftAutosave({ initial: draft, form, onSaved, loadLatest }),
       };
     },
     {
@@ -74,8 +76,137 @@ describe("draft autosave", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     api.patch.mockReset();
+    draftSnapshotStore.setState({ entries: [] });
+    localStorage.clear();
   });
   afterEach(() => vi.useRealTimers());
+
+  /** Echoes the patched translations at the next revision. */
+  const echoPatch = () =>
+    api.patch.mockImplementation(
+      async ({
+        translations,
+        expectedRevision,
+      }: {
+        translations: Parameters<typeof applyPatch>[1]["translations"];
+        expectedRevision: number;
+      }) => ({
+        ...initial,
+        ...applyPatch(toValues(initial), { translations }),
+        revision: expectedRevision + 1,
+      })
+    );
+
+  it("saves three seconds after the last edit", async () => {
+    echoPatch();
+    const { result } = setup();
+    act(() => result.current.form.setValue("translations.en.title", "One"));
+    await act(() => vi.advanceTimersByTimeAsync(2900));
+    expect(api.patch).not.toHaveBeenCalled();
+    await act(() => vi.advanceTimersByTimeAsync(200));
+    expect(api.patch).toHaveBeenCalledTimes(1);
+    expect(result.current.isDirty).toBe(false);
+  });
+
+  it("saves at most fifteen seconds after the first edit while typing continues", async () => {
+    echoPatch();
+    const { result } = setup();
+    for (let second = 0; second < 15; second += 2) {
+      act(() =>
+        result.current.form.setValue("translations.en.title", `T${second}`)
+      );
+      await act(() => vi.advanceTimersByTimeAsync(second === 14 ? 900 : 2000));
+    }
+    expect(api.patch).not.toHaveBeenCalled();
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(api.patch).toHaveBeenCalledTimes(1);
+    expect(api.patch).toHaveBeenLastCalledWith(
+      expect.objectContaining({ translations: { en: { title: "T14" } } }),
+      expect.anything()
+    );
+  });
+
+  it("saves at once when the tab is hidden", async () => {
+    echoPatch();
+    const { result } = setup();
+    act(() => result.current.form.setValue("translations.en.title", "Away"));
+    Object.defineProperty(document, "visibilityState", {
+      value: "hidden",
+      configurable: true,
+    });
+    try {
+      await act(async () => {
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+    } finally {
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
+        configurable: true,
+      });
+    }
+    expect(api.patch).toHaveBeenCalledTimes(1);
+    await act(() => vi.advanceTimersByTimeAsync(4000));
+    expect(api.patch).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps unsaved edits in the browser and resumes them on the same revision", async () => {
+    const first = setup();
+    act(() =>
+      first.result.current.form.setValue("translations.en.title", "Offline")
+    );
+    expect(readDraftSnapshot(initial.id)).toEqual({
+      revision: 1,
+      patch: { translations: { en: { title: "Offline" } } },
+    });
+    expect(localStorage.getItem("chia.dash.draft-snapshots")).toContain(
+      "Offline"
+    );
+    first.unmount();
+
+    echoPatch();
+    const second = setup();
+    await act(() => Promise.resolve());
+    expect(second.result.current.form.getValues("translations.en.title")).toBe(
+      "Offline"
+    );
+    expect(api.patch).toHaveBeenCalledTimes(1);
+    expect(api.patch).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        expectedRevision: 1,
+        translations: { en: { title: "Offline" } },
+      }),
+      expect.anything()
+    );
+    expect(second.result.current.isDirty).toBe(false);
+    expect(readDraftSnapshot(initial.id)).toBeNull();
+  });
+
+  it("offers edits made against an older revision as a conflict", async () => {
+    draftSnapshotStore
+      .getState()
+      .keep(initial.id, { revision: 1, patch: { slug: "mine" } });
+    const newer = { ...initial, revision: 2 };
+    const { result } = setup(newer);
+    await act(() => Promise.resolve());
+    expect(result.current.issue).toEqual({ kind: "conflict", draft: newer });
+    expect(result.current.form.getValues("slug")).toBe("mine");
+    expect(readDraftSnapshot(initial.id)).toEqual({
+      revision: 2,
+      patch: { slug: "mine" },
+    });
+    await act(() => vi.advanceTimersByTimeAsync(20_000));
+    expect(api.patch).not.toHaveBeenCalled();
+
+    api.patch.mockResolvedValueOnce({ ...newer, slug: "mine", revision: 3 });
+    await act(async () => result.current.keepMine());
+    expect(api.patch).toHaveBeenLastCalledWith(
+      expect.objectContaining({ expectedRevision: 2, slug: "mine" }),
+      expect.anything()
+    );
+    expect(result.current.issue).toBeNull();
+    expect(result.current.isDirty).toBe(false);
+    expect(readDraftSnapshot(initial.id)).toBeNull();
+  });
 
   it("ignores locale navigation and reverting an edit before the debounce", async () => {
     const { result } = setup();

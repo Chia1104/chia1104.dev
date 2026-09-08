@@ -1,7 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 import { Button } from "@heroui/react";
 import { ChevronRight } from "lucide-react";
 
@@ -20,6 +18,8 @@ import {
   useSidebar,
 } from "@chia/ui/sidebar";
 
+import { useGuardedRouter } from "@/libs/navigation-guard";
+
 export interface NavMainItem {
   title: string;
   url: string;
@@ -36,7 +36,7 @@ export function NavMain({
   items: NavMainItem[];
 }) {
   const { open, isMobile } = useSidebar();
-  const router = useRouter();
+  const router = useGuardedRouter();
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{title}</SidebarGroupLabel>
