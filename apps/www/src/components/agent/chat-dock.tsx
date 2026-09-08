@@ -67,7 +67,7 @@ export const ChatDock = () => {
     />
   );
   const compactHeader = launcherCovered ? (
-    <div className="border-border flex shrink-0 items-center gap-2 border-b px-4 py-3">
+    <div className="border-border hidden shrink-0 items-center gap-2 border-b px-4 py-3 sm:flex">
       <span aria-hidden="true" className="flex shrink-0">
         <CHBot className="size-6 rounded-full" resting />
       </span>

@@ -183,29 +183,29 @@
     "error": "這裡看起來有點無聊，我會盡快為你準備好"
   },
   "chbot": {
-    "title": "問問部落格",
-    "open": "開啟部落格助理",
-    "maximize": "放大助理",
-    "restore": "還原助理",
-    "close": "關閉助理",
+    "title": "Gloss",
+    "open": "開啟 Gloss",
+    "maximize": "放大 Gloss",
+    "restore": "還原 Gloss",
+    "close": "關閉 Gloss",
     "collapse": "收合對話",
-    "resize": "調整助理寬度",
-    "emptyTitle": "想找什麼文章？",
+    "resize": "調整 Gloss 寬度",
+    "emptyTitle": "問問 Gloss",
     "emptyDescription": "我可以搜尋並閱讀已發佈的文章，幫你找到對的那一篇。用任何語言提問都可以。",
     "suggestions": {
       "latest": "最近發佈了哪些文章？",
       "topics": "這個部落格涵蓋哪些主題？",
       "find": "有哪些文章談到 Next.js？"
     },
-    "placeholder": "問問部落格的內容…",
+    "placeholder": "問問 Gloss…",
     "signingIn": "正在準備你的工作階段…",
-    "loadFailed": "助理無法啟動。",
+    "loadFailed": "Gloss 無法啟動。",
     "retry": "再試一次",
     "usage": "本週免費額度已使用 {percent}%",
     "usageReset": "{time} 重置",
     "comingSoon": {
       "badge": "即將開放",
-      "title": "部落格助理快準備好了",
+      "title": "Gloss 快準備好了",
       "description": "以下是它將能為你做的事。",
       "features": {
         "search": "依主題或關鍵字搜尋已發佈的文章",
@@ -259,7 +259,7 @@
     },
     "humanCheck": {
       "title": "先做個小驗證",
-      "description": "確認你不是機器人，接下來一週助理就是你的了。",
+      "description": "確認你不是機器人，接下來一週 Gloss 就是你的了。",
       "starting": "正在建立你的工作階段…",
       "failed": "驗證沒有通過，請再試一次。"
     },

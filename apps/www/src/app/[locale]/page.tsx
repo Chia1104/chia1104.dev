@@ -13,7 +13,7 @@ export const revalidate = 14400; // 4 hours
 const Page = () => {
   return (
     <ViewTransition>
-      <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
+      <article className="prose dark:prose-invert mt-20 max-w-175 items-start">
         <AboutMe />
         <LocationHero />
         <FavoriteSongs />

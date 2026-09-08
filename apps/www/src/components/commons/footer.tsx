@@ -109,6 +109,11 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
                 buttonProps={{
                   variant: "tertiary",
                 }}
+                dropdownProps={{
+                  popover: {
+                    className: "min-w-40",
+                  },
+                }}
               />
               <LocaleSelector />
               <Settings />
@@ -175,6 +180,11 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
               }}
               buttonProps={{
                 variant: "tertiary",
+              }}
+              dropdownProps={{
+                popover: {
+                  className: "min-w-40",
+                },
               }}
             />
             <LocaleSelector />

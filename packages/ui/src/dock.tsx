@@ -21,9 +21,9 @@ export const DOCK_WIDTH_VARIABLE = "--dock-width";
 /** Set on the root for the length of a drag; width transitions pause so the panel keeps up. */
 export const DOCK_RESIZING_ATTRIBUTE = "data-dock-resizing";
 
-const DEFAULT_PAGE_MIN_WIDTH = 400;
+const DEFAULT_PAGE_MIN_WIDTH = 445;
 const KEYBOARD_STEP = 16;
-const DEFAULT_MIN_WIDTH = 320;
+const DEFAULT_MIN_WIDTH = 445;
 const DEFAULT_MAX_WIDTH = 768;
 
 interface WidthBounds {

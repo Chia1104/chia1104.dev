@@ -14,8 +14,8 @@ export interface BaseProps {
   };
   children?: React.ReactNode;
   slot?: {
-    tocFooter?: React.ReactNode;
-    afterLastUpdate?: React.ReactNode;
+    /** Host controls that close the article, beside the revision line. */
+    actions?: React.ReactNode;
   };
 }
 
