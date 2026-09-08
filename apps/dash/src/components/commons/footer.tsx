@@ -41,7 +41,7 @@ const Footer = ({ className }: { className?: string }) => {
               </Suspense>
             </ErrorBoundary>
           </div>
-          <p className="text-default-400 page-md:text-start text-center text-xs">
+          <p className="text-muted page-md:text-start text-center text-xs">
             &copy; {dayjs().format("YYYY")} Chia1104.dev. All rights reserved.
           </p>
         </div>

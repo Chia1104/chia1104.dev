@@ -238,7 +238,7 @@ export const SessionTabs = ({
                     fullWidth
                     onChange={setQuery}
                     value={query}>
-                    <SearchField.Group className="h-8 min-h-8">
+                    <SearchField.Group>
                       <SearchField.SearchIcon />
                       <SearchField.Input
                         className="text-xs"
@@ -354,7 +354,7 @@ const SessionActions = ({
         }}>
         {withRename ? (
           <Dropdown.Item
-            className="min-h-7 gap-2 px-2 py-1 text-xs"
+            className="text-xs"
             id="rename"
             textValue={labels.renameSession}>
             <Pencil className="size-3.5" />
@@ -364,7 +364,7 @@ const SessionActions = ({
         {withDelete ? (
           <Dropdown.Item
             id="delete"
-            className="min-h-7 gap-2 px-2 py-1 text-xs"
+            className="text-xs"
             textValue={labels.deleteSession}
             variant="danger">
             <Trash2 className="size-3.5" />

@@ -26,7 +26,7 @@ export function FeedSearch({ query, locale, onSelect }: FeedSearchProps) {
 
   if (isDebouncing || search.isPending || search.isFetching) {
     return (
-      <CommandLoading className="text-muted-foreground py-6 text-center text-sm">
+      <CommandLoading className="text-muted py-6 text-center text-sm">
         {t("search-loading")}
       </CommandLoading>
     );
@@ -43,9 +43,7 @@ export function FeedSearch({ query, locale, onSelect }: FeedSearchProps) {
   const items = search.data?.items ?? [];
   if (items.length === 0) {
     return (
-      <p className="text-muted-foreground py-6 text-center text-sm">
-        {t("no-results")}
-      </p>
+      <p className="text-muted py-6 text-center text-sm">{t("no-results")}</p>
     );
   }
 
@@ -63,7 +61,7 @@ export function FeedSearch({ query, locale, onSelect }: FeedSearchProps) {
           <div className="i-mdi-text-box-search-outline mt-0.5 size-5 shrink-0" />
           <span className="min-w-0">
             <span className="block truncate font-medium">{feed.title}</span>
-            <span className="text-muted-foreground line-clamp-2 text-xs">
+            <span className="text-muted line-clamp-2 text-xs">
               {feed.description || feed.excerpt}
             </span>
           </span>

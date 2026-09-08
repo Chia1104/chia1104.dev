@@ -45,7 +45,6 @@ export const UsageDialog = ({ isOpen, onOpenChange }: UsageDialogProps) => {
                     {t("failed")}
                   </p>
                   <Button
-                    className="h-8 min-h-8 px-3 text-xs"
                     size="sm"
                     variant="secondary"
                     onPress={() => void usage.refetch()}>
@@ -93,11 +92,7 @@ export const UsageDialog = ({ isOpen, onOpenChange }: UsageDialogProps) => {
               ) : null}
             </Modal.Body>
             <Modal.Footer>
-              <Button
-                className="h-8 min-h-8 px-3 text-xs"
-                slot="close"
-                variant="secondary"
-                size="sm">
+              <Button slot="close" variant="secondary" size="sm">
                 {t("done")}
               </Button>
             </Modal.Footer>

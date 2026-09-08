@@ -1,0 +1,203 @@
+/*
+ * Shared theme scaffolding. Palette files (`default.css`, `cyan.css`) only assign colour and
+ * radius tokens; everything that does not change between palettes lives here.
+ */
+
+:root {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
+}
+
+/* Fumadocs reads its own `--color-fd-*` tokens; they resolve to the HeroUI tokens here. */
+:root,
+.dark {
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-muted: var(--default);
+  --color-fd-muted-foreground: var(--muted);
+  --color-fd-popover: var(--overlay);
+  --color-fd-popover-foreground: var(--overlay-foreground);
+  --color-fd-card: var(--surface);
+  --color-fd-card-foreground: var(--surface-foreground);
+  --color-fd-border: var(--border);
+  --color-fd-primary: var(--accent);
+  --color-fd-primary-foreground: var(--accent-foreground);
+  --color-fd-secondary: var(--default);
+  --color-fd-secondary-foreground: var(--default-foreground);
+  --color-fd-accent: var(--default);
+  --color-fd-accent-foreground: var(--default-foreground);
+  --color-fd-ring: var(--focus);
+  --color-fd-error: var(--danger);
+}
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-default: var(--default);
+  --color-default-foreground: var(--default-foreground);
+  --color-field-background: var(--field-background);
+  --color-field-foreground: var(--field-foreground);
+  --color-field-placeholder: var(--field-placeholder);
+  --color-focus: var(--focus);
+  --color-overlay: var(--overlay);
+  --color-overlay-foreground: var(--overlay-foreground);
+  --color-scrollbar: var(--scrollbar);
+  --color-segment: var(--segment);
+  --color-segment-foreground: var(--segment-foreground);
+  --color-separator: var(--separator);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+}
+
+/*
+ * Compact density for HeroUI. HeroUI has no density token, so every control is one step smaller
+ * than its stock size here: md is HeroUI's sm, sm is a 28px control, lg is HeroUI's md. Call
+ * sites choose `size`; they must not restate heights in `className`.
+ */
+@layer components {
+  .button {
+    @apply h-9 gap-1.5 px-3 text-sm md:h-8;
+
+    & svg:not([data-slot="spinner"] svg, [data-slot="link-icon"] svg) {
+      @apply my-0.5 size-4;
+    }
+
+    & > [class^="i-"],
+    & > [class*=" i-"] {
+      @apply shrink-0;
+    }
+  }
+
+  .button--sm {
+    @apply h-8 gap-1 px-2.5 text-xs md:h-7;
+
+    & svg:not([data-slot="spinner"] svg, [data-slot="link-icon"] svg) {
+      @apply size-3.5;
+    }
+  }
+
+  .button--lg {
+    @apply h-10 px-4 text-sm md:h-9;
+  }
+
+  .button--icon-only {
+    @apply w-9 p-0 md:w-8;
+  }
+
+  .button--icon-only.button--sm {
+    @apply w-8 md:w-7;
+  }
+
+  .button--icon-only.button--lg {
+    @apply w-10 md:w-9;
+  }
+
+  .chip {
+    @apply leading-4;
+  }
+
+  .chip--sm {
+    @apply text-[11px];
+  }
+
+  .input-group,
+  .select__trigger {
+    @apply min-h-8;
+  }
+
+  .search-field__group {
+    @apply h-8;
+  }
+
+  .input,
+  .textarea,
+  .select__trigger {
+    @apply py-1.5;
+  }
+
+  .list-box-item,
+  .menu-item {
+    @apply min-h-8 gap-2 py-1;
+  }
+
+  .tabs__tab {
+    @apply h-7 px-3 text-xs;
+  }
+
+  .kbd {
+    @apply h-5 px-1.5 text-xs;
+  }
+}
+
+@layer utilities {
+  /*
+   * Reading scale. Fumadocs emits its prose rules in the utilities layer, so the override has to
+   * live there too. Prose headings share the UI scale: h1 is the page title, h2 the section
+   * title (`text-xl`), h3 the card title (`text-lg`). Weight stays at 600 everywhere.
+   */
+  .prose {
+    :where(h1, h2, h3, h4):not(
+      :where([class~="not-prose"], [class~="not-prose"] *)
+    ) {
+      @apply font-semibold tracking-tight;
+    }
+
+    :where(h1):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+      @apply text-3xl leading-tight;
+    }
+
+    :where(h2):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+      @apply text-xl leading-snug;
+    }
+
+    :where(h3):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+      @apply text-lg leading-snug;
+    }
+
+    :where(h4):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+      @apply text-base leading-snug;
+    }
+
+    /* Fumadocs underlines prose links in the brand colour; body copy reads better with a quiet rule. */
+    :where(a:not([data-card])):not(
+      :where([class~="not-prose"], [class~="not-prose"] *)
+    ) {
+      @apply decoration-muted;
+    }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}

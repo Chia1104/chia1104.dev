@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "private": true,
   "files": [
+    "base.css",
     "default.css",
     "cyan.css"
   ],
   "exports": {
+    "./base.css": "./base.css",
     "./default.css": "./default.css",
     "./cyan.css": "./cyan.css"
   },

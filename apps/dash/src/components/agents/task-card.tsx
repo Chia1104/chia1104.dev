@@ -129,7 +129,7 @@ export const TaskCard = ({
             </Chip>
             <OverriddenChip isOverridden={overridden} />
             {task.updatedAt !== null ? (
-              <span className="text-muted-foreground ml-auto text-xs">
+              <span className="text-muted ml-auto text-xs">
                 updated {formatDate(task.updatedAt)}
               </span>
             ) : null}

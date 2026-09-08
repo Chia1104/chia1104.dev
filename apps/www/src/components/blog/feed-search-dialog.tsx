@@ -29,10 +29,10 @@ export function FeedSearchDialog({ locale }: FeedSearchDialogProps) {
         fullWidth
         variant="tertiary"
         aria-label={t("search-articles")}
-        className="not-prose dark:bg-dark-dark rounded-full"
+        className="not-prose dark:bg-dark-dark page-sm:flex hidden items-center gap-2"
         onPress={() => setOpen(true)}>
         <span className="i-mdi-search size-3.5" />
-        <span className="page-sm:inline hidden">{t("search-articles")}</span>
+        <span className="inline">{t("search-articles")}</span>
       </Button>
       <CommandDialog
         open={open}
@@ -52,7 +52,7 @@ export function FeedSearchDialog({ locale }: FeedSearchDialogProps) {
           {query.trim().length >= 2 ? (
             <FeedSearch query={query} locale={locale} onSelect={close} />
           ) : (
-            <p className="text-muted-foreground px-4 py-6 text-center text-sm">
+            <p className="text-muted px-4 py-6 text-center text-sm">
               {t("search-hint")}
             </p>
           )}

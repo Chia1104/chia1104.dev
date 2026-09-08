@@ -22,9 +22,9 @@ const StatCard = ({
 }) => (
   <Card className="w-full">
     <Card.Content className="flex flex-col gap-1 py-4">
-      <span className="text-muted-foreground text-xs">{label}</span>
+      <span className="text-muted text-xs">{label}</span>
       <span className="text-2xl font-semibold tabular-nums">{value}</span>
-      {hint && <span className="text-muted-foreground text-xs">{hint}</span>}
+      {hint && <span className="text-muted text-xs">{hint}</span>}
     </Card.Content>
   </Card>
 );
@@ -38,7 +38,7 @@ const CountsRow = ({
 }) => (
   <div className="flex items-center justify-between gap-4 py-1.5">
     <span className="text-sm">{label}</span>
-    <span className="text-muted-foreground font-mono text-xs tabular-nums">
+    <span className="text-muted font-mono text-xs tabular-nums">
       {counts.current} / {counts.total}
       {counts.stale > 0 && ` · ${counts.stale} stale`}
       {counts.missing > 0 && ` · ${counts.missing} missing`}
@@ -59,7 +59,7 @@ const Breakdown = ({
     </Card.Header>
     <Card.Content className="divide-border divide-y">
       {rows.length === 0 ? (
-        <p className="text-muted-foreground py-2 text-sm">No data</p>
+        <p className="text-muted py-2 text-sm">No data</p>
       ) : (
         rows.map((row) => (
           <CountsRow key={row.key} counts={row.counts} label={row.label} />
@@ -80,7 +80,7 @@ const IndexKeyTable = ({ rows }: { rows: Overview["byIndexKey"] }) => (
     </Card.Header>
     <Card.Content className="divide-border divide-y">
       {rows.length === 0 ? (
-        <p className="text-muted-foreground py-2 text-sm">No vectors stored</p>
+        <p className="text-muted py-2 text-sm">No vectors stored</p>
       ) : (
         rows.map((row) => (
           <div

@@ -34,6 +34,11 @@ describe("buildSystemPrompt", () => {
     expect(profileAt).toBeLessThan(prompt.indexOf("# Operator instructions"));
   });
 
+  it("carries the name the site introduces the assistant by", () => {
+    // The dock, the launcher and the empty state all say Gloss; the prompt has to agree.
+    expect(buildSystemPrompt()).toContain("Gloss");
+  });
+
   it("names every tool it tells the model to use", () => {
     const prompt = buildSystemPrompt();
     for (const name of [

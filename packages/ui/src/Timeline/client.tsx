@@ -39,8 +39,8 @@ const ANIMATION_CONFIG = {
 } as const;
 
 const YEAR_CLASSNAME = "text-[5em] font-bold leading-3 opacity-20";
-const TITLE_CLASSNAME = "text-lg font-bold";
-const SUBTITLE_CLASSNAME = "text-sm text-gray-500";
+const TITLE_CLASSNAME = "text-lg font-semibold";
+const SUBTITLE_CLASSNAME = "text-muted text-sm";
 const MORE_TEXT = "MORE";
 
 interface TimelineYearProps {

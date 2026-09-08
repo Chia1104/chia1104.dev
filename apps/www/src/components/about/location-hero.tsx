@@ -2,10 +2,10 @@
 
 import { useTranslations } from "next-intl";
 
-import Card from "@chia/ui/card";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 
 import Location from "@/components/about/location";
+import { FeatureCard } from "@/components/commons/feature-card";
 
 export const LocationHero = () => {
   const t = useTranslations("about.location");
@@ -16,7 +16,7 @@ export const LocationHero = () => {
         {t("title")} <span className="i-mdi-location size-7" />
       </h2>
       <p>{t("description")}</p>
-      <Card className="page-sm:h-[400px] relative flex h-[300px] w-full justify-center p-2 pt-10">
+      <FeatureCard className="page-sm:h-[400px] relative flex h-[300px] w-full flex-col items-center justify-start p-2 pt-10">
         <ErrorBoundary>
           <span className="page-sm:text-6xl pointer-events-none bg-linear-to-b from-black to-gray-300/80 bg-clip-text text-center text-5xl leading-none font-semibold whitespace-pre-wrap text-transparent dark:from-white dark:to-slate-900/10">
             {tProfile("location")}
@@ -33,7 +33,7 @@ export const LocationHero = () => {
             />
           </div>
         </ErrorBoundary>
-      </Card>
+      </FeatureCard>
     </>
   );
 };

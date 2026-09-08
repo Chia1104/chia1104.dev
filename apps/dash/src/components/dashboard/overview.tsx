@@ -24,9 +24,9 @@ const StatCard = ({
 }) => (
   <Card className="w-full">
     <Card.Content className="flex flex-col gap-1 py-4">
-      <span className="text-muted-foreground text-xs">{label}</span>
+      <span className="text-muted text-xs">{label}</span>
       <span className="text-2xl font-semibold tabular-nums">{value}</span>
-      {hint && <span className="text-muted-foreground text-xs">{hint}</span>}
+      {hint && <span className="text-muted text-xs">{hint}</span>}
     </Card.Content>
   </Card>
 );
@@ -42,7 +42,7 @@ const SectionHeading = ({
     <h2 className="text-lg font-semibold">{title}</h2>
     {action && (
       <Link
-        className="text-muted-foreground hover:text-foreground text-sm"
+        className="text-muted hover:text-foreground text-sm"
         href={action.href}>
         {action.label}
       </Link>
@@ -60,7 +60,7 @@ const TopUsers = ({ users }: { users: UsageWeek["topUsers"] }) => (
     </Card.Header>
     <Card.Content className="divide-border divide-y">
       {users.length === 0 ? (
-        <p className="text-muted-foreground py-2 text-sm">No spend yet</p>
+        <p className="text-muted py-2 text-sm">No spend yet</p>
       ) : (
         users.map((user) => (
           <Link
@@ -75,12 +75,10 @@ const TopUsers = ({ users }: { users: UsageWeek["topUsers"] }) => (
               <span className="truncate text-sm">
                 {user.name}
                 {user.isAnonymous && (
-                  <span className="text-muted-foreground"> · guest</span>
+                  <span className="text-muted"> · guest</span>
                 )}
               </span>
-              <span className="text-muted-foreground truncate text-xs">
-                {user.email}
-              </span>
+              <span className="text-muted truncate text-xs">{user.email}</span>
             </div>
             <span className="font-mono text-xs tabular-nums">
               {formatUsd(user.houseUsd)} · {user.turns} turn
@@ -168,25 +166,23 @@ export const DashboardOverview = () => {
           <StatCard label="Drafts" value={content.drafts} />
           <Card className="w-full">
             <Card.Content className="flex flex-col gap-1 py-4">
-              <span className="text-muted-foreground text-xs">
-                Latest index run
-              </span>
+              <span className="text-muted text-xs">Latest index run</span>
               {latestIndexRun ? (
                 <>
                   <div className="flex items-center gap-2">
                     <RunStatusChip status={latestIndexRun.status} />
-                    <span className="text-muted-foreground font-mono text-xs">
+                    <span className="text-muted font-mono text-xs">
                       {latestIndexRun.scope}
                     </span>
                   </div>
                   <Link
-                    className="text-muted-foreground hover:text-foreground text-xs"
+                    className="text-muted hover:text-foreground text-xs"
                     href="/rag/runs">
                     {formatDateTime(latestIndexRun.createdAt)}
                   </Link>
                 </>
               ) : (
-                <span className="text-muted-foreground text-sm">None yet</span>
+                <span className="text-muted text-sm">None yet</span>
               )}
             </Card.Content>
           </Card>

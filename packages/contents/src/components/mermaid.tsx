@@ -68,7 +68,7 @@ function MermaidContent({ chart }: { chart: string }) {
                     if (container) bindFunctions?.(container);
                   }}
                   dangerouslySetInnerHTML={{ __html: svg }}
-                  className="[&_svg]:h-auto [&_svg]:w-full"
+                  className="flex items-center justify-center [&_svg]:h-auto [&_svg]:w-full"
                 />
               </Modal.Body>
             </Modal.Dialog>
@@ -80,7 +80,7 @@ function MermaidContent({ chart }: { chart: string }) {
           ref={(container) => {
             if (container) bindFunctions?.(container);
           }}
-          className="w-max min-w-full"
+          className="flex w-max min-w-full items-center justify-center"
           dangerouslySetInnerHTML={{ __html: svg }}
         />
       </ScrollShadow>

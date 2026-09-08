@@ -22,11 +22,11 @@ import { toast } from "sonner";
 
 import { ErrorCode as CaptchaErrorCode } from "@chia/api/captcha/constants";
 import meta from "@chia/meta";
-import Card from "@chia/ui/card";
 import SubmitForm from "@chia/ui/submit-form";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { SiteCaptcha } from "@/components/commons/captcha";
+import { FeatureCard } from "@/components/commons/feature-card";
 import { orpc } from "@/libs/orpc/client";
 import type { Contact as ContactInput } from "@/shared/validator";
 import { contactSchema } from "@/shared/validator";
@@ -112,7 +112,7 @@ export const ContactForm = ({
           <TextField isInvalid={fieldState.invalid}>
             <Label htmlFor={field.name}>
               {t("email")}
-              <span className="text-destructive ml-0.5">*</span>
+              <span className="text-danger ml-0.5">*</span>
             </Label>
             <Input
               {...field}
@@ -134,7 +134,7 @@ export const ContactForm = ({
           <TextField isInvalid={fieldState.invalid}>
             <Label htmlFor={field.name}>
               {t("title")}
-              <span className="text-destructive ml-0.5">*</span>
+              <span className="text-danger ml-0.5">*</span>
             </Label>
             <Input
               {...field}
@@ -156,7 +156,7 @@ export const ContactForm = ({
           <TextField isInvalid={fieldState.invalid}>
             <Label htmlFor={field.name}>
               {t("message")}
-              <span className="text-destructive ml-0.5">*</span>
+              <span className="text-danger ml-0.5">*</span>
             </Label>
             <TextArea
               {...field}
@@ -210,13 +210,13 @@ export const ContactForm = ({
 
 const Contact = () => {
   return (
-    <Card
-      wrapperProps={{
-        className: "w-full max-w-[600px] justify-self-center",
+    <FeatureCard
+      classNames={{
+        root: "w-full max-w-[600px] justify-self-center",
       }}
-      className="page-md:p-10 flex w-full max-w-[600px] flex-col items-center justify-start px-5 py-10">
+      className="page-md:p-10 flex flex-col items-center justify-start px-5 py-10">
       <ContactForm />
-    </Card>
+    </FeatureCard>
   );
 };
 

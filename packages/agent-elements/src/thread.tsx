@@ -530,7 +530,7 @@ const ThreadViewport = ({
               <Button
                 isIconOnly
                 aria-label={jumpLabel}
-                className="size-7 rounded-full shadow-md"
+                className="rounded-full shadow-md"
                 size="sm"
                 variant="secondary"
                 onPress={() => scroll("latest")}>

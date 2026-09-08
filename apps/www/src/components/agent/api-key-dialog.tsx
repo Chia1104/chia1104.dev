@@ -140,7 +140,6 @@ export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
                     {t("loadFailed")}
                   </p>
                   <Button
-                    className="h-8 min-h-8 px-3 text-xs"
                     size="sm"
                     variant="tertiary"
                     onPress={() => void keys.refetch()}>
@@ -211,7 +210,7 @@ export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
                       autoComplete="off"
                       autoCapitalize="none"
                       spellCheck={false}
-                      className="h-8 min-h-8 w-full min-w-0 pr-9 font-mono text-sm"
+                      className="w-full min-w-0 pr-9 font-mono text-sm"
                       id="agent-api-key"
                       onChange={(event) => setApiKey(event.target.value)}
                       placeholder={t("placeholder")}
@@ -221,10 +220,11 @@ export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
                     />
                     <Button
                       type="button"
-                      className="text-muted absolute top-1/2 right-0.5 size-7 min-h-7 -translate-y-1/2"
+                      className="text-muted absolute top-1/2 right-0.5 -translate-y-1/2"
                       aria-label={showKey ? t("hide") : t("show")}
                       aria-pressed={showKey}
                       isIconOnly
+                      size="sm"
                       isDisabled={busy}
                       onPress={() => setShowKey((value) => !value)}
                       variant="ghost">
@@ -264,7 +264,7 @@ export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
                     onPress={() => revoke.mutate(provider)}
                     size="sm"
                     variant="ghost"
-                    className="text-danger h-8 min-h-8 px-3 text-xs">
+                    className="text-danger">
                     {t("revoke")}
                   </Button>
                 </div>
@@ -278,16 +278,10 @@ export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
               </p>
             </Modal.Body>
             <Modal.Footer>
-              <Button
-                className="h-8 min-h-8 px-3 text-xs"
-                slot="close"
-                isDisabled={busy}
-                variant="ghost"
-                size="sm">
+              <Button slot="close" isDisabled={busy} variant="ghost" size="sm">
                 {t("done")}
               </Button>
               <Button
-                className="h-8 min-h-8 px-3 text-xs"
                 form="agent-api-key-form"
                 type="submit"
                 size="sm"

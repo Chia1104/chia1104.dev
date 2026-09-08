@@ -36,7 +36,7 @@ export const ScopeChips = ({
 }) => {
   const scopes = toApiKeyScopes(permissions);
   if (scopes.length === 0) {
-    return <span className="text-muted-foreground text-xs">No scopes</span>;
+    return <span className="text-muted text-xs">No scopes</span>;
   }
   return (
     <div className="flex flex-wrap gap-1">

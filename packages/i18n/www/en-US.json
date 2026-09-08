@@ -183,28 +183,29 @@
     "error": "Here looks a little boring, I'll prepare it for you soon"
   },
   "chbot": {
-    "title": "Ask the blog",
-    "open": "Open the blog assistant",
-    "maximize": "Maximize the assistant",
-    "restore": "Restore the assistant",
-    "close": "Close the assistant",
-    "resize": "Resize the assistant",
-    "emptyTitle": "Ask about the posts",
+    "title": "Gloss",
+    "open": "Open Gloss",
+    "maximize": "Maximize Gloss",
+    "restore": "Restore Gloss",
+    "close": "Close Gloss",
+    "collapse": "Collapse conversation",
+    "resize": "Resize Gloss",
+    "emptyTitle": "Ask Gloss",
     "emptyDescription": "I search and read the published posts and point you to the right one. Ask in any language.",
     "suggestions": {
       "latest": "What has been published recently?",
       "topics": "What topics does this blog cover?",
       "find": "Which posts talk about Next.js?"
     },
-    "placeholder": "Ask about the blog…",
+    "placeholder": "Ask Gloss…",
     "signingIn": "Preparing your session…",
-    "loadFailed": "The assistant could not start.",
+    "loadFailed": "Gloss could not start.",
     "retry": "Try again",
     "usage": "{percent}% of this week's free allowance used",
     "usageReset": "resets {time}",
     "comingSoon": {
       "badge": "Coming soon",
-      "title": "The blog assistant is almost ready",
+      "title": "Gloss is almost ready",
       "description": "Here is what it will do for you.",
       "features": {
         "search": "Search the published posts by topic or exact phrase",
@@ -258,7 +259,7 @@
     },
     "humanCheck": {
       "title": "One quick check",
-      "description": "Confirm you're human and the assistant is yours for the week.",
+      "description": "Confirm you're human and Gloss is yours for the week.",
       "starting": "Starting your session…",
       "failed": "That didn't go through. Try the check again."
     },

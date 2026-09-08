@@ -1,9 +1,10 @@
 @import "tailwindcss";
 @import "@heroui/styles";
-@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/lib/default-colors.css";
 @import "fumadocs-ui/css/preset.css";
 @import "@chia/tailwind/novel.css";
 @import "@chia/tailwind/animations.css";
+@import "@chia/themes/base.css";
 @import "@chia/themes/cyan.css";
 @import "@chia/tailwind/preset.css";
 
@@ -16,7 +17,6 @@
 
 @theme {
   --color-sec-text: #444444;
-  --color-primary: #00e1ff;
 }
 
 /*

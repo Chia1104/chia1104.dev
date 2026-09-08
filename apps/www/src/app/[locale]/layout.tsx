@@ -63,10 +63,9 @@ export function generateStaticParams() {
 
 const Layout = async ({
   children,
-  modal,
 }: {
   children: ReactNode;
-  modal: ReactNode;
+  modal?: ReactNode;
 }) => {
   const [locale, messages, timeZone] = await Promise.all([
     getLocale(),
@@ -78,10 +77,7 @@ const Layout = async ({
   return (
     <RootLayout locale={locale}>
       <RootProvider messages={messages} timeZone={timeZone} locale={locale}>
-        <AppLayout locale={locale}>
-          {children}
-          {modal}
-        </AppLayout>
+        <AppLayout locale={locale}>{children}</AppLayout>
         <AppPlugins />
       </RootProvider>
     </RootLayout>

@@ -30,7 +30,7 @@ export default async function Layout({
             <div className="w-full max-w-xs">{children}</div>
           </div>
         </div>
-        <div className="bg-muted relative hidden lg:block">
+        <div className="bg-surface-secondary relative hidden lg:block">
           <Image
             src="/feature-background.jpg"
             alt="Feature Background"

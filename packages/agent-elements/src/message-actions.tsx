@@ -102,16 +102,12 @@ const ActionButton = ({
     <Tooltip.Trigger>
       <Button
         aria-label={label}
-        className="text-default-600 size-6 min-w-6"
+        className="text-muted size-6 min-w-6"
         isIconOnly
         onPress={onPress}
         size="sm"
         variant="ghost">
-        <Icon
-          aria-hidden
-          className="text-default-600 stroke-default-600 size-3.5"
-          strokeWidth={1}
-        />
+        <Icon aria-hidden className="size-3.5" strokeWidth={1} />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content placement="top">{label}</Tooltip.Content>
@@ -256,7 +252,7 @@ const ForkDialog = ({
               event.preventDefault();
               void submit();
             }}>
-            <Modal.Body className="gap-3">
+            <Modal.Body className="flex flex-col gap-3">
               <p className="text-muted text-sm">{labels.forkDescription}</p>
               <TextField
                 autoFocus

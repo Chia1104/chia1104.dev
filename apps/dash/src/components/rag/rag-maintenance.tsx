@@ -95,9 +95,7 @@ const ConfirmActionModal = ({
               <Modal.Heading>{copy?.title}</Modal.Heading>
             </Modal.Header>
             <Modal.Body className="flex flex-col gap-4">
-              <p className="text-muted-foreground text-sm">
-                {copy?.description}
-              </p>
+              <p className="text-muted text-sm">{copy?.description}</p>
 
               {isLoading || !data ? (
                 <div className="flex justify-center py-4">
@@ -108,13 +106,11 @@ const ConfirmActionModal = ({
                   <dl className="grid grid-cols-2 gap-y-1 text-sm">
                     {action === "prune" ? (
                       <>
-                        <dt className="text-muted-foreground">
-                          Vectors to drop
-                        </dt>
+                        <dt className="text-muted">Vectors to drop</dt>
                         <dd className="text-right font-mono tabular-nums">
                           {leftoverVectors}
                         </dd>
-                        <dt className="text-muted-foreground">
+                        <dt className="text-muted">
                           Chunks left without a vector
                         </dt>
                         <dd className="text-right font-mono tabular-nums">
@@ -123,17 +119,15 @@ const ConfirmActionModal = ({
                       </>
                     ) : (
                       <>
-                        <dt className="text-muted-foreground">Resources</dt>
+                        <dt className="text-muted">Resources</dt>
                         <dd className="text-right font-mono tabular-nums">
                           {data.targets}
                         </dd>
-                        <dt className="text-muted-foreground">Chunks</dt>
+                        <dt className="text-muted">Chunks</dt>
                         <dd className="text-right font-mono tabular-nums">
                           {data.counts.total}
                         </dd>
-                        <dt className="text-muted-foreground">
-                          Chunks needing a vector
-                        </dt>
+                        <dt className="text-muted">Chunks needing a vector</dt>
                         <dd className="text-right font-mono tabular-nums">
                           {data.needingEmbedding}
                         </dd>
@@ -268,7 +262,7 @@ export const RagMaintenance = () => {
       </Card>
 
       {run && isActive && run.progress && (
-        <p className="text-muted-foreground font-mono text-xs tabular-nums">
+        <p className="text-muted font-mono text-xs tabular-nums">
           {run.progress.done} / {run.progress.total} resources
           {run.progress.failed.length > 0 &&
             ` · ${run.progress.failed.length} failed`}

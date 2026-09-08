@@ -40,7 +40,9 @@ export const HumanCheck = () => {
         <span aria-hidden className="i-mdi-shield-check-outline size-6" />
       </span>
       <div>
-        <h2 className="text-foreground text-lg font-semibold">{t("title")}</h2>
+        <h2 className="text-foreground text-base font-semibold">
+          {t("title")}
+        </h2>
         <p className="text-muted mt-1 max-w-[36ch] text-sm">
           {t("description")}
         </p>

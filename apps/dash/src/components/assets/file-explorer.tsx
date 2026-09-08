@@ -109,8 +109,8 @@ export const FileExplorer = () => {
             ) : (
               <>
                 <div className="page-md:hidden flex flex-col items-center justify-center gap-3 py-12 text-center">
-                  <FolderOpen className="text-muted-foreground size-10 opacity-30" />
-                  <p className="text-muted-foreground text-sm">
+                  <FolderOpen className="text-muted size-10 opacity-30" />
+                  <p className="text-muted text-sm">
                     Tap Browse to explore your files
                   </p>
                   <Button
@@ -122,7 +122,7 @@ export const FileExplorer = () => {
                 </div>
                 {objects && objects.length > 0 && (
                   <div className="page-md:flex hidden items-center justify-center">
-                    <div className="text-muted-foreground flex flex-col items-center gap-2 opacity-30">
+                    <div className="text-muted flex flex-col items-center gap-2 opacity-30">
                       <Info className="size-10" />
                       <p className="text-sm">Select a file to view details</p>
                     </div>

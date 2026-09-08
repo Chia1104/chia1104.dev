@@ -7,7 +7,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Trash } from "lucide-react";
 import { toast } from "sonner";
 
-import CHCard from "@chia/ui/card";
 import DateFormat from "@chia/ui/date-format";
 
 import { orpc } from "@/libs/orpc/client";
@@ -25,14 +24,12 @@ const SUPPORTED_LOCALES_META = [
 ] as const;
 
 const Empty = () => (
-  <CHCard
-    className="prose dark:prose-invert page-sm:px-4 flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12"
-    wrapperProps={{ className: "w-full" }}>
+  <Card className="prose dark:prose-invert page-sm:px-4 flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12">
     <h3>No open drafts</h3>
     <div className="not-prose">
       <Logo classNames={{ root: "size-20" }} />
     </div>
-  </CHCard>
+  </Card>
 );
 
 const DraftItem = ({ draft }: { draft: Draft }) => {
@@ -106,7 +103,7 @@ const DraftItem = ({ draft }: { draft: Draft }) => {
                     {translationTitle}
                   </span>
                 ) : (
-                  <span className="text-muted-foreground flex-1 text-xs italic">
+                  <span className="text-muted flex-1 text-xs italic">
                     — Not translated
                   </span>
                 )}

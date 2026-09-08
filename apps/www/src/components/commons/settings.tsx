@@ -30,6 +30,7 @@ export const Settings = () => {
             </Modal.Header>
             <Modal.Body className="flex flex-col gap-4">
               <Switch
+                size="sm"
                 isSelected={aiEnabled}
                 onChange={(isSelected) =>
                   startTransition(() => setAiEnabled(isSelected))
@@ -46,6 +47,7 @@ export const Settings = () => {
                 </Switch.Content>
               </Switch>
               <Switch
+                size="sm"
                 isSelected={backgroundEnabled}
                 onChange={(isSelected) =>
                   startTransition(() => setBackgroundEnabled(isSelected))
@@ -64,6 +66,7 @@ export const Settings = () => {
                 </Switch.Content>
               </Switch>
               <Switch
+                size="sm"
                 isSelected={cursorEnabled}
                 onChange={(isSelected) =>
                   startTransition(() => setCursorEnabled(isSelected))

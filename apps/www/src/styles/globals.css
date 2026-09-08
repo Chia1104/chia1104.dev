@@ -1,8 +1,9 @@
 @import "tailwindcss";
 @import "@heroui/styles";
-@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/lib/default-colors.css";
 @import "fumadocs-ui/css/preset.css";
 @import "@chia/tailwind/animations.css";
+@import "@chia/themes/base.css";
 @import "@chia/themes/default.css";
 @import "@chia/tailwind/preset.css";
 
@@ -74,18 +75,6 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    Segoe UI,
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    Fira Sans,
-    Droid Sans,
-    Helvetica Neue,
-    sans-serif;
   scroll-behavior: smooth;
   scroll-padding-top: 10px;
 }

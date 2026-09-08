@@ -107,26 +107,24 @@ const ChunkDetailDrawer = ({
           ) : (
             <>
               <dl className="grid grid-cols-2 gap-2 text-xs">
-                <dt className="text-muted-foreground">Source</dt>
+                <dt className="text-muted">Source</dt>
                 <dd className="font-mono">
                   {data.chunk.sourceType}:{data.chunk.sourceId}
                 </dd>
-                <dt className="text-muted-foreground">Kind / index</dt>
+                <dt className="text-muted">Kind / index</dt>
                 <dd className="font-mono">
                   {data.chunk.kind} #{data.chunk.chunkIndex}
                 </dd>
-                <dt className="text-muted-foreground">Heading</dt>
+                <dt className="text-muted">Heading</dt>
                 <dd className="font-mono">{data.chunk.headingPath ?? "—"}</dd>
-                <dt className="text-muted-foreground">Tokens</dt>
+                <dt className="text-muted">Tokens</dt>
                 <dd className="font-mono">{data.chunk.tokenCount ?? "—"}</dd>
-                <dt className="text-muted-foreground">Content hash</dt>
+                <dt className="text-muted">Content hash</dt>
                 <dd className="truncate font-mono">{data.chunk.contentHash}</dd>
               </dl>
 
               <div className="flex flex-col gap-1">
-                <span className="text-muted-foreground text-xs">
-                  Stored vectors
-                </span>
+                <span className="text-muted text-xs">Stored vectors</span>
                 {data.chunk.vectors.length === 0 ? (
                   <span className="text-xs">None</span>
                 ) : (
@@ -141,7 +139,7 @@ const ChunkDetailDrawer = ({
               </div>
 
               <div className="flex flex-col gap-1">
-                <span className="text-muted-foreground text-xs">Content</span>
+                <span className="text-muted text-xs">Content</span>
                 <Card variant="tertiary" className="rounded-md p-2 text-xs">
                   <Card.Content>{data.chunk.content}</Card.Content>
                 </Card>
@@ -231,7 +229,7 @@ export const RagChunkExplorer = () => {
           onChange={(value) => void setParams({ q: value.trim() || null })}
           value={params.q}>
           <div className="relative">
-            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
+            <SearchIcon className="text-muted pointer-events-none absolute top-1/2 left-2.5 z-10 size-3.5 -translate-y-1/2" />
             <Input className="pl-8" placeholder="Search content..." />
           </div>
         </TextField>
@@ -351,7 +349,7 @@ export const RagChunkExplorer = () => {
                       {chunk.kind} #{chunk.chunkIndex}
                     </Table.Cell>
                     <Table.Cell>
-                      <span className="text-muted-foreground line-clamp-1 max-w-40 text-xs">
+                      <span className="text-muted line-clamp-1 max-w-40 text-xs">
                         {chunk.headingPath ?? "—"}
                       </span>
                     </Table.Cell>
