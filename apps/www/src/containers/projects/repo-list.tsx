@@ -7,7 +7,7 @@ import { RepoCard } from "@/components/project/repo-card";
 export const RepoList = async () => {
   const repo = await getPinnedRepos(meta.name);
   return (
-    <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div className="page-md:grid-cols-2 mt-4 grid grid-cols-1 gap-4">
       {repo.user.pinnedItems.edges.map((item) => (
         <RepoCard
           key={item.node.id}

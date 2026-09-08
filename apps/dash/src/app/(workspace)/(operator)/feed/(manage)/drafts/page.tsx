@@ -9,7 +9,7 @@ const DraftList = dynamic(
   () => import("@/components/feed/draft-list").then((mod) => mod.DraftList),
   {
     loading: () => (
-      <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="page-md:grid-cols-2 grid w-full grid-cols-1 gap-5">
         <FeedSkeleton />
       </div>
     ),

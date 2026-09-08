@@ -25,6 +25,7 @@ The frontends import only the contract type from `@chia/api/orpc/contracts` and 
 - `src/libs/orpc/client.ts` runs in the browser with the session cookie and may call only public procedures and the visitor's own agent sessions. Never expose an API key to it.
 - Public agent chat lives in `src/components/agent/` and uses `@chia/agent-elements` content renderers only. Guest sessions come from better-auth's anonymous plugin and require the site captcha before minting. `@chia/ui/captcha` is the shared challenge widget.
 - Content uses `@chia/contents`; localization uses `next-intl` with `packages/i18n/www`.
+- The shell around the content is the `page` container, narrowed by the chat dock through `--dock-width`. Layout inside it responds with the `page-sm`, `page-md` and `page-lg` variants, not viewport breakpoints; portaled overlays and the drawer branch keep viewport breakpoints.
 
 ## `dash`
 
@@ -34,7 +35,9 @@ Data fetching runs in the browser through `src/libs/orpc/client.ts` with the Bet
 
 The post editor edits `feed_draft`, never the feed: autosave is a compare-and-set on the draft revision, changes from the agent, MCP or another tab arrive over `feeds.draft:watch` as invalidations of the current draft query. Watch connections and database-listener reconnects resynchronize current state without replaying revision history; there is no client polling. The mounted agent session additionally reports its draft-tier tool calls through `onToolEvent`, so the editor can show what the agent is doing to the open draft and refresh it as soon as a call settles. Unsaved edits also persist in the browser as a patch over the revision they were made against; reopening the draft resumes them on the same revision and offers them as a conflict on a newer one. Navigation away from the editor goes through `useGuardedRouter` in `libs/navigation-guard`, which saves first and asks only when saving fails. Only Apply writes the feed. Feed-level switches (published, date, delete) call `feeds.update` directly.
 
-The writing agent is a drawer the workspace layout mounts for the operator, not a page. The layout mounts `AgentContextProvider` from `@chia/agent-elements/context`; a page provides the records it has open (the editor provides its draft) and every prompt, suggestion and slash command from the drawer carries them as attachments unless the operator detaches one. The agent is otherwise unbound and picks drafts through its own tools.
+`SidebarInset` is the `page` container, narrowed by the sidebar and the agent dock. Layout inside it responds with the `page-sm`, `page-md` and `page-lg` variants, not viewport breakpoints; portaled overlays keep viewport breakpoints.
+
+The writing agent is a dock the workspace layout mounts for the operator, not a page. The layout mounts `AgentContextProvider` from `@chia/agent-elements/context`; a page provides the records it has open (the editor provides its draft) and every prompt, suggestion and slash command from the drawer carries them as attachments unless the operator detaches one. The agent is otherwise unbound and picks drafts through its own tools.
 
 What a signed-in person may see comes from `dashboard.access`, never the `role` column: an `operator` is the configured admin id and gets the `(operator)` route group, whose server layout redirects everyone else; a `member` gets the overview and general settings. Guests are refused at the workspace layout.
 

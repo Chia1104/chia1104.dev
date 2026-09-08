@@ -19,6 +19,26 @@
   --color-primary: #00e1ff;
 }
 
+/*
+ * `page` is the inset beside the sidebar, so these follow the width a page has, not the
+ * viewport: the sidebar and an open agent dock narrow it the same way a smaller window does.
+ */
+@custom-variant page-sm {
+  @container page (width >= 640px) {
+    @slot;
+  }
+}
+@custom-variant page-md {
+  @container page (width >= 768px) {
+    @slot;
+  }
+}
+@custom-variant page-lg {
+  @container page (width >= 1024px) {
+    @slot;
+  }
+}
+
 @layer components {
   .animated-feature-cards::before {
     background: radial-gradient(

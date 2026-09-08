@@ -124,7 +124,7 @@ export const DashboardOverview = () => {
           title="Users"
           action={{ href: "/users", label: "Manage users" }}
         />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="page-md:grid-cols-4 grid grid-cols-2 gap-4">
           <StatCard label="Accounts and guests" value={users.total} />
           <StatCard label="New in 7 days" value={users.newThisWeek} />
           <StatCard
@@ -141,7 +141,7 @@ export const DashboardOverview = () => {
           title="Agent this week"
           action={{ href: "/agents", label: "Quota settings" }}
         />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        <div className="page-md:grid-cols-3 grid grid-cols-2 gap-4">
           <StatCard
             hint={`resets ${formatDateTime(week.period.end)} (${week.period.timeZone})`}
             label="House spend"
@@ -162,7 +162,7 @@ export const DashboardOverview = () => {
           title="Content"
           action={{ href: "/feed/posts", label: "Open content" }}
         />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="page-md:grid-cols-4 grid grid-cols-2 gap-4">
           <StatCard label="Published posts" value={content.posts} />
           <StatCard label="Published notes" value={content.notes} />
           <StatCard label="Drafts" value={content.drafts} />

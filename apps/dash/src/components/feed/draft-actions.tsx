@@ -164,7 +164,7 @@ const PostSettings = ({ feedId }: { feedId: number }) => {
           </Calendar>
         </DatePicker.Popover>
       </DatePicker>
-      <div className="justify-self-center sm:ml-auto">
+      <div className="page-sm:ml-auto justify-self-center">
         <DeleteButton
           feedId={feedId}
           type={feed.type}
@@ -376,7 +376,7 @@ export const DraftActions = ({
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <Card className="sticky top-0 z-20 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
+      <Card className="page-sm:flex-row page-sm:items-center page-sm:justify-between sticky top-0 z-20 backdrop-blur-sm">
         <Card.Header className="min-w-0 gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <Card.Title className="text-base font-semibold">

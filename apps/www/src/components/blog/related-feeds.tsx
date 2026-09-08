@@ -20,7 +20,7 @@ export function RelatedFeedsSkeleton() {
       aria-label="Loading related articles"
       className="not-prose mt-12 w-full">
       <Skeleton className="mb-4 h-7 w-40 rounded-lg" />
-      <ul className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <ul className="page-md:grid-cols-2 page-lg:grid-cols-3 grid gap-3">
         {["related-feed-1", "related-feed-2", "related-feed-3"].map((item) => (
           <li key={item}>
             <Card
@@ -61,7 +61,7 @@ export async function RelatedFeeds({ locale, slug }: RelatedFeedsProps) {
       <h2 id="related-feeds-title" className="mb-4 text-xl font-semibold">
         {t("related-feeds")}
       </h2>
-      <ul className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <ul className="page-md:grid-cols-2 page-lg:grid-cols-3 grid gap-3">
         {feeds.items.map((feed) => {
           const type = `${feed.type}s`;
           const token = createFeedImageToken({

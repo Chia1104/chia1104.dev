@@ -56,11 +56,11 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
     switch (type) {
       case FeedType.Note:
         return {
-          ul: "md:grid-cols-2",
+          ul: "page-md:grid-cols-2",
         };
       case FeedType.Post:
         return {
-          ul: "lg:grid-cols-[.75fr_1fr]",
+          ul: "page-lg:grid-cols-[.75fr_1fr]",
         };
       default:
         return {
@@ -86,7 +86,7 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
       <NavigationMenuContent>
         <ul
           className={cn(
-            "grid w-[300px] gap-3 p-4 pb-0 md:w-[500px] lg:w-[600px]",
+            "page-md:w-[500px] page-lg:w-[600px] grid w-[300px] gap-3 p-4 pb-0",
             hasFeeds ? getStyles().ul : "max-w-[300px]"
           )}>
           {hasFeeds ? (

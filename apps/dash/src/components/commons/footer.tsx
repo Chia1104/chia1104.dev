@@ -16,8 +16,8 @@ const Footer = ({ className }: { className?: string }) => {
         "bg-sidebar border-sidebar-border flex w-full flex-col border-t",
         className
       )}>
-      <div className="mx-auto w-full px-6 py-5 md:flex md:items-center md:justify-between lg:px-8">
-        <div className="flex flex-col items-center justify-center gap-2 md:order-2 md:items-end">
+      <div className="page-md:flex page-md:items-center page-md:justify-between page-lg:px-8 mx-auto w-full px-6 py-5">
+        <div className="page-md:order-2 page-md:items-end flex flex-col items-center justify-center gap-2">
           <ThemeSwitch
             dropdownProps={{
               popover: {
@@ -29,8 +29,8 @@ const Footer = ({ className }: { className?: string }) => {
             }}
           />
         </div>
-        <div className="mt-4 flex flex-col gap-2 md:order-1 md:mt-0">
-          <div className="flex items-center justify-center gap-3 md:justify-start">
+        <div className="page-md:order-1 page-md:mt-0 mt-4 flex flex-col gap-2">
+          <div className="page-md:justify-start flex items-center justify-center gap-3">
             <div className="flex items-center gap-2">
               <Logo />
               <span className="text-small font-medium">Chia1104.dev</span>
@@ -41,7 +41,7 @@ const Footer = ({ className }: { className?: string }) => {
               </Suspense>
             </ErrorBoundary>
           </div>
-          <p className="text-default-400 text-center text-xs md:text-start">
+          <p className="text-default-400 page-md:text-start text-center text-xs">
             &copy; {dayjs().format("YYYY")} Chia1104.dev. All rights reserved.
           </p>
         </div>

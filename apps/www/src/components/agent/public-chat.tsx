@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button, Spinner } from "@heroui/react";
@@ -43,7 +44,12 @@ const Centered = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-export const PublicChat = () => {
+/** The host's controls for the panel itself, shown beside the session tabs. */
+interface PublicChatProps {
+  headerActions?: ReactNode;
+}
+
+export const PublicChat = ({ headerActions }: PublicChatProps) => {
   const t = useTranslations("chbot");
   const session = authClient.useSession();
 
@@ -73,10 +79,10 @@ export const PublicChat = () => {
     return <HumanCheck />;
   }
 
-  return <PublicChatSessions />;
+  return <PublicChatSessions headerActions={headerActions} />;
 };
 
-const PublicChatSessions = () => {
+const PublicChatSessions = ({ headerActions }: PublicChatProps) => {
   const t = useTranslations("chbot");
   const locale = useLocale();
   const labels = agentLabelsOf(locale);
@@ -232,6 +238,7 @@ const PublicChatSessions = () => {
           visible={3}
         />
         {session.data && <AccountMenu user={session.data.user} />}
+        {headerActions}
       </div>
       {selectedSessionId ? (
         <AgentSessionProvider

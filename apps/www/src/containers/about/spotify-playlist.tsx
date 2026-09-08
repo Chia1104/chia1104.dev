@@ -60,7 +60,7 @@ const First: FC<{
   data: ReturnType<typeof getTop4>[0];
 }> = ({ data }) => {
   return (
-    <div className="flex w-full flex-col items-center sm:items-start">
+    <div className="page-sm:items-start flex w-full flex-col items-center">
       <span className="group relative w-2/3">
         <ImageItem
           src={data.track.album.images[0]?.url ?? ""}
@@ -139,7 +139,7 @@ export async function SpotifyPlaylist() {
             "--noise-gradient-3-dark": "var(--color-pink-600)",
           } as React.CSSProperties
         }
-        className="grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg px-5 py-7 sm:grid-cols-2 sm:py-3">
+        className="page-sm:grid-cols-2 page-sm:py-3 grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg px-5 py-7">
         <div className="flex w-full items-center">
           <First data={data[0]} />
         </div>

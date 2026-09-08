@@ -214,7 +214,7 @@ const Contact = () => {
       wrapperProps={{
         className: "w-full max-w-[600px] justify-self-center",
       }}
-      className="flex w-full max-w-[600px] flex-col items-center justify-start px-5 py-10 md:p-10">
+      className="page-md:p-10 flex w-full max-w-[600px] flex-col items-center justify-start px-5 py-10">
       <ContactForm />
     </Card>
   );

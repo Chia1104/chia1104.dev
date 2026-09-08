@@ -27,7 +27,7 @@ export const LoadingCard = () => (
 );
 
 export const RepoListFallback = () => (
-  <div className="mt-4 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+  <div className="page-md:grid-cols-2 mt-4 grid w-full grid-cols-1 gap-4">
     {loadingCards.map((card) => (
       <LoadingCard key={card} />
     ))}

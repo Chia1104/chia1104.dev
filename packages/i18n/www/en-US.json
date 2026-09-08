@@ -185,6 +185,10 @@
   "chbot": {
     "title": "Ask the blog",
     "open": "Open the blog assistant",
+    "maximize": "Maximize the assistant",
+    "restore": "Restore the assistant",
+    "close": "Close the assistant",
+    "resize": "Resize the assistant",
     "emptyTitle": "Ask about the posts",
     "emptyDescription": "I search and read the published posts and point you to the right one. Ask in any language.",
     "suggestions": {

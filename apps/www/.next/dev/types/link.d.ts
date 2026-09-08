@@ -42,7 +42,7 @@ declare namespace __next_route_internal_types__ {
     | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}/og` // ../../../src/app/[locale]/(blog)/[type]/[slug]/og/route.ts
     | `/${SafeSlug<T>}/about` // /[locale]/about
     | `/${SafeSlug<T>}/contact` // ../../../src/app/[locale]/contact/page.tsx
-    | `/${SafeSlug<T>}/email` // ../../../src/app/[locale]/@modal/(.)email/page.tsx
+    | `/${SafeSlug<T>}/email` // ../../../src/app/[locale]/email/page.ts
     | `/${SafeSlug<T>}/note/${SafeSlug<T>}` // /[locale]/note/[slug]
     | `/${SafeSlug<T>}/post/${SafeSlug<T>}` // /[locale]/post/[slug]
     | `/${SafeSlug<T>}/projects` // ../../../src/app/[locale]/projects/page.tsx

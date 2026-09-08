@@ -21,10 +21,7 @@ export const FileTreeDrawer = ({
   children,
 }: FileTreeDrawerProps) => {
   return (
-    <Drawer.Backdrop
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      className="md:hidden">
+    <Drawer.Backdrop isOpen={isOpen} onOpenChange={onOpenChange}>
       <Drawer.Content placement="bottom">
         <Drawer.Dialog>
           <Drawer.Handle />

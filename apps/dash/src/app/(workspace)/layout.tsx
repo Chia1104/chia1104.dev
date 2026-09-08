@@ -34,7 +34,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
       <AgentContextProvider>
         <SidebarProvider>
           <AppSidebar />
-          <SidebarInset>
+          <SidebarInset className="@container/page">
             <header className="bg-sidebar border-sidebar-border flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
               <div className="flex min-w-0 flex-1 items-center gap-2 px-4">
                 <SidebarTrigger className="shrink-0" />

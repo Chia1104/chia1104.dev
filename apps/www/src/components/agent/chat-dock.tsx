@@ -7,6 +7,7 @@ import { Button, Drawer, Spinner } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { useMediaQuery } from "usehooks-ts";
 
+import { DockActions, DockShell } from "@chia/ui/dock";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { CHBot } from "@/components/commons/ch-bot";
@@ -30,39 +31,28 @@ const PublicChat = dynamic(
 const DOCK_QUERY = "(min-width: 1024px)";
 /** Under this a side drawer would leave nothing to read, so the chat comes up as a sheet. */
 const SHEET_QUERY = "(max-width: 639px)";
-/** Width the shell reserves; keep it in step with the panel's `w-96`. */
-const DOCK_WIDTH = "24rem";
+const DEFAULT_WIDTH = 384;
 
 export const ChatDock = () => {
   const t = useTranslations("chbot");
   const aiEnabled = useSettingsStore((state) => state.aiEnabled);
-  const isOpen = useChatDockStore((state) => state.isOpen);
-  const setOpen = useChatDockStore((state) => state.setOpen);
+  const mode = useChatDockStore((state) => state.mode);
+  const setMode = useChatDockStore((state) => state.setMode);
+  const toggle = useChatDockStore((state) => state.toggle);
   const isWide = useMediaQuery(DOCK_QUERY, { initializeWithValue: false });
   const isSheet = useMediaQuery(SHEET_QUERY, { initializeWithValue: false });
-
-  const isDocked = isWide && isOpen;
+  const isOpen = mode !== "closed";
 
   useEffect(() => {
     void useChatDockStore.persist.rehydrate();
   }, []);
 
-  /**
-   * The shell reserves the dock's width through this variable. It cannot subscribe to the store
-   * itself: every page would then hydrate the shell around a value only this branch cares about.
-   */
-  useEffect(() => {
-    if (!isDocked) return;
-    const root = document.documentElement;
-    root.style.setProperty("--chat-dock-width", DOCK_WIDTH);
-    return () => {
-      root.style.removeProperty("--chat-dock-width");
-    };
-  }, [isDocked]);
-
   if (!aiEnabled) {
     return null;
   }
+
+  // The drawer and the maximized panel cover the launcher; the column leaves it as the way back out.
+  const launcherCovered = isOpen && (!isWide || mode === "maximized");
 
   return (
     <>
@@ -70,28 +60,42 @@ export const ChatDock = () => {
         aria-expanded={isOpen}
         aria-label={t("open")}
         className={cn(
-          "fixed right-[calc(var(--chat-dock-width,0px)+1.5rem)] bottom-6 z-50 size-16 rounded-full transition-[right] duration-200 ease-out motion-reduce:transition-none",
-          // The drawer covers the launcher; the dock leaves it beside the panel as the way back out.
-          isOpen && !isDocked ? "invisible" : null
+          "fixed right-[calc(var(--dock-width,0px)+1.5rem)] bottom-6 z-50 size-16 rounded-full transition-[right] duration-200 ease-out motion-reduce:transition-none [html[data-dock-resizing]_&]:transition-none",
+          launcherCovered ? "invisible" : null
         )}
-        onPress={() => setOpen(!isOpen)}>
+        onPress={toggle}>
         <CHBot className="size-16 rounded-full shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]" />
       </Button>
 
       {isWide ? (
-        <aside
-          aria-label={t("title")}
-          className={cn(
-            // `bg-overlay` is the drawer's own surface, so the chat reads the same either way.
-            "bg-overlay fixed inset-y-0 right-0 z-50 flex flex-col overflow-hidden transition-[width] duration-200 ease-out motion-reduce:transition-none",
-            isOpen ? "border-border w-96 border-l" : "w-0"
-          )}>
-          <div className="flex h-full w-96 flex-col">
-            {isOpen ? <PublicChat /> : null}
-          </div>
-        </aside>
+        <DockShell
+          className="z-50"
+          defaultWidth={DEFAULT_WIDTH}
+          label={t("title")}
+          mode={mode}
+          onModeChange={setMode}
+          resizeLabel={t("resize")}
+          storageKey="chia.www.chat-dock.width">
+          {isOpen ? (
+            <PublicChat
+              headerActions={
+                <DockActions
+                  labels={{
+                    maximize: t("maximize"),
+                    restore: t("restore"),
+                    close: t("close"),
+                  }}
+                  mode={mode}
+                  onModeChange={setMode}
+                />
+              }
+            />
+          ) : null}
+        </DockShell>
       ) : (
-        <Drawer.Backdrop isOpen={isOpen} onOpenChange={setOpen}>
+        <Drawer.Backdrop
+          isOpen={isOpen}
+          onOpenChange={(open) => setMode(open ? "open" : "closed")}>
           <Drawer.Content placement={isSheet ? "bottom" : "right"}>
             <Drawer.Dialog
               className={cn(

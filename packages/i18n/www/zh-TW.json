@@ -185,6 +185,10 @@
   "chbot": {
     "title": "問問部落格",
     "open": "開啟部落格助理",
+    "maximize": "放大助理",
+    "restore": "還原助理",
+    "close": "關閉助理",
+    "resize": "調整助理寬度",
     "emptyTitle": "想找什麼文章？",
     "emptyDescription": "我可以搜尋並閱讀已發佈的文章，幫你找到對的那一篇。用任何語言提問都可以。",
     "suggestions": {

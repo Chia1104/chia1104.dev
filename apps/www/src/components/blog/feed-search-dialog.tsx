@@ -32,7 +32,7 @@ export function FeedSearchDialog({ locale }: FeedSearchDialogProps) {
         className="not-prose dark:bg-dark-dark rounded-full"
         onPress={() => setOpen(true)}>
         <span className="i-mdi-search size-3.5" />
-        <span className="hidden sm:inline">{t("search-articles")}</span>
+        <span className="page-sm:inline hidden">{t("search-articles")}</span>
       </Button>
       <CommandDialog
         open={open}

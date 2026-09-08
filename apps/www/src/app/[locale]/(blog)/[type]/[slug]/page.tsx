@@ -130,9 +130,9 @@ const Page = async ({
           <ActionGroup
             content={feed.translations[0]?.content}
             articleUrl={articleUrl}
-            className="mt-5 flex justify-end lg:hidden"
+            className="page-lg:hidden mt-5 flex justify-end"
           />
-          <div className="mt-5 flex flex-col items-start lg:flex-row lg:items-center lg:justify-between">
+          <div className="page-lg:flex-row page-lg:items-center page-lg:justify-between mt-5 flex flex-col items-start">
             <div className="not-prose flex items-center gap-2">
               <Avatar>
                 <Avatar.Image src={Meta.avatar} />
@@ -192,7 +192,7 @@ const Page = async ({
                 <ActionGroup
                   content={feed.translations[0]?.content}
                   articleUrl={articleUrl}
-                  className="mt-5 hidden self-end md:flex"
+                  className="page-md:flex mt-5 hidden self-end"
                 />
               ),
             },

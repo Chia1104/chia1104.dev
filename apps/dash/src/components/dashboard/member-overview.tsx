@@ -33,7 +33,7 @@ export const MemberOverview = () => {
   const percent = fraction === null ? null : Math.round(fraction * 100);
 
   return (
-    <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+    <div className="page-md:grid-cols-2 grid w-full grid-cols-1 gap-4">
       <Card className="w-full">
         <Card.Header>
           <Card.Title className="text-sm">Profile</Card.Title>

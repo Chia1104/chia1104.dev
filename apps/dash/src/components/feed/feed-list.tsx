@@ -30,7 +30,7 @@ interface Props {
 const Empty = memo(() => {
   return (
     <CHCard
-      className="prose dark:prose-invert flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12 sm:px-4"
+      className="prose dark:prose-invert page-sm:px-4 flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12"
       wrapperProps={{
         className: "w-full",
       }}>
@@ -215,7 +215,7 @@ const FeedList = ({ initFeed, nextCursor, query = {} }: Props) => {
   return (
     <div className="w-full">
       {isSuccess && flatData.length === 0 ? <Empty /> : null}
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="page-md:grid-cols-2 grid grid-cols-1 gap-5">
         {isSuccess && flatData.length > 0
           ? flatData.map((feed, index) => {
               const isLastItem = flatData.length === index + 1;

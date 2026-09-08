@@ -38,8 +38,36 @@
   --color-bgBlue: rgba(117, 149, 255, 0.3);
 }
 
+/*
+ * `page` is the shell around the content, so these follow the width the content has, not the
+ * viewport: an open dock narrows the page the same way a smaller window does.
+ */
+@custom-variant page-sm {
+  @container page (width >= 640px) {
+    @slot;
+  }
+}
+@custom-variant page-md {
+  @container page (width >= 768px) {
+    @slot;
+  }
+}
+@custom-variant page-lg {
+  @container page (width >= 992px) {
+    @slot;
+  }
+}
+
 @utility container {
-  @apply sm:max-w-[640px] md:max-w-[768px] lg:max-w-[992px] xl:max-w-[992px] 2xl:max-w-[992px];
+  @container page (width >= 640px) {
+    max-width: 640px;
+  }
+  @container page (width >= 768px) {
+    max-width: 768px;
+  }
+  @container page (width >= 992px) {
+    max-width: 992px;
+  }
 }
 
 html,

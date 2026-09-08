@@ -133,7 +133,7 @@ export const RagOverview = () => {
 
       <CoverageBar counts={data.counts} />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="page-md:grid-cols-4 grid grid-cols-2 gap-4">
         <StatCard label="Chunks" value={data.counts.total} />
         <StatCard label="Embedded" value={data.counts.current} />
         <StatCard
@@ -144,7 +144,7 @@ export const RagOverview = () => {
         <StatCard label="Missing" value={data.counts.missing} />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="page-md:grid-cols-2 grid gap-4">
         <Breakdown
           rows={data.bySourceType.map((row) => ({
             key: row.sourceType,

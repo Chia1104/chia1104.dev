@@ -26,7 +26,7 @@ const SUPPORTED_LOCALES_META = [
 
 const Empty = () => (
   <CHCard
-    className="prose dark:prose-invert flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12 sm:px-4"
+    className="prose dark:prose-invert page-sm:px-4 flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12"
     wrapperProps={{ className: "w-full" }}>
     <h3>No open drafts</h3>
     <div className="not-prose">
@@ -177,7 +177,7 @@ export const DraftList = () => {
 
   if (drafts.isLoading) {
     return (
-      <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="page-md:grid-cols-2 grid w-full grid-cols-1 gap-5">
         <FeedSkeleton />
       </div>
     );
@@ -187,7 +187,7 @@ export const DraftList = () => {
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="page-md:grid-cols-2 grid grid-cols-1 gap-5">
         {items.map((draft) => (
           <DraftItem key={draft.id} draft={draft} />
         ))}
