@@ -182,10 +182,7 @@ export const SelectionTrigger = <T,>({
     ? undefined
     : {
         top: at.top,
-        left: Math.max(
-          EDGE_PX,
-          Math.min(at.left, window.innerWidth - EDGE_PX)
-        ),
+        left: Math.max(EDGE_PX, Math.min(at.left, window.innerWidth - EDGE_PX)),
       };
 
   return (
@@ -243,7 +240,11 @@ export interface SelectionMenuProps {
 }
 
 /** Preset actions for a selection, and a free prompt where the host allows one. */
-export const SelectionMenu = ({ actions, preview, prompt }: SelectionMenuProps) => {
+export const SelectionMenu = ({
+  actions,
+  preview,
+  prompt,
+}: SelectionMenuProps) => {
   const [text, setText] = useState("");
   const inputId = useId();
   const submit = (event: FormEvent) => {
