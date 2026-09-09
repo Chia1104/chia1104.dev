@@ -21,11 +21,17 @@ export const SignInRequired = () => {
 
       <section
         aria-labelledby="chbot-sign-in-title"
-        className="absolute inset-x-0 bottom-0 isolate flex flex-col items-center gap-4 px-6 pt-24 pb-6 text-center">
-        <div
-          aria-hidden
-          className="from-background via-background/85 pointer-events-none absolute inset-0 -z-10 bg-linear-to-t to-transparent [mask-image:linear-gradient(to_top,black_65%,transparent)] backdrop-blur-lg"
-        />
+        className="absolute inset-x-0 bottom-0 isolate flex flex-col items-center gap-4 px-6 pt-32 pb-6 text-center">
+        {/*
+         * The band above the copy is the only place the preview shows through: solid below it,
+         * a fade over its height, and a blur that begins mid-fade so the tint hides the blur's
+         * own edge on browsers that ignore the mask on a backdrop filter.
+         */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          <div className="bg-background absolute inset-x-0 top-32 bottom-0" />
+          <div className="from-background via-background/70 absolute inset-x-0 top-0 h-32 bg-linear-to-t via-45% to-transparent" />
+          <div className="absolute inset-x-0 top-16 bottom-0 [mask-image:linear-gradient(to_top,black_calc(100%-4rem),transparent)] backdrop-blur-md" />
+        </div>
         <div className="flex flex-col gap-1">
           <h2
             id="chbot-sign-in-title"
