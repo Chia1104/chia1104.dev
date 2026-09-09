@@ -99,8 +99,8 @@ const renderAttachments = async (
         return {
           text:
             `- The visitor is reading the post "${read.translation.title}" (slug \`${read.post.slug}\`, ` +
-            `locale ${attachment.locale}). A question with no other subject is about this post; ` +
-            `\`get_post\` it before answering.`,
+            `locale ${attachment.locale}) at ${read.translation.url}. A question with no other ` +
+            `subject is about this post; \`get_post\` it before answering.`,
           label: read.translation.title,
         };
       }
@@ -124,7 +124,7 @@ const renderAttachments = async (
       const where = source.headingPath ? `, under "${source.headingPath}"` : "";
       return {
         text:
-          `- Selected in the post "${read.translation.title}" (slug \`${read.post.slug}\`, locale ${source.locale}${where}):\n` +
+          `- Selected in the post "${read.translation.title}" (slug \`${read.post.slug}\`, locale ${source.locale}${where}) at ${read.translation.url}:\n` +
           quoted(text),
         label: source.headingPath
           ? `${read.translation.title} · ${source.headingPath}`

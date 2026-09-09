@@ -71,6 +71,7 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
           {
             slug: "existing-post",
             locale: "en",
+            url: "http://localhost:3000/en-US/posts/existing-post",
             title: "An existing post",
             snippet: "…",
           },
@@ -79,6 +80,7 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
           {
             feedId: 1,
             slug: "existing-post",
+            url: "http://localhost:3000/en-US/posts/existing-post",
             type: "post",
             contentType: "mdx",
             published: true,
@@ -86,6 +88,7 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
             translations: [
               {
                 locale: "en",
+                url: "http://localhost:3000/en-US/posts/existing-post",
                 title: "An existing post",
                 content: "## Existing section\n\nExisting body.",
               },
@@ -274,7 +277,7 @@ describe("runPublicTurn", () => {
     const prompt = seen[0]?.messages.find((m) => m.role === "user");
     const blocks = JSON.stringify(prompt?.content);
     expect(blocks).toContain(
-      'The visitor is reading the post \\"An existing post\\" (slug `existing-post`, locale en)'
+      'The visitor is reading the post \\"An existing post\\" (slug `existing-post`, locale en) at http://localhost:3000/en-US/posts/existing-post'
     );
     expect(blocks).toContain("A post this agent cannot read; ignore it");
     expect(fixture.events.find((e) => e.type === "user")).toMatchObject({

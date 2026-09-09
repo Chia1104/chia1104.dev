@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
-import { getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
+import { feedUrl, getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
 
 import { client } from "@/libs/orpc/client.rsc";
 import { Locale as ILocale } from "@/libs/utils/i18n";
@@ -44,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         return items.map(
           (feed) =>
             ({
-              url: `${baseUrl}/${localeResolver(locale)}/${feed.type}s/${feed.slug}`,
+              url: feedUrl({ type: feed.type, slug: feed.slug, locale }),
               lastModified: feed.updatedAt,
               priority: 0.8,
               changeFrequency: "weekly",
