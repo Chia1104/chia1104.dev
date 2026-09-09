@@ -55,6 +55,7 @@
     "@chia/agent-runtime": "workspace:*",
     "@chia/agent-writing": "workspace:*",
     "@chia/ai": "workspace:*",
+    "@chia/auth": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/service-kit": "workspace:*",
     "@chia/utils": "workspace:*",

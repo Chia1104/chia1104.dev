@@ -8,6 +8,7 @@ import * as z from "zod";
 
 import { ModelPicker } from "@chia/agent-elements/model-picker";
 import { providerLabelOf } from "@chia/agent-elements/provider-icons";
+import { CallerTier } from "@chia/auth/tier";
 
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
@@ -88,3 +89,45 @@ export const useInvalidateAgentAdmin = () => {
     [queryClient]
   );
 };
+
+/** Maps contract `CallerTier` values. */
+export const audienceOf = (minTier: number): string => {
+  switch (minTier) {
+    case CallerTier.Anonymous:
+      return "anyone";
+    case CallerTier.Guest:
+      return "guests and readers";
+    case CallerTier.ApiKey:
+      return "API-key callers";
+    case CallerTier.Session:
+      return "signed-in readers";
+    case CallerTier.Root:
+      return "you only";
+    default:
+      return `tier ${minTier}`;
+  }
+};
+
+/** The floors an operator may pick: the definition's own and every tier above it that a session can hold. */
+export const audienceOptionsOf = (code: number) =>
+  [CallerTier.Guest, CallerTier.Session, CallerTier.Root]
+    .filter((tier) => tier >= code)
+    .map((tier) => ({ id: String(tier), label: audienceOf(tier) }));
+
+export type KindAdmin =
+  RouterOutputs["agent"]["admin"]["kinds"]["list"][number];
+export type TaskAdmin =
+  RouterOutputs["agent"]["admin"]["tasks"]["list"][number];
+
+/** Whether any row value departs from the code default. */
+export const isKindOverridden = (kind: KindAdmin): boolean =>
+  kind.minTier.override !== null ||
+  kind.defaults.override.model !== null ||
+  kind.defaults.override.thinkingLevel !== null ||
+  kind.defaults.override.autoApprove !== null ||
+  Object.keys(kind.config.override).length > 0;
+
+export const isTaskOverridden = (task: TaskAdmin): boolean =>
+  task.model.override !== null ||
+  (task.prompt?.override ?? null) !== null ||
+  Object.keys(task.params?.override ?? {}).length > 0;

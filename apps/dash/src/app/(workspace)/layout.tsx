@@ -15,18 +15,17 @@ import { AgentDock, AgentDockTrigger } from "@/components/agent/agent-dock";
 import { AppSidebar } from "@/components/commons/app-sidebar";
 import Footer from "@/components/commons/footer";
 import { NavBreadcrumbs } from "@/components/commons/nav-breadcrumbs";
-import { getAccess, getSession } from "@/services/auth/resources.rsc";
+import { getSession } from "@/services/auth/resources.rsc";
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const session = await getSession();
 
-  // A guest from the public site holds a session cookie but is not a person.
-  if (!session.data || session.data.user.isAnonymous) {
+  // A guest from the public site holds a session cookie but has no dashboard.
+  if (!session.data || session.data.access.dashboard === null) {
     unauthorized();
   }
   // The writing agent is the operator's; a member never sees the trigger or the dock.
-  const access = await getAccess();
-  const operator = access.data?.level === "operator";
+  const operator = session.data.access.dashboard === "operator";
 
   // Pages provide what they have open (the editor's draft) and the dock sends it.
   return (

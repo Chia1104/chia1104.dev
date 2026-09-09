@@ -78,7 +78,9 @@ export const countEmbeddingTokensAsync = async (
   text: string
 ): Promise<number> => {
   const encoding = await tryLoadTokenizer();
-  return encoding ? encoding.encode(text).length : estimateEmbeddingTokens(text);
+  return encoding
+    ? encoding.encode(text).length
+    : estimateEmbeddingTokens(text);
 };
 
 /**
@@ -188,12 +190,7 @@ export const guardEmbeddingInput = async (
     ? null
     : await tryLoadTokenizer();
 
-  return guardEmbeddingInputWithEncoding(
-    text,
-    context,
-    maxTokens,
-    encoding
-  );
+  return guardEmbeddingInputWithEncoding(text, context, maxTokens, encoding);
 };
 
 /**

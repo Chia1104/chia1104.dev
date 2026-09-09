@@ -11,10 +11,10 @@ const AgentsPage = () => (
   <section className="flex w-full flex-col gap-6">
     <div className="flex flex-col gap-1">
       <h1 className="text-2xl font-semibold">Agents</h1>
-      <p className="text-muted text-sm">
-        What each agent starts with, and which model and prompt every side job
-        runs on. Kinds and tasks are code; this page only overrides what the
-        code registers.
+      <p className="text-muted max-w-prose text-sm">
+        What each agent runs as today, and what you changed from the code.
+        Agents and their tasks are registered in code; this page only overrides
+        them.
       </p>
     </div>
     <Suspense

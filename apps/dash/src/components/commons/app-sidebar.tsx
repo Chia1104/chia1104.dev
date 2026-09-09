@@ -1,5 +1,6 @@
 "use client";
 
+import { authClient } from "@chia/auth/client";
 import {
   Sidebar,
   SidebarContent,
@@ -8,7 +9,6 @@ import {
   SidebarRail,
 } from "@chia/ui/sidebar";
 
-import { useAccess } from "@/hooks/use-access";
 import { useRouteItems } from "@/shared/routes";
 
 import AuthGuard from "./auth-guard";
@@ -17,9 +17,9 @@ import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const access = useAccess();
-  // Until the server answers, show the member set so operator links never flash for a member.
-  const routeItems = useRouteItems(access.data?.level ?? "member");
+  const session = authClient.useSession();
+  // Until the session answers, show the member set so operator links never flash for a member.
+  const routeItems = useRouteItems(session.data?.access.dashboard ?? "member");
   const groups = [
     { title: "Overview", items: routeItems.overview },
     { title: "Content", items: routeItems.content },

@@ -18,6 +18,7 @@ import { SessionModelPicker } from "@chia/agent-elements/session-model-picker";
 import { SessionTabs } from "@chia/agent-elements/session-tabs";
 import { Thread } from "@chia/agent-elements/thread";
 import { authClient } from "@chia/auth/client";
+import { CallerTier } from "@chia/auth/tier";
 import enUS from "@chia/i18n/agent-elements/en-US.json";
 import zhTW from "@chia/i18n/agent-elements/zh-TW.json";
 
@@ -29,14 +30,15 @@ import { AccountMenu } from "./account-menu";
 import { ComingSoon } from "./coming-soon";
 import { HumanCheck } from "./human-check";
 import { PUBLIC_AGENT_KIND } from "./kind";
+import { SignInRequired } from "./sign-in-required";
 
 /** House first: no setup. BYOK providers follow once the visitor registers a key. */
 const PROVIDER_ORDER = ["vercel-ai-gateway", "openai", "anthropic"];
 
 const agentLabelsOf = (locale: string) => (locale === Locale.EN ? enUS : zhTW);
 
-/** A signed-in visitor the kind's `minTier` still refuses: the public agent is not open yet. */
-const isGated = (error: Error | null): boolean =>
+/** The kind's floor moved under a live session; the session carries the new floor once refetched. */
+const isRefused = (error: Error | null): boolean =>
   error instanceof ORPCError && error.code === "FORBIDDEN";
 
 const Centered = ({ children }: { children: React.ReactNode }) => (
@@ -78,6 +80,17 @@ export const PublicChat = ({ headerActions }: PublicChatProps) => {
 
   if (!session.data) {
     return <HumanCheck />;
+  }
+
+  // A guest is asked to sign in only when signing in would be enough; a closed kind is closed to everyone.
+  const { tier, agent } = session.data.access;
+  const floor = agent[PUBLIC_AGENT_KIND] ?? CallerTier.Root;
+  if (tier < floor) {
+    return tier === CallerTier.Guest && floor <= CallerTier.Session ? (
+      <SignInRequired />
+    ) : (
+      <ComingSoon />
+    );
   }
 
   return <PublicChatSessions headerActions={headerActions} />;
@@ -209,9 +222,11 @@ const PublicChatSessions = ({ headerActions }: PublicChatProps) => {
     else createMutation.mutate({ kind: PUBLIC_AGENT_KIND });
   };
 
-  if (isGated(sessionsQuery.error) || isGated(createMutation.error)) {
-    return <ComingSoon />;
-  }
+  const refusal = [sessionsQuery.error, createMutation.error].find(isRefused);
+  const refetchSession = session.refetch;
+  useEffect(() => {
+    if (refusal) void refetchSession();
+  }, [refusal, refetchSession]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

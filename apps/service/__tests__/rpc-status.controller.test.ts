@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
+import { CallerTier } from "@chia/auth/tier";
 import * as dbMocks from "@chia/test/mocks/db-feeds";
 
 import * as guardMocks from "./helpers/guards";

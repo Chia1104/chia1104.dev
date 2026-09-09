@@ -57,12 +57,14 @@ oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建�
 
 ### 存取模型
 
-每條 agent route 先解析 `CallerTier`，再由 kind 與 session guard 比對 persisted kind 的 `minTier` 並驗證 ownership。
+每條 agent route 先解析 `CallerTier`（`@chia/auth/tier`），再由 kind 與 session guard 比對 kind 的 floor 並驗證 ownership。Floor 是 definition 的 `minTier` 經 operator 的 `kind_config.min_tier` override 抬高後的值；override 只能抬高不能降低，kind 不會開放到程式碼沒有支援的 tier。
 
-| Kind      | 最低 tier | 內容可見性                     | 可變 domain state    |
-| --------- | --------- | ------------------------------ | -------------------- |
-| `writing` | `Root`    | 設定作者的草稿與已發佈內容     | 共用 draft 與 memory |
-| `public`  | `Guest`   | 設定作者的已發佈內容與 profile | 無                   |
+| Kind      | Definition floor | 內容可見性                     | 可變 domain state    |
+| --------- | ---------------- | ------------------------------ | -------------------- |
+| `writing` | `Root`           | 設定作者的草稿與已發佈內容     | 共用 draft 與 memory |
+| `public`  | `Guest`          | 設定作者的已發佈內容與 profile | 無                   |
+
+Better Auth 的 `get-session` 帶有 `access`：session 自身的 tier、dashboard 等級，以及每個 hosted kind 目前的 floor。前端據此決定要渲染什麼；guards 不讀它，每個請求都重新分級 caller。
 
 Generic 層不攜帶 admin 身分。Writing binding 只在建立 content port 時讀設定作者；public binding 不會收到該身分或任何可寫 port。
 

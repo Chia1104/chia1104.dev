@@ -247,6 +247,8 @@ export type AgentMemory = InferSelectModel<typeof agentMemories>;
  */
 export const agentKindConfigs = agentSchema.table("kind_config", {
   kind: text("kind").primaryKey(),
+  /** `CallerTier` the operator raised the kind's floor to; `null` defers to the definition. */
+  minTier: integer("min_tier"),
   providerId: text("provider_id"),
   modelId: text("model_id"),
   thinkingLevel: text("thinking_level"),

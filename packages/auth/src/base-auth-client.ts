@@ -2,6 +2,7 @@ import { apiKeyClient } from "@better-auth/api-key/client";
 import { passkeyClient } from "@better-auth/passkey/client";
 import type { BetterAuthClientOptions } from "better-auth";
 import { anonymousClient } from "better-auth/client/plugins";
+import { customSessionClient } from "better-auth/client/plugins";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { magicLinkClient } from "better-auth/client/plugins";
 import { adminClient } from "better-auth/client/plugins";
@@ -9,6 +10,8 @@ import { adminClient } from "better-auth/client/plugins";
 import { Role } from "@chia/db/types";
 import { withServiceEndpoint } from "@chia/utils/config";
 import { Service } from "@chia/utils/schema";
+
+import type { Auth } from "./server";
 
 export const baseAuthClient = (config?: Partial<BetterAuthClientOptions>) => {
   return {
@@ -35,6 +38,7 @@ export const baseAuthClient = (config?: Partial<BetterAuthClientOptions>) => {
       apiKeyClient(),
       adminClient(),
       anonymousClient(),
+      customSessionClient<Auth>(),
     ],
   } satisfies BetterAuthClientOptions;
 };

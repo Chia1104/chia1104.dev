@@ -1,5 +1,5 @@
+import { CallerTier } from "@chia/auth/tier";
 import type { Caller } from "@chia/service-kit/policies/caller.policy";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 /**
  * A caller below the required tier has flags clamped away rather than rejected, so a

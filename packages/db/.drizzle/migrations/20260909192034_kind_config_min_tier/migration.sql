@@ -1,0 +1,2 @@
+ALTER TABLE "agent"."kind_config" ADD COLUMN "min_tier" integer;--> statement-breakpoint
+INSERT INTO "agent"."kind_config" ("kind", "min_tier") VALUES ('public', 4) ON CONFLICT ("kind") DO UPDATE SET "min_tier" = 4;

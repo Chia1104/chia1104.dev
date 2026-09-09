@@ -7,10 +7,11 @@ import {
   Card,
   Checkbox,
   CheckboxGroup,
-  Chip,
   Description,
   Form,
   Label,
+  ListBox,
+  Select,
   Switch,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +23,6 @@ import * as z from "zod";
 import { ThinkingSlider } from "@chia/agent-elements/thinking-slider";
 
 import { orpc } from "@/libs/orpc/client";
-import type { RouterOutputs } from "@/libs/orpc/types";
 
 import {
   ConfigFields,
@@ -33,13 +33,15 @@ import {
 import {
   ModelSelect,
   OverriddenChip,
+  audienceOf,
+  audienceOptionsOf,
   formatDate,
+  isKindOverridden,
   modelLabel,
   modelRefSchema,
   useInvalidateAgentAdmin,
 } from "./shared";
-
-type KindAdmin = RouterOutputs["agent"]["admin"]["kinds"]["list"][number];
+import type { KindAdmin } from "./shared";
 
 const THINKING_LEVELS = [
   "off",
@@ -53,6 +55,7 @@ const THINKING_LEVELS = [
 
 /** Null on a field means the code default. */
 const kindFormSchema = z.object({
+  minTier: z.number().int().nullable(),
   model: modelRefSchema.nullable(),
   thinkingLevel: z.enum(THINKING_LEVELS).nullable(),
   autoApprove: z.array(z.string()).nullable(),
@@ -62,29 +65,12 @@ const kindFormSchema = z.object({
 type KindFormValues = z.infer<typeof kindFormSchema>;
 
 const formValuesOf = (kind: KindAdmin): KindFormValues => ({
+  minTier: kind.minTier.override,
   model: kind.defaults.override.model,
   thinkingLevel: kind.defaults.override.thinkingLevel,
   autoApprove: kind.defaults.override.autoApprove,
   config: configFormValueOf(kind.config.schema, kind.config.override),
 });
-
-/** Maps contract `CallerTier` values. */
-const audienceOf = (minTier: number): string => {
-  switch (minTier) {
-    case 0:
-      return "anyone";
-    case 1:
-      return "guests and signed-in users";
-    case 2:
-      return "API-key callers";
-    case 3:
-      return "signed-in users";
-    case 4:
-      return "the author only";
-    default:
-      return `tier ${minTier}`;
-  }
-};
 
 /** Edits the override. Parent remounts after save so a refetch never collides with an in-progress edit. */
 export const KindCard = ({ kind }: { kind: KindAdmin }) => {
@@ -122,6 +108,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
   const onSubmit = handleSubmit((values) =>
     update.mutate({
       kind: kind.kind,
+      minTier: values.minTier,
       model: values.model,
       thinkingLevel: values.thinkingLevel,
       autoApprove: values.autoApprove,
@@ -129,13 +116,10 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
     })
   );
 
-  const overridden =
-    kind.defaults.override.model !== null ||
-    kind.defaults.override.thinkingLevel !== null ||
-    kind.defaults.override.autoApprove !== null ||
-    Object.keys(kind.config.override).length > 0;
+  const overridden = isKindOverridden(kind);
 
   const code = kind.defaults.code;
+  const audienceOptions = audienceOptionsOf(kind.minTier.code);
   const busy = update.isPending;
   const autoApprove = watch("autoApprove");
 
@@ -144,10 +128,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
       <Form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Card.Header>
           <div className="flex flex-wrap items-center gap-2">
-            <Card.Title className="text-base">{kind.label}</Card.Title>
-            <Chip size="sm" variant="soft">
-              <Chip.Label className="font-mono text-xs">{kind.kind}</Chip.Label>
-            </Chip>
+            <Card.Title className="text-base">Settings</Card.Title>
             <OverriddenChip isOverridden={overridden} />
             {kind.updatedAt !== null ? (
               <span className="text-muted ml-auto text-xs">
@@ -156,11 +137,62 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
             ) : null}
           </div>
           <Card.Description className="text-xs">
-            {kind.description} Available to {audienceOf(kind.minTier)}.
+            Each field starts from what the code registers. Saving writes only
+            what you changed.
           </Card.Description>
         </Card.Header>
 
         <Card.Content className="flex flex-col gap-6">
+          {audienceOptions.length > 1 ? (
+            <section className="flex flex-col gap-4">
+              <div>
+                <h3 className="text-sm font-medium">Audience</h3>
+                <p className="text-muted text-xs">
+                  Who may open this agent. Takes effect on the next request;
+                  anyone below the bar is asked to sign in.
+                </p>
+              </div>
+              <Controller
+                control={control}
+                name="minTier"
+                render={({ field }) => (
+                  <div className="flex w-full max-w-md flex-col gap-1">
+                    <Label className="text-xs">Minimum tier</Label>
+                    <Select
+                      aria-label="Minimum tier"
+                      className="w-full"
+                      isDisabled={busy}
+                      onChange={(id) =>
+                        field.onChange(id === "" ? null : Number(id))
+                      }
+                      value={field.value === null ? "" : String(field.value)}>
+                      <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox
+                          items={[
+                            {
+                              id: "",
+                              label: `Default — ${audienceOf(kind.minTier.code)}`,
+                            },
+                            ...audienceOptions,
+                          ]}>
+                          {(item) => (
+                            <ListBox.Item id={item.id}>
+                              {item.label}
+                            </ListBox.Item>
+                          )}
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
+                  </div>
+                )}
+              />
+            </section>
+          ) : null}
+
           <section className="flex flex-col gap-4">
             <div>
               <h3 className="text-sm font-medium">New session defaults</h3>

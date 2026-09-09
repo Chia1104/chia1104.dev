@@ -17,10 +17,10 @@ import {
 import { publicPolicy } from "@chia/agent-public/policy";
 import { runPublicTurn } from "@chia/agent-public/runtime";
 import { createPublicTools } from "@chia/agent-public/tools/tool-set";
+import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { getFeedById } from "@chia/db/repos/feeds";
 import { AppError } from "@chia/service-kit/errors";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import type { AgentKindDefinition } from "./kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "./tasks";
@@ -57,10 +57,11 @@ export const createPublicAgentKind = (
       "Answers visitors' questions about the author and the published posts, on the public site.",
 
     /**
-     * Anyone with a user row. Lower tiers are metered by the shared weekly allowance and the
-     * running-turn cap; only `Root` is not.
+     * Anyone with a user row; the operator raises this per deployment through the kind's
+     * config. Lower tiers are metered by the shared weekly allowance and the running-turn
+     * cap; only `Root` is not.
      */
-    minTier: CallerTier.Root,
+    minTier: CallerTier.Guest,
     defaults: PUBLIC_SESSION_DEFAULTS,
     policy: publicPolicy,
 

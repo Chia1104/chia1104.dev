@@ -12,8 +12,12 @@ const FEATURES = [
   { key: "feedback", icon: "i-mdi-comment-edit-outline" },
 ] as const;
 
-/** Shown while the public kind is still gated to the operator: the visitor is signed in, the kind refuses them. */
-export const ComingSoon = () => {
+/**
+ * What the agent will do for the visitor. On its own it means the kind is closed until the
+ * operator opens it; as a `preview` behind the sign-in sheet the badge and the closing note
+ * give way, because signing in is enough.
+ */
+export const ComingSoon = ({ preview = false }: { preview?: boolean }) => {
   const t = useTranslations("chbot.comingSoon");
 
   return (
@@ -27,9 +31,11 @@ export const ComingSoon = () => {
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        <Chip color="accent" size="sm" variant="soft">
-          <Chip.Label>{t("badge")}</Chip.Label>
-        </Chip>
+        {preview ? null : (
+          <Chip color="accent" size="sm" variant="soft">
+            <Chip.Label>{t("badge")}</Chip.Label>
+          </Chip>
+        )}
         <h2 className="text-foreground text-xl font-semibold tracking-tight">
           {t("title")}
         </h2>
@@ -53,7 +59,7 @@ export const ComingSoon = () => {
         ))}
       </ul>
 
-      <p className="text-muted text-xs">{t("note")}</p>
+      {preview ? null : <p className="text-muted text-xs">{t("note")}</p>}
     </div>
   );
 };

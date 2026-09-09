@@ -216,6 +216,10 @@
       },
       "note": "Check back soon."
     },
+    "signInRequired": {
+      "title": "Sign in to continue",
+      "description": "Gloss is open to signed-in readers right now. Complete the check, then pick a provider."
+    },
     "account": {
       "signIn": "Sign in",
       "signInTitle": "Keep your conversations",

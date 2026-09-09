@@ -1,4 +1,5 @@
 import { ApiKeyScope } from "@chia/auth/apikey";
+import { CallerTier } from "@chia/auth/tier";
 import {
   listFeedDraftRevisions,
   listOpenFeedDrafts,
@@ -21,7 +22,6 @@ import {
 } from "@chia/db/repos/feeds";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import {
   resolveFeedLimit,
