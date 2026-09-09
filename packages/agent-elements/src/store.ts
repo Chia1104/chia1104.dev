@@ -10,9 +10,13 @@ import {
   emptyViewState,
   foldEvents,
 } from "@chia/agent-runtime/wire/fold";
-import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type {
+  AgentAttachmentInput,
+  AgentWireEvent,
+} from "@chia/agent-runtime/wire/schema";
 import { createQueryInvalidator } from "@chia/utils/query-client";
 
+import { attachmentInputOf, attachmentKeyOf } from "./attachment.ts";
 import type { AgentLabels } from "./labels.ts";
 import { fill, mergeLabels } from "./labels.ts";
 import { agentQueryKeys, sessionDetailQuery } from "./queries.ts";
@@ -53,12 +57,6 @@ export interface AgentSessionState {
    * transcript.
    */
   failure: string | null;
-}
-
-/** What a prompt hands the agent beside the text; the kind decides what it accepts. */
-export interface AgentAttachmentInput {
-  type: string;
-  id: number;
 }
 
 export interface PromptOptions {
@@ -114,7 +112,13 @@ export interface AgentSessionStoreOptions extends AgentSessionCallbacks {
   kind?: string;
   labels?: Partial<AgentLabels>;
   /** What the host has on screen, read as each prompt or command is sent. */
-  context?: () => readonly AgentAttachmentInput[];
+  context?: AgentContextSource;
+}
+
+export interface AgentContextSource {
+  attached: () => readonly AgentAttachmentInput[];
+  /** The server accepted a prompt that carried `attached()`. */
+  sent: () => void;
 }
 
 /** Host context first, then the call's own; a record named twice goes once. */
@@ -125,10 +129,10 @@ const attachmentsOf = (
   const seen = new Set<string>();
   const merged: AgentAttachmentInput[] = [];
   for (const item of [...context, ...(own ?? [])]) {
-    const key = `${item.type}:${item.id}`;
+    const key = attachmentKeyOf(item);
     if (seen.has(key)) continue;
     seen.add(key);
-    merged.push({ type: item.type, id: item.id });
+    merged.push(attachmentInputOf(item));
   }
   return merged.length > 0 ? merged : undefined;
 };
@@ -272,7 +276,8 @@ export const createAgentSessionStore = ({
      * what happens next; `run` only re-syncs streams that ended on their own.
      */
     const run = async (
-      start: (signal: AbortSignal) => Promise<AsyncIterable<AgentWireEvent>>
+      start: (signal: AbortSignal) => Promise<AsyncIterable<AgentWireEvent>>,
+      onAccepted?: () => void
     ) => {
       stopStream();
       const own = new AbortController();
@@ -288,6 +293,7 @@ export const createAgentSessionStore = ({
         if (mine === generation) set({ connection: "idle" });
         throw cause;
       }
+      onAccepted?.();
 
       // Events fold into a local view first and reach the store at most once per interval: one
       // network chunk decodes into a burst of deltas delivered back-to-back, and every `set` is a
@@ -445,14 +451,16 @@ export const createAgentSessionStore = ({
         set({ pendingPrompt: text, failure: null });
         try {
           const attachments = attachmentsOf(
-            context?.() ?? [],
+            context?.attached() ?? [],
             options?.attachments
           );
-          await run((signal) =>
-            client.sessions.chat(
-              { ...scoped, action: { type: "prompt", text, attachments } },
-              { signal }
-            )
+          await run(
+            (signal) =>
+              client.sessions.chat(
+                { ...scoped, action: { type: "prompt", text, attachments } },
+                { signal }
+              ),
+            context?.sent
           );
         } catch (cause) {
           set({ pendingPrompt: null, failure: failureOf(cause, get().labels) });
@@ -464,15 +472,20 @@ export const createAgentSessionStore = ({
         const text = displayText ?? formatSlashCommand(name, args);
         set({ pendingPrompt: text, failure: null });
         try {
-          const attachments = attachmentsOf(context?.() ?? [], undefined);
-          await run((signal) =>
-            client.sessions.chat(
-              {
-                ...scoped,
-                action: { type: "command", name, args, text, attachments },
-              },
-              { signal }
-            )
+          const attachments = attachmentsOf(
+            context?.attached() ?? [],
+            undefined
+          );
+          await run(
+            (signal) =>
+              client.sessions.chat(
+                {
+                  ...scoped,
+                  action: { type: "command", name, args, text, attachments },
+                },
+                { signal }
+              ),
+            context?.sent
           );
         } catch (cause) {
           set({ pendingPrompt: null, failure: failureOf(cause, get().labels) });

@@ -314,6 +314,12 @@ Web search 只回 snippets；`fetch_url` 抓取單一頁面，並透過 `MemoryP
 
 Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts` 與 `open_draft` 負責找到或建立，operator 則以 prompt 附件（`{ type: "draft", id }`）交付。Kind 的 `attach` 在 session lock 內、turn 入列前驗證附件；runtime 把附件渲染成持久化 user message 的第一個 text block，並在 `user` wire event 上標上 label，live 與 replay 的 transcript 因此一致。Client 端由 `@chia/agent-elements/context` 讓 host 頁面登記目前開啟的記錄；session store 會把這些記錄附在每一則 prompt、建議提問與 slash command 上，operator 不論從哪個入口起 turn，model 都看得到開啟中的 draft。同一個 host 也透過 `onToolEvent` 收到 session 的 `tool:start` 與 `tool:end`，編輯器據此顯示 agent 正在對開啟中的 draft 做什麼，並在 draft-tier 呼叫結束時立刻重新讀取；`feeds.draft:watch` 走 Postgres NOTIFY 仍是該列的權威來源，因為 MCP client 與未掛載的 session 也會寫入它。
 
+### 選取內容
+
+`@chia/agent-runtime/wire/schema` 的 `agentAttachmentInputSchema` 是 prompt 可攜帶內容的唯一定義：以 id 指定的 `draft`、以 id 與 locale 指定的已發布 `feed`，或帶著選取文字（上限 4000 字元）與來源的 `selection`。文章頁在掛載期間持續提供自己的 `feed`，就像編輯器提供 draft 一樣，因此在文章旁送出的每則 prompt 都帶著它，model 會把沒有指明其他對象的問題視為在問這篇文章。來源可以是編輯器裡的 draft（帶 locale 與行號範圍），或公開站上已發布的 feed（帶 locale 與 heading 路徑）。各 kind 的 `attach` 決定接受哪些：writing kind 接受 caller 擁有的 draft 並記錄到 session；public kind 接受已發布的 feed 與其中的選取，未發布的 id 在 turn 入列前就被拒絕。各 kind 的 `renderAttachments` 把文字連同出處引述給 model，writing model 可把它原封不動交給 `edit_draft_content`，public model 可透過 `get_post` 讀取該節。選取文字不會與資料列比對：編輯器送出前先 flush autosave，model 也會重新讀取 draft。
+
+公開站由 `@chia/agent-elements/selection` 量測 DOM 選取並浮出觸發按鈕與選單；粗指標（觸控）裝置上觸發按鈕改放在視窗底部，避開原生選取工具列。選單只提供固定問題，因為訪客的每週額度很小，段落加上已知的問題就是 model 需要的全部。編輯器則把項目掛在 Monaco 自己的右鍵選單上（precondition `editorHasSelection`），文字上方不再疊任何東西：預設動作直接送出一輪，另一項把選取附加到 composer 讓操作者自行提問。動作要嘛把選取提供為一次性的 context item（`once`，下一則 prompt 帶出後即撤回），要嘛在 context store 登記一筆 `AgentContextRequest`。掛在同一個 `AgentContextProvider` 下的 session 一旦能接受 prompt 就會送出待處理的請求，頁面因此能在 drawer 尚未開啟或 session 仍在 hydrate 時發起 turn。
+
 `agent.writing_session_draft` 記錄 session 處理過的每份 draft，以及 turn 結束時觀察到的最高 revision。下一個 turn 的 volatile context 列出 session 最近的 drafts，並逐份把高於該 revision 的 operator revisions 列成「operator edits since your last turn」，讓 model 先重讀再編輯。丟棄 draft 會刪除它與 session 的對應列；仍指名它的 tool call 會收到 not-found 錯誤。
 
 ### Memory lifecycle

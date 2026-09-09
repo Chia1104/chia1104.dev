@@ -162,7 +162,10 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
               ) : null}
             </div>
           }>
-          <EditFields feedId={draft.feedId ?? undefined} />
+          <EditFields
+            feedId={draft.feedId ?? undefined}
+            target={{ draftId: draft.id, flush: autosave.flush }}
+          />
         </DraftActions>
       </Form>
       <AlertDialog isOpen={conflict !== null}>

@@ -233,6 +233,18 @@ export const WWW_BASE_URL =
     ? "https://www.chia1104.dev"
     : "http://localhost:3000";
 
+/** The site serves `en` under `en-US`; every other locale keeps its own segment. */
+const wwwLocaleSegment = (locale: string): string =>
+  locale === "en" ? "en-US" : locale;
+
+/** The page of a post or note on the public site, in one locale, as the sitemap lists it. */
+export const feedUrl = (feed: {
+  type: string;
+  slug: string;
+  locale: string;
+}): string =>
+  `${WWW_BASE_URL}/${wwwLocaleSegment(feed.locale)}/${feed.type}s/${feed.slug}`;
+
 export const DASH_BASE_URL =
   getEnv() === "production" || getEnv() === "prod"
     ? "https://dash.chia1104.dev"

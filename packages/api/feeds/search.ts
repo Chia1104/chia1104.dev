@@ -24,6 +24,7 @@ export type SearchFeedsProvider = ResourceSearchMode;
 export interface SearchFeedsItem extends ResourceSearchHit {
   feedId: number;
   slug: string;
+  type: FeedRef["type"];
 }
 
 export interface SearchFeedsServiceResult extends Omit<
@@ -141,15 +142,20 @@ export async function searchPublicFeedsService({
   });
 }
 
+type FeedRef = Omit<
+  Awaited<ReturnType<typeof getFeedRefsByTranslationIds>>[number],
+  "translationId"
+>;
+
 const resolveFeedRefs = async (
   db: DB,
   translationIds: number[]
-): Promise<Map<number, { feedId: number; slug: string }>> => {
+): Promise<Map<number, FeedRef>> => {
   const rows = await getFeedRefsByTranslationIds(db, { translationIds });
   return new Map(
     rows.map((row) => [
       row.translationId,
-      { feedId: row.feedId, slug: row.slug },
+      { feedId: row.feedId, slug: row.slug, type: row.type },
     ])
   );
 };

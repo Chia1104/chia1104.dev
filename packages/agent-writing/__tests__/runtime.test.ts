@@ -17,7 +17,10 @@ import type {
 } from "@chia/agent-runtime/types";
 import { foldEvents } from "@chia/agent-runtime/wire/fold";
 import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
-import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type {
+  AgentAttachmentInput,
+  AgentWireEvent,
+} from "@chia/agent-runtime/wire/schema";
 
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
@@ -46,7 +49,7 @@ interface Fixture {
     options?: {
       signal?: AbortSignal;
       onEvent?: (event: AgentWireEvent) => void;
-      attachments?: { type: string; id: number }[];
+      attachments?: AgentAttachmentInput[];
       approvedApprovalKeys?: ReadonlySet<string>;
       consumeApproval?: (key: string) => Promise<void>;
     }
@@ -73,6 +76,7 @@ const build = async (
       {
         slug: "existing-post",
         locale: "en",
+        url: "http://localhost:3000/en-US/posts/existing-post",
         title: "An existing post",
         snippet: "…",
       },
@@ -81,12 +85,14 @@ const build = async (
       {
         feedId: 1,
         slug: "existing-post",
+        url: "http://localhost:3000/en-US/posts/existing-post",
         type: "post",
         published: true,
         defaultLocale: "en",
         translations: [
           {
             locale: "en",
+            url: "http://localhost:3000/en-US/posts/existing-post",
             title: "An existing post",
             content: "## Existing section\n\nExisting body.",
           },
@@ -736,6 +742,54 @@ describe("runWritingTurn", () => {
     expect(entry).toMatchObject({
       type: "message",
       attachments: [{ type: "draft", id: DRAFT_ID, label: "Hello world" }],
+    });
+  });
+
+  it("quotes a selection from a draft with its lines, so the model can edit it byte-exact", async () => {
+    await fixture.draft.patchTranslation(DRAFT_ID, "zh-TW", {
+      title: "Hello world",
+      content: "Intro line\n\nThe middle paragraph.\n",
+    });
+    const seen: Context[] = [];
+    fixture.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("On it.");
+      },
+    ]);
+
+    await fixture.run("Make this punchier", {
+      attachments: [
+        {
+          type: "selection",
+          text: "The middle paragraph.",
+          source: {
+            type: "draft",
+            id: DRAFT_ID,
+            locale: "zh-TW",
+            startLine: 3,
+            endLine: 3,
+          },
+        },
+      ],
+    });
+
+    const prompt = seen[0]?.messages.find((m) => m.role === "user");
+    const blocks = JSON.stringify(prompt?.content);
+    expect(blocks).toContain(
+      `Selected in draft #${DRAFT_ID} \\"Hello world\\", locale zh-TW, line 3`
+    );
+    expect(blocks).toContain('\\"\\"\\"\\nThe middle paragraph.\\n\\"\\"\\"');
+    expect(blocks).toContain("Make this punchier");
+    expect(fixture.events.find((e) => e.type === "user")).toMatchObject({
+      text: "Make this punchier",
+      attachments: [
+        {
+          type: "selection",
+          text: "The middle paragraph.",
+          label: `Draft #${DRAFT_ID} · zh-TW · line 3`,
+        },
+      ],
     });
   });
 

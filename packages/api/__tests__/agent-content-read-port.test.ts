@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import type { DB } from "@chia/db/client";
+import * as dbMocks from "@chia/test/mocks/db-feeds";
 
 import { createContentReadPort } from "../agents/content-read.port";
-
-import * as dbMocks from "@chia/test/mocks/db-feeds";
 
 const searchFeedsService = vi.hoisted(() =>
   vi.fn(async () => ({ mode: "hybrid", items: [] }))
@@ -53,6 +53,22 @@ describe("createContentReadPort visibility", () => {
         db,
         expect.objectContaining({ userId: AUTHOR, published: true })
       );
+    });
+
+    it("carries the page of each post as the site serves it", async () => {
+      const post = await port.getPost({ slug: "test-feed-1" });
+      expect(post).toMatchObject({
+        url: "http://localhost:3000/en-US/posts/test-feed-1",
+        translations: [
+          {
+            locale: "en",
+            url: "http://localhost:3000/en-US/posts/test-feed-1",
+          },
+        ],
+      });
+
+      const [first] = await port.listPosts({ limit: 10 });
+      expect(first?.url).toBe("http://localhost:3000/en-US/posts/test-feed-1");
     });
 
     it("lists published posts when asked for everything", async () => {

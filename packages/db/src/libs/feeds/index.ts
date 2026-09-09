@@ -487,6 +487,7 @@ export const getFeedRefsByTranslationIds = withDTO(
         translationId: feedTranslations.id,
         feedId: feedTranslations.feedId,
         slug: feeds.slug,
+        type: feeds.type,
       })
       .from(feedTranslations)
       .innerJoin(feeds, eq(feeds.id, feedTranslations.feedId))

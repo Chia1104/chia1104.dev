@@ -10,6 +10,7 @@ import type { Usage } from "@earendil-works/pi-ai";
 import type { Static, TSchema } from "typebox";
 
 import type { OperatorDecision } from "./wire/operator-decision.ts";
+import type { AgentAttachment } from "./wire/schema.ts";
 
 export type { PromptTemplate, Skill, ThinkingLevel };
 
@@ -104,16 +105,6 @@ export interface AgentNavigationOptions {
 
 export interface AgentNavigationResult {
   cancelled: boolean;
-}
-
-/**
- * Something the operator handed the turn beside the text: a draft to work on, later a post or
- * a memory. The kind renders it for the model and fills `label` for clients.
- */
-export interface AgentAttachment {
-  type: string;
-  id: number;
-  label?: string;
 }
 
 export interface AgentTurnMessage {

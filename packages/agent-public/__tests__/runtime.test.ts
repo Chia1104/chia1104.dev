@@ -20,7 +20,10 @@ import type {
   AgentTurnExecution,
 } from "@chia/agent-runtime/types";
 import { foldEvents } from "@chia/agent-runtime/wire/fold";
-import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type {
+  AgentAttachmentInput,
+  AgentWireEvent,
+} from "@chia/agent-runtime/wire/schema";
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 import { createFakeProfileReadPort } from "@chia/test/fixtures/profile-read-port";
 
@@ -44,7 +47,10 @@ interface Fixture {
   setResponses: (
     responses: Parameters<ReturnType<typeof fauxProvider>["setResponses"]>[0]
   ) => void;
-  run: (text: string) => Promise<AgentTurnExecution<ApprovalRequest>>;
+  run: (
+    text: string,
+    attachments?: AgentAttachmentInput[]
+  ) => Promise<AgentTurnExecution<ApprovalRequest>>;
 }
 
 const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
@@ -65,6 +71,7 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
           {
             slug: "existing-post",
             locale: "en",
+            url: "http://localhost:3000/en-US/posts/existing-post",
             title: "An existing post",
             snippet: "…",
           },
@@ -73,6 +80,7 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
           {
             feedId: 1,
             slug: "existing-post",
+            url: "http://localhost:3000/en-US/posts/existing-post",
             type: "post",
             contentType: "mdx",
             published: true,
@@ -80,6 +88,7 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
             translations: [
               {
                 locale: "en",
+                url: "http://localhost:3000/en-US/posts/existing-post",
                 title: "An existing post",
                 content: "## Existing section\n\nExisting body.",
               },
@@ -104,14 +113,14 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
     events,
     session,
     setResponses: faux.setResponses,
-    run: (text) =>
+    run: (text, attachments) =>
       runPublicTurn({
         session,
         settings: sessionSettings,
         agentSessionId: SESSION_ID,
         content,
         profile: createFakeProfileReadPort(PROFILE),
-        message: { text },
+        message: { text, attachments },
         onEvent: (event) => events.push(event),
         models,
         toApproval: (approval) => approval,
@@ -206,6 +215,77 @@ describe("runPublicTurn", () => {
     expect(JSON.stringify(await fixture.session.getBranch())).not.toContain(
       "# Current session"
     );
+  });
+
+  it("quotes a selection from a published post with its heading, and skips one it cannot read", async () => {
+    const seen: Context[] = [];
+    fixture.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("It means this.");
+      },
+    ]);
+
+    await fixture.run("What does this mean?", [
+      {
+        type: "selection",
+        text: "Existing body.",
+        source: {
+          type: "feed",
+          id: 1,
+          locale: "en",
+          headingPath: "Existing section",
+        },
+      },
+      {
+        type: "selection",
+        text: "Hidden words",
+        source: { type: "feed", id: 99, locale: "en" },
+      },
+    ]);
+
+    const prompt = seen[0]?.messages.find((m) => m.role === "user");
+    const blocks = JSON.stringify(prompt?.content);
+    expect(blocks).toContain(
+      'Selected in the post \\"An existing post\\" (slug `existing-post`, locale en, under \\"Existing section\\")'
+    );
+    expect(blocks).toContain("Existing body.");
+    expect(blocks).toContain("a post this agent cannot read; ignore it");
+    expect(blocks).toContain("What does this mean?");
+    expect(fixture.events.find((e) => e.type === "user")).toMatchObject({
+      attachments: [
+        { type: "selection", label: "An existing post · Existing section" },
+        { type: "selection", label: "Selection" },
+      ],
+    });
+  });
+
+  it("names the post the visitor is reading, and skips one it cannot read", async () => {
+    const seen: Context[] = [];
+    fixture.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("It is about this.");
+      },
+    ]);
+
+    await fixture.run("What is this about?", [
+      { type: "feed", id: 1, locale: "en" },
+      { type: "feed", id: 99, locale: "en" },
+    ]);
+
+    const prompt = seen[0]?.messages.find((m) => m.role === "user");
+    const blocks = JSON.stringify(prompt?.content);
+    expect(blocks).toContain(
+      'The visitor is reading the post \\"An existing post\\" (slug `existing-post`, locale en) at http://localhost:3000/en-US/posts/existing-post'
+    );
+    expect(blocks).toContain("A post this agent cannot read; ignore it");
+    expect(fixture.events.find((e) => e.type === "user")).toMatchObject({
+      attachments: [
+        { type: "feed", label: "An existing post" },
+        { type: "feed", label: "Post #99" },
+      ],
+    });
   });
 
   it("refuses calls past the soft budget and still ends the turn", async () => {

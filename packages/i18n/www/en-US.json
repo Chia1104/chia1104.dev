@@ -276,6 +276,15 @@
       "reset": "Resets {time}",
       "ownKey": "Calls made with your own API key are billed by the provider and do not count toward this allowance.",
       "done": "Done"
+    },
+    "selection": {
+      "ask": "Ask about this",
+      "explain": "Explain this passage",
+      "example": "Give an example",
+      "related": "What else covers this?",
+      "explainPrompt": "Explain the selected passage.",
+      "examplePrompt": "Give a concrete example of what the selected passage describes.",
+      "relatedPrompt": "Which other posts cover what the selected passage is about?"
     }
   },
   "settings": {

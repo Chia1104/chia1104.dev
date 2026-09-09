@@ -14,10 +14,11 @@ import {
 
 import { Alert, Button, Chip, CloseButton, TextArea } from "@heroui/react";
 import { BorderBeam } from "border-beam";
-import { ArrowUp, Paperclip, Square, X } from "lucide-react";
+import { ArrowUp, Paperclip, Square, TextQuote, X } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { attachmentKeyOf, attachmentMetaOf } from "./attachment.ts";
 import {
   composerDraftOf,
   composerDraftReducer,
@@ -25,7 +26,7 @@ import {
 } from "./composer-draft.ts";
 import type { ComposerDraft } from "./composer-draft.ts";
 import { ContextUsage } from "./context-usage.tsx";
-import { contextKeyOf, useAgentContext } from "./context.tsx";
+import { useAgentContext } from "./context.tsx";
 import { useAgentLabels } from "./labels-context.tsx";
 import { fill } from "./labels.ts";
 import {
@@ -149,13 +150,13 @@ export const ComposerContext = () => {
   return (
     <>
       {items.map((item) => {
-        const key = contextKeyOf(item);
+        const key = attachmentKeyOf(item);
         const attached = !detached.includes(key);
         return (
           <ComposerAttachment
             key={key}
             className={attached ? undefined : "text-muted"}
-            icon={<Paperclip />}
+            icon={item.type === "selection" ? <TextQuote /> : <Paperclip />}
             label={
               attached
                 ? item.label
@@ -163,7 +164,7 @@ export const ComposerContext = () => {
             }
             meta={
               <Chip size="sm" variant="soft">
-                <Chip.Label>#{item.id}</Chip.Label>
+                <Chip.Label>{attachmentMetaOf(item)}</Chip.Label>
               </Chip>
             }
             action={
@@ -564,6 +565,7 @@ const ComposerEditor = ({
         ) : null}
 
         <BorderBeam
+          active={busy}
           className="relative z-10"
           duration={3.5}
           size="pulse-inner"

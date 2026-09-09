@@ -1,3 +1,4 @@
+import type { AgentAttachmentInput } from "@chia/agent-runtime/wire/schema";
 import { AppError, appErrorCodeFromStatus } from "@chia/service-kit/errors";
 
 import type {
@@ -43,7 +44,7 @@ export interface AgentSessionStartRequest {
 export interface AgentMessagePayload {
   text: string;
   template?: { name: string; args?: string[] };
-  attachments?: { type: string; id: number }[];
+  attachments?: AgentAttachmentInput[];
   decision?: {
     toolCallId: string;
     toolName: string;

@@ -33,7 +33,8 @@ export const searchPostsTool = defineTool({
   description:
     "Search posts. `semantic` matches on meaning (best for topics); `keyword` matches " +
     "on literal terms (best for names, APIs, error messages). Each hit's `headingPath` names the " +
-    "section that matched — pass it to `get_post`'s `focusHeadings` to read that section first.",
+    "section that matched — pass it to `get_post`'s `focusHeadings` to read that section first. " +
+    "Each hit's `url` is the post's page; link with it as given.",
   parameters: Type.Object({
     keyword: Type.String({
       description: "The topic or phrase to look for.",
@@ -88,7 +89,7 @@ export const getPostTool = defineTool({
     "Read one post in full, including every locale's metadata and MDX body. Pass the `slug` " +
     "returned by `search_posts` or `list_posts`. Long bodies degrade to their matched sections " +
     "and then to an outline; each returned heading carries the anchor the site renders, so cite " +
-    "`slug#anchor`.",
+    "`url#anchor` with the translation's `url` as given. Never assemble a link from the slug.",
   parameters: Type.Object({
     slug: Type.String({
       description: "Post slug returned by `search_posts` or `list_posts`.",
@@ -161,7 +162,8 @@ export const getPostTool = defineTool({
 export const listPostsTool = defineTool({
   name: CONTENT_TOOL_NAMES.listPosts,
   label: CONTENT_TOOL_LABEL_BY_NAME[CONTENT_TOOL_NAMES.listPosts],
-  description: "List recent posts, newest first.",
+  description:
+    "List recent posts, newest first. Each carries the `url` of its page; link with it as given.",
   parameters: Type.Object({
     limit: Type.Optional(
       Type.Integer({

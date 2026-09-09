@@ -1,12 +1,20 @@
 "use client";
 
-import { Children, isValidElement } from "react";
+import type { ComponentType, ReactNode } from "react";
+import {
+  Children,
+  createContext,
+  isValidElement,
+  useContext,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { Alert, AlertDialog, Button, Card } from "@heroui/react";
 import { cjk } from "@streamdown/cjk";
 import { ExternalLink } from "lucide-react";
 import { Streamdown } from "streamdown";
-import type { Components, LinkSafetyModalProps } from "streamdown";
+import type { Components } from "streamdown";
 
 import { markdownElements } from "@chia/contents/markdown-elements";
 import { CopyButton } from "@chia/ui/copy-button";
@@ -48,43 +56,17 @@ const CodeBlock: Components["code"] = ({ children, className }) => {
   );
 };
 
-/**
- * Streamdown defaults use shadcn tokens (`bg-muted`, `text-muted-foreground`); HeroUI's `muted`
- * is a text colour, so those defaults render as grey slabs. Tables and emphasis come from the
- * blog elements; the rest is restated in HeroUI tokens. Unlisted elements keep Streamdown's
- * rendering. Hosts layer overrides through `components`.
- */
-export const markdownComponents: Components = {
-  ...markdownElements,
-  code: CodeBlock,
-  inlineCode: ({ className, node: _node, ...props }) => (
-    <code
-      className={cn(
-        "bg-surface-secondary text-foreground rounded-md px-1.5 py-0.5 font-mono text-[0.875em]",
-        className
-      )}
-      {...props}
-    />
-  ),
-  blockquote: ({ node: _node, ...props }) => (
-    <Alert className="bg-surface-secondary gap-2 px-2.5 py-2">
-      <Alert.Indicator />
-      <Alert.Content>
-        <Alert.Description>{props.children}</Alert.Description>
-      </Alert.Content>
-    </Alert>
-  ),
-  hr: ({ className, node: _node, ...props }) => (
-    <hr className={cn("border-border my-6", className)} {...props} />
-  ),
-};
-
 const LinkSafetyDialog = ({
   isOpen,
   onClose,
   onConfirm,
   url,
-}: LinkSafetyModalProps) => {
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  url: string;
+}) => {
   const labels = useAgentLabels();
   return (
     <AlertDialog
@@ -141,9 +123,122 @@ const LinkSafetyDialog = ({
   );
 };
 
-const renderLinkSafety = (props: LinkSafetyModalProps) => (
-  <LinkSafetyDialog {...props} />
+// Nothing to subscribe to: the origin never changes after the first client render.
+const subscribeNever = () => () => undefined;
+
+/** The page's own origin once it is in a browser; `null` while rendering on the server. */
+const useOrigin = (): string | null =>
+  useSyncExternalStore(
+    subscribeNever,
+    () => window.location.origin,
+    () => null
+  );
+
+/** Renders a link into the host's own origin; `href` is root-relative. */
+export type SiteLink = ComponentType<{
+  href: string;
+  className?: string;
+  children?: ReactNode;
+}>;
+
+const PlainSiteLink: SiteLink = ({ children, className, href }) => (
+  <a className={className} href={href}>
+    {children}
+  </a>
 );
+
+const SiteLinkContext = createContext<SiteLink>(PlainSiteLink);
+
+/** A host with a client router hands its link component here, e.g. `next/link`. */
+export const SiteLinkProvider = SiteLinkContext.Provider;
+
+/**
+ * Links from the model. One into this origin is a site link, so a section of the page the
+ * reader is on scrolls into view; anything else asks first, because the model may have been
+ * handed the URL by a page it read.
+ */
+const MarkdownLink: Components["a"] = ({
+  children,
+  className,
+  href,
+  node: _node,
+  // Streamdown marks every link for a new tab; a link into this site navigates in place.
+  rel: _rel,
+  target: _target,
+  ...props
+}) => {
+  const [open, setOpen] = useState(false);
+  const origin = useOrigin();
+  const SiteLink = useContext(SiteLinkContext);
+  const linkClass = cn("link wrap-anywhere", className);
+  if (!href || href === "streamdown:incomplete-link") {
+    return (
+      <span className={linkClass} data-incomplete="true" data-streamdown="link">
+        {children}
+      </span>
+    );
+  }
+  const url = URL.parse(href);
+  if (url && origin !== null && url.origin === origin) {
+    return (
+      <SiteLink
+        className={linkClass}
+        href={`${url.pathname}${url.search}${url.hash}`}
+        {...props}>
+        {children}
+      </SiteLink>
+    );
+  }
+  return (
+    <>
+      <button
+        className={cn("appearance-none text-left", linkClass)}
+        data-streamdown="link"
+        onClick={() => setOpen(true)}
+        type="button">
+        {children}
+      </button>
+      <LinkSafetyDialog
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        onConfirm={() => window.open(href, "_blank", "noreferrer")}
+        url={href}
+      />
+    </>
+  );
+};
+
+/**
+ * Streamdown defaults use shadcn tokens (`bg-muted`, `text-muted-foreground`); HeroUI's `muted`
+ * is a text colour, so those defaults render as grey slabs. Tables and emphasis come from the
+ * blog elements; the rest is restated in HeroUI tokens. Unlisted elements keep Streamdown's
+ * rendering. Hosts layer overrides through `components`.
+ */
+export const markdownComponents: Components = {
+  ...markdownElements,
+  code: CodeBlock,
+  inlineCode: ({ className, node: _node, ...props }) => (
+    <code
+      className={cn(
+        "bg-surface-secondary text-foreground rounded-md px-1.5 py-0.5 font-mono text-[0.875em]",
+        className
+      )}
+      {...props}
+    />
+  ),
+  blockquote: ({ node: _node, ...props }) => (
+    <Alert className="bg-surface-secondary gap-2 px-2.5 py-2">
+      <Alert.Indicator />
+      <Alert.Content>
+        <Alert.Description>{props.children}</Alert.Description>
+      </Alert.Content>
+    </Alert>
+  ),
+  hr: ({ className, node: _node, ...props }) => (
+    <hr className={cn("border-border my-6", className)} {...props} />
+  ),
+  a: MarkdownLink,
+};
 
 export interface MarkdownProps {
   text: string;
@@ -155,8 +250,8 @@ export interface MarkdownProps {
 
 /**
  * CJK plugin keeps emphasis and strikethrough working across Chinese punctuation. Streamdown
- * instantiates the fenced-code element and link modal itself, so copy and confirmation strings
- * come from labels context. Needs no session; without a provider the `en-US` catalog applies.
+ * instantiates the fenced-code element and links itself, so copy and confirmation strings come
+ * from labels context. Needs no session; without a provider the `en-US` catalog applies.
  */
 export const Markdown = ({
   className,
@@ -168,9 +263,6 @@ export const Markdown = ({
     className={cn(
       "text-foreground text-sm leading-6",
       "[&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_h4]:text-sm",
-      "**:data-[streamdown=link]:text-foreground/70 **:data-[streamdown=link]:decoration-muted/70 **:data-[streamdown=link]:underline-offset-[5px]",
-      "**:data-[streamdown=link]:transition-colors **:data-[streamdown=link]:duration-300 **:data-[streamdown=link]:ease-in-out",
-      "**:data-[streamdown=link]:hover:decoration-foreground/70",
       className
     )}
     components={
@@ -178,7 +270,6 @@ export const Markdown = ({
     }
     controls={{ table: false, mermaid: false }}
     isAnimating={streaming}
-    linkSafety={{ enabled: true, renderModal: renderLinkSafety }}
     mode={streaming ? "streaming" : "static"}
     plugins={{ cjk }}>
     {text}
