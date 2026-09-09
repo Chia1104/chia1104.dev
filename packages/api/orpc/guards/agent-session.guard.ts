@@ -1,12 +1,12 @@
 import { os } from "@orpc/server";
 
+import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { getAgentSession } from "@chia/db/repos/agent";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import {
   requireAgentKind,
-  requireAgentKindTier,
+  resolveAgentKindFloor,
 } from "../services/agent.service";
 import type {
   AgentModelRef,
@@ -17,8 +17,8 @@ import type {
 import type { CallerContext } from "./caller.guard";
 
 /**
- * Both run after `callerGuard()`. Which tier may use a kind is that kind's registered
- * `minTier`; neither guard hard-codes a role.
+ * Both run after `callerGuard()`. Which tier may use a kind is that kind's floor, raised by
+ * the operator's override; neither guard hard-codes a role.
  */
 
 export interface AgentSessionContext {
@@ -31,10 +31,7 @@ export interface AgentSessionContext {
 
 const agentOS = os.$context<CallerContext>();
 
-/**
- * Asked before the kind's definition is loaded. Used by both guards and the kind-less list
- * route.
- */
+/** Asked before the kind's definition is loaded. Used by both guards and the kind-less list route. */
 export const canUseAgentKind = (
   caller: AgentServiceCaller,
   minTier: CallerTier
@@ -75,7 +72,9 @@ export const agentSessionGuard = () =>
         throw errors.NOT_FOUND();
       }
 
-      if (!canUseAgentKind(caller, requireAgentKindTier(context, row.kind))) {
+      if (
+        !canUseAgentKind(caller, await resolveAgentKindFloor(context, row.kind))
+      ) {
         throw errors.FORBIDDEN();
       }
       const service = await requireAgentKind(context, row.kind);
@@ -101,7 +100,10 @@ export const agentKindGuard = () =>
       ) => {
         const caller = agentCallerOf(context, errors);
         if (
-          !canUseAgentKind(caller, requireAgentKindTier(context, input.kind))
+          !canUseAgentKind(
+            caller,
+            await resolveAgentKindFloor(context, input.kind)
+          )
         ) {
           throw errors.FORBIDDEN();
         }

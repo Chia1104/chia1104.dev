@@ -2,19 +2,19 @@
 
 import { Spinner } from "@heroui/react";
 
-import { useAccess } from "@/hooks/use-access";
+import { authClient } from "@chia/auth/client";
 
 import { MemberOverview } from "./member-overview";
 import { DashboardOverview } from "./overview";
 
 export const Overview = () => {
-  const access = useAccess();
+  const session = authClient.useSession();
 
-  if (access.error) {
-    return <p className="text-danger py-8 text-sm">{access.error.message}</p>;
+  if (session.error) {
+    return <p className="text-danger py-8 text-sm">{session.error.message}</p>;
   }
 
-  switch (access.data?.level) {
+  switch (session.data?.access.dashboard) {
     case "operator":
       return <DashboardOverview />;
     case "member":

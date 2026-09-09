@@ -12,7 +12,7 @@ const FEATURES = [
   { key: "feedback", icon: "i-mdi-comment-edit-outline" },
 ] as const;
 
-/** Shown while the public kind is still gated to the operator: the visitor is signed in, the kind refuses them. */
+/** The kind's floor is above what this visitor can reach by signing in: closed until the operator opens it. */
 export const ComingSoon = () => {
   const t = useTranslations("chbot.comingSoon");
 

@@ -1,3 +1,4 @@
+import { CallerTier } from "@chia/auth/tier";
 import { countAgentMemories } from "@chia/db/repos/agent/memory";
 import { countFeedTranslations } from "@chia/db/repos/feeds";
 import {
@@ -17,7 +18,6 @@ import {
 import { RESOURCE_INDEX_RUN_SCOPE } from "@chia/db/schema";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 import type { Caller } from "@chia/service-kit/policies/caller.policy";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import {
   currentIndexKey,

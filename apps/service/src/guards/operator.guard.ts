@@ -1,11 +1,9 @@
 import { createMiddleware } from "hono/factory";
 
 import { ApiKeyScope } from "@chia/auth/apikey";
+import { CallerTier } from "@chia/auth/tier";
 import { applyPolicy } from "@chia/service-kit/adapters/hono";
-import {
-  CallerTier,
-  callerPolicy,
-} from "@chia/service-kit/policies/caller.policy";
+import { callerPolicy } from "@chia/service-kit/policies/caller.policy";
 
 /** Admits the operator only: a Root session, or an admin-owned key carrying `operator:root`. */
 export const verifyOperator = () =>

@@ -216,6 +216,10 @@
       },
       "note": "敬請期待。"
     },
+    "signInRequired": {
+      "title": "登入後繼續",
+      "description": "Gloss 目前只開放給已登入的讀者。完成驗證後選擇登入方式。"
+    },
     "account": {
       "signIn": "登入",
       "signInTitle": "保留你的對話",

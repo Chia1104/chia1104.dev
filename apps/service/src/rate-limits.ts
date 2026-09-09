@@ -1,4 +1,4 @@
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
+import { CallerTier } from "@chia/auth/tier";
 import type { RateLimitBudget } from "@chia/service-kit/policies/rate-limit.policy";
 
 const MINUTE = 60_000;

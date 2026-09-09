@@ -11,6 +11,8 @@ import {
   Description,
   Form,
   Label,
+  ListBox,
+  Select,
   Switch,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +22,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 import { ThinkingSlider } from "@chia/agent-elements/thinking-slider";
+import { CallerTier } from "@chia/auth/tier";
 
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
@@ -53,6 +56,7 @@ const THINKING_LEVELS = [
 
 /** Null on a field means the code default. */
 const kindFormSchema = z.object({
+  minTier: z.number().int().nullable(),
   model: modelRefSchema.nullable(),
   thinkingLevel: z.enum(THINKING_LEVELS).nullable(),
   autoApprove: z.array(z.string()).nullable(),
@@ -62,6 +66,7 @@ const kindFormSchema = z.object({
 type KindFormValues = z.infer<typeof kindFormSchema>;
 
 const formValuesOf = (kind: KindAdmin): KindFormValues => ({
+  minTier: kind.minTier.override,
   model: kind.defaults.override.model,
   thinkingLevel: kind.defaults.override.thinkingLevel,
   autoApprove: kind.defaults.override.autoApprove,
@@ -71,20 +76,26 @@ const formValuesOf = (kind: KindAdmin): KindFormValues => ({
 /** Maps contract `CallerTier` values. */
 const audienceOf = (minTier: number): string => {
   switch (minTier) {
-    case 0:
+    case CallerTier.Anonymous:
       return "anyone";
-    case 1:
+    case CallerTier.Guest:
       return "guests and signed-in users";
-    case 2:
+    case CallerTier.ApiKey:
       return "API-key callers";
-    case 3:
+    case CallerTier.Session:
       return "signed-in users";
-    case 4:
+    case CallerTier.Root:
       return "the author only";
     default:
       return `tier ${minTier}`;
   }
 };
+
+/** The floors an operator may pick: the definition's own and every tier above it that a session can hold. */
+const audienceOptionsOf = (code: number) =>
+  [CallerTier.Guest, CallerTier.Session, CallerTier.Root]
+    .filter((tier) => tier >= code)
+    .map((tier) => ({ id: String(tier), label: audienceOf(tier) }));
 
 /** Edits the override. Parent remounts after save so a refetch never collides with an in-progress edit. */
 export const KindCard = ({ kind }: { kind: KindAdmin }) => {
@@ -122,6 +133,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
   const onSubmit = handleSubmit((values) =>
     update.mutate({
       kind: kind.kind,
+      minTier: values.minTier,
       model: values.model,
       thinkingLevel: values.thinkingLevel,
       autoApprove: values.autoApprove,
@@ -130,12 +142,14 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
   );
 
   const overridden =
+    kind.minTier.override !== null ||
     kind.defaults.override.model !== null ||
     kind.defaults.override.thinkingLevel !== null ||
     kind.defaults.override.autoApprove !== null ||
     Object.keys(kind.config.override).length > 0;
 
   const code = kind.defaults.code;
+  const audienceOptions = audienceOptionsOf(kind.minTier.code);
   const busy = update.isPending;
   const autoApprove = watch("autoApprove");
 
@@ -156,11 +170,62 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
             ) : null}
           </div>
           <Card.Description className="text-xs">
-            {kind.description} Available to {audienceOf(kind.minTier)}.
+            {kind.description} Available to {audienceOf(kind.minTier.effective)}
+            .
           </Card.Description>
         </Card.Header>
 
         <Card.Content className="flex flex-col gap-6">
+          {audienceOptions.length > 1 ? (
+            <section className="flex flex-col gap-4">
+              <div>
+                <h3 className="text-sm font-medium">Audience</h3>
+                <p className="text-muted text-xs">
+                  Who may open this kind. Applies to the next request; sessions
+                  below the floor are refused until their owner signs in.
+                </p>
+              </div>
+              <Controller
+                control={control}
+                name="minTier"
+                render={({ field }) => (
+                  <div className="flex w-full max-w-md flex-col gap-1">
+                    <Label className="text-xs">Minimum tier</Label>
+                    <Select
+                      aria-label="Minimum tier"
+                      className="w-full"
+                      isDisabled={busy}
+                      onChange={(id) =>
+                        field.onChange(id === "" ? null : Number(id))
+                      }
+                      value={field.value === null ? "" : String(field.value)}>
+                      <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox
+                          items={[
+                            {
+                              id: "",
+                              label: `Default — ${audienceOf(kind.minTier.code)}`,
+                            },
+                            ...audienceOptions,
+                          ]}>
+                          {(item) => (
+                            <ListBox.Item id={item.id}>
+                              {item.label}
+                            </ListBox.Item>
+                          )}
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
+                  </div>
+                )}
+              />
+            </section>
+          ) : null}
+
           <section className="flex flex-col gap-4">
             <div>
               <h3 className="text-sm font-medium">New session defaults</h3>

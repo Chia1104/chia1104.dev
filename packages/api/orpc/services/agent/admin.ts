@@ -30,6 +30,7 @@ import {
 } from "@chia/agent-runtime/models";
 import type { AgentModelRef } from "@chia/agent-runtime/models";
 import type { ThinkingLevel } from "@chia/agent-runtime/types";
+import { agentKindFloor, isCallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { countAgentSessions } from "@chia/db/repos/agent";
 import {
@@ -80,6 +81,7 @@ export interface AgentAdminService {
     caller: AgentAdminCaller,
     input: {
       kind: string;
+      minTier?: number | null;
       model?: AgentModelRef | null;
       thinkingLevel?: string | null;
       autoApprove?: string[] | null;
@@ -153,6 +155,17 @@ const taskOrNotFound = (taskId: string): AgentTaskDefinition => {
 const badRequest = (message: string) =>
   new AppError("BAD_REQUEST", { message });
 
+const assertKindFloor = (definition: LoadedKind, minTier: number) => {
+  if (!isCallerTier(minTier)) {
+    throw badRequest(`"${minTier}" is not a caller tier.`);
+  }
+  if (minTier < definition.minTier) {
+    throw badRequest(
+      `Kind "${definition.kind}" cannot admit a tier below its definition's floor.`
+    );
+  }
+};
+
 const kindView = (
   definition: LoadedKind,
   row: AgentKindConfig | undefined
@@ -168,7 +181,11 @@ const kindView = (
     kind: definition.kind,
     label: definition.label,
     description: definition.description,
-    minTier: definition.minTier,
+    minTier: {
+      code: definition.minTier,
+      override: row?.minTier ?? null,
+      effective: agentKindFloor(definition.minTier, row?.minTier),
+    },
     defaults: {
       code,
       override: {
@@ -359,6 +376,7 @@ export const createAgentAdminService = (
 
     async updateKind({ db }, input) {
       const definition = await kindOrNotFound(source, input.kind);
+      if (input.minTier != null) assertKindFloor(definition, input.minTier);
       if (input.model) assertKindModel(definition, input.model);
       if (input.autoApprove) assertKindTiers(definition, input.autoApprove);
       const config =
@@ -367,6 +385,7 @@ export const createAgentAdminService = (
           : parseKindConfig(definition, input.config);
 
       const row = await upsertAgentKindConfig(db, input.kind, {
+        minTier: input.minTier,
         // A pair, set or cleared together; `undefined` leaves both alone.
         providerId: pairField(input.model, "providerId"),
         modelId: pairField(input.model, "modelId"),

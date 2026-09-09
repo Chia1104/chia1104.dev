@@ -5,8 +5,8 @@ import type {
   ProfileReadPort,
 } from "@chia/agent-content/types";
 import { PUBLIC_AGENT_KIND } from "@chia/agent-public/models";
+import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import type { AgentKindCaller } from "../src/kind";
 
@@ -47,9 +47,9 @@ const profile: ProfileReadPort = {
 describe("createPublicAgentKind", () => {
   const kind = createPublicAgentKind();
 
-  it("is root-only and offers only read tools, no commands and no skills", () => {
+  it("admits guests and offers only read tools, no commands and no skills", () => {
     expect(kind.kind).toBe(PUBLIC_AGENT_KIND);
-    expect(kind.minTier).toBe(CallerTier.Root);
+    expect(kind.minTier).toBe(CallerTier.Guest);
 
     const capabilities = kind.capabilities();
     expect(capabilities.tools.map((tool) => tool.name)).toEqual([

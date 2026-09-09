@@ -4,7 +4,7 @@ import type {
   AgentKindEntry,
 } from "@chia/agent-host/kind";
 import type { AgentCredentials } from "@chia/agent-runtime/models";
-import type { CallerTier } from "@chia/service-kit/policies/caller.policy";
+import type { CallerTier } from "@chia/auth/tier";
 import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-hooks";
 
 import type { AgentKindService } from "./agent.service";

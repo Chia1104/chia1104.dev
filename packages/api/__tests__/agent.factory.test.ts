@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
+import { CallerTier } from "@chia/auth/tier";
 
 import { createAgentFactory } from "../orpc/services/agent.factory";
 

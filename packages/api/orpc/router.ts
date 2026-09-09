@@ -59,7 +59,6 @@ export const router = contractOS.router({
     },
   },
   dashboard: {
-    access: dashboardRoutes.getDashboardAccessRoute,
     overview: dashboardRoutes.getDashboardOverviewRoute,
   },
   health: {

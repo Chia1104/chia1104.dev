@@ -57,7 +57,7 @@ const kind: KindAdmin = {
   kind: "writing",
   label: "Writing",
   description: "Drafts posts.",
-  minTier: 3,
+  minTier: { code: 3, override: null, effective: 3 },
   defaults: {
     code: {
       providerId: "vercel-ai-gateway",
@@ -201,6 +201,7 @@ describe("KindCard", () => {
       expect(client.agent.admin.kinds.update).toHaveBeenCalledWith(
         {
           kind: "writing",
+          minTier: null,
           model: null,
           thinkingLevel: null,
           autoApprove: null,

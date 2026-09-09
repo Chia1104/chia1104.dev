@@ -9,10 +9,10 @@ import {
 } from "../guards/agent-session.guard";
 import { callerGuard } from "../guards/caller.guard";
 import {
-  availableAgentKinds,
   requireAgentFactory,
   requireAgentKind,
-  requireAgentKindTier,
+  resolveAgentKindFloor,
+  resolveAgentKindFloors,
 } from "../services/agent.service";
 import type { AgentKindService } from "../services/agent.service";
 import { contractOS } from "../utils";
@@ -35,20 +35,16 @@ export const listAgentSessionsRoute = contractOS.agent.sessions.list
     const agentCaller = agentCallerOf(opts.context, opts.errors);
     let services: AgentKindService[];
     if (opts.input?.kind) {
-      const tier = requireAgentKindTier(opts.context, opts.input.kind);
-      if (!canUseAgentKind(agentCaller, tier)) throw opts.errors.FORBIDDEN();
+      const floor = await resolveAgentKindFloor(opts.context, opts.input.kind);
+      if (!canUseAgentKind(agentCaller, floor)) throw opts.errors.FORBIDDEN();
       services = [await requireAgentKind(opts.context, opts.input.kind)];
     } else {
-      // Tier-filter on the eager floor first, so a kind the caller cannot use is never loaded.
+      // Tier-filter first, so a kind the caller cannot use is never loaded.
+      const floors = await resolveAgentKindFloors(opts.context);
       services = await Promise.all(
-        availableAgentKinds(opts.context)
-          .filter((kind) =>
-            canUseAgentKind(
-              agentCaller,
-              requireAgentKindTier(opts.context, kind)
-            )
-          )
-          .map((kind) => requireAgentKind(opts.context, kind))
+        [...floors]
+          .filter(([, floor]) => canUseAgentKind(agentCaller, floor))
+          .map(([kind]) => requireAgentKind(opts.context, kind))
       );
     }
     const pages = await Promise.all(
