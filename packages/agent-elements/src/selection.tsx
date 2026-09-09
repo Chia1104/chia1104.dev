@@ -186,38 +186,43 @@ export const SelectionTrigger = <T,>({
       };
 
   return (
-    <Popover
-      isOpen={open}
-      onOpenChange={(next) => {
-        if (next) setHeld({ selection: current, anchor: at });
-        else close();
-      }}>
-      <Popover.Trigger>
-        <Button
-          aria-label={label}
-          className={cn(
-            "fixed z-50 h-7 gap-1.5 rounded-full px-2.5 text-xs shadow-md",
-            coarse
-              ? "bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] left-1/2 -translate-x-1/2"
-              : "-translate-x-full",
-            className
-          )}
-          size="sm"
-          style={style}
-          variant="secondary">
-          <Sparkles className="size-3.5" />
-          {label}
-        </Button>
-      </Popover.Trigger>
-      <Popover.Content
-        className="bg-surface/80 w-72 p-0 backdrop-blur-sm"
-        offset={6}
-        placement={coarse ? "top" : "bottom end"}>
-        <Popover.Dialog className="p-2">
-          {children(current, close)}
-        </Popover.Dialog>
-      </Popover.Content>
-    </Popover>
+    // Pressing the mouse on the trigger must not collapse the selection it is for.
+    <span
+      className={cn(
+        "fixed z-50",
+        coarse
+          ? "bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] left-1/2 -translate-x-1/2"
+          : "-translate-x-full",
+        className
+      )}
+      onMouseDown={(event) => event.preventDefault()}
+      style={style}>
+      <Popover
+        isOpen={open}
+        onOpenChange={(next) => {
+          if (next) setHeld({ selection: current, anchor: at });
+          else close();
+        }}>
+        <Popover.Trigger>
+          <Button
+            aria-label={label}
+            className="h-7 gap-1.5 rounded-full px-2.5 text-xs shadow-md"
+            size="sm"
+            variant="secondary">
+            <Sparkles className="size-3.5" />
+            {label}
+          </Button>
+        </Popover.Trigger>
+        <Popover.Content
+          className="bg-surface/80 w-72 p-0 backdrop-blur-sm"
+          offset={6}
+          placement={coarse ? "top" : "bottom end"}>
+          <Popover.Dialog className="p-2">
+            {children(current, close)}
+          </Popover.Dialog>
+        </Popover.Content>
+      </Popover>
+    </span>
   );
 };
 
