@@ -22,7 +22,6 @@ import type { SessionTree } from "../session/tree.ts";
 import { bindToolContext, resolveToolContext } from "../tools.ts";
 import type { ToolContextSource } from "../tools.ts";
 import type {
-  AgentAttachment,
   AgentPolicy,
   AgentSessionSettings,
   AgentTool,
@@ -35,7 +34,7 @@ import type {
   AgentTurnMessage,
   AgentUsageListener,
 } from "../types.ts";
-import type { AgentWireEvent } from "../wire/schema.ts";
+import type { AgentAttachment, AgentWireEvent } from "../wire/schema.ts";
 
 import {
   compactionContextWindow,

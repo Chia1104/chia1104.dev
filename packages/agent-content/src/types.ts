@@ -11,6 +11,8 @@ export type PostFeedType = Exclude<FeedType, "all">;
 export interface PostSearchHit {
   slug: string;
   locale: Locale;
+  /** The page on the public site; the only link an agent should give for the hit. */
+  url: string;
   title: string;
   /** Best-matching fragment: a BM25 snippet, or the summary when there is none. */
   snippet: string;
@@ -21,6 +23,8 @@ export interface PostSearchHit {
 export interface PostListItem {
   feedId: number;
   slug: string;
+  /** The page on the public site, in the default locale. */
+  url: string;
   type: PostFeedType;
   published: boolean;
   defaultLocale: Locale;
@@ -31,12 +35,16 @@ export interface PostListItem {
 export interface PostSnapshot {
   feedId: number;
   slug: string;
+  /** The page on the public site, in the default locale. */
+  url: string;
   type: PostFeedType;
   published: boolean;
   defaultLocale: Locale;
   mainImage?: string | null;
   translations: {
     locale: Locale;
+    /** The page in this locale; `url#anchor` cites a section. */
+    url: string;
     title: string;
     excerpt?: string | null;
     description?: string | null;

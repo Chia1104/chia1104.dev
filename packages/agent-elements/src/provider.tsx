@@ -92,7 +92,10 @@ export const AgentSessionProvider = ({
       kind,
       labels,
       context: contextStore
-        ? () => attachedContext(contextStore.getState())
+        ? {
+            attached: () => attachedContext(contextStore.getState()),
+            sent: () => contextStore.getState().sent(),
+          }
         : undefined,
       onStateChanged: (event) => callbacks.current.onStateChanged?.(event),
       onToolEvent: (event) => callbacks.current.onToolEvent?.(event),
@@ -105,6 +108,37 @@ export const AgentSessionProvider = ({
     void store.getState().hydrate();
     return () => store.getState().dispose();
   }, [store]);
+
+  /**
+   * A request made on the page before this session could take it (the drawer was closed, the
+   * session still hydrating, a turn running) is sent the moment the session can prompt. Runs
+   * after the hydrate effect above, so the first check never sees the pre-hydration idle state.
+   */
+  useEffect(() => {
+    if (!contextStore) return;
+    const send = () => {
+      if (!contextStore.getState().pending) return;
+      const state = store.getState();
+      if (
+        state.connection !== "idle" ||
+        state.view.runStatus === "running" ||
+        state.view.pendingApprovals.length > 0
+      )
+        return;
+      const request = contextStore.getState().takeRequest();
+      if (!request) return;
+      // A refused request lands in the store's `failure`; nothing else to do with it here.
+      store
+        .getState()
+        .prompt(request.text, { attachments: request.attachments })
+        .catch(() => undefined);
+    };
+    send();
+    const unsubscribers = [contextStore.subscribe(send), store.subscribe(send)];
+    return () => {
+      for (const unsubscribe of unsubscribers) unsubscribe();
+    };
+  }, [contextStore, store]);
 
   // A locale switch in the host arrives as a new `labels` value; the store keeps the current one.
   useEffect(() => {

@@ -1,6 +1,6 @@
-import type { AgentAttachment, AgentErrorKind, ToolTier } from "../types.ts";
+import type { AgentErrorKind, ToolTier } from "../types.ts";
 
-import type { AgentWireEvent } from "./schema.ts";
+import type { AgentAttachment, AgentWireEvent } from "./schema.ts";
 
 export interface ToolCallView {
   kind: "tool";

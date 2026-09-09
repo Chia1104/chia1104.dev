@@ -10,7 +10,6 @@ import type {
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
-  AgentAttachment,
   AgentPolicy,
   AgentSessionDefaults,
   AgentSessionSettings,
@@ -18,7 +17,10 @@ import type {
   AgentTurnMessage,
   AgentUsageListener,
 } from "@chia/agent-runtime/types";
-import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type {
+  AgentAttachmentInput,
+  AgentWireEvent,
+} from "@chia/agent-runtime/wire/schema";
 import type { DB } from "@chia/db/client";
 import type { AgentSession } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
@@ -172,7 +174,7 @@ export interface AgentKindState<TState> {
     caller: AgentKindCaller,
     db: DB,
     sessionId: string,
-    attachments: readonly AgentAttachment[]
+    attachments: readonly AgentAttachmentInput[]
   ): Promise<void>;
 }
 

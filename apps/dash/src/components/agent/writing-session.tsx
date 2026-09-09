@@ -3,8 +3,9 @@
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
+import { attachmentKeyOf } from "@chia/agent-elements/attachment";
 import { Composer, ComposerContext } from "@chia/agent-elements/composer";
-import { contextKeyOf, useAgentContext } from "@chia/agent-elements/context";
+import { useAgentContext } from "@chia/agent-elements/context";
 import { EmptyState } from "@chia/agent-elements/empty-state";
 import { useSessionDetail } from "@chia/agent-elements/provider";
 import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
@@ -41,9 +42,9 @@ export const WritingSession = ({
   const drafts = useSessionDetail().data?.drafts ?? [];
   // The page's own records are listed by the composer; the session's other drafts follow.
   const context = useAgentContext((state) => state.items);
-  const onScreen = new Set(context.map(contextKeyOf));
+  const onScreen = new Set(context.map(attachmentKeyOf));
   const otherDrafts = drafts.filter(
-    (draft) => !onScreen.has(contextKeyOf({ type: "draft", id: draft.id }))
+    (draft) => !onScreen.has(attachmentKeyOf({ type: "draft", id: draft.id }))
   );
 
   const [modelPickerOpen, setModelPickerOpen] = useState(false);

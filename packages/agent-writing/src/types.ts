@@ -95,9 +95,6 @@ export interface SessionDraftRef {
   lastSeenRevision: number;
 }
 
-/** The attachment type a prompt uses to hand the agent a draft. */
-export const DRAFT_ATTACHMENT_TYPE = "draft";
-
 export interface FetchedPage {
   url: string;
   title?: string;

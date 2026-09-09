@@ -16,6 +16,7 @@ import {
   getInfiniteFeeds,
 } from "@chia/db/repos/feeds";
 import type { Locale } from "@chia/db/types";
+import { feedUrl } from "@chia/utils/config";
 
 import { searchFeedsService } from "../feeds/search";
 
@@ -70,21 +71,25 @@ export const createContentReadPort = (
         limit: input.limit,
       });
 
-      return result.items.slice(0, input.limit).map((item) => ({
-        slug: item.slug,
-        locale:
+      return result.items.slice(0, input.limit).map((item) => {
+        const locale =
           /* SAFETY: The producer contract guarantees this value satisfies Locale. */ (item
-            .summary.locale ?? "zh-TW") as Locale,
-        title: item.summary.title,
-        // hybrid hits carry no highlighted snippet (ParadeDB cannot combine one with the
-        // fused query), so fall back to the matched chunk's text.
-        snippet:
-          stripHighlight(item.bestChunk.snippet) ||
-          truncateSnippet(item.bestChunk.content) ||
-          item.summary.description ||
-          "",
-        headingPath: item.bestChunk.headingPath ?? undefined,
-      }));
+            .summary.locale ?? "zh-TW") as Locale;
+        return {
+          slug: item.slug,
+          locale,
+          url: feedUrl({ type: item.type, slug: item.slug, locale }),
+          title: item.summary.title,
+          // hybrid hits carry no highlighted snippet (ParadeDB cannot combine one with the
+          // fused query), so fall back to the matched chunk's text.
+          snippet:
+            stripHighlight(item.bestChunk.snippet) ||
+            truncateSnippet(item.bestChunk.content) ||
+            item.summary.description ||
+            "",
+          headingPath: item.bestChunk.headingPath ?? undefined,
+        };
+      });
     },
 
     async getPost(input: GetPostInput): Promise<PostSnapshot | null> {
@@ -137,6 +142,11 @@ export const createContentReadPort = (
         return {
           feedId: feed.id,
           slug: feed.slug,
+          url: feedUrl({
+            type: feed.type,
+            slug: feed.slug,
+            locale: feed.defaultLocale,
+          }),
           type: /* SAFETY: The producer contract guarantees this value satisfies PostFeedType. */ feed.type as PostFeedType,
           published: feed.published,
           defaultLocale:
@@ -192,6 +202,11 @@ const toPostSnapshot = (feed: {
 }): PostSnapshot => ({
   feedId: feed.id,
   slug: feed.slug,
+  url: feedUrl({
+    type: feed.type,
+    slug: feed.slug,
+    locale: feed.defaultLocale,
+  }),
   type: /* SAFETY: The producer contract guarantees this value satisfies PostFeedType. */ feed.type as PostFeedType,
   published: feed.published,
   defaultLocale:
@@ -200,6 +215,11 @@ const toPostSnapshot = (feed: {
   translations: (feed.translations ?? []).map((translation) => ({
     locale:
       /* SAFETY: The producer contract guarantees this value satisfies Locale. */ translation.locale as Locale,
+    url: feedUrl({
+      type: feed.type,
+      slug: feed.slug,
+      locale: translation.locale,
+    }),
     title: translation.title,
     excerpt: translation.excerpt,
     description: translation.description,

@@ -116,6 +116,10 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
   last turn; the session context lists what they touched, per draft.
 - **Prefer editing to rewriting.** Once the operator has reviewed prose, replacing the whole
   body throws that review away. Make targeted edits.
+- **A selection is the scope.** When the operator attaches text they selected in the editor,
+  that passage is what they mean by "this": change it with \`edit_draft_content\` using the
+  quoted text as \`oldString\`, leave every other line byte-identical, and do not touch the
+  metadata unless asked.
 - **Match the existing voice.** This is one person's blog with a consistent register.
   \`read_skill\` the relevant tone skill before writing prose, and read a nearby existing post
   if unsure.

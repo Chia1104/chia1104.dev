@@ -23,6 +23,19 @@ const MEditor = dynamic(() => import("@monaco-editor/react"), {
   loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
 });
 
+export interface EditorSelection {
+  text: string;
+  startLine: number;
+  endLine: number;
+}
+
+/** An entry on the editor's own context menu, offered while text is selected. */
+export interface EditorSelectionAction {
+  id: string;
+  label: string;
+  run: (selection: EditorSelection) => void;
+}
+
 export interface MarkdownEditorProps {
   value: string;
   onChange: (value: string | undefined) => void;
@@ -31,7 +44,26 @@ export interface MarkdownEditorProps {
   theme?: "vs-dark" | "light";
   height?: string;
   className?: string;
+  selectionActions?: readonly EditorSelectionAction[];
 }
+
+/** The selected text with its line range, or `null` when nothing is selected. */
+const readSelection = (
+  editor: MonacoEditorNS.IStandaloneCodeEditor
+): EditorSelection | null => {
+  const selection = editor.getSelection();
+  const model = editor.getModel();
+  if (!selection || !model || selection.isEmpty()) return null;
+  const text = model.getValueInRange(selection).trim();
+  if (!text) return null;
+  const end = selection.getEndPosition();
+  // A selection that ends at the start of a line does not include that line.
+  const endLine =
+    end.column === 1 && end.lineNumber > selection.startLineNumber
+      ? end.lineNumber - 1
+      : end.lineNumber;
+  return { text, startLine: selection.startLineNumber, endLine };
+};
 
 export const MarkdownEditor = ({
   value,
@@ -41,6 +73,7 @@ export const MarkdownEditor = ({
   theme = "light",
   height = "700px",
   className,
+  selectionActions,
 }: MarkdownEditorProps) => {
   const [aiEnabled, setAiEnabled] = useState(true);
 
@@ -54,6 +87,9 @@ export const MarkdownEditor = ({
   );
 
   const editorRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null);
+  // Actions are registered once on mount; the menu runs whatever the latest render passed.
+  const actionsRef = useRef(selectionActions);
+  actionsRef.current = selectionActions;
   // Last completion we returned. If the text before the cursor ends with it, the user just
   // committed the suggestion; skip the API call to avoid an immediate re-trigger.
   const lastCompletionRef = useRef("");
@@ -69,6 +105,23 @@ export const MarkdownEditor = ({
           e.changes.length > 0 &&
           e.changes.every((c) => c.rangeLength > 0 && c.text === "");
       });
+
+      for (const [index, action] of (actionsRef.current ?? []).entries()) {
+        editor.addAction({
+          id: `agent.${action.id}`,
+          label: action.label,
+          contextMenuGroupId: "agent",
+          contextMenuOrder: index,
+          precondition: "editorHasSelection",
+          run: () => {
+            const selection = readSelection(editor);
+            if (!selection) return;
+            actionsRef.current
+              ?.find((entry) => entry.id === action.id)
+              ?.run(selection);
+          },
+        });
+      }
 
       editorRef.current = monaco.languages.registerInlineCompletionsProvider(
         "markdown",

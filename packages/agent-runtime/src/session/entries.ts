@@ -1,7 +1,7 @@
 import type { AgentMessage, JsonValue } from "@earendil-works/pi-agent-core";
 import type { Usage } from "@earendil-works/pi-ai";
 
-import type { AgentAttachment } from "../types.ts";
+import type { AgentAttachment } from "../wire/schema.ts";
 
 /**
  * The persisted session tree, owned here rather than imported from Pi.

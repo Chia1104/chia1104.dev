@@ -41,6 +41,14 @@
       "types": "./src/context.tsx",
       "default": "./src/context.tsx"
     },
+    "./attachment": {
+      "types": "./src/attachment.ts",
+      "default": "./src/attachment.ts"
+    },
+    "./selection": {
+      "types": "./src/selection.tsx",
+      "default": "./src/selection.tsx"
+    },
     "./chat": {
       "types": "./src/chat.tsx",
       "default": "./src/chat.tsx"

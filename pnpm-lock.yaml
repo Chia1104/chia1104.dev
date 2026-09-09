@@ -2569,6 +2569,9 @@ importers:
 
   packages/workflow-control:
     dependencies:
+      '@chia/agent-runtime':
+        specifier: workspace:*
+        version: link:../agent-runtime
       '@chia/ai':
         specifier: workspace:*
         version: link:../ai

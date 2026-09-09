@@ -1,7 +1,10 @@
 import { asyncIteratorObject, oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { agentWireEventSchema } from "@chia/agent-runtime/wire/schema";
+import {
+  agentAttachmentInputSchema,
+  agentWireEventSchema,
+} from "@chia/agent-runtime/wire/schema";
 
 import { feedDraftSchema } from "./feeds.contract";
 import { withMetaSchema } from "./shared";
@@ -75,15 +78,6 @@ const toolTierSchema = z.string();
 export const agentModelRefSchema = z.object({
   providerId: z.string().min(1),
   modelId: z.string().min(1),
-});
-
-/**
- * What a prompt hands the agent beside the text. `type` is kind policy: the writing agent takes
- * `draft`; a kind refuses what it cannot read.
- */
-export const agentAttachmentInputSchema = z.object({
-  type: z.string().min(1),
-  id: z.number().int(),
 });
 
 export const agentSessionSummarySchema = z.object({

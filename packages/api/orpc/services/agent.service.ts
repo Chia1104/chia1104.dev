@@ -2,7 +2,10 @@ import type {
   AgentKindCaller,
   AgentKindCapabilities,
 } from "@chia/agent-host/kind";
-import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type {
+  AgentAttachmentInput,
+  AgentWireEvent,
+} from "@chia/agent-runtime/wire/schema";
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import type { ServiceContext } from "@chia/service-kit/context";
 import { AppError } from "@chia/service-kit/errors";
@@ -102,7 +105,7 @@ export interface AgentKindService {
       sessionId: string;
       text: string;
       template?: { name: string; args?: string[] };
-      attachments?: { type: string; id: number }[];
+      attachments?: AgentAttachmentInput[];
     }
   ): Promise<AgentStreamCursor & { startedRun: boolean }>;
 

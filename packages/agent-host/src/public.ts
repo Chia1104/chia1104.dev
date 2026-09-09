@@ -18,6 +18,8 @@ import { publicPolicy } from "@chia/agent-public/policy";
 import { runPublicTurn } from "@chia/agent-public/runtime";
 import { createPublicTools } from "@chia/agent-public/tools/tool-set";
 import type { DB } from "@chia/db/client";
+import { getFeedById } from "@chia/db/repos/feeds";
+import { AppError } from "@chia/service-kit/errors";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import type { AgentKindDefinition } from "./kind";
@@ -91,6 +93,37 @@ export const createPublicAgentKind = (
       load: () => Promise.resolve({}),
       fork: () => Promise.resolve(),
       detail: () => Promise.resolve({}),
+
+      /**
+       * Only a published post: the one the visitor is reading, or text selected in one. Checked
+       * here so an unpublished id fails the request instead of the turn, and so an attachment
+       * cannot probe what the visitor cannot read.
+       */
+      async attach(_caller, db, _sessionId, attachments) {
+        for (const attachment of attachments) {
+          if (attachment.type === "draft") {
+            throw new AppError("BAD_REQUEST", {
+              message: `The public agent takes no "draft" attachments.`,
+            });
+          }
+          if (
+            attachment.type === "selection" &&
+            attachment.source.type !== "feed"
+          ) {
+            throw new AppError("BAD_REQUEST", {
+              message: `The public agent takes no "${attachment.source.type}" selections.`,
+            });
+          }
+          const feedId =
+            attachment.type === "feed" ? attachment.id : attachment.source.id;
+          const feed = await getFeedById(db, { feedId, published: true });
+          if (!feed) {
+            throw new AppError("NOT_FOUND", {
+              message: `Unknown post: ${feedId}`,
+            });
+          }
+        }
+      },
     },
 
     ...(execution && {

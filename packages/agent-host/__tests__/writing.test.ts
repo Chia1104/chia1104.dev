@@ -127,9 +127,45 @@ describe("createWritingAgentKind state", () => {
     );
   });
 
-  it("refuses an attachment of another type or of a draft that is not the caller's", async () => {
+  it("admits a selection from a draft the caller owns and records that draft once", async () => {
+    drafts.getFeedDraft.mockResolvedValue(record(7));
+
+    await kind.state.attach?.(caller, db, "session-1", [
+      { type: "draft", id: 7 },
+      {
+        type: "selection",
+        text: "Selected words",
+        source: {
+          type: "draft",
+          id: 7,
+          locale: "zh-TW",
+          startLine: 2,
+          endLine: 3,
+        },
+      },
+    ]);
+
+    expect(repo.touchWritingSessionDrafts).toHaveBeenCalledWith(
+      db,
+      "session-1",
+      [{ draftId: 7 }]
+    );
+  });
+
+  it("refuses a selection from a post or from a draft that is not the caller's", async () => {
     await expect(
-      kind.state.attach?.(caller, db, "session-1", [{ type: "post", id: 1 }])
+      kind.state.attach?.(caller, db, "session-1", [
+        {
+          type: "selection",
+          text: "Selected words",
+          source: { type: "feed", id: 1, locale: "en" },
+        },
+      ])
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      kind.state.attach?.(caller, db, "session-1", [
+        { type: "feed", id: 1, locale: "en" },
+      ])
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
 
     drafts.getFeedDraft.mockResolvedValue(record(7, "someone-else"));

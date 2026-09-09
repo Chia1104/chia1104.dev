@@ -5,10 +5,12 @@ import { cn } from "@chia/ui/utils/cn.util";
 
 import { MetadataFields } from "./metadata-fields";
 import { SwitchEditor } from "./switch-editor";
+import type { DraftEditorTarget } from "./switch-editor";
 
 interface Props {
   className?: string;
   feedId?: number;
+  target: DraftEditorTarget;
 }
 
 export const EditFields = (props: Props) => {
@@ -16,7 +18,7 @@ export const EditFields = (props: Props) => {
     <div className={cn("flex flex-col gap-10", props.className)}>
       <MetadataFields feedId={props.feedId} />
       <ErrorBoundary>
-        <SwitchEditor />
+        <SwitchEditor target={props.target} />
       </ErrorBoundary>
     </div>
   );
