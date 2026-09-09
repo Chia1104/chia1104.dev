@@ -7,7 +7,6 @@ import {
   Card,
   Checkbox,
   CheckboxGroup,
-  Chip,
   Description,
   Form,
   Label,
@@ -22,10 +21,8 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 import { ThinkingSlider } from "@chia/agent-elements/thinking-slider";
-import { CallerTier } from "@chia/auth/tier";
 
 import { orpc } from "@/libs/orpc/client";
-import type { RouterOutputs } from "@/libs/orpc/types";
 
 import {
   ConfigFields,
@@ -36,13 +33,15 @@ import {
 import {
   ModelSelect,
   OverriddenChip,
+  audienceOf,
+  audienceOptionsOf,
   formatDate,
+  isKindOverridden,
   modelLabel,
   modelRefSchema,
   useInvalidateAgentAdmin,
 } from "./shared";
-
-type KindAdmin = RouterOutputs["agent"]["admin"]["kinds"]["list"][number];
+import type { KindAdmin } from "./shared";
 
 const THINKING_LEVELS = [
   "off",
@@ -72,30 +71,6 @@ const formValuesOf = (kind: KindAdmin): KindFormValues => ({
   autoApprove: kind.defaults.override.autoApprove,
   config: configFormValueOf(kind.config.schema, kind.config.override),
 });
-
-/** Maps contract `CallerTier` values. */
-const audienceOf = (minTier: number): string => {
-  switch (minTier) {
-    case CallerTier.Anonymous:
-      return "anyone";
-    case CallerTier.Guest:
-      return "guests and signed-in users";
-    case CallerTier.ApiKey:
-      return "API-key callers";
-    case CallerTier.Session:
-      return "signed-in users";
-    case CallerTier.Root:
-      return "the author only";
-    default:
-      return `tier ${minTier}`;
-  }
-};
-
-/** The floors an operator may pick: the definition's own and every tier above it that a session can hold. */
-const audienceOptionsOf = (code: number) =>
-  [CallerTier.Guest, CallerTier.Session, CallerTier.Root]
-    .filter((tier) => tier >= code)
-    .map((tier) => ({ id: String(tier), label: audienceOf(tier) }));
 
 /** Edits the override. Parent remounts after save so a refetch never collides with an in-progress edit. */
 export const KindCard = ({ kind }: { kind: KindAdmin }) => {
@@ -141,12 +116,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
     })
   );
 
-  const overridden =
-    kind.minTier.override !== null ||
-    kind.defaults.override.model !== null ||
-    kind.defaults.override.thinkingLevel !== null ||
-    kind.defaults.override.autoApprove !== null ||
-    Object.keys(kind.config.override).length > 0;
+  const overridden = isKindOverridden(kind);
 
   const code = kind.defaults.code;
   const audienceOptions = audienceOptionsOf(kind.minTier.code);
@@ -158,10 +128,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
       <Form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Card.Header>
           <div className="flex flex-wrap items-center gap-2">
-            <Card.Title className="text-base">{kind.label}</Card.Title>
-            <Chip size="sm" variant="soft">
-              <Chip.Label className="font-mono text-xs">{kind.kind}</Chip.Label>
-            </Chip>
+            <Card.Title className="text-base">Settings</Card.Title>
             <OverriddenChip isOverridden={overridden} />
             {kind.updatedAt !== null ? (
               <span className="text-muted ml-auto text-xs">
@@ -170,8 +137,8 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
             ) : null}
           </div>
           <Card.Description className="text-xs">
-            {kind.description} Available to {audienceOf(kind.minTier.effective)}
-            .
+            Each field starts from what the code registers. Saving writes only
+            what you changed.
           </Card.Description>
         </Card.Header>
 
@@ -181,8 +148,8 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
               <div>
                 <h3 className="text-sm font-medium">Audience</h3>
                 <p className="text-muted text-xs">
-                  Who may open this kind. Applies to the next request; sessions
-                  below the floor are refused until their owner signs in.
+                  Who may open this agent. Takes effect on the next request;
+                  anyone below the bar is asked to sign in.
                 </p>
               </div>
               <Controller

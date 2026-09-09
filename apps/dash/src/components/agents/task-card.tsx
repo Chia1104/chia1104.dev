@@ -20,19 +20,17 @@ import * as z from "zod";
 import { TASK_PROMPT_MAX_CHARS } from "@chia/api/orpc/contracts/agent-admin.contract";
 
 import { orpc } from "@/libs/orpc/client";
-import type { RouterOutputs } from "@/libs/orpc/types";
 
 import {
   ModelSelect,
   OverriddenChip,
   formatDate,
+  isTaskOverridden,
   modelLabel,
   modelRefSchema,
   useInvalidateAgentAdmin,
 } from "./shared";
-import type { AgentModelInfo } from "./shared";
-
-type TaskAdmin = RouterOutputs["agent"]["admin"]["tasks"]["list"][number];
+import type { AgentModelInfo, TaskAdmin } from "./shared";
 
 const SESSION_MODEL_LABEL = "the session's own model";
 
@@ -110,10 +108,7 @@ export const TaskCard = ({
     });
   });
 
-  const overridden =
-    task.model.override !== null ||
-    (task.prompt?.override ?? null) !== null ||
-    Object.keys(task.params?.override ?? {}).length > 0;
+  const overridden = isTaskOverridden(task);
 
   const busy = update.isPending;
   const prompt = watch("prompt");
