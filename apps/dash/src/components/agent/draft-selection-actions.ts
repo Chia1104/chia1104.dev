@@ -1,15 +1,13 @@
 "use client";
 
 import { useAgentContext } from "@chia/agent-elements/context";
-import { SelectionMenu } from "@chia/agent-elements/selection";
+
+import type {
+  EditorSelection,
+  EditorSelectionAction,
+} from "@/components/feed/markdown-editor";
 
 import { agentDockStore } from "./dock-store";
-
-export interface DraftSelection {
-  text: string;
-  startLine: number;
-  endLine: number;
-}
 
 const PRESETS = [
   {
@@ -39,75 +37,67 @@ const showDock = () => {
 };
 
 /**
- * Presets and a free prompt for text selected in the editor. The draft is flushed before the
- * prompt goes out so the agent reads what the operator sees; the dock opens to show the turn.
+ * The editor's context-menu entries for selected text: presets that send a turn, and one that
+ * attaches the selection for the operator to ask about in the composer. The draft is flushed
+ * before a prompt goes out so the agent reads what the operator sees; the dock opens to show it.
  */
-export const DraftSelectionMenu = ({
+export const useDraftSelectionActions = ({
   draftId,
   flush,
   locale,
-  onDone,
-  selection,
 }: {
   draftId: number;
   locale: string;
-  selection: DraftSelection;
   /** Saves pending edits; `false` means the draft is blocked on a conflict. */
   flush: () => Promise<boolean>;
-  onDone: () => void;
-}) => {
+}): EditorSelectionAction[] => {
   const request = useAgentContext((state) => state.request);
   const provide = useAgentContext((state) => state.provide);
-  const source = {
+
+  const sourceOf = (selection: EditorSelection) => ({
     type: "draft" as const,
     id: draftId,
     locale,
     startLine: selection.startLine,
     endLine: selection.endLine,
-  };
-  const range =
-    selection.startLine === selection.endLine
-      ? `L${selection.startLine}`
-      : `L${selection.startLine}–${selection.endLine}`;
+  });
 
-  const send = async (prompt: string) => {
-    onDone();
+  const send = async (prompt: string, selection: EditorSelection) => {
     if (!(await flush())) return;
     request({
       text: prompt,
-      attachments: [{ type: "selection", text: selection.text, source }],
+      attachments: [
+        {
+          type: "selection",
+          text: selection.text,
+          source: sourceOf(selection),
+        },
+      ],
     });
     showDock();
   };
 
-  const attach = () => {
-    onDone();
+  const attach = (selection: EditorSelection) => {
+    const range =
+      selection.startLine === selection.endLine
+        ? `L${selection.startLine}`
+        : `L${selection.startLine}–${selection.endLine}`;
     provide({
       type: "selection",
       text: selection.text,
-      source,
+      source: sourceOf(selection),
       label: `Selection · ${locale} · ${range}`,
       once: true,
     });
     showDock();
   };
 
-  return (
-    <SelectionMenu
-      actions={[
-        ...PRESETS.map((preset) => ({
-          id: preset.id,
-          label: preset.label,
-          onSelect: () => void send(preset.prompt),
-        })),
-        { id: "attach", label: "Attach to the next message", onSelect: attach },
-      ]}
-      preview={selection.text}
-      prompt={{
-        placeholder: "Ask about this passage…",
-        submitLabel: "Send",
-        onSubmit: (prompt) => void send(prompt),
-      }}
-    />
-  );
+  return [
+    ...PRESETS.map((preset) => ({
+      id: preset.id,
+      label: preset.label,
+      run: (selection: EditorSelection) => void send(preset.prompt, selection),
+    })),
+    { id: "attach", label: "Ask the agent about this", run: attach },
+  ];
 };

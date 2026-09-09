@@ -6,7 +6,7 @@ import { Controller, useFormContext } from "react-hook-form";
 
 import useTheme from "@chia/ui/utils/use-theme";
 
-import { DraftSelectionMenu } from "@/components/agent/draft-selection-menu";
+import { useDraftSelectionActions } from "@/components/agent/draft-selection-actions";
 
 import type { DraftFormValues } from "./draft-form-schema";
 import { MarkdownEditor } from "./markdown-editor";
@@ -24,6 +24,11 @@ export const SwitchEditor = memo(
 
     const activeLocale = form.watch("activeLocale");
     const title = form.watch(`translations.${activeLocale}.title`) ?? "";
+    const selectionActions = useDraftSelectionActions({
+      draftId: target.draftId,
+      flush: target.flush,
+      locale: activeLocale,
+    });
 
     return (
       <div className="relative w-full">
@@ -38,15 +43,7 @@ export const SwitchEditor = memo(
               title={title}
               locale={activeLocale}
               theme={isDarkMode ? "vs-dark" : "light"}
-              renderSelection={(selection, close) => (
-                <DraftSelectionMenu
-                  draftId={target.draftId}
-                  flush={target.flush}
-                  locale={activeLocale}
-                  onDone={close}
-                  selection={selection}
-                />
-              )}
+              selectionActions={selectionActions}
             />
           )}
         />
