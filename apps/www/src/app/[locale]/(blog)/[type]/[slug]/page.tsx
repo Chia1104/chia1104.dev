@@ -139,26 +139,30 @@ const Page = async ({
             </div>
             <div
               id="feed-meta"
-              className="text-foreground-700 flex items-center">
-              <ViewTransition>
-                <DateFormat
-                  date={feed.createdAt}
-                  format="MMMM D, YYYY"
-                  locale={locale}
-                />
-              </ViewTransition>
-              <i className="i-mdi-dot" />
-              <span>{t(`${feed.type}s.doc-title`)}</span>
-              {feed.translations[0]?.readTime ? (
-                <>
-                  <i className="i-mdi-dot" />
-                  <span>
-                    {t("read-with-minutes", {
-                      minutes: feed.translations[0]?.readTime,
-                    })}
-                  </span>
-                </>
-              ) : null}
+              className="text-foreground-700 flex flex-col items-end sm:flex-row sm:items-center">
+              <div className="flex items-center">
+                <ViewTransition>
+                  <DateFormat
+                    date={feed.createdAt}
+                    format="MMMM D, YYYY"
+                    locale={locale}
+                  />
+                </ViewTransition>
+                <i className="i-mdi-dot hidden sm:block" />
+              </div>
+              <div className="flex items-center">
+                <span>{t(`${feed.type}s.doc-title`)}</span>
+                {feed.translations[0]?.readTime ? (
+                  <>
+                    <i className="i-mdi-dot" />
+                    <span>
+                      {t("read-with-minutes", {
+                        minutes: feed.translations[0]?.readTime,
+                      })}
+                    </span>
+                  </>
+                ) : null}
+              </div>
             </div>
           </div>
         </header>
