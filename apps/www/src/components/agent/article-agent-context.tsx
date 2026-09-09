@@ -94,7 +94,6 @@ export const ArticleAgentContext = ({
                 }
               : null
           }
-          label={t("ask")}
           selection={selection}>
           {(passage, close) => (
             <SelectionMenu
@@ -103,7 +102,6 @@ export const ArticleAgentContext = ({
                 label: t(id),
                 onSelect: () => ask(t(`${id}Prompt`), passage, close),
               }))}
-              preview={passage.text}
             />
           )}
         </SelectionTrigger>

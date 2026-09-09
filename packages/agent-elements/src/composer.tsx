@@ -565,6 +565,7 @@ const ComposerEditor = ({
         ) : null}
 
         <BorderBeam
+          active={busy}
           className="relative z-10"
           duration={3.5}
           size="pulse-inner"

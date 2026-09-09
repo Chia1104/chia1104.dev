@@ -1,9 +1,9 @@
 "use client";
 
-import type { FormEvent, ReactNode, RefObject } from "react";
-import { useEffect, useId, useState, useSyncExternalStore } from "react";
+import type { ReactNode, RefObject } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
-import { Button, Input, Popover, TextField } from "@heroui/react";
+import { Button, Popover } from "@heroui/react";
 import { Sparkles } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
@@ -128,7 +128,6 @@ export interface SelectionTriggerProps<T> {
   selection: T | null;
   /** Viewport point the trigger hangs from, usually the selection's bottom-right corner. */
   anchor: { top: number; left: number } | null;
-  label: string;
   className?: string;
   children: (selection: T, close: () => void) => ReactNode;
 }
@@ -163,7 +162,6 @@ export const SelectionTrigger = <T,>({
   anchor,
   children,
   className,
-  label,
   selection,
 }: SelectionTriggerProps<T>) => {
   const [held, setHeld] = useState<{
@@ -205,16 +203,16 @@ export const SelectionTrigger = <T,>({
         }}>
         <Popover.Trigger>
           <Button
-            aria-label={label}
-            className="h-7 gap-1.5 rounded-full px-2.5 text-xs shadow-md"
+            aria-label="Ask a question"
+            className="size-6 rounded-full px-2.5 text-xs shadow-md"
             size="sm"
-            variant="secondary">
-            <Sparkles className="size-3.5" />
-            {label}
+            variant="secondary"
+            isIconOnly>
+            <Sparkles className="size-3" />
           </Button>
         </Popover.Trigger>
         <Popover.Content
-          className="bg-surface/80 w-72 p-0 backdrop-blur-sm"
+          className="bg-surface/80 p-0 backdrop-blur-sm"
           offset={6}
           placement={coarse ? "top" : "bottom end"}>
           <Popover.Dialog className="p-2">
@@ -233,71 +231,24 @@ export interface SelectionAction {
 }
 
 export interface SelectionMenuProps {
-  actions: readonly SelectionAction[];
-  /** Rendered above the actions, e.g. the first line of the selected text. */
-  preview?: ReactNode;
-  /** Adds a prompt field; the caller attaches the selection and sends what was typed. */
-  prompt?: {
-    placeholder: string;
-    submitLabel: string;
-    onSubmit: (prompt: string) => void;
-  };
+  actions: SelectionAction[];
 }
 
 /** Preset actions for a selection, and a free prompt where the host allows one. */
-export const SelectionMenu = ({
-  actions,
-  preview,
-  prompt,
-}: SelectionMenuProps) => {
-  const [text, setText] = useState("");
-  const inputId = useId();
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    const typed = text.trim();
-    if (typed) prompt?.onSubmit(typed);
-  };
+export const SelectionMenu = ({ actions }: SelectionMenuProps) => {
   return (
     <div className="flex flex-col gap-1">
-      {preview ? (
-        <p className="text-muted border-border line-clamp-2 border-b px-2 pb-2 text-[11px]">
-          {preview}
-        </p>
-      ) : null}
       {actions.map((action) => (
         <Button
           key={action.id}
           className="h-8 justify-start px-2 text-xs"
           onPress={action.onSelect}
           size="sm"
-          variant="ghost">
+          variant="ghost"
+          fullWidth>
           {action.label}
         </Button>
       ))}
-      {prompt ? (
-        <form className="flex items-center gap-1 pt-1" onSubmit={submit}>
-          <TextField
-            aria-label={prompt.placeholder}
-            className="min-w-0 flex-1"
-            id={inputId}
-            onChange={setText}
-            value={text}>
-            <Input
-              autoFocus
-              className="h-8 text-xs"
-              placeholder={prompt.placeholder}
-            />
-          </TextField>
-          <Button
-            className="h-8 px-2 text-xs"
-            isDisabled={text.trim().length === 0}
-            size="sm"
-            type="submit"
-            variant="primary">
-            {prompt.submitLabel}
-          </Button>
-        </form>
-      ) : null}
     </div>
   );
 };

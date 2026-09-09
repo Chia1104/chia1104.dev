@@ -128,7 +128,7 @@ function FloatingTOCNavigation({
           aria-label={label}
           placement="left"
           offset={0}
-          className="w-56 max-w-[calc(100vw-4rem)] p-1.5 motion-reduce:animate-none">
+          className="bg-surface/80 w-56 max-w-[calc(100vw-4rem)] p-1.5 backdrop-blur-sm motion-reduce:animate-none">
           <FloatingTOCLinks
             toc={toc}
             label={label}

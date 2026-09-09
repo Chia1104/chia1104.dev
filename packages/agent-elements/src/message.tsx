@@ -83,7 +83,7 @@ const MessageMeta = ({
 };
 
 const CHIP_CLASS =
-  "bg-surface-secondary text-muted border-border inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-0.5 text-[11px]";
+  "bg-surface-secondary text-muted border-border max-w-full items-center gap-1 rounded-full border px-2 py-0.5 text-[11px]";
 
 /** A selection opens its text on hover; the label alone says where it came from. */
 const AttachmentChip = ({ attachment }: { attachment: AgentAttachment }) => {
@@ -95,11 +95,11 @@ const AttachmentChip = ({ attachment }: { attachment: AgentAttachment }) => {
         ? `Post #${attachment.id}`
         : attachmentMetaOf(attachment));
   if (attachment.type !== "selection") {
-    return <span className={CHIP_CLASS}>{label}</span>;
+    return <span className={cn(CHIP_CLASS, "line-clamp-1")}>{label}</span>;
   }
   return (
     <Tooltip delay={300}>
-      <Tooltip.Trigger className={CHIP_CLASS}>
+      <Tooltip.Trigger className={cn(CHIP_CLASS, "inline-flex")}>
         <TextQuote className="size-3 shrink-0" />
         <span className="truncate">{label}</span>
       </Tooltip.Trigger>
