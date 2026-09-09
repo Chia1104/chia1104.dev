@@ -76,6 +76,7 @@ const build = async (
       {
         slug: "existing-post",
         locale: "en",
+        url: "http://localhost:3000/en-US/posts/existing-post",
         title: "An existing post",
         snippet: "…",
       },
@@ -84,12 +85,14 @@ const build = async (
       {
         feedId: 1,
         slug: "existing-post",
+        url: "http://localhost:3000/en-US/posts/existing-post",
         type: "post",
         published: true,
         defaultLocale: "en",
         translations: [
           {
             locale: "en",
+            url: "http://localhost:3000/en-US/posts/existing-post",
             title: "An existing post",
             content: "## Existing section\n\nExisting body.",
           },
