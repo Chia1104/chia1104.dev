@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
+import { CallerTier } from "@chia/auth/tier";
 import { serviceContextOf } from "@chia/test/context";
 import { sessionOf } from "@chia/test/session";
 
 import type { ServiceContext } from "../src/context";
 import type { Caller } from "../src/policies/caller.policy";
-import { CallerTier } from "../src/policies/caller.policy";
 import { captchaPolicy } from "../src/policies/captcha.policy";
 import type { RateLimitContext } from "../src/policies/rate-limit.policy";
 import { rateLimitPolicy } from "../src/policies/rate-limit.policy";
@@ -229,8 +229,7 @@ describe("callerPolicy", () => {
   });
 
   it("grades a guest session as Guest — above anonymous, below an API key", async () => {
-    const { callerPolicy, CallerTier } =
-      await import("../src/policies/caller.policy");
+    const { callerPolicy } = await import("../src/policies/caller.policy");
     const result = await callerPolicy()(withSession(session("user", true)));
 
     expect(result.ok).toBe(true);
@@ -240,8 +239,7 @@ describe("callerPolicy", () => {
   });
 
   it("grades a signed-in person as Session and the configured admin as Root", async () => {
-    const { callerPolicy, CallerTier } =
-      await import("../src/policies/caller.policy");
+    const { callerPolicy } = await import("../src/policies/caller.policy");
     const person = await callerPolicy()(withSession(session("user")));
     expect(person.ok && person.patch?.caller.tier).toBe(CallerTier.Session);
 
@@ -249,14 +247,14 @@ describe("callerPolicy", () => {
       withSession({
         session: { id: "s2", userId: ADMIN_ID },
         user: { id: ADMIN_ID, role: "root", isAnonymous: false },
+        access: { tier: 4, dashboard: "operator", agent: {} },
       })
     );
     expect(admin.ok && admin.patch?.caller.tier).toBe(CallerTier.Root);
   });
 
   it("refuses a guest below a required Session tier as FORBIDDEN, not UNAUTHORIZED", async () => {
-    const { callerPolicy, CallerTier } =
-      await import("../src/policies/caller.policy");
+    const { callerPolicy } = await import("../src/policies/caller.policy");
     const result = await callerPolicy({ minTier: CallerTier.Session })(
       withSession(session("user", true))
     );
@@ -264,8 +262,7 @@ describe("callerPolicy", () => {
   });
 
   it("grades a pre-resolved caller without touching credentials", async () => {
-    const { callerPolicy, CallerTier } =
-      await import("../src/policies/caller.policy");
+    const { callerPolicy } = await import("../src/policies/caller.policy");
     const getSession = vi.fn();
     const caller: Caller = { tier: CallerTier.Guest, adminId: ADMIN_ID };
     const context = makeContext({
@@ -395,8 +392,7 @@ describe("callerPolicy with an API key", () => {
     });
 
   it("lifts an admin-owned key carrying operator:root to Root", async () => {
-    const { callerPolicy, CallerTier } =
-      await import("../src/policies/caller.policy");
+    const { callerPolicy } = await import("../src/policies/caller.policy");
     const result = await callerPolicy({ minTier: CallerTier.Root })(
       withVerifiedKey({
         referenceId: ADMIN_ID,
@@ -410,8 +406,7 @@ describe("callerPolicy with an API key", () => {
   });
 
   it("asks no scopes of a key lifted to Root but every scope of a plain key", async () => {
-    const { callerPolicy, CallerTier } =
-      await import("../src/policies/caller.policy");
+    const { callerPolicy } = await import("../src/policies/caller.policy");
     const lifted = await callerPolicy({ scopes: ["feeds:write"] })(
       withVerifiedKey({
         referenceId: ADMIN_ID,
@@ -430,8 +425,7 @@ describe("callerPolicy with an API key", () => {
   });
 
   it("keeps operator:root at ApiKey when someone else owns the key", async () => {
-    const { callerPolicy, CallerTier } =
-      await import("../src/policies/caller.policy");
+    const { callerPolicy } = await import("../src/policies/caller.policy");
     const result = await callerPolicy()(
       withVerifiedKey({
         referenceId: "user-2",
@@ -442,8 +436,7 @@ describe("callerPolicy with an API key", () => {
   });
 
   it("keeps an admin-owned key without the scope at ApiKey", async () => {
-    const { callerPolicy, CallerTier } =
-      await import("../src/policies/caller.policy");
+    const { callerPolicy } = await import("../src/policies/caller.policy");
     const result = await callerPolicy()(
       withVerifiedKey({
         referenceId: ADMIN_ID,

@@ -6,6 +6,7 @@ import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
+import type { CreateAuthOptions } from "@chia/auth/server";
 import { createAuth } from "@chia/auth/server";
 import { connectDatabase } from "@chia/db/client";
 import { tryCatch } from "@chia/utils/error-helper";
@@ -22,8 +23,12 @@ export const parseAllowedOrigins = (value?: string): string[] | string => {
   return value.split(",").map((item) => item.trim());
 };
 
+export interface ServiceFactoryOptions {
+  auth: CreateAuthOptions;
+}
+
 /** Attaches db, kv and auth to every request. */
-export const createServiceFactory = () =>
+export const createServiceFactory = (options: ServiceFactoryOptions) =>
   createFactory<ServiceHonoEnv>({
     initApp: (app) => {
       app.use(async (c, next) => {
@@ -44,7 +49,7 @@ export const createServiceFactory = () =>
         c.set("clientIP", getClientIP(c.req.raw));
         c.set("db", db);
         c.set("kv", kv);
-        c.set("auth", createAuth(db, kv));
+        c.set("auth", createAuth(db, kv, options.auth));
 
         await next();
       });

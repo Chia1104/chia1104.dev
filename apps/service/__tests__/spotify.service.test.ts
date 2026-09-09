@@ -42,8 +42,8 @@ vi.mock("@chia/db/repos/spotify", () => ({
   withLockedSpotifyCredential: mocks.withLockedSpotifyCredential,
 }));
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HTTPError } from "ky";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   completeSpotifyAuthorizationService,

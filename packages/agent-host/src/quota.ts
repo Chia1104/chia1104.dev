@@ -1,10 +1,10 @@
+import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { countRunningAgentTurns, lockAgentUser } from "@chia/db/repos/agent";
 import { getAgentQuotaConfig } from "@chia/db/repos/agent/config";
 import { sumAgentUsageCost } from "@chia/db/repos/agent/usage";
 import type { AgentCredentialSource, AgentQuotaConfig } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 import dayjs from "@chia/utils/day";
 
 import { AGENT_TURN_KEY } from "./execution";

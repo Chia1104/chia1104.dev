@@ -17,9 +17,8 @@ const endpoint = new URL(
 );
 
 /**
- * Server-only twin of `client.ts` that forwards the visitor's cookie, so a layout can ask
- * `dashboard.access` before rendering. It carries no key of its own: it is the same person
- * the browser client is.
+ * Server-only twin of `client.ts` that forwards the visitor's cookie. It carries no key of
+ * its own: it is the same person the browser client is.
  */
 export const link = new RPCLink({
   origin: endpoint.origin,

@@ -21,14 +21,12 @@ import type {
   AgentAttachmentInput,
   AgentWireEvent,
 } from "@chia/agent-runtime/wire/schema";
+import type { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import type { AgentSession } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 import type { ServiceContext } from "@chia/service-kit/context";
-import type {
-  Caller,
-  CallerTier,
-} from "@chia/service-kit/policies/caller.policy";
+import type { Caller } from "@chia/service-kit/policies/caller.policy";
 import type { JsonObject } from "@chia/utils/json";
 
 /**

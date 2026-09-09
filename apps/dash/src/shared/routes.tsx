@@ -22,10 +22,11 @@ import {
   Users,
 } from "lucide-react";
 
-import type { NavMainItem } from "@/components/commons/nav-main";
-import type { RouterOutputs } from "@/libs/orpc/types";
+import type { Session } from "@chia/auth/types";
 
-export type AccessLevel = RouterOutputs["dashboard"]["access"]["level"];
+import type { NavMainItem } from "@/components/commons/nav-main";
+
+export type AccessLevel = NonNullable<Session["access"]["dashboard"]>;
 
 interface RouteItem extends NavMainItem {
   /** Hidden from a member; the `(operator)` route group refuses the URL as well. */

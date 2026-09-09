@@ -4,7 +4,7 @@ import { vi } from "vitest";
 
 import type { CallerContext } from "@chia/api/orpc/guards/caller.guard";
 import { baseOS } from "@chia/api/orpc/utils";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
+import { CallerTier } from "@chia/auth/tier";
 
 const FAKE_API_KEY =
   /* SAFETY: This fixture implements the VerifiedApiKey members the routes read. */ {
@@ -31,6 +31,7 @@ const TEST_SESSION = {
     role: "root",
     isAnonymous: false,
   },
+  access: { tier: 4, dashboard: "operator", agent: { writing: 4, public: 1 } },
 };
 
 const GUEST_SESSION = {
@@ -42,6 +43,7 @@ const GUEST_SESSION = {
     role: "user",
     isAnonymous: true,
   },
+  access: { tier: 1, dashboard: null, agent: { writing: 4, public: 1 } },
 };
 
 let callerTier: CallerTier = CallerTier.Root;

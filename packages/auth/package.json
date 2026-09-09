@@ -33,6 +33,14 @@
     "./types": {
       "types": "./src/types.ts",
       "default": "./src/types.ts"
+    },
+    "./tier": {
+      "types": "./src/tier.ts",
+      "default": "./src/tier.ts"
+    },
+    "./access": {
+      "types": "./src/access.ts",
+      "default": "./src/access.ts"
     }
   },
   "scripts": {

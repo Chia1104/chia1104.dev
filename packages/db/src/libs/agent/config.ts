@@ -19,6 +19,7 @@ import type {
 /** Absent keys are left alone, `null` clears; a missing row is inserted. */
 
 export interface UpsertAgentKindConfigDTO {
+  minTier?: number | null;
   providerId?: string | null;
   modelId?: string | null;
   thinkingLevel?: string | null;

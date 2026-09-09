@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import type { AgentQuotaConfig } from "@chia/db/schema";
 import { isAppError } from "@chia/service-kit/errors";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 /**
  * Quota is a tier policy over the operator's row and the ledger. The week is

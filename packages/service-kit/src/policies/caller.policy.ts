@@ -1,8 +1,8 @@
 import type { ApiKeyScope } from "@chia/auth/apikey";
 import { ApiKeyScope as Scope, hasApiKeyScope } from "@chia/auth/apikey";
+import { CallerTier, tierForUser } from "@chia/auth/tier";
 import type { Session } from "@chia/auth/types";
 import { X_CH_API_KEY } from "@chia/auth/utils";
-import { Role } from "@chia/db/types";
 import { getAdminId } from "@chia/utils/config";
 
 import { AppError } from "../errors";
@@ -12,21 +12,6 @@ import { apiKeyPolicy, missingApiKeyScope } from "./apikey.policy";
 import { sessionPolicy } from "./session.policy";
 import type { Policy, PolicyResult } from "./types";
 import { allow, deny } from "./types";
-
-/** How much the caller has proven, ordered so tiers can be compared. */
-export const CallerTier = {
-  Anonymous: 0,
-  /** Session cookie for a guest minted by `anonymous()`. Below ApiKey. */
-  Guest: 1,
-  /** Valid `X-CH-API-KEY`. */
-  ApiKey: 2,
-  /** Valid session cookie for a signed-in person. */
-  Session: 3,
-  /** Session of the configured admin. */
-  Root: 4,
-} as const;
-
-export type CallerTier = (typeof CallerTier)[keyof typeof CallerTier];
 
 export interface Caller {
   tier: CallerTier;
@@ -52,14 +37,6 @@ const SESSION_COOKIE_MARKER = "session_token";
 const hasSessionCredential = (headers: Headers, preset?: Session | null) =>
   preset !== undefined ||
   (headers.get("Cookie")?.includes(SESSION_COOKIE_MARKER) ?? false);
-
-const tierForSession = (session: Session, adminId: string): CallerTier => {
-  if (session.user.isAnonymous === true) return CallerTier.Guest;
-  return session.user.id === adminId &&
-    (session.user.role === Role.Root || session.user.role === Role.Admin)
-    ? CallerTier.Root
-    : CallerTier.Session;
-};
 
 /**
  * A key that carries `operator:root` and belongs to the configured admin acts as that admin.
@@ -139,7 +116,7 @@ export const callerPolicy = (
         caller.tier =
           /* SAFETY: The producer contract guarantees this value satisfies CallerTier. */ Math.max(
             caller.tier,
-            tierForSession(result.patch.session, adminId)
+            tierForUser(result.patch.session.user, adminId)
           ) as CallerTier;
       }
     }

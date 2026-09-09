@@ -1640,6 +1640,9 @@ importers:
       '@chia/ai':
         specifier: workspace:*
         version: link:../ai
+      '@chia/auth':
+        specifier: workspace:*
+        version: link:../auth
       '@chia/db':
         specifier: workspace:*
         version: link:../db

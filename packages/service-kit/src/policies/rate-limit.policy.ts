@@ -1,9 +1,10 @@
+import type { CallerTier } from "@chia/auth/tier";
 import type { Keyv } from "@chia/kv/types";
 
 import type { ServiceContext } from "../context";
 import { AppError } from "../errors";
 
-import type { Caller, CallerTier } from "./caller.policy";
+import type { Caller } from "./caller.policy";
 import type { Policy } from "./types";
 import { allow, deny } from "./types";
 

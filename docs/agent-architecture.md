@@ -57,12 +57,14 @@ The oRPC context receives an `agentFactory` built from eager `minTier` values an
 
 ### Access model
 
-Every agent route resolves a `CallerTier`. Kind and session guards compare that tier with the persisted kind's `minTier` and verify ownership.
+Every agent route resolves a `CallerTier` (`@chia/auth/tier`). Kind and session guards compare that tier with the kind's floor and verify ownership. The floor is the definition's `minTier` raised by the operator's `kind_config.min_tier` override; an override can never lower it, so a kind is never opened wider than its code was written for.
 
-| Kind      | Minimum tier | Content visibility                                | Mutable domain state    |
-| --------- | ------------ | ------------------------------------------------- | ----------------------- |
-| `writing` | `Root`       | Configured author's drafts and published content  | Shared draft and memory |
-| `public`  | `Guest`      | Configured author's published content and profile | None                    |
+| Kind      | Definition floor | Content visibility                                | Mutable domain state    |
+| --------- | ---------------- | ------------------------------------------------- | ----------------------- |
+| `writing` | `Root`           | Configured author's drafts and published content  | Shared draft and memory |
+| `public`  | `Guest`          | Configured author's published content and profile | None                    |
+
+Better Auth's `get-session` carries `access`: the session's own tier, its dashboard level and the floor of every hosted kind. Frontends decide what to render from it; guards never read it and grade the caller on every request.
 
 The generic layer does not carry an admin identity. The writing binding reads the configured author when its content port needs it; the public binding never receives that identity or a write-capable port.
 

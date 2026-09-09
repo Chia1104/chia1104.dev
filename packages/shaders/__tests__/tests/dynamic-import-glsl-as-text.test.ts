@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { bundlerImportGlslAsText } from "../../src/utils/dynamic-import-glsl-as-text";
 
 describe("bundlerImportGlslAsText", () => {

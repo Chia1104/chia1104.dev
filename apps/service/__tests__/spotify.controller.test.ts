@@ -28,7 +28,7 @@ vi.mock("@chia/api/spotify/playback", () => ({
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
+import { CallerTier } from "@chia/auth/tier";
 
 import { app } from "../src/server";
 

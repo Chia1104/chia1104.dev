@@ -1,3 +1,7 @@
 import { createServiceFactory } from "@chia/service-kit/bootstrap";
 
-export default createServiceFactory();
+import { agentKindFloors } from "../agents/kinds";
+
+export default createServiceFactory({
+  auth: { access: { agentKinds: agentKindFloors } },
+});

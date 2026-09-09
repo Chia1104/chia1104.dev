@@ -21,6 +21,7 @@ import { writingSkills } from "@chia/agent-writing/prompts/skills";
 import { writingPromptTemplates } from "@chia/agent-writing/prompts/templates";
 import { runWritingTurn } from "@chia/agent-writing/runtime";
 import { createWritingTools } from "@chia/agent-writing/tools/tool-set";
+import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import {
   copyWritingSessionDrafts,
@@ -32,7 +33,6 @@ import type { WritingAgentSessionState } from "@chia/db/repos/agent";
 import { getFeedDraft, getFeedDrafts } from "@chia/db/repos/drafts";
 import type { FeedDraftRecord } from "@chia/db/repos/drafts";
 import { AppError } from "@chia/service-kit/errors";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "./tasks";

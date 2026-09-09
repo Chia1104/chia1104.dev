@@ -6,10 +6,16 @@ import type {
   AgentAttachmentInput,
   AgentWireEvent,
 } from "@chia/agent-runtime/wire/schema";
+import type { CallerTier } from "@chia/auth/tier";
+import { agentKindFloor } from "@chia/auth/tier";
+import type { DB } from "@chia/db/client";
+import {
+  getAgentKindConfig,
+  listAgentKindConfigs,
+} from "@chia/db/repos/agent/config";
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import type { ServiceContext } from "@chia/service-kit/context";
 import { AppError } from "@chia/service-kit/errors";
-import type { CallerTier } from "@chia/service-kit/policies/caller.policy";
 import type { JsonObject } from "@chia/utils/json";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
@@ -223,11 +229,8 @@ export const requireAgentFactory = (context: BaseOSContext): AgentFactory => {
   return context.agentFactory;
 };
 
-/**
- * The registered tier floor for `kind`, or `SERVICE_UNAVAILABLE` when the factory has none.
- * Eager so the guards refuse a caller below the floor before the definition is loaded.
- */
-export const requireAgentKindTier = (
+/** The definition's floor for `kind`, or `SERVICE_UNAVAILABLE` when the factory has none. */
+const requireAgentKindCodeFloor = (
   context: BaseOSContext,
   kind: string
 ): CallerTier => {
@@ -240,6 +243,40 @@ export const requireAgentKindTier = (
     );
   }
   return minTier;
+};
+
+/**
+ * The tier `kind` admits: the definition's floor raised by the operator's override. Read
+ * before the definition is loaded, so a refused caller never pays for the import.
+ */
+export const resolveAgentKindFloor = async (
+  context: BaseOSContext,
+  kind: string
+): Promise<CallerTier> => {
+  const code = requireAgentKindCodeFloor(context, kind);
+  const row = await getAgentKindConfig(
+    /* SAFETY: The producer contract guarantees this value satisfies DB. */ context.db as DB,
+    kind
+  );
+  return agentKindFloor(code, row?.minTier);
+};
+
+/** Every hosted kind's admitted tier in one read, for requests that name no kind. */
+export const resolveAgentKindFloors = async (
+  context: BaseOSContext
+): Promise<Map<string, CallerTier>> => {
+  const rows = await listAgentKindConfigs(
+    /* SAFETY: The producer contract guarantees this value satisfies DB. */ context.db as DB
+  );
+  return new Map(
+    availableAgentKinds(context).map((kind) => [
+      kind,
+      agentKindFloor(
+        requireAgentKindCodeFloor(context, kind),
+        rows.find((row) => row.kind === kind)?.minTier
+      ),
+    ])
+  );
 };
 
 /** A freshly composed service for `kind`, or `SERVICE_UNAVAILABLE` when the factory has none. */

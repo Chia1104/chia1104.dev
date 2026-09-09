@@ -1,5 +1,5 @@
 import { ApiKeyScope } from "@chia/auth/apikey";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
+import { CallerTier } from "@chia/auth/tier";
 
 import {
   activateSpotifyAccountService,

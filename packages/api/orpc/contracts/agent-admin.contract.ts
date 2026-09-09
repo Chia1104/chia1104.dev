@@ -36,8 +36,12 @@ export const agentKindAdminSchema = z.object({
   kind: z.string(),
   label: z.string(),
   description: z.string(),
-  /** `CallerTier` the kind admits; a number because the tier enum lives in service-kit. */
-  minTier: z.number().int(),
+  /** `CallerTier` values, as numbers; the operator may raise `code`, never lower it. */
+  minTier: z.object({
+    code: z.number().int(),
+    override: z.number().int().nullable(),
+    effective: z.number().int(),
+  }),
   /** What a new session starts with when its creator chooses nothing. */
   defaults: z.object({
     code: sessionDefaultsSchema,
@@ -64,6 +68,8 @@ export const updateAgentKindAdminContract = oc
   .input(
     z.object({
       kind: z.string().min(1),
+      /** A `CallerTier` at or above the definition's floor; `null` restores the floor. */
+      minTier: z.number().int().nullable().optional(),
       model: agentModelRefSchema.nullable().optional(),
       thinkingLevel: thinkingLevelSchema.nullable().optional(),
       autoApprove: z.array(z.string()).nullable().optional(),

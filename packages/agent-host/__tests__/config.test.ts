@@ -25,6 +25,7 @@ const definition = {
 
 const row = (overrides: Partial<AgentKindConfig> = {}): AgentKindConfig => ({
   kind: "writing",
+  minTier: null,
   providerId: null,
   modelId: null,
   thinkingLevel: null,

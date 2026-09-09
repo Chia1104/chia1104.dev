@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AgentTurnExecution } from "@chia/agent-runtime/types";
+import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import type { FeedDraftRecord } from "@chia/db/repos/drafts";
-import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import type { AgentKindCaller, AgentTurnContext } from "../src/kind";
 
