@@ -4,7 +4,6 @@ import { FeedOrderBy, FeedType } from "@chia/db/types";
 import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
 import FeedNavigation from "@/components/blog/feed-navigation";
-import { FeedSearchDialog } from "@/components/blog/feed-search-dialog";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
@@ -41,7 +40,6 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
           />
         </NavigationMenuList>
       </NavigationMenu>
-      <FeedSearchDialog locale={locale} />
     </div>
   );
 };
