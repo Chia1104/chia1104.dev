@@ -158,6 +158,14 @@
   }
 }
 
+/*
+ * The one link style: blog prose and the agent's markdown both apply it, so a link reads the
+ * same wherever it came from.
+ */
+@utility link {
+  @apply text-foreground decoration-muted font-medium underline decoration-[1.5px] underline-offset-[3.5px] transition-opacity duration-200 hover:opacity-80;
+}
+
 @layer utilities {
   /*
    * Reading scale. Fumadocs emits its prose rules in the utilities layer, so the override has to
@@ -187,11 +195,10 @@
       @apply text-base leading-snug;
     }
 
-    /* Fumadocs underlines prose links in the brand colour; body copy reads better with a quiet rule. */
     :where(a:not([data-card])):not(
       :where([class~="not-prose"], [class~="not-prose"] *)
     ) {
-      @apply decoration-muted;
+      @apply link;
     }
   }
 }

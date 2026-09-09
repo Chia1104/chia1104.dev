@@ -1,8 +1,11 @@
 "use client";
 
+import type { ComponentType, ReactNode } from "react";
 import {
   Children,
+  createContext,
   isValidElement,
+  useContext,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -131,10 +134,28 @@ const useOrigin = (): string | null =>
     () => null
   );
 
+/** Renders a link into the host's own origin; `href` is root-relative. */
+export type SiteLink = ComponentType<{
+  href: string;
+  className?: string;
+  children?: ReactNode;
+}>;
+
+const PlainSiteLink: SiteLink = ({ children, className, href }) => (
+  <a className={className} href={href}>
+    {children}
+  </a>
+);
+
+const SiteLinkContext = createContext<SiteLink>(PlainSiteLink);
+
+/** A host with a client router hands its link component here, e.g. `next/link`. */
+export const SiteLinkProvider = SiteLinkContext.Provider;
+
 /**
- * Links from the model. One that stays on this origin is an ordinary link, so a section of
- * the page the reader is on scrolls into view; anything else asks first, because the model may
- * have been handed the URL by a page it read.
+ * Links from the model. One into this origin is a site link, so a section of the page the
+ * reader is on scrolls into view; anything else asks first, because the model may have been
+ * handed the URL by a page it read.
  */
 const MarkdownLink: Components["a"] = ({
   children,
@@ -148,7 +169,8 @@ const MarkdownLink: Components["a"] = ({
 }) => {
   const [open, setOpen] = useState(false);
   const origin = useOrigin();
-  const linkClass = cn("font-medium wrap-anywhere underline", className);
+  const SiteLink = useContext(SiteLinkContext);
+  const linkClass = cn("link wrap-anywhere", className);
   if (!href || href === "streamdown:incomplete-link") {
     return (
       <span className={linkClass} data-incomplete="true" data-streamdown="link">
@@ -156,11 +178,15 @@ const MarkdownLink: Components["a"] = ({
       </span>
     );
   }
-  if (origin !== null && URL.parse(href)?.origin === origin) {
+  const url = URL.parse(href);
+  if (url && origin !== null && url.origin === origin) {
     return (
-      <a className={linkClass} data-streamdown="link" href={href} {...props}>
+      <SiteLink
+        className={linkClass}
+        href={`${url.pathname}${url.search}${url.hash}`}
+        {...props}>
         {children}
-      </a>
+      </SiteLink>
     );
   }
   return (
@@ -237,9 +263,6 @@ export const Markdown = ({
     className={cn(
       "text-foreground text-sm leading-6",
       "[&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_h4]:text-sm",
-      "**:data-[streamdown=link]:text-foreground/70 **:data-[streamdown=link]:decoration-muted/70 **:data-[streamdown=link]:underline-offset-[5px]",
-      "**:data-[streamdown=link]:transition-colors **:data-[streamdown=link]:duration-300 **:data-[streamdown=link]:ease-in-out",
-      "**:data-[streamdown=link]:hover:decoration-foreground/70",
       className
     )}
     components={

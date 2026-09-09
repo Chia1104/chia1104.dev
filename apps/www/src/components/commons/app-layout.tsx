@@ -1,8 +1,11 @@
 "use client";
 
+import Link from "next/link";
+
 import type { Locale } from "next-intl";
 
 import { AgentContextProvider } from "@chia/agent-elements/context";
+import { SiteLinkProvider } from "@chia/agent-elements/markdown";
 import ScrollYProgress from "@chia/ui/scroll-y-progess";
 
 import { ChatDock } from "@/components/agent/chat-dock";
@@ -20,17 +23,20 @@ const AppLayout = ({
   return (
     // A page's selection menu files a prompt here; the chat dock's session sends it.
     <AgentContextProvider>
-      <Background />
-      {/* `--dock-width` is unset until the dock is open; only then does the page give up room. */}
-      <div className="@container/page flex min-h-dvh flex-col pr-[var(--dock-width,0px)] transition-[padding] duration-200 ease-out motion-reduce:transition-none [html[data-dock-resizing]_&]:transition-none">
-        <NavMenu locale={locale} />
-        <ScrollYProgress className="fixed top-0 z-999 w-[calc(100%-var(--dock-width,0px))]" />
-        <main data-testid="main-content" className="main container">
-          {children}
-        </main>
-        <Footer locale={locale} />
-      </div>
-      <ChatDock />
+      {/* A link the agent gives into this site routes on the client like any other. */}
+      <SiteLinkProvider value={Link}>
+        <Background />
+        {/* `--dock-width` is unset until the dock is open; only then does the page give up room. */}
+        <div className="@container/page flex min-h-dvh flex-col pr-[var(--dock-width,0px)] transition-[padding] duration-200 ease-out motion-reduce:transition-none [html[data-dock-resizing]_&]:transition-none">
+          <NavMenu locale={locale} />
+          <ScrollYProgress className="fixed top-0 z-999 w-[calc(100%-var(--dock-width,0px))]" />
+          <main data-testid="main-content" className="main container">
+            {children}
+          </main>
+          <Footer locale={locale} />
+        </div>
+        <ChatDock />
+      </SiteLinkProvider>
     </AgentContextProvider>
   );
 };
