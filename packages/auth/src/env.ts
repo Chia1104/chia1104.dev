@@ -34,7 +34,6 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().optional(),
     CORS_ALLOWED_ORIGIN: z.string().optional(),
     CF_BYPASS_TOKEN: z.string().optional(),
-    CH_API_KEY: z.string().optional(),
   },
   runtimeEnv: {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
@@ -48,7 +47,6 @@ export const env = createEnv({
     RESEND_API_KEY: process.env.RESEND_API_KEY ?? "re_123",
     CORS_ALLOWED_ORIGIN: process.env.CORS_ALLOWED_ORIGIN,
     CF_BYPASS_TOKEN: process.env.CF_BYPASS_TOKEN,
-    CH_API_KEY: process.env.CH_API_KEY,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
