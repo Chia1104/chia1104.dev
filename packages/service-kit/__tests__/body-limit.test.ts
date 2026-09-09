@@ -1,8 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import http from "node:http";
 
 import { Hono } from "hono";
 import { serve } from "srvx/node";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { isAppError, toErrorResponse } from "../src/errors";
 import { bodyLimit } from "../src/middlewares/body-limit";

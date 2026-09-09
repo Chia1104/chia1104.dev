@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+
 import { cleanMdxKeepStructure, stripMdx } from "../src/embeddings/markdown";
 
 const CONTENT = `

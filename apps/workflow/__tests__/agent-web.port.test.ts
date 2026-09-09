@@ -18,8 +18,8 @@ vi.mock("firecrawl", () => {
   return { Firecrawl, SdkError };
 });
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SdkError } from "firecrawl";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createAgentWebPort } from "../src/services/agent-web.port";
 

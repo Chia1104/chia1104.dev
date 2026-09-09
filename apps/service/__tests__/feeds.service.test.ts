@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { searchPublicFeedsService } from "@chia/api/feeds/search";
 import type { DB } from "@chia/db/client";
-
 import * as dbMocks from "@chia/test/mocks/db-feeds";
 
 const hit = (sourceId: number) => ({

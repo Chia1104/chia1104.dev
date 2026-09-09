@@ -2,67 +2,40 @@
   "version": "8",
   "dialect": "postgres",
   "id": "ab0758e3-604d-479b-bd39-741aff4e539f",
-  "prevIds": [
-    "35c7a4f7-a9a6-4282-aec4-b037269913c3"
-  ],
+  "prevIds": ["35c7a4f7-a9a6-4282-aec4-b037269913c3"],
   "ddl": [
     {
-      "values": [
-        "mdx",
-        "notion",
-        "tiptap",
-        "plate"
-      ],
+      "values": ["mdx", "notion", "tiptap", "plate"],
       "name": "content_type",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "post",
-        "note"
-      ],
+      "values": ["post", "note"],
       "name": "feed_type",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "pending",
-        "accepted",
-        "rejected",
-        "expired",
-        "canceled"
-      ],
+      "values": ["pending", "accepted", "rejected", "expired", "canceled"],
       "name": "invitation_status",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "en",
-        "zh-TW"
-      ],
+      "values": ["en", "zh-TW"],
       "name": "locale",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "owner",
-        "admin",
-        "member"
-      ],
+      "values": ["owner", "admin", "member"],
       "name": "member_role",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "admin",
-        "user",
-        "root"
-      ],
+      "values": ["admin", "user", "root"],
       "name": "role",
       "entityType": "enums",
       "schema": "public"
@@ -4667,14 +4640,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "chia_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_account_user_id_chia_user_id_fk",
@@ -4684,14 +4653,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "session_id"
-      ],
+      "columns": ["session_id"],
       "schemaTo": "public",
       "tableTo": "chia_agent_session",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_agent_pending_message_FbnXYYHlwm65_fkey",
@@ -4701,14 +4666,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "session_id"
-      ],
+      "columns": ["session_id"],
       "schemaTo": "public",
       "tableTo": "chia_agent_session",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_agent_run_session_id_chia_agent_session_id_fkey",
@@ -4718,14 +4679,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "session_id"
-      ],
+      "columns": ["session_id"],
       "schemaTo": "public",
       "tableTo": "chia_agent_session",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_agent_session_entry_session_id_chia_agent_session_id_fkey",
@@ -4735,14 +4692,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "chia_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_agent_session_user_id_chia_user_id_fkey",
@@ -4752,14 +4705,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "session_id"
-      ],
+      "columns": ["session_id"],
       "schemaTo": "public",
       "tableTo": "chia_agent_session",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_agent_tool_approval_session_id_chia_agent_session_id_fkey",
@@ -4769,14 +4718,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "decided_by"
-      ],
+      "columns": ["decided_by"],
       "schemaTo": "public",
       "tableTo": "chia_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "name": "chia_agent_tool_approval_decided_by_chia_user_id_fkey",
@@ -4786,14 +4731,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "project_id"
-      ],
+      "columns": ["project_id"],
       "schemaTo": "public",
       "tableTo": "chia_project",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_apikey_project_id_chia_project_id_fk",
@@ -4803,14 +4744,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "chia_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_asset_user_id_chia_user_id_fk",
@@ -4820,14 +4757,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "asset_id"
-      ],
+      "columns": ["asset_id"],
       "schemaTo": "public",
       "tableTo": "chia_asset",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_assets_to_tags_asset_id_chia_asset_id_fk",
@@ -4837,14 +4770,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "tag_id"
-      ],
+      "columns": ["tag_id"],
       "schemaTo": "public",
       "tableTo": "chia_tag",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_assets_to_tags_tag_id_chia_tag_id_fk",
@@ -4854,14 +4783,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "feed_id"
-      ],
+      "columns": ["feed_id"],
       "schemaTo": "public",
       "tableTo": "chia_feed",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_feed_translation_feed_id_chia_feed_id_fk",
@@ -4871,14 +4796,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "chia_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_feed_user_id_chia_user_id_fk",
@@ -4888,14 +4809,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "feed_id"
-      ],
+      "columns": ["feed_id"],
       "schemaTo": "public",
       "tableTo": "chia_feed",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_feeds_to_tags_feed_id_chia_feed_id_fk",
@@ -4905,14 +4822,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "tag_id"
-      ],
+      "columns": ["tag_id"],
       "schemaTo": "public",
       "tableTo": "chia_tag",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_feeds_to_tags_tag_id_chia_tag_id_fk",
@@ -4922,14 +4835,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "organization_id"
-      ],
+      "columns": ["organization_id"],
       "schemaTo": "public",
       "tableTo": "chia_organization",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_invitation_organization_id_chia_organization_id_fk",
@@ -4939,14 +4848,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "inviter_id"
-      ],
+      "columns": ["inviter_id"],
       "schemaTo": "public",
       "tableTo": "chia_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_invitation_inviter_id_chia_user_id_fk",
@@ -4956,14 +4861,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "organization_id"
-      ],
+      "columns": ["organization_id"],
       "schemaTo": "public",
       "tableTo": "chia_organization",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_member_organization_id_chia_organization_id_fk",
@@ -4973,14 +4874,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "chia_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_member_user_id_chia_user_id_fk",
@@ -4990,14 +4887,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "chia_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_passkey_user_id_chia_user_id_fk",
@@ -5007,14 +4900,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "organization_id"
-      ],
+      "columns": ["organization_id"],
       "schemaTo": "public",
       "tableTo": "chia_organization",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_project_organization_id_chia_organization_id_fk",
@@ -5024,14 +4913,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "feed_translation_id"
-      ],
+      "columns": ["feed_translation_id"],
       "schemaTo": "public",
       "tableTo": "chia_feed_translation",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_resource_chunk_yDIuddFEqwIc_fkey",
@@ -5041,14 +4926,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "chunk_id"
-      ],
+      "columns": ["chunk_id"],
       "schemaTo": "public",
       "tableTo": "chia_resource_chunk",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_resource_embedding_chunk_id_chia_resource_chunk_id_fkey",
@@ -5058,14 +4939,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "chia_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_session_user_id_chia_user_id_fk",
@@ -5075,14 +4952,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "chia_user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_spotify_credential_user_id_chia_user_id_fkey",
@@ -5092,14 +4965,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "tag_id"
-      ],
+      "columns": ["tag_id"],
       "schemaTo": "public",
       "tableTo": "chia_tag",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_tag_translation_tag_id_chia_tag_id_fk",
@@ -5109,14 +4978,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "session_id"
-      ],
+      "columns": ["session_id"],
       "schemaTo": "public",
       "tableTo": "chia_agent_session",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_writing_agent_draft_session_id_chia_agent_session_id_fkey",
@@ -5126,14 +4991,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "session_id"
-      ],
+      "columns": ["session_id"],
       "schemaTo": "public",
       "tableTo": "chia_agent_session",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_writing_agent_session_jFq3ARaaLvAT_fkey",
@@ -5143,14 +5004,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "target_feed_id"
-      ],
+      "columns": ["target_feed_id"],
       "schemaTo": "public",
       "tableTo": "chia_feed",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "name": "chia_writing_agent_session_target_feed_id_chia_feed_id_fkey",
@@ -5159,10 +5016,7 @@
       "table": "chia_writing_agent_session"
     },
     {
-      "columns": [
-        "session_id",
-        "id"
-      ],
+      "columns": ["session_id", "id"],
       "nameExplicit": false,
       "name": "chia_agent_session_entry_pkey",
       "entityType": "pks",
@@ -5170,10 +5024,7 @@
       "table": "chia_agent_session_entry"
     },
     {
-      "columns": [
-        "session_id",
-        "tool_call_id"
-      ],
+      "columns": ["session_id", "tool_call_id"],
       "nameExplicit": false,
       "name": "chia_agent_tool_approval_pkey",
       "entityType": "pks",
@@ -5181,10 +5032,7 @@
       "table": "chia_agent_tool_approval"
     },
     {
-      "columns": [
-        "asset_id",
-        "tag_id"
-      ],
+      "columns": ["asset_id", "tag_id"],
       "nameExplicit": false,
       "name": "chia_assets_to_tags_asset_id_tag_id_pk",
       "entityType": "pks",
@@ -5192,10 +5040,7 @@
       "table": "chia_assets_to_tags"
     },
     {
-      "columns": [
-        "feed_id",
-        "tag_id"
-      ],
+      "columns": ["feed_id", "tag_id"],
       "nameExplicit": false,
       "name": "chia_feeds_to_tags_feed_id_tag_id_pk",
       "entityType": "pks",
@@ -5203,10 +5048,7 @@
       "table": "chia_feeds_to_tags"
     },
     {
-      "columns": [
-        "chunk_id",
-        "model"
-      ],
+      "columns": ["chunk_id", "model"],
       "nameExplicit": false,
       "name": "chia_resource_embedding_pkey",
       "entityType": "pks",
@@ -5214,10 +5056,7 @@
       "table": "chia_resource_embedding"
     },
     {
-      "columns": [
-        "session_id",
-        "locale"
-      ],
+      "columns": ["session_id", "locale"],
       "nameExplicit": false,
       "name": "chia_writing_agent_draft_pkey",
       "entityType": "pks",
@@ -5225,9 +5064,7 @@
       "table": "chia_writing_agent_draft"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_account_pkey",
       "schema": "public",
@@ -5235,9 +5072,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_agent_pending_message_pkey",
       "schema": "public",
@@ -5245,9 +5080,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_agent_run_pkey",
       "schema": "public",
@@ -5255,9 +5088,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_agent_session_pkey",
       "schema": "public",
@@ -5265,9 +5096,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_apikey_pkey",
       "schema": "public",
@@ -5275,9 +5104,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_asset_pkey",
       "schema": "public",
@@ -5285,9 +5112,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_feed_translation_pkey",
       "schema": "public",
@@ -5295,9 +5120,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_feed_pkey",
       "schema": "public",
@@ -5305,9 +5128,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_invitation_pkey",
       "schema": "public",
@@ -5315,9 +5136,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_member_pkey",
       "schema": "public",
@@ -5325,9 +5144,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_organization_pkey",
       "schema": "public",
@@ -5335,9 +5152,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_passkey_pkey",
       "schema": "public",
@@ -5345,9 +5160,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_project_pkey",
       "schema": "public",
@@ -5355,9 +5168,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_resource_chunk_pkey",
       "schema": "public",
@@ -5365,9 +5176,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_session_pkey",
       "schema": "public",
@@ -5375,9 +5184,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "nameExplicit": false,
       "name": "chia_spotify_credential_pkey",
       "schema": "public",
@@ -5385,9 +5192,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_tag_translation_pkey",
       "schema": "public",
@@ -5395,9 +5200,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_tag_pkey",
       "schema": "public",
@@ -5405,9 +5208,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_user_pkey",
       "schema": "public",
@@ -5415,9 +5216,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chia_verification_pkey",
       "schema": "public",
@@ -5425,9 +5224,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "session_id"
-      ],
+      "columns": ["session_id"],
       "nameExplicit": false,
       "name": "chia_writing_agent_session_pkey",
       "schema": "public",
@@ -5436,9 +5233,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "slug"
-      ],
+      "columns": ["slug"],
       "nullsNotDistinct": false,
       "name": "chia_feed_slug_unique",
       "schema": "public",
@@ -5447,9 +5242,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "slug"
-      ],
+      "columns": ["slug"],
       "nullsNotDistinct": false,
       "name": "chia_organization_slug_unique",
       "schema": "public",
@@ -5458,9 +5251,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "slug"
-      ],
+      "columns": ["slug"],
       "nullsNotDistinct": false,
       "name": "chia_project_slug_unique",
       "schema": "public",
@@ -5469,9 +5260,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "token"
-      ],
+      "columns": ["token"],
       "nullsNotDistinct": false,
       "name": "chia_session_token_unique",
       "schema": "public",
@@ -5480,9 +5269,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "slug"
-      ],
+      "columns": ["slug"],
       "nullsNotDistinct": false,
       "name": "chia_tag_slug_unique",
       "schema": "public",
@@ -5491,9 +5278,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nullsNotDistinct": false,
       "name": "chia_user_email_unique",
       "schema": "public",

@@ -41,4 +41,3 @@ export const mockEmail = {
 export const mockContact = {
   ...mockEmail,
 };
-
