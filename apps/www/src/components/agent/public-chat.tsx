@@ -8,7 +8,8 @@ import { ORPCError } from "@orpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 
-import { Composer } from "@chia/agent-elements/composer";
+import { Composer, ComposerContext } from "@chia/agent-elements/composer";
+import { useAgentContext } from "@chia/agent-elements/context";
 import { EmptyState } from "@chia/agent-elements/empty-state";
 import { AgentSessionProvider } from "@chia/agent-elements/provider";
 import { agentQueryKeys } from "@chia/agent-elements/queries";
@@ -87,6 +88,7 @@ const PublicChatSessions = ({ headerActions }: PublicChatProps) => {
   const locale = useLocale();
   const labels = agentLabelsOf(locale);
   const queryClient = useQueryClient();
+  const context = useAgentContext((state) => state.items);
   const session = authClient.useSession();
 
   const listOptions = orpc.agent.sessions.list.queryOptions({
@@ -264,6 +266,7 @@ const PublicChatSessions = ({ headerActions }: PublicChatProps) => {
             renderers={contentToolRenderers}
           />
           <Composer
+            attachments={context.length > 0 ? <ComposerContext /> : undefined}
             localCommands={localCommands}
             placeholder={t("placeholder")}
             toolbar={
