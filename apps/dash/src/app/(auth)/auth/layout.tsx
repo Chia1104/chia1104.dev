@@ -14,9 +14,9 @@ export default async function Layout({
   const session = await getSession();
 
   // The session cookie is shared across subdomains, so a guest minted on the public site
-  // reaches here too. Only a person is sent to the workspace; a guest would be bounced
-  // straight back, so they sign in from this page instead.
-  if (session.data && !session.data.user.isAnonymous) {
+  // reaches here too. Only someone with a dashboard is sent to the workspace; a guest would
+  // be bounced straight back, so they sign in from this page instead.
+  if (session.data?.access.dashboard) {
     redirect("/");
   }
 
