@@ -17,7 +17,7 @@ import DateFormat from "@chia/ui/date-format";
 import { WWW_BASE_URL, getBaseUrl } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 
-import { ArticleSelection } from "@/components/agent/article-selection";
+import { ArticleAgentContext } from "@/components/agent/article-agent-context";
 import { ActionGroup } from "@/components/blog/action-group";
 import {
   RelatedFeeds,
@@ -162,7 +162,10 @@ const Page = async ({
             </div>
           </div>
         </header>
-        <ArticleSelection feedId={feed.id} locale={dbLocale}>
+        <ArticleAgentContext
+          feedId={feed.id}
+          locale={dbLocale}
+          title={translation.title}>
           <Content
             content={getContentProps({ content: translation.content })}
             context={{
@@ -183,7 +186,7 @@ const Page = async ({
               },
             }}
           />
-        </ArticleSelection>
+        </ArticleAgentContext>
         <ErrorBoundary>
           <Suspense fallback={<RelatedFeedsSkeleton />}>
             <RelatedFeeds locale={locale} slug={slug} />

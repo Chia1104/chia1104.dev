@@ -95,28 +95,31 @@ export const createPublicAgentKind = (
       detail: () => Promise.resolve({}),
 
       /**
-       * Only text selected in a published post. Checked here so an unpublished id fails the
-       * request instead of the turn, and so a selection cannot probe what the visitor cannot read.
+       * Only a published post: the one the visitor is reading, or text selected in one. Checked
+       * here so an unpublished id fails the request instead of the turn, and so an attachment
+       * cannot probe what the visitor cannot read.
        */
       async attach(_caller, db, _sessionId, attachments) {
         for (const attachment of attachments) {
-          if (attachment.type !== "selection") {
+          if (attachment.type === "draft") {
             throw new AppError("BAD_REQUEST", {
-              message: `The public agent takes no "${attachment.type}" attachments.`,
+              message: `The public agent takes no "draft" attachments.`,
             });
           }
-          if (attachment.source.type !== "feed") {
+          if (
+            attachment.type === "selection" &&
+            attachment.source.type !== "feed"
+          ) {
             throw new AppError("BAD_REQUEST", {
               message: `The public agent takes no "${attachment.source.type}" selections.`,
             });
           }
-          const feed = await getFeedById(db, {
-            feedId: attachment.source.id,
-            published: true,
-          });
+          const feedId =
+            attachment.type === "feed" ? attachment.id : attachment.source.id;
+          const feed = await getFeedById(db, { feedId, published: true });
           if (!feed) {
             throw new AppError("NOT_FOUND", {
-              message: `Unknown post: ${attachment.source.id}`,
+              message: `Unknown post: ${feedId}`,
             });
           }
         }

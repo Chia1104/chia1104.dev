@@ -5,7 +5,10 @@ import { useRef } from "react";
 
 import { useTranslations } from "next-intl";
 
-import { useAgentContext } from "@chia/agent-elements/context";
+import {
+  useAgentContext,
+  useProvideAgentContext,
+} from "@chia/agent-elements/context";
 import {
   SelectionMenu,
   SelectionTrigger,
@@ -32,17 +35,21 @@ const showChat = () => {
 };
 
 /**
- * Lets a reader select a passage of the post and ask the blog assistant about it. The prompt
- * is handed to the chat dock, which sends it once its session is ready.
+ * What the reader has open, for the chat beside the post: the post itself rides along with
+ * every prompt while the page is mounted, and a selected passage can be asked about from a
+ * menu on the selection. The prompt is handed to the chat dock, which sends it once its
+ * session is ready.
  */
-export const ArticleSelection = ({
+export const ArticleAgentContext = ({
   children,
   feedId,
   locale,
+  title,
 }: {
   children: ReactNode;
   feedId: number;
   locale: string;
+  title: string;
 }) => {
   const t = useTranslations("chbot.selection");
   const aiEnabled = useSettingsStore((state) => state.aiEnabled);
@@ -50,6 +57,9 @@ export const ArticleSelection = ({
   // The container also holds the table of contents; only the body's text is a passage.
   const selection = useDomSelection(ref, { within: ".prose" });
   const request = useAgentContext((state) => state.request);
+  useProvideAgentContext(
+    aiEnabled ? { type: "feed", id: feedId, locale, label: title } : null
+  );
 
   const ask = (prompt: string, passage: DomSelection, close: () => void) => {
     close();

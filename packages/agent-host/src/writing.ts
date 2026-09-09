@@ -177,6 +177,11 @@ export const createWritingAgentKind = (
       async attach(caller, db, sessionId, attachments) {
         const draftIds = new Set<number>();
         for (const attachment of attachments) {
+          if (attachment.type === "feed") {
+            throw new AppError("BAD_REQUEST", {
+              message: `The writing agent takes no "feed" attachments.`,
+            });
+          }
           if (
             attachment.type === "selection" &&
             attachment.source.type !== "draft"

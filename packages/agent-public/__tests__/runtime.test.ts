@@ -257,6 +257,34 @@ describe("runPublicTurn", () => {
     });
   });
 
+  it("names the post the visitor is reading, and skips one it cannot read", async () => {
+    const seen: Context[] = [];
+    fixture.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("It is about this.");
+      },
+    ]);
+
+    await fixture.run("What is this about?", [
+      { type: "feed", id: 1, locale: "en" },
+      { type: "feed", id: 99, locale: "en" },
+    ]);
+
+    const prompt = seen[0]?.messages.find((m) => m.role === "user");
+    const blocks = JSON.stringify(prompt?.content);
+    expect(blocks).toContain(
+      'The visitor is reading the post \\"An existing post\\" (slug `existing-post`, locale en)'
+    );
+    expect(blocks).toContain("A post this agent cannot read; ignore it");
+    expect(fixture.events.find((e) => e.type === "user")).toMatchObject({
+      attachments: [
+        { type: "feed", label: "An existing post" },
+        { type: "feed", label: "Post #99" },
+      ],
+    });
+  });
+
   it("refuses calls past the soft budget and still ends the turn", async () => {
     const calls = publicTurnBudget.maxToolCalls + 1;
     fixture.setResponses([

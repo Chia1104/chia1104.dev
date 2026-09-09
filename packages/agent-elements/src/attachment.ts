@@ -12,6 +12,8 @@ const hashOf = (text: string): string => {
 /** Identity of an attachment on the client: what dedupes a prompt and keys a context row. */
 export const attachmentKeyOf = (attachment: AgentAttachmentInput): string => {
   if (attachment.type === "draft") return `draft:${attachment.id}`;
+  if (attachment.type === "feed")
+    return `feed:${attachment.id}:${attachment.locale}`;
   const { source } = attachment;
   const where =
     source.type === "draft"
@@ -26,15 +28,17 @@ export const attachmentInputOf = (
 ): AgentAttachmentInput =>
   attachment.type === "draft"
     ? { type: "draft", id: attachment.id }
-    : {
-        type: "selection",
-        text: attachment.text,
-        source: attachment.source,
-      };
+    : attachment.type === "feed"
+      ? { type: "feed", id: attachment.id, locale: attachment.locale }
+      : {
+          type: "selection",
+          text: attachment.text,
+          source: attachment.source,
+        };
 
 /** The short tag beside an attachment's label: the record id, or where the selection sits. */
 export const attachmentMetaOf = (attachment: AgentAttachmentInput): string => {
-  if (attachment.type === "draft") return `#${attachment.id}`;
+  if (attachment.type !== "selection") return `#${attachment.id}`;
   const { source } = attachment;
   if (source.type === "draft") {
     return source.startLine === source.endLine

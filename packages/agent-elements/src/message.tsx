@@ -91,7 +91,9 @@ const AttachmentChip = ({ attachment }: { attachment: AgentAttachment }) => {
     attachment.label ??
     (attachment.type === "draft"
       ? `Draft #${attachment.id}`
-      : attachmentMetaOf(attachment));
+      : attachment.type === "feed"
+        ? `Post #${attachment.id}`
+        : attachmentMetaOf(attachment));
   if (attachment.type !== "selection") {
     return <span className={CHIP_CLASS}>{label}</span>;
   }

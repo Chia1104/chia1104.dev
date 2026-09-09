@@ -69,6 +69,26 @@ describe("createPublicAgentKind", () => {
     await expect(kind.state.detail(db, "session-1", {})).resolves.toEqual({});
   });
 
+  it("admits the post being read when it is published", async () => {
+    feeds.getFeedById.mockResolvedValue({ id: 3 });
+    await expect(
+      kind.state.attach?.(caller, db, "session-1", [
+        { type: "feed", id: 3, locale: "en" },
+      ])
+    ).resolves.toBeUndefined();
+    expect(feeds.getFeedById).toHaveBeenCalledWith(db, {
+      feedId: 3,
+      published: true,
+    });
+
+    feeds.getFeedById.mockResolvedValue(null);
+    await expect(
+      kind.state.attach?.(caller, db, "session-1", [
+        { type: "feed", id: 4, locale: "en" },
+      ])
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
   it("admits a selection from a published post and nothing else", async () => {
     feeds.getFeedById.mockResolvedValue({ id: 3 });
     await expect(

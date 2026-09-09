@@ -149,6 +149,12 @@ const renderAttachment = async (
   store: DraftStore,
   attachment: AgentAttachment
 ): Promise<{ text: string; label: string }> => {
+  if (attachment.type === "feed") {
+    return {
+      text: `- A published post this agent cannot read as an attachment; ignore it.`,
+      label: `Post #${attachment.id}`,
+    };
+  }
   if (attachment.type === "selection") {
     const { source, text } = attachment;
     if (source.type !== "draft") {

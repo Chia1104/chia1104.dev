@@ -63,9 +63,24 @@ export interface RunPublicTurnOptions<TApproval> {
 /** Quoted as a fenced block so the passage reads as the visitor's citation, not their words. */
 const quoted = (text: string): string => `"""\n${text}\n"""`;
 
+/** The published post and its translation for `locale`, or `null` when the port cannot see it. */
+const readPost = async (
+  content: ContentReadPort,
+  feedId: number,
+  localeName: string
+) => {
+  const locale = Object.values(Locale).find((value) => value === localeName);
+  const post = await content.getPost({ feedId, locale });
+  const translation =
+    post?.translations.find((entry) => entry.locale === localeName) ??
+    post?.translations[0];
+  return post && translation ? { post, translation } : null;
+};
+
 /**
- * The block the model reads ahead of the visitor's words. Only a selection from a published
- * post is readable; the port decides what is published, so an unreadable id is named and skipped.
+ * The block the model reads ahead of the visitor's words. Only a published post is readable:
+ * the one being read, or a selection from one. The port decides what is published, so an
+ * unreadable id is named and skipped.
  */
 const renderAttachments = async (
   content: ContentReadPort,
@@ -73,6 +88,22 @@ const renderAttachments = async (
 ): Promise<RenderedAttachments> => {
   const rendered = await Promise.all(
     attachments.map(async (attachment) => {
+      if (attachment.type === "feed") {
+        const read = await readPost(content, attachment.id, attachment.locale);
+        if (!read) {
+          return {
+            text: `- A post this agent cannot read; ignore it.`,
+            label: `Post #${attachment.id}`,
+          };
+        }
+        return {
+          text:
+            `- The visitor is reading the post "${read.translation.title}" (slug \`${read.post.slug}\`, ` +
+            `locale ${attachment.locale}). A question with no other subject is about this post; ` +
+            `\`get_post\` it before answering.`,
+          label: read.translation.title,
+        };
+      }
       if (
         attachment.type !== "selection" ||
         attachment.source.type !== "feed"
@@ -83,14 +114,8 @@ const renderAttachments = async (
         };
       }
       const { source, text } = attachment;
-      const locale = Object.values(Locale).find(
-        (value) => value === source.locale
-      );
-      const post = await content.getPost({ feedId: source.id, locale });
-      const translation =
-        post?.translations.find((entry) => entry.locale === source.locale) ??
-        post?.translations[0];
-      if (!post || !translation) {
+      const read = await readPost(content, source.id, source.locale);
+      if (!read) {
         return {
           text: `- Selected text from a post this agent cannot read; ignore it.`,
           label: "Selection",
@@ -99,11 +124,11 @@ const renderAttachments = async (
       const where = source.headingPath ? `, under "${source.headingPath}"` : "";
       return {
         text:
-          `- Selected in the post "${translation.title}" (slug \`${post.slug}\`, locale ${source.locale}${where}):\n` +
+          `- Selected in the post "${read.translation.title}" (slug \`${read.post.slug}\`, locale ${source.locale}${where}):\n` +
           quoted(text),
         label: source.headingPath
-          ? `${translation.title} · ${source.headingPath}`
-          : translation.title,
+          ? `${read.translation.title} · ${source.headingPath}`
+          : read.translation.title,
       };
     })
   );

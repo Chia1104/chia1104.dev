@@ -162,6 +162,11 @@ describe("createWritingAgentKind state", () => {
         },
       ])
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      kind.state.attach?.(caller, db, "session-1", [
+        { type: "feed", id: 1, locale: "en" },
+      ])
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
 
     drafts.getFeedDraft.mockResolvedValue(record(7, "someone-else"));
     await expect(
