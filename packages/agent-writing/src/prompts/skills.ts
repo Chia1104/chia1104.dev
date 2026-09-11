@@ -16,12 +16,13 @@ const skill = (name: string, description: string, content: string): Skill => ({
 
 export const mdxAuthoringSkill = skill(
   "mdx-authoring",
-  "The MDX dialect, math, code, links and JSX constraints for a post body. Read before writing or editing any body.",
+  "The MDX dialect: headings and anchors, callouts, math, code block options and tabs, links, images and JSX rules for a post body. Read before writing or editing any body.",
   `
 # MDX authoring
 
-Post bodies are MDX compiled with \`remark-math\` and \`rehype-katex\`. Standard Markdown works.
-Beyond it:
+Post bodies are MDX compiled by the site's Fumadocs pipeline: GFM, \`remark-math\` with KaTeX,
+Shiki code highlighting, heading anchors and a generated table of contents. Standard Markdown
+works. Beyond it:
 
 ## Frontmatter — do NOT write any
 
@@ -33,10 +34,19 @@ with \`patch_draft_meta\`. A \`---\` block at the top of the body renders as lit
 Start at \`##\`. The page already renders the post title as the \`<h1>\`. Do not skip levels
 (\`##\` → \`####\`) — the table of contents is generated from the heading tree.
 
-## Callouts
+Anchors come from the heading text (GitHub slug rules; a repeated title gets \`-1\`, \`-2\`). Append
+\`[#anchor]\` to pin a stable id when another post or a citation links to the section:
 
-Directive admonitions such as \`:::note\` and GitHub alerts such as \`> [!NOTE]\` are **not
-supported**. Load \`mdx-components\` and use its \`Callout\` component instead.
+\`\`\`
+## Rebuilding the index [#reindex]
+\`\`\`
+
+## Blockquotes are callouts
+
+A \`>\` block renders as an **info callout**, not as a quotation; the site has no quotation style.
+Use \`>\` for a short aside. Load \`mdx-components\` and use \`Callout\` when the note needs a type
+(warning, error, success, idea) or a title. Directive admonitions (\`:::note\`) and GitHub alerts
+(\`> [!NOTE]\`) are not supported: the marker is printed as text.
 
 ## Math
 
@@ -52,24 +62,85 @@ $$
 
 ## Code
 
-Always tag the language — the highlighter needs it:
+Always tag the language — the highlighter needs it. Options follow the language, separated by
+spaces:
 
 \`\`\`\`
-\`\`\`ts
-const x = 1;
+\`\`\`ts title="src/cache.ts" lineNumbers
+const ttl = 60; // [!code --]
+const ttl = 300; // [!code ++]
+const key = input.id; // [!code highlight]
+\`\`\`
+\`\`\`\`
+
+- \`title="…"\` shows a filename header above the block.
+- \`lineNumbers\` turns line numbers on.
+- A trailing comment \`[!code ++]\`, \`[!code --]\`, \`[!code highlight]\`, \`[!code focus]\` or
+  \`[!code word:token]\` marks that line. Use the language's own comment syntax (\`#\` in shell,
+  \`--\` in SQL, \`<!-- -->\` in HTML); the marker is stripped from the output.
+- \`twoslash\` is not available. Do not add it.
+
+Consecutive code blocks carrying \`tab="Label"\` render as one tabbed block, no \`Tabs\` needed:
+
+\`\`\`\`
+\`\`\`ts tab="ky"
+const data = await ky.get(url).json();
+\`\`\`
+
+\`\`\`ts tab="fetch"
+const data = await (await fetch(url)).json();
+\`\`\`
+\`\`\`\`
+
+Install commands go in a \`package-install\` block; the site renders npm, pnpm, yarn and bun tabs
+from it. Write the package names, or a full \`npm\` / \`npx\` command:
+
+\`\`\`\`
+\`\`\`package-install
+zod @orpc/client
 \`\`\`
 \`\`\`\`
 
 ## Links
 
-Use site-absolute paths for internal links (\`/feed/some-slug\`) and full URLs for external
-ones. **Relative paths (\`./x\`, \`../x\`) do not resolve** and are a validation error.
+Posts live at \`/posts/<slug>\` and notes at \`/notes/<slug>\`. English pages carry an \`/en\` prefix;
+zh-TW pages have none. Prefer the \`url\` a content tool returned (\`search_posts\`, \`list_posts\`,
+\`get_post\`) and pass it through unchanged; cite a section as \`url#anchor\` with an anchor those
+tools returned. **Never write \`/feed/…\`**: that path does not exist. Relative paths (\`./x\`,
+\`../x\`) do not resolve. External links are full URLs.
 
-## JSX
+## Images
 
-Every JSX tag must be closed, including void elements (\`<br />\`, not \`<br>\`). An unclosed tag
-is a compile error. Stick to Markdown unless you specifically need a component. Before adding or
-editing one, load \`mdx-components\`; never import a component inside the post body.
+Markdown images are the normal form:
+
+\`\`\`
+![Terminal showing the failing test](https://storage.chia1104.dev/global/failing-test.png)
+\`\`\`
+
+The renderer measures every image at compile time, so the URL must be publicly reachable now.
+A local path such as \`/images/x.png\` is looked up in the site's public folder, which has no such
+files, and **breaks the whole page**. Use only image URLs the operator supplied or that already
+appear in the draft; never invent one. Allowed hosts: \`storage.chia1104.dev\` (the operator's
+uploads), \`i.imgur.com\`, \`raw.githubusercontent.com\`, \`avatars.githubusercontent.com\`,
+\`opengraph.githubassets.com\`, \`repository-images.githubusercontent.com\`. Alt text describes what
+the image shows.
+
+## JSX and raw HTML
+
+MDX is JSX, not HTML:
+
+- Every tag closes, including void elements (\`<br />\`, \`<img … />\`). An unclosed \`<br>\` is a
+  compile error.
+- Attributes are React props: \`className\`, not \`class\`. \`style\` must be an object expression
+  (\`style={{ maxWidth: 480 }}\`); a string breaks rendering. Prefer no inline styling at all.
+- \`{\` and \`}\` in prose open an expression. Put braces in inline code or escape them as \`\\{\`. A
+  \`<\` directly followed by a letter opens a tag; \`a < b\` with a space is fine.
+- Lowercase HTML elements (\`iframe\`, \`details\`, \`video\`) pass through, so an embed such as a
+  LinkedIn or YouTube \`iframe\` is allowed. Capitalized names must come from \`mdx-components\`.
+- Markdown inside a JSX block is only parsed as Markdown when a blank line separates it from the
+  tags; otherwise it is inline text.
+- Never write \`import\` or \`export\` in a body. Stick to Markdown unless a component is needed;
+  before adding or editing one, load \`mdx-components\`.
 `
 );
 
@@ -80,50 +151,50 @@ export const mdxComponentsSkill = skill(
 # MDX components
 
 Components are injected by the renderer. Use them directly — **never add \`import\` or \`export\`
-statements to a post**. Component names are case-sensitive. Use only the catalog below; do not
-invent a component from the wider Fumadocs library.
+statements to a post**. Names are case-sensitive. Use only the catalog below; a name the renderer
+does not map renders nothing or breaks the page, so do not borrow from the wider Fumadocs library.
 
 Ordinary headings, links, images, blockquotes, fenced code, tables and bold text already have site
-renderers. Prefer their Markdown syntax unless a component below provides behavior Markdown cannot.
+renderers. Prefer their Markdown syntax unless a component below adds behavior Markdown cannot.
+Code tabs and install-command tabs also have Markdown forms (\`tab="…"\` and \`package-install\`,
+see \`mdx-authoring\`) and do not need \`Tabs\`.
+
+Attribute values are literals: strings in quotes; numbers, booleans, arrays and objects in braces
+(\`defaultIndex={0}\`, \`items={["a", "b"]}\`). No variables or function calls. Leave a blank line
+after an opening tag and before a closing tag whenever the content is Markdown.
 
 ## Tabs
 
-Use one \`Tab\` per item. Keep every \`value\` identical to its item label; explicit values are
-more stable than index-based inference.
+For mixed content (prose, lists, images) under switchable labels. One \`Tab\` per item; keep every
+\`value\` identical to its item label.
 
 \`\`\`mdx
-<Tabs items={["TypeScript", "JavaScript"]} defaultIndex={0}>
-  <Tab value="TypeScript">
+<Tabs items={["Vercel", "Railway"]} defaultIndex={0}>
+  <Tab value="Vercel">
 
-\`\`\`ts
-const typed: string = "yes";
-\`\`\`
+Set the variable in the project settings and redeploy.
 
   </Tab>
-  <Tab value="JavaScript">
+  <Tab value="Railway">
 
-\`\`\`js
-const typed = "no";
-\`\`\`
+Set the variable on the service; the deploy restarts on its own.
 
   </Tab>
 </Tabs>
 \`\`\`
 
-Use \`groupId="..."\` to synchronize related tab groups and add \`persist\` only when the selected
-value should survive a reload.
+Use \`groupId="…"\` to synchronize related tab groups and add \`persist\` only when the selected
+value should survive a reload. Code-only tabs are simpler as fenced blocks with \`tab="…"\`.
 
 ## Callouts
 
-Directive admonitions such as \`:::note\` and GitHub alerts such as \`> [!NOTE]\` are not
-supported. Use \`Callout\` for every note, warning or aside. Supported types are \`info\`,
-\`warn\`/\`warning\`, \`error\`, \`success\` and \`idea\`.
-
-Use \`type="info"\` for an ordinary note:
+Use \`Callout\` for a note, warning or aside that needs a type or a title. Types are \`info\` (the
+default), \`warn\` / \`warning\`, \`error\`, \`success\` and \`idea\`. A plain \`>\` blockquote is the
+shorthand for an untitled \`info\` callout.
 
 \`\`\`mdx
-<Callout type="info">
-  Logs compare expected and actual behavior; each record should eliminate a hypothesis.
+<Callout type="warn">
+  Soft-deleted posts stay searchable until their chunks are removed explicitly.
 </Callout>
 \`\`\`
 
@@ -142,11 +213,37 @@ For custom multi-part content, the lower-level components are also available:
 </CalloutContainer>
 \`\`\`
 
+## Steps
+
+Numbered procedure with a vertical guide. Each \`Step\` starts with a \`###\` heading (it appears in
+the table of contents) followed by ordinary Markdown, code or a \`package-install\` block.
+
+\`\`\`\`mdx
+<Steps>
+<Step>
+
+### Install the package
+
+\`\`\`package-install
+@orpc/client
+\`\`\`
+
+</Step>
+<Step>
+
+### Create the client
+
+Point \`createORPCClient\` at the service endpoint.
+
+</Step>
+</Steps>
+\`\`\`\`
+
 ## Accordions
 
 Every \`Accordion\` must be inside \`Accordions\` and must have a \`title\`. Add a stable, unique
-\`id\` when the section should be directly linkable. Use \`type="multiple"\` only when readers
-need several items open at once; the default is a collapsible single item.
+\`id\` when the section should be directly linkable. Use \`type="multiple"\` on \`Accordions\` only
+when readers need several items open at once; the default is a collapsible single item.
 
 \`\`\`mdx
 <Accordions>
@@ -161,13 +258,14 @@ need several items open at once; the default is a collapsible single item.
 
 ## Cards
 
-Use \`Cards\` to group related destinations. \`Card\` requires \`title\`; \`href\` and
-\`description\` are optional. Internal links must remain site-absolute.
+Use \`Cards\` to group related destinations. \`Card\` requires \`title\`; \`href\` and \`description\`
+are optional. Internal links use the \`url\` a content tool returned (\`/posts/<slug>\`); external
+ones add \`external\`.
 
 \`\`\`mdx
 <Cards>
-  <Card title="Agent architecture" href="/feed/agent-architecture">
-    How durable turns, tools and approvals fit together.
+  <Card title="How I work with AI agents" href="/posts/ai-agent-development-workflow">
+    From Copilot completions to CLI agents, and what I still review by hand.
   </Card>
   <Card title="Source repository" href="https://github.com/chia1104" external>
     Browse the implementation.
@@ -179,8 +277,8 @@ Do not add icon components: no icon library is injected into post MDX.
 
 ## File trees
 
-Wrap every tree in \`Files\`. \`File\` and \`Folder\` require \`name\`; folders may be nested and
-\`defaultOpen\` expands a folder initially.
+Wrap every tree in \`Files\`. \`File\` and \`Folder\` require \`name\`; folders may be nested,
+\`defaultOpen\` expands a folder initially and \`disabled\` greys one out.
 
 \`\`\`mdx
 <Files>
@@ -221,22 +319,34 @@ This is the hand-authored \`TypeTable\`, not \`AutoTypeTable\`; it cannot read a
 
 ## Mermaid
 
-Pass a complete Mermaid definition through the required \`chart\` string. Encode line breaks as
-\`\\n\` inside the attribute. Keep node labels short and quote labels that contain punctuation.
+Pass a complete Mermaid definition through the required \`chart\` string. Line breaks may be
+written as \`\\n\` inside the attribute or as real newlines. Keep node labels short; when a label
+needs double quotes (punctuation, parentheses), wrap the attribute in single quotes.
 
 \`\`\`mdx
 <Mermaid chart="flowchart LR\\n  draft[Draft] --> review[Review]\\n  review --> publish[Publish]" />
 \`\`\`
 
+\`\`\`mdx
+<Mermaid
+  chart='sequenceDiagram
+    participant Browser
+    participant Service
+    Browser->>Service: POST /rpc ("feeds.list")
+    Service-->>Browser: 200 items'
+/>
+\`\`\`
+
 ## Images and layout helpers
 
-Markdown images and \`Image\` both render with the site's zoom behavior. Use \`Image\` when explicit
-dimensions or a wrapper are needed. A string \`src\` must have numeric \`width\` and \`height\`, and
-\`alt\` must describe the image (or be \`alt=""\` when purely decorative).
+Markdown images and \`Image\` both render with the site's zoom behavior. Use the Markdown form by
+default; use \`Image\` only when exact dimensions or a wrapper are needed. A string \`src\` must be
+an allowed host (see \`mdx-authoring\`) and carry numeric \`width\` and \`height\`; \`alt\` describes
+the image, or is \`alt=""\` when purely decorative.
 
 \`\`\`mdx
 <Image
-  src="/images/agent-turn.png"
+  src="https://storage.chia1104.dev/global/agent-turn.png"
   alt="Sequence diagram of a durable agent turn"
   width={1600}
   height={900}
@@ -254,7 +364,7 @@ They may be composed when a small image needs centering:
 \`\`\`mdx
 <FlexCenter>
   <ImageWrapperWithMaxWidth>
-    <Image src="/images/logo.png" alt="Project logo" width={250} height={250} />
+    <Image src="https://storage.chia1104.dev/global/logo.png" alt="Project logo" width={250} height={250} />
   </ImageWrapperWithMaxWidth>
 </FlexCenter>
 \`\`\`
@@ -274,11 +384,11 @@ the only alternative to the normal style.
 
 ## Compiler-facing components
 
-\`CodeBlockTab\`, \`CodeBlockTabs\`, \`CodeBlockTabsList\` and \`CodeBlockTabsTrigger\` exist for
-Fumadocs code-tab output. Do not author them manually; use \`Tabs\`/\`Tab\` around fenced code.
+\`CodeBlockTab\`, \`CodeBlockTabs\`, \`CodeBlockTabsList\` and \`CodeBlockTabsTrigger\` are what the
+compiler emits for \`tab="…"\` and \`package-install\` blocks. Do not author them by hand.
 
-No other named JSX components are available. In particular, do not use \`Steps\`, \`Step\`,
-\`AutoTypeTable\` or arbitrary icon components unless the renderer is changed first.
+No other named JSX components are available. In particular, do not use \`AutoTypeTable\`,
+\`InlineTOC\`, \`GithubInfo\` or arbitrary icon components unless the renderer is changed first.
 `
 );
 
