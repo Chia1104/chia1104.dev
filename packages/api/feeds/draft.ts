@@ -2,6 +2,7 @@ import type { DB } from "@chia/db/client";
 import {
   createFeedDraft,
   deleteFeedDraft,
+  editFeedDraftContent,
   getFeedDraft,
   getFeedDraftByFeedId,
   getFeedDraftForUpdate,
@@ -162,6 +163,54 @@ export const patchFeedDraftService = async (
     translations: input.translations,
   });
   return unwrapWrite(result, input.draftId);
+};
+
+export interface EditFeedDraftContentServiceInput extends FeedDraftWriter {
+  draftId: number;
+  adminId: string;
+  locale: Locale;
+  oldString: string;
+  newString: string;
+  replaceAll?: boolean;
+  expectedRevision?: number;
+}
+
+export interface EditFeedDraftContentResult {
+  draft: FeedDraftRecord;
+  replacements: number;
+}
+
+/** A target that does not match exactly once is `BAD_REQUEST`; the message says how to fix the call. */
+export const editFeedDraftContentService = async (
+  db: DB,
+  input: EditFeedDraftContentServiceInput
+): Promise<EditFeedDraftContentResult> => {
+  await requireDraft(db, input.draftId, input.adminId);
+  const result = await editFeedDraftContent(db, {
+    draftId: input.draftId,
+    locale: input.locale,
+    oldString: input.oldString,
+    newString: input.newString,
+    replaceAll: input.replaceAll,
+    expectedRevision: input.expectedRevision,
+    author: input.author,
+    sessionId: input.sessionId,
+  });
+  switch (result.status) {
+    case "ok":
+      return { draft: result.draft, replacements: result.replacements };
+    case "no_body":
+      throw new AppError("BAD_REQUEST", {
+        message: `Draft ${input.draftId} has no "${input.locale}" body yet; write one before editing it.`,
+      });
+    case "not_applied":
+      throw new AppError("BAD_REQUEST", {
+        message: result.message,
+        data: { reason: result.reason },
+      });
+    default:
+      return { draft: unwrapWrite(result, input.draftId), replacements: 0 };
+  }
 };
 
 const unwrapWrite = (

@@ -1,5 +1,6 @@
 import type { DB } from "@chia/db/client";
 import {
+  editFeedDraftContent,
   getFeedDraft,
   listOperatorFeedDraftChanges,
   patchFeedDraft,
@@ -16,6 +17,8 @@ import { omitUndefined } from "@chia/utils/object";
 import type { DraftStore } from "../ports.ts";
 import type {
   DraftChange,
+  DraftContentEdit,
+  DraftEditResult,
   DraftFeedMeta,
   DraftTranslation,
   FeedDraft,
@@ -25,7 +28,9 @@ import type {
 import {
   DraftConflictError,
   DraftNotFoundError,
+  EditNotAppliedError,
   draftSummary,
+  noBodyMessage,
 } from "./operations.ts";
 
 export interface PgDraftStoreOptions {
@@ -136,6 +141,35 @@ export class PgDraftStore implements DraftStore {
       }),
       expectedRevision
     );
+  }
+
+  async editContent(
+    draftId: number,
+    locale: Locale,
+    edit: DraftContentEdit
+  ): Promise<DraftEditResult> {
+    const result = await editFeedDraftContent(this.db, {
+      draftId,
+      locale,
+      oldString: edit.oldString,
+      newString: edit.newString,
+      replaceAll: edit.replaceAll,
+      author: FEED_DRAFT_AUTHOR.Agent,
+      sessionId: this.options.sessionId,
+    });
+    switch (result.status) {
+      case "ok":
+        return {
+          draft: this.observe(result.draft),
+          replacements: result.replacements,
+        };
+      case "no_body":
+        throw new EditNotAppliedError(noBodyMessage(locale), "no_body");
+      case "not_applied":
+        throw new EditNotAppliedError(result.message, result.reason);
+      default:
+        return { draft: this.settle(draftId, result), replacements: 0 };
+    }
   }
 
   operatorChangesSince(

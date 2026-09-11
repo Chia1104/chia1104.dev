@@ -233,6 +233,35 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
   );
 
   server.registerTool(
+    "edit_draft",
+    {
+      title: "Edit a draft body in place",
+      description:
+        "Replace an exact string in one locale's MDX body without resending the rest. `oldString` must match the current body byte for byte, indentation included; a target that matches more than once fails unless replaceAll. Read the draft first with get_draft.",
+      inputSchema: {
+        draftId: z.number().int(),
+        locale: localeSchema,
+        oldString: z.string().min(1).describe("Exact existing text to replace"),
+        newString: z
+          .string()
+          .describe("Replacement text; empty deletes the match"),
+        replaceAll: z
+          .boolean()
+          .optional()
+          .describe("Replace every match instead of failing on ambiguity"),
+        expectedRevision: z
+          .number()
+          .int()
+          .optional()
+          .describe(
+            "The revision you last read; omit to edit whatever is current"
+          ),
+      },
+    },
+    guarded((input) => api.feeds["draft:edit"](input))
+  );
+
+  server.registerTool(
     "apply_draft",
     {
       title: "Apply a draft to its post",

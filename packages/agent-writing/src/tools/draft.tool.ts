@@ -4,11 +4,7 @@ import { FeedType } from "@chia/db/types";
 import type { Locale } from "@chia/db/types";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 
-import {
-  DraftConflictError,
-  applyEdit,
-  withLineNumbers,
-} from "../draft/operations.ts";
+import { withLineNumbers } from "../draft/operations.ts";
 import type {
   DraftFeedMeta,
   DraftTranslation,
@@ -368,50 +364,29 @@ export const editDraftContentTool = defineTool({
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
     const { draftId, locale } = params;
-
-    // Read-apply-write pinned to the revision read. If the operator saved in between, the
-    // edit is re-applied on the new body once: an exact-string edit usually still lands.
-    for (let attempt = 0; ; attempt += 1) {
-      const draft = await context.draft.get(draftId);
-      const current = draft.translations[locale]?.content;
-
-      if (current === undefined || current === null) {
-        throw new Error(
-          `No draft body for locale "${locale}" yet. Use write_draft_content first.`
-        );
+    // Matched under the draft lock against whatever body is current, so an operator save in
+    // between is edited rather than overwritten.
+    const { draft, replacements } = await context.draft.editContent(
+      draftId,
+      locale,
+      {
+        oldString: params.oldString,
+        newString: params.newString,
+        replaceAll: params.replaceAll ?? false,
       }
-
-      const result = applyEdit(
-        current,
-        params.oldString,
-        params.newString,
-        params.replaceAll ?? false
-      );
-
-      try {
-        const next = await context.draft.setContent(
-          draftId,
-          locale,
-          result.content,
-          draft.revision
-        );
-        return textResult(
-          `Applied ${result.replacements} replacement(s) to draft ${draftId} (${locale}, revision ${next.revision}).`,
-          {
-            draftId,
-            locale,
-            replacements: result.replacements,
-            revision: next.revision,
-            // Enough for the UI to render a diff without shipping both full bodies.
-            oldString: params.oldString,
-            newString: params.newString,
-          }
-        );
-      } catch (error) {
-        if (error instanceof DraftConflictError && attempt === 0) continue;
-        throw error;
+    );
+    return textResult(
+      `Applied ${replacements} replacement(s) to draft ${draftId} (${locale}, revision ${draft.revision}).`,
+      {
+        draftId,
+        locale,
+        replacements,
+        revision: draft.revision,
+        // Enough for the UI to render a diff without shipping both full bodies.
+        oldString: params.oldString,
+        newString: params.newString,
       }
-    }
+    );
   },
 });
 

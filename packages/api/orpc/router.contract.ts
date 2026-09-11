@@ -91,6 +91,7 @@ export const routerContract = {
     "draft:get": feedsContracts.getFeedDraftContract,
     "draft:list": feedsContracts.listFeedDraftsContract,
     "draft:patch": feedsContracts.patchFeedDraftContract,
+    "draft:edit": feedsContracts.editFeedDraftContract,
     "draft:apply": feedsContracts.applyFeedDraftContract,
     "draft:discard": feedsContracts.discardFeedDraftContract,
     "draft:revisions": feedsContracts.listFeedDraftRevisionsContract,

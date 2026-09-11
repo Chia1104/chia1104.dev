@@ -1,5 +1,8 @@
 import { and, desc, eq, gt, inArray, isNull, lt, or, sql } from "drizzle-orm";
 
+import { replaceExact } from "@chia/utils/text";
+import type { ExactReplaceFailure } from "@chia/utils/text";
+
 import type { DB } from "../../client.ts";
 import type {
   FeedDraftAuthor,
@@ -418,61 +421,129 @@ export const patchFeedDraft = (
     ) {
       return { status: "conflict", draft: current };
     }
-
-    const changes: FeedDraftChange[] = [];
-    const metaFields = input.meta ? definedKeys(input.meta, META_FIELDS) : [];
-    if (metaFields.length > 0) changes.push({ fields: metaFields });
-
-    const translationEntries = Object.entries(input.translations ?? {})
-      .map(([locale, patch]) => ({
-        locale:
-          /* SAFETY: patch translations are keyed by Locale. */ locale as Locale,
-        patch: patch ?? {},
-        fields: definedKeys(patch ?? {}, TRANSLATION_FIELDS),
-      }))
-      .filter((entry) => entry.fields.length > 0);
-    for (const entry of translationEntries) {
-      changes.push({ locale: entry.locale, fields: entry.fields });
-    }
-
-    if (changes.length === 0) return { status: "ok", draft: current };
-
-    const revision = current.revision + 1;
-    await tx
-      .update(feedDrafts)
-      .set({
-        ...(input.meta ?? {}),
-        revision,
-        updatedAt: new Date(),
-      })
-      .where(eq(feedDrafts.id, input.draftId));
-
-    for (const entry of translationEntries) {
-      await tx
-        .insert(feedDraftTranslations)
-        .values({
-          draftId: input.draftId,
-          locale: entry.locale,
-          ...entry.patch,
-        })
-        .onConflictDoUpdate({
-          target: [feedDraftTranslations.draftId, feedDraftTranslations.locale],
-          set: { ...entry.patch, updatedAt: new Date() },
-        });
-    }
-
-    const draft = (await readDraft(tx, input.draftId))!;
-    await recordRevision(tx, draft, input, changes);
-    await notifyFeedDraft(tx, {
-      type: "revision",
-      draftId: draft.id,
-      revision: draft.revision,
-      author: input.author,
-      sessionId: input.sessionId ?? null,
-      changes,
-    });
-    return { status: "ok", draft };
+    return { status: "ok", draft: await writePatch(tx, current, input) };
   });
+
+export interface EditFeedDraftContentInput extends FeedDraftWriter {
+  draftId: number;
+  locale: Locale;
+  oldString: string;
+  newString: string;
+  replaceAll?: boolean;
+  expectedRevision?: number;
+}
+
+export type FeedDraftEditResult =
+  | { status: "ok"; draft: FeedDraftRecord; replacements: number }
+  | { status: "conflict"; draft: FeedDraftRecord }
+  | { status: "not_found" }
+  /** The locale has no body to edit. */
+  | { status: "no_body" }
+  /** The target did not match once; `message` says how to proceed. */
+  | { status: "not_applied"; reason: ExactReplaceFailure; message: string };
+
+/**
+ * Exact-string replacement in one locale's body, matched against the body under the draft
+ * lock. Without `expectedRevision` an edit lands on whatever is current, which is safe by
+ * construction: the target either still matches once or the edit is refused.
+ */
+export const editFeedDraftContent = (
+  db: DB,
+  input: EditFeedDraftContentInput
+): Promise<FeedDraftEditResult> =>
+  db.transaction(async (tx) => {
+    const current = await readDraft(tx, input.draftId, true);
+    if (!current) return { status: "not_found" };
+    if (
+      input.expectedRevision !== undefined &&
+      input.expectedRevision !== current.revision
+    ) {
+      return { status: "conflict", draft: current };
+    }
+    const body = current.translations[input.locale]?.content;
+    if (body === undefined || body === null) return { status: "no_body" };
+
+    const edit = replaceExact(
+      body,
+      input.oldString,
+      input.newString,
+      input.replaceAll ?? false
+    );
+    if (!edit.ok) {
+      return {
+        status: "not_applied",
+        reason: edit.reason,
+        message: edit.message,
+      };
+    }
+    const draft = await writePatch(tx, current, {
+      author: input.author,
+      sessionId: input.sessionId,
+      translations: { [input.locale]: { content: edit.content } },
+    });
+    return { status: "ok", draft, replacements: edit.replacements };
+  });
+
+/** The write half of a patch, on a draft already locked and revision-checked. */
+const writePatch = async (
+  tx: Tx,
+  current: FeedDraftRecord,
+  input: FeedDraftWriter & Pick<PatchFeedDraftInput, "meta" | "translations">
+): Promise<FeedDraftRecord> => {
+  const changes: FeedDraftChange[] = [];
+  const metaFields = input.meta ? definedKeys(input.meta, META_FIELDS) : [];
+  if (metaFields.length > 0) changes.push({ fields: metaFields });
+
+  const translationEntries = Object.entries(input.translations ?? {})
+    .map(([locale, patch]) => ({
+      locale:
+        /* SAFETY: patch translations are keyed by Locale. */ locale as Locale,
+      patch: patch ?? {},
+      fields: definedKeys(patch ?? {}, TRANSLATION_FIELDS),
+    }))
+    .filter((entry) => entry.fields.length > 0);
+  for (const entry of translationEntries) {
+    changes.push({ locale: entry.locale, fields: entry.fields });
+  }
+
+  if (changes.length === 0) return current;
+
+  const revision = current.revision + 1;
+  await tx
+    .update(feedDrafts)
+    .set({
+      ...(input.meta ?? {}),
+      revision,
+      updatedAt: new Date(),
+    })
+    .where(eq(feedDrafts.id, current.id));
+
+  for (const entry of translationEntries) {
+    await tx
+      .insert(feedDraftTranslations)
+      .values({
+        draftId: current.id,
+        locale: entry.locale,
+        ...entry.patch,
+      })
+      .onConflictDoUpdate({
+        target: [feedDraftTranslations.draftId, feedDraftTranslations.locale],
+        set: { ...entry.patch, updatedAt: new Date() },
+      });
+  }
+
+  const draft = (await readDraft(tx, current.id))!;
+  await recordRevision(tx, draft, input, changes);
+  await notifyFeedDraft(tx, {
+    type: "revision",
+    draftId: draft.id,
+    revision: draft.revision,
+    author: input.author,
+    sessionId: input.sessionId ?? null,
+    changes,
+  });
+  return draft;
+};
 
 export interface ReplaceFeedDraftInput extends FeedDraftWriter {
   draftId: number;

@@ -39,6 +39,7 @@ const fakeApi = (overrides: object = {}): McpApi =>
       "draft:open": vi.fn(),
       "draft:get": vi.fn(),
       "draft:patch": vi.fn(),
+      "draft:edit": vi.fn(),
       "draft:apply": vi.fn(),
       "draft:discard": vi.fn(),
       "draft:revisions": vi.fn(),
@@ -55,6 +56,7 @@ describe("mcp server", () => {
     expect(tools.map((tool) => tool.name).sort()).toEqual([
       "apply_draft",
       "discard_draft",
+      "edit_draft",
       "get_draft",
       "get_post",
       "list_draft_revisions",
@@ -158,6 +160,41 @@ describe("mcp server", () => {
       draftId: 3,
       expectedRevision: 4,
       translations: { en: { title: "Hello", content: "# Hi" } },
+    });
+  });
+
+  it("edits a body through the draft edit procedure, target and revision intact", async () => {
+    const edit = vi.fn().mockResolvedValue({
+      draftId: 3,
+      locale: "en",
+      revision: 6,
+      replacements: 1,
+    });
+    const client = await connect(fakeApi({ feeds: { "draft:edit": edit } }));
+
+    const result = await client.callTool({
+      name: "edit_draft",
+      arguments: {
+        draftId: 3,
+        locale: "en",
+        oldString: "First paragraph.",
+        newString: "Rewritten.",
+        expectedRevision: 5,
+      },
+    });
+
+    expect(edit).toHaveBeenCalledWith({
+      draftId: 3,
+      locale: "en",
+      oldString: "First paragraph.",
+      newString: "Rewritten.",
+      expectedRevision: 5,
+    });
+    expect(JSON.parse(textOf(result))).toEqual({
+      draftId: 3,
+      locale: "en",
+      revision: 6,
+      replacements: 1,
     });
   });
 

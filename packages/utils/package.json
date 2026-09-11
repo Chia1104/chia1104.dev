@@ -64,6 +64,10 @@
     "./slug": {
       "types": "./src/slug/index.ts",
       "default": "./src/slug/index.ts"
+    },
+    "./text": {
+      "types": "./src/text/index.ts",
+      "default": "./src/text/index.ts"
     }
   },
   "scripts": {

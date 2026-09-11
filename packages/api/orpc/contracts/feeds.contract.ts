@@ -412,6 +412,37 @@ export const patchFeedDraftContract = oc
   .input(patchFeedDraftSchema)
   .output(feedDraftSchema);
 
+export const editFeedDraftSchema = z.object({
+  draftId: z.number().int(),
+  locale: z.enum(locale.enumValues),
+  /** Matched byte for byte against the current body. */
+  oldString: z.string().min(1),
+  /** Empty deletes the match. */
+  newString: z.string(),
+  /** Replace every match instead of refusing an ambiguous target. */
+  replaceAll: z.boolean().optional(),
+  /** Omit to edit whatever is current; an exact match makes that safe. */
+  expectedRevision: z.number().int().optional(),
+});
+
+export type EditFeedDraftInput = z.infer<typeof editFeedDraftSchema>;
+
+/** Exact-string replacement in one locale's body, applied under the draft lock. */
+export const editFeedDraftContract = oc
+  .errors({
+    ...DRAFT_ERRORS,
+    CONFLICT: { data: z.object({ revision: z.number().int() }) },
+  })
+  .input(editFeedDraftSchema)
+  .output(
+    z.object({
+      draftId: z.number().int(),
+      locale: z.enum(locale.enumValues),
+      revision: z.number().int(),
+      replacements: z.number().int(),
+    })
+  );
+
 export const applyFeedDraftContract = oc
   .errors(DRAFT_ERRORS)
   .input(z.object({ draftId: z.number().int() }))

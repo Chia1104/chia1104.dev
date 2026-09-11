@@ -32,6 +32,7 @@ import {
 import {
   applyFeedDraftService,
   discardFeedDraftService,
+  editFeedDraftContentService,
   getFeedDraftService,
   openFeedDraftService,
   patchFeedDraftService,
@@ -338,6 +339,27 @@ export const patchFeedDraftRoute = contractOS.feeds["draft:patch"]
           author: FEED_DRAFT_AUTHOR.Operator,
         })
       );
+    })
+  );
+
+export const editFeedDraftRoute = contractOS.feeds["draft:edit"]
+  .use(rootWriteGuard)
+  .handler((opts) =>
+    withORPCErrors(async () => {
+      const { draft, replacements } = await editFeedDraftContentService(
+        opts.context.db,
+        {
+          ...opts.input,
+          adminId: opts.context.caller.adminId,
+          author: FEED_DRAFT_AUTHOR.Operator,
+        }
+      );
+      return {
+        draftId: draft.id,
+        locale: opts.input.locale,
+        revision: draft.revision,
+        replacements,
+      };
     })
   );
 
