@@ -335,6 +335,18 @@ export const feedDraftSchema = z.object({
 
 export type FeedDraftOutput = z.infer<typeof feedDraftSchema>;
 
+/** A draft as listed: titles only, so a list stays small however long the bodies are. */
+export const feedDraftSummarySchema = feedDraftSchema
+  .omit({ translations: true })
+  .extend({
+    translations: z.partialRecord(
+      z.enum(locale.enumValues),
+      z.object({ title: z.string().nullable() })
+    ),
+  });
+
+export type FeedDraftSummaryOutput = z.infer<typeof feedDraftSummarySchema>;
+
 const feedDraftTranslationPatchSchema = feedDraftTranslationSchema.partial();
 
 export const patchFeedDraftSchema = z.object({
@@ -386,10 +398,10 @@ export const getFeedDraftContract = oc
   .input(z.object({ draftId: z.number().int() }))
   .output(feedDraftSchema);
 
-/** Drafts with unapplied work: never applied, or edited since the last apply. */
+/** Drafts with unapplied work: never applied, or edited since the last apply. Bodies are in `draft:get`. */
 export const listFeedDraftsContract = oc
   .errors(DRAFT_ERRORS)
-  .output(z.object({ items: z.array(feedDraftSchema) }));
+  .output(z.object({ items: z.array(feedDraftSummarySchema) }));
 
 export const patchFeedDraftContract = oc
   .errors({

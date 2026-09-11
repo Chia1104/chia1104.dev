@@ -206,10 +206,21 @@ export const getFeedDraftByFeedId = async (db: DB, feedId: number) => {
   return draft ? readDraft(db, draft.id) : null;
 };
 
+/** A draft as listed: every field but the translation bodies, which only `getFeedDraft` reads. */
+export interface FeedDraftListItem extends Omit<
+  FeedDraftRecord,
+  "translations"
+> {
+  translations: Partial<Record<Locale, { title: string | null }>>;
+}
+
 /**
  * Drafts the operator still has work in: never applied, or edited since the last apply.
  */
-export const listOpenFeedDrafts = async (db: DB, userId: string) => {
+export const listOpenFeedDrafts = async (
+  db: DB,
+  userId: string
+): Promise<FeedDraftListItem[]> => {
   const drafts = await db
     .select()
     .from(feedDrafts)
@@ -223,7 +234,30 @@ export const listOpenFeedDrafts = async (db: DB, userId: string) => {
       )
     )
     .orderBy(desc(feedDrafts.updatedAt));
-  return readDraftTranslations(db, drafts);
+  if (drafts.length === 0) return [];
+  const titles = await db
+    .select({
+      draftId: feedDraftTranslations.draftId,
+      locale: feedDraftTranslations.locale,
+      title: feedDraftTranslations.title,
+    })
+    .from(feedDraftTranslations)
+    .where(
+      inArray(
+        feedDraftTranslations.draftId,
+        drafts.map((draft) => draft.id)
+      )
+    );
+  const byDraft = new Map<number, FeedDraftListItem["translations"]>();
+  for (const row of titles) {
+    const translations = byDraft.get(row.draftId) ?? {};
+    translations[row.locale] = { title: row.title };
+    byDraft.set(row.draftId, translations);
+  }
+  return drafts.map((draft) => ({
+    ...toRecord(draft, []),
+    translations: byDraft.get(draft.id) ?? {},
+  }));
 };
 
 /**

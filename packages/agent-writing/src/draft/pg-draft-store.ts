@@ -5,6 +5,7 @@ import {
   patchFeedDraft,
 } from "@chia/db/repos/drafts";
 import type {
+  FeedDraftListItem,
   FeedDraftRecord,
   FeedDraftWriteResult,
 } from "@chia/db/repos/drafts";
@@ -33,7 +34,7 @@ export interface PgDraftStoreOptions {
   /** Get-or-create as the host does it, so the agent and the editor share one draft per feed. */
   open(input: { feedId?: number }): Promise<FeedDraftRecord>;
   /** The author's drafts with unapplied work, newest first. */
-  list(): Promise<FeedDraftRecord[]>;
+  list(): Promise<FeedDraftListItem[]>;
 }
 
 /** {@link DraftStore} over the shared `feed_draft` rows, writing as the agent. */
@@ -74,9 +75,7 @@ export class PgDraftStore implements DraftStore {
 
   async list(): Promise<FeedDraftSummary[]> {
     const records = await this.options.list();
-    return records.map((record) =>
-      draftSummary(toFeedDraft(record), record.updatedAt)
-    );
+    return records.map((record) => draftSummary(record, record.updatedAt));
   }
 
   async open(input: { feedId?: number }): Promise<FeedDraft> {

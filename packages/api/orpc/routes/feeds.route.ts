@@ -268,7 +268,11 @@ export const upsertContentRoute = contractOS.feeds["content:upsert"]
 
 // The working draft is the operator's; the agent reaches it through its own port, never here.
 
-const toDraftOutput = (draft: FeedDraftRecord) => ({
+const toDraftOutput = <
+  TDraft extends Pick<FeedDraftRecord, "createdAt" | "updatedAt">,
+>(
+  draft: TDraft
+) => ({
   ...draft,
   createdAt: draft.createdAt.toISOString(),
   updatedAt: draft.updatedAt.toISOString(),

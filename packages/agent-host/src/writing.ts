@@ -31,7 +31,7 @@ import {
 } from "@chia/db/repos/agent";
 import type { WritingAgentSessionState } from "@chia/db/repos/agent";
 import { getFeedDraft, getFeedDrafts } from "@chia/db/repos/drafts";
-import type { FeedDraftRecord } from "@chia/db/repos/drafts";
+import type { FeedDraftListItem, FeedDraftRecord } from "@chia/db/repos/drafts";
 import { AppError } from "@chia/service-kit/errors";
 
 import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
@@ -68,7 +68,10 @@ export interface CreateWritingAgentKindOptions {
     feedId?: number;
   }): Promise<FeedDraftRecord>;
   /** The author's drafts with unapplied work, newest first. */
-  listDrafts(options: { db: DB; adminId: string }): Promise<FeedDraftRecord[]>;
+  listDrafts(options: {
+    db: DB;
+    adminId: string;
+  }): Promise<FeedDraftListItem[]>;
   execution?: WritingExecutionHost;
 }
 

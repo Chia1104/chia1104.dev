@@ -125,11 +125,59 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
     {
       title: "List open drafts",
       description:
-        "Drafts with unapplied work: new posts not yet applied, and posts edited since their last apply.",
+        "Drafts with unapplied work: new posts not yet applied, and posts edited since their last apply. Returns ids, titles and revisions; use get_draft for the body.",
       inputSchema: {},
       annotations: { readOnlyHint: true },
     },
     guarded(() => api.feeds["draft:list"]())
+  );
+
+  server.registerTool(
+    "discard_draft",
+    {
+      title: "Discard a draft",
+      description:
+        "Drop a draft's unapplied work. A post's draft goes back to what the post holds; a new post's draft is deleted with its revisions.",
+      inputSchema: { draftId: z.number().int() },
+      annotations: { destructiveHint: true },
+    },
+    guarded(async ({ draftId }) => {
+      await api.feeds["draft:discard"]({ draftId });
+      return { draftId, discarded: true };
+    })
+  );
+
+  server.registerTool(
+    "list_draft_revisions",
+    {
+      title: "List a draft's revisions",
+      description:
+        "Restore points of a draft, newest first: who wrote each (operator or agent) and which fields changed. Pass a revision's id to restore_draft_revision.",
+      inputSchema: {
+        draftId: z.number().int(),
+        limit: z.number().int().min(1).max(100).optional(),
+      },
+      annotations: { readOnlyHint: true },
+    },
+    guarded(({ draftId, limit }) =>
+      api.feeds["draft:revisions"]({ draftId, limit })
+    )
+  );
+
+  server.registerTool(
+    "restore_draft_revision",
+    {
+      title: "Restore a draft revision",
+      description:
+        "Put the draft back to the state a revision recorded, as a new revision on top. Nothing is lost: the state being replaced stays in the trail.",
+      inputSchema: {
+        draftId: z.number().int(),
+        revisionId: z.number().int(),
+      },
+    },
+    guarded(({ draftId, revisionId }) =>
+      api.feeds["draft:restore"]({ draftId, revisionId })
+    )
   );
 
   server.registerTool(

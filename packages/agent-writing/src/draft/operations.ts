@@ -37,8 +37,18 @@ export const patchTranslation = (
   },
 });
 
+/** What a summary needs from a draft; a full draft or a listed one both fit. */
+type DraftSummarySource = Pick<
+  FeedDraft,
+  "id" | "feedId" | "revision" | "slug" | "type" | "defaultLocale"
+> & {
+  translations: Partial<Record<Locale, { title?: string | null }>>;
+};
+
 /** The default locale's title, else the first locale that has one. */
-export const draftTitle = (draft: FeedDraft): string | null => {
+export const draftTitle = (
+  draft: Pick<DraftSummarySource, "defaultLocale" | "translations">
+): string | null => {
   const preferred = draft.translations[draft.defaultLocale]?.title;
   if (preferred) return preferred;
   for (const translation of Object.values(draft.translations)) {
@@ -48,7 +58,7 @@ export const draftTitle = (draft: FeedDraft): string | null => {
 };
 
 export const draftSummary = (
-  draft: FeedDraft,
+  draft: DraftSummarySource,
   updatedAt: Date
 ): FeedDraftSummary => ({
   id: draft.id,

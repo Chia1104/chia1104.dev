@@ -40,6 +40,9 @@ const fakeApi = (overrides: object = {}): McpApi =>
       "draft:get": vi.fn(),
       "draft:patch": vi.fn(),
       "draft:apply": vi.fn(),
+      "draft:discard": vi.fn(),
+      "draft:revisions": vi.fn(),
+      "draft:restore": vi.fn(),
     },
     agent: { sessions: { create: vi.fn(), chat: vi.fn(), get: vi.fn() } },
     ...overrides,
@@ -51,16 +54,52 @@ describe("mcp server", () => {
     const { tools } = await client.listTools();
     expect(tools.map((tool) => tool.name).sort()).toEqual([
       "apply_draft",
+      "discard_draft",
       "get_draft",
       "get_post",
+      "list_draft_revisions",
       "list_drafts",
       "list_posts",
       "open_draft",
+      "restore_draft_revision",
       "set_published",
       "update_draft",
       "write_post",
       "writing_status",
     ]);
+  });
+
+  it("discards through the draft procedure and answers with the id", async () => {
+    const discard = vi.fn().mockResolvedValue(undefined);
+    const client = await connect(
+      fakeApi({ feeds: { "draft:discard": discard } })
+    );
+
+    const result = await client.callTool({
+      name: "discard_draft",
+      arguments: { draftId: 11 },
+    });
+
+    expect(discard).toHaveBeenCalledWith({ draftId: 11 });
+    expect(JSON.parse(textOf(result))).toEqual({
+      draftId: 11,
+      discarded: true,
+    });
+  });
+
+  it("restores a revision by id", async () => {
+    const restore = vi.fn().mockResolvedValue({ id: 11, revision: 6 });
+    const client = await connect(
+      fakeApi({ feeds: { "draft:restore": restore } })
+    );
+
+    const result = await client.callTool({
+      name: "restore_draft_revision",
+      arguments: { draftId: 11, revisionId: 40 },
+    });
+
+    expect(restore).toHaveBeenCalledWith({ draftId: 11, revisionId: 40 });
+    expect(JSON.parse(textOf(result))).toEqual({ id: 11, revision: 6 });
   });
 
   it("lists drafts too and trims each feed to what the model needs", async () => {
