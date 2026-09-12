@@ -23,7 +23,7 @@ import type {
 import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
-import { ApprovalCard, isApprovalItem } from "./approval-card.tsx";
+import { ApprovalCard } from "./approval-card.tsx";
 import { useAgentLabels } from "./labels-context.tsx";
 import { MessageActions } from "./message-actions.tsx";
 import {
@@ -43,6 +43,12 @@ import type { ToolRenderers } from "./tool-call.tsx";
 type RowGap = "group" | "none";
 type AssistantItemView = TextMessageView & { kind: "assistant" };
 type AgentItemView = AssistantItemView | NoticeView | ToolCallView;
+type ActivityItemView = AssistantItemView | ToolCallView;
+type OutputItemView = AssistantItemView | NoticeView;
+
+type AgentSegment =
+  | { kind: "activity"; key: string; items: ActivityItemView[] }
+  | { kind: "output"; key: string; item: OutputItemView };
 
 type ThreadRow =
   | {
@@ -58,6 +64,7 @@ type ThreadRow =
       kind: "agent";
       key: string;
       items: AgentItemView[];
+      segments: AgentSegment[];
       gapAfter: RowGap;
       badgeState: OrbState | null;
     }
@@ -74,10 +81,35 @@ const itemKey = (item: AgentViewItem, index: number): string =>
 const isAgentItem = (item: AgentViewItem): item is AgentItemView =>
   item.kind !== "user";
 
-const isActivityItem = (
-  item: AgentItemView
-): item is AssistantItemView | ToolCallView =>
-  item.kind === "tool" || (item.kind === "assistant" && Boolean(item.thinking));
+/**
+ * Splits a reply into arrival-ordered segments: consecutive thinking and tool calls share one
+ * collapsible segment, and each text or notice sits between them. A message's thinking precedes
+ * its text because the fold keeps the two channels as separate strings.
+ */
+const segmentsOf = (
+  items: readonly AgentItemView[],
+  offset: number
+): AgentSegment[] => {
+  const segments: AgentSegment[] = [];
+  let activity: Extract<AgentSegment, { kind: "activity" }> | null = null;
+
+  items.forEach((item, index) => {
+    const key = itemKey(item, offset + index);
+    if (item.kind === "tool" || (item.kind === "assistant" && item.thinking)) {
+      if (!activity) {
+        activity = { kind: "activity", key: `a:${key}`, items: [] };
+        segments.push(activity);
+      }
+      activity.items.push(item);
+    }
+    if (item.kind === "notice" || (item.kind === "assistant" && item.text)) {
+      activity = null;
+      segments.push({ kind: "output", key: `o:${key}`, item });
+    }
+  });
+
+  return segments;
+};
 
 /** Consecutive agent-side items form one collapsible, virtualized reply. */
 const buildRows = (
@@ -120,6 +152,7 @@ const buildRows = (
       kind: "agent",
       key: `a:${groupStart}`,
       items: group,
+      segments: segmentsOf(group, groupStart),
       gapAfter: "group",
       badgeState,
     });
@@ -148,17 +181,13 @@ const ToolItem = ({
   item: ToolCallView;
   renderers?: ToolRenderers;
 }) =>
-  isApprovalItem(item) ? (
+  item.approval ? (
     <ApprovalCard tool={item} />
   ) : (
     <ToolCall renderers={renderers} tool={item} />
   );
 
-const AgentOutputItem = ({
-  item,
-}: {
-  item: Exclude<AgentItemView, ToolCallView>;
-}) => {
+const AgentOutputItem = ({ item }: { item: OutputItemView }) => {
   if (item.kind === "notice") return <Notice notice={item} />;
   return (
     <AssistantMessage
@@ -201,6 +230,55 @@ const ActivityStatusLabel = ({
         </motion.span>
       </AnimatePresence>
     </span>
+  );
+};
+
+const ActivitySegment = ({
+  live,
+  renderers,
+  segment,
+  thinkingLabel,
+  thoughtLabel,
+}: {
+  live: boolean;
+  renderers?: ToolRenderers;
+  segment: Extract<AgentSegment, { kind: "activity" }>;
+  thinkingLabel: string;
+  thoughtLabel: string;
+}) => {
+  const activeTool = live
+    ? segment.items.findLast(
+        (item): item is ToolCallView =>
+          item.kind === "tool" &&
+          (item.status === "running" || item.status === "awaiting_approval")
+      )
+    : undefined;
+  const label = live ? (activeTool?.label ?? thinkingLabel) : thoughtLabel;
+
+  return (
+    <Disclosure>
+      <Disclosure.Heading>
+        <Disclosure.Trigger className="text-muted flex h-8 w-full items-center gap-2 text-xs">
+          <ActivityStatusLabel active={live} label={label} />
+          <Disclosure.Indicator className="ml-auto size-3.5" />
+        </Disclosure.Trigger>
+      </Disclosure.Heading>
+      <Disclosure.Content>
+        <Disclosure.Body className="flex min-w-0 flex-col gap-3">
+          {segment.items.map((item) =>
+            item.kind === "tool" ? (
+              <ToolItem
+                key={item.toolCallId}
+                item={item}
+                renderers={renderers}
+              />
+            ) : (
+              <AssistantThinking key={item.messageId} message={item} />
+            )
+          )}
+        </Disclosure.Body>
+      </Disclosure.Content>
+    </Disclosure>
   );
 };
 
@@ -247,62 +325,22 @@ const ThreadRowContent = ({
     );
   }
 
-  const activityItems = row.items.filter(isActivityItem);
-  const outputItems = row.items.filter(
-    (item): item is Exclude<AgentItemView, ToolCallView> =>
-      item.kind === "notice" ||
-      (item.kind === "assistant" && Boolean(item.text))
-  );
-  const hasActivity = activityItems.length > 0;
-  const activeTool = row.items.findLast(
-    (item): item is ToolCallView =>
-      item.kind === "tool" &&
-      (item.status === "running" || item.status === "awaiting_approval")
-  );
-  const activityLabel =
-    activeTool?.label ??
-    (row.badgeState === null ? thoughtLabel : thinkingLabel);
-
   return (
-    <div>
-      {hasActivity ? (
-        <Disclosure className="mb-3">
-          <Disclosure.Heading>
-            <Disclosure.Trigger className="text-muted flex h-8 w-full items-center gap-2 text-xs">
-              <ActivityStatusLabel
-                active={row.badgeState !== null}
-                label={activityLabel}
-              />
-              <Disclosure.Indicator className="ml-auto size-3.5" />
-            </Disclosure.Trigger>
-          </Disclosure.Heading>
-          <Disclosure.Content>
-            <Disclosure.Body className="flex min-w-0 flex-col gap-3">
-              {activityItems.map((item, index) =>
-                item.kind === "tool" ? (
-                  <ToolItem
-                    key={itemKey(item, index)}
-                    item={item}
-                    renderers={renderers}
-                  />
-                ) : (
-                  <AssistantThinking
-                    key={itemKey(item, index)}
-                    message={item}
-                  />
-                )
-              )}
-            </Disclosure.Body>
-          </Disclosure.Content>
-        </Disclosure>
-      ) : null}
-      {outputItems.length > 0 ? (
-        <div className={cn("flex min-w-0 flex-col gap-3")}>
-          {outputItems.map((item, index) => (
-            <AgentOutputItem key={itemKey(item, index)} item={item} />
-          ))}
-        </div>
-      ) : null}
+    <div className="flex min-w-0 flex-col gap-3">
+      {row.segments.map((segment, index) =>
+        segment.kind === "output" ? (
+          <AgentOutputItem key={segment.key} item={segment.item} />
+        ) : (
+          <ActivitySegment
+            key={segment.key}
+            live={row.badgeState !== null && index === row.segments.length - 1}
+            renderers={renderers}
+            segment={segment}
+            thinkingLabel={thinkingLabel}
+            thoughtLabel={thoughtLabel}
+          />
+        )
+      )}
     </div>
   );
 };

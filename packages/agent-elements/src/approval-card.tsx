@@ -20,9 +20,6 @@ import { agentQueryKeys } from "./queries.ts";
 import { jsonOf } from "./tool-call.tsx";
 import type { AgentSessionDetail } from "./types.ts";
 
-export const isApprovalItem = (tool: ToolCallView): boolean =>
-  tool.status === "awaiting_approval" || tool.approval !== undefined;
-
 export interface ApprovalCardProps {
   tool: ToolCallView;
   className?: string;
@@ -185,6 +182,23 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
           ) : null}
         </div>
       )}
+    </div>
+  );
+};
+
+/** Undecided approvals stay pinned above the composer, which is locked until they are decided. */
+export const PendingApprovals = ({ className }: { className?: string }) => {
+  const pending = useAgentSession((state) => state.view.pendingApprovals);
+  if (pending.length === 0) return null;
+  return (
+    <div
+      className={cn(
+        "flex max-h-[45vh] flex-col gap-2 overflow-y-auto",
+        className
+      )}>
+      {pending.map((tool) => (
+        <ApprovalCard key={tool.toolCallId} tool={tool} />
+      ))}
     </div>
   );
 };
