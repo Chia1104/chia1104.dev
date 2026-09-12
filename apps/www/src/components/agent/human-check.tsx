@@ -7,8 +7,8 @@ import { Spinner } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
-import { X_CAPTCHA_RESPONSE } from "@chia/api/captcha/constants";
 import { authClient } from "@chia/auth/client";
+import { X_CAPTCHA_RESPONSE } from "@chia/integrations/captcha/constants";
 
 import { SiteCaptcha } from "@/components/commons/captcha";
 

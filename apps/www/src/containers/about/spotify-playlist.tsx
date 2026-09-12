@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { FC } from "react";
 
-import type { PlayList } from "@chia/api/spotify/types";
+import type { PlayList } from "@chia/integrations/spotify/types";
 import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
 import { NoiseBackground } from "@chia/ui/noise-background";

@@ -10,7 +10,7 @@ import { routerContract } from "../router.contract";
 
 /**
  * Values the guards need that only the hosting app knows. Carried on the context so
- * `packages/api` parses no env of its own.
+ * `packages/services` parses no env of its own.
  */
 export interface ORPCConfig {
   /** Private half of the keypair the AI provider-key cookies are encrypted with. */

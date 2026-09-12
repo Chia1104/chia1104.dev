@@ -10,10 +10,10 @@ const { mockSearchPublicFeedsService } = vi.hoisted(() => ({
   mockSearchPublicFeedsService: vi.fn(),
 }));
 
-vi.mock("@chia/api/services/feeds/search.service", async (importOriginal) => {
+vi.mock("@chia/services/feeds/search.service", async (importOriginal) => {
   const actual =
     await importOriginal<
-      typeof import("@chia/api/services/feeds/search.service")
+      typeof import("@chia/services/feeds/search.service")
     >();
   return {
     ...actual,

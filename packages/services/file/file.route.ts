@@ -11,7 +11,7 @@ const slugger = new GithubSlugger();
  * graph of processes that never touch a file route.
  */
 const getS3Service = async () =>
-  (await import("../../s3/s3.service")).s3Service;
+  (await import("@chia/integrations/s3/service")).s3Service;
 
 export const createSignedUrlForUploadRoute = contractOS.file[
   "signed-url:create"

@@ -1,9 +1,5 @@
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
-import {
-  FEED_TRANSLATION_SOURCE_TYPE,
-  getResourceAdapter,
-} from "@chia/api/resources/registry";
 import { getConnection } from "@chia/db/client";
 import { listFeedTranslationIds } from "@chia/db/repos/feeds";
 import {
@@ -12,6 +8,10 @@ import {
   replaceResourceChunks,
   saveChunkEmbeddings,
 } from "@chia/db/repos/resources/chunk";
+import {
+  FEED_TRANSLATION_SOURCE_TYPE,
+  getResourceAdapter,
+} from "@chia/services/rag/registry";
 
 /**
  * Full reindex of an evaluation copy of the corpus, without the workflow

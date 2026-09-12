@@ -31,7 +31,7 @@ import type { JsonObject } from "@chia/utils/json";
 
 /**
  * What one agent kind contributes to the host. Generic session/turn machinery lives in
- * `packages/api`. A kind supplies the parts that differ: defaults, policy, models, operator
+ * `packages/services`. A kind supplies the parts that differ: defaults, policy, models, operator
  * config, the 1:1 state row, and the Pi turn. `defaults` and `config` are the code's values;
  * the operator overrides them in `agent.kind_config`.
  */

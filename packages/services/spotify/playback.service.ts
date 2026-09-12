@@ -5,15 +5,14 @@ import {
   getActiveSpotifyCredential,
   withLockedSpotifyCredential,
 } from "@chia/db/repos/spotify";
-
 import {
   decryptSpotifyToken,
   encryptSpotifyToken,
   getNowPlaying,
   getPlayList,
   refreshSpotifyAccessToken,
-} from "../../spotify";
-import { env } from "../../spotify/env";
+} from "@chia/integrations/spotify";
+import { env } from "@chia/integrations/spotify/env";
 
 import { SpotifyCredentialUnavailableError } from "./account.service";
 

@@ -1,9 +1,9 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import * as z from "zod";
 
-import { env as serviceEnv } from "@chia/api/env";
-import { env as s3Env } from "@chia/api/s3/env";
 import { adminEnv } from "@chia/auth/env";
+import { env as s3Env } from "@chia/integrations/s3/env";
+import { env as serviceEnv } from "@chia/services/env";
 import { NodeEnvSchema, AppEnvSchema } from "@chia/utils/schema";
 
 export const getClientEnv = () => {

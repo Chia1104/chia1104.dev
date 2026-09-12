@@ -1,7 +1,7 @@
 import * as z from "zod";
 
-import { feedDraftSchema } from "@chia/api/services/feeds/feeds.contract";
 import { Locale } from "@chia/db/types";
+import { feedDraftSchema } from "@chia/services/feeds/feeds.contract";
 
 /** The editable draft fields plus the locale currently shown by the form. */
 export const draftFormSchema = z.compile(

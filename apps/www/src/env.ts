@@ -1,9 +1,9 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import * as z from "zod";
 
-import { env as captchaEnv } from "@chia/api/captcha/env.client";
-import { externalInfraEnv as serviceEnv } from "@chia/api/env";
-import { env as githubEnv } from "@chia/api/github/env";
+import { env as captchaEnv } from "@chia/integrations/captcha/env.client";
+import { env as githubEnv } from "@chia/integrations/github/env";
+import { externalInfraEnv as serviceEnv } from "@chia/services/env";
 import { NodeEnvSchema, AppEnvSchema } from "@chia/utils/schema";
 
 import { Locale } from "./libs/utils/i18n";

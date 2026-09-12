@@ -5,7 +5,7 @@ import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { RouterContractClient } from "@orpc/contract";
 
-import type { routerContract } from "@chia/api/services/router.contract";
+import type { routerContract } from "@chia/services/router.contract";
 import { withServiceEndpoint } from "@chia/utils/config";
 import { Service } from "@chia/utils/schema";
 

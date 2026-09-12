@@ -24,10 +24,10 @@ const { api, repo, hooks } = vi.hoisted(() => ({
   hooks: { memoryHooks: { onMemoryChanged: vi.fn() } },
 }));
 
-vi.mock("@chia/api/services/rag/search.service", () => ({
+vi.mock("@chia/services/rag/search.service", () => ({
   searchResources: api.searchResources,
 }));
-vi.mock("@chia/api/services/memory/write.service", () => ({
+vi.mock("@chia/services/memory/write.service", () => ({
   createMemoryService: api.createMemoryService,
   recordSourceMemoryService: api.recordSourceMemoryService,
 }));

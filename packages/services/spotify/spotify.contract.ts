@@ -1,8 +1,11 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
-import type { CurrentPlaying, PlayList } from "../../spotify/types";
-import { spotifyCredentialUserSchema } from "../../spotify/validator";
+import type {
+  CurrentPlaying,
+  PlayList,
+} from "@chia/integrations/spotify/types";
+import { spotifyCredentialUserSchema } from "@chia/integrations/spotify/validator";
 
 /**
  * Public playback plus operator account management.

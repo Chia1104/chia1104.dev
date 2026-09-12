@@ -13,8 +13,8 @@
   },
   "devDependencies": {
     "@chia/ai": "workspace:*",
-    "@chia/api": "workspace:*",
     "@chia/db": "workspace:*",
+    "@chia/services": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
     "drizzle-orm": "catalog:drizzle",

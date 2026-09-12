@@ -4,10 +4,6 @@ import { FatalError } from "workflow";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
 import { recordAgentUsage } from "@chia/agent-host/usage";
 import { WRITING_AGENT_KIND } from "@chia/agent-writing/models";
-import {
-  createMemoryService,
-  reinforceLessonService,
-} from "@chia/api/services/memory/write.service";
 import { connectDatabase } from "@chia/db/client";
 import {
   advanceWritingSessionConsolidation,
@@ -18,6 +14,10 @@ import {
 import { listAgentLessons } from "@chia/db/repos/agent/memory";
 import { listFeedDraftRevisionsSince } from "@chia/db/repos/drafts";
 import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
+import {
+  createMemoryService,
+  reinforceLessonService,
+} from "@chia/services/memory/write.service";
 
 import { memoryHooks } from "../services/agent-memory-indexing.service";
 

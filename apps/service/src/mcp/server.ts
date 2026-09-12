@@ -4,8 +4,8 @@ import { ORPCError } from "@orpc/server";
 import type { RouterClient } from "@orpc/server";
 import * as z from "zod";
 
-import type { router } from "@chia/api/services/router";
 import { FeedType, Locale } from "@chia/db/types";
+import type { router } from "@chia/services/router";
 
 /**
  * Every tool is an adapter over an oRPC procedure; guards, errors and hooks run inside the

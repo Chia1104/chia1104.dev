@@ -1,4 +1,4 @@
-import type { FeedHooks } from "@chia/api/services/shared/context";
+import type { FeedHooks } from "@chia/services/shared/context";
 
 import { workflowControl } from "./workflow-control";
 

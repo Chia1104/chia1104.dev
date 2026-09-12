@@ -5,8 +5,8 @@ import type {
   AgentSessionDetail as ContractAgentSessionDetail,
   AgentSessionSummary as ContractAgentSessionSummary,
   AgentUsageStanding as ContractAgentUsageStanding,
-} from "@chia/api/services/agent/agent.contract";
-import type { routerContract } from "@chia/api/services/router.contract";
+} from "@chia/services/agent/agent.contract";
+import type { routerContract } from "@chia/services/router.contract";
 
 /**
  * The `agent` branch of the host's contract-typed oRPC client. This package never builds one.

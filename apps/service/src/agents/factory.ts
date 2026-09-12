@@ -1,6 +1,6 @@
 import { getRun } from "workflow/api";
 
-import { createAgentFactory } from "@chia/api/services/agent/agent.factory";
+import { createAgentFactory } from "@chia/services/agent/agent.factory";
 
 import {
   decryptAgentCredentials,

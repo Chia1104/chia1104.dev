@@ -21,7 +21,7 @@ Two agent kinds ship:
 
 ```mermaid
 flowchart TB
-    UI[apps/dash or apps/www] --> API[packages/api<br/>oRPC agent service]
+    UI[apps/dash or apps/www] --> API[packages/services<br/>oRPC agent service]
     API --> SVC[apps/service<br/>auth, session API, host bindings]
     SVC --> WF[apps/workflow<br/>durable turn executor]
     WF --> KIND[agent-writing or agent-public]
@@ -31,13 +31,13 @@ flowchart TB
     RUNTIME --> PG[(Postgres agent schema)]
 ```
 
-| Layer                       | Owner                                           | Responsibility                                                |
-| --------------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
-| Transport and orchestration | `packages/api`, `apps/service`, `apps/workflow` | Auth, oRPC, workflow control, streams and host ports          |
-| Execution                   | `@chia/agent-runtime`                           | Pi lifecycle, persistence, approvals, models and wire events  |
-| Shared content              | `@chia/agent-content`                           | Read-only blog tools, `ContentReadPort` and `ProfileReadPort` |
-| Domain                      | `@chia/agent-writing`, `@chia/agent-public`     | Prompts, tools, policy, model policy and domain ports         |
-| Client                      | `@chia/agent-elements`                          | Session store, queries and shared chat UI                     |
+| Layer                       | Owner                                                | Responsibility                                                |
+| --------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
+| Transport and orchestration | `packages/services`, `apps/service`, `apps/workflow` | Auth, oRPC, workflow control, streams and host ports          |
+| Execution                   | `@chia/agent-runtime`                                | Pi lifecycle, persistence, approvals, models and wire events  |
+| Shared content              | `@chia/agent-content`                                | Read-only blog tools, `ContentReadPort` and `ProfileReadPort` |
+| Domain                      | `@chia/agent-writing`, `@chia/agent-public`          | Prompts, tools, policy, model policy and domain ports         |
+| Client                      | `@chia/agent-elements`                               | Session store, queries and shared chat UI                     |
 
 The stable client boundary is `AgentWireEvent`, not an interchangeable model engine. Pi-specific names and types remain explicit inside the runtime.
 
@@ -49,7 +49,7 @@ Each host provides an `AgentKindDefinition`:
 
 - `apps/service/src/agents/` binds API-time capabilities, state and credentials.
 - `apps/workflow/src/agents/` binds execution-time ports and `runTurn`.
-- `packages/api/services/agent/` owns generic session, run, approval, maintenance, usage and admin behavior.
+- `packages/services/agent/` owns generic session, run, approval, maintenance, usage and admin behavior.
 
 The oRPC context receives an `agentFactory` built from eager `minTier` values and dynamic definition loaders. Guards can reject callers before loading a domain package or provider SDK. Dynamic imports provide module caching; the factory keeps no definition registry or service cache.
 
@@ -334,7 +334,7 @@ On the public site, `@chia/agent-elements/selection` measures a DOM selection an
 | `fact`   | A cited conclusion saved by the model    | Active immediately              |
 | `lesson` | A writing preference the operator taught | Pending until operator approval |
 
-Every memory write goes through `packages/api/services/memory/write.service.ts` and schedules RAG indexing when needed. Only live, active memory is indexed. See [RAG architecture](./rag-architecture.md#6-agent-memory-resource).
+Every memory write goes through `packages/services/memory/write.service.ts` and schedules RAG indexing when needed. Only live, active memory is indexed. See [RAG architecture](./rag-architecture.md#6-agent-memory-resource).
 
 Facts and sources reach the model only through visible `search_memory` and `get_memory` tool calls. The volatile context lists bounded identifiers for memories saved in the current session. Active lesson titles are always included because they are standing preferences.
 
@@ -413,7 +413,7 @@ Do not start until all of these hold upstream: the storage format is declared st
 | Shared content tools                  | `packages/agent-content/src/`                                                                         |
 | Writing and public domains            | `packages/agent-writing/src/`, `packages/agent-public/src/`                                           |
 | Kind bindings and tasks               | `packages/agent-host/src/`, `apps/service/src/agents/`, `apps/workflow/src/agents/`                   |
-| Generic oRPC agent service            | `packages/api/services/agent/`                                                                        |
+| Generic oRPC agent service            | `packages/services/agent/`                                                                            |
 | Workflow and turn step                | `apps/workflow/src/workflows/agent-session.workflow.ts`, `apps/workflow/src/steps/agent-turn.step.ts` |
 | Database schema                       | `packages/db/src/schemas/agent.schema.ts`                                                             |
 | Shared client                         | `packages/agent-elements/src/`                                                                        |

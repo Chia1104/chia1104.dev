@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock("@chia/api/services/spotify/account.service", () => ({
+vi.mock("@chia/services/spotify/account.service", () => ({
   SpotifyCredentialUnavailableError: mocks.SpotifyCredentialUnavailableError,
   completeSpotifyAuthorizationService:
     mocks.completeSpotifyAuthorizationService,
@@ -21,7 +21,7 @@ vi.mock("../src/services/spotify.service", () => ({
 }));
 
 // `playlist` requires the API key; only `apps/www`'s server client reads it.
-vi.mock("@chia/api/services/spotify/playback.service", () => ({
+vi.mock("@chia/services/spotify/playback.service", () => ({
   getSpotifyNowPlayingService: mocks.getSpotifyNowPlayingService,
   getSpotifyPlaylistService: mocks.getSpotifyPlaylistService,
 }));

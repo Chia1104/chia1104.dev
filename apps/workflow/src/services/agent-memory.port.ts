@@ -5,12 +5,6 @@ import type {
   MemorySummary,
   SavedMemory,
 } from "@chia/agent-writing/ports";
-import {
-  createMemoryService,
-  recordSourceMemoryService,
-} from "@chia/api/services/memory/write.service";
-import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/api/services/rag/registry";
-import { searchResources } from "@chia/api/services/rag/search.service";
 import type { DB } from "@chia/db/client";
 import {
   getAgentMemories,
@@ -21,6 +15,12 @@ import {
 import type { AgentMemory } from "@chia/db/schema";
 import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
+import {
+  createMemoryService,
+  recordSourceMemoryService,
+} from "@chia/services/memory/write.service";
+import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/registry";
+import { searchResources } from "@chia/services/rag/search.service";
 
 import { memoryHooks } from "./agent-memory-indexing.service";
 

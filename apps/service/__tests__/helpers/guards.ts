@@ -2,9 +2,9 @@ import { os } from "@orpc/server";
 import { createMiddleware } from "hono/factory";
 import { vi } from "vitest";
 
-import { baseOS } from "@chia/api/services/shared/context";
-import type { CallerContext } from "@chia/api/services/shared/guards/caller.guard";
 import { CallerTier } from "@chia/auth/tier";
+import { baseOS } from "@chia/services/shared/context";
+import type { CallerContext } from "@chia/services/shared/guards/caller.guard";
 
 const FAKE_API_KEY =
   /* SAFETY: This fixture implements the VerifiedApiKey members the routes read. */ {

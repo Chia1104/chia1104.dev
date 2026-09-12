@@ -19,10 +19,10 @@ import {
 import type { FormProps } from "@heroui/react";
 import { toast } from "sonner";
 
-import { X_CAPTCHA_RESPONSE } from "@chia/api/captcha/constants";
-import { env as captchaEnv } from "@chia/api/captcha/env.client";
 import { authClient } from "@chia/auth/client";
 import { Provider } from "@chia/auth/types";
+import { X_CAPTCHA_RESPONSE } from "@chia/integrations/captcha/constants";
+import { env as captchaEnv } from "@chia/integrations/captcha/env.client";
 import SubmitForm from "@chia/ui/submit-form";
 import useTheme from "@chia/ui/utils/use-theme";
 

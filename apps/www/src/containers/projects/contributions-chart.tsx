@@ -1,7 +1,7 @@
 import { ScrollShadow } from "@heroui/react";
 import "server-only";
 
-import { getContributions } from "@chia/api/github";
+import { getContributions } from "@chia/integrations/github";
 import meta from "@chia/meta";
 import { cn } from "@chia/ui/utils/cn.util";
 import dayjs from "@chia/utils/day";

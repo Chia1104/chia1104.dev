@@ -1,4 +1,5 @@
-import { sendContactEmail } from "../../email";
+import { sendContactEmail } from "@chia/integrations/email";
+
 import { contractOS } from "../shared/context";
 import { callerGuard } from "../shared/guards/caller.guard";
 import { captchaGuard } from "../shared/guards/captcha.guard";

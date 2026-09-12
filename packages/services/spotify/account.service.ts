@@ -9,17 +9,16 @@ import {
   setActiveSpotifyCredential,
   upsertSpotifyCredential,
 } from "@chia/db/repos/spotify";
-import type { Keyv } from "@chia/kv/types";
-
-import { env } from "../../spotify/env";
 import {
   codeAuthorization,
   decryptSpotifyToken,
   encryptSpotifyToken,
   generateAuthorizeUrl,
   getSpotifyUserProfile,
-} from "../../spotify/index";
-import type { SpotifyOAuthCallbackDTO } from "../../spotify/validator";
+} from "@chia/integrations/spotify";
+import { env } from "@chia/integrations/spotify/env";
+import type { SpotifyOAuthCallbackDTO } from "@chia/integrations/spotify/validator";
+import type { Keyv } from "@chia/kv/types";
 
 const SPOTIFY_OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 const SPOTIFY_OAUTH_STATE_PREFIX = "spotify:oauth:state:";

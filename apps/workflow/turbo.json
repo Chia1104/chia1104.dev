@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tags": ["workflow"],
-  "extends": ["//", "@chia/api", "@chia/db", "@chia/utils"],
+  "extends": ["//", "@chia/services", "@chia/db", "@chia/utils"],
   "tasks": {
     "build": {
       "outputs": [".output/**", "!.output/server/node_modules/**"],

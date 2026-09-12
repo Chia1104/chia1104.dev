@@ -1,7 +1,7 @@
+import { captchaSiteverifyWithCredentials } from "@chia/integrations/captcha";
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
 import { captchaPolicy } from "@chia/service-kit/policies/captcha.policy";
 
-import { captchaSiteverifyWithCredentials } from "../../../captcha";
 import { baseOS } from "../context";
 
 export interface CaptchaGuardInput {
@@ -10,7 +10,7 @@ export interface CaptchaGuardInput {
 
 /**
  * Verifies the captcha token mapped in via `.use(captchaGuard.adaptInput((input) => ({ token: input.captchaToken })))`.
- * The verifier is injected because `@chia/service-kit` cannot depend on `@chia/api`.
+ * The verifier is injected because `@chia/service-kit` cannot depend on `@chia/services`.
  */
 export const captchaGuard = baseOS
   .errors({

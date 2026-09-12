@@ -9,7 +9,8 @@ on:
       - "packages/utils/**"
       - "packages/auth/**"
       - "packages/cache/**"
-      - "packages/api/**"
+      - "packages/services/**"
+      - "packages/integrations/**"
       - ".github/workflows/service-ci.yml"
       - "package.json"
 

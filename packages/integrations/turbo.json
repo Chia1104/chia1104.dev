@@ -1,14 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "tags": ["@chia/api"],
+  "tags": ["@chia/integrations"],
   "extends": ["//"],
   "tasks": {
     "build": {
       "passThroughEnv": [
         "BS_UPTIME_TOKEN",
         "BS_TEL_TOKEN",
-        "INTERNAL_SERVICE_ENDPOINT",
-        "NEXT_PUBLIC_SERVICE_ENDPOINT",
         "GITHUB_API",
         "GITHUB_GRAPHQL_API",
         "GH_PUBLIC_TOKEN",
@@ -27,15 +25,11 @@
         "S3_SECRET_ACCESS_KEY",
         "S3_REGION",
         "S3_BUCKET_NAME",
-        "S3_ENDPOINT",
-        "CF_BYPASS_TOKEN",
-        "CH_API_KEY"
+        "S3_ENDPOINT"
       ],
       "env": [
         "BS_UPTIME_TOKEN",
         "BS_TEL_TOKEN",
-        "INTERNAL_SERVICE_ENDPOINT",
-        "NEXT_PUBLIC_SERVICE_ENDPOINT",
         "GITHUB_API",
         "GITHUB_GRAPHQL_API",
         "GH_PUBLIC_TOKEN",
@@ -54,9 +48,7 @@
         "S3_SECRET_ACCESS_KEY",
         "S3_REGION",
         "S3_BUCKET_NAME",
-        "S3_ENDPOINT",
-        "CF_BYPASS_TOKEN",
-        "CH_API_KEY"
+        "S3_ENDPOINT"
       ]
     }
   }
