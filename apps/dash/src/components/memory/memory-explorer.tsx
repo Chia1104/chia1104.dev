@@ -116,9 +116,10 @@ const useInvalidateMemory = () => {
 /** A lesson stays `pending` until approved here; only then it reaches a prompt. */
 const PendingLessons = () => {
   const invalidate = useInvalidateMemory();
+  // the list pages by id; the queue is read whole, at the page maximum, and ordered here
   const { data, isLoading } = useQuery(
     orpc.memory.list.queryOptions({
-      input: { kind: "lesson", status: "pending", limit: 20 },
+      input: { kind: "lesson", status: "pending", limit: 100 },
     })
   );
 
@@ -146,7 +147,6 @@ const PendingLessons = () => {
     })
   );
 
-  // the ones more sessions asked for come first
   const items = [...(data?.items ?? [])].sort(
     (a, b) => b.reinforcements - a.reinforcements || b.id - a.id
   );

@@ -715,8 +715,10 @@ export const listFeedDraftRevisions = async (
     .limit(input.limit);
 
 /**
- * Revisions written after `after`, oldest first, preceded by the last one at or before it so
+ * Revisions saved after `after`, oldest first, preceded by the newest one not saved since so
  * the first change has a baseline to diff against. `after` null reads the whole trail.
+ * A revision counts by its last save, not its first: operator saves coalesce into one row
+ * for ten minutes, so a row that straddles `after` is read again in full rather than lost.
  */
 export const listFeedDraftRevisionsSince = async (
   db: DB,
@@ -736,14 +738,14 @@ export const listFeedDraftRevisionsSince = async (
     .where(
       and(
         owned,
-        input.after ? gt(feedDraftRevisions.createdAt, input.after) : undefined
+        input.after ? gt(feedDraftRevisions.updatedAt, input.after) : undefined
       )
     )
     .orderBy(feedDraftRevisions.revision);
   if (!input.after) return since.map((row) => row.revision);
 
   const [baseline] = await select()
-    .where(and(owned, lte(feedDraftRevisions.createdAt, input.after)))
+    .where(and(owned, lte(feedDraftRevisions.updatedAt, input.after)))
     .orderBy(desc(feedDraftRevisions.revision))
     .limit(1);
   return [

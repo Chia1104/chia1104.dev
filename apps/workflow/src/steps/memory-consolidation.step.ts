@@ -10,10 +10,10 @@ import {
 } from "@chia/api/memories/write";
 import { connectDatabase } from "@chia/db/client";
 import {
+  advanceWritingSessionConsolidation,
   getAgentSession,
   getWritingAgentSession,
   getWritingSessionConsolidation,
-  updateWritingSessionConsolidation,
 } from "@chia/db/repos/agent";
 import { listAgentLessons } from "@chia/db/repos/agent/memory";
 import { listFeedDraftRevisionsSince } from "@chia/db/repos/drafts";
@@ -37,7 +37,10 @@ export interface MemoryConsolidationResult {
  * the operator's draft edits since it, so every run costs one bounded model call and a
  * correction is read once. Only operator messages, assistant prose and the operator's own
  * edits reach the model.
- * A model failure is `nothing` and leaves the watermark, so the next run reads the same delta.
+ * The watermark is claimed with a compare-and-set before any proposal is written: a run that
+ * overlapped another on the same session, as an apply and an idle run can, finds the mark
+ * moved and drops its proposals instead of writing them a second time. A model failure is
+ * `nothing` and leaves the watermark, so the next run reads the same delta.
  * Runtime is imported at first use: this step is registered at boot and the runtime carries
  * the provider stack.
  */
@@ -130,10 +133,13 @@ export const consolidateSessionMemoryStep = async (request: {
       limit: LESSONS_SHOWN_MAX,
     }),
   ]);
-  const markConsolidated = () =>
-    updateWritingSessionConsolidation(db, request.sessionId, {
-      consolidatedLeafId: leafId,
-      consolidatedAt: startedAt,
+  const claim = () =>
+    advanceWritingSessionConsolidation(db, request.sessionId, {
+      from: {
+        consolidatedLeafId: mark?.consolidatedLeafId ?? null,
+        consolidatedAt: mark?.consolidatedAt ?? null,
+      },
+      to: { consolidatedLeafId: leafId, consolidatedAt: startedAt },
     });
 
   const prompt = buildLessonExtractionPrompt({
@@ -144,7 +150,7 @@ export const consolidateSessionMemoryStep = async (request: {
     systemPrompt: task.systemPrompt,
   });
   if (!prompt) {
-    await markConsolidated();
+    await claim();
     return { status: "nothing", created: [], reinforced: 0 };
   }
 
@@ -169,12 +175,20 @@ export const consolidateSessionMemoryStep = async (request: {
   if (!reply) {
     return { status: "nothing", created: [], reinforced: 0 };
   }
+  const proposals = parseLessonProposals(reply);
+  if (!(await claim())) {
+    console.warn("Lesson extraction superseded by a newer run", {
+      sessionId: request.sessionId,
+      dropped: proposals.length,
+    });
+    return { status: "nothing", created: [], reinforced: 0 };
+  }
 
   const activeIds = new Set(active.map((lesson) => lesson.id));
   const pendingById = new Map(pending.map((lesson) => [lesson.id, lesson]));
   const created: number[] = [];
   let reinforced = 0;
-  for (const proposal of parseLessonProposals(reply)) {
+  for (const proposal of proposals) {
     if (proposal.action === "reinforce") {
       // a session does not vouch for its own proposal
       const target = pendingById.get(proposal.id);
@@ -197,7 +211,6 @@ export const consolidateSessionMemoryStep = async (request: {
     );
     created.push(saved.id);
   }
-  await markConsolidated();
 
   return {
     status: created.length > 0 || reinforced > 0 ? "extracted" : "nothing",
@@ -207,6 +220,7 @@ export const consolidateSessionMemoryStep = async (request: {
 };
 
 /**
- * A retry after a partial write would insert the same lessons again.
+ * The mark moves before the proposals land, so a retry would read an empty delta and could
+ * not finish a partial write; the model call is the cost worth not repeating.
  */
 consolidateSessionMemoryStep.maxRetries = 0;

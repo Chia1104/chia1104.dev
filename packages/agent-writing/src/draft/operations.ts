@@ -3,6 +3,7 @@ import { mergeDefined, omitUndefined } from "@chia/utils/object";
 import { excerptAround } from "@chia/utils/text";
 import type { AppliedEdit, ExactReplaceFailure } from "@chia/utils/text";
 
+import { withoutFencedCode } from "../markdown/fences.ts";
 import type {
   DraftAppliedEdit,
   DraftFeedMeta,
@@ -116,7 +117,7 @@ const PROSE_LANGUAGE = {
 const LANGUAGE_SAMPLE_MIN = 80;
 
 const withoutCode = (body: string) =>
-  body.replace(/```[\s\S]*?```/g, " ").replace(/`[^`\n]*`/g, " ");
+  withoutFencedCode(body).replace(/`[^`\n]*`/g, " ");
 
 /** Why a body does not read as its locale's language, or undefined. */
 export const languageMismatch = (

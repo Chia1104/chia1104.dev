@@ -24,6 +24,7 @@ const { repo } = vi.hoisted(() => ({
     listAgentMemories: vi.fn(),
     getAgentMemory: vi.fn(),
     updateAgentMemory: vi.fn(),
+    approveAgentLesson: vi.fn(),
     softDeleteAgentMemory: vi.fn(),
   },
 }));
@@ -77,6 +78,10 @@ describe("memory routes", () => {
       async (_db: DB, _id: number, patch: UpdateAgentMemoryDTO) =>
         row(omitUndefined(patch))
     );
+    repo.approveAgentLesson.mockImplementation(async (_db: DB, id: number) => ({
+      approved: row({ id, status: "active" }),
+      archived: null,
+    }));
     repo.softDeleteAgentMemory.mockResolvedValue(true);
   });
 
@@ -144,7 +149,7 @@ describe("memory routes", () => {
     await expect(
       call(routes.approveLessonRoute, { id: 7 }, { context })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
-    expect(repo.updateAgentMemory).not.toHaveBeenCalled();
+    expect(repo.approveAgentLesson).not.toHaveBeenCalled();
   });
 
   it("starts consolidation through the workflow client", async ({

@@ -580,6 +580,41 @@ export const updateWritingSessionConsolidation = async (
     .where(eq(writingAgentSessions.sessionId, sessionId));
 };
 
+export type WritingSessionMark = Pick<
+  WritingSessionConsolidation,
+  "consolidatedLeafId" | "consolidatedAt"
+>;
+
+/**
+ * Moves the extraction mark from `from` to `to`; false when it no longer reads `from`, so a
+ * run that overlapped another writes nothing from a delta the other already consumed.
+ */
+export const advanceWritingSessionConsolidation = async (
+  db: DB,
+  sessionId: string,
+  input: { from: WritingSessionMark; to: WritingSessionMark }
+): Promise<boolean> => {
+  const rows = await db
+    .update(writingAgentSessions)
+    .set(input.to)
+    .where(
+      and(
+        eq(writingAgentSessions.sessionId, sessionId),
+        input.from.consolidatedLeafId === null
+          ? isNull(writingAgentSessions.consolidatedLeafId)
+          : eq(
+              writingAgentSessions.consolidatedLeafId,
+              input.from.consolidatedLeafId
+            ),
+        input.from.consolidatedAt === null
+          ? isNull(writingAgentSessions.consolidatedAt)
+          : eq(writingAgentSessions.consolidatedAt, input.from.consolidatedAt)
+      )
+    )
+    .returning({ sessionId: writingAgentSessions.sessionId });
+  return rows.length > 0;
+};
+
 /** Sessions that worked on a draft, most recently touched first. */
 export const listWritingSessionIdsForDraft = async (
   db: DB,

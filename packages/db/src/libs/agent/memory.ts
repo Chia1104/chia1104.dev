@@ -83,6 +83,63 @@ export const reinforceAgentMemory = async (
   return row;
 };
 
+export interface ApprovedAgentLesson {
+  approved: AgentMemory;
+  /** The active lesson the approved one superseded, when there still was one. */
+  archived: AgentMemory | null;
+}
+
+/**
+ * `pending → active` in one transaction, archiving the live active lesson `supersedesId`
+ * names in the same step. Undefined when `id` is not a live pending lesson any more, so two
+ * approvals of one row activate it once.
+ */
+export const approveAgentLesson = async (
+  db: DB,
+  id: number
+): Promise<ApprovedAgentLesson | undefined> =>
+  await db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(agentMemories)
+      .where(
+        and(
+          eq(agentMemories.id, id),
+          eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+          eq(agentMemories.status, AGENT_MEMORY_STATUS.Pending),
+          live()
+        )
+      )
+      .for("update");
+    if (!row) return undefined;
+
+    const now = new Date();
+    let archived: AgentMemory | null = null;
+    if (row.supersedesId !== null) {
+      const [target] = await tx
+        .update(agentMemories)
+        .set({ status: AGENT_MEMORY_STATUS.Archived, updatedAt: now })
+        .where(
+          and(
+            eq(agentMemories.id, row.supersedesId),
+            eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+            eq(agentMemories.status, AGENT_MEMORY_STATUS.Active),
+            live()
+          )
+        )
+        .returning();
+      archived = target ?? null;
+    }
+
+    const [approved] = await tx
+      .update(agentMemories)
+      .set({ status: AGENT_MEMORY_STATUS.Active, updatedAt: now })
+      .where(eq(agentMemories.id, row.id))
+      .returning();
+    if (!approved) throw new Error(`Lesson ${id} vanished mid-approval.`);
+    return { approved, archived };
+  });
+
 /** Includes soft-deleted rows; callers that must not see them check `deletedAt`. */
 export const getAgentMemory = async (db: DB, id: number) =>
   await db.query.agentMemories.findFirst({ where: { id } });

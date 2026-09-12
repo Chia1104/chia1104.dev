@@ -49,6 +49,10 @@
       "types": "./src/memory/lessons.ts",
       "default": "./src/memory/lessons.ts"
     },
+    "./markdown/fences": {
+      "types": "./src/markdown/fences.ts",
+      "default": "./src/markdown/fences.ts"
+    },
     "./prompts/system": {
       "types": "./src/prompts/system.ts",
       "default": "./src/prompts/system.ts"

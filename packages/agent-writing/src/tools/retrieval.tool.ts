@@ -2,6 +2,7 @@ import { StringEnum } from "@earendil-works/pi-ai";
 
 import { contentReadTools } from "@chia/agent-content/tools/read";
 
+import { closeOpenFence } from "../markdown/fences.ts";
 import type {
   FetchedPage,
   WebSearchResult,
@@ -165,20 +166,13 @@ export const fetchUrlTool = defineTool({
  * outage must not cost the turn its research. Stores the whole page, not an excerpt: RAG
  * recalls by section, and an excerpt only ever bought the first paragraph.
  */
-/** A cut inside a code fence would turn the rest of the page into code, or code into prose. */
-const closeOpenFence = (text: string): string => {
-  const fences = text.match(/^(`{3,}|~{3,})/gm) ?? [];
-  return fences.length % 2 === 1
-    ? `${text}\n${fences[fences.length - 1]}`
-    : text;
-};
-
 const recordSource = async (
   context: WritingToolContext,
   page: FetchedPage,
   signal: AbortSignal | undefined
 ): Promise<void> => {
   const trimmed = page.text.trim();
+  // a cut inside a code fence would turn the rest of the page into code, or code into prose
   const text =
     trimmed.length > SOURCE_MAX_CHARS
       ? closeOpenFence(trimmed.slice(0, SOURCE_MAX_CHARS))

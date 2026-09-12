@@ -5,6 +5,7 @@ import type { AgentMemory } from "@chia/db/schema";
 
 const { repo } = vi.hoisted(() => ({
   repo: {
+    approveAgentLesson: vi.fn(),
     createAgentMemory: vi.fn(),
     getAgentMemory: vi.fn(),
     reinforceAgentMemory: vi.fn(),
@@ -172,33 +173,65 @@ describe("lesson review services", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    repo.updateAgentMemory.mockImplementation(async (_db, id: number) =>
-      row(id)
-    );
+    repo.createAgentMemory.mockImplementation(async () => lesson({}));
+    repo.approveAgentLesson.mockImplementation(async (_db, id: number) => ({
+      approved: lesson({ id, status: "active" }),
+      archived: null,
+    }));
   });
 
-  it("approves a lesson and archives the one it supersedes, re-indexing both", async () => {
-    repo.getAgentMemory.mockResolvedValueOnce(lesson({ supersedesId: 3 }));
+  it("lets a lesson supersede only an active lesson", async () => {
+    repo.getAgentMemory.mockResolvedValueOnce(
+      lesson({ id: 3, status: "active" })
+    );
+    await createMemoryService(
+      db,
+      { kind: "lesson", title: "t", content: "c", supersedesId: 3 },
+      { onMemoryChanged }
+    );
+    expect(repo.createAgentMemory).toHaveBeenCalledWith(
+      db,
+      expect.objectContaining({ supersedesId: 3 })
+    );
 
-    await approveLessonService(db, { id: 7 }, { onMemoryChanged });
-
-    expect(repo.updateAgentMemory.mock.calls).toEqual([
-      [db, 3, { status: "archived" }],
-      [
+    repo.getAgentMemory.mockResolvedValueOnce(row(3));
+    await expect(
+      createMemoryService(
         db,
-        7,
-        {
-          title: undefined,
-          content: undefined,
-          status: "active",
-          sourceUrl: undefined,
-        },
-      ],
-    ]);
+        { kind: "lesson", title: "t", content: "c", supersedesId: 3 },
+        {}
+      )
+    ).rejects.toThrow("not an active lesson");
+    await expect(
+      createMemoryService(
+        db,
+        { kind: "fact", title: "t", content: "c", supersedesId: 3 },
+        {}
+      )
+    ).rejects.toThrow("Only a lesson supersedes");
+    expect(repo.createAgentMemory).toHaveBeenCalledTimes(1);
+  });
+
+  it("approves a lesson in one repository step and re-indexes it and the one it archived", async () => {
+    repo.getAgentMemory.mockResolvedValueOnce(lesson({ supersedesId: 3 }));
+    repo.approveAgentLesson.mockResolvedValueOnce({
+      approved: lesson({ status: "active", supersedesId: 3 }),
+      archived: lesson({ id: 3, status: "archived" }),
+    });
+
+    const approved = await approveLessonService(
+      db,
+      { id: 7 },
+      { onMemoryChanged }
+    );
+
+    expect(approved.status).toBe("active");
+    expect(repo.approveAgentLesson).toHaveBeenCalledWith(db, 7);
+    expect(repo.updateAgentMemory).not.toHaveBeenCalled();
     expect(onMemoryChanged.mock.calls).toEqual([[3], [7]]);
   });
 
-  it("approves only live lessons", async () => {
+  it("approves only a live pending lesson, once", async () => {
     repo.getAgentMemory.mockResolvedValueOnce(lesson({ kind: "fact" }));
     await expect(approveLessonService(db, { id: 7 }, {})).rejects.toThrow(
       "not a lesson"
@@ -209,7 +242,19 @@ describe("lesson review services", () => {
     await expect(approveLessonService(db, { id: 7 }, {})).rejects.toThrow(
       "not found"
     );
-    expect(repo.updateAgentMemory).not.toHaveBeenCalled();
+    repo.getAgentMemory.mockResolvedValueOnce(lesson({ status: "archived" }));
+    await expect(approveLessonService(db, { id: 7 }, {})).rejects.toThrow(
+      "only a pending lesson"
+    );
+    expect(repo.approveAgentLesson).not.toHaveBeenCalled();
+
+    // read as pending, but another approval got to the row first
+    repo.getAgentMemory.mockResolvedValueOnce(lesson({}));
+    repo.approveAgentLesson.mockResolvedValueOnce(undefined);
+    await expect(
+      approveLessonService(db, { id: 7 }, { onMemoryChanged })
+    ).rejects.toThrow("reviewed by someone else");
+    expect(onMemoryChanged).not.toHaveBeenCalled();
   });
 
   it("reports whether a reinforcement found a pending lesson", async () => {

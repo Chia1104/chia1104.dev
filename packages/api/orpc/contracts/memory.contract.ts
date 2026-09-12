@@ -105,7 +105,7 @@ export const removeMemoryContract = oc
 
 /** `pending → active`. Kept separate so the audit trail of who approved a lesson is one procedure. */
 export const approveLessonContract = oc
-  .errors(writeErrors)
+  .errors({ ...writeErrors, CONFLICT: {} })
   .input(memoryIdSchema)
   .output(z.object({ memory: memoryDetailSchema }));
 

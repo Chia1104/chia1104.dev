@@ -1,5 +1,6 @@
 import type { DB } from "@chia/db/client";
 import {
+  approveAgentLesson,
   createAgentMemory,
   getAgentMemory,
   reinforceAgentMemory,
@@ -86,11 +87,32 @@ export interface CreateMemoryServiceInput {
   supersedesId?: number | null;
 }
 
+/** Only a live active lesson can be superseded; the id comes from the model. */
+const assertSupersedable = async (db: DB, id: number): Promise<number> => {
+  const target = await getAgentMemory(db, id);
+  if (
+    !target ||
+    target.deletedAt !== null ||
+    target.kind !== AGENT_MEMORY_KIND.Lesson ||
+    target.status !== AGENT_MEMORY_STATUS.Active
+  ) {
+    throw new AppError("BAD_REQUEST", {
+      message: `Memory ${id} is not an active lesson, so nothing can supersede it.`,
+    });
+  }
+  return id;
+};
+
 export const createMemoryService = async (
   db: DB,
   input: CreateMemoryServiceInput,
   hooks: MemoryHooks
 ): Promise<AgentMemory> => {
+  if (input.supersedesId != null && input.kind !== AGENT_MEMORY_KIND.Lesson) {
+    throw new AppError("BAD_REQUEST", {
+      message: "Only a lesson supersedes another.",
+    });
+  }
   const row = await createAgentMemory(db, {
     kind: input.kind,
     status: input.status,
@@ -98,7 +120,10 @@ export const createMemoryService = async (
     content: assertContent(input.content),
     sourceUrl: input.sourceUrl ? normalizeSourceUrl(input.sourceUrl) : null,
     sessionId: input.sessionId ?? null,
-    supersedesId: input.supersedesId ?? null,
+    supersedesId:
+      input.supersedesId == null
+        ? null
+        : await assertSupersedable(db, input.supersedesId),
   });
 
   await hooks.onMemoryChanged?.(row.id);
@@ -107,8 +132,9 @@ export const createMemoryService = async (
 };
 
 /**
- * `pending → active`. A lesson that supersedes another archives that one first, so the two
- * never stand side by side in a prompt.
+ * `pending → active`. A lesson that supersedes another archives that one in the same
+ * transaction, so the two never stand side by side in a prompt; both are indexed after it
+ * commits.
  */
 export const approveLessonService = async (
   db: DB,
@@ -126,17 +152,20 @@ export const approveLessonService = async (
       message: `Memory ${input.id} is a ${row.kind}, not a lesson.`,
     });
   }
-  if (row.supersedesId !== null) {
-    const superseded = await updateAgentMemory(db, row.supersedesId, {
-      status: AGENT_MEMORY_STATUS.Archived,
+  if (row.status !== AGENT_MEMORY_STATUS.Pending) {
+    throw new AppError("BAD_REQUEST", {
+      message: `Lesson ${input.id} is ${row.status}; only a pending lesson is approved.`,
     });
-    if (superseded) await hooks.onMemoryChanged?.(superseded.id);
   }
-  return await updateMemoryService(
-    db,
-    { id: row.id, status: AGENT_MEMORY_STATUS.Active },
-    hooks
-  );
+  const result = await approveAgentLesson(db, row.id);
+  if (!result) {
+    throw new AppError("CONFLICT", {
+      message: `Lesson ${input.id} was reviewed by someone else first.`,
+    });
+  }
+  if (result.archived) await hooks.onMemoryChanged?.(result.archived.id);
+  await hooks.onMemoryChanged?.(result.approved.id);
+  return result.approved;
 };
 
 /**

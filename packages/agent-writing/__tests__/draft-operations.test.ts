@@ -84,4 +84,16 @@ describe("languageMismatch", () => {
     ).toBeUndefined();
     expect(languageMismatch("en", "短")).toBeUndefined();
   });
+
+  it("reads tilde fences and nested fences as code", () => {
+    expect(
+      languageMismatch("en", `${english}\n\n~~~\n${chinese}\n~~~`)
+    ).toBeUndefined();
+    expect(
+      languageMismatch(
+        "en",
+        `${english}\n\n\`\`\`\`md\n\`\`\`ts\n${chinese}\n\`\`\`\n${chinese}\n\`\`\`\``
+      )
+    ).toBeUndefined();
+  });
 });
