@@ -41,6 +41,18 @@ describe("replaceExact", () => {
     });
   });
 
+  it("inserts dollar sequences verbatim instead of expanding them as replacement patterns", () => {
+    const math = "Cost is $O(n)$ per call.";
+    expect(replaceExact(math, "$O(n)$", "$$O(n \\log n)$$")).toMatchObject({
+      ok: true,
+      content: "Cost is $$O(n \\log n)$$ per call.",
+    });
+    expect(replaceExact("a b", "b", "$&$'$`")).toMatchObject({
+      ok: true,
+      content: "a $&$'$`",
+    });
+  });
+
   it("deletes when the replacement is empty", () => {
     expect(replaceExact(body, "\n\nSecond paragraph.", "")).toMatchObject({
       ok: true,

@@ -55,9 +55,11 @@ export const replaceExact = (
 
   return {
     ok: true,
+    // A function replacer inserts `newString` verbatim; a string one would expand `$&`, `$'` and
+    // `` $` ``, and post bodies carry `$` for math.
     content: replaceAll
       ? content.split(oldString).join(newString)
-      : content.replace(oldString, newString),
+      : content.replace(oldString, () => newString),
     replacements: replaceAll ? occurrences : 1,
   };
 };
