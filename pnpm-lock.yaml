@@ -196,6 +196,9 @@ catalogs:
     dayjs:
       specifier: ^1.11.23
       version: 1.11.23
+    diff:
+      specifier: 8.0.4
+      version: 8.0.4
     es-toolkit:
       specifier: 1.52.0
       version: 1.52.0
@@ -1204,6 +1207,9 @@ importers:
       ai:
         specifier: catalog:ai
         version: 7.0.92(zod@4.5.4)
+      diff:
+        specifier: 'catalog:'
+        version: 8.0.4
       es-toolkit:
         specifier: 'catalog:'
         version: 1.52.0
@@ -1784,6 +1790,9 @@ importers:
       '@earendil-works/pi-ai':
         specifier: catalog:agent
         version: 0.85.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.5.4))(supports-color@10.2.2)(ws@8.21.3)(zod@4.5.4)
+      diff:
+        specifier: 'catalog:'
+        version: 8.0.4
       es-toolkit:
         specifier: 'catalog:'
         version: 1.52.0

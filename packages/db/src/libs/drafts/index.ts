@@ -1,4 +1,15 @@
-import { and, desc, eq, gt, inArray, isNull, lt, or, sql } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  gt,
+  inArray,
+  isNull,
+  lt,
+  lte,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import { applyEdits } from "@chia/utils/text";
 import type {
@@ -702,6 +713,44 @@ export const listFeedDraftRevisions = async (
     )
     .orderBy(desc(feedDraftRevisions.revision))
     .limit(input.limit);
+
+/**
+ * Revisions written after `after`, oldest first, preceded by the last one at or before it so
+ * the first change has a baseline to diff against. `after` null reads the whole trail.
+ */
+export const listFeedDraftRevisionsSince = async (
+  db: DB,
+  input: { draftId: number; userId: string; after: Date | null }
+): Promise<FeedDraftRevision[]> => {
+  const owned = and(
+    eq(feedDraftRevisions.draftId, input.draftId),
+    eq(feedDrafts.userId, input.userId)
+  );
+  const select = () =>
+    db
+      .select({ revision: feedDraftRevisions })
+      .from(feedDraftRevisions)
+      .innerJoin(feedDrafts, eq(feedDrafts.id, feedDraftRevisions.draftId));
+
+  const since = await select()
+    .where(
+      and(
+        owned,
+        input.after ? gt(feedDraftRevisions.createdAt, input.after) : undefined
+      )
+    )
+    .orderBy(feedDraftRevisions.revision);
+  if (!input.after) return since.map((row) => row.revision);
+
+  const [baseline] = await select()
+    .where(and(owned, lte(feedDraftRevisions.createdAt, input.after)))
+    .orderBy(desc(feedDraftRevisions.revision))
+    .limit(1);
+  return [
+    ...(baseline ? [baseline.revision] : []),
+    ...since.map((row) => row.revision),
+  ];
+};
 
 /** A revision of one of `userId`'s drafts; a revision under anyone else's draft reads as null. */
 export const getFeedDraftRevision = async (

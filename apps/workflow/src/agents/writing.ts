@@ -23,7 +23,8 @@ export const writingAgentKind = createWritingAgentKind({
     createContentPort: createAgentContentPort,
     createMemoryPort: createAgentMemoryPort,
     createWebPort: createAgentWebPort,
-    startMemoryConsolidation: (sessionId) =>
-      workflowControl.startMemoryConsolidation(sessionId),
+    startMemoryConsolidation: (request) =>
+      workflowControl.startMemoryConsolidation(request),
+    cancelWorkflowRun: (runId) => workflowControl.cancelRun(runId),
   },
 });

@@ -129,6 +129,33 @@ describe("createAgentMemoryPort", () => {
     expect(saved).toMatchObject({ id: 3, changed: true });
   });
 
+  it("writes a lesson as a pending proposal that may supersede an active one", async () => {
+    api.createMemoryService.mockResolvedValueOnce({
+      ...row(6),
+      kind: "lesson",
+      status: "pending",
+    });
+
+    const saved = await port.save({
+      kind: "lesson",
+      title: "t",
+      content: "c",
+      supersedesId: 2,
+    });
+
+    expect(api.createMemoryService).toHaveBeenCalledWith(
+      db,
+      expect.objectContaining({
+        kind: "lesson",
+        status: "pending",
+        supersedesId: 2,
+        sessionId: SESSION_ID,
+      }),
+      hooks.memoryHooks
+    );
+    expect(saved).toMatchObject({ id: 6, kind: "lesson" });
+  });
+
   it("records sources by URL and reports whether the revisit changed anything", async () => {
     api.recordSourceMemoryService.mockResolvedValueOnce({
       id: 4,

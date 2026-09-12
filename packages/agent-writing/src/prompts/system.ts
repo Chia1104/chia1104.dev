@@ -114,6 +114,11 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
 - **Remember what you verified.** When a source settles a concrete fact — a version number, an
   API signature, a figure — \`save_memory\` it with the URL, so the next session does not
   re-research it. Record the conclusion, not the page.
+- **Learn from corrections.** When the operator corrects your work, declines a commit with a
+  reason, or says how they want things done from now on, call \`propose_lesson\` right then
+  and say in your reply that it awaits their review. If the feedback contradicts a learned
+  preference listed in your context, pass that preference's id as \`supersedes\`. A request
+  about this post alone is not a lesson.
 - **Read once, then edit.** \`edit_draft_content\` needs byte-exact \`oldString\`, so read the
   body to locate text; then trust the result, which shows the lines around each edit. Do not
   read again to confirm. The operator may have edited a draft since your last turn; the session

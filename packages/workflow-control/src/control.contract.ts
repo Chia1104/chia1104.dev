@@ -48,7 +48,11 @@ export const workflowControlCommandSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("memory-consolidation:start"),
-    request: z.object({ sessionId: z.string().min(1) }),
+    request: z.object({
+      sessionId: z.string().min(1),
+      /** Sleep before extracting, so a session is read once it has gone quiet. */
+      delayMs: z.number().int().nonnegative().optional(),
+    }),
   }),
   z.object({ type: z.literal("run:cancel"), runId: z.string() }),
   z.object({ type: z.literal("run:status"), runId: z.string() }),

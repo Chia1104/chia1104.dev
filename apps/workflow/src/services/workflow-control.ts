@@ -93,11 +93,13 @@ export const workflowControl = {
     startedRunId({ type: "feed-index:start", request: { feedID } }),
   startResourceIndex: (request: { sourceType: string; sourceId: number }) =>
     startedRunId({ type: "resource-index:start", request }),
-  startMemoryConsolidation: (sessionId: string) =>
-    startedRunId({
-      type: "memory-consolidation:start",
-      request: { sessionId },
-    }),
+  startMemoryConsolidation: (request: {
+    sessionId: string;
+    delayMs?: number;
+  }) => startedRunId({ type: "memory-consolidation:start", request }),
+  async cancelRun(runId: string) {
+    await executeLocalWorkflowCommand({ type: "run:cancel", runId });
+  },
   async resumeAgentAbort(controllerId: string, reason: string) {
     await executeLocalWorkflowCommand({
       type: "agent-abort:resume",

@@ -37,6 +37,7 @@ export interface InsertAgentMemoryDTO {
   sourceUrl?: string | null;
   sessionId?: string | null;
   status?: AgentMemoryStatus;
+  supersedesId?: number | null;
 }
 
 export const createAgentMemory = async (
@@ -52,9 +53,33 @@ export const createAgentMemory = async (
       content: input.content,
       sourceUrl: input.sourceUrl ?? null,
       sessionId: input.sessionId ?? null,
+      supersedesId: input.supersedesId ?? null,
     })
     .returning();
   if (!row) throw new Error("Memory was not inserted.");
+  return row;
+};
+
+/** Counts one more session behind a pending lesson; returns the live row, or undefined. */
+export const reinforceAgentMemory = async (
+  db: DB,
+  id: number
+): Promise<AgentMemory | undefined> => {
+  const [row] = await db
+    .update(agentMemories)
+    .set({
+      reinforcements: sql`${agentMemories.reinforcements} + 1`,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(agentMemories.id, id),
+        eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+        eq(agentMemories.status, AGENT_MEMORY_STATUS.Pending),
+        live()
+      )
+    )
+    .returning();
   return row;
 };
 
@@ -177,6 +202,8 @@ export interface AgentMemorySummary {
   status: AgentMemoryStatus;
   title: string;
   sourceUrl: string | null;
+  supersedesId: number | null;
+  reinforcements: number;
 }
 
 const summaryColumns = {
@@ -185,7 +212,43 @@ const summaryColumns = {
   status: agentMemories.status,
   title: agentMemories.title,
   sourceUrl: agentMemories.sourceUrl,
+  supersedesId: agentMemories.supersedesId,
+  reinforcements: agentMemories.reinforcements,
 };
+
+export interface AgentLesson {
+  id: number;
+  status: AgentMemoryStatus;
+  title: string;
+  content: string;
+  sessionId: string | null;
+  supersedesId: number | null;
+}
+
+/** Live lessons in one status with their content, newest first, for lesson extraction. */
+export const listAgentLessons = async (
+  db: DB,
+  input: { status: AgentMemoryStatus; limit: number }
+): Promise<AgentLesson[]> =>
+  await db
+    .select({
+      id: agentMemories.id,
+      status: agentMemories.status,
+      title: agentMemories.title,
+      content: agentMemories.content,
+      sessionId: agentMemories.sessionId,
+      supersedesId: agentMemories.supersedesId,
+    })
+    .from(agentMemories)
+    .where(
+      and(
+        eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+        eq(agentMemories.status, input.status),
+        live()
+      )
+    )
+    .orderBy(desc(agentMemories.updatedAt), desc(agentMemories.id))
+    .limit(input.limit);
 
 /** Session memories, oldest first, for the volatile context. */
 export const listAgentMemoriesBySession = async (

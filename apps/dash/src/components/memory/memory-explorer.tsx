@@ -146,7 +146,10 @@ const PendingLessons = () => {
     })
   );
 
-  const items = data?.items ?? [];
+  // the ones more sessions asked for come first
+  const items = [...(data?.items ?? [])].sort(
+    (a, b) => b.reinforcements - a.reinforcements || b.id - a.id
+  );
   if (!isLoading && items.length === 0) return null;
 
   return (
@@ -155,7 +158,8 @@ const PendingLessons = () => {
         <Card.Title className="text-sm">Lessons awaiting review</Card.Title>
         <Card.Description className="text-xs">
           A lesson is injected into every future turn once approved. Nothing the
-          agent extracted reaches a prompt before you have read it.
+          agent proposed reaches a prompt before you have read it. Approving a
+          revision archives the lesson it replaces.
         </Card.Description>
       </Card.Header>
       <Card.Content className="flex flex-col gap-3">
@@ -168,7 +172,24 @@ const PendingLessons = () => {
             <div
               key={lesson.id}
               className="border-border flex flex-col gap-2 rounded-lg border p-3">
-              <p className="text-sm font-medium">{lesson.title}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-medium">{lesson.title}</p>
+                {lesson.supersedesId !== null ? (
+                  <Chip color="accent" size="sm" variant="soft">
+                    <Chip.Label className="text-xs">
+                      revises #{lesson.supersedesId}
+                    </Chip.Label>
+                  </Chip>
+                ) : null}
+                {lesson.reinforcements > 0 ? (
+                  <Chip color="warning" size="sm" variant="soft">
+                    <Chip.Label className="text-xs">
+                      +{lesson.reinforcements} session
+                      {lesson.reinforcements === 1 ? "" : "s"}
+                    </Chip.Label>
+                  </Chip>
+                ) : null}
+              </div>
               <p className="text-muted text-xs">{lesson.preview}</p>
               <div className="flex items-center gap-2">
                 <Button
@@ -205,7 +226,7 @@ const PendingLessons = () => {
   );
 };
 
-/** Reflection for a session that never committed. */
+/** Extracts now instead of waiting for the session to go quiet; reads only what earlier runs have not. */
 const ConsolidateSession = () => {
   const [sessionId, setSessionId] = useState("");
   const consolidate = useMutation(

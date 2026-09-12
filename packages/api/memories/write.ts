@@ -1,12 +1,15 @@
 import type { DB } from "@chia/db/client";
 import {
   createAgentMemory,
+  getAgentMemory,
+  reinforceAgentMemory,
   softDeleteAgentMemory,
   updateAgentMemory,
   upsertSourceMemory,
 } from "@chia/db/repos/agent/memory";
 import { isResourceIndexedSince } from "@chia/db/repos/resources/chunk";
 import type { AgentMemory } from "@chia/db/schema";
+import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
 import type { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
 
@@ -79,6 +82,8 @@ export interface CreateMemoryServiceInput {
   sourceUrl?: string | null;
   sessionId?: string | null;
   status?: AgentMemoryStatus;
+  /** A lesson only: the active lesson this one replaces when approved. */
+  supersedesId?: number | null;
 }
 
 export const createMemoryService = async (
@@ -93,12 +98,55 @@ export const createMemoryService = async (
     content: assertContent(input.content),
     sourceUrl: input.sourceUrl ? normalizeSourceUrl(input.sourceUrl) : null,
     sessionId: input.sessionId ?? null,
+    supersedesId: input.supersedesId ?? null,
   });
 
   await hooks.onMemoryChanged?.(row.id);
 
   return row;
 };
+
+/**
+ * `pending → active`. A lesson that supersedes another archives that one first, so the two
+ * never stand side by side in a prompt.
+ */
+export const approveLessonService = async (
+  db: DB,
+  input: { id: number },
+  hooks: MemoryHooks
+): Promise<AgentMemory> => {
+  const row = await getAgentMemory(db, input.id);
+  if (!row || row.deletedAt !== null) {
+    throw new AppError("NOT_FOUND", {
+      message: `Memory ${input.id} not found`,
+    });
+  }
+  if (row.kind !== AGENT_MEMORY_KIND.Lesson) {
+    throw new AppError("BAD_REQUEST", {
+      message: `Memory ${input.id} is a ${row.kind}, not a lesson.`,
+    });
+  }
+  if (row.supersedesId !== null) {
+    const superseded = await updateAgentMemory(db, row.supersedesId, {
+      status: AGENT_MEMORY_STATUS.Archived,
+    });
+    if (superseded) await hooks.onMemoryChanged?.(superseded.id);
+  }
+  return await updateMemoryService(
+    db,
+    { id: row.id, status: AGENT_MEMORY_STATUS.Active },
+    hooks
+  );
+};
+
+/**
+ * One more session behind a pending lesson. Nothing to index: a pending lesson has no chunks.
+ * False when the id is not a live pending lesson.
+ */
+export const reinforceLessonService = async (
+  db: DB,
+  input: { id: number }
+): Promise<boolean> => (await reinforceAgentMemory(db, input.id)) !== undefined;
 
 export interface RecordSourceMemoryServiceInput {
   sourceUrl: string;

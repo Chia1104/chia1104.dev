@@ -57,6 +57,12 @@ export const summarizeToolResult = <TResult>(
       const id = asNumber(details.id);
       return id === undefined ? "Saved memory." : `Saved memory #${id}.`;
     }
+    case TOOL_NAMES.proposeLesson: {
+      const id = asNumber(details.id);
+      return id === undefined
+        ? "Proposed a lesson for review."
+        : `Proposed lesson #${id} for review.`;
+    }
     case TOOL_NAMES.readDraft: {
       const locale = asString(details.locale);
       const lineCount = asNumber(details.lineCount);

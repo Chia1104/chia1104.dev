@@ -4,6 +4,7 @@ import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
 import {
   getMemoryTool,
+  proposeLessonTool,
   saveMemoryTool,
   searchMemoryTool,
 } from "../src/tools/memory.tool.ts";
@@ -107,7 +108,7 @@ describe("memory tools", () => {
     ).rejects.toThrow("No memory #42");
   });
 
-  it("only ever writes facts; sources and lessons have other authors", async () => {
+  it("save_memory only ever writes facts; sources have another author", async () => {
     const context = createContext();
     await saveMemoryTool.execute(
       "call-1",
@@ -120,10 +121,47 @@ describe("memory tools", () => {
     expect(context.memory.all[0]?.sourceUrl).toBeNull();
   });
 
-  it("is classified as read for retrieval and draft for the write, and sits before the draft tools", () => {
+  it("propose_lesson writes a pending lesson that may supersede an active one", async () => {
+    const context = createContext();
+
+    const proposed = await proposeLessonTool.execute(
+      "call-1",
+      {
+        title: "Open with the problem, not the tool",
+        content: "The first paragraph names the problem the post solves.",
+        supersedes: 3,
+      },
+      undefined,
+      undefined,
+      context
+    );
+
+    expect(proposed.details).toEqual({
+      id: 1,
+      kind: "lesson",
+      title: "Open with the problem, not the tool",
+      supersedes: 3,
+    });
+    expect(proposed.content[0]).toMatchObject({
+      text: expect.stringContaining("waiting for review"),
+    });
+    expect(context.memory.all[0]).toMatchObject({
+      kind: "lesson",
+      status: "pending",
+      supersedesId: 3,
+      sessionId: SESSION_ID,
+    });
+    await expect(context.memory.listActiveLessons(10)).resolves.toEqual([]);
+    expect(summarizeToolResult(TOOL_NAMES.proposeLesson, proposed, false)).toBe(
+      "Proposed lesson #1 for review."
+    );
+  });
+
+  it("is classified as read for retrieval and draft for the writes, and sits before the draft tools", () => {
     expect(tierOf(TOOL_NAMES.searchMemory)).toBe("read");
     expect(tierOf(TOOL_NAMES.getMemory)).toBe("read");
     expect(tierOf(TOOL_NAMES.saveMemory)).toBe("draft");
+    expect(tierOf(TOOL_NAMES.proposeLesson)).toBe("draft");
 
     const names = createWritingTools().map((tool) => tool.name);
     expect(names.indexOf(TOOL_NAMES.searchMemory)).toBeGreaterThan(

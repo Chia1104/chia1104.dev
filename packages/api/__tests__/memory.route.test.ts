@@ -42,6 +42,8 @@ const row = (overrides: Partial<AgentMemory> = {}): AgentMemory => ({
   content: "The operator cut every long intro.",
   sourceUrl: null,
   sessionId: "session-1",
+  supersedesId: null,
+  reinforcements: 0,
   createdAt: new Date("2026-08-01T00:00:00Z"),
   updatedAt: new Date("2026-08-01T00:00:00Z"),
   deletedAt: null,

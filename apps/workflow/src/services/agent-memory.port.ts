@@ -19,7 +19,7 @@ import {
   listAgentMemoriesBySession,
 } from "@chia/db/repos/agent/memory";
 import type { AgentMemory } from "@chia/db/schema";
-import { AGENT_MEMORY_KIND } from "@chia/db/schema";
+import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
 
 import { memoryHooks } from "./agent-memory-indexing.service";
@@ -83,14 +83,18 @@ export const createAgentMemoryPort = (
         };
       }
 
+      // a lesson is a proposal: pending until the operator approves it in the dashboard
+      const lesson = input.kind === AGENT_MEMORY_KIND.Lesson;
       const row = await createMemoryService(
         db,
         {
           kind: input.kind,
+          status: lesson ? AGENT_MEMORY_STATUS.Pending : undefined,
           title: input.title,
           content: input.content,
           sourceUrl: input.sourceUrl,
           sessionId,
+          supersedesId: lesson ? input.supersedesId : undefined,
         },
         memoryHooks
       );

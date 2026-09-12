@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
+import type { AgentMemory } from "@chia/db/schema";
 
 const { repo } = vi.hoisted(() => ({
   repo: {
     createAgentMemory: vi.fn(),
+    getAgentMemory: vi.fn(),
+    reinforceAgentMemory: vi.fn(),
     updateAgentMemory: vi.fn(),
     softDeleteAgentMemory: vi.fn(),
     upsertSourceMemory: vi.fn(),
@@ -19,9 +22,11 @@ const { isResourceIndexedSince } = vi.hoisted(() => ({
 vi.mock("@chia/db/repos/resources/chunk", () => ({ isResourceIndexedSince }));
 
 const {
+  approveLessonService,
   createMemoryService,
   normalizeSourceUrl,
   recordSourceMemoryService,
+  reinforceLessonService,
   removeMemoryService,
   updateMemoryService,
 } = await import("../memories/write.ts");
@@ -37,6 +42,8 @@ const row = (id: number) => ({
   content: "c",
   sourceUrl: null,
   sessionId: null,
+  supersedesId: null,
+  reinforcements: 0,
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null,
@@ -151,5 +158,64 @@ describe("memory write services", () => {
     await expect(removeMemoryService(db, { id: 404 }, {})).rejects.toThrow(
       "not found"
     );
+  });
+});
+
+describe("lesson review services", () => {
+  const onMemoryChanged = vi.fn(async () => undefined);
+  const lesson = (overrides: Partial<AgentMemory>) => ({
+    ...row(7),
+    kind: "lesson",
+    status: "pending",
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    repo.updateAgentMemory.mockImplementation(async (_db, id: number) =>
+      row(id)
+    );
+  });
+
+  it("approves a lesson and archives the one it supersedes, re-indexing both", async () => {
+    repo.getAgentMemory.mockResolvedValueOnce(lesson({ supersedesId: 3 }));
+
+    await approveLessonService(db, { id: 7 }, { onMemoryChanged });
+
+    expect(repo.updateAgentMemory.mock.calls).toEqual([
+      [db, 3, { status: "archived" }],
+      [
+        db,
+        7,
+        {
+          title: undefined,
+          content: undefined,
+          status: "active",
+          sourceUrl: undefined,
+        },
+      ],
+    ]);
+    expect(onMemoryChanged.mock.calls).toEqual([[3], [7]]);
+  });
+
+  it("approves only live lessons", async () => {
+    repo.getAgentMemory.mockResolvedValueOnce(lesson({ kind: "fact" }));
+    await expect(approveLessonService(db, { id: 7 }, {})).rejects.toThrow(
+      "not a lesson"
+    );
+    repo.getAgentMemory.mockResolvedValueOnce(
+      lesson({ deletedAt: new Date() })
+    );
+    await expect(approveLessonService(db, { id: 7 }, {})).rejects.toThrow(
+      "not found"
+    );
+    expect(repo.updateAgentMemory).not.toHaveBeenCalled();
+  });
+
+  it("reports whether a reinforcement found a pending lesson", async () => {
+    repo.reinforceAgentMemory.mockResolvedValueOnce(lesson({}));
+    await expect(reinforceLessonService(db, { id: 7 })).resolves.toBe(true);
+    repo.reinforceAgentMemory.mockResolvedValueOnce(undefined);
+    await expect(reinforceLessonService(db, { id: 8 })).resolves.toBe(false);
   });
 });

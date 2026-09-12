@@ -26,6 +26,10 @@ const memorySummaryFields = {
   sourceUrl: z.string().nullable(),
   /** Provenance; null once the session is gone. */
   sessionId: z.string().nullable(),
+  /** A pending lesson that replaces this active lesson when approved. */
+  supersedesId: z.number().nullable(),
+  /** Further sessions whose feedback repeated a pending lesson. */
+  reinforcements: z.number(),
   createdAt: z.date(),
   updatedAt: z.date(),
 };
