@@ -1,12 +1,15 @@
 import type { DB } from "@chia/db/client";
 import {
+  editFeedDraftContent,
   getFeedDraft,
   listOperatorFeedDraftChanges,
   patchFeedDraft,
 } from "@chia/db/repos/drafts";
 import type {
+  FeedDraftListItem,
   FeedDraftRecord,
   FeedDraftWriteResult,
+  PatchFeedDraftInput,
 } from "@chia/db/repos/drafts";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
@@ -15,8 +18,9 @@ import { omitUndefined } from "@chia/utils/object";
 import type { DraftStore } from "../ports.ts";
 import type {
   DraftChange,
-  DraftFeedMeta,
-  DraftTranslation,
+  DraftContentEdit,
+  DraftEditResult,
+  DraftWrite,
   FeedDraft,
   FeedDraftSummary,
 } from "../types.ts";
@@ -24,16 +28,21 @@ import type {
 import {
   DraftConflictError,
   DraftNotFoundError,
+  EditNotAppliedError,
+  describeEdits,
   draftSummary,
+  noBodyMessage,
 } from "./operations.ts";
 
 export interface PgDraftStoreOptions {
   /** Recorded as the author of every revision this store writes. */
   sessionId: string;
+  /** The drafts' owner; a write to anyone else's draft reads as not found. */
+  userId: string;
   /** Get-or-create as the host does it, so the agent and the editor share one draft per feed. */
   open(input: { feedId?: number }): Promise<FeedDraftRecord>;
   /** The author's drafts with unapplied work, newest first. */
-  list(): Promise<FeedDraftRecord[]>;
+  list(): Promise<FeedDraftListItem[]>;
 }
 
 /** {@link DraftStore} over the shared `feed_draft` rows, writing as the agent. */
@@ -74,9 +83,7 @@ export class PgDraftStore implements DraftStore {
 
   async list(): Promise<FeedDraftSummary[]> {
     const records = await this.options.list();
-    return records.map((record) =>
-      draftSummary(toFeedDraft(record), record.updatedAt)
-    );
+    return records.map((record) => draftSummary(record, record.updatedAt));
   }
 
   async open(input: { feedId?: number }): Promise<FeedDraft> {
@@ -84,66 +91,82 @@ export class PgDraftStore implements DraftStore {
   }
 
   async get(draftId: number): Promise<FeedDraft> {
-    const record = await getFeedDraft(this.db, draftId);
+    const record = await getFeedDraft(this.db, draftId, this.options.userId);
     if (!record) throw new DraftNotFoundError(draftId);
     return this.observe(record);
   }
 
-  async patchFeedMeta(
+  async write(
     draftId: number,
-    patch: DraftFeedMeta
-  ): Promise<FeedDraft> {
-    return this.settle(
-      draftId,
-      await patchFeedDraft(this.db, {
-        draftId,
-        author: FEED_DRAFT_AUTHOR.Agent,
-        sessionId: this.options.sessionId,
-        meta: omitUndefined(patch),
-      })
-    );
-  }
-
-  async patchTranslation(
-    draftId: number,
-    locale: Locale,
-    patch: DraftTranslation
-  ): Promise<FeedDraft> {
-    return this.settle(
-      draftId,
-      await patchFeedDraft(this.db, {
-        draftId,
-        author: FEED_DRAFT_AUTHOR.Agent,
-        sessionId: this.options.sessionId,
-        translations: { [locale]: omitUndefined(patch) },
-      })
-    );
-  }
-
-  async setContent(
-    draftId: number,
-    locale: Locale,
-    content: string,
+    input: DraftWrite,
     expectedRevision?: number
   ): Promise<FeedDraft> {
+    const translations: PatchFeedDraftInput["translations"] = {};
+    for (const [locale, patch] of Object.entries(input.translations ?? {})) {
+      if (!patch) continue;
+      // SAFETY: DraftWrite.translations is keyed by Locale.
+      translations[locale as Locale] = omitUndefined(patch);
+    }
     return this.settle(
       draftId,
       await patchFeedDraft(this.db, {
         draftId,
+        userId: this.options.userId,
         expectedRevision,
         author: FEED_DRAFT_AUTHOR.Agent,
         sessionId: this.options.sessionId,
-        translations: { [locale]: { content } },
+        meta: input.meta ? omitUndefined(input.meta) : undefined,
+        translations,
       }),
       expectedRevision
     );
+  }
+
+  async editContent(
+    draftId: number,
+    locale: Locale,
+    edits: readonly DraftContentEdit[]
+  ): Promise<DraftEditResult> {
+    const result = await editFeedDraftContent(this.db, {
+      draftId,
+      userId: this.options.userId,
+      locale,
+      edits,
+      author: FEED_DRAFT_AUTHOR.Agent,
+      sessionId: this.options.sessionId,
+    });
+    switch (result.status) {
+      case "ok": {
+        const draft = this.observe(result.draft);
+        return {
+          draft,
+          edits: describeEdits(
+            draft.translations[locale]?.content ?? "",
+            result.edits
+          ),
+        };
+      }
+      case "no_body":
+        throw new EditNotAppliedError(noBodyMessage(locale), "no_body");
+      case "not_applied":
+        throw new EditNotAppliedError(
+          `Edit ${result.index + 1} of ${edits.length} was not applied, so nothing was written. ${result.message}`,
+          result.reason
+        );
+      default:
+        return { draft: this.settle(draftId, result), edits: [] };
+    }
   }
 
   operatorChangesSince(
     draftId: number,
     afterRevision: number
   ): Promise<DraftChange[]> {
-    return listOperatorFeedDraftChanges(this.db, { draftId, afterRevision });
+    return listOperatorFeedDraftChanges(this.db, {
+      draftId,
+      afterRevision,
+      userId: this.options.userId,
+    });
   }
 }
 

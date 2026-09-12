@@ -25,6 +25,7 @@ import type {
   AgentPolicy,
   AgentSessionSettings,
   AgentTool,
+  ToolCallRefusal,
   ToolCallRequest,
 } from "../types.ts";
 import type {
@@ -87,6 +88,13 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   policy: AgentPolicy;
   /** See {@link AgentTurnBudget}; crossing it ends the turn as `budget_exhausted`. */
   budget: AgentTurnBudget;
+  /**
+   * Kind-specific checks a call must pass before the gate sees it, so a call that would fail
+   * anyway never raises an approval. Runs after the budget; a refusal reads like a tool error.
+   */
+  preflight?: (
+    request: ToolCallRequest
+  ) => Promise<ToolCallRefusal | undefined> | ToolCallRefusal | undefined;
   /**
    * What an approval is granted for, as the tool gate defines it. Defaults to the tool name
    * and its exact arguments.
@@ -178,6 +186,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   promptTemplates = [],
   policy,
   budget,
+  preflight,
   approvalKeyOf = defaultApprovalKey,
   approvedApprovalKeys,
   consumeApproval,
@@ -313,7 +322,8 @@ export const runPiTurn = async <TContext extends object, TApproval>({
             }
           }
         : undefined,
-      // One hook, budget first: a call the budget refuses must never raise an approval.
+      // One hook, budget first, then the kind's preflight: a call either refuses must never
+      // raise an approval.
       beforeToolCall: async ({ toolCall, args }) => {
         const request: ToolCallRequest = {
           toolCallId: toolCall.id,
@@ -321,7 +331,11 @@ export const runPiTurn = async <TContext extends object, TApproval>({
           input: args,
         };
         try {
-          return turnBudget.handle(request) ?? (await gate.handle(request));
+          return (
+            turnBudget.handle(request) ??
+            (await preflight?.(request)) ??
+            (await gate.handle(request))
+          );
         } catch (error) {
           failTurn(errorOfThrown(error));
           return { block: true, reason: "This turn is being stopped." };

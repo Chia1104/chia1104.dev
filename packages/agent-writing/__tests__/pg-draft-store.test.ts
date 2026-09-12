@@ -89,6 +89,7 @@ const DRAFT_ID = 7;
 const build = () =>
   new PgDraftStore(db, {
     sessionId: "session-1",
+    userId: "author",
     list: async () => [...drafts.values()],
     open: async ({ feedId }) => {
       const existing = [...drafts.values()].find(
@@ -117,19 +118,27 @@ describe("PgDraftStore", () => {
 
   it("leaves omitted per-locale fields alone when the patch carries explicit undefined keys", async () => {
     const store = build();
-    await store.patchTranslation(DRAFT_ID, "en", {
-      title: "Title",
-      excerpt: "Excerpt",
-      description: "Description",
-      summary: "Summary",
+    await store.write(DRAFT_ID, {
+      translations: {
+        en: {
+          title: "Title",
+          excerpt: "Excerpt",
+          description: "Description",
+          summary: "Summary",
+        },
+      },
     });
 
-    // Exactly what `patch_draft_meta` sends: every per-locale key present, most undefined.
-    const next = await store.patchTranslation(DRAFT_ID, "en", {
-      title: "New title",
-      excerpt: undefined,
-      description: undefined,
-      summary: undefined,
+    // Exactly what `write_draft` sends: every per-locale key present, most undefined.
+    const next = await store.write(DRAFT_ID, {
+      translations: {
+        en: {
+          title: "New title",
+          excerpt: undefined,
+          description: undefined,
+          summary: undefined,
+        },
+      },
     });
 
     expect(next.translations.en).toMatchObject({
@@ -142,10 +151,14 @@ describe("PgDraftStore", () => {
 
   it("clears a field on null and keeps the body across metadata patches", async () => {
     const store = build();
-    await store.setContent(DRAFT_ID, "en", "## Body");
-    await store.patchTranslation(DRAFT_ID, "en", { title: "T", excerpt: "E" });
-    const next = await store.patchTranslation(DRAFT_ID, "en", {
-      excerpt: null,
+    await store.write(DRAFT_ID, {
+      translations: { en: { content: "## Body" } },
+    });
+    await store.write(DRAFT_ID, {
+      translations: { en: { title: "T", excerpt: "E" } },
+    });
+    const next = await store.write(DRAFT_ID, {
+      translations: { en: { excerpt: null } },
     });
 
     expect(next.translations.en?.excerpt).toBeNull();
@@ -155,11 +168,9 @@ describe("PgDraftStore", () => {
 
   it("merges feed-level metadata the same way", async () => {
     const store = build();
-    await store.patchFeedMeta(DRAFT_ID, { slug: "a-slug", type: "post" });
-    const next = await store.patchFeedMeta(DRAFT_ID, {
-      slug: undefined,
-      type: undefined,
-      defaultLocale: "en",
+    await store.write(DRAFT_ID, { meta: { slug: "a-slug", type: "post" } });
+    const next = await store.write(DRAFT_ID, {
+      meta: { slug: undefined, type: undefined, defaultLocale: "en" },
     });
 
     expect(next).toMatchObject({
@@ -177,7 +188,11 @@ describe("PgDraftStore", () => {
     drafts.set(DRAFT_ID, { ...current, revision: read.revision + 1 });
 
     await expect(
-      store.setContent(DRAFT_ID, "en", "## Stale", read.revision)
+      store.write(
+        DRAFT_ID,
+        { translations: { en: { content: "## Stale" } } },
+        read.revision
+      )
     ).rejects.toBeInstanceOf(DraftConflictError);
     // The conflict response still tells the store where the draft is now.
     expect(store.observedRevisions.get(DRAFT_ID)).toBe(read.revision + 1);
@@ -186,7 +201,9 @@ describe("PgDraftStore", () => {
   it("tracks the revision it saw per draft and names a draft that is gone", async () => {
     const store = build();
     const opened = await store.open({ feedId: 42 });
-    await store.setContent(opened.id, "en", "## Body");
+    await store.write(opened.id, {
+      translations: { en: { content: "## Body" } },
+    });
     await store.get(DRAFT_ID);
 
     expect([...store.observedRevisions]).toEqual([
@@ -202,7 +219,7 @@ describe("PgDraftStore", () => {
       DraftNotFoundError
     );
     await expect(
-      store.setContent(DRAFT_ID, "en", "## Body")
+      store.write(DRAFT_ID, { translations: { en: { content: "## Body" } } })
     ).rejects.toBeInstanceOf(DraftNotFoundError);
   });
 });

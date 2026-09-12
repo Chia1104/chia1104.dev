@@ -72,6 +72,33 @@ export interface FeedDraft {
   translations: Partial<Record<Locale, DraftTranslation>>;
 }
 
+/** An exact-string replacement in one locale's body. */
+export interface DraftContentEdit {
+  oldString: string;
+  newString: string;
+  /** Replace every match instead of refusing an ambiguous target. */
+  replaceAll?: boolean;
+}
+
+/** One edit as it landed: how many places, and the numbered lines around the first. */
+export interface DraftAppliedEdit {
+  replacements: number;
+  line: number;
+  context: string;
+}
+
+export interface DraftEditResult {
+  draft: FeedDraft;
+  /** In input order. */
+  edits: DraftAppliedEdit[];
+}
+
+/** One write: feed-level fields and any number of locales, landing as one revision. */
+export interface DraftWrite {
+  meta?: DraftFeedMeta;
+  translations?: Partial<Record<Locale, DraftTranslation>>;
+}
+
 /** Which fields the operator touched since the agent last looked; `locale` is absent for feed-level fields. */
 export type DraftChange = FeedDraftChange;
 

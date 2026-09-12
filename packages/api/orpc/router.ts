@@ -88,6 +88,7 @@ export const router = contractOS.router({
     "draft:get": feedsRoutes.getFeedDraftRoute,
     "draft:list": feedsRoutes.listFeedDraftsRoute,
     "draft:patch": feedsRoutes.patchFeedDraftRoute,
+    "draft:edit": feedsRoutes.editFeedDraftRoute,
     "draft:apply": feedsRoutes.applyFeedDraftRoute,
     "draft:discard": feedsRoutes.discardFeedDraftRoute,
     "draft:revisions": feedsRoutes.listFeedDraftRevisionsRoute,

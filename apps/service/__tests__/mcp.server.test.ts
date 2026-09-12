@@ -39,7 +39,11 @@ const fakeApi = (overrides: object = {}): McpApi =>
       "draft:open": vi.fn(),
       "draft:get": vi.fn(),
       "draft:patch": vi.fn(),
+      "draft:edit": vi.fn(),
       "draft:apply": vi.fn(),
+      "draft:discard": vi.fn(),
+      "draft:revisions": vi.fn(),
+      "draft:restore": vi.fn(),
     },
     agent: { sessions: { create: vi.fn(), chat: vi.fn(), get: vi.fn() } },
     ...overrides,
@@ -51,16 +55,53 @@ describe("mcp server", () => {
     const { tools } = await client.listTools();
     expect(tools.map((tool) => tool.name).sort()).toEqual([
       "apply_draft",
+      "discard_draft",
+      "edit_draft",
       "get_draft",
       "get_post",
+      "list_draft_revisions",
       "list_drafts",
       "list_posts",
       "open_draft",
+      "restore_draft_revision",
       "set_published",
       "update_draft",
       "write_post",
       "writing_status",
     ]);
+  });
+
+  it("discards through the draft procedure and answers with the id", async () => {
+    const discard = vi.fn().mockResolvedValue(undefined);
+    const client = await connect(
+      fakeApi({ feeds: { "draft:discard": discard } })
+    );
+
+    const result = await client.callTool({
+      name: "discard_draft",
+      arguments: { draftId: 11 },
+    });
+
+    expect(discard).toHaveBeenCalledWith({ draftId: 11 });
+    expect(JSON.parse(textOf(result))).toEqual({
+      draftId: 11,
+      discarded: true,
+    });
+  });
+
+  it("restores a revision by id", async () => {
+    const restore = vi.fn().mockResolvedValue({ id: 11, revision: 6 });
+    const client = await connect(
+      fakeApi({ feeds: { "draft:restore": restore } })
+    );
+
+    const result = await client.callTool({
+      name: "restore_draft_revision",
+      arguments: { draftId: 11, revisionId: 40 },
+    });
+
+    expect(restore).toHaveBeenCalledWith({ draftId: 11, revisionId: 40 });
+    expect(JSON.parse(textOf(result))).toEqual({ id: 11, revision: 6 });
   });
 
   it("lists drafts too and trims each feed to what the model needs", async () => {
@@ -119,6 +160,39 @@ describe("mcp server", () => {
       draftId: 3,
       expectedRevision: 4,
       translations: { en: { title: "Hello", content: "# Hi" } },
+    });
+  });
+
+  it("edits a body through the draft edit procedure, target and revision intact", async () => {
+    const edit = vi.fn().mockResolvedValue({
+      draftId: 3,
+      locale: "en",
+      revision: 6,
+      replacements: 1,
+      edits: [{ replacements: 1, line: 3, context: "2\t\n3\tRewritten." }],
+    });
+    const client = await connect(fakeApi({ feeds: { "draft:edit": edit } }));
+
+    const result = await client.callTool({
+      name: "edit_draft",
+      arguments: {
+        draftId: 3,
+        locale: "en",
+        edits: [{ oldString: "First paragraph.", newString: "Rewritten." }],
+        expectedRevision: 5,
+      },
+    });
+
+    expect(edit).toHaveBeenCalledWith({
+      draftId: 3,
+      locale: "en",
+      edits: [{ oldString: "First paragraph.", newString: "Rewritten." }],
+      expectedRevision: 5,
+    });
+    expect(JSON.parse(textOf(result))).toMatchObject({
+      revision: 6,
+      replacements: 1,
+      edits: [{ line: 3 }],
     });
   });
 

@@ -2,6 +2,7 @@ import type { DB } from "@chia/db/client";
 import {
   createFeedDraft,
   deleteFeedDraft,
+  editFeedDraftContent,
   getFeedDraft,
   getFeedDraftByFeedId,
   getFeedDraftForUpdate,
@@ -12,6 +13,7 @@ import {
   snapshotOfRevision,
 } from "@chia/db/repos/drafts";
 import type {
+  FeedDraftContentEdit,
   FeedDraftMetaPatch,
   FeedDraftRecord,
   FeedDraftSnapshot,
@@ -23,6 +25,7 @@ import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 import { AppError } from "@chia/service-kit/errors";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
+import { excerptAround } from "@chia/utils/text";
 
 import type { FeedHooks } from "../orpc/utils";
 
@@ -39,8 +42,8 @@ const requireDraft = async (
   draftId: number,
   adminId: string
 ): Promise<FeedDraftRecord> => {
-  const draft = await getFeedDraft(db, draftId);
-  if (!draft || draft.userId !== adminId) {
+  const draft = await getFeedDraft(db, draftId, adminId);
+  if (!draft) {
     throw new AppError("NOT_FOUND", {
       message: `Draft ${draftId} not found`,
     });
@@ -139,8 +142,6 @@ export const patchFeedDraftService = async (
   db: DB,
   input: PatchFeedDraftServiceInput
 ): Promise<FeedDraftRecord> => {
-  await requireDraft(db, input.draftId, input.adminId);
-
   const meta = { ...input.meta };
   if (meta.slug !== undefined && meta.slug !== null) {
     const slug = normalizeAsciiSlug(meta.slug);
@@ -155,6 +156,7 @@ export const patchFeedDraftService = async (
 
   const result = await patchFeedDraft(db, {
     draftId: input.draftId,
+    userId: input.adminId,
     expectedRevision: input.expectedRevision,
     author: input.author,
     sessionId: input.sessionId,
@@ -162,6 +164,75 @@ export const patchFeedDraftService = async (
     translations: input.translations,
   });
   return unwrapWrite(result, input.draftId);
+};
+
+export interface EditFeedDraftContentServiceInput extends FeedDraftWriter {
+  draftId: number;
+  adminId: string;
+  locale: Locale;
+  edits: readonly FeedDraftContentEdit[];
+  expectedRevision?: number;
+}
+
+/** One edit as it landed: how many places, and the numbered lines around the first. */
+export interface AppliedDraftEdit {
+  replacements: number;
+  line: number;
+  context: string;
+}
+
+export interface EditFeedDraftContentResult {
+  draft: FeedDraftRecord;
+  edits: AppliedDraftEdit[];
+}
+
+/** Lines around each edit, so the caller sees where it landed without reading the body again. */
+const CONTEXT_RADIUS = 2;
+
+/**
+ * A target that does not match exactly once is `BAD_REQUEST` naming the edit's index; nothing
+ * of the batch is written.
+ */
+export const editFeedDraftContentService = async (
+  db: DB,
+  input: EditFeedDraftContentServiceInput
+): Promise<EditFeedDraftContentResult> => {
+  const result = await editFeedDraftContent(db, {
+    draftId: input.draftId,
+    userId: input.adminId,
+    locale: input.locale,
+    edits: input.edits,
+    expectedRevision: input.expectedRevision,
+    author: input.author,
+    sessionId: input.sessionId,
+  });
+  switch (result.status) {
+    case "ok": {
+      const content = result.draft.translations[input.locale]?.content ?? "";
+      return {
+        draft: result.draft,
+        edits: result.edits.map((edit) => {
+          const { line, text } = excerptAround(
+            content,
+            edit.offsets[0] ?? 0,
+            CONTEXT_RADIUS
+          );
+          return { replacements: edit.replacements, line, context: text };
+        }),
+      };
+    }
+    case "no_body":
+      throw new AppError("BAD_REQUEST", {
+        message: `Draft ${input.draftId} has no "${input.locale}" body yet; write one before editing it.`,
+      });
+    case "not_applied":
+      throw new AppError("BAD_REQUEST", {
+        message: `Edit ${result.index + 1} of ${input.edits.length} was not applied, so nothing was written. ${result.message}`,
+        data: { index: result.index, reason: result.reason },
+      });
+    default:
+      return { draft: unwrapWrite(result, input.draftId), edits: [] };
+  }
 };
 
 const unwrapWrite = (
@@ -358,6 +429,7 @@ export const discardFeedDraftService = async (
   }
   const result = await replaceFeedDraft(db, {
     draftId: draft.id,
+    userId: input.adminId,
     snapshot: await feedSnapshot(db, draft.feedId, input.adminId),
     author: FEED_DRAFT_AUTHOR.Operator,
   });
@@ -373,10 +445,12 @@ export const restoreFeedDraftRevisionService = async (
   db: DB,
   input: { draftId: number; revisionId: number; adminId: string }
 ): Promise<FeedDraftRecord> => {
-  await requireDraft(db, input.draftId, input.adminId);
+  // Scoped to the admin's drafts, so a revision under anyone else's draft is not found
+  // whether or not it exists.
   const revision = await getFeedDraftRevision(db, {
     draftId: input.draftId,
     revisionId: input.revisionId,
+    userId: input.adminId,
   });
   if (!revision) {
     throw new AppError("NOT_FOUND", {
@@ -385,6 +459,7 @@ export const restoreFeedDraftRevisionService = async (
   }
   const result = await replaceFeedDraft(db, {
     draftId: input.draftId,
+    userId: input.adminId,
     snapshot: snapshotOfRevision(revision),
     author: FEED_DRAFT_AUTHOR.Operator,
   });

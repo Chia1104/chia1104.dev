@@ -4,8 +4,9 @@ import type { Locale } from "@chia/db/types";
 import type {
   CommitDraftResult,
   DraftChange,
-  DraftFeedMeta,
-  DraftTranslation,
+  DraftContentEdit,
+  DraftEditResult,
+  DraftWrite,
   FeedDraft,
   FeedDraftSummary,
   FetchedPage,
@@ -82,22 +83,26 @@ export interface DraftStore {
   /** A feed's working draft, created from the feed when there is none; an empty draft for a new post without `feedId`. */
   open(input: { feedId?: number }): Promise<FeedDraft>;
   get(draftId: number): Promise<FeedDraft>;
-  patchFeedMeta(draftId: number, patch: DraftFeedMeta): Promise<FeedDraft>;
-  patchTranslation(
-    draftId: number,
-    locale: Locale,
-    patch: DraftTranslation
-  ): Promise<FeedDraft>;
   /**
-   * Replaces a locale's body. With `expectedRevision`, a draft that moved since that
-   * revision rejects the write with {@link DraftConflictError} instead of overwriting it.
+   * Writes feed-level fields and per-locale fields together as one revision. `undefined`
+   * leaves a field alone, `null` clears it. With `expectedRevision`, a draft that moved since
+   * that revision rejects the write instead of overwriting it.
    */
-  setContent(
+  write(
     draftId: number,
-    locale: Locale,
-    content: string,
+    input: DraftWrite,
     expectedRevision?: number
   ): Promise<FeedDraft>;
+  /**
+   * Exact-string replacements applied in order against the body as it is when the write
+   * happens, so an operator save in between cannot be overwritten: every target still matches
+   * once or the batch is refused.
+   */
+  editContent(
+    draftId: number,
+    locale: Locale,
+    edits: readonly DraftContentEdit[]
+  ): Promise<DraftEditResult>;
   /** What the operator changed after `afterRevision`, merged per locale. */
   operatorChangesSince(
     draftId: number,
