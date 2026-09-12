@@ -303,10 +303,9 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Hello\n\nSome body text.",
+            translations: { en: { content: "## Hello\n\nSome body text." } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -328,16 +327,15 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
-          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            title: "A post",
             slug: "a-post",
+            defaultLocale: "en",
+            translations: { en: { title: "A post" } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -346,6 +344,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing the English post.",
           }),
         ],
@@ -376,17 +375,15 @@ describe("runWritingTurn", () => {
     approved.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
-          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            title: "A post",
             slug: "a-post",
             defaultLocale: "en",
+            translations: { en: { title: "A post" } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -395,6 +392,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing the English post.",
           }),
         ],
@@ -419,17 +417,15 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
-          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            title: "A post",
             slug: "a-post",
             defaultLocale: "en",
+            translations: { en: { title: "A post" } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -438,6 +434,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing the English post.",
           }),
         ],
@@ -458,6 +455,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing as approved.",
           }),
         ],
@@ -481,17 +479,15 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            title: "A post",
             slug: "a-post",
             defaultLocale: "en",
+            translations: { en: { title: "A post" } },
           }),
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -501,15 +497,15 @@ describe("runWritingTurn", () => {
     await fixture.run("Stage a post");
     const approvedRevision = (await fixture.draft.get(DRAFT_ID)).revision;
 
-    // Reads in order: the volatile context, the gate's key, then the tool. The editor saves
-    // right after the gate read the revision it matched.
+    // Reads in order: the volatile context, the preflight, the gate's key, then the tool. The
+    // editor saves right after the gate read the revision it matched.
     const store = fixture.draft;
     const originalGet = store.get.bind(store);
     let reads = 0;
     store.get = async (draftId) => {
       const draft = await originalGet(draftId);
       reads += 1;
-      if (reads === 2) {
+      if (reads === 3) {
         store.operatorEdit(DRAFT_ID, "en", { content: "## Post\n\nEdited." });
       }
       return draft;
@@ -519,6 +515,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing as approved.",
           }),
         ],
@@ -545,17 +542,15 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            title: "A post",
             slug: "a-post",
             defaultLocale: "en",
+            translations: { en: { title: "A post" } },
           }),
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -570,10 +565,11 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nA body the operator never saw.",
+            translations: {
+              en: { content: "## Post\n\nA body the operator never saw." },
+            },
           }),
         ],
         { stopReason: "toolUse" }
@@ -582,6 +578,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing.",
           }),
         ],
@@ -609,13 +606,13 @@ describe("runWritingTurn", () => {
     approved.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing.",
           }),
         ],

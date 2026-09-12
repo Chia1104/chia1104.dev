@@ -1,6 +1,11 @@
 import { summarizeContentToolResult } from "@chia/agent-content/tools/summarize";
 import { toolErrorText, toolResultDetails } from "@chia/agent-runtime/tools";
-import { asJsonArray, asNumber, asString } from "@chia/utils/json";
+import {
+  asJsonArray,
+  asJsonObject,
+  asNumber,
+  asString,
+} from "@chia/utils/json";
 
 import { TOOL_NAMES } from "./registry.ts";
 
@@ -60,23 +65,21 @@ export const summarizeToolResult = <TResult>(
       }
       return "Read draft metadata.";
     }
-    case TOOL_NAMES.patchDraftMeta: {
+    case TOOL_NAMES.writeDraft: {
       const warnings = asJsonArray(details.warnings);
-      const locale = asString(details.locale);
-      const scope = locale ? `${locale} metadata` : "Metadata";
+      const written = asJsonObject(details.translations);
+      const locales = written ? Object.keys(written) : [];
+      const scope =
+        locales.length > 0 ? `Wrote ${locales.join(", ")}` : "Updated metadata";
       return warnings && warnings.length > 0
-        ? `${scope} updated with ${warnings.length} warning(s).`
-        : `${scope} updated.`;
-    }
-    case TOOL_NAMES.writeDraftContent: {
-      const locale = asString(details.locale);
-      const lineCount = asNumber(details.lineCount);
-      return `Wrote ${locale ?? "draft"} body${lineCount === undefined ? "" : ` (${lineCount} lines)`}.`;
+        ? `${scope} with ${warnings.length} warning(s).`
+        : `${scope}.`;
     }
     case TOOL_NAMES.editDraftContent: {
       const replacements = asNumber(details.replacements) ?? 0;
+      const edits = asJsonArray(details.edits);
       const locale = asString(details.locale);
-      return `${replacements} replacement(s) in ${locale ?? "draft"}.`;
+      return `${replacements} replacement(s) across ${edits?.length ?? 1} edit(s) in ${locale ?? "draft"}.`;
     }
     case TOOL_NAMES.commitDraft: {
       const feedId = asNumber(details.feedId);

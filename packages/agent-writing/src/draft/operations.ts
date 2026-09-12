@@ -1,10 +1,13 @@
 import type { Locale } from "@chia/db/types";
 import { mergeDefined, omitUndefined } from "@chia/utils/object";
-import type { ExactReplaceFailure } from "@chia/utils/text";
+import { excerptAround } from "@chia/utils/text";
+import type { AppliedEdit, ExactReplaceFailure } from "@chia/utils/text";
 
 import type {
+  DraftAppliedEdit,
   DraftFeedMeta,
   DraftTranslation,
+  DraftWrite,
   FeedDraft,
   FeedDraftSummary,
 } from "../types.ts";
@@ -96,7 +99,31 @@ export class DraftConflictError extends Error {
 }
 
 export const noBodyMessage = (locale: Locale) =>
-  `No draft body for locale "${locale}" yet. Use write_draft_content first.`;
+  `No draft body for locale "${locale}" yet. Write one with write_draft first.`;
+
+/** Lines around each landed edit, for a result the model can trust without reading again. */
+export const describeEdits = (
+  content: string,
+  edits: readonly AppliedEdit[]
+): DraftAppliedEdit[] =>
+  edits.map((edit) => {
+    const { line, text } = excerptAround(content, edit.offsets[0] ?? 0, 2);
+    return { replacements: edit.replacements, line, context: text };
+  });
+
+/** Applies a write to an in-memory draft: meta first, then every locale, as one step. */
+export const applyWrite = (draft: FeedDraft, input: DraftWrite): FeedDraft => {
+  let next = input.meta ? patchFeedMeta(draft, input.meta) : draft;
+  for (const [locale, patch] of Object.entries(input.translations ?? {})) {
+    // A patch with no defined field must not create the locale or bump the revision.
+    if (!patch || Object.values(patch).every((value) => value === undefined)) {
+      continue;
+    }
+    // SAFETY: DraftWrite.translations is keyed by Locale.
+    next = patchTranslation(next, locale as Locale, patch);
+  }
+  return next;
+};
 
 export class EditNotAppliedError extends Error {
   constructor(
@@ -107,14 +134,3 @@ export class EditNotAppliedError extends Error {
     this.name = "EditNotAppliedError";
   }
 }
-
-/**
- * Renders the body with 1-based line numbers so the model can locate `oldString`.
- */
-export const withLineNumbers = (content: string): string => {
-  const lines = content.split("\n");
-  const width = String(lines.length).length;
-  return lines
-    .map((line, index) => `${String(index + 1).padStart(width, " ")}\t${line}`)
-    .join("\n");
-};

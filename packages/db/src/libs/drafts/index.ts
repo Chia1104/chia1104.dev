@@ -1,7 +1,11 @@
 import { and, desc, eq, gt, inArray, isNull, lt, or, sql } from "drizzle-orm";
 
-import { replaceExact } from "@chia/utils/text";
-import type { ExactReplaceFailure } from "@chia/utils/text";
+import { applyEdits } from "@chia/utils/text";
+import type {
+  AppliedEdit,
+  ContentEdit,
+  ExactReplaceFailure,
+} from "@chia/utils/text";
 
 import type { DB } from "../../client.ts";
 import type {
@@ -462,26 +466,35 @@ export const patchFeedDraft = (
     return { status: "ok", draft: await writePatch(tx, locked.draft, input) };
   });
 
+export type FeedDraftContentEdit = ContentEdit;
+
 export interface EditFeedDraftContentInput extends FeedDraftOwnedWrite {
   locale: Locale;
-  oldString: string;
-  newString: string;
-  replaceAll?: boolean;
+  /** Applied in order, each against the body the previous one produced. */
+  edits: readonly FeedDraftContentEdit[];
 }
 
+export type FeedDraftAppliedEdit = AppliedEdit;
+
 export type FeedDraftEditResult =
-  | { status: "ok"; draft: FeedDraftRecord; replacements: number }
+  | { status: "ok"; draft: FeedDraftRecord; edits: FeedDraftAppliedEdit[] }
   | { status: "conflict"; draft: FeedDraftRecord }
   | { status: "not_found" }
   /** The locale has no body to edit. */
   | { status: "no_body" }
-  /** The target did not match once; `message` says how to proceed. */
-  | { status: "not_applied"; reason: ExactReplaceFailure; message: string };
+  /** Edit `index` did not match once; nothing was written. `message` says how to proceed. */
+  | {
+      status: "not_applied";
+      index: number;
+      reason: ExactReplaceFailure;
+      message: string;
+    };
 
 /**
- * Exact-string replacement in one locale's body, matched against the body under the draft
- * lock. Without `expectedRevision` an edit lands on whatever is current, which is safe by
- * construction: the target either still matches once or the edit is refused.
+ * Exact-string replacements in one locale's body, matched against the body under the draft
+ * lock and written as one revision. Without `expectedRevision` the edits land on whatever is
+ * current, which is safe by construction: each target still matches once or the batch is
+ * refused.
  */
 export const editFeedDraftContent = (
   db: DB,
@@ -494,25 +507,15 @@ export const editFeedDraftContent = (
     const body = current.translations[input.locale]?.content;
     if (body === undefined || body === null) return { status: "no_body" };
 
-    const edit = replaceExact(
-      body,
-      input.oldString,
-      input.newString,
-      input.replaceAll ?? false
-    );
-    if (!edit.ok) {
-      return {
-        status: "not_applied",
-        reason: edit.reason,
-        message: edit.message,
-      };
-    }
+    const applied = applyEdits(body, input.edits);
+    if (!applied.ok) return { status: "not_applied", ...applied };
+    const content = applied.content;
     const draft = await writePatch(tx, current, {
       author: input.author,
       sessionId: input.sessionId,
-      translations: { [input.locale]: { content: edit.content } },
+      translations: { [input.locale]: { content } },
     });
-    return { status: "ok", draft, replacements: edit.replacements };
+    return { status: "ok", draft, edits: applied.edits };
   });
 
 /** The write half of a patch, on a draft already locked and revision-checked. */

@@ -80,9 +80,23 @@ export interface DraftContentEdit {
   replaceAll?: boolean;
 }
 
+/** One edit as it landed: how many places, and the numbered lines around the first. */
+export interface DraftAppliedEdit {
+  replacements: number;
+  line: number;
+  context: string;
+}
+
 export interface DraftEditResult {
   draft: FeedDraft;
-  replacements: number;
+  /** In input order. */
+  edits: DraftAppliedEdit[];
+}
+
+/** One write: feed-level fields and any number of locales, landing as one revision. */
+export interface DraftWrite {
+  meta?: DraftFeedMeta;
+  translations?: Partial<Record<Locale, DraftTranslation>>;
 }
 
 /** Which fields the operator touched since the agent last looked; `locale` is absent for feed-level fields. */

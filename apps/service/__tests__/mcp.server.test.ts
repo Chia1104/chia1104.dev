@@ -169,6 +169,7 @@ describe("mcp server", () => {
       locale: "en",
       revision: 6,
       replacements: 1,
+      edits: [{ replacements: 1, line: 3, context: "2\t\n3\tRewritten." }],
     });
     const client = await connect(fakeApi({ feeds: { "draft:edit": edit } }));
 
@@ -177,8 +178,7 @@ describe("mcp server", () => {
       arguments: {
         draftId: 3,
         locale: "en",
-        oldString: "First paragraph.",
-        newString: "Rewritten.",
+        edits: [{ oldString: "First paragraph.", newString: "Rewritten." }],
         expectedRevision: 5,
       },
     });
@@ -186,15 +186,13 @@ describe("mcp server", () => {
     expect(edit).toHaveBeenCalledWith({
       draftId: 3,
       locale: "en",
-      oldString: "First paragraph.",
-      newString: "Rewritten.",
+      edits: [{ oldString: "First paragraph.", newString: "Rewritten." }],
       expectedRevision: 5,
     });
-    expect(JSON.parse(textOf(result))).toEqual({
-      draftId: 3,
-      locale: "en",
+    expect(JSON.parse(textOf(result))).toMatchObject({
       revision: 6,
       replacements: 1,
+      edits: [{ line: 3 }],
     });
   });
 

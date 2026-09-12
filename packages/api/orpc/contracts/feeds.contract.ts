@@ -412,22 +412,27 @@ export const patchFeedDraftContract = oc
   .input(patchFeedDraftSchema)
   .output(feedDraftSchema);
 
-export const editFeedDraftSchema = z.object({
-  draftId: z.number().int(),
-  locale: z.enum(locale.enumValues),
+export const feedDraftContentEditSchema = z.object({
   /** Matched byte for byte against the current body. */
   oldString: z.string().min(1),
   /** Empty deletes the match. */
   newString: z.string(),
   /** Replace every match instead of refusing an ambiguous target. */
   replaceAll: z.boolean().optional(),
+});
+
+export const editFeedDraftSchema = z.object({
+  draftId: z.number().int(),
+  locale: z.enum(locale.enumValues),
+  /** Applied in order as one revision; a target that does not match once refuses the batch. */
+  edits: z.array(feedDraftContentEditSchema).min(1).max(50),
   /** Omit to edit whatever is current; an exact match makes that safe. */
   expectedRevision: z.number().int().optional(),
 });
 
 export type EditFeedDraftInput = z.infer<typeof editFeedDraftSchema>;
 
-/** Exact-string replacement in one locale's body, applied under the draft lock. */
+/** Exact-string replacements in one locale's body, applied under the draft lock. */
 export const editFeedDraftContract = oc
   .errors({
     ...DRAFT_ERRORS,
@@ -439,7 +444,16 @@ export const editFeedDraftContract = oc
       draftId: z.number().int(),
       locale: z.enum(locale.enumValues),
       revision: z.number().int(),
+      /** Across every edit. */
       replacements: z.number().int(),
+      /** Per edit, in input order: how many places and the numbered lines around the first. */
+      edits: z.array(
+        z.object({
+          replacements: z.number().int(),
+          line: z.number().int(),
+          context: z.string(),
+        })
+      ),
     })
   );
 

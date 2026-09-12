@@ -13,6 +13,7 @@ import {
   snapshotOfRevision,
 } from "@chia/db/repos/drafts";
 import type {
+  FeedDraftContentEdit,
   FeedDraftMetaPatch,
   FeedDraftRecord,
   FeedDraftSnapshot,
@@ -24,6 +25,7 @@ import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 import { AppError } from "@chia/service-kit/errors";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
+import { excerptAround } from "@chia/utils/text";
 
 import type { FeedHooks } from "../orpc/utils";
 
@@ -168,18 +170,29 @@ export interface EditFeedDraftContentServiceInput extends FeedDraftWriter {
   draftId: number;
   adminId: string;
   locale: Locale;
-  oldString: string;
-  newString: string;
-  replaceAll?: boolean;
+  edits: readonly FeedDraftContentEdit[];
   expectedRevision?: number;
+}
+
+/** One edit as it landed: how many places, and the numbered lines around the first. */
+export interface AppliedDraftEdit {
+  replacements: number;
+  line: number;
+  context: string;
 }
 
 export interface EditFeedDraftContentResult {
   draft: FeedDraftRecord;
-  replacements: number;
+  edits: AppliedDraftEdit[];
 }
 
-/** A target that does not match exactly once is `BAD_REQUEST`; the message says how to fix the call. */
+/** Lines around each edit, so the caller sees where it landed without reading the body again. */
+const CONTEXT_RADIUS = 2;
+
+/**
+ * A target that does not match exactly once is `BAD_REQUEST` naming the edit's index; nothing
+ * of the batch is written.
+ */
 export const editFeedDraftContentService = async (
   db: DB,
   input: EditFeedDraftContentServiceInput
@@ -188,27 +201,37 @@ export const editFeedDraftContentService = async (
     draftId: input.draftId,
     userId: input.adminId,
     locale: input.locale,
-    oldString: input.oldString,
-    newString: input.newString,
-    replaceAll: input.replaceAll,
+    edits: input.edits,
     expectedRevision: input.expectedRevision,
     author: input.author,
     sessionId: input.sessionId,
   });
   switch (result.status) {
-    case "ok":
-      return { draft: result.draft, replacements: result.replacements };
+    case "ok": {
+      const content = result.draft.translations[input.locale]?.content ?? "";
+      return {
+        draft: result.draft,
+        edits: result.edits.map((edit) => {
+          const { line, text } = excerptAround(
+            content,
+            edit.offsets[0] ?? 0,
+            CONTEXT_RADIUS
+          );
+          return { replacements: edit.replacements, line, context: text };
+        }),
+      };
+    }
     case "no_body":
       throw new AppError("BAD_REQUEST", {
         message: `Draft ${input.draftId} has no "${input.locale}" body yet; write one before editing it.`,
       });
     case "not_applied":
       throw new AppError("BAD_REQUEST", {
-        message: result.message,
-        data: { reason: result.reason },
+        message: `Edit ${result.index + 1} of ${input.edits.length} was not applied, so nothing was written. ${result.message}`,
+        data: { index: result.index, reason: result.reason },
       });
     default:
-      return { draft: unwrapWrite(result, input.draftId), replacements: 0 };
+      return { draft: unwrapWrite(result, input.draftId), edits: [] };
   }
 };
 
