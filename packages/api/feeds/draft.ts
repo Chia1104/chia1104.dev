@@ -40,8 +40,8 @@ const requireDraft = async (
   draftId: number,
   adminId: string
 ): Promise<FeedDraftRecord> => {
-  const draft = await getFeedDraft(db, draftId);
-  if (!draft || draft.userId !== adminId) {
+  const draft = await getFeedDraft(db, draftId, adminId);
+  if (!draft) {
     throw new AppError("NOT_FOUND", {
       message: `Draft ${draftId} not found`,
     });

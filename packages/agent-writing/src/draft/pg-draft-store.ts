@@ -90,7 +90,7 @@ export class PgDraftStore implements DraftStore {
   }
 
   async get(draftId: number): Promise<FeedDraft> {
-    const record = await getFeedDraft(this.db, draftId);
+    const record = await getFeedDraft(this.db, draftId, this.options.userId);
     if (!record) throw new DraftNotFoundError(draftId);
     return this.observe(record);
   }
@@ -182,7 +182,11 @@ export class PgDraftStore implements DraftStore {
     draftId: number,
     afterRevision: number
   ): Promise<DraftChange[]> {
-    return listOperatorFeedDraftChanges(this.db, { draftId, afterRevision });
+    return listOperatorFeedDraftChanges(this.db, {
+      draftId,
+      afterRevision,
+      userId: this.options.userId,
+    });
   }
 }
 

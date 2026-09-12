@@ -195,8 +195,8 @@ export const createWritingAgentKind = (
           }
           const draftId =
             attachment.type === "draft" ? attachment.id : attachment.source.id;
-          const draft = await getFeedDraft(db, draftId);
-          if (!draft || draft.userId !== caller.userId) {
+          const draft = await getFeedDraft(db, draftId, caller.userId);
+          if (!draft) {
             throw new AppError("NOT_FOUND", {
               message: `Unknown draft: ${draftId}`,
             });

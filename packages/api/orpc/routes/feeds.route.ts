@@ -390,13 +390,10 @@ export const listFeedDraftRevisionsRoute = contractOS.feeds["draft:revisions"]
   .use(rootWriteGuard)
   .handler((opts) =>
     withORPCErrors(async () => {
-      await getFeedDraftService(opts.context.db, {
-        draftId: opts.input.draftId,
-        adminId: opts.context.caller.adminId,
-      });
       const items = await listFeedDraftRevisions(opts.context.db, {
         draftId: opts.input.draftId,
         limit: opts.input.limit,
+        userId: opts.context.caller.adminId,
       });
       return { items: items.map(toRevisionOutput) };
     })

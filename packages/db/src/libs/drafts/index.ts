@@ -135,10 +135,17 @@ const snapshotOf = (draft: FeedDraftRecord): FeedDraftSnapshot => ({
 const readDraft = async (
   db: DB | Tx,
   draftId: number,
-  lock = false
+  options: { lock?: boolean; userId?: string } = {}
 ): Promise<FeedDraftRecord | null> => {
-  const query = db.select().from(feedDrafts).where(eq(feedDrafts.id, draftId));
-  const [draft] = lock ? await query.for("update") : await query;
+  const query = db
+    .select()
+    .from(feedDrafts)
+    .where(
+      options.userId === undefined
+        ? eq(feedDrafts.id, draftId)
+        : and(eq(feedDrafts.id, draftId), eq(feedDrafts.userId, options.userId))
+    );
+  const [draft] = options.lock ? await query.for("update") : await query;
   if (!draft) return null;
   const rows = await db
     .select()
@@ -147,11 +154,13 @@ const readDraft = async (
   return toRecord(draft, translationsOf(rows));
 };
 
-export const getFeedDraft = (db: DB, draftId: number) => readDraft(db, draftId);
+/** One of `userId`'s drafts; anyone else's reads as null. */
+export const getFeedDraft = (db: DB, draftId: number, userId: string) =>
+  readDraft(db, draftId, { userId });
 
 /** The draft under `FOR UPDATE`, so a compare-and-set on its revision holds until the transaction ends. */
 export const getFeedDraftForUpdate = (tx: Tx, draftId: number) =>
-  readDraft(tx, draftId, true);
+  readDraft(tx, draftId, { lock: true });
 
 /** State needed by watch streams, without translation bodies. */
 export const getFeedDraftStatus = async (db: DB, draftId: number) => {
@@ -424,10 +433,11 @@ const lockOwnedDraft = async (
   | { status: "locked"; draft: FeedDraftRecord }
   | Exclude<FeedDraftWriteResult, { status: "ok" }>
 > => {
-  const current = await readDraft(tx, input.draftId, true);
-  if (!current || current.userId !== input.userId) {
-    return { status: "not_found" };
-  }
+  const current = await readDraft(tx, input.draftId, {
+    lock: true,
+    userId: input.userId,
+  });
+  if (!current) return { status: "not_found" };
   if (
     input.expectedRevision !== undefined &&
     input.expectedRevision !== current.revision
@@ -663,9 +673,10 @@ export const deleteFeedDraft = (db: DB, draftId: number) =>
 
 export type FeedDraftRevisionSummary = Omit<FeedDraftRevision, "snapshot">;
 
+/** Newest first, only under one of `userId`'s drafts; anyone else's draft lists nothing. */
 export const listFeedDraftRevisions = async (
   db: DB,
-  input: { draftId: number; limit: number }
+  input: { draftId: number; limit: number; userId: string }
 ): Promise<FeedDraftRevisionSummary[]> =>
   await db
     .select({
@@ -679,7 +690,13 @@ export const listFeedDraftRevisions = async (
       updatedAt: feedDraftRevisions.updatedAt,
     })
     .from(feedDraftRevisions)
-    .where(eq(feedDraftRevisions.draftId, input.draftId))
+    .innerJoin(feedDrafts, eq(feedDrafts.id, feedDraftRevisions.draftId))
+    .where(
+      and(
+        eq(feedDraftRevisions.draftId, input.draftId),
+        eq(feedDrafts.userId, input.userId)
+      )
+    )
     .orderBy(desc(feedDraftRevisions.revision))
     .limit(input.limit);
 
@@ -702,17 +719,19 @@ export const getFeedDraftRevision = async (
   return row?.revision ?? null;
 };
 
-/** Operator revisions above `afterRevision`, oldest first, for the agent's turn context. */
+/** Operator revisions above `afterRevision` on one of `userId`'s drafts, oldest first, for the agent's turn context. */
 export const listOperatorFeedDraftChanges = async (
   db: DB,
-  input: { draftId: number; afterRevision: number }
+  input: { draftId: number; afterRevision: number; userId: string }
 ): Promise<FeedDraftChange[]> => {
   const rows = await db
     .select({ changes: feedDraftRevisions.changes })
     .from(feedDraftRevisions)
+    .innerJoin(feedDrafts, eq(feedDrafts.id, feedDraftRevisions.draftId))
     .where(
       and(
         eq(feedDraftRevisions.draftId, input.draftId),
+        eq(feedDrafts.userId, input.userId),
         eq(feedDraftRevisions.author, FEED_DRAFT_AUTHOR.Operator),
         gt(feedDraftRevisions.revision, input.afterRevision)
       )
