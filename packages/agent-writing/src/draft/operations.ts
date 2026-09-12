@@ -1,5 +1,6 @@
 import type { Locale } from "@chia/db/types";
 import { mergeDefined, omitUndefined } from "@chia/utils/object";
+import type { ExactReplaceFailure } from "@chia/utils/text";
 
 import type {
   DraftFeedMeta,
@@ -37,8 +38,18 @@ export const patchTranslation = (
   },
 });
 
+/** What a summary needs from a draft; a full draft or a listed one both fit. */
+type DraftSummarySource = Pick<
+  FeedDraft,
+  "id" | "feedId" | "revision" | "slug" | "type" | "defaultLocale"
+> & {
+  translations: Partial<Record<Locale, { title?: string | null }>>;
+};
+
 /** The default locale's title, else the first locale that has one. */
-export const draftTitle = (draft: FeedDraft): string | null => {
+export const draftTitle = (
+  draft: Pick<DraftSummarySource, "defaultLocale" | "translations">
+): string | null => {
   const preferred = draft.translations[draft.defaultLocale]?.title;
   if (preferred) return preferred;
   for (const translation of Object.values(draft.translations)) {
@@ -48,7 +59,7 @@ export const draftTitle = (draft: FeedDraft): string | null => {
 };
 
 export const draftSummary = (
-  draft: FeedDraft,
+  draft: DraftSummarySource,
   updatedAt: Date
 ): FeedDraftSummary => ({
   id: draft.id,
@@ -84,71 +95,18 @@ export class DraftConflictError extends Error {
   }
 }
 
+export const noBodyMessage = (locale: Locale) =>
+  `No draft body for locale "${locale}" yet. Use write_draft_content first.`;
+
 export class EditNotAppliedError extends Error {
   constructor(
     message: string,
-    readonly reason: "not_found" | "ambiguous" | "empty_target"
+    readonly reason: ExactReplaceFailure | "no_body"
   ) {
     super(message);
     this.name = "EditNotAppliedError";
   }
 }
-
-export interface EditResult {
-  content: string;
-  replacements: number;
-}
-
-/**
- * `oldString` → `newString` replacement. A non-unique match without `replaceAll` is an error,
- * not a first-match replacement.
- */
-export const applyEdit = (
-  content: string,
-  oldString: string,
-  newString: string,
-  replaceAll = false
-): EditResult => {
-  if (oldString.length === 0) {
-    throw new EditNotAppliedError(
-      "`oldString` must not be empty. Use write_draft_content to replace the whole body.",
-      "empty_target"
-    );
-  }
-
-  const occurrences = countOccurrences(content, oldString);
-
-  if (occurrences === 0) {
-    throw new EditNotAppliedError(
-      "`oldString` was not found in the draft. Read the draft again — whitespace and indentation must match exactly.",
-      "not_found"
-    );
-  }
-
-  if (occurrences > 1 && !replaceAll) {
-    throw new EditNotAppliedError(
-      `\`oldString\` matches ${occurrences} places. Include more surrounding context to make it unique, or pass replaceAll: true.`,
-      "ambiguous"
-    );
-  }
-
-  return {
-    content: replaceAll
-      ? content.split(oldString).join(newString)
-      : content.replace(oldString, newString),
-    replacements: replaceAll ? occurrences : 1,
-  };
-};
-
-const countOccurrences = (haystack: string, needle: string): number => {
-  let count = 0;
-  let index = haystack.indexOf(needle);
-  while (index !== -1) {
-    count += 1;
-    index = haystack.indexOf(needle, index + needle.length);
-  }
-  return count;
-};
 
 /**
  * Renders the body with 1-based line numbers so the model can locate `oldString`.

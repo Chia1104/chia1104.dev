@@ -89,6 +89,7 @@ const DRAFT_ID = 7;
 const build = () =>
   new PgDraftStore(db, {
     sessionId: "session-1",
+    userId: "author",
     list: async () => [...drafts.values()],
     open: async ({ feedId }) => {
       const existing = [...drafts.values()].find(

@@ -168,9 +168,18 @@ describe("createWritingAgentKind state", () => {
       ])
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
 
-    drafts.getFeedDraft.mockResolvedValue(record(7, "someone-else"));
+    // The repository scopes the read to the caller; a foreign draft comes back as null.
+    drafts.getFeedDraft.mockImplementation(
+      async (_db: DB, id: number, userId: string) =>
+        id === 7 && userId === "author" ? record(7) : null
+    );
     await expect(
-      kind.state.attach?.(caller, db, "session-1", [{ type: "draft", id: 7 }])
+      kind.state.attach?.(
+        { ...caller, userId: "someone-else" },
+        db,
+        "session-1",
+        [{ type: "draft", id: 7 }]
+      )
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
     expect(repo.touchWritingSessionDrafts).not.toHaveBeenCalled();
   });

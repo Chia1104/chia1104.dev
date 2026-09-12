@@ -125,11 +125,59 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
     {
       title: "List open drafts",
       description:
-        "Drafts with unapplied work: new posts not yet applied, and posts edited since their last apply.",
+        "Drafts with unapplied work: new posts not yet applied, and posts edited since their last apply. Returns ids, titles and revisions; use get_draft for the body.",
       inputSchema: {},
       annotations: { readOnlyHint: true },
     },
     guarded(() => api.feeds["draft:list"]())
+  );
+
+  server.registerTool(
+    "discard_draft",
+    {
+      title: "Discard a draft",
+      description:
+        "Drop a draft's unapplied work. A post's draft goes back to what the post holds; a new post's draft is deleted with its revisions.",
+      inputSchema: { draftId: z.number().int() },
+      annotations: { destructiveHint: true },
+    },
+    guarded(async ({ draftId }) => {
+      await api.feeds["draft:discard"]({ draftId });
+      return { draftId, discarded: true };
+    })
+  );
+
+  server.registerTool(
+    "list_draft_revisions",
+    {
+      title: "List a draft's revisions",
+      description:
+        "Restore points of a draft, newest first: who wrote each (operator or agent) and which fields changed. Pass a revision's id to restore_draft_revision.",
+      inputSchema: {
+        draftId: z.number().int(),
+        limit: z.number().int().min(1).max(100).optional(),
+      },
+      annotations: { readOnlyHint: true },
+    },
+    guarded(({ draftId, limit }) =>
+      api.feeds["draft:revisions"]({ draftId, limit })
+    )
+  );
+
+  server.registerTool(
+    "restore_draft_revision",
+    {
+      title: "Restore a draft revision",
+      description:
+        "Put the draft back to the state a revision recorded, as a new revision on top. Nothing is lost: the state being replaced stays in the trail.",
+      inputSchema: {
+        draftId: z.number().int(),
+        revisionId: z.number().int(),
+      },
+    },
+    guarded(({ draftId, revisionId }) =>
+      api.feeds["draft:restore"]({ draftId, revisionId })
+    )
   );
 
   server.registerTool(
@@ -182,6 +230,35 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
       },
     },
     guarded((input) => api.feeds["draft:patch"](input))
+  );
+
+  server.registerTool(
+    "edit_draft",
+    {
+      title: "Edit a draft body in place",
+      description:
+        "Replace an exact string in one locale's MDX body without resending the rest. `oldString` must match the current body byte for byte, indentation included; a target that matches more than once fails unless replaceAll. Read the draft first with get_draft.",
+      inputSchema: {
+        draftId: z.number().int(),
+        locale: localeSchema,
+        oldString: z.string().min(1).describe("Exact existing text to replace"),
+        newString: z
+          .string()
+          .describe("Replacement text; empty deletes the match"),
+        replaceAll: z
+          .boolean()
+          .optional()
+          .describe("Replace every match instead of failing on ambiguity"),
+        expectedRevision: z
+          .number()
+          .int()
+          .optional()
+          .describe(
+            "The revision you last read; omit to edit whatever is current"
+          ),
+      },
+    },
+    guarded((input) => api.feeds["draft:edit"](input))
   );
 
   server.registerTool(

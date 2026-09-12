@@ -291,24 +291,15 @@ describe("draft slug handling", () => {
     expect(context.content.commits).toHaveLength(0);
   });
 
-  it("re-applies an exact edit once when the operator saved in between", async () => {
+  it("lands an exact edit on the body the operator saved in between", async () => {
     const context = createContext();
     await context.draft.patchTranslation(DRAFT_ID, "en", {
       content: "## Title\n\nFirst paragraph.\n\nSecond paragraph.",
     });
-    const store = context.draft;
-    const originalSet = store.setContent.bind(store);
-    let interleaved = false;
-    store.setContent = (draftId, locale, content, expectedRevision) => {
-      if (!interleaved) {
-        interleaved = true;
-        store.operatorEdit(DRAFT_ID, "en", {
-          content:
-            "## Title\n\nFirst paragraph.\n\nSecond paragraph.\n\nOperator note.",
-        });
-      }
-      return originalSet(draftId, locale, content, expectedRevision);
-    };
+    context.draft.operatorEdit(DRAFT_ID, "en", {
+      content:
+        "## Title\n\nFirst paragraph.\n\nSecond paragraph.\n\nOperator note.",
+    });
 
     const result = await editDraftContentTool.execute(
       "call-1",
@@ -326,6 +317,31 @@ describe("draft slug handling", () => {
     expect(result.details).toMatchObject({ replacements: 1 });
     expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
       "## Title\n\nRewritten.\n\nSecond paragraph.\n\nOperator note."
+    );
+  });
+
+  it("refuses an ambiguous target with the way forward, instead of guessing", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
+      content: "same line\nsame line",
+    });
+
+    await expect(
+      editDraftContentTool.execute(
+        "call-1",
+        {
+          draftId: DRAFT_ID,
+          locale: "en",
+          oldString: "same line",
+          newString: "changed",
+        },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow(/matches 2 places/);
+    expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
+      "same line\nsame line"
     );
   });
 

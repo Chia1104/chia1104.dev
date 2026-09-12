@@ -32,6 +32,7 @@ import {
 import {
   applyFeedDraftService,
   discardFeedDraftService,
+  editFeedDraftContentService,
   getFeedDraftService,
   openFeedDraftService,
   patchFeedDraftService,
@@ -268,7 +269,11 @@ export const upsertContentRoute = contractOS.feeds["content:upsert"]
 
 // The working draft is the operator's; the agent reaches it through its own port, never here.
 
-const toDraftOutput = (draft: FeedDraftRecord) => ({
+const toDraftOutput = <
+  TDraft extends Pick<FeedDraftRecord, "createdAt" | "updatedAt">,
+>(
+  draft: TDraft
+) => ({
   ...draft,
   createdAt: draft.createdAt.toISOString(),
   updatedAt: draft.updatedAt.toISOString(),
@@ -337,6 +342,27 @@ export const patchFeedDraftRoute = contractOS.feeds["draft:patch"]
     })
   );
 
+export const editFeedDraftRoute = contractOS.feeds["draft:edit"]
+  .use(rootWriteGuard)
+  .handler((opts) =>
+    withORPCErrors(async () => {
+      const { draft, replacements } = await editFeedDraftContentService(
+        opts.context.db,
+        {
+          ...opts.input,
+          adminId: opts.context.caller.adminId,
+          author: FEED_DRAFT_AUTHOR.Operator,
+        }
+      );
+      return {
+        draftId: draft.id,
+        locale: opts.input.locale,
+        revision: draft.revision,
+        replacements,
+      };
+    })
+  );
+
 export const applyFeedDraftRoute = contractOS.feeds["draft:apply"]
   .use(rootWriteGuard)
   .handler((opts) =>
@@ -364,13 +390,10 @@ export const listFeedDraftRevisionsRoute = contractOS.feeds["draft:revisions"]
   .use(rootWriteGuard)
   .handler((opts) =>
     withORPCErrors(async () => {
-      await getFeedDraftService(opts.context.db, {
-        draftId: opts.input.draftId,
-        adminId: opts.context.caller.adminId,
-      });
       const items = await listFeedDraftRevisions(opts.context.db, {
         draftId: opts.input.draftId,
         limit: opts.input.limit,
+        userId: opts.context.caller.adminId,
       });
       return { items: items.map(toRevisionOutput) };
     })

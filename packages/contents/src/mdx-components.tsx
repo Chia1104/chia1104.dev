@@ -9,6 +9,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 import { CodeBlock, Pre } from "fumadocs-ui/components/codeblock";
 import { File, Folder, Files } from "fumadocs-ui/components/files";
 import { Heading } from "fumadocs-ui/components/heading";
+import { Step, Steps } from "fumadocs-ui/components/steps";
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { TypeTable } from "fumadocs-ui/components/type-table";
 import defaultComponents from "fumadocs-ui/mdx";
@@ -32,6 +33,8 @@ export const FumadocsComponents =
     File,
     Folder,
     Files,
+    Steps,
+    Step,
     pre: ({ ref: _ref, ...props }: any) => (
       <CodeBlock {...props}>
         <Pre>{props.children}</Pre>

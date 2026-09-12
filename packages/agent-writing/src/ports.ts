@@ -4,6 +4,8 @@ import type { Locale } from "@chia/db/types";
 import type {
   CommitDraftResult,
   DraftChange,
+  DraftContentEdit,
+  DraftEditResult,
   DraftFeedMeta,
   DraftTranslation,
   FeedDraft,
@@ -98,6 +100,16 @@ export interface DraftStore {
     content: string,
     expectedRevision?: number
   ): Promise<FeedDraft>;
+  /**
+   * Exact-string replacement matched against the body as it is when the write happens, so an
+   * operator save in between cannot be overwritten: the target still matches once or the edit
+   * is refused.
+   */
+  editContent(
+    draftId: number,
+    locale: Locale,
+    edit: DraftContentEdit
+  ): Promise<DraftEditResult>;
   /** What the operator changed after `afterRevision`, merged per locale. */
   operatorChangesSince(
     draftId: number,

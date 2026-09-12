@@ -2,6 +2,7 @@ import type { DB } from "@chia/db/client";
 import {
   createFeedDraft,
   deleteFeedDraft,
+  editFeedDraftContent,
   getFeedDraft,
   getFeedDraftByFeedId,
   getFeedDraftForUpdate,
@@ -39,8 +40,8 @@ const requireDraft = async (
   draftId: number,
   adminId: string
 ): Promise<FeedDraftRecord> => {
-  const draft = await getFeedDraft(db, draftId);
-  if (!draft || draft.userId !== adminId) {
+  const draft = await getFeedDraft(db, draftId, adminId);
+  if (!draft) {
     throw new AppError("NOT_FOUND", {
       message: `Draft ${draftId} not found`,
     });
@@ -139,8 +140,6 @@ export const patchFeedDraftService = async (
   db: DB,
   input: PatchFeedDraftServiceInput
 ): Promise<FeedDraftRecord> => {
-  await requireDraft(db, input.draftId, input.adminId);
-
   const meta = { ...input.meta };
   if (meta.slug !== undefined && meta.slug !== null) {
     const slug = normalizeAsciiSlug(meta.slug);
@@ -155,6 +154,7 @@ export const patchFeedDraftService = async (
 
   const result = await patchFeedDraft(db, {
     draftId: input.draftId,
+    userId: input.adminId,
     expectedRevision: input.expectedRevision,
     author: input.author,
     sessionId: input.sessionId,
@@ -162,6 +162,54 @@ export const patchFeedDraftService = async (
     translations: input.translations,
   });
   return unwrapWrite(result, input.draftId);
+};
+
+export interface EditFeedDraftContentServiceInput extends FeedDraftWriter {
+  draftId: number;
+  adminId: string;
+  locale: Locale;
+  oldString: string;
+  newString: string;
+  replaceAll?: boolean;
+  expectedRevision?: number;
+}
+
+export interface EditFeedDraftContentResult {
+  draft: FeedDraftRecord;
+  replacements: number;
+}
+
+/** A target that does not match exactly once is `BAD_REQUEST`; the message says how to fix the call. */
+export const editFeedDraftContentService = async (
+  db: DB,
+  input: EditFeedDraftContentServiceInput
+): Promise<EditFeedDraftContentResult> => {
+  const result = await editFeedDraftContent(db, {
+    draftId: input.draftId,
+    userId: input.adminId,
+    locale: input.locale,
+    oldString: input.oldString,
+    newString: input.newString,
+    replaceAll: input.replaceAll,
+    expectedRevision: input.expectedRevision,
+    author: input.author,
+    sessionId: input.sessionId,
+  });
+  switch (result.status) {
+    case "ok":
+      return { draft: result.draft, replacements: result.replacements };
+    case "no_body":
+      throw new AppError("BAD_REQUEST", {
+        message: `Draft ${input.draftId} has no "${input.locale}" body yet; write one before editing it.`,
+      });
+    case "not_applied":
+      throw new AppError("BAD_REQUEST", {
+        message: result.message,
+        data: { reason: result.reason },
+      });
+    default:
+      return { draft: unwrapWrite(result, input.draftId), replacements: 0 };
+  }
 };
 
 const unwrapWrite = (
@@ -358,6 +406,7 @@ export const discardFeedDraftService = async (
   }
   const result = await replaceFeedDraft(db, {
     draftId: draft.id,
+    userId: input.adminId,
     snapshot: await feedSnapshot(db, draft.feedId, input.adminId),
     author: FEED_DRAFT_AUTHOR.Operator,
   });
@@ -373,10 +422,12 @@ export const restoreFeedDraftRevisionService = async (
   db: DB,
   input: { draftId: number; revisionId: number; adminId: string }
 ): Promise<FeedDraftRecord> => {
-  await requireDraft(db, input.draftId, input.adminId);
+  // Scoped to the admin's drafts, so a revision under anyone else's draft is not found
+  // whether or not it exists.
   const revision = await getFeedDraftRevision(db, {
     draftId: input.draftId,
     revisionId: input.revisionId,
+    userId: input.adminId,
   });
   if (!revision) {
     throw new AppError("NOT_FOUND", {
@@ -385,6 +436,7 @@ export const restoreFeedDraftRevisionService = async (
   }
   const result = await replaceFeedDraft(db, {
     draftId: input.draftId,
+    userId: input.adminId,
     snapshot: snapshotOfRevision(revision),
     author: FEED_DRAFT_AUTHOR.Operator,
   });

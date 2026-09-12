@@ -335,6 +335,18 @@ export const feedDraftSchema = z.object({
 
 export type FeedDraftOutput = z.infer<typeof feedDraftSchema>;
 
+/** A draft as listed: titles only, so a list stays small however long the bodies are. */
+export const feedDraftSummarySchema = feedDraftSchema
+  .omit({ translations: true })
+  .extend({
+    translations: z.partialRecord(
+      z.enum(locale.enumValues),
+      z.object({ title: z.string().nullable() })
+    ),
+  });
+
+export type FeedDraftSummaryOutput = z.infer<typeof feedDraftSummarySchema>;
+
 const feedDraftTranslationPatchSchema = feedDraftTranslationSchema.partial();
 
 export const patchFeedDraftSchema = z.object({
@@ -386,10 +398,10 @@ export const getFeedDraftContract = oc
   .input(z.object({ draftId: z.number().int() }))
   .output(feedDraftSchema);
 
-/** Drafts with unapplied work: never applied, or edited since the last apply. */
+/** Drafts with unapplied work: never applied, or edited since the last apply. Bodies are in `draft:get`. */
 export const listFeedDraftsContract = oc
   .errors(DRAFT_ERRORS)
-  .output(z.object({ items: z.array(feedDraftSchema) }));
+  .output(z.object({ items: z.array(feedDraftSummarySchema) }));
 
 export const patchFeedDraftContract = oc
   .errors({
@@ -399,6 +411,37 @@ export const patchFeedDraftContract = oc
   })
   .input(patchFeedDraftSchema)
   .output(feedDraftSchema);
+
+export const editFeedDraftSchema = z.object({
+  draftId: z.number().int(),
+  locale: z.enum(locale.enumValues),
+  /** Matched byte for byte against the current body. */
+  oldString: z.string().min(1),
+  /** Empty deletes the match. */
+  newString: z.string(),
+  /** Replace every match instead of refusing an ambiguous target. */
+  replaceAll: z.boolean().optional(),
+  /** Omit to edit whatever is current; an exact match makes that safe. */
+  expectedRevision: z.number().int().optional(),
+});
+
+export type EditFeedDraftInput = z.infer<typeof editFeedDraftSchema>;
+
+/** Exact-string replacement in one locale's body, applied under the draft lock. */
+export const editFeedDraftContract = oc
+  .errors({
+    ...DRAFT_ERRORS,
+    CONFLICT: { data: z.object({ revision: z.number().int() }) },
+  })
+  .input(editFeedDraftSchema)
+  .output(
+    z.object({
+      draftId: z.number().int(),
+      locale: z.enum(locale.enumValues),
+      revision: z.number().int(),
+      replacements: z.number().int(),
+    })
+  );
 
 export const applyFeedDraftContract = oc
   .errors(DRAFT_ERRORS)

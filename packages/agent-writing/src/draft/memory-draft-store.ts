@@ -1,8 +1,11 @@
 import type { Locale } from "@chia/db/types";
+import { replaceExact } from "@chia/utils/text";
 
 import type { DraftStore } from "../ports.ts";
 import type {
   DraftChange,
+  DraftContentEdit,
+  DraftEditResult,
   DraftFeedMeta,
   DraftTranslation,
   FeedDraft,
@@ -12,8 +15,10 @@ import type {
 import {
   DraftConflictError,
   DraftNotFoundError,
+  EditNotAppliedError,
   draftSummary,
   emptyDraft,
+  noBodyMessage,
   patchFeedMeta,
   patchTranslation,
 } from "./operations.ts";
@@ -121,6 +126,31 @@ export class InMemoryDraftStore implements DraftStore {
       );
     }
     return this.patchTranslation(draftId, locale, { content });
+  }
+
+  async editContent(
+    draftId: number,
+    locale: Locale,
+    edit: DraftContentEdit
+  ): Promise<DraftEditResult> {
+    const body = this.read(draftId).translations[locale]?.content;
+    if (body === undefined || body === null) {
+      throw new EditNotAppliedError(noBodyMessage(locale), "no_body");
+    }
+    const result = replaceExact(
+      body,
+      edit.oldString,
+      edit.newString,
+      edit.replaceAll ?? false
+    );
+    if (!result.ok)
+      throw new EditNotAppliedError(result.message, result.reason);
+    return {
+      draft: await this.patchTranslation(draftId, locale, {
+        content: result.content,
+      }),
+      replacements: result.replacements,
+    };
   }
 
   operatorChangesSince(

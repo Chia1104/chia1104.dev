@@ -1,10 +1,12 @@
 import type { DB } from "@chia/db/client";
 import {
+  editFeedDraftContent,
   getFeedDraft,
   listOperatorFeedDraftChanges,
   patchFeedDraft,
 } from "@chia/db/repos/drafts";
 import type {
+  FeedDraftListItem,
   FeedDraftRecord,
   FeedDraftWriteResult,
 } from "@chia/db/repos/drafts";
@@ -15,6 +17,8 @@ import { omitUndefined } from "@chia/utils/object";
 import type { DraftStore } from "../ports.ts";
 import type {
   DraftChange,
+  DraftContentEdit,
+  DraftEditResult,
   DraftFeedMeta,
   DraftTranslation,
   FeedDraft,
@@ -24,16 +28,20 @@ import type {
 import {
   DraftConflictError,
   DraftNotFoundError,
+  EditNotAppliedError,
   draftSummary,
+  noBodyMessage,
 } from "./operations.ts";
 
 export interface PgDraftStoreOptions {
   /** Recorded as the author of every revision this store writes. */
   sessionId: string;
+  /** The drafts' owner; a write to anyone else's draft reads as not found. */
+  userId: string;
   /** Get-or-create as the host does it, so the agent and the editor share one draft per feed. */
   open(input: { feedId?: number }): Promise<FeedDraftRecord>;
   /** The author's drafts with unapplied work, newest first. */
-  list(): Promise<FeedDraftRecord[]>;
+  list(): Promise<FeedDraftListItem[]>;
 }
 
 /** {@link DraftStore} over the shared `feed_draft` rows, writing as the agent. */
@@ -74,9 +82,7 @@ export class PgDraftStore implements DraftStore {
 
   async list(): Promise<FeedDraftSummary[]> {
     const records = await this.options.list();
-    return records.map((record) =>
-      draftSummary(toFeedDraft(record), record.updatedAt)
-    );
+    return records.map((record) => draftSummary(record, record.updatedAt));
   }
 
   async open(input: { feedId?: number }): Promise<FeedDraft> {
@@ -84,7 +90,7 @@ export class PgDraftStore implements DraftStore {
   }
 
   async get(draftId: number): Promise<FeedDraft> {
-    const record = await getFeedDraft(this.db, draftId);
+    const record = await getFeedDraft(this.db, draftId, this.options.userId);
     if (!record) throw new DraftNotFoundError(draftId);
     return this.observe(record);
   }
@@ -97,6 +103,7 @@ export class PgDraftStore implements DraftStore {
       draftId,
       await patchFeedDraft(this.db, {
         draftId,
+        userId: this.options.userId,
         author: FEED_DRAFT_AUTHOR.Agent,
         sessionId: this.options.sessionId,
         meta: omitUndefined(patch),
@@ -113,6 +120,7 @@ export class PgDraftStore implements DraftStore {
       draftId,
       await patchFeedDraft(this.db, {
         draftId,
+        userId: this.options.userId,
         author: FEED_DRAFT_AUTHOR.Agent,
         sessionId: this.options.sessionId,
         translations: { [locale]: omitUndefined(patch) },
@@ -130,6 +138,7 @@ export class PgDraftStore implements DraftStore {
       draftId,
       await patchFeedDraft(this.db, {
         draftId,
+        userId: this.options.userId,
         expectedRevision,
         author: FEED_DRAFT_AUTHOR.Agent,
         sessionId: this.options.sessionId,
@@ -139,11 +148,45 @@ export class PgDraftStore implements DraftStore {
     );
   }
 
+  async editContent(
+    draftId: number,
+    locale: Locale,
+    edit: DraftContentEdit
+  ): Promise<DraftEditResult> {
+    const result = await editFeedDraftContent(this.db, {
+      draftId,
+      userId: this.options.userId,
+      locale,
+      oldString: edit.oldString,
+      newString: edit.newString,
+      replaceAll: edit.replaceAll,
+      author: FEED_DRAFT_AUTHOR.Agent,
+      sessionId: this.options.sessionId,
+    });
+    switch (result.status) {
+      case "ok":
+        return {
+          draft: this.observe(result.draft),
+          replacements: result.replacements,
+        };
+      case "no_body":
+        throw new EditNotAppliedError(noBodyMessage(locale), "no_body");
+      case "not_applied":
+        throw new EditNotAppliedError(result.message, result.reason);
+      default:
+        return { draft: this.settle(draftId, result), replacements: 0 };
+    }
+  }
+
   operatorChangesSince(
     draftId: number,
     afterRevision: number
   ): Promise<DraftChange[]> {
-    return listOperatorFeedDraftChanges(this.db, { draftId, afterRevision });
+    return listOperatorFeedDraftChanges(this.db, {
+      draftId,
+      afterRevision,
+      userId: this.options.userId,
+    });
   }
 }
 
