@@ -7,14 +7,15 @@ import { TOOL_NAMES, labelOf } from "./registry.ts";
 import { Type, defineTool, jsonBlock, textResult } from "./schema.ts";
 
 /**
- * `save_memory` writes a `fact` only. A `source` is recorded by `fetch_url`; a `lesson` is
- * extracted by a workflow. Retrieval is a tool so cost is visible and the transcript shows
- * what was drawn on.
+ * `save_memory` writes a `fact`; `propose_lesson` writes a `lesson` that stays pending until
+ * the operator approves it. A `source` is recorded by `fetch_url`. Retrieval is a tool so
+ * cost is visible and the transcript shows what was drawn on.
  */
 
 /** Small enough to force a distillation; a page goes through `fetch_url`, not here. */
 const MAX_FACT_CHARS = 4_000;
 const MAX_TITLE_CHARS = 200;
+const MAX_LESSON_CHARS = 2_000;
 const DEFAULT_SEARCH_LIMIT = 5;
 const MAX_SEARCH_LIMIT = 10;
 /**
@@ -73,6 +74,62 @@ export const saveMemoryTool = defineTool({
         kind: saved.kind,
         title: saved.title,
         sourceUrl: saved.sourceUrl,
+      }
+    );
+  },
+});
+
+export const proposeLessonTool = defineTool({
+  name: TOOL_NAMES.proposeLesson,
+  label: labelOf(TOOL_NAMES.proposeLesson),
+  description:
+    "Propose a standing lesson for the operator to review: a preference about structure, " +
+    "tone, length, sourcing or what to avoid that they just stated, corrected you on, or " +
+    "declined a commit over, and that should apply to every future post. It takes effect " +
+    "only once they approve it in the dashboard. Pass `supersedes` when their feedback " +
+    "contradicts a learned preference listed in your context; the new text replaces that " +
+    "preference entirely. Not for facts (`save_memory`) or for requests about this post alone.",
+  parameters: Type.Object({
+    title: Type.String({
+      description:
+        "One line stating the preference, as it should read in a list.",
+      minLength: 1,
+      maxLength: MAX_TITLE_CHARS,
+    }),
+    content: Type.String({
+      description:
+        "The preference in two or three sentences, in the operator's language: what to do, " +
+        "when it applies, and what it replaces if anything.",
+      minLength: 1,
+      maxLength: MAX_LESSON_CHARS,
+    }),
+    supersedes: Type.Optional(
+      Type.Integer({
+        description:
+          "Id of the learned preference this one replaces, from the list in your context.",
+        minimum: 1,
+      })
+    ),
+  }),
+  executionMode: "parallel",
+  async execute(_toolCallId, params, signal, _onUpdate, context) {
+    const saved = await context.memory.save(
+      {
+        kind: "lesson",
+        title: params.title,
+        content: params.content,
+        supersedesId: params.supersedes,
+      },
+      signal
+    );
+
+    return textResult(
+      `Proposed lesson #${saved.id}: ${saved.title}. It applies once the operator approves it in the dashboard; tell them it is waiting for review.`,
+      {
+        id: saved.id,
+        kind: saved.kind,
+        title: saved.title,
+        supersedes: params.supersedes ?? null,
       }
     );
   },
@@ -165,6 +222,7 @@ export const getMemoryTool = defineTool({
           title: memory.title,
           content,
           matchedHeadingPaths: params.focusHeadings,
+          format: "markdown",
         },
       ],
       { budget: MEMORY_BODY_TOKEN_BUDGET }
@@ -185,4 +243,5 @@ export const memoryTools: WritingTool[] = [
   searchMemoryTool,
   getMemoryTool,
   saveMemoryTool,
+  proposeLessonTool,
 ];

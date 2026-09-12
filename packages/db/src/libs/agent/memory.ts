@@ -37,6 +37,7 @@ export interface InsertAgentMemoryDTO {
   sourceUrl?: string | null;
   sessionId?: string | null;
   status?: AgentMemoryStatus;
+  supersedesId?: number | null;
 }
 
 export const createAgentMemory = async (
@@ -52,11 +53,115 @@ export const createAgentMemory = async (
       content: input.content,
       sourceUrl: input.sourceUrl ?? null,
       sessionId: input.sessionId ?? null,
+      supersedesId: input.supersedesId ?? null,
     })
     .returning();
   if (!row) throw new Error("Memory was not inserted.");
   return row;
 };
+
+/** Counts one more session behind a pending lesson; returns the live row, or undefined. */
+export const reinforceAgentMemory = async (
+  db: DB,
+  id: number
+): Promise<AgentMemory | undefined> => {
+  const [row] = await db
+    .update(agentMemories)
+    .set({
+      reinforcements: sql`${agentMemories.reinforcements} + 1`,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(agentMemories.id, id),
+        eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+        eq(agentMemories.status, AGENT_MEMORY_STATUS.Pending),
+        live()
+      )
+    )
+    .returning();
+  return row;
+};
+
+export type ApproveAgentLessonResult =
+  | {
+      status: "approved";
+      approved: AgentMemory;
+      /** The active lesson the approved one superseded, when there still was one. */
+      archived: AgentMemory | null;
+    }
+  /** `id` is not a live pending lesson any more: two approvals of one row activate it once. */
+  | { status: "not_pending" }
+  /** Another revision of the same lesson is already active; two must not stand together. */
+  | { status: "already_replaced"; by: number };
+
+/**
+ * `pending → active` in one transaction, archiving the live active lesson `supersedesId`
+ * names in the same step. A target that was archived on its own is fine to revise; one that
+ * a different approved revision replaced is a conflict for the operator to settle.
+ */
+export const approveAgentLesson = async (
+  db: DB,
+  id: number
+): Promise<ApproveAgentLessonResult> =>
+  await db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(agentMemories)
+      .where(
+        and(
+          eq(agentMemories.id, id),
+          eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+          eq(agentMemories.status, AGENT_MEMORY_STATUS.Pending),
+          live()
+        )
+      )
+      .for("update");
+    if (!row) return { status: "not_pending" };
+
+    const now = new Date();
+    let archived: AgentMemory | null = null;
+    if (row.supersedesId !== null) {
+      const [target] = await tx
+        .update(agentMemories)
+        .set({ status: AGENT_MEMORY_STATUS.Archived, updatedAt: now })
+        .where(
+          and(
+            eq(agentMemories.id, row.supersedesId),
+            eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+            eq(agentMemories.status, AGENT_MEMORY_STATUS.Active),
+            live()
+          )
+        )
+        .returning();
+      archived = target ?? null;
+      if (!target) {
+        const [replacement] = await tx
+          .select({ id: agentMemories.id })
+          .from(agentMemories)
+          .where(
+            and(
+              eq(agentMemories.supersedesId, row.supersedesId),
+              eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+              eq(agentMemories.status, AGENT_MEMORY_STATUS.Active),
+              live()
+            )
+          )
+          .limit(1);
+        if (replacement) {
+          return { status: "already_replaced", by: replacement.id };
+        }
+      }
+    }
+
+    const [approved] = await tx
+      .update(agentMemories)
+      .set({ status: AGENT_MEMORY_STATUS.Active, updatedAt: now })
+      .where(eq(agentMemories.id, row.id))
+      .returning();
+    if (!approved) throw new Error(`Lesson ${id} vanished mid-approval.`);
+    return { status: "approved", approved, archived };
+  });
 
 /** Includes soft-deleted rows; callers that must not see them check `deletedAt`. */
 export const getAgentMemory = async (db: DB, id: number) =>
@@ -177,6 +282,8 @@ export interface AgentMemorySummary {
   status: AgentMemoryStatus;
   title: string;
   sourceUrl: string | null;
+  supersedesId: number | null;
+  reinforcements: number;
 }
 
 const summaryColumns = {
@@ -185,7 +292,43 @@ const summaryColumns = {
   status: agentMemories.status,
   title: agentMemories.title,
   sourceUrl: agentMemories.sourceUrl,
+  supersedesId: agentMemories.supersedesId,
+  reinforcements: agentMemories.reinforcements,
 };
+
+export interface AgentLesson {
+  id: number;
+  status: AgentMemoryStatus;
+  title: string;
+  content: string;
+  sessionId: string | null;
+  supersedesId: number | null;
+}
+
+/** Live lessons in one status with their content, newest first, for lesson extraction. */
+export const listAgentLessons = async (
+  db: DB,
+  input: { status: AgentMemoryStatus; limit: number }
+): Promise<AgentLesson[]> =>
+  await db
+    .select({
+      id: agentMemories.id,
+      status: agentMemories.status,
+      title: agentMemories.title,
+      content: agentMemories.content,
+      sessionId: agentMemories.sessionId,
+      supersedesId: agentMemories.supersedesId,
+    })
+    .from(agentMemories)
+    .where(
+      and(
+        eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+        eq(agentMemories.status, input.status),
+        live()
+      )
+    )
+    .orderBy(desc(agentMemories.updatedAt), desc(agentMemories.id))
+    .limit(input.limit);
 
 /** Session memories, oldest first, for the volatile context. */
 export const listAgentMemoriesBySession = async (

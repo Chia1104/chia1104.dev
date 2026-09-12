@@ -24,6 +24,7 @@ const { repo } = vi.hoisted(() => ({
     listAgentMemories: vi.fn(),
     getAgentMemory: vi.fn(),
     updateAgentMemory: vi.fn(),
+    approveAgentLesson: vi.fn(),
     softDeleteAgentMemory: vi.fn(),
   },
 }));
@@ -42,6 +43,8 @@ const row = (overrides: Partial<AgentMemory> = {}): AgentMemory => ({
   content: "The operator cut every long intro.",
   sourceUrl: null,
   sessionId: "session-1",
+  supersedesId: null,
+  reinforcements: 0,
   createdAt: new Date("2026-08-01T00:00:00Z"),
   updatedAt: new Date("2026-08-01T00:00:00Z"),
   deletedAt: null,
@@ -75,6 +78,11 @@ describe("memory routes", () => {
       async (_db: DB, _id: number, patch: UpdateAgentMemoryDTO) =>
         row(omitUndefined(patch))
     );
+    repo.approveAgentLesson.mockImplementation(async (_db: DB, id: number) => ({
+      status: "approved",
+      approved: row({ id, status: "active" }),
+      archived: null,
+    }));
     repo.softDeleteAgentMemory.mockResolvedValue(true);
   });
 
@@ -142,7 +150,7 @@ describe("memory routes", () => {
     await expect(
       call(routes.approveLessonRoute, { id: 7 }, { context })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
-    expect(repo.updateAgentMemory).not.toHaveBeenCalled();
+    expect(repo.approveAgentLesson).not.toHaveBeenCalled();
   });
 
   it("starts consolidation through the workflow client", async ({

@@ -1,5 +1,6 @@
 import { ApiKeyScope } from "@chia/auth/apikey";
 import { CallerTier } from "@chia/auth/tier";
+import { listWritingSessionIdsForDraft } from "@chia/db/repos/agent";
 import {
   listFeedDraftRevisions,
   listOpenFeedDrafts,
@@ -364,16 +365,37 @@ export const editFeedDraftRoute = contractOS.feeds["draft:edit"]
     })
   );
 
+/**
+ * A commit by the operator is the strongest signal that a draft is how they want it, so every
+ * writing session that worked on it extracts its lessons now. The agent's own commit goes
+ * through its content port, and the host schedules that extraction itself.
+ */
 export const applyFeedDraftRoute = contractOS.feeds["draft:apply"]
   .use(rootWriteGuard)
   .handler((opts) =>
-    withORPCErrors(() =>
-      applyFeedDraftService(
+    withORPCErrors(async () => {
+      const sessionIds = await listWritingSessionIdsForDraft(
+        opts.context.db,
+        opts.input.draftId
+      );
+      const result = await applyFeedDraftService(
         opts.context.db,
         { draftId: opts.input.draftId, adminId: opts.context.caller.adminId },
         opts.context.hooks ?? {}
-      )
-    )
+      );
+      for (const sessionId of sessionIds) {
+        try {
+          await opts.context.workflow.startMemoryConsolidation(sessionId);
+        } catch (cause) {
+          console.error("Could not start lesson extraction after apply", {
+            draftId: opts.input.draftId,
+            sessionId,
+            cause,
+          });
+        }
+      }
+      return result;
+    })
   );
 
 export const discardFeedDraftRoute = contractOS.feeds["draft:discard"]

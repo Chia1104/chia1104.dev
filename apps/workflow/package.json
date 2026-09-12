@@ -29,6 +29,7 @@
     "@workflow-worlds/redis": "catalog:workflow",
     "@workflow/world-postgres": "catalog:workflow",
     "ai": "catalog:ai",
+    "diff": "catalog:",
     "es-toolkit": "catalog:",
     "firecrawl": "catalog:ai",
     "hono": "catalog:hono",

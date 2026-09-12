@@ -26,6 +26,10 @@ const memorySummaryFields = {
   sourceUrl: z.string().nullable(),
   /** Provenance; null once the session is gone. */
   sessionId: z.string().nullable(),
+  /** A pending lesson that replaces this active lesson when approved. */
+  supersedesId: z.number().nullable(),
+  /** Further sessions whose feedback repeated a pending lesson. */
+  reinforcements: z.number(),
   createdAt: z.date(),
   updatedAt: z.date(),
 };
@@ -101,7 +105,7 @@ export const removeMemoryContract = oc
 
 /** `pending → active`. Kept separate so the audit trail of who approved a lesson is one procedure. */
 export const approveLessonContract = oc
-  .errors(writeErrors)
+  .errors({ ...writeErrors, CONFLICT: {} })
   .input(memoryIdSchema)
   .output(z.object({ memory: memoryDetailSchema }));
 

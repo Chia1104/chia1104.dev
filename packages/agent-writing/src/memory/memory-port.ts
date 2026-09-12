@@ -10,6 +10,7 @@ import type {
 
 interface StoredMemory extends MemoryDetail {
   sessionId: string | null;
+  supersedesId: number | null;
 }
 
 /**
@@ -50,14 +51,16 @@ export class InMemoryMemoryPort implements MemoryPort {
       return Promise.resolve({ ...summaryOf(next), changed });
     }
 
+    // a lesson is a proposal until the operator approves it, like the Postgres port
     const row: StoredMemory = {
       id: this.nextId++,
       kind: input.kind,
-      status: "active",
+      status: input.kind === "lesson" ? "pending" : "active",
       title: input.title,
       content: input.content,
       sourceUrl,
       sessionId: this.sessionId,
+      supersedesId: input.supersedesId ?? null,
       createdAt: now,
       updatedAt: now,
     };
@@ -87,7 +90,11 @@ export class InMemoryMemoryPort implements MemoryPort {
   get(id: number): Promise<MemoryDetail | null> {
     const row = this.rows.get(id);
     if (!row) return Promise.resolve(null);
-    const { sessionId: _sessionId, ...detail } = row;
+    const {
+      sessionId: _sessionId,
+      supersedesId: _supersedesId,
+      ...detail
+    } = row;
     return Promise.resolve(detail);
   }
 

@@ -1,10 +1,12 @@
 import { getAgentMemory, listAgentMemories } from "@chia/db/repos/agent/memory";
 import type { AgentMemory } from "@chia/db/schema";
-import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
-import { AppError } from "@chia/service-kit/errors";
 
-import { removeMemoryService, updateMemoryService } from "../../memories/write";
+import {
+  approveLessonService,
+  removeMemoryService,
+  updateMemoryService,
+} from "../../memories/write";
 import { adminGuard } from "../guards/admin.guard";
 import { contractOS } from "../utils";
 
@@ -22,6 +24,8 @@ const detailOf = (row: AgentMemory) => ({
   content: row.content,
   sourceUrl: row.sourceUrl,
   sessionId: row.sessionId,
+  supersedesId: row.supersedesId,
+  reinforcements: row.reinforcements,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,
 });
@@ -76,20 +80,9 @@ export const approveLessonRoute = contractOS.memory["lesson:approve"]
   .use(adminGuard())
   .handler((opts) =>
     withORPCErrors(async () => {
-      const row = await getAgentMemory(opts.context.db, opts.input.id);
-      if (!row || row.deletedAt !== null) {
-        throw new AppError("NOT_FOUND", {
-          message: `Memory ${opts.input.id} not found`,
-        });
-      }
-      if (row.kind !== AGENT_MEMORY_KIND.Lesson) {
-        throw new AppError("BAD_REQUEST", {
-          message: `Memory ${opts.input.id} is a ${row.kind}, not a lesson.`,
-        });
-      }
-      const updated = await updateMemoryService(
+      const updated = await approveLessonService(
         opts.context.db,
-        { id: row.id, status: AGENT_MEMORY_STATUS.Active },
+        opts.input,
         opts.context.hooks ?? {}
       );
       return { memory: detailOf(updated) };

@@ -151,7 +151,7 @@ kind + index 相同        → 改寫 row，刪除舊向量
 
 ## 4. Chunking
 
-實作位於 `packages/ai/src/embeddings/chunking.ts`，section 目標大小為 512 token。
+實作位於 `packages/ai/src/embeddings/chunking.ts`，section 目標大小為 512 token。呼叫端宣告文法：文章內文以 MDX 解析，agent memory 以 markdown 解析，所以抓回來的網頁裡的 `<` 是文字，不會變成失敗的 JSX 解析。無法解析的 MDX 會退回 markdown 並發出 warning，那個 warning 代表文章需要修正。
 
 ```text
 MDX

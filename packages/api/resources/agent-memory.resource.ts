@@ -40,7 +40,11 @@ const buildCard = async (row: AgentMemory): Promise<string> => {
   ].filter((part): part is string => part !== null);
   const body =
     row.kind === AGENT_MEMORY_KIND.Source
-      ? await buildEmbeddingInput({ title: row.title, content: row.content })
+      ? await buildEmbeddingInput({
+          title: row.title,
+          content: row.content,
+          format: "markdown",
+        })
       : `Title: ${row.title}`;
   return [...identity, body].join("\n");
 };
@@ -56,7 +60,10 @@ const buildChunkSet = async (row: AgentMemory): Promise<ResourceChunkSet> => {
     },
   ];
 
-  for (const chunk of await chunkMarkdown({ content: row.content })) {
+  for (const chunk of await chunkMarkdown({
+    content: row.content,
+    format: "markdown",
+  })) {
     chunks.push({
       kind: RESOURCE_CHUNK_KIND.Section,
       chunkIndex: chunk.chunkIndex,

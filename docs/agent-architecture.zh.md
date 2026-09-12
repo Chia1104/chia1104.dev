@@ -332,13 +332,15 @@ Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts`
 | -------- | ------------------------------------- | ---------------------- |
 | `source` | `fetch_url` 讀過的頁面，以 URL 為 key | 立即 active            |
 | `fact`   | 模型保存的附來源結論                  | 立即 active            |
-| `lesson` | 從 feedback 抽出的寫作偏好            | Operator 核准後 active |
+| `lesson` | Operator 教過的寫作偏好               | Operator 核准後 active |
 
 所有 memory write 都經過 `packages/api/memories/write.ts`，並在需要時排程 RAG indexing。只有 live、active memory 會進索引。詳見 [RAG 架構](./rag-architecture.zh.md#6-agent-memory-resource)。
 
 Fact 與 source 只透過可見的 `search_memory`、`get_memory` tool call 進入模型。Volatile context 會列出本 session 已保存 memory 的受限識別資訊。Active lesson title 則固定加入，因為它們是 standing preferences。
 
-`memoryConsolidationWorkflow` 在成功的 `commit_draft` turn 後或由 dashboard 手動啟動。它只讀 operator messages 與 assistant prose，排除 tool results，最多產生三條 pending lesson。未經人員審核的 model output 不會成為常駐 prompt instruction。
+Lesson 有兩個作者、一道閘門。Operator 糾正模型、附理由拒絕 commit 或說出常駐偏好時，模型在 turn 內以 `propose_lesson` 提案；其餘由 `memoryConsolidationWorkflow` 事後提案。兩者都以 `pending` 落地，未經人員審核的 model output 不會成為常駐 prompt instruction。提案可以取代一條 active lesson；核准時在同一個 transaction 裡封存被取代的那條，同一個偏好不會有兩個版本同時進 prompt；若那條已被另一個核准的修訂取代，核准會被拒絕。之後的 session 若重複回饋到一條 pending lesson，run 會加強它而不是新增一條，待審清單依這個計數排序。
+
+Workflow 是增量的。`agent.writing_session` 記錄上一次 run 讀到的 leaf entry 與時間；一次 run 讀該 leaf 之後的 operator messages 與 assistant prose，加上那個時間之後 operator 在 `feed_draft_revision` 儲存過的手動編輯（以 line diff 呈現），排除 tool results；寫入任何 proposal 之前先以 compare-and-set 比對讀到的水位線再推進，所以同一 session 上重疊的兩次 run 只會寫入一組。Host 在每個 writing turn 之後排程一次 run：turn 有 commit 就立即，否則等待閒置延遲，並取消上一個 turn 留下的等待中 run，所以每個 session 只有一個 run 在等。`feeds.draft:apply` 會為每個處理過該 draft 的 session 啟動一次 run，因此從編輯器或 MCP commit 也會閉環。Dashboard 也可以手動啟動。
 
 ### 內容可見性
 
