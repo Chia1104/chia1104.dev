@@ -157,6 +157,8 @@ export interface SaveMemoryInput {
   title: string;
   content: string;
   sourceUrl?: string;
+  /** For a `lesson`: the active lesson this proposal replaces once approved. */
+  supersedesId?: number;
 }
 
 export interface MemorySummary {

@@ -3,7 +3,7 @@ const { mockHandler, mockVerify } = vi.hoisted(() => ({
   mockVerify: vi.fn(),
 }));
 
-vi.mock("@chia/api/captcha", () => ({
+vi.mock("@chia/integrations/captcha", () => ({
   X_CAPTCHA_RESPONSE: "x-captcha-response",
   captchaSiteverifyWithCredentials: mockVerify,
 }));

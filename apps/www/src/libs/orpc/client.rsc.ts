@@ -4,7 +4,7 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { RouterContractClient } from "@orpc/contract";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
-import type { routerContract } from "@chia/api/orpc/contracts";
+import type { routerContract } from "@chia/services/router.contract";
 import { withServiceEndpoint } from "@chia/utils/config";
 import { X_CF_BYPASS_TOKEN } from "@chia/utils/request";
 import { Service } from "@chia/utils/schema";

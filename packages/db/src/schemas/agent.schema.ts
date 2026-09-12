@@ -144,6 +144,15 @@ export const writingAgentSessions = agentSchema.table("writing_session", {
   sessionId: text("session_id")
     .primaryKey()
     .references(() => agentSessions.id, { onDelete: "cascade" }),
+  /** Leaf entry the last lesson extraction read up to; the next run reads what came after. */
+  consolidatedLeafId: text("consolidated_leaf_id"),
+  /** When that extraction ran; draft revisions after it are the next run's operator edits. */
+  consolidatedAt: timestamp("consolidated_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
+  /** The delayed extraction run waiting on this session, cancelled when a newer turn reschedules it. */
+  consolidationRunId: text("consolidation_run_id"),
 });
 
 export type WritingAgentSession = InferSelectModel<typeof writingAgentSessions>;
@@ -224,6 +233,13 @@ export const agentMemories = agentSchema.table(
     sessionId: text("session_id").references(() => agentSessions.id, {
       onDelete: "set null",
     }),
+    /** A pending lesson that revises this active one; approving it archives the row it points at. */
+    supersedesId: integer("supersedes_id").references(
+      (): AnyPgColumn => agentMemories.id,
+      { onDelete: "set null" }
+    ),
+    /** Further sessions whose feedback repeated a pending lesson; orders the review queue. */
+    reinforcements: integer("reinforcements").notNull().default(0),
     ...timestamps,
     ...softDelete,
   },

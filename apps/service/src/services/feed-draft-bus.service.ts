@@ -1,10 +1,10 @@
-import { FeedDraftBus } from "@chia/api/feeds/draft-bus";
 import { resolveDatabaseUrl } from "@chia/db/client";
 import { listenChannel } from "@chia/db/listen";
 import {
   FEED_DRAFT_CHANNEL,
   feedDraftNoticeSchema,
 } from "@chia/db/repos/drafts/notice";
+import { FeedDraftBus } from "@chia/services/feeds/draft-bus";
 
 /** One bus per process; every `draft:watch` stream on this replica subscribes here. */
 export const feedDraftBus = new FeedDraftBus();

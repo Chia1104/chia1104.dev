@@ -21,7 +21,7 @@ Two agent kinds ship:
 
 ```mermaid
 flowchart TB
-    UI[apps/dash or apps/www] --> API[packages/api<br/>oRPC agent service]
+    UI[apps/dash or apps/www] --> API[packages/services<br/>oRPC agent service]
     API --> SVC[apps/service<br/>auth, session API, host bindings]
     SVC --> WF[apps/workflow<br/>durable turn executor]
     WF --> KIND[agent-writing or agent-public]
@@ -31,13 +31,13 @@ flowchart TB
     RUNTIME --> PG[(Postgres agent schema)]
 ```
 
-| Layer                       | Owner                                           | Responsibility                                                |
-| --------------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
-| Transport and orchestration | `packages/api`, `apps/service`, `apps/workflow` | Auth, oRPC, workflow control, streams and host ports          |
-| Execution                   | `@chia/agent-runtime`                           | Pi lifecycle, persistence, approvals, models and wire events  |
-| Shared content              | `@chia/agent-content`                           | Read-only blog tools, `ContentReadPort` and `ProfileReadPort` |
-| Domain                      | `@chia/agent-writing`, `@chia/agent-public`     | Prompts, tools, policy, model policy and domain ports         |
-| Client                      | `@chia/agent-elements`                          | Session store, queries and shared chat UI                     |
+| Layer                       | Owner                                                | Responsibility                                                |
+| --------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
+| Transport and orchestration | `packages/services`, `apps/service`, `apps/workflow` | Auth, oRPC, workflow control, streams and host ports          |
+| Execution                   | `@chia/agent-runtime`                                | Pi lifecycle, persistence, approvals, models and wire events  |
+| Shared content              | `@chia/agent-content`                                | Read-only blog tools, `ContentReadPort` and `ProfileReadPort` |
+| Domain                      | `@chia/agent-writing`, `@chia/agent-public`          | Prompts, tools, policy, model policy and domain ports         |
+| Client                      | `@chia/agent-elements`                               | Session store, queries and shared chat UI                     |
 
 The stable client boundary is `AgentWireEvent`, not an interchangeable model engine. Pi-specific names and types remain explicit inside the runtime.
 
@@ -49,7 +49,7 @@ Each host provides an `AgentKindDefinition`:
 
 - `apps/service/src/agents/` binds API-time capabilities, state and credentials.
 - `apps/workflow/src/agents/` binds execution-time ports and `runTurn`.
-- `packages/api/orpc/services/agent/` owns generic session, run, approval, maintenance, usage and admin behavior.
+- `packages/services/agent/` owns generic session, run, approval, maintenance, usage and admin behavior.
 
 The oRPC context receives an `agentFactory` built from eager `minTier` values and dynamic definition loaders. Guards can reject callers before loading a domain package or provider SDK. Dynamic imports provide module caching; the factory keeps no definition registry or service cache.
 
@@ -328,17 +328,19 @@ On the public site, `@chia/agent-elements/selection` measures a DOM selection an
 
 `agent.memory` stores:
 
-| Kind     | Meaning                                      | Activation                      |
-| -------- | -------------------------------------------- | ------------------------------- |
-| `source` | A page read by `fetch_url`, keyed by URL     | Active immediately              |
-| `fact`   | A cited conclusion saved by the model        | Active immediately              |
-| `lesson` | A writing preference extracted from feedback | Pending until operator approval |
+| Kind     | Meaning                                  | Activation                      |
+| -------- | ---------------------------------------- | ------------------------------- |
+| `source` | A page read by `fetch_url`, keyed by URL | Active immediately              |
+| `fact`   | A cited conclusion saved by the model    | Active immediately              |
+| `lesson` | A writing preference the operator taught | Pending until operator approval |
 
-Every memory write goes through `packages/api/memories/write.ts` and schedules RAG indexing when needed. Only live, active memory is indexed. See [RAG architecture](./rag-architecture.md#6-agent-memory-resource).
+Every memory write goes through `packages/services/memory/write.service.ts` and schedules RAG indexing when needed. Only live, active memory is indexed. See [RAG architecture](./rag-architecture.md#6-agent-memory-resource).
 
 Facts and sources reach the model only through visible `search_memory` and `get_memory` tool calls. The volatile context lists bounded identifiers for memories saved in the current session. Active lesson titles are always included because they are standing preferences.
 
-`memoryConsolidationWorkflow` runs after a successful `commit_draft` (apply) turn or by dashboard request. It reads operator messages and assistant prose, excludes tool results, and produces at most three pending lessons. Unreviewed model output never becomes a standing prompt instruction.
+A lesson has two authors and one gate. The model proposes one in the turn with `propose_lesson` when the operator corrects it, declines a commit with a reason or states a standing preference; `memoryConsolidationWorkflow` proposes the rest afterwards. Both land as `pending`, and unreviewed model output never becomes a standing prompt instruction. A proposal may supersede an active lesson; approving it archives the one it replaces in the same transaction, so two versions of a preference never stand in one prompt, and is refused when another approved revision already replaced that lesson. When a later session's feedback repeats a pending lesson the run reinforces it instead of adding one, and the review queue orders by that count.
+
+The workflow is incremental. `agent.writing_session` keeps the leaf entry and time the last run read up to; a run reads operator messages and assistant prose after that leaf, plus the operator's `feed_draft_revision` rows saved since that time as line diffs, excludes tool results, and moves the mark with a compare-and-set on the values it read before it writes a proposal, so two runs that overlap on one session write one set. The host schedules a run after every writing turn: at once when the turn committed, otherwise after an idle delay, cancelling the run the previous turn left waiting so one waits per session. `feeds.draft:apply` starts a run for every session that worked on the draft, so a commit from the editor or MCP also closes the loop. The dashboard can start one by hand.
 
 ### Content visibility
 
@@ -411,7 +413,7 @@ Do not start until all of these hold upstream: the storage format is declared st
 | Shared content tools                  | `packages/agent-content/src/`                                                                         |
 | Writing and public domains            | `packages/agent-writing/src/`, `packages/agent-public/src/`                                           |
 | Kind bindings and tasks               | `packages/agent-host/src/`, `apps/service/src/agents/`, `apps/workflow/src/agents/`                   |
-| Generic oRPC agent service            | `packages/api/orpc/services/agent/`                                                                   |
+| Generic oRPC agent service            | `packages/services/agent/`                                                                            |
 | Workflow and turn step                | `apps/workflow/src/workflows/agent-session.workflow.ts`, `apps/workflow/src/steps/agent-turn.step.ts` |
 | Database schema                       | `packages/db/src/schemas/agent.schema.ts`                                                             |
 | Shared client                         | `packages/agent-elements/src/`                                                                        |

@@ -5,12 +5,6 @@ import type {
   MemorySummary,
   SavedMemory,
 } from "@chia/agent-writing/ports";
-import {
-  createMemoryService,
-  recordSourceMemoryService,
-} from "@chia/api/memories/write";
-import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/api/resources/registry";
-import { searchResources } from "@chia/api/resources/search";
 import type { DB } from "@chia/db/client";
 import {
   getAgentMemories,
@@ -19,13 +13,19 @@ import {
   listAgentMemoriesBySession,
 } from "@chia/db/repos/agent/memory";
 import type { AgentMemory } from "@chia/db/schema";
-import { AGENT_MEMORY_KIND } from "@chia/db/schema";
+import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
+import {
+  createMemoryService,
+  recordSourceMemoryService,
+} from "@chia/services/memory/write.service";
+import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/registry";
+import { searchResources } from "@chia/services/rag/search.service";
 
 import { memoryHooks } from "./agent-memory-indexing.service";
 
 /**
- * Writes go through `memories/write.ts` so the index run is never skipped. Search uses
+ * Writes go through `memory/write.service.ts` so the index run is never skipped. Search uses
  * `searchResources` with the memory type and unpublished rows, both required, since memory
  * chunks are indexed `published: false`. Built with a `DB` and session id (provenance), not a request.
  */
@@ -83,14 +83,18 @@ export const createAgentMemoryPort = (
         };
       }
 
+      // a lesson is a proposal: pending until the operator approves it in the dashboard
+      const lesson = input.kind === AGENT_MEMORY_KIND.Lesson;
       const row = await createMemoryService(
         db,
         {
           kind: input.kind,
+          status: lesson ? AGENT_MEMORY_STATUS.Pending : undefined,
           title: input.title,
           content: input.content,
           sourceUrl: input.sourceUrl,
           sessionId,
+          supersedesId: lesson ? input.supersedesId : undefined,
         },
         memoryHooks
       );

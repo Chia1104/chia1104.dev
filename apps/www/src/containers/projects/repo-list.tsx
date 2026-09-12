@@ -1,5 +1,5 @@
 import "server-only";
-import { getPinnedRepos } from "@chia/api/github";
+import { getPinnedRepos } from "@chia/integrations/github";
 import meta from "@chia/meta";
 
 import { RepoCard } from "@/components/project/repo-card";

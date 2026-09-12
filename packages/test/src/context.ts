@@ -10,7 +10,7 @@ export interface StructuralContext {
 
 /**
  * Request-shaped fixture. Pass the consumer's context type as `TContext`; this package does
- * not import `@chia/api` so it stays a graph leaf.
+ * not import `@chia/services` so it stays a graph leaf.
  */
 export const contextOf = <TContext = StructuralContext>(
   session: TestSession | null,

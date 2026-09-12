@@ -1,11 +1,11 @@
 import * as z from "zod";
 
-import { feedsContracts } from "@chia/api/orpc/contracts";
 import { Locale } from "@chia/db/types";
+import { feedDraftSchema } from "@chia/services/feeds/feeds.contract";
 
 /** The editable draft fields plus the locale currently shown by the form. */
 export const draftFormSchema = z.compile(
-  feedsContracts.feedDraftSchema
+  feedDraftSchema
     .pick({
       slug: true,
       type: true,

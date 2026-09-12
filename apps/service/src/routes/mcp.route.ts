@@ -1,7 +1,7 @@
 import { createRouterClient } from "@orpc/server";
 import { Hono } from "hono";
 
-import { router } from "@chia/api/orpc/router";
+import { router } from "@chia/services/router";
 import { DASH_BASE_URL } from "@chia/utils/config";
 
 import {

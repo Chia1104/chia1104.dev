@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 
-import type { BaseOSContext, ORPCConfig } from "@chia/api/orpc/utils";
+import type { BaseOSContext, ORPCConfig } from "@chia/services/shared/context";
 
 import { agentFactory } from "../agents/factory";
 import { env } from "../env";

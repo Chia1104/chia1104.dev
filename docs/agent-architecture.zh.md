@@ -21,7 +21,7 @@
 
 ```mermaid
 flowchart TB
-    UI[apps/dash 或 apps/www] --> API[packages/api<br/>oRPC agent service]
+    UI[apps/dash 或 apps/www] --> API[packages/services<br/>oRPC agent service]
     API --> SVC[apps/service<br/>auth、session API、host bindings]
     SVC --> WF[apps/workflow<br/>durable turn executor]
     WF --> KIND[agent-writing 或 agent-public]
@@ -31,13 +31,13 @@ flowchart TB
     RUNTIME --> PG[(Postgres agent schema)]
 ```
 
-| 層                         | 擁有者                                          | 責任                                                        |
-| -------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
-| Transport 與 orchestration | `packages/api`、`apps/service`、`apps/workflow` | Auth、oRPC、workflow control、streams 與 host ports         |
-| Execution                  | `@chia/agent-runtime`                           | Pi lifecycle、persistence、approvals、models 與 wire events |
-| Shared content             | `@chia/agent-content`                           | 唯讀部落格 tools、`ContentReadPort` 與 `ProfileReadPort`    |
-| Domain                     | `@chia/agent-writing`、`@chia/agent-public`     | Prompts、tools、policy、model allowlist 與 domain ports     |
-| Client                     | `@chia/agent-elements`                          | Session store、queries 與共用 chat UI                       |
+| 層                         | 擁有者                                               | 責任                                                        |
+| -------------------------- | ---------------------------------------------------- | ----------------------------------------------------------- |
+| Transport 與 orchestration | `packages/services`、`apps/service`、`apps/workflow` | Auth、oRPC、workflow control、streams 與 host ports         |
+| Execution                  | `@chia/agent-runtime`                                | Pi lifecycle、persistence、approvals、models 與 wire events |
+| Shared content             | `@chia/agent-content`                                | 唯讀部落格 tools、`ContentReadPort` 與 `ProfileReadPort`    |
+| Domain                     | `@chia/agent-writing`、`@chia/agent-public`          | Prompts、tools、policy、model allowlist 與 domain ports     |
+| Client                     | `@chia/agent-elements`                               | Session store、queries 與共用 chat UI                       |
 
 穩定的 client 邊界是 `AgentWireEvent`，不是可替換的 model engine。Runtime 內部保留明確的 Pi 命名與型別。
 
@@ -49,7 +49,7 @@ flowchart TB
 
 - `apps/service/src/agents/` 綁定 API 階段的 capabilities、state 與 credentials。
 - `apps/workflow/src/agents/` 綁定執行階段的 ports 與 `runTurn`。
-- `packages/api/orpc/services/agent/` 擁有共用的 session、run、approval、maintenance、usage 與 admin 行為。
+- `packages/services/agent/` 擁有共用的 session、run、approval、maintenance、usage 與 admin 行為。
 
 oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建立的 `agentFactory`。Guard 能在載入 domain package 或 provider SDK 前拒絕呼叫；dynamic import 已提供 module cache，factory 不另外保存 definition registry 或 service cache。
 
@@ -332,13 +332,15 @@ Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts`
 | -------- | ------------------------------------- | ---------------------- |
 | `source` | `fetch_url` 讀過的頁面，以 URL 為 key | 立即 active            |
 | `fact`   | 模型保存的附來源結論                  | 立即 active            |
-| `lesson` | 從 feedback 抽出的寫作偏好            | Operator 核准後 active |
+| `lesson` | Operator 教過的寫作偏好               | Operator 核准後 active |
 
-所有 memory write 都經過 `packages/api/memories/write.ts`，並在需要時排程 RAG indexing。只有 live、active memory 會進索引。詳見 [RAG 架構](./rag-architecture.zh.md#6-agent-memory-resource)。
+所有 memory write 都經過 `packages/services/memory/write.service.ts`，並在需要時排程 RAG indexing。只有 live、active memory 會進索引。詳見 [RAG 架構](./rag-architecture.zh.md#6-agent-memory-resource)。
 
 Fact 與 source 只透過可見的 `search_memory`、`get_memory` tool call 進入模型。Volatile context 會列出本 session 已保存 memory 的受限識別資訊。Active lesson title 則固定加入，因為它們是 standing preferences。
 
-`memoryConsolidationWorkflow` 在成功的 `commit_draft` turn 後或由 dashboard 手動啟動。它只讀 operator messages 與 assistant prose，排除 tool results，最多產生三條 pending lesson。未經人員審核的 model output 不會成為常駐 prompt instruction。
+Lesson 有兩個作者、一道閘門。Operator 糾正模型、附理由拒絕 commit 或說出常駐偏好時，模型在 turn 內以 `propose_lesson` 提案；其餘由 `memoryConsolidationWorkflow` 事後提案。兩者都以 `pending` 落地，未經人員審核的 model output 不會成為常駐 prompt instruction。提案可以取代一條 active lesson；核准時在同一個 transaction 裡封存被取代的那條，同一個偏好不會有兩個版本同時進 prompt；若那條已被另一個核准的修訂取代，核准會被拒絕。之後的 session 若重複回饋到一條 pending lesson，run 會加強它而不是新增一條，待審清單依這個計數排序。
+
+Workflow 是增量的。`agent.writing_session` 記錄上一次 run 讀到的 leaf entry 與時間；一次 run 讀該 leaf 之後的 operator messages 與 assistant prose，加上那個時間之後 operator 在 `feed_draft_revision` 儲存過的手動編輯（以 line diff 呈現），排除 tool results；寫入任何 proposal 之前先以 compare-and-set 比對讀到的水位線再推進，所以同一 session 上重疊的兩次 run 只會寫入一組。Host 在每個 writing turn 之後排程一次 run：turn 有 commit 就立即，否則等待閒置延遲，並取消上一個 turn 留下的等待中 run，所以每個 session 只有一個 run 在等。`feeds.draft:apply` 會為每個處理過該 draft 的 session 啟動一次 run，因此從編輯器或 MCP commit 也會閉環。Dashboard 也可以手動啟動。
 
 ### 內容可見性
 
@@ -411,7 +413,7 @@ Harness 本身就是為 host 排程設計的。Lane API 收斂成四個 durable 
 | 共用 content tools                    | `packages/agent-content/src/`                                                                         |
 | Writing 與 public domains             | `packages/agent-writing/src/`、`packages/agent-public/src/`                                           |
 | Kind bindings 與 tasks                | `packages/agent-host/src/`、`apps/service/src/agents/`、`apps/workflow/src/agents/`                   |
-| Generic oRPC agent service            | `packages/api/orpc/services/agent/`                                                                   |
+| Generic oRPC agent service            | `packages/services/agent/`                                                                            |
 | Workflow 與 turn step                 | `apps/workflow/src/workflows/agent-session.workflow.ts`、`apps/workflow/src/steps/agent-turn.step.ts` |
 | Database schema                       | `packages/db/src/schemas/agent.schema.ts`                                                             |
 | 共用 client                           | `packages/agent-elements/src/`                                                                        |

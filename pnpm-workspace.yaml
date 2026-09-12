@@ -30,6 +30,7 @@ catalog:
   bun-types: ^1.4.1
   client-only: ^0.0.1
   dayjs: ^1.11.23
+  diff: 8.0.4
   es-toolkit: 1.52.0
   graphql-request: ^7.4.0
   ky: ^2.1.0

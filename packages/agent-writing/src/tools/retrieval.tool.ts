@@ -2,6 +2,7 @@ import { StringEnum } from "@earendil-works/pi-ai";
 
 import { contentReadTools } from "@chia/agent-content/tools/read";
 
+import { closeOpenFence } from "../markdown/fences.ts";
 import type {
   FetchedPage,
   WebSearchResult,
@@ -170,7 +171,12 @@ const recordSource = async (
   page: FetchedPage,
   signal: AbortSignal | undefined
 ): Promise<void> => {
-  const text = page.text.trim().slice(0, SOURCE_MAX_CHARS);
+  const trimmed = page.text.trim();
+  // a cut inside a code fence would turn the rest of the page into code, or code into prose
+  const text =
+    trimmed.length > SOURCE_MAX_CHARS
+      ? closeOpenFence(trimmed.slice(0, SOURCE_MAX_CHARS))
+      : trimmed;
   if (text.length === 0) return;
   try {
     await context.memory.save(

@@ -1,7 +1,7 @@
 import { createWritingAgentKind } from "@chia/agent-host/writing";
-import { openFeedDraftService } from "@chia/api/feeds/draft";
 import { listOpenFeedDrafts } from "@chia/db/repos/drafts";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
+import { openFeedDraftService } from "@chia/services/feeds/draft.service";
 import { getAdminId } from "@chia/utils/config";
 
 import { createAgentContentPort } from "../services/agent-content.port";
@@ -23,7 +23,8 @@ export const writingAgentKind = createWritingAgentKind({
     createContentPort: createAgentContentPort,
     createMemoryPort: createAgentMemoryPort,
     createWebPort: createAgentWebPort,
-    startMemoryConsolidation: (sessionId) =>
-      workflowControl.startMemoryConsolidation(sessionId),
+    startMemoryConsolidation: (request) =>
+      workflowControl.startMemoryConsolidation(request),
+    cancelWorkflowRun: (runId) => workflowControl.cancelRun(runId),
   },
 });

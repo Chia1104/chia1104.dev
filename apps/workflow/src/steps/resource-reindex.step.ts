@@ -1,10 +1,6 @@
 import "zod/compile";
 import { getWorkflowMetadata, RetryableError } from "workflow";
 
-import {
-  AGENT_MEMORY_SOURCE_TYPE,
-  FEED_TRANSLATION_SOURCE_TYPE,
-} from "@chia/api/resources/registry";
 import { connectDatabase } from "@chia/db/client";
 import { listAgentMemoryIds } from "@chia/db/repos/agent/memory";
 import { listFeedTranslationIds } from "@chia/db/repos/feeds";
@@ -15,6 +11,10 @@ import {
 } from "@chia/db/repos/resources/index-run";
 import { RESOURCE_INDEX_RUN_STATUS } from "@chia/db/schema";
 import type { ResourceIndexRunProgress } from "@chia/db/schema";
+import {
+  AGENT_MEMORY_SOURCE_TYPE,
+  FEED_TRANSLATION_SOURCE_TYPE,
+} from "@chia/services/rag/registry";
 
 import type { ResourceIndexRequest } from "./resource-index.step";
 

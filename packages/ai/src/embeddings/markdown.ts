@@ -51,10 +51,21 @@ const loadParser = async () => {
 type Parser = Awaited<ReturnType<typeof loadParser>>;
 
 /**
- * Parses as MDX; falls back to markdown when remark-mdx throws (stray `<`
- * or an unclosed tag). Indexing continues; JSX degrades to text.
+ * The grammar a document was written in. Post bodies are MDX; memory (fetched pages, facts,
+ * lessons) is markdown, where a stray `<` is text, not a tag.
  */
-const parseDocument = (parser: Parser, source: string): Root => {
+export type MarkdownFormat = "mdx" | "markdown";
+
+/**
+ * Parses in the declared grammar. MDX that does not parse (stray `<` or an unclosed tag) is
+ * read as markdown so indexing continues, and the warning is the signal to fix the post.
+ */
+const parseDocument = (
+  parser: Parser,
+  source: string,
+  format: MarkdownFormat
+): Root => {
+  if (format === "markdown") return parser.md.parse(source);
   try {
     return parser.mdx.parse(source);
   } catch (error) {
@@ -150,10 +161,11 @@ const cleanNodes = (nodes: RootContent[], parser: Parser): RootContent[] =>
  * names, CLI commands, error messages).
  */
 export const cleanMdxKeepStructure = async (
-  source: string
+  source: string,
+  format: MarkdownFormat = "mdx"
 ): Promise<string> => {
   const parser = await loadParser();
-  const tree = parseDocument(parser, source);
+  const tree = parseDocument(parser, source, format);
   tree.children = cleanNodes(tree.children, parser);
 
   return parser.md.stringify(tree).trim();
@@ -195,10 +207,11 @@ const walkHeadings = (
 };
 
 export const extractHeadings = async (
-  content: string
+  content: string,
+  format: MarkdownFormat = "mdx"
 ): Promise<MarkdownHeading[]> => {
   const parser = await loadParser();
-  const tree = parseDocument(parser, content);
+  const tree = parseDocument(parser, content, format);
 
   const headings: MarkdownHeading[] = [];
   const stack: { level: number; title: string }[] = [];
@@ -226,10 +239,11 @@ export const extractHeadings = async (
  * `cleanMdxKeepStructure`; sections are verbatim slices of that markdown.
  */
 export const splitByHeadings = async (
-  content: string
+  content: string,
+  format: MarkdownFormat = "mdx"
 ): Promise<MarkdownSection[]> => {
   const parser = await loadParser();
-  const tree = parseDocument(parser, content);
+  const tree = parseDocument(parser, content, format);
 
   const sections: MarkdownSection[] = [];
   const stack: { level: number; title: string }[] = [];
@@ -281,6 +295,7 @@ export interface HeadingOutlineOptions {
   maxDepth?: number;
   /** Cap so a pathological document cannot blow the card's size */
   maxHeadings?: number;
+  format?: MarkdownFormat;
 }
 
 /**
@@ -294,9 +309,9 @@ export const buildHeadingOutline = async (
   const maxDepth = options.maxDepth ?? 3;
   const maxHeadings = options.maxHeadings ?? 40;
 
-  const headings = (await extractHeadings(content)).filter(
-    (heading) => heading.level <= maxDepth
-  );
+  const headings = (
+    await extractHeadings(content, options.format ?? "mdx")
+  ).filter((heading) => heading.level <= maxDepth);
   if (headings.length === 0) {
     return "";
   }
@@ -353,9 +368,12 @@ const collectPlainText = (
  * Flattens to plain prose for the document card's body fallback: no code
  * blocks, markup, or expressions.
  */
-export const stripMdx = async (source: string): Promise<string> => {
+export const stripMdx = async (
+  source: string,
+  format: MarkdownFormat = "mdx"
+): Promise<string> => {
   const parser = await loadParser();
-  const tree = parseDocument(parser, source);
+  const tree = parseDocument(parser, source, format);
 
   const parts: string[] = [];
   collectPlainText(tree.children, parser, parts);

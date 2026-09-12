@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/integrations",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./github": {
+      "types": "./github/index.ts",
+      "default": "./github/index.ts"
+    },
+    "./github/query": {
+      "types": "./github/query/index.ts",
+      "default": "./github/query/index.ts"
+    },
+    "./github/env": {
+      "types": "./github/env.ts",
+      "default": "./github/env.ts"
+    },
+    "./github/types": {
+      "types": "./github/types.ts",
+      "default": "./github/types.ts"
+    },
+    "./spotify": {
+      "types": "./spotify/index.ts",
+      "default": "./spotify/index.ts"
+    },
+    "./spotify/env": {
+      "types": "./spotify/env.ts",
+      "default": "./spotify/env.ts"
+    },
+    "./spotify/types": {
+      "types": "./spotify/types.ts",
+      "default": "./spotify/types.ts"
+    },
+    "./spotify/validator": {
+      "types": "./spotify/validator.ts",
+      "default": "./spotify/validator.ts"
+    },
+    "./betterstack/types": {
+      "types": "./betterstack/types.ts",
+      "default": "./betterstack/types.ts"
+    },
+    "./betterstack/env": {
+      "types": "./betterstack/env.ts",
+      "default": "./betterstack/env.ts"
+    },
+    "./betterstack/utils": {
+      "types": "./betterstack/utils.ts",
+      "default": "./betterstack/utils.ts"
+    },
+    "./betterstack/uptime": {
+      "types": "./betterstack/uptime/index.ts",
+      "default": "./betterstack/uptime/index.ts"
+    },
+    "./captcha": {
+      "types": "./captcha/index.ts",
+      "default": "./captcha/index.ts"
+    },
+    "./captcha/constants": {
+      "types": "./captcha/constants.ts",
+      "default": "./captcha/constants.ts"
+    },
+    "./captcha/env": {
+      "types": "./captcha/env.ts",
+      "default": "./captcha/env.ts"
+    },
+    "./captcha/env.client": {
+      "types": "./captcha/env.client.ts",
+      "default": "./captcha/env.client.ts"
+    },
+    "./s3/env": {
+      "types": "./s3/env.ts",
+      "default": "./s3/env.ts"
+    },
+    "./s3/client": {
+      "types": "./s3/s3.client.ts",
+      "default": "./s3/s3.client.ts"
+    },
+    "./s3/service": {
+      "types": "./s3/s3.service.ts",
+      "default": "./s3/s3.service.ts"
+    },
+    "./email": {
+      "types": "./email/index.ts",
+      "default": "./email/index.ts"
+    },
+    "./email/env": {
+      "types": "./email/env.ts",
+      "default": "./email/env.ts"
+    }
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "type:check": "tsc --noEmit",
+    "test": "vitest --run",
+    "clean": "git clean -xdf .turbo node_modules dist .cache"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "catalog:aws",
+    "@aws-sdk/s3-request-presigner": "catalog:aws",
+    "@chia/meta": "workspace:*",
+    "@chia/ui": "workspace:*",
+    "@chia/utils": "workspace:*",
+    "@t3-oss/env-core": "catalog:env",
+    "graphql-request": "catalog:",
+    "ky": "catalog:",
+    "resend": "catalog:email",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chia/test": "workspace:*",
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
+  }
+}

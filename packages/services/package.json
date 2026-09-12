@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/services",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./env": {
+      "types": "./env.ts",
+      "default": "./env.ts"
+    },
+    "./router.contract": {
+      "types": "./router.contract.ts",
+      "default": "./router.contract.ts"
+    },
+    "./router": {
+      "types": "./router.ts",
+      "default": "./router.ts"
+    },
+    "./shared/context": {
+      "types": "./shared/context.ts",
+      "default": "./shared/context.ts"
+    },
+    "./shared/guards/caller.guard": {
+      "types": "./shared/guards/caller.guard.ts",
+      "default": "./shared/guards/caller.guard.ts"
+    },
+    "./shared/guards/captcha.guard": {
+      "types": "./shared/guards/captcha.guard.ts",
+      "default": "./shared/guards/captcha.guard.ts"
+    },
+    "./shared/guards/rate-limit.guard": {
+      "types": "./shared/guards/rate-limit.guard.ts",
+      "default": "./shared/guards/rate-limit.guard.ts"
+    },
+    "./agent/agent.contract": {
+      "types": "./agent/agent.contract.ts",
+      "default": "./agent/agent.contract.ts"
+    },
+    "./agent/admin.contract": {
+      "types": "./agent/admin.contract.ts",
+      "default": "./agent/admin.contract.ts"
+    },
+    "./agent/agent.factory": {
+      "types": "./agent/agent.factory.ts",
+      "default": "./agent/agent.factory.ts"
+    },
+    "./agent/content-read.port": {
+      "types": "./agent/content-read.port.ts",
+      "default": "./agent/content-read.port.ts"
+    },
+    "./agent/profile-read.port": {
+      "types": "./agent/profile-read.port.ts",
+      "default": "./agent/profile-read.port.ts"
+    },
+    "./feeds/feeds.contract": {
+      "types": "./feeds/feeds.contract.ts",
+      "default": "./feeds/feeds.contract.ts"
+    },
+    "./feeds/search.service": {
+      "types": "./feeds/search.service.ts",
+      "default": "./feeds/search.service.ts"
+    },
+    "./feeds/write.service": {
+      "types": "./feeds/write.service.ts",
+      "default": "./feeds/write.service.ts"
+    },
+    "./feeds/draft.service": {
+      "types": "./feeds/draft.service.ts",
+      "default": "./feeds/draft.service.ts"
+    },
+    "./feeds/draft-bus": {
+      "types": "./feeds/draft-bus.ts",
+      "default": "./feeds/draft-bus.ts"
+    },
+    "./memory/write.service": {
+      "types": "./memory/write.service.ts",
+      "default": "./memory/write.service.ts"
+    },
+    "./rag/registry": {
+      "types": "./rag/registry.ts",
+      "default": "./rag/registry.ts"
+    },
+    "./rag/search.service": {
+      "types": "./rag/search.service.ts",
+      "default": "./rag/search.service.ts"
+    },
+    "./spotify/account.service": {
+      "types": "./spotify/account.service.ts",
+      "default": "./spotify/account.service.ts"
+    },
+    "./spotify/playback.service": {
+      "types": "./spotify/playback.service.ts",
+      "default": "./spotify/playback.service.ts"
+    }
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "type:check": "tsc --noEmit",
+    "test": "vitest --run",
+    "clean": "git clean -xdf .turbo node_modules dist .cache"
+  },
+  "dependencies": {
+    "@chia/agent-content": "workspace:*",
+    "@chia/agent-host": "workspace:*",
+    "@chia/agent-runtime": "workspace:*",
+    "@chia/ai": "workspace:*",
+    "@chia/auth": "workspace:*",
+    "@chia/db": "workspace:*",
+    "@chia/integrations": "workspace:*",
+    "@chia/kv": "workspace:*",
+    "@chia/service-kit": "workspace:*",
+    "@chia/utils": "workspace:*",
+    "@chia/workflow-control": "workspace:*",
+    "@orpc/contract": "catalog:orpc",
+    "@orpc/server": "catalog:orpc",
+    "@t3-oss/env-core": "catalog:env",
+    "drizzle-orm": "catalog:drizzle",
+    "github-slugger": "catalog:unified",
+    "ky": "catalog:",
+    "node-html-parser": "catalog:unified",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chia/test": "workspace:*",
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
+  }
+}

@@ -1,7 +1,7 @@
 import "zod/compile";
 import * as z from "zod";
 
-import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/api/resources/registry";
+import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/services/rag/registry";
 
 import { estimateReadingTimeStep } from "../steps/estimate-reading-time.step";
 import { loadFeedForIndexingStep } from "../steps/feed-indexing.step";

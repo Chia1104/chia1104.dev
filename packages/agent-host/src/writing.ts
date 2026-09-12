@@ -27,7 +27,9 @@ import {
   copyWritingSessionDrafts,
   createWritingAgentSession,
   getWritingAgentSession,
+  getWritingSessionConsolidation,
   touchWritingSessionDrafts,
+  updateWritingSessionConsolidation,
 } from "@chia/db/repos/agent";
 import type { WritingAgentSessionState } from "@chia/db/repos/agent";
 import { getFeedDraft, getFeedDrafts } from "@chia/db/repos/drafts";
@@ -56,8 +58,20 @@ interface WritingExecutionHost {
   }): ContentPort;
   createMemoryPort(options: { db: DB; sessionId: string }): MemoryPort;
   createWebPort(): WebPort;
-  startMemoryConsolidation(sessionId: string): Promise<string>;
+  /** Starts the lesson extraction run, after `delayMs`; resolves to its run id. */
+  startMemoryConsolidation(request: {
+    sessionId: string;
+    delayMs: number;
+  }): Promise<string>;
+  cancelWorkflowRun(runId: string): Promise<void>;
 }
+
+/**
+ * How long a session sits without a turn before its lessons are extracted. A commit extracts
+ * at once: the draft is how the operator wanted it, so the corrections that got it there are
+ * complete.
+ */
+const LESSON_EXTRACTION_IDLE_MS = 2 * 60 * 60 * 1000;
 
 export interface CreateWritingAgentKindOptions {
   /** Get-or-create a shared draft: a feed's working draft, or a fresh empty one. */
@@ -291,12 +305,32 @@ export const createWritingAgentKind = (
           }))
         );
 
-        // After the turn ends: `runPiTurn` appends every entry before it resolves.
-        if (turn.status === "done" && committed) {
+        // After the turn ends: `runPiTurn` appends every entry before it resolves. One run
+        // waits per session; this turn's replaces the one the previous turn scheduled.
+        if (turn.status === "done") {
           try {
-            await execution.startMemoryConsolidation(context.row.id);
+            const current = await getWritingSessionConsolidation(
+              context.db,
+              context.row.id
+            );
+            if (current?.consolidationRunId) {
+              await execution
+                .cancelWorkflowRun(current.consolidationRunId)
+                .catch(() => undefined);
+            }
+            const runId = await execution.startMemoryConsolidation({
+              sessionId: context.row.id,
+              delayMs: committed ? 0 : LESSON_EXTRACTION_IDLE_MS,
+            });
+            await updateWritingSessionConsolidation(
+              context.db,
+              context.row.id,
+              {
+                consolidationRunId: runId,
+              }
+            );
           } catch (cause) {
-            console.error("Could not start memory consolidation", {
+            console.error("Could not schedule lesson extraction", {
               sessionId: context.row.id,
               error: String(cause),
             });

@@ -1,0 +1,9 @@
+{
+  "extends": "@chiastack/tsconfig/react.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"],
+    "allowImportingTsExtensions": true
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
+}

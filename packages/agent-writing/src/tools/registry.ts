@@ -17,7 +17,9 @@ export const TOOL_NAMES = {
   searchMemory: "search_memory",
   getMemory: "get_memory",
   saveMemory: "save_memory",
+  proposeLesson: "propose_lesson",
   listDrafts: "list_drafts",
+  newDraft: "new_draft",
   openDraft: "open_draft",
   readDraft: "read_draft",
   writeDraft: "write_draft",
@@ -41,6 +43,8 @@ export const TOOL_TIER_BY_NAME = {
   [TOOL_NAMES.listDrafts]: "read",
 
   [TOOL_NAMES.saveMemory]: "draft",
+  [TOOL_NAMES.proposeLesson]: "draft",
+  [TOOL_NAMES.newDraft]: "draft",
   [TOOL_NAMES.openDraft]: "draft",
   [TOOL_NAMES.readDraft]: "draft",
   [TOOL_NAMES.writeDraft]: "draft",
@@ -60,6 +64,8 @@ export const TOOL_LABEL_BY_NAME = {
   [TOOL_NAMES.listDrafts]: "List drafts",
 
   [TOOL_NAMES.saveMemory]: "Save memory",
+  [TOOL_NAMES.proposeLesson]: "Propose lesson",
+  [TOOL_NAMES.newDraft]: "Start new draft",
   [TOOL_NAMES.openDraft]: "Open draft",
   [TOOL_NAMES.readDraft]: "Read draft",
   [TOOL_NAMES.writeDraft]: "Write draft",

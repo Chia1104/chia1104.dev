@@ -20,7 +20,7 @@ import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { ErrorCode as CaptchaErrorCode } from "@chia/api/captcha/constants";
+import { ErrorCode as CaptchaErrorCode } from "@chia/integrations/captcha/constants";
 import meta from "@chia/meta";
 import SubmitForm from "@chia/ui/submit-form";
 import { cn } from "@chia/ui/utils/cn.util";

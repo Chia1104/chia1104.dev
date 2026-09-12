@@ -1,0 +1,21 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tags": ["@chia/services"],
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "passThroughEnv": [
+        "INTERNAL_SERVICE_ENDPOINT",
+        "NEXT_PUBLIC_SERVICE_ENDPOINT",
+        "CF_BYPASS_TOKEN",
+        "CH_API_KEY"
+      ],
+      "env": [
+        "INTERNAL_SERVICE_ENDPOINT",
+        "NEXT_PUBLIC_SERVICE_ENDPOINT",
+        "CF_BYPASS_TOKEN",
+        "CH_API_KEY"
+      ]
+    }
+  }
+}

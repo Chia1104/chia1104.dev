@@ -3,7 +3,7 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 
-import { router } from "@chia/api/orpc/router";
+import { router } from "@chia/services/router";
 
 import { env } from "../env";
 import {

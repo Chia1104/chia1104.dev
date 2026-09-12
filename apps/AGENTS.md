@@ -1,80 +1,46 @@
 # Apps
 
-| App        | Port | Deployment           | Responsibility                                                         |
-| ---------- | ---- | -------------------- | ---------------------------------------------------------------------- |
-| `www`      | 3000 | Vercel               | Public profile, blog, projects and contact                             |
-| `dash`     | 3001 | Railway              | Admin UI for users, content, profile, assets, RAG, agents and settings |
-| `service`  | 3005 | Railway              | Auth, database access, oRPC and AI HTTP routes                         |
-| `workflow` | 3008 | Railway, one replica | Durable workflows, steps and agent turns                               |
+| App        | Port | Deployment           | Responsibility                                 |
+| ---------- | ---- | -------------------- | ---------------------------------------------- |
+| `www`      | 3000 | Vercel               | Public profile, content and reader agent       |
+| `dash`     | 3001 | Railway              | Authenticated administration and writing agent |
+| `service`  | 3005 | Railway              | Auth, data access, oRPC and AI HTTP surfaces   |
+| `workflow` | 3008 | Railway, one replica | Durable workflows, steps and agent turns       |
 
 `apps/functions/pg-dump-cron` is the scheduled Postgres-to-S3 backup job.
 
 ## Network boundary
 
-Vercel cannot reach Railway's private network. Resolve endpoints with `withServiceEndpoint(path, service, options)` from `@chia/utils/config`:
-
-- Server runtimes use the internal endpoint when available.
-- Browsers use `NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT`.
-- `service` reaches `workflow` over Railway's private network.
-
-The frontends import only the contract type from `@chia/api/orpc/contracts` and call `service` directly. Do not add tRPC, a Next.js API proxy or cross-app imports.
+- Vercel cannot reach Railway's private network. Resolve endpoints with `withServiceEndpoint` from `@chia/utils/config`.
+- Browsers use `NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT`; server runtimes may use internal endpoints.
+- Frontends import the oRPC contract type and call `service` directly. Do not add a Next.js API proxy, tRPC or cross-app imports.
+- `service` reaches `workflow` through the authenticated `@chia/workflow-control` boundary.
 
 ## `www`
 
-- `src/libs/orpc/client.rsc.ts` is server-only and sends `CH_API_KEY` plus the Cloudflare bypass token. That key needs the `feeds:read` and `spotify:read` scopes.
-- `src/libs/orpc/client.ts` runs in the browser with the session cookie and may call only public procedures and the visitor's own agent sessions. Never expose an API key to it.
-- Public agent chat lives in `src/components/agent/` and uses `@chia/agent-elements` content renderers only. `AppLayout` mounts `AgentContextProvider` around the page and the chat dock; a post page wraps its body in `ArticleAgentContext`, which provides the post as a `feed` attachment while mounted and files the reader's selected passage as a `selection` attachment request, opening the dock to send it. Guest sessions come from better-auth's anonymous plugin and require the site captcha before minting. `@chia/ui/captcha` is the shared challenge widget. Whether the visitor may use the public kind comes from `session.access` (their tier against the kind's floor), never from a refused request: a guest below a `Session` floor is asked to sign in, a floor above that shows the kind as closed.
-- Content uses `@chia/contents`; localization uses `next-intl` with `packages/i18n/www`.
-- The shell around the content is the `page` container, narrowed by the chat dock through `--dock-width`. Layout inside it responds with the `page-sm`, `page-md` and `page-lg` variants, not viewport breakpoints; portaled overlays and the drawer branch keep viewport breakpoints.
+- `src/libs/orpc/client.rsc.ts` is server-only and may attach `CH_API_KEY`; the browser client must never receive an API key.
+- Browser requests use the Better Auth session cookie and may access only public or caller-owned procedures.
+- Content rendering belongs to `@chia/contents`, localization to `@chia/i18n` and shared agent UI to `@chia/agent-elements`.
+- Render access from `session.access`; do not infer authorization from failed requests or the raw role column.
 
 ## `dash`
 
-Data fetching runs in the browser through `src/libs/orpc/client.ts` with the Better Auth session cookie. Keep pages as thin server shells or client pages, and fetch data in client components through oRPC query and mutation options. `src/libs/orpc/client.rsc.ts` is the server-only twin that forwards the request cookie; layouts use it to decide what to render, never to fetch page data.
-
-`dash` has no database, KV, auth-server or in-process oRPC context. Server actions are limited to dashboard-owned server concerns.
-
-The post editor edits `feed_draft`, never the feed: autosave is a compare-and-set on the draft revision, changes from the agent, MCP or another tab arrive over `feeds.draft:watch` as invalidations of the current draft query. Watch connections and database-listener reconnects resynchronize current state without replaying revision history; there is no client polling. The mounted agent session additionally reports its draft-tier tool calls through `onToolEvent`, so the editor can show what the agent is doing to the open draft and refresh it as soon as a call settles. Unsaved edits also persist in the browser as a patch over the revision they were made against; reopening the draft resumes them on the same revision and offers them as a conflict on a newer one. Navigation away from the editor goes through `useGuardedRouter` in `libs/navigation-guard`, which saves first and asks only when saving fails. Only Apply writes the feed. Feed-level switches (published, date, delete) call `feeds.update` directly.
-
-`SidebarInset` is the `page` container, narrowed by the sidebar and the agent dock. Layout inside it responds with the `page-sm`, `page-md` and `page-lg` variants, not viewport breakpoints; portaled overlays keep viewport breakpoints.
-
-The writing agent is a dock the workspace layout mounts for the operator, not a page. The layout mounts `AgentContextProvider` from `@chia/agent-elements/context`; a page provides the records it has open (the editor provides its draft) and every prompt, suggestion and slash command from the drawer carries them as attachments unless the operator detaches one. Text selected in the editor reaches the agent the same way, as a `selection` attachment with the draft's line range, from entries on Monaco's own context menu; the editor flushes its autosave before the request goes out and opens the dock to show the turn. The agent is otherwise unbound and picks drafts through its own tools.
-
-What a signed-in person may see comes from `session.access.dashboard`, never the `role` column: an `operator` is the configured admin id and gets the `(operator)` route group, whose server layout redirects everyone else; a `member` gets the overview and general settings. Guests carry `null` and are refused at the workspace layout.
-
-User administration writes through better-auth's admin client. Do not duplicate ban or session semantics. Admin access is the configured admin id, not the `role` column.
+- Fetch page data in client components through oRPC query and mutation options. The server client forwards cookies for layout decisions, not page data fetching.
+- `dash` has no database, KV, auth server or in-process oRPC context. Server actions are limited to dashboard-owned concerns.
+- Dashboard authorization comes from `session.access.dashboard`; operator routes also verify the configured admin identity.
+- User administration goes through Better Auth's admin client rather than duplicating its session or ban semantics.
 
 ## `service`
 
-`src/server.ts` mounts Hono on Nitro; `src/bootstrap.ts` applies `@chia/service-kit/bootstrap`. Its `/api/v1` surface is:
-
-```text
-/auth      Better Auth; guest, social and magic-link sign-in require `x-captcha-response`
-/rpc       oRPC
-/health
-/ai        Vercel AI SDK streaming routes; `key:signed` also admits guests
-/mcp       Model Context Protocol over stateless Streamable HTTP; operator only
-/spotify   OAuth callback
-```
-
-Keep these boundaries under `src/`:
-
-- `routes/` mounts HTTP surfaces.
-- `factories/orpc.factory.ts` is the only place that builds the oRPC context.
-- `agents/` contains host bindings and dynamic agent-kind loaders; business logic belongs in `packages/api`.
-- `guards/` binds shared policies to Hono. `rate-limits.ts` holds the budget of each HTTP mount; procedure budgets stay in `@chia/api/orpc/rate-limits`.
-- `mcp/` builds the MCP server over an in-process router client. Tools are adapters over oRPC procedures and hold no business logic; content writes go through `feeds.draft:*`, `write_post` returns once the durable turn has started and review stays in dash.
-- `services/` orchestrates host-side ports; `repos/` owns remote access. Table access belongs in `@chia/db/repos`.
-
-`service` never executes workflows. Starts, resumes and cancellations go through the context's `@chia/workflow-control` client; run state and streams use shared World storage. See [`docs/workflow-deployment.md`](../docs/workflow-deployment.md).
-
-Keep heavy dependencies behind dynamic imports so route imports do not inflate the boot path.
+- `src/server.ts` mounts Hono on Nitro and `src/bootstrap.ts` applies `@chia/service-kit/bootstrap`.
+- Keep HTTP mounts in `routes/`, oRPC context construction in `factories/orpc.factory.ts`, host bindings in `agents/`, transport guards in `guards/`, orchestration in `services/` and remote access in `repos/`.
+- Business logic belongs in packages. Database access goes through `@chia/db/repos/*`.
+- The service starts, resumes and cancels workflows but never executes them.
+- Keep heavy provider and agent dependencies behind dynamic imports so route imports stay lightweight.
 
 ## `workflow`
 
-This is the only durable-workflow executor. It exposes `/health` and the authenticated workflow-control route. Keep it at one replica unless the design in [`docs/workflow-deployment.md`](../docs/workflow-deployment.md) is changed.
-
-- `workflow-control.route.ts` validates commands and authentication; `services/workflow-control.ts` executes start, resume and cancel operations.
-- `workflows/` contains durable orchestration; `steps/` contains side effects. Workflow functions cannot use Node built-ins.
-- Keep workflow filenames and exported function names stable because existing runs resume by the SDK-derived ID.
-- `agents/` supplies execution-time host bindings. Shared contracts and behavior belong in `@chia/agent-host` and `@chia/workflow-control`, never another app.
-- Packages reached by step code may need to be direct `apps/workflow` dependencies. Otherwise esbuild can inline CommonJS dependencies into invalid ESM during `nitro dev`.
+- This is the only durable-workflow executor. Keep it at one replica unless `docs/workflow-deployment.md` changes.
+- Workflow functions orchestrate only; Node built-ins, database access, providers and other side effects belong in steps.
+- Keep workflow filenames and exported function names stable because existing runs resume by their SDK-derived IDs.
+- Shared contracts and agent behavior belong in packages, not another app.

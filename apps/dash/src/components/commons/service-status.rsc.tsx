@@ -1,5 +1,5 @@
 import "server-only";
-import { getMonitors } from "@chia/api/betterstack/uptime";
+import { getMonitors } from "@chia/integrations/betterstack/uptime";
 
 import { StatusChip } from "./status-chip";
 

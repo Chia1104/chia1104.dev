@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { cleanMdxKeepStructure, stripMdx } from "../src/embeddings/markdown";
+import {
+  buildHeadingOutline,
+  cleanMdxKeepStructure,
+  stripMdx,
+} from "../src/embeddings/markdown";
 
 const CONTENT = `
 # Heading 1 - Foo
@@ -161,5 +165,34 @@ describe("cleanMdxKeepStructure", () => {
         "| x | y |",
       ].join("\n")
     );
+  });
+});
+
+describe("declared markdown", () => {
+  const PROSE =
+    'Register with `isToolCallEventType<"my_tool", Input>(event)`; nb "<" and ">" are stripped.';
+
+  it("reads a fetched page as markdown without trying MDX first", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    const cleaned = await cleanMdxKeepStructure(PROSE, "markdown");
+    const outline = await buildHeadingOutline(`# Title\n\n${PROSE}`, {
+      format: "markdown",
+    });
+
+    expect(cleaned).toContain("my_tool");
+    expect(outline).toBe("- Title");
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("still warns once for a post that is not valid MDX", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    const cleaned = await cleanMdxKeepStructure(PROSE);
+
+    expect(cleaned).toContain("my_tool");
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
   });
 });

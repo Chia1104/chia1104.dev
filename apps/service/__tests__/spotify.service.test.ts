@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => ({
   withLockedSpotifyCredential: vi.fn(),
 }));
 
-vi.mock("@chia/api/spotify", () => ({
+vi.mock("@chia/integrations/spotify", () => ({
   codeAuthorization: mocks.codeAuthorization,
   decryptSpotifyToken: mocks.decryptSpotifyToken,
   encryptSpotifyToken: mocks.encryptSpotifyToken,
@@ -45,17 +45,17 @@ vi.mock("@chia/db/repos/spotify", () => ({
 import { HTTPError } from "ky";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { DB } from "@chia/db/client";
+import type { Keyv } from "@chia/kv/types";
 import {
   completeSpotifyAuthorizationService,
   createSpotifyAuthorizationService,
   SpotifyCredentialUnavailableError,
-} from "@chia/api/spotify/account";
+} from "@chia/services/spotify/account.service";
 import {
   getSpotifyNowPlayingService,
   resolveSpotifyAccessToken,
-} from "@chia/api/spotify/playback";
-import type { DB } from "@chia/db/client";
-import type { Keyv } from "@chia/kv/types";
+} from "@chia/services/spotify/playback.service";
 
 const db = {} as DB;
 

@@ -3,7 +3,8 @@
   "tags": ["service"],
   "extends": [
     "//",
-    "@chia/api",
+    "@chia/integrations",
+    "@chia/services",
     "@chia/auth",
     "@chia/db",
     "@chia/kv",

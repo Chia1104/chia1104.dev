@@ -6,7 +6,7 @@ import type {
 } from "@chia/agent-runtime/types";
 import type { Locale } from "@chia/db/types";
 
-import { DraftNotFoundError } from "../draft/operations.ts";
+import { DraftNotFoundError, languageMismatch } from "../draft/operations.ts";
 import type { FeedDraft, WritingTool, WritingToolContext } from "../types.ts";
 
 import { TOOL_NAMES, labelOf } from "./registry.ts";
@@ -39,6 +39,13 @@ const commitBlocker = (draft: FeedDraft): string | undefined => {
   );
   if (untitled.length > 0) {
     return `These locales have no title: ${untitled.join(", ")}. Every translation needs one.`;
+  }
+  for (const locale of locales) {
+    const mismatch = languageMismatch(
+      locale,
+      draft.translations[locale]?.content ?? ""
+    );
+    if (mismatch) return mismatch;
   }
   if (draft.feedId === null && !draft.slug) {
     return "A new post needs an English/ASCII slug. Set one with write_draft before committing.";

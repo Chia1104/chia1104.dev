@@ -4,8 +4,8 @@ import { ORPCError } from "@orpc/server";
 import type { RouterClient } from "@orpc/server";
 import * as z from "zod";
 
-import type { router } from "@chia/api/orpc/router";
 import { FeedType, Locale } from "@chia/db/types";
+import type { router } from "@chia/services/router";
 
 /**
  * Every tool is an adapter over an oRPC procedure; guards, errors and hooks run inside the
@@ -187,7 +187,14 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
       description:
         "Open a post's working draft (creating it from the post when there is none), or start an empty draft for a new post when feedId is omitted. Returns the draft with its revision.",
       inputSchema: {
-        feedId: z.number().int().optional(),
+        feedId: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe(
+            "An existing post's id; omit to start a new post. A new post has no id yet."
+          ),
       },
     },
     guarded(({ feedId }) => api.feeds["draft:open"]({ feedId }))

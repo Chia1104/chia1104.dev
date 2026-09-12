@@ -2,8 +2,8 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 
-import { completeSpotifyAuthorizationService } from "@chia/api/spotify/account";
-import { spotifyOAuthCallbackSchema } from "@chia/api/spotify/validator";
+import { spotifyOAuthCallbackSchema } from "@chia/integrations/spotify/validator";
+import { completeSpotifyAuthorizationService } from "@chia/services/spotify/account.service";
 
 import { env } from "../env";
 import { getSpotifyDashboardRedirect } from "../services/spotify.service";

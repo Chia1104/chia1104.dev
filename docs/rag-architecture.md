@@ -151,7 +151,7 @@ Error handling:
 
 ## 4. Chunking
 
-The implementation lives in `packages/ai/src/embeddings/chunking.ts`. The section target is 512 tokens.
+The implementation lives in `packages/ai/src/embeddings/chunking.ts`. The section target is 512 tokens. The caller declares the grammar: post bodies are parsed as MDX, agent memory as markdown, so a `<` in a fetched page is text and never a failed JSX parse. MDX that fails to parse is read as markdown with a warning, and that warning means the post needs fixing.
 
 ```text
 MDX
@@ -307,11 +307,11 @@ Current constraints:
 
 Primary locations:
 
-| Responsibility                   | Location                                                                            |
-| -------------------------------- | ----------------------------------------------------------------------------------- |
-| Embeddings, chunking and context | `packages/ai/src/embeddings/`                                                       |
-| Schema, chunks and retrieval SQL | `packages/db/src/schemas/resources.schema.ts`, `packages/db/src/libs/resources/`    |
-| Adapters and resource services   | `packages/api/resources/`                                                           |
-| Feed search                      | `packages/api/feeds/search.ts`                                                      |
-| Indexing workflows and steps     | `apps/workflow/src/workflows/`, `apps/workflow/src/steps/resource-index.step.ts`    |
-| Context hooks and index runs     | `apps/service/src/factories/orpc.factory.ts`, `packages/api/resources/index-run.ts` |
+| Responsibility                   | Location                                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------------------------ |
+| Embeddings, chunking and context | `packages/ai/src/embeddings/`                                                              |
+| Schema, chunks and retrieval SQL | `packages/db/src/schemas/resources.schema.ts`, `packages/db/src/libs/resources/`           |
+| Adapters and resource services   | `packages/services/rag/`                                                                   |
+| Feed search                      | `packages/services/feeds/search.service.ts`                                                |
+| Indexing workflows and steps     | `apps/workflow/src/workflows/`, `apps/workflow/src/steps/resource-index.step.ts`           |
+| Context hooks and index runs     | `apps/service/src/factories/orpc.factory.ts`, `packages/services/rag/index-run.service.ts` |

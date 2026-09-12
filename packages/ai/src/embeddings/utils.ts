@@ -1,4 +1,5 @@
 import { buildHeadingOutline, stripMdx } from "./markdown.ts";
+import type { MarkdownFormat } from "./markdown.ts";
 
 /**
  * One dimension, one column. Changing this is a schema change plus a reindex.
@@ -126,6 +127,8 @@ export interface DocumentCardInput {
   excerpt?: string | null;
   content?: string | null;
   tags?: string[];
+  /** @default "mdx" */
+  format?: MarkdownFormat;
 }
 
 /**
@@ -145,14 +148,17 @@ export const buildEmbeddingInput = async (
     .find((value): value is string => !!value);
 
   const tags = input.tags?.filter((tag) => !!tag.trim()) ?? [];
-  const outline = input.content ? await buildHeadingOutline(input.content) : "";
+  const format = input.format ?? "mdx";
+  const outline = input.content
+    ? await buildHeadingOutline(input.content, { format })
+    : "";
 
   // No summary and no structure: fall back to a bounded slice of the body
   // so the vector is not just the title
   const bodyFallback =
     !summary && !outline && input.content
       ? truncateForEmbedding(
-          await stripMdx(input.content),
+          await stripMdx(input.content, format),
           CARD_BODY_FALLBACK_TOKENS
         )
       : null;

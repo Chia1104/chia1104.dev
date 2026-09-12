@@ -4,6 +4,7 @@ import { FeedType, Locale } from "@chia/db/types";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 import { numberLines } from "@chia/utils/text";
 
+import { languageMismatch } from "../draft/operations.ts";
 import type {
   DraftFeedMeta,
   DraftTranslation,
@@ -61,7 +62,7 @@ export const listDraftsTool = defineTool({
     const drafts = await context.draft.list();
     if (drafts.length === 0) {
       return textResult(
-        "No open drafts. `open_draft` starts one, for a new post or for an existing post by feedId.",
+        "No open drafts. `new_draft` starts one for a new post; `open_draft` opens an existing post's by feedId.",
         { drafts }
       );
     }
@@ -69,36 +70,57 @@ export const listDraftsTool = defineTool({
   },
 });
 
+const openedResult = (draft: FeedDraft) => {
+  const locales = Object.keys(draft.translations);
+  return textResult(
+    `Opened draft ${draft.id} ${draft.feedId === null ? "for a new post" : `for feed ${draft.feedId}`} ` +
+      `(revision ${draft.revision}). Use draftId ${draft.id} with the other draft tools.\n\n` +
+      jsonBlock({ feedMeta: feedMetaOf(draft), locales }),
+    {
+      draftId: draft.id,
+      feedId: draft.feedId,
+      revision: draft.revision,
+      locales,
+    }
+  );
+};
+
+/**
+ * Two tools, not one optional id: a model that must send a number for "no post" sends `0`,
+ * and one that may omit it guesses. A new post has nothing to identify it, so its tool takes
+ * nothing.
+ */
+export const newDraftTool = defineTool({
+  name: TOOL_NAMES.newDraft,
+  label: labelOf(TOOL_NAMES.newDraft),
+  description:
+    "Start an empty draft for a new post that does not exist yet. Takes no arguments: a new " +
+    "post has no id. Check `list_drafts` first so an existing empty draft is reused, and use " +
+    "`open_draft` for a post that already exists.",
+  parameters: Type.Object({}),
+  executionMode: "sequential",
+  async execute(_toolCallId, _params, _signal, _onUpdate, context) {
+    return openedResult(await context.draft.open({}));
+  },
+});
+
 export const openDraftTool = defineTool({
   name: TOOL_NAMES.openDraft,
   label: labelOf(TOOL_NAMES.openDraft),
   description:
-    "Open a post's working draft, creating it from the post when there is none, or start an " +
-    "empty draft for a new post when `feedId` is omitted. A post has one draft, shared with the " +
-    "operator; check `list_drafts` before starting a new post.",
+    "Open an existing post's working draft, creating it from the post when there is none. A " +
+    "post has one draft, shared with the operator. For a post that does not exist yet use " +
+    "`new_draft` instead; there is no id to pass.",
   parameters: Type.Object({
-    feedId: Type.Optional(
-      Type.Integer({
-        description:
-          "An existing post, as `list_posts` or `search_posts` reported it. Omit for a new post.",
-      })
-    ),
+    feedId: Type.Integer({
+      description:
+        "The post's id, as `list_posts` or `search_posts` reported it. Never guess one.",
+      minimum: 1,
+    }),
   }),
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
-    const draft = await context.draft.open({ feedId: params.feedId });
-    const locales = Object.keys(draft.translations);
-    return textResult(
-      `Opened draft ${draft.id} ${draft.feedId === null ? "for a new post" : `for feed ${draft.feedId}`} ` +
-        `(revision ${draft.revision}). Use draftId ${draft.id} with the other draft tools.\n\n` +
-        jsonBlock({ feedMeta: feedMetaOf(draft), locales }),
-      {
-        draftId: draft.id,
-        feedId: draft.feedId,
-        revision: draft.revision,
-        locales,
-      }
-    );
+    return openedResult(await context.draft.open({ feedId: params.feedId }));
   },
 });
 
@@ -214,10 +236,11 @@ export const writeDraftTool = defineTool({
   description:
     "Write a draft: feed-level fields and any number of locales, each with metadata and/or the " +
     "whole MDX body, as one revision. Use it to create a post in one call (both locales, all " +
-    "metadata) or to set metadata later. Omitted fields are left alone; `null` clears an " +
-    "optional one. A body write fails if the operator changed the draft since you last read " +
-    "it; read it again and decide. The result echoes the merged metadata, so no read-back is " +
-    "needed.",
+    "metadata) or to set metadata later. Each locale's body is prose in that locale's " +
+    "language; a body written in the other language is refused. Omitted fields are left " +
+    "alone; `null` clears an optional one. A body write fails if the operator changed the " +
+    "draft since you last read it; read it again and decide. The result echoes the merged " +
+    "metadata, so no read-back is needed.",
   parameters: Type.Object({
     draftId: DraftIdSchema,
     slug: Type.Optional(
@@ -268,8 +291,13 @@ export const writeDraftTool = defineTool({
         continue;
       }
       // SAFETY: TranslationsWriteSchema is keyed by Locale.
-      writes[locale as Locale] = patch;
-      if (patch.content !== undefined) writesBody = true;
+      const key = locale as Locale;
+      if (patch.content !== undefined) {
+        const mismatch = languageMismatch(key, patch.content);
+        if (mismatch) throw new Error(mismatch);
+        writesBody = true;
+      }
+      writes[key] = patch;
       if (
         patch.description !== null &&
         patch.description !== undefined &&
@@ -385,13 +413,19 @@ export const editDraftContentTool = defineTool({
           `Edit ${index + 1} — line ${edit.line}, ${edit.replacements} replacement(s):\n${edit.context}`
       )
       .join("\n\n");
+    // The edit has landed; a body now in the wrong language is reported, and blocks the commit.
+    const warning =
+      languageMismatch(locale, draft.translations[locale]?.content ?? "") ??
+      null;
     return textResult(
-      `Applied ${replacements} replacement(s) across ${edits.length} edit(s) to draft ${draftId} (${locale}, revision ${draft.revision}).\n\n${where}`,
+      `Applied ${replacements} replacement(s) across ${edits.length} edit(s) to draft ${draftId} (${locale}, revision ${draft.revision}).` +
+        `${warning ? `\n\nWarning: ${warning}` : ""}\n\n${where}`,
       {
         draftId,
         locale,
         replacements,
         revision: draft.revision,
+        warning,
         // Enough for the UI to render a diff without shipping both full bodies.
         edits: params.edits.map((edit, index) => ({
           oldString: edit.oldString,
@@ -406,6 +440,7 @@ export const editDraftContentTool = defineTool({
 
 export const draftTools: WritingTool[] = [
   listDraftsTool,
+  newDraftTool,
   openDraftTool,
   readDraftTool,
   writeDraftTool,

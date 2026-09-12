@@ -151,7 +151,7 @@ kind + index 相同        → 改寫 row，刪除舊向量
 
 ## 4. Chunking
 
-實作位於 `packages/ai/src/embeddings/chunking.ts`，section 目標大小為 512 token。
+實作位於 `packages/ai/src/embeddings/chunking.ts`，section 目標大小為 512 token。呼叫端宣告文法：文章內文以 MDX 解析，agent memory 以 markdown 解析，所以抓回來的網頁裡的 `<` 是文字，不會變成失敗的 JSX 解析。無法解析的 MDX 會退回 markdown 並發出 warning，那個 warning 代表文章需要修正。
 
 ```text
 MDX
@@ -305,11 +305,11 @@ Generated column expression 無法原地修改，相關 migration 必須人工�
 
 主要位置：
 
-| 責任                         | 位置                                                                                |
-| ---------------------------- | ----------------------------------------------------------------------------------- |
-| Embedding、chunking、context | `packages/ai/src/embeddings/`                                                       |
-| Schema、chunk 與搜尋 SQL     | `packages/db/src/schemas/resources.schema.ts`、`packages/db/src/libs/resources/`    |
-| Adapter 與 resource service  | `packages/api/resources/`                                                           |
-| Feed 搜尋                    | `packages/api/feeds/search.ts`                                                      |
-| Indexing workflows 與 steps  | `apps/workflow/src/workflows/`、`apps/workflow/src/steps/resource-index.step.ts`    |
-| Context hooks 與 index run   | `apps/service/src/factories/orpc.factory.ts`、`packages/api/resources/index-run.ts` |
+| 責任                         | 位置                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------ |
+| Embedding、chunking、context | `packages/ai/src/embeddings/`                                                              |
+| Schema、chunk 與搜尋 SQL     | `packages/db/src/schemas/resources.schema.ts`、`packages/db/src/libs/resources/`           |
+| Adapter 與 resource service  | `packages/services/rag/`                                                                   |
+| Feed 搜尋                    | `packages/services/feeds/search.service.ts`                                                |
+| Indexing workflows 與 steps  | `apps/workflow/src/workflows/`、`apps/workflow/src/steps/resource-index.step.ts`           |
+| Context hooks 與 index run   | `apps/service/src/factories/orpc.factory.ts`、`packages/services/rag/index-run.service.ts` |

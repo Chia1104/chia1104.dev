@@ -87,12 +87,12 @@ vi.mock("../src/guards/ai.guard", async () => {
   };
 });
 
-vi.mock("@chia/api/orpc/guards/rate-limit.guard", async () => {
+vi.mock("@chia/services/shared/guards/rate-limit.guard", async () => {
   const mocks = await import("./helpers/guards");
   return { rateLimitGuard: mocks.orpcRateLimitGuard };
 });
 
-vi.mock("@chia/api/orpc/guards/caller.guard", async () => {
+vi.mock("@chia/services/shared/guards/caller.guard", async () => {
   const mocks = await import("./helpers/guards");
   return {
     callerGuard: mocks.orpcCallerGuard,
@@ -100,7 +100,7 @@ vi.mock("@chia/api/orpc/guards/caller.guard", async () => {
   };
 });
 
-vi.mock("@chia/api/orpc/guards/captcha.guard", async () => {
+vi.mock("@chia/services/shared/guards/captcha.guard", async () => {
   const mocks = await import("./helpers/guards");
   return { captchaGuard: mocks.orpcCaptchaGuard };
 });
@@ -127,7 +127,7 @@ vi.mock("@chia/db/repos/feeds/search", async () => {
   return { getRelatedFeeds };
 });
 
-vi.mock("@chia/api/resources/search", async () => {
+vi.mock("@chia/services/rag/search.service", async () => {
   const { searchResources } = await import("@chia/test/mocks/db-feeds");
   return { searchResources };
 });

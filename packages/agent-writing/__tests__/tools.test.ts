@@ -6,10 +6,12 @@ import { commitDraftTool, commitPreflight } from "../src/tools/commit.tool.ts";
 import {
   editDraftContentTool,
   listDraftsTool,
+  newDraftTool,
   openDraftTool,
   writeDraftTool,
 } from "../src/tools/draft.tool.ts";
 import { fetchUrlTool, webSearchTool } from "../src/tools/retrieval.tool.ts";
+import { summarizeToolResult } from "../src/tools/summarize.ts";
 import { createWritingTools } from "../src/tools/tool-set.ts";
 import type { WritingToolContext } from "../src/types.ts";
 
@@ -174,6 +176,45 @@ describe("fetchUrlTool source trail", () => {
     );
 
     expect(context.memory.all.map((row) => row.title)).toEqual(["example.com"]);
+  });
+
+  it("closes a code fence the 64k cut left open, and leaves a closed one alone", async () => {
+    const context = createContext();
+    const open = `intro\n\n\`\`\`ts\n${"x".repeat(70_000)}`;
+    const closed = `\`\`\`ts\ncode\n\`\`\`\n\n${"y".repeat(70_000)}`;
+    context.web = createFakeWebPort({
+      pages: {
+        "https://example.com/open": {
+          url: "https://example.com/open",
+          text: open,
+        },
+        "https://example.com/closed": {
+          url: "https://example.com/closed",
+          text: closed,
+        },
+      },
+    });
+
+    await fetchUrlTool.execute(
+      "c1",
+      { url: "https://example.com/open" },
+      undefined,
+      undefined,
+      context
+    );
+    await fetchUrlTool.execute(
+      "c2",
+      { url: "https://example.com/closed" },
+      undefined,
+      undefined,
+      context
+    );
+
+    const [first, second] = context.memory.all;
+    expect(first?.content.endsWith("\n```")).toBe(true);
+    expect(first?.content).toHaveLength(64_000 + 4);
+    expect(second?.content).toHaveLength(64_000);
+    expect(second?.content.endsWith("yyy")).toBe(true);
   });
 
   it("never lets the trail fail the fetch", async () => {
@@ -596,6 +637,84 @@ describe("draft slug handling", () => {
     expect(opened.details).toMatchObject({ feedId: 42 });
     expect(again.details).toEqual(opened.details);
     expect(await context.draft.list()).toHaveLength(2);
+
+    // A new post has no id, so its tool takes none.
+    const fresh = await newDraftTool.execute(
+      "call-4",
+      {},
+      undefined,
+      undefined,
+      context
+    );
+    expect(fresh.details).toMatchObject({ feedId: null });
+    expect(fresh.details).not.toMatchObject({ draftId: DRAFT_ID });
+    expect(await context.draft.list()).toHaveLength(3);
+    expect(summarizeToolResult(newDraftTool.name, fresh, false)).toMatch(
+      /^Opened draft #\d+ for a new post\.$/
+    );
+    expect(summarizeToolResult(openDraftTool.name, opened, false)).toMatch(
+      /^Opened draft #\d+ for feed 42\.$/
+    );
+  });
+
+  it("refuses a body in the other locale's language, warns after an edit and blocks the commit", async () => {
+    const context = createContext();
+    const chinese =
+      "這一段說明索引是怎麼建立的，以及規劃器為什麼會選擇它而不是全表掃描。".repeat(
+        4
+      );
+
+    await expect(
+      writeDraftTool.execute(
+        "call-1",
+        {
+          draftId: DRAFT_ID,
+          translations: { en: { title: "Title", content: chinese } },
+        },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow("en locale takes English prose");
+    expect((await context.draft.get(DRAFT_ID)).translations.en).toBeUndefined();
+
+    await context.draft.write(DRAFT_ID, {
+      meta: { defaultLocale: "en", slug: "a-post" },
+      translations: {
+        en: {
+          title: "A post",
+          content: "## Body\n\nShort.",
+          excerpt: "E",
+          description: "D",
+          summary: "S",
+        },
+      },
+    });
+    const edited = await editDraftContentTool.execute(
+      "call-2",
+      {
+        draftId: DRAFT_ID,
+        locale: "en",
+        edits: [{ oldString: "Short.", newString: chinese }],
+      },
+      undefined,
+      undefined,
+      context
+    );
+    expect(edited.details).toMatchObject({
+      replacements: 1,
+      warning: expect.stringContaining("English prose"),
+    });
+    await expect(
+      commitPreflight(context)({
+        toolCallId: "call-3",
+        toolName: commitDraftTool.name,
+        input: { draftId: DRAFT_ID, confirmation: "Commit." },
+      })
+    ).resolves.toMatchObject({
+      block: true,
+      reason: expect.stringContaining("English prose"),
+    });
   });
 
   it("does not expose the obsolete slugify tool", () => {

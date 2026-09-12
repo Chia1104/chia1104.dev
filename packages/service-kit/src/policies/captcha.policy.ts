@@ -3,7 +3,7 @@ import { AppError } from "../errors";
 import type { Policy } from "./types";
 import { allow, deny } from "./types";
 
-/** Kept as literals so this package needs no dependency on `@chia/api`. */
+/** Kept as literals so this package needs no dependency on `@chia/integrations`. */
 export const CaptchaErrorCode = {
   Required: "CAPTCHA_REQUIRED",
   Failed: "CAPTCHA_FAILED",
@@ -13,8 +13,8 @@ export interface CaptchaPolicyOptions {
   /** Caller-supplied token, resolved by the procedure from validated input. */
   token: string | undefined;
   /**
-   * Provider round trip. Injected so this package does not depend on `@chia/api`.
-   * Wire with `captchaSiteverifyWithCredentials` from `@chia/api/captcha`.
+   * Provider round trip. Injected so this package does not depend on `@chia/integrations`.
+   * Wire with `captchaSiteverifyWithCredentials` from `@chia/integrations/captcha`.
    */
   verify: (credentials: {
     token: string;

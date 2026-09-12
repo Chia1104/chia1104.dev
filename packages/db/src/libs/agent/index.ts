@@ -541,6 +541,93 @@ export const touchWritingSessionDrafts = async (
     });
 };
 
+export interface WritingSessionConsolidation {
+  consolidatedLeafId: string | null;
+  consolidatedAt: Date | null;
+  consolidationRunId: string | null;
+}
+
+/** Where lesson extraction left off for one session; null when the session has no writing row. */
+export const getWritingSessionConsolidation = async (
+  db: DB,
+  sessionId: string
+): Promise<WritingSessionConsolidation | null> => {
+  const [row] = await db
+    .select({
+      consolidatedLeafId: writingAgentSessions.consolidatedLeafId,
+      consolidatedAt: writingAgentSessions.consolidatedAt,
+      consolidationRunId: writingAgentSessions.consolidationRunId,
+    })
+    .from(writingAgentSessions)
+    .where(eq(writingAgentSessions.sessionId, sessionId));
+  return row ?? null;
+};
+
+/** Only the keys present in `patch` are written. */
+export const updateWritingSessionConsolidation = async (
+  db: DB,
+  sessionId: string,
+  patch: Partial<WritingSessionConsolidation>
+) => {
+  const set: Partial<WritingSessionConsolidation> = {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (value !== undefined) Object.assign(set, { [key]: value });
+  }
+  if (Object.keys(set).length === 0) return;
+  await db
+    .update(writingAgentSessions)
+    .set(set)
+    .where(eq(writingAgentSessions.sessionId, sessionId));
+};
+
+export type WritingSessionMark = Pick<
+  WritingSessionConsolidation,
+  "consolidatedLeafId" | "consolidatedAt"
+>;
+
+/**
+ * Moves the extraction mark from `from` to `to`; false when it no longer reads `from`, so a
+ * run that overlapped another writes nothing from a delta the other already consumed.
+ */
+export const advanceWritingSessionConsolidation = async (
+  db: DB,
+  sessionId: string,
+  input: { from: WritingSessionMark; to: WritingSessionMark }
+): Promise<boolean> => {
+  const rows = await db
+    .update(writingAgentSessions)
+    .set(input.to)
+    .where(
+      and(
+        eq(writingAgentSessions.sessionId, sessionId),
+        input.from.consolidatedLeafId === null
+          ? isNull(writingAgentSessions.consolidatedLeafId)
+          : eq(
+              writingAgentSessions.consolidatedLeafId,
+              input.from.consolidatedLeafId
+            ),
+        input.from.consolidatedAt === null
+          ? isNull(writingAgentSessions.consolidatedAt)
+          : eq(writingAgentSessions.consolidatedAt, input.from.consolidatedAt)
+      )
+    )
+    .returning({ sessionId: writingAgentSessions.sessionId });
+  return rows.length > 0;
+};
+
+/** Sessions that worked on a draft, most recently touched first. */
+export const listWritingSessionIdsForDraft = async (
+  db: DB,
+  draftId: number
+): Promise<string[]> => {
+  const rows = await db
+    .select({ sessionId: writingAgentSessionDrafts.sessionId })
+    .from(writingAgentSessionDrafts)
+    .where(eq(writingAgentSessionDrafts.draftId, draftId))
+    .orderBy(desc(writingAgentSessionDrafts.touchedAt));
+  return rows.map((row) => row.sessionId);
+};
+
 /** A fork keeps working on the source session's drafts, from the same revisions. */
 export const copyWritingSessionDrafts = async (
   db: DB,

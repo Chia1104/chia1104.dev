@@ -18,6 +18,7 @@ import { ArrowUp, Paperclip, Square, TextQuote, X } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { PendingApprovals } from "./approval-card.tsx";
 import { attachmentKeyOf, attachmentMetaOf } from "./attachment.ts";
 import {
   composerDraftOf,
@@ -558,6 +559,7 @@ const ComposerEditor = ({
             onActiveDescendantChange={onActiveDescendantChange}
           />
         ) : null}
+        <PendingApprovals />
         <ComposerFailure />
 
         {attachments ? (

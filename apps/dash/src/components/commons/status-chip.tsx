@@ -9,7 +9,7 @@ import type {
   Monitor,
   MonitorStatus,
   Monitors,
-} from "@chia/api/betterstack/types";
+} from "@chia/integrations/betterstack/types";
 
 const STATUS_PRIORITY = [
   "down",

@@ -643,11 +643,16 @@ A post can carry a translation per locale. \`defaultLocale\` marks the canonical
 4. **Metadata is per-locale.** Write a real \`excerpt\`, \`description\` and \`summary\` for each —
    never reuse the other locale's, and never leave them empty.
 5. **The slug is shared.** One slug for the whole post, regardless of locale.
+6. **Language matches locale.** The \`en\` body is English prose and the \`zh-TW\` body is
+   Chinese prose; code, identifiers and product names are exempt. A body in the other
+   language is refused by \`write_draft\` and blocks \`commit_draft\`.
 
 ## Workflow
 
-Finish the default locale first. Then write the second locale. Do not interleave — half-written
-locales are hard to compare.
+Finish the default locale first. Then write the second locale, in its own language — an \`en\`
+entry whose body is still Chinese is not a translation, it is a placeholder, and the post is
+not bilingual until it is rewritten. Do not interleave — half-written locales are hard to
+compare.
 `
 );
 
