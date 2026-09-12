@@ -222,6 +222,7 @@ export const getMemoryTool = defineTool({
           title: memory.title,
           content,
           matchedHeadingPaths: params.focusHeadings,
+          format: "markdown",
         },
       ],
       { budget: MEMORY_BODY_TOKEN_BUDGET }

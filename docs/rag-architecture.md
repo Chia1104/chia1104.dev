@@ -151,7 +151,7 @@ Error handling:
 
 ## 4. Chunking
 
-The implementation lives in `packages/ai/src/embeddings/chunking.ts`. The section target is 512 tokens.
+The implementation lives in `packages/ai/src/embeddings/chunking.ts`. The section target is 512 tokens. The caller declares the grammar: post bodies are parsed as MDX, agent memory as markdown, so a `<` in a fetched page is text and never a failed JSX parse. MDX that fails to parse is read as markdown with a warning, and that warning means the post needs fixing.
 
 ```text
 MDX

@@ -5,6 +5,7 @@ import {
   extractHeadings,
   splitByHeadings,
 } from "./markdown.ts";
+import type { MarkdownFormat } from "./markdown.ts";
 import { tryLoadTokenizer } from "./tokenizer.ts";
 import { estimateEmbeddingTokens } from "./utils.ts";
 
@@ -37,6 +38,8 @@ export interface DocumentContextInput {
    * when the whole document does not fit.
    */
   matchedHeadingPaths?: (string | null)[];
+  /** @default "mdx" */
+  format?: MarkdownFormat;
 }
 
 export interface HeadingAnchor {
@@ -75,10 +78,11 @@ export interface BuildContextResult {
  */
 export const buildHeadingAnchors = async (
   content: string,
-  keepPaths?: ReadonlySet<string>
+  keepPaths?: ReadonlySet<string>,
+  format: MarkdownFormat = "mdx"
 ): Promise<HeadingAnchor[]> => {
   const slugger = new GithubSlugger();
-  const anchors = (await extractHeadings(content)).map((heading) => ({
+  const anchors = (await extractHeadings(content, format)).map((heading) => ({
     path: heading.path,
     title: heading.title,
     anchor: `#${slugger.slug(heading.title)}`,
@@ -118,7 +122,7 @@ const buildSectionsView = async (
   maxTokens: number,
   encoding: Awaited<ReturnType<typeof tryLoadTokenizer>>
 ): Promise<{ text: string; keptPaths: Set<string> }> => {
-  const sections = await splitByHeadings(input.content);
+  const sections = await splitByHeadings(input.content, input.format ?? "mdx");
   const matched = new Set(
     (input.matchedHeadingPaths ?? []).filter((path): path is string => !!path)
   );
@@ -158,7 +162,7 @@ const buildSectionsView = async (
 const buildOutlineView = async (input: DocumentContextInput): Promise<string> =>
   [
     input.summary?.trim() ? input.summary.trim() : null,
-    await buildHeadingOutline(input.content),
+    await buildHeadingOutline(input.content, { format: input.format ?? "mdx" }),
   ]
     .filter((part): part is string => !!part)
     .join("\n\n");
@@ -227,7 +231,8 @@ export const buildDocumentContext = async (
           tokenCount: cost,
           anchors: await buildHeadingAnchors(
             input.content,
-            candidate.keepPaths
+            candidate.keepPaths,
+            input.format ?? "mdx"
           ),
         };
         break;

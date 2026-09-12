@@ -178,6 +178,45 @@ describe("fetchUrlTool source trail", () => {
     expect(context.memory.all.map((row) => row.title)).toEqual(["example.com"]);
   });
 
+  it("closes a code fence the 64k cut left open, and leaves a closed one alone", async () => {
+    const context = createContext();
+    const open = `intro\n\n\`\`\`ts\n${"x".repeat(70_000)}`;
+    const closed = `\`\`\`ts\ncode\n\`\`\`\n\n${"y".repeat(70_000)}`;
+    context.web = createFakeWebPort({
+      pages: {
+        "https://example.com/open": {
+          url: "https://example.com/open",
+          text: open,
+        },
+        "https://example.com/closed": {
+          url: "https://example.com/closed",
+          text: closed,
+        },
+      },
+    });
+
+    await fetchUrlTool.execute(
+      "c1",
+      { url: "https://example.com/open" },
+      undefined,
+      undefined,
+      context
+    );
+    await fetchUrlTool.execute(
+      "c2",
+      { url: "https://example.com/closed" },
+      undefined,
+      undefined,
+      context
+    );
+
+    const [first, second] = context.memory.all;
+    expect(first?.content.endsWith("\n```")).toBe(true);
+    expect(first?.content).toHaveLength(64_000 + 4);
+    expect(second?.content).toHaveLength(64_000);
+    expect(second?.content.endsWith("yyy")).toBe(true);
+  });
+
   it("never lets the trail fail the fetch", async () => {
     const context = createContext();
     context.web = createFakeWebPort({
