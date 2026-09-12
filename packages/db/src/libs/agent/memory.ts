@@ -83,21 +83,27 @@ export const reinforceAgentMemory = async (
   return row;
 };
 
-export interface ApprovedAgentLesson {
-  approved: AgentMemory;
-  /** The active lesson the approved one superseded, when there still was one. */
-  archived: AgentMemory | null;
-}
+export type ApproveAgentLessonResult =
+  | {
+      status: "approved";
+      approved: AgentMemory;
+      /** The active lesson the approved one superseded, when there still was one. */
+      archived: AgentMemory | null;
+    }
+  /** `id` is not a live pending lesson any more: two approvals of one row activate it once. */
+  | { status: "not_pending" }
+  /** Another revision of the same lesson is already active; two must not stand together. */
+  | { status: "already_replaced"; by: number };
 
 /**
  * `pending → active` in one transaction, archiving the live active lesson `supersedesId`
- * names in the same step. Undefined when `id` is not a live pending lesson any more, so two
- * approvals of one row activate it once.
+ * names in the same step. A target that was archived on its own is fine to revise; one that
+ * a different approved revision replaced is a conflict for the operator to settle.
  */
 export const approveAgentLesson = async (
   db: DB,
   id: number
-): Promise<ApprovedAgentLesson | undefined> =>
+): Promise<ApproveAgentLessonResult> =>
   await db.transaction(async (tx) => {
     const [row] = await tx
       .select()
@@ -111,7 +117,7 @@ export const approveAgentLesson = async (
         )
       )
       .for("update");
-    if (!row) return undefined;
+    if (!row) return { status: "not_pending" };
 
     const now = new Date();
     let archived: AgentMemory | null = null;
@@ -129,6 +135,23 @@ export const approveAgentLesson = async (
         )
         .returning();
       archived = target ?? null;
+      if (!target) {
+        const [replacement] = await tx
+          .select({ id: agentMemories.id })
+          .from(agentMemories)
+          .where(
+            and(
+              eq(agentMemories.supersedesId, row.supersedesId),
+              eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+              eq(agentMemories.status, AGENT_MEMORY_STATUS.Active),
+              live()
+            )
+          )
+          .limit(1);
+        if (replacement) {
+          return { status: "already_replaced", by: replacement.id };
+        }
+      }
     }
 
     const [approved] = await tx
@@ -137,7 +160,7 @@ export const approveAgentLesson = async (
       .where(eq(agentMemories.id, row.id))
       .returning();
     if (!approved) throw new Error(`Lesson ${id} vanished mid-approval.`);
-    return { approved, archived };
+    return { status: "approved", approved, archived };
   });
 
 /** Includes soft-deleted rows; callers that must not see them check `deletedAt`. */

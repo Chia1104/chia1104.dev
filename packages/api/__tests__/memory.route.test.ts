@@ -79,6 +79,7 @@ describe("memory routes", () => {
         row(omitUndefined(patch))
     );
     repo.approveAgentLesson.mockImplementation(async (_db: DB, id: number) => ({
+      status: "approved",
       approved: row({ id, status: "active" }),
       archived: null,
     }));

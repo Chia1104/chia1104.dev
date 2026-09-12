@@ -108,9 +108,14 @@ export const createMemoryService = async (
   input: CreateMemoryServiceInput,
   hooks: MemoryHooks
 ): Promise<AgentMemory> => {
-  if (input.supersedesId != null && input.kind !== AGENT_MEMORY_KIND.Lesson) {
+  // activation and the archive of the superseded lesson happen together, in approval only
+  if (
+    input.supersedesId != null &&
+    (input.kind !== AGENT_MEMORY_KIND.Lesson ||
+      input.status !== AGENT_MEMORY_STATUS.Pending)
+  ) {
     throw new AppError("BAD_REQUEST", {
-      message: "Only a lesson supersedes another.",
+      message: "Only a pending lesson supersedes another.",
     });
   }
   const row = await createAgentMemory(db, {
@@ -158,9 +163,14 @@ export const approveLessonService = async (
     });
   }
   const result = await approveAgentLesson(db, row.id);
-  if (!result) {
+  if (result.status === "not_pending") {
     throw new AppError("CONFLICT", {
       message: `Lesson ${input.id} was reviewed by someone else first.`,
+    });
+  }
+  if (result.status === "already_replaced") {
+    throw new AppError("CONFLICT", {
+      message: `Lesson ${input.id} revises #${row.supersedesId}, which lesson #${result.by} already replaced. Archive one of the two.`,
     });
   }
   if (result.archived) await hooks.onMemoryChanged?.(result.archived.id);
