@@ -107,7 +107,6 @@
     "graphql-request": "catalog:",
     "ky": "catalog:",
     "resend": "catalog:email",
-    "server-only": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
