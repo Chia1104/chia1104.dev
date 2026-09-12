@@ -140,8 +140,6 @@ export const patchFeedDraftService = async (
   db: DB,
   input: PatchFeedDraftServiceInput
 ): Promise<FeedDraftRecord> => {
-  await requireDraft(db, input.draftId, input.adminId);
-
   const meta = { ...input.meta };
   if (meta.slug !== undefined && meta.slug !== null) {
     const slug = normalizeAsciiSlug(meta.slug);
@@ -156,6 +154,7 @@ export const patchFeedDraftService = async (
 
   const result = await patchFeedDraft(db, {
     draftId: input.draftId,
+    userId: input.adminId,
     expectedRevision: input.expectedRevision,
     author: input.author,
     sessionId: input.sessionId,
@@ -185,9 +184,9 @@ export const editFeedDraftContentService = async (
   db: DB,
   input: EditFeedDraftContentServiceInput
 ): Promise<EditFeedDraftContentResult> => {
-  await requireDraft(db, input.draftId, input.adminId);
   const result = await editFeedDraftContent(db, {
     draftId: input.draftId,
+    userId: input.adminId,
     locale: input.locale,
     oldString: input.oldString,
     newString: input.newString,
@@ -407,6 +406,7 @@ export const discardFeedDraftService = async (
   }
   const result = await replaceFeedDraft(db, {
     draftId: draft.id,
+    userId: input.adminId,
     snapshot: await feedSnapshot(db, draft.feedId, input.adminId),
     author: FEED_DRAFT_AUTHOR.Operator,
   });
@@ -422,7 +422,6 @@ export const restoreFeedDraftRevisionService = async (
   db: DB,
   input: { draftId: number; revisionId: number; adminId: string }
 ): Promise<FeedDraftRecord> => {
-  await requireDraft(db, input.draftId, input.adminId);
   const revision = await getFeedDraftRevision(db, {
     draftId: input.draftId,
     revisionId: input.revisionId,
@@ -432,8 +431,10 @@ export const restoreFeedDraftRevisionService = async (
       message: `Revision ${input.revisionId} not found`,
     });
   }
+  // The replace answers not_found for a draft the admin does not own, so the snapshot never lands elsewhere.
   const result = await replaceFeedDraft(db, {
     draftId: input.draftId,
+    userId: input.adminId,
     snapshot: snapshotOfRevision(revision),
     author: FEED_DRAFT_AUTHOR.Operator,
   });

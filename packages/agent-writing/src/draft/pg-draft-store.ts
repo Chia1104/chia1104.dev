@@ -36,6 +36,8 @@ import {
 export interface PgDraftStoreOptions {
   /** Recorded as the author of every revision this store writes. */
   sessionId: string;
+  /** The drafts' owner; a write to anyone else's draft reads as not found. */
+  userId: string;
   /** Get-or-create as the host does it, so the agent and the editor share one draft per feed. */
   open(input: { feedId?: number }): Promise<FeedDraftRecord>;
   /** The author's drafts with unapplied work, newest first. */
@@ -101,6 +103,7 @@ export class PgDraftStore implements DraftStore {
       draftId,
       await patchFeedDraft(this.db, {
         draftId,
+        userId: this.options.userId,
         author: FEED_DRAFT_AUTHOR.Agent,
         sessionId: this.options.sessionId,
         meta: omitUndefined(patch),
@@ -117,6 +120,7 @@ export class PgDraftStore implements DraftStore {
       draftId,
       await patchFeedDraft(this.db, {
         draftId,
+        userId: this.options.userId,
         author: FEED_DRAFT_AUTHOR.Agent,
         sessionId: this.options.sessionId,
         translations: { [locale]: omitUndefined(patch) },
@@ -134,6 +138,7 @@ export class PgDraftStore implements DraftStore {
       draftId,
       await patchFeedDraft(this.db, {
         draftId,
+        userId: this.options.userId,
         expectedRevision,
         author: FEED_DRAFT_AUTHOR.Agent,
         sessionId: this.options.sessionId,
@@ -150,6 +155,7 @@ export class PgDraftStore implements DraftStore {
   ): Promise<DraftEditResult> {
     const result = await editFeedDraftContent(this.db, {
       draftId,
+      userId: this.options.userId,
       locale,
       oldString: edit.oldString,
       newString: edit.newString,

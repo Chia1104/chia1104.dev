@@ -224,6 +224,7 @@ export const createWritingAgentKind = (
         });
         const draft = new PgDraftStore(context.db, {
           sessionId: context.row.id,
+          userId: adminId,
           open: ({ feedId }) =>
             host.openDraft({
               db: context.db,

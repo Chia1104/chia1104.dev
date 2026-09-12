@@ -86,20 +86,28 @@ const notifyFeedDraft = (tx: Tx, notice: FeedDraftNotice) =>
     sql`select pg_notify(${FEED_DRAFT_CHANNEL}, ${JSON.stringify(notice)})`
   );
 
+const translationOf = (
+  row: typeof feedDraftTranslations.$inferSelect
+): FeedDraftTranslationSnapshot => ({
+  title: row.title,
+  excerpt: row.excerpt,
+  description: row.description,
+  summary: row.summary,
+  content: row.content,
+});
+
+const translationsOf = (
+  rows: (typeof feedDraftTranslations.$inferSelect)[]
+): FeedDraftRecord["translations"] => {
+  const translations: FeedDraftRecord["translations"] = {};
+  for (const row of rows) translations[row.locale] = translationOf(row);
+  return translations;
+};
+
 const toRecord = (
   draft: typeof feedDrafts.$inferSelect,
-  rows: (typeof feedDraftTranslations.$inferSelect)[]
+  translations: FeedDraftRecord["translations"]
 ): FeedDraftRecord => {
-  const translations: FeedDraftRecord["translations"] = {};
-  for (const row of rows) {
-    translations[row.locale] = {
-      title: row.title,
-      excerpt: row.excerpt,
-      description: row.description,
-      summary: row.summary,
-      content: row.content,
-    };
-  }
   return {
     id: draft.id,
     feedId: draft.feedId,
@@ -136,7 +144,7 @@ const readDraft = async (
     .select()
     .from(feedDraftTranslations)
     .where(eq(feedDraftTranslations.draftId, draftId));
-  return toRecord(draft, rows);
+  return toRecord(draft, translationsOf(rows));
 };
 
 export const getFeedDraft = (db: DB, draftId: number) => readDraft(db, draftId);
@@ -180,7 +188,7 @@ const readDraftTranslations = async (
     translations.set(row.draftId, group);
   }
   return drafts.map((draft) =>
-    toRecord(draft, translations.get(draft.id) ?? [])
+    toRecord(draft, translationsOf(translations.get(draft.id) ?? []))
   );
 };
 
@@ -258,7 +266,7 @@ export const listOpenFeedDrafts = async (
     byDraft.set(row.draftId, translations);
   }
   return drafts.map((draft) => ({
-    ...toRecord(draft, []),
+    ...toRecord(draft, {}),
     translations: byDraft.get(draft.id) ?? {},
   }));
 };
@@ -400,10 +408,36 @@ export const createFeedDraft = (
     return record;
   });
 
-export interface PatchFeedDraftInput extends FeedDraftWriter {
+/** Who is writing. A draft another user owns answers `not_found`, checked on the locked row. */
+export interface FeedDraftOwnedWrite extends FeedDraftWriter {
   draftId: number;
-  /** Omit to write over whatever is current; agent edits that re-read first pass it. */
+  userId: string;
+  /** Omit to write over whatever is current. */
   expectedRevision?: number;
+}
+
+/** The draft under `FOR UPDATE` when it exists and belongs to `userId`; the write result otherwise. */
+const lockOwnedDraft = async (
+  tx: Tx,
+  input: FeedDraftOwnedWrite
+): Promise<
+  | { status: "locked"; draft: FeedDraftRecord }
+  | Exclude<FeedDraftWriteResult, { status: "ok" }>
+> => {
+  const current = await readDraft(tx, input.draftId, true);
+  if (!current || current.userId !== input.userId) {
+    return { status: "not_found" };
+  }
+  if (
+    input.expectedRevision !== undefined &&
+    input.expectedRevision !== current.revision
+  ) {
+    return { status: "conflict", draft: current };
+  }
+  return { status: "locked", draft: current };
+};
+
+export interface PatchFeedDraftInput extends FeedDraftOwnedWrite {
   meta?: FeedDraftMetaPatch;
   translations?: Partial<Record<Locale, FeedDraftTranslationPatch>>;
 }
@@ -413,24 +447,16 @@ export const patchFeedDraft = (
   input: PatchFeedDraftInput
 ): Promise<FeedDraftWriteResult> =>
   db.transaction(async (tx) => {
-    const current = await readDraft(tx, input.draftId, true);
-    if (!current) return { status: "not_found" };
-    if (
-      input.expectedRevision !== undefined &&
-      input.expectedRevision !== current.revision
-    ) {
-      return { status: "conflict", draft: current };
-    }
-    return { status: "ok", draft: await writePatch(tx, current, input) };
+    const locked = await lockOwnedDraft(tx, input);
+    if (locked.status !== "locked") return locked;
+    return { status: "ok", draft: await writePatch(tx, locked.draft, input) };
   });
 
-export interface EditFeedDraftContentInput extends FeedDraftWriter {
-  draftId: number;
+export interface EditFeedDraftContentInput extends FeedDraftOwnedWrite {
   locale: Locale;
   oldString: string;
   newString: string;
   replaceAll?: boolean;
-  expectedRevision?: number;
 }
 
 export type FeedDraftEditResult =
@@ -452,14 +478,9 @@ export const editFeedDraftContent = (
   input: EditFeedDraftContentInput
 ): Promise<FeedDraftEditResult> =>
   db.transaction(async (tx) => {
-    const current = await readDraft(tx, input.draftId, true);
-    if (!current) return { status: "not_found" };
-    if (
-      input.expectedRevision !== undefined &&
-      input.expectedRevision !== current.revision
-    ) {
-      return { status: "conflict", draft: current };
-    }
+    const locked = await lockOwnedDraft(tx, input);
+    if (locked.status !== "locked") return locked;
+    const current = locked.draft;
     const body = current.translations[input.locale]?.content;
     if (body === undefined || body === null) return { status: "no_body" };
 
@@ -509,17 +530,20 @@ const writePatch = async (
   if (changes.length === 0) return current;
 
   const revision = current.revision + 1;
-  await tx
+  const [row] = await tx
     .update(feedDrafts)
     .set({
       ...(input.meta ?? {}),
       revision,
       updatedAt: new Date(),
     })
-    .where(eq(feedDrafts.id, current.id));
+    .where(eq(feedDrafts.id, current.id))
+    .returning();
+  if (!row) throw new Error(`Updating draft ${current.id} returned no row.`);
 
+  const translations = { ...current.translations };
   for (const entry of translationEntries) {
-    await tx
+    const [written] = await tx
       .insert(feedDraftTranslations)
       .values({
         draftId: current.id,
@@ -529,10 +553,12 @@ const writePatch = async (
       .onConflictDoUpdate({
         target: [feedDraftTranslations.draftId, feedDraftTranslations.locale],
         set: { ...entry.patch, updatedAt: new Date() },
-      });
+      })
+      .returning();
+    if (written) translations[entry.locale] = translationOf(written);
   }
 
-  const draft = (await readDraft(tx, current.id))!;
+  const draft = toRecord(row, translations);
   await recordRevision(tx, draft, input, changes);
   await notifyFeedDraft(tx, {
     type: "revision",
@@ -545,10 +571,8 @@ const writePatch = async (
   return draft;
 };
 
-export interface ReplaceFeedDraftInput extends FeedDraftWriter {
-  draftId: number;
+export interface ReplaceFeedDraftInput extends FeedDraftOwnedWrite {
   snapshot: FeedDraftSnapshot;
-  expectedRevision?: number;
 }
 
 /** Whole-draft replacement: restore and reset-from-feed. Locales absent from the snapshot are dropped. */
@@ -557,17 +581,12 @@ export const replaceFeedDraft = (
   input: ReplaceFeedDraftInput
 ): Promise<FeedDraftWriteResult> =>
   db.transaction(async (tx) => {
-    const current = await readDraft(tx, input.draftId, true);
-    if (!current) return { status: "not_found" };
-    if (
-      input.expectedRevision !== undefined &&
-      input.expectedRevision !== current.revision
-    ) {
-      return { status: "conflict", draft: current };
-    }
+    const locked = await lockOwnedDraft(tx, input);
+    if (locked.status !== "locked") return locked;
+    const current = locked.draft;
 
     const revision = current.revision + 1;
-    await tx
+    const [row] = await tx
       .update(feedDrafts)
       .set({
         slug: input.snapshot.slug,
@@ -577,23 +596,30 @@ export const replaceFeedDraft = (
         revision,
         updatedAt: new Date(),
       })
-      .where(eq(feedDrafts.id, input.draftId));
+      .where(eq(feedDrafts.id, input.draftId))
+      .returning();
+    if (!row)
+      throw new Error(`Updating draft ${input.draftId} returned no row.`);
     await tx
       .delete(feedDraftTranslations)
       .where(eq(feedDraftTranslations.draftId, input.draftId));
     const translations = Object.entries(input.snapshot.translations);
-    if (translations.length > 0) {
-      await tx.insert(feedDraftTranslations).values(
-        translations.map(([locale, translation]) => ({
-          draftId: input.draftId,
-          locale:
-            /* SAFETY: snapshot translations are keyed by Locale. */ locale as Locale,
-          ...translation,
-        }))
-      );
-    }
+    const written =
+      translations.length > 0
+        ? await tx
+            .insert(feedDraftTranslations)
+            .values(
+              translations.map(([locale, translation]) => ({
+                draftId: input.draftId,
+                locale:
+                  /* SAFETY: snapshot translations are keyed by Locale. */ locale as Locale,
+                ...translation,
+              }))
+            )
+            .returning()
+        : [];
 
-    const draft = (await readDraft(tx, input.draftId))!;
+    const draft = toRecord(row, translationsOf(written));
     const locales = new Set([
       ...Object.keys(current.translations),
       ...Object.keys(draft.translations),
