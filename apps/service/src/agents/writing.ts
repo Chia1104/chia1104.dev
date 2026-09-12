@@ -1,5 +1,5 @@
 import { createWritingAgentKind } from "@chia/agent-host/writing";
-import { openFeedDraftService } from "@chia/api/feeds/draft";
+import { openFeedDraftService } from "@chia/api/services/feeds/draft.service";
 import { listOpenFeedDrafts } from "@chia/db/repos/drafts";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 

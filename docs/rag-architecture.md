@@ -307,11 +307,11 @@ Current constraints:
 
 Primary locations:
 
-| Responsibility                   | Location                                                                            |
-| -------------------------------- | ----------------------------------------------------------------------------------- |
-| Embeddings, chunking and context | `packages/ai/src/embeddings/`                                                       |
-| Schema, chunks and retrieval SQL | `packages/db/src/schemas/resources.schema.ts`, `packages/db/src/libs/resources/`    |
-| Adapters and resource services   | `packages/api/resources/`                                                           |
-| Feed search                      | `packages/api/feeds/search.ts`                                                      |
-| Indexing workflows and steps     | `apps/workflow/src/workflows/`, `apps/workflow/src/steps/resource-index.step.ts`    |
-| Context hooks and index runs     | `apps/service/src/factories/orpc.factory.ts`, `packages/api/resources/index-run.ts` |
+| Responsibility                   | Location                                                                                       |
+| -------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Embeddings, chunking and context | `packages/ai/src/embeddings/`                                                                  |
+| Schema, chunks and retrieval SQL | `packages/db/src/schemas/resources.schema.ts`, `packages/db/src/libs/resources/`               |
+| Adapters and resource services   | `packages/api/services/rag/`                                                                   |
+| Feed search                      | `packages/api/services/feeds/search.service.ts`                                                |
+| Indexing workflows and steps     | `apps/workflow/src/workflows/`, `apps/workflow/src/steps/resource-index.step.ts`               |
+| Context hooks and index runs     | `apps/service/src/factories/orpc.factory.ts`, `packages/api/services/rag/index-run.service.ts` |

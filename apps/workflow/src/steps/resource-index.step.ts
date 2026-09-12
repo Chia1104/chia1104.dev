@@ -3,7 +3,7 @@ import { FatalError, fetch } from "workflow";
 
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
-import { getResourceAdapter } from "@chia/api/resources/registry";
+import { getResourceAdapter } from "@chia/api/services/rag/registry";
 import { connectDatabase } from "@chia/db/client";
 import {
   deleteResourceChunks,

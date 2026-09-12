@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { searchPublicFeedsService } from "@chia/api/feeds/search";
+import { searchPublicFeedsService } from "@chia/api/services/feeds/search.service";
 import type { DB } from "@chia/db/client";
 import * as dbMocks from "@chia/test/mocks/db-feeds";
 

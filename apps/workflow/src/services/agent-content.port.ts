@@ -1,7 +1,7 @@
 import type { ContentPort } from "@chia/agent-writing/ports";
-import { createContentReadPort } from "@chia/api/agents/content-read.port";
-import { applyFeedDraftService } from "@chia/api/feeds/draft";
-import { updateFeedService } from "@chia/api/feeds/write";
+import { createContentReadPort } from "@chia/api/services/agent/content-read.port";
+import { applyFeedDraftService } from "@chia/api/services/feeds/draft.service";
+import { updateFeedService } from "@chia/api/services/feeds/write.service";
 import type { DB } from "@chia/db/client";
 
 import { feedHooks } from "./feed-indexing.service";

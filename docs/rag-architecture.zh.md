@@ -305,11 +305,11 @@ Generated column expression 無法原地修改，相關 migration 必須人工�
 
 主要位置：
 
-| 責任                         | 位置                                                                                |
-| ---------------------------- | ----------------------------------------------------------------------------------- |
-| Embedding、chunking、context | `packages/ai/src/embeddings/`                                                       |
-| Schema、chunk 與搜尋 SQL     | `packages/db/src/schemas/resources.schema.ts`、`packages/db/src/libs/resources/`    |
-| Adapter 與 resource service  | `packages/api/resources/`                                                           |
-| Feed 搜尋                    | `packages/api/feeds/search.ts`                                                      |
-| Indexing workflows 與 steps  | `apps/workflow/src/workflows/`、`apps/workflow/src/steps/resource-index.step.ts`    |
-| Context hooks 與 index run   | `apps/service/src/factories/orpc.factory.ts`、`packages/api/resources/index-run.ts` |
+| 責任                         | 位置                                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Embedding、chunking、context | `packages/ai/src/embeddings/`                                                                  |
+| Schema、chunk 與搜尋 SQL     | `packages/db/src/schemas/resources.schema.ts`、`packages/db/src/libs/resources/`               |
+| Adapter 與 resource service  | `packages/api/services/rag/`                                                                   |
+| Feed 搜尋                    | `packages/api/services/feeds/search.service.ts`                                                |
+| Indexing workflows 與 steps  | `apps/workflow/src/workflows/`、`apps/workflow/src/steps/resource-index.step.ts`               |
+| Context hooks 與 index run   | `apps/service/src/factories/orpc.factory.ts`、`packages/api/services/rag/index-run.service.ts` |

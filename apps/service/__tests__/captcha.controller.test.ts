@@ -4,7 +4,7 @@ const { mockVerify, mockSendContactEmail } = vi.hoisted(() => ({
 }));
 
 // The captcha guard must run; only the provider round trip and delivery are stubbed.
-vi.unmock("@chia/api/orpc/guards/captcha.guard");
+vi.unmock("@chia/api/services/shared/guards/captcha.guard");
 
 vi.mock("@chia/api/captcha", () => ({
   X_CAPTCHA_RESPONSE: "x-captcha-response",

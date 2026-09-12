@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 
-import { completeSpotifyAuthorizationService } from "@chia/api/spotify/account";
+import { completeSpotifyAuthorizationService } from "@chia/api/services/spotify/account.service";
 import { spotifyOAuthCallbackSchema } from "@chia/api/spotify/validator";
 
 import { env } from "../env";

@@ -1,5 +1,5 @@
-import type { MemoryHooks } from "@chia/api/orpc/utils";
-import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/api/resources/registry";
+import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/api/services/rag/registry";
+import type { MemoryHooks } from "@chia/api/services/shared/context";
 
 import { workflowControl } from "./workflow-control";
 

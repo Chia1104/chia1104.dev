@@ -17,7 +17,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { TASK_PROMPT_MAX_CHARS } from "@chia/api/orpc/contracts/agent-admin.contract";
+import { TASK_PROMPT_MAX_CHARS } from "@chia/api/services/agent/admin.contract";
 
 import { orpc } from "@/libs/orpc/client";
 

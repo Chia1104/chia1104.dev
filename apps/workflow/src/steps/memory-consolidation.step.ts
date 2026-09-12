@@ -7,7 +7,7 @@ import { WRITING_AGENT_KIND } from "@chia/agent-writing/models";
 import {
   createMemoryService,
   reinforceLessonService,
-} from "@chia/api/memories/write";
+} from "@chia/api/services/memory/write.service";
 import { connectDatabase } from "@chia/db/client";
 import {
   advanceWritingSessionConsolidation,

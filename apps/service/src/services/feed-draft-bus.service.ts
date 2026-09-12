@@ -1,4 +1,4 @@
-import { FeedDraftBus } from "@chia/api/feeds/draft-bus";
+import { FeedDraftBus } from "@chia/api/services/feeds/draft-bus";
 import { resolveDatabaseUrl } from "@chia/db/client";
 import { listenChannel } from "@chia/db/listen";
 import {

@@ -3,7 +3,7 @@ import type {
   InferRouterContractInputs,
 } from "@orpc/contract";
 
-import type { routerContract } from "@chia/api/orpc/contracts";
+import type { routerContract } from "@chia/api/services/router.contract";
 
 export type RouterOutputs = InferRouterContractOutputs<typeof routerContract>;
 

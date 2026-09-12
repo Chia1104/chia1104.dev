@@ -49,7 +49,7 @@ flowchart TB
 
 - `apps/service/src/agents/` 綁定 API 階段的 capabilities、state 與 credentials。
 - `apps/workflow/src/agents/` 綁定執行階段的 ports 與 `runTurn`。
-- `packages/api/orpc/services/agent/` 擁有共用的 session、run、approval、maintenance、usage 與 admin 行為。
+- `packages/api/services/agent/` 擁有共用的 session、run、approval、maintenance、usage 與 admin 行為。
 
 oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建立的 `agentFactory`。Guard 能在載入 domain package 或 provider SDK 前拒絕呼叫；dynamic import 已提供 module cache，factory 不另外保存 definition registry 或 service cache。
 
@@ -334,7 +334,7 @@ Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts`
 | `fact`   | 模型保存的附來源結論                  | 立即 active            |
 | `lesson` | Operator 教過的寫作偏好               | Operator 核准後 active |
 
-所有 memory write 都經過 `packages/api/memories/write.ts`，並在需要時排程 RAG indexing。只有 live、active memory 會進索引。詳見 [RAG 架構](./rag-architecture.zh.md#6-agent-memory-resource)。
+所有 memory write 都經過 `packages/api/services/memory/write.service.ts`，並在需要時排程 RAG indexing。只有 live、active memory 會進索引。詳見 [RAG 架構](./rag-architecture.zh.md#6-agent-memory-resource)。
 
 Fact 與 source 只透過可見的 `search_memory`、`get_memory` tool call 進入模型。Volatile context 會列出本 session 已保存 memory 的受限識別資訊。Active lesson title 則固定加入，因為它們是 standing preferences。
 
@@ -413,7 +413,7 @@ Harness 本身就是為 host 排程設計的。Lane API 收斂成四個 durable 
 | 共用 content tools                    | `packages/agent-content/src/`                                                                         |
 | Writing 與 public domains             | `packages/agent-writing/src/`、`packages/agent-public/src/`                                           |
 | Kind bindings 與 tasks                | `packages/agent-host/src/`、`apps/service/src/agents/`、`apps/workflow/src/agents/`                   |
-| Generic oRPC agent service            | `packages/api/orpc/services/agent/`                                                                   |
+| Generic oRPC agent service            | `packages/api/services/agent/`                                                                        |
 | Workflow 與 turn step                 | `apps/workflow/src/workflows/agent-session.workflow.ts`、`apps/workflow/src/steps/agent-turn.step.ts` |
 | Database schema                       | `packages/db/src/schemas/agent.schema.ts`                                                             |
 | 共用 client                           | `packages/agent-elements/src/`                                                                        |

@@ -2,8 +2,8 @@ import { os } from "@orpc/server";
 import { createMiddleware } from "hono/factory";
 import { vi } from "vitest";
 
-import type { CallerContext } from "@chia/api/orpc/guards/caller.guard";
-import { baseOS } from "@chia/api/orpc/utils";
+import { baseOS } from "@chia/api/services/shared/context";
+import type { CallerContext } from "@chia/api/services/shared/guards/caller.guard";
 import { CallerTier } from "@chia/auth/tier";
 
 const FAKE_API_KEY =

@@ -49,7 +49,7 @@ Each host provides an `AgentKindDefinition`:
 
 - `apps/service/src/agents/` binds API-time capabilities, state and credentials.
 - `apps/workflow/src/agents/` binds execution-time ports and `runTurn`.
-- `packages/api/orpc/services/agent/` owns generic session, run, approval, maintenance, usage and admin behavior.
+- `packages/api/services/agent/` owns generic session, run, approval, maintenance, usage and admin behavior.
 
 The oRPC context receives an `agentFactory` built from eager `minTier` values and dynamic definition loaders. Guards can reject callers before loading a domain package or provider SDK. Dynamic imports provide module caching; the factory keeps no definition registry or service cache.
 
@@ -334,7 +334,7 @@ On the public site, `@chia/agent-elements/selection` measures a DOM selection an
 | `fact`   | A cited conclusion saved by the model    | Active immediately              |
 | `lesson` | A writing preference the operator taught | Pending until operator approval |
 
-Every memory write goes through `packages/api/memories/write.ts` and schedules RAG indexing when needed. Only live, active memory is indexed. See [RAG architecture](./rag-architecture.md#6-agent-memory-resource).
+Every memory write goes through `packages/api/services/memory/write.service.ts` and schedules RAG indexing when needed. Only live, active memory is indexed. See [RAG architecture](./rag-architecture.md#6-agent-memory-resource).
 
 Facts and sources reach the model only through visible `search_memory` and `get_memory` tool calls. The volatile context lists bounded identifiers for memories saved in the current session. Active lesson titles are always included because they are standing preferences.
 
@@ -413,7 +413,7 @@ Do not start until all of these hold upstream: the storage format is declared st
 | Shared content tools                  | `packages/agent-content/src/`                                                                         |
 | Writing and public domains            | `packages/agent-writing/src/`, `packages/agent-public/src/`                                           |
 | Kind bindings and tasks               | `packages/agent-host/src/`, `apps/service/src/agents/`, `apps/workflow/src/agents/`                   |
-| Generic oRPC agent service            | `packages/api/orpc/services/agent/`                                                                   |
+| Generic oRPC agent service            | `packages/api/services/agent/`                                                                        |
 | Workflow and turn step                | `apps/workflow/src/workflows/agent-session.workflow.ts`, `apps/workflow/src/steps/agent-turn.step.ts` |
 | Database schema                       | `packages/db/src/schemas/agent.schema.ts`                                                             |
 | Shared client                         | `packages/agent-elements/src/`                                                                        |

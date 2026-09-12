@@ -8,9 +8,9 @@ import type {
 import {
   createMemoryService,
   recordSourceMemoryService,
-} from "@chia/api/memories/write";
-import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/api/resources/registry";
-import { searchResources } from "@chia/api/resources/search";
+} from "@chia/api/services/memory/write.service";
+import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/api/services/rag/registry";
+import { searchResources } from "@chia/api/services/rag/search.service";
 import type { DB } from "@chia/db/client";
 import {
   getAgentMemories,
@@ -25,7 +25,7 @@ import { AppError } from "@chia/service-kit/errors";
 import { memoryHooks } from "./agent-memory-indexing.service";
 
 /**
- * Writes go through `memories/write.ts` so the index run is never skipped. Search uses
+ * Writes go through `memory/write.service.ts` so the index run is never skipped. Search uses
  * `searchResources` with the memory type and unpublished rows, both required, since memory
  * chunks are indexed `published: false`. Built with a `DB` and session id (provenance), not a request.
  */

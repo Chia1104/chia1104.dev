@@ -1,7 +1,12 @@
 import type { RouterContractClient } from "@orpc/contract";
 
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
-import type { agentContracts, routerContract } from "@chia/api/orpc/contracts";
+import type {
+  AgentSessionDetail as ContractAgentSessionDetail,
+  AgentSessionSummary as ContractAgentSessionSummary,
+  AgentUsageStanding as ContractAgentUsageStanding,
+} from "@chia/api/services/agent/agent.contract";
+import type { routerContract } from "@chia/api/services/router.contract";
 
 /**
  * The `agent` branch of the host's contract-typed oRPC client. This package never builds one.
@@ -55,9 +60,9 @@ export interface AgentSessionClient {
   };
 }
 
-export type AgentSessionDetail = agentContracts.AgentSessionDetail;
-export type AgentSessionSummary = agentContracts.AgentSessionSummary;
-export type AgentUsageStanding = agentContracts.AgentUsageStanding;
+export type AgentSessionDetail = ContractAgentSessionDetail;
+export type AgentSessionSummary = ContractAgentSessionSummary;
+export type AgentUsageStanding = ContractAgentUsageStanding;
 export type AgentModel = Awaited<
   ReturnType<AgentClient["models"]["list"]>
 >[number];

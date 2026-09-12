@@ -1,7 +1,7 @@
 import "zod/compile";
 import * as z from "zod";
 
-import { isResourceType, resourceTypes } from "@chia/api/resources/registry";
+import { isResourceType, resourceTypes } from "@chia/api/services/rag/registry";
 
 import { indexResource } from "../steps/resource-index.step";
 import type { ResourceIndexResult } from "../steps/resource-index.step";
