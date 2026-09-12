@@ -303,10 +303,9 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Hello\n\nSome body text.",
+            translations: { en: { content: "## Hello\n\nSome body text." } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -328,16 +327,14 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
-          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            title: "A post",
             slug: "a-post",
+            translations: { en: { title: "A post" } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -376,17 +373,15 @@ describe("runWritingTurn", () => {
     approved.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
-          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            title: "A post",
             slug: "a-post",
             defaultLocale: "en",
+            translations: { en: { title: "A post" } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -419,17 +414,15 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
-          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            title: "A post",
             slug: "a-post",
             defaultLocale: "en",
+            translations: { en: { title: "A post" } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -481,17 +474,15 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            title: "A post",
             slug: "a-post",
             defaultLocale: "en",
+            translations: { en: { title: "A post" } },
           }),
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -545,17 +536,15 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.patchDraftMeta, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            title: "A post",
             slug: "a-post",
             defaultLocale: "en",
+            translations: { en: { title: "A post" } },
           }),
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
         ],
         { stopReason: "toolUse" }
@@ -570,10 +559,11 @@ describe("runWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nA body the operator never saw.",
+            translations: {
+              en: { content: "## Post\n\nA body the operator never saw." },
+            },
           }),
         ],
         { stopReason: "toolUse" }
@@ -609,10 +599,9 @@ describe("runWritingTurn", () => {
     approved.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
+          fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
-            locale: "en",
-            content: "## Post\n\nBody.",
+            translations: { en: { content: "## Post\n\nBody." } },
           }),
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,

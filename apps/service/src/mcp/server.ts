@@ -237,18 +237,30 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
     {
       title: "Edit a draft body in place",
       description:
-        "Replace an exact string in one locale's MDX body without resending the rest. `oldString` must match the current body byte for byte, indentation included; a target that matches more than once fails unless replaceAll. Read the draft first with get_draft.",
+        "Replace exact strings in one locale's MDX body without resending the rest. Edits apply in order as one revision; each `oldString` must match the body byte for byte, indentation included, and a target that matches more than once fails unless replaceAll. A failed edit refuses the whole batch. The result shows the numbered lines around each edit, so no read-back is needed.",
       inputSchema: {
         draftId: z.number().int(),
         locale: localeSchema,
-        oldString: z.string().min(1).describe("Exact existing text to replace"),
-        newString: z
-          .string()
-          .describe("Replacement text; empty deletes the match"),
-        replaceAll: z
-          .boolean()
-          .optional()
-          .describe("Replace every match instead of failing on ambiguity"),
+        edits: z
+          .array(
+            z.object({
+              oldString: z
+                .string()
+                .min(1)
+                .describe("Exact existing text to replace"),
+              newString: z
+                .string()
+                .describe("Replacement text; empty deletes the match"),
+              replaceAll: z
+                .boolean()
+                .optional()
+                .describe(
+                  "Replace every match instead of failing on ambiguity"
+                ),
+            })
+          )
+          .min(1)
+          .max(50),
         expectedRevision: z
           .number()
           .int()

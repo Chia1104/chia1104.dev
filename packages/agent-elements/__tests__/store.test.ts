@@ -633,15 +633,15 @@ describe("createAgentSessionStore", () => {
     const started = {
       type: "tool:start",
       toolCallId: "t1",
-      toolName: "write_draft_content",
-      label: "Write draft body",
+      toolName: "write_draft",
+      label: "Write draft",
       tier: "draft",
       args: { draftId: 7, locale: "en" },
     } as const;
     const ended = {
       type: "tool:end",
       toolCallId: "t1",
-      toolName: "write_draft_content",
+      toolName: "write_draft",
       isError: false,
       summary: "Wrote it",
     } as const;

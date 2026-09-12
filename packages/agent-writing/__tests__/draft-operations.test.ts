@@ -4,7 +4,6 @@ import {
   emptyDraft,
   patchFeedMeta,
   patchTranslation,
-  withLineNumbers,
 } from "../src/draft/operations.ts";
 
 describe("patchTranslation", () => {
@@ -46,16 +45,5 @@ describe("patchFeedMeta", () => {
       type: "post",
       defaultLocale: "en",
     });
-  });
-});
-
-describe("withLineNumbers", () => {
-  it("right-aligns numbers so the body stays readable past line 9", () => {
-    const numbered = withLineNumbers(
-      Array.from({ length: 10 }, (_, index) => `line ${index + 1}`).join("\n")
-    );
-    const lines = numbered.split("\n");
-    expect(lines[0]).toBe(" 1\tline 1");
-    expect(lines[9]).toBe("10\tline 10");
   });
 });

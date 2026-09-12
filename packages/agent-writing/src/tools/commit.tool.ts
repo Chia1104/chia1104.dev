@@ -50,7 +50,7 @@ export const commitDraftTool = defineTool({
     }
     if (!draft.translations[draft.defaultLocale]) {
       throw new Error(
-        `No draft for the default locale "${draft.defaultLocale}". Either write it or change defaultLocale via patch_draft_meta.`
+        `No draft for the default locale "${draft.defaultLocale}". Either write it or change defaultLocale with write_draft.`
       );
     }
     const untitled = locales.filter(
@@ -63,9 +63,18 @@ export const commitDraftTool = defineTool({
     }
     if (draft.feedId === null && !draft.slug) {
       throw new Error(
-        "A new post needs an English/ASCII slug. Set one with patch_draft_meta before committing."
+        "A new post needs an English/ASCII slug. Set one with write_draft before committing."
       );
     }
+
+    // Missing metadata is not an error, but it is easy to forget once the body is done.
+    const metadataGaps = locales.flatMap((locale) => {
+      const translation = draft.translations[locale];
+      const missing = (["excerpt", "description", "summary"] as const).filter(
+        (field) => !translation?.[field]
+      );
+      return missing.length > 0 ? [`${locale}: ${missing.join(", ")}`] : [];
+    });
 
     const result = await context.content.applyDraft({
       draftId: draft.id,
@@ -74,8 +83,13 @@ export const commitDraftTool = defineTool({
 
     return textResult(
       `${result.created ? "Created" : "Updated"} feed ${result.feedId} at slug \`${result.slug}\`, ` +
-        `still unpublished.\n\n${jsonBlock(result)}`,
-      { ...result, draftId: draft.id, confirmation: params.confirmation }
+        `still unpublished.${metadataGaps.length > 0 ? `\n\nMetadata still empty — ${metadataGaps.join("; ")}.` : ""}\n\n${jsonBlock(result)}`,
+      {
+        ...result,
+        draftId: draft.id,
+        confirmation: params.confirmation,
+        metadataGaps,
+      }
     );
   },
 });

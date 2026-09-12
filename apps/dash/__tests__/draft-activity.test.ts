@@ -11,12 +11,12 @@ const start = (
   toolCallId: string,
   tier: string,
   args: { draftId?: number; locale?: string; title?: string },
-  label = "Write draft body"
+  label = "Write draft"
 ) =>
   ({
     type: "tool:start",
     toolCallId,
-    toolName: "write_draft_content",
+    toolName: "write_draft",
     label,
     tier,
     args,
@@ -31,7 +31,7 @@ const end = (
   ({
     type: "tool:end",
     toolCallId,
-    toolName: "write_draft_content",
+    toolName: "write_draft",
     isError,
     aborted,
     summary: "",
@@ -53,7 +53,7 @@ describe("draft activity", () => {
     expect(hook.result.current).toEqual({
       draftId: 7,
       locale: "en",
-      label: "Write draft body",
+      label: "Write draft",
     });
 
     let settled: unknown;
@@ -65,7 +65,7 @@ describe("draft activity", () => {
     expect(settled).toEqual({
       draftId: 7,
       locale: "en",
-      label: "Write draft body",
+      label: "Write draft",
       revision: 4,
     });
     expect(hook.result.current).toBeNull();
@@ -75,7 +75,7 @@ describe("draft activity", () => {
     trackDraftToolEvent(start("t1", "draft", { draftId: 7 }));
     expect(trackDraftToolEvent(end("t1"))).toEqual({
       draftId: 7,
-      label: "Write draft body",
+      label: "Write draft",
     });
   });
 

@@ -9,6 +9,7 @@ import type {
   FeedDraftListItem,
   FeedDraftRecord,
   FeedDraftWriteResult,
+  PatchFeedDraftInput,
 } from "@chia/db/repos/drafts";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
@@ -19,8 +20,7 @@ import type {
   DraftChange,
   DraftContentEdit,
   DraftEditResult,
-  DraftFeedMeta,
-  DraftTranslation,
+  DraftWrite,
   FeedDraft,
   FeedDraftSummary,
 } from "../types.ts";
@@ -29,6 +29,7 @@ import {
   DraftConflictError,
   DraftNotFoundError,
   EditNotAppliedError,
+  describeEdits,
   draftSummary,
   noBodyMessage,
 } from "./operations.ts";
@@ -95,45 +96,17 @@ export class PgDraftStore implements DraftStore {
     return this.observe(record);
   }
 
-  async patchFeedMeta(
+  async write(
     draftId: number,
-    patch: DraftFeedMeta
-  ): Promise<FeedDraft> {
-    return this.settle(
-      draftId,
-      await patchFeedDraft(this.db, {
-        draftId,
-        userId: this.options.userId,
-        author: FEED_DRAFT_AUTHOR.Agent,
-        sessionId: this.options.sessionId,
-        meta: omitUndefined(patch),
-      })
-    );
-  }
-
-  async patchTranslation(
-    draftId: number,
-    locale: Locale,
-    patch: DraftTranslation
-  ): Promise<FeedDraft> {
-    return this.settle(
-      draftId,
-      await patchFeedDraft(this.db, {
-        draftId,
-        userId: this.options.userId,
-        author: FEED_DRAFT_AUTHOR.Agent,
-        sessionId: this.options.sessionId,
-        translations: { [locale]: omitUndefined(patch) },
-      })
-    );
-  }
-
-  async setContent(
-    draftId: number,
-    locale: Locale,
-    content: string,
+    input: DraftWrite,
     expectedRevision?: number
   ): Promise<FeedDraft> {
+    const translations: PatchFeedDraftInput["translations"] = {};
+    for (const [locale, patch] of Object.entries(input.translations ?? {})) {
+      if (!patch) continue;
+      // SAFETY: DraftWrite.translations is keyed by Locale.
+      translations[locale as Locale] = omitUndefined(patch);
+    }
     return this.settle(
       draftId,
       await patchFeedDraft(this.db, {
@@ -142,7 +115,8 @@ export class PgDraftStore implements DraftStore {
         expectedRevision,
         author: FEED_DRAFT_AUTHOR.Agent,
         sessionId: this.options.sessionId,
-        translations: { [locale]: { content } },
+        meta: input.meta ? omitUndefined(input.meta) : undefined,
+        translations,
       }),
       expectedRevision
     );
@@ -151,30 +125,36 @@ export class PgDraftStore implements DraftStore {
   async editContent(
     draftId: number,
     locale: Locale,
-    edit: DraftContentEdit
+    edits: readonly DraftContentEdit[]
   ): Promise<DraftEditResult> {
     const result = await editFeedDraftContent(this.db, {
       draftId,
       userId: this.options.userId,
       locale,
-      oldString: edit.oldString,
-      newString: edit.newString,
-      replaceAll: edit.replaceAll,
+      edits,
       author: FEED_DRAFT_AUTHOR.Agent,
       sessionId: this.options.sessionId,
     });
     switch (result.status) {
-      case "ok":
+      case "ok": {
+        const draft = this.observe(result.draft);
         return {
-          draft: this.observe(result.draft),
-          replacements: result.replacements,
+          draft,
+          edits: describeEdits(
+            draft.translations[locale]?.content ?? "",
+            result.edits
+          ),
         };
+      }
       case "no_body":
         throw new EditNotAppliedError(noBodyMessage(locale), "no_body");
       case "not_applied":
-        throw new EditNotAppliedError(result.message, result.reason);
+        throw new EditNotAppliedError(
+          `Edit ${result.index + 1} of ${edits.length} was not applied, so nothing was written. ${result.message}`,
+          result.reason
+        );
       default:
-        return { draft: this.settle(draftId, result), replacements: 0 };
+        return { draft: this.settle(draftId, result), edits: [] };
     }
   }
 

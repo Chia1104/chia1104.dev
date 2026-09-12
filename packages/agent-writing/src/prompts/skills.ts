@@ -27,7 +27,8 @@ works. Beyond it:
 ## Frontmatter — do NOT write any
 
 Title, excerpt, description and summary are **structured metadata**, not frontmatter. Set them
-with \`patch_draft_meta\`. A \`---\` block at the top of the body renders as literal text.
+with \`write_draft\`, in the same call as the body. A \`---\` block at the top of the body renders
+as literal text.
 
 ## Headings
 
@@ -484,10 +485,10 @@ guess who wrote the text. Observable patterns are the evidence.
 2. Identify the core point and 3–5 voice signals to preserve: vocabulary, cadence, bluntness,
    humor, uncertainty, digressions or roughness. Keep this note internal.
 3. In Detect mode, report the findings and stop.
-4. In Edit mode, use targeted \`edit_draft_content\` calls. Do not replace the whole body merely
-   to make it consistent, especially after the operator has reviewed it.
-5. Read the edited locale again and run the final check below. Fix every failed check before
-   handing back the draft.
+4. In Edit mode, send the targeted changes as one \`edit_draft_content\` batch. Do not replace
+   the whole body merely to make it consistent, especially after the operator has reviewed it.
+5. Run the final check below against the edited text the result shows. Fix every failed check
+   before handing back the draft.
 6. Summarize what changed and why. Mention any larger reordering explicitly.
 
 If the core point, intended reader or desired effect is genuinely unclear, ask one focused question
@@ -617,7 +618,7 @@ actually covers, not a hook.
 ## \`slug\`
 
 Lowercase, hyphenated, English even for zh-TW posts, and stable — changing it breaks inbound
-links. Choose the English wording yourself, then pass it to \`patch_draft_meta\`; normalization only
+links. Choose the English wording yourself, then pass it to \`write_draft\`; normalization only
 lowercases and hyphenates it, and never translates a localized title. Keep it short: 3–6 words.
 Omit stop words.
 `

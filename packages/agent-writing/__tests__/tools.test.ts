@@ -7,8 +7,7 @@ import {
   editDraftContentTool,
   listDraftsTool,
   openDraftTool,
-  patchDraftMetaTool,
-  writeDraftContentTool,
+  writeDraftTool,
 } from "../src/tools/draft.tool.ts";
 import { fetchUrlTool, webSearchTool } from "../src/tools/retrieval.tool.ts";
 import { createWritingTools } from "../src/tools/tool-set.ts";
@@ -207,7 +206,7 @@ describe("draft slug handling", () => {
   it("normalizes an English candidate when metadata is patched", async () => {
     const context = createContext();
 
-    const result = await patchDraftMetaTool.execute(
+    const result = await writeDraftTool.execute(
       "call-1",
       { draftId: DRAFT_ID, slug: "Embedding RAG Architecture" },
       undefined,
@@ -224,7 +223,7 @@ describe("draft slug handling", () => {
     const context = createContext();
 
     await expect(
-      patchDraftMetaTool.execute(
+      writeDraftTool.execute(
         "call-1",
         { draftId: DRAFT_ID, slug: "Embedding 與 RAG 架構" },
         undefined,
@@ -234,6 +233,46 @@ describe("draft slug handling", () => {
     ).rejects.toThrow("must be an English/ASCII phrase");
     await expect(context.draft.get(DRAFT_ID)).resolves.toMatchObject({
       slug: null,
+    });
+  });
+
+  it("writes both locales, their metadata and the slug as one revision", async () => {
+    const context = createContext();
+    const before = (await context.draft.get(DRAFT_ID)).revision;
+
+    const result = await writeDraftTool.execute(
+      "call-1",
+      {
+        draftId: DRAFT_ID,
+        slug: "Two Locales",
+        defaultLocale: "zh-TW",
+        translations: {
+          "zh-TW": { title: "標題", content: "## 內文", description: "描述" },
+          en: { title: "Title", content: "## Body" },
+        },
+      },
+      undefined,
+      undefined,
+      context
+    );
+
+    const draft = await context.draft.get(DRAFT_ID);
+    expect(draft.revision).toBe(before + 1);
+    expect(draft).toMatchObject({
+      slug: "two-locales",
+      defaultLocale: "zh-TW",
+      translations: {
+        "zh-TW": { title: "標題", content: "## 內文", description: "描述" },
+        en: { title: "Title", content: "## Body" },
+      },
+    });
+    expect(result.details).toMatchObject({
+      feedMeta: { slug: "two-locales" },
+      translations: {
+        "zh-TW": { title: "標題", lineCount: 1 },
+        en: { title: "Title", lineCount: 1 },
+      },
+      warnings: [],
     });
   });
 
@@ -306,17 +345,72 @@ describe("draft slug handling", () => {
       {
         draftId: DRAFT_ID,
         locale: "en",
-        oldString: "First paragraph.",
-        newString: "Rewritten.",
+        edits: [{ oldString: "First paragraph.", newString: "Rewritten." }],
       },
       undefined,
       undefined,
       context
     );
 
-    expect(result.details).toMatchObject({ replacements: 1 });
+    expect(result.details).toMatchObject({
+      replacements: 1,
+      edits: [{ line: 3, replacements: 1 }],
+    });
+    expect(result.content[0]).toMatchObject({
+      text: expect.stringContaining("3\tRewritten."),
+    });
     expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
       "## Title\n\nRewritten.\n\nSecond paragraph.\n\nOperator note."
+    );
+  });
+
+  it("applies a batch in order as one revision and refuses the whole batch on one miss", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
+      content: "alpha\nbeta\ngamma",
+    });
+    const before = (await context.draft.get(DRAFT_ID)).revision;
+
+    const result = await editDraftContentTool.execute(
+      "call-1",
+      {
+        draftId: DRAFT_ID,
+        locale: "en",
+        edits: [
+          { oldString: "gamma", newString: "GAMMA" },
+          { oldString: "alpha", newString: "a" },
+        ],
+      },
+      undefined,
+      undefined,
+      context
+    );
+    const after = await context.draft.get(DRAFT_ID);
+    expect(after.translations.en?.content).toBe("a\nbeta\nGAMMA");
+    expect(after.revision).toBe(before + 1);
+    expect(result.details).toMatchObject({
+      replacements: 2,
+      edits: [{ line: 3 }, { line: 1 }],
+    });
+
+    await expect(
+      editDraftContentTool.execute(
+        "call-2",
+        {
+          draftId: DRAFT_ID,
+          locale: "en",
+          edits: [
+            { oldString: "beta", newString: "b" },
+            { oldString: "missing", newString: "x" },
+          ],
+        },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow(/Edit 2 of 2 was not applied/);
+    expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
+      "a\nbeta\nGAMMA"
     );
   });
 
@@ -332,8 +426,7 @@ describe("draft slug handling", () => {
         {
           draftId: DRAFT_ID,
           locale: "en",
-          oldString: "same line",
-          newString: "changed",
+          edits: [{ oldString: "same line", newString: "changed" }],
         },
         undefined,
         undefined,
@@ -353,9 +446,12 @@ describe("draft slug handling", () => {
     });
 
     await expect(
-      writeDraftContentTool.execute(
+      writeDraftTool.execute(
         "call-1",
-        { draftId: DRAFT_ID, locale: "en", content: "## Model version" },
+        {
+          draftId: DRAFT_ID,
+          translations: { en: { content: "## Model version" } },
+        },
         undefined,
         undefined,
         context
@@ -371,9 +467,9 @@ describe("draft slug handling", () => {
     context.draft.discard(DRAFT_ID);
 
     await expect(
-      writeDraftContentTool.execute(
+      writeDraftTool.execute(
         "call-1",
-        { draftId: DRAFT_ID, locale: "en", content: "## Body" },
+        { draftId: DRAFT_ID, translations: { en: { content: "## Body" } } },
         undefined,
         undefined,
         context

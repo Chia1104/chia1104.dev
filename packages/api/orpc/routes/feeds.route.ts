@@ -346,7 +346,7 @@ export const editFeedDraftRoute = contractOS.feeds["draft:edit"]
   .use(rootWriteGuard)
   .handler((opts) =>
     withORPCErrors(async () => {
-      const { draft, replacements } = await editFeedDraftContentService(
+      const { draft, edits } = await editFeedDraftContentService(
         opts.context.db,
         {
           ...opts.input,
@@ -358,7 +358,8 @@ export const editFeedDraftRoute = contractOS.feeds["draft:edit"]
         draftId: draft.id,
         locale: opts.input.locale,
         revision: draft.revision,
-        replacements,
+        replacements: edits.reduce((sum, edit) => sum + edit.replacements, 0),
+        edits,
       };
     })
   );
