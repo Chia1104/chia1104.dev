@@ -683,20 +683,23 @@ export const listFeedDraftRevisions = async (
     .orderBy(desc(feedDraftRevisions.revision))
     .limit(input.limit);
 
+/** A revision of one of `userId`'s drafts; a revision under anyone else's draft reads as null. */
 export const getFeedDraftRevision = async (
   db: DB,
-  input: { draftId: number; revisionId: number }
+  input: { draftId: number; revisionId: number; userId: string }
 ): Promise<FeedDraftRevision | null> => {
   const [row] = await db
-    .select()
+    .select({ revision: feedDraftRevisions })
     .from(feedDraftRevisions)
+    .innerJoin(feedDrafts, eq(feedDrafts.id, feedDraftRevisions.draftId))
     .where(
       and(
         eq(feedDraftRevisions.draftId, input.draftId),
-        eq(feedDraftRevisions.id, input.revisionId)
+        eq(feedDraftRevisions.id, input.revisionId),
+        eq(feedDrafts.userId, input.userId)
       )
     );
-  return row ?? null;
+  return row?.revision ?? null;
 };
 
 /** Operator revisions above `afterRevision`, oldest first, for the agent's turn context. */

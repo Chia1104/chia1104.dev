@@ -422,16 +422,18 @@ export const restoreFeedDraftRevisionService = async (
   db: DB,
   input: { draftId: number; revisionId: number; adminId: string }
 ): Promise<FeedDraftRecord> => {
+  // Scoped to the admin's drafts, so a revision under anyone else's draft is not found
+  // whether or not it exists.
   const revision = await getFeedDraftRevision(db, {
     draftId: input.draftId,
     revisionId: input.revisionId,
+    userId: input.adminId,
   });
   if (!revision) {
     throw new AppError("NOT_FOUND", {
       message: `Revision ${input.revisionId} not found`,
     });
   }
-  // The replace answers not_found for a draft the admin does not own, so the snapshot never lands elsewhere.
   const result = await replaceFeedDraft(db, {
     draftId: input.draftId,
     userId: input.adminId,
