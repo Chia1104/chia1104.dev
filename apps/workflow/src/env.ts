@@ -25,6 +25,8 @@ export const env = createEnv({
     AI_AUTH_PRIVATE_KEY: z.string().optional(),
     AI_GATEWAY_API_KEY: z.string().optional(),
     FIRECRAWL_API_KEY: z.string().min(1),
+    /** Read-only repository token for the writing agent's GitHub tools; scope it to `contents:read`. */
+    GH_AGENT_TOKEN: z.string().min(1),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3008,
@@ -45,6 +47,7 @@ export const env = createEnv({
     AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
     FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+    GH_AGENT_TOKEN: process.env.GH_AGENT_TOKEN,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

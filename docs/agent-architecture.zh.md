@@ -297,16 +297,21 @@ Usage 記錄採 best-effort，不在 response critical path。Insert 失敗會�
 
 Writing kind 組合 host-owned ports：
 
-| Port          | 責任                             |
-| ------------- | -------------------------------- |
-| `ContentPort` | 讀取作者內容、套用 draft、發佈。 |
-| `WebPort`     | 透過 Firecrawl 搜尋與抓取頁面。  |
-| `MemoryPort`  | 持久化與檢索跨 session memory。  |
-| `DraftStore`  | 以 CAS 讀寫作者的共用 drafts。   |
+| Port          | 責任                                   |
+| ------------- | -------------------------------------- |
+| `ContentPort` | 讀取作者內容、套用 draft、發佈。       |
+| `WebPort`     | 透過 Firecrawl 搜尋與抓取頁面。        |
+| `GitHubPort`  | 讀取 kind config 允許的 repositories。 |
+| `MemoryPort`  | 持久化與檢索跨 session memory。        |
+| `DraftStore`  | 以 CAS 讀寫作者的共用 drafts。         |
 
 只有 commit-tier tool 會寫入正式 feed，且需要 approval。Draft 與 memory write 可逆。破壞性刪除與圖片上傳不提供給 agent。
 
 Web search 只回 snippets；`fetch_url` 抓取單一頁面，並透過 `MemoryPort` 記錄來源。Host port 接收 turn abort signal。Domain package 不直接執行 outbound fetch。
+
+### Connectors
+
+一個 connector 就是 agent 讀取的一個外部系統：`@chia/agent-writing/ports` 裡的一個 port、`WritingToolContext.connectors` 底下的一個必填 key、以它命名的一組 tool，以及 kind config 裡由操作者設定的範圍。沒有 connector registry；新增一個 connector 就是新增一個 port，host 沒綁定就無法建立 turn。GitHub 是第一個：`github_*` tools 只讀 `githubRepos` 列出的 repositories，host port 在任何請求前先檢查 allowlist，一個 turn 內解析過的 ref 會釘在該 commit，讓 tree 與檔案一致、引用帶 sha。`@chia/integrations/github/source` 的 client 以參數接收 token，只有 `apps/workflow` 持有它。
 
 ### 共用 draft
 

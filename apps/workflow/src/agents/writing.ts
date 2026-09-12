@@ -5,6 +5,7 @@ import { openFeedDraftService } from "@chia/services/feeds/draft.service";
 import { getAdminId } from "@chia/utils/config";
 
 import { createAgentContentPort } from "../services/agent-content.port";
+import { createAgentGitHubPort } from "../services/agent-github.port";
 import { createAgentMemoryPort } from "../services/agent-memory.port";
 import { createAgentWebPort } from "../services/agent-web.port";
 import { workflowControl } from "../services/workflow-control";
@@ -23,6 +24,7 @@ export const writingAgentKind = createWritingAgentKind({
     createContentPort: createAgentContentPort,
     createMemoryPort: createAgentMemoryPort,
     createWebPort: createAgentWebPort,
+    createGitHubPort: createAgentGitHubPort,
     startMemoryConsolidation: (request) =>
       workflowControl.startMemoryConsolidation(request),
     cancelWorkflowRun: (runId) => workflowControl.cancelRun(runId),

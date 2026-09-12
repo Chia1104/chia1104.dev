@@ -10,6 +10,9 @@ import type {
   FeedDraft,
   FeedDraftSummary,
   FetchedPage,
+  GitHubFile,
+  GitHubRef,
+  GitHubTree,
   MemoryDetail,
   MemoryHit,
   MemorySearchInput,
@@ -28,6 +31,11 @@ export type {
   FeedDraft,
   FeedDraftSummary,
   FetchedPage,
+  GitHubEntryType,
+  GitHubFile,
+  GitHubRef,
+  GitHubTree,
+  GitHubTreeEntry,
   MemoryDetail,
   MemoryHit,
   MemoryKind,
@@ -70,6 +78,29 @@ export interface WebPort {
     signal?: AbortSignal
   ): Promise<WebSearchResult[]>;
   fetchPage(url: string, signal?: AbortSignal): Promise<FetchedPage>;
+}
+
+/**
+ * Read access to the repositories the operator listed in the kind config. The host enforces
+ * that allowlist on every call and refuses anything else; the tools never see the token.
+ * A ref resolved once in a turn stays pinned to that commit for the rest of it, so a tree
+ * and the files read from it agree.
+ */
+export interface GitHubPort {
+  resolveRef(
+    input: { repo: string; ref?: string },
+    signal?: AbortSignal
+  ): Promise<GitHubRef>;
+  /** One directory level, or the whole subtree with `recursive`. */
+  listTree(
+    input: { repo: string; ref?: string; path?: string; recursive?: boolean },
+    signal?: AbortSignal
+  ): Promise<GitHubTree>;
+  /** Refuses directories, symlinks, submodules, binaries and blobs above the provider's inline limit. */
+  readFile(
+    input: { repo: string; ref?: string; path: string },
+    signal?: AbortSignal
+  ): Promise<GitHubFile>;
 }
 
 /**

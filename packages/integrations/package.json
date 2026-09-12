@@ -21,6 +21,10 @@
       "types": "./github/types.ts",
       "default": "./github/types.ts"
     },
+    "./github/source": {
+      "types": "./github/source.ts",
+      "default": "./github/source.ts"
+    },
     "./spotify": {
       "types": "./spotify/index.ts",
       "default": "./spotify/index.ts"

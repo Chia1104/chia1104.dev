@@ -1186,6 +1186,9 @@ importers:
       '@chia/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@chia/integrations':
+        specifier: workspace:*
+        version: link:../../packages/integrations
       '@chia/service-kit':
         specifier: workspace:*
         version: link:../../packages/service-kit

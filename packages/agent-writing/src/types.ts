@@ -10,7 +10,13 @@ import type {
 } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 
-import type { ContentPort, DraftStore, MemoryPort, WebPort } from "./ports.ts";
+import type {
+  ContentPort,
+  DraftStore,
+  GitHubPort,
+  MemoryPort,
+  WebPort,
+} from "./ports.ts";
 
 /**
  * Tool tiers, increasing blast radius:
@@ -29,6 +35,11 @@ export interface WritingToolContext extends ContentToolContext {
   agentSessionId: string;
   content: ContentPort;
   web: WebPort;
+  /**
+   * Connectors, one port per external system. Every key is required: adding a connector
+   * means adding a port here, and the host cannot bind the turn without it.
+   */
+  connectors: { github: GitHubPort };
   draft: DraftStore;
   memory: MemoryPort;
   /**
@@ -147,6 +158,51 @@ export interface WebSearchResult {
   url: string;
   title?: string;
   description?: string;
+}
+
+/** A repository ref pinned to the commit it named when the turn first resolved it. */
+export interface GitHubRef {
+  /** `owner/name`, lower-cased. */
+  repo: string;
+  /** The branch, tag or sha the caller asked for; the default branch when they named none. */
+  ref: string;
+  /** Full commit sha; cite files against this, not `ref`, so the citation cannot drift. */
+  sha: string;
+  defaultBranch: string;
+  url: string;
+  description: string | null;
+  private: boolean;
+}
+
+export type GitHubEntryType = "file" | "dir" | "symlink" | "submodule";
+
+export interface GitHubTreeEntry {
+  /** Repository-relative, no leading slash. */
+  path: string;
+  type: GitHubEntryType;
+  /** Bytes; absent for directories. */
+  size?: number;
+}
+
+export interface GitHubTree {
+  ref: GitHubRef;
+  /** The directory listed; empty for the root. */
+  path: string;
+  entries: GitHubTreeEntry[];
+  /** The provider capped the listing; entries are a prefix of the directory. */
+  truncated: boolean;
+}
+
+export interface GitHubFile {
+  ref: GitHubRef;
+  path: string;
+  blobSha: string;
+  /** Bytes as stored. */
+  size: number;
+  /** Decoded UTF-8 text. */
+  text: string;
+  /** Permalink at `ref.sha`. */
+  url: string;
 }
 
 export type MemoryKind = AgentMemoryKind;
