@@ -187,7 +187,14 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
       description:
         "Open a post's working draft (creating it from the post when there is none), or start an empty draft for a new post when feedId is omitted. Returns the draft with its revision.",
       inputSchema: {
-        feedId: z.number().int().optional(),
+        feedId: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe(
+            "An existing post's id; omit to start a new post. A new post has no id yet."
+          ),
       },
     },
     guarded(({ feedId }) => api.feeds["draft:open"]({ feedId }))

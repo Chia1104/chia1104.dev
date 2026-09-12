@@ -98,6 +98,50 @@ export class DraftConflictError extends Error {
   }
 }
 
+/**
+ * Which language a locale's prose is written in, judged by the share of Han characters among
+ * Han and Latin letters outside code. The zh-TW floor is low because a Latin letter is a
+ * fraction of a word while a Han character is most of one: Chinese prose full of English
+ * terms still clears it, and an English body under zh-TW does not.
+ */
+const PROSE_LANGUAGE = {
+  en: { language: "English", hanShare: { max: 0.2 } },
+  "zh-TW": { language: "Chinese", hanShare: { min: 0.05 } },
+} as const satisfies Record<
+  Locale,
+  { language: string; hanShare: { max: number } | { min: number } }
+>;
+
+/** Below this many letters a body is too short to judge. */
+const LANGUAGE_SAMPLE_MIN = 80;
+
+const withoutCode = (body: string) =>
+  body.replace(/```[\s\S]*?```/g, " ").replace(/`[^`\n]*`/g, " ");
+
+/** Why a body does not read as its locale's language, or undefined. */
+export const languageMismatch = (
+  locale: Locale,
+  body: string
+): string | undefined => {
+  const prose = withoutCode(body);
+  const han = prose.match(/\p{Script=Han}/gu)?.length ?? 0;
+  const latin = prose.match(/\p{Script=Latin}/gu)?.length ?? 0;
+  if (han + latin < LANGUAGE_SAMPLE_MIN) return undefined;
+
+  const rule = PROSE_LANGUAGE[locale];
+  const share = han / (han + latin);
+  const wrong =
+    "max" in rule.hanShare
+      ? share > rule.hanShare.max
+      : share < rule.hanShare.min;
+  if (!wrong) return undefined;
+  return (
+    `The ${locale} body is ${Math.round(share * 100)}% Chinese characters outside code; ` +
+    `the ${locale} locale takes ${rule.language} prose. Rewrite it in ${rule.language}, ` +
+    `or leave the ${locale} locale out until it is.`
+  );
+};
+
 export const noBodyMessage = (locale: Locale) =>
   `No draft body for locale "${locale}" yet. Write one with write_draft first.`;
 

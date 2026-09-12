@@ -63,6 +63,15 @@ export const summarizeToolResult = <TResult>(
         ? "Proposed a lesson for review."
         : `Proposed lesson #${id} for review.`;
     }
+    case TOOL_NAMES.newDraft:
+    case TOOL_NAMES.openDraft: {
+      const draftId = asNumber(details.draftId);
+      const feedId = asNumber(details.feedId);
+      if (draftId === undefined) return "Opened draft.";
+      return feedId === undefined
+        ? `Opened draft #${draftId} for a new post.`
+        : `Opened draft #${draftId} for feed ${feedId}.`;
+    }
     case TOOL_NAMES.readDraft: {
       const locale = asString(details.locale);
       const lineCount = asNumber(details.lineCount);

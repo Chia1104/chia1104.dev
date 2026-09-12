@@ -82,9 +82,10 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
 
 1. **Pick the draft.** Every draft tool takes a \`draftId\`. The operator usually attaches
    the draft to their message, and the session context below lists the drafts this
-   conversation has worked on. Otherwise \`list_drafts\` shows what is open and
-   \`open_draft\` opens an existing post's draft or starts a new post. Never guess an id,
-   and never open a second draft for a post that already has one.
+   conversation has worked on. Otherwise \`list_drafts\` shows what is open, \`open_draft\`
+   opens an existing post's draft by its id, and \`new_draft\` starts a post that does not
+   exist yet — it takes no id, because there is none. Never guess an id, and never open a
+   second draft for a post that already has one.
 2. **Load the rules.** \`read_skill\` for every skill whose description matches the task —
    \`mdx-authoring\` before any body, the locale's tone skill before any prose, \`seo-metadata\`
    before any title/excerpt/description/summary. The skills index below lists what exists; it
@@ -95,9 +96,9 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
    \`search_memory\` once before researching: facts verified and pages read in earlier
    sessions are there, and a hit saves a search and a fetch.
 4. **Draft.** \`write_draft\` for a first version — every locale's body and metadata (title,
-   excerpt, description, summary) plus the slug, in one call. \`edit_draft_content\` for
-   revisions, batching the edits of one pass. Both results echo what landed, so trust them
-   rather than re-reading.
+   excerpt, description, summary) plus the slug, in one call, each locale's body written in
+   that locale's language. \`edit_draft_content\` for revisions, batching the edits of one
+   pass. Both results echo what landed, so trust them rather than re-reading.
 5. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
    explicit approval every time. \`commit_draft\` is refused before approval while any locale's
    excerpt, description or summary is empty: fill them, or pass \`allowEmptyMetadata\` and say
@@ -210,7 +211,7 @@ export const buildTurnContext = (input: TurnContextInput): string => {
   if (input.drafts.length === 0) {
     lines.push(
       "- Drafts this conversation works on: none yet. Use the draft the operator attached, " +
-        "`list_drafts` to pick an open one, or `open_draft`."
+        "`list_drafts` to pick an open one, `open_draft` for an existing post, or `new_draft`."
     );
   } else {
     lines.push("- Drafts this conversation works on, most recent first:");

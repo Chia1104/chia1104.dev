@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   emptyDraft,
+  languageMismatch,
   patchFeedMeta,
   patchTranslation,
 } from "../src/draft/operations.ts";
@@ -45,5 +46,42 @@ describe("patchFeedMeta", () => {
       type: "post",
       defaultLocale: "en",
     });
+  });
+});
+
+describe("languageMismatch", () => {
+  const english =
+    "This paragraph explains how the index is built and why the planner picks it over a scan. ".repeat(
+      3
+    );
+  const chinese =
+    "這一段說明索引是怎麼建立的，以及規劃器為什麼會選擇它而不是全表掃描。".repeat(
+      4
+    );
+
+  it("refuses a Chinese body under en and an English body under zh-TW", () => {
+    expect(languageMismatch("en", chinese)).toMatch(
+      /en locale takes English prose/
+    );
+    expect(languageMismatch("zh-TW", english)).toMatch(
+      /zh-TW locale takes Chinese prose/
+    );
+    expect(languageMismatch("en", english)).toBeUndefined();
+    expect(languageMismatch("zh-TW", chinese)).toBeUndefined();
+  });
+
+  it("ignores code, tolerates English terms in Chinese prose and does not judge a short body", () => {
+    expect(
+      languageMismatch("en", `${english}\n\n\`\`\`ts\n// ${chinese}\n\`\`\``)
+    ).toBeUndefined();
+    expect(
+      languageMismatch(
+        "zh-TW",
+        "我們用 `pgvector` 的 HNSW index 做 hybrid search，再用 BM25 補召回。".repeat(
+          3
+        )
+      )
+    ).toBeUndefined();
+    expect(languageMismatch("en", "短")).toBeUndefined();
   });
 });
