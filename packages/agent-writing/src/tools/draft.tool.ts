@@ -260,7 +260,13 @@ export const writeDraftTool = defineTool({
     const writes: NonNullable<DraftWrite["translations"]> = {};
     let writesBody = false;
     for (const [locale, patch] of Object.entries(translations ?? {})) {
-      if (!patch) continue;
+      // `{ en: {} }` is schema-valid and writes nothing; keep it out so the result is honest.
+      if (
+        !patch ||
+        Object.values(patch).every((value) => value === undefined)
+      ) {
+        continue;
+      }
       // SAFETY: TranslationsWriteSchema is keyed by Locale.
       writes[locale as Locale] = patch;
       if (patch.content !== undefined) writesBody = true;

@@ -115,7 +115,10 @@ export const describeEdits = (
 export const applyWrite = (draft: FeedDraft, input: DraftWrite): FeedDraft => {
   let next = input.meta ? patchFeedMeta(draft, input.meta) : draft;
   for (const [locale, patch] of Object.entries(input.translations ?? {})) {
-    if (!patch) continue;
+    // A patch with no defined field must not create the locale or bump the revision.
+    if (!patch || Object.values(patch).every((value) => value === undefined)) {
+      continue;
+    }
     // SAFETY: DraftWrite.translations is keyed by Locale.
     next = patchTranslation(next, locale as Locale, patch);
   }

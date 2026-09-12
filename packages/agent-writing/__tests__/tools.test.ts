@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
-import { commitDraftTool } from "../src/tools/commit.tool.ts";
+import { commitDraftTool, commitPreflight } from "../src/tools/commit.tool.ts";
 import {
   editDraftContentTool,
   listDraftsTool,
@@ -308,6 +308,93 @@ describe("draft slug handling", () => {
       { draftId: DRAFT_ID, expectedRevision: current },
       { draftId: DRAFT_ID, expectedRevision: current - 1 },
     ]);
+  });
+
+  it("refuses a commit before approval while metadata is empty, unless the model owns it", async () => {
+    const context = createContext();
+    await context.draft.write(DRAFT_ID, {
+      meta: { defaultLocale: "en", slug: "a-post" },
+      translations: {
+        en: { title: "A post", content: "## Body", summary: "S" },
+      },
+    });
+    const preflight = commitPreflight(context);
+    const request = (input: {
+      draftId: number;
+      confirmation: string;
+      allowEmptyMetadata?: boolean;
+    }) => ({
+      toolCallId: "call-1",
+      toolName: commitDraftTool.name,
+      input,
+    });
+
+    await expect(
+      preflight(request({ draftId: DRAFT_ID, confirmation: "Commit." }))
+    ).resolves.toMatchObject({
+      block: true,
+      reason: expect.stringMatching(/en: excerpt, description/),
+    });
+    await expect(
+      preflight(
+        request({
+          draftId: DRAFT_ID,
+          confirmation: "Commit without excerpt and description.",
+          allowEmptyMetadata: true,
+        })
+      )
+    ).resolves.toBeUndefined();
+
+    await context.draft.write(DRAFT_ID, {
+      translations: { en: { excerpt: "E", description: "D" } },
+    });
+    await expect(
+      preflight(request({ draftId: DRAFT_ID, confirmation: "Commit." }))
+    ).resolves.toBeUndefined();
+    // Another tool is none of the preflight's business.
+    await expect(
+      preflight({ toolCallId: "c", toolName: "read_draft", input: {} })
+    ).resolves.toBeUndefined();
+  });
+
+  it("refuses a slugless new post before approval, with the same message execute gives", async () => {
+    const context = createContext();
+    await context.draft.write(DRAFT_ID, {
+      meta: { defaultLocale: "en" },
+      translations: { en: { title: "T", content: "## B" } },
+    });
+    await expect(
+      commitPreflight(context)({
+        toolCallId: "call-1",
+        toolName: commitDraftTool.name,
+        input: {
+          draftId: DRAFT_ID,
+          confirmation: "Create.",
+          allowEmptyMetadata: true,
+        },
+      })
+    ).resolves.toMatchObject({
+      block: true,
+      reason: expect.stringMatching(/needs an English\/ASCII slug/),
+    });
+  });
+
+  it("treats an empty per-locale object as nothing to write", async () => {
+    const context = createContext();
+    const before = (await context.draft.get(DRAFT_ID)).revision;
+
+    await expect(
+      writeDraftTool.execute(
+        "call-1",
+        { draftId: DRAFT_ID, translations: { en: {} } },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow("Nothing to write");
+    const after = await context.draft.get(DRAFT_ID);
+    expect(after.revision).toBe(before);
+    expect(after.translations.en).toBeUndefined();
   });
 
   it("requires an explicit slug before creating a feed", async () => {

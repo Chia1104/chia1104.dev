@@ -334,6 +334,7 @@ describe("runWritingTurn", () => {
           fauxToolCall(TOOL_NAMES.writeDraft, {
             draftId: DRAFT_ID,
             slug: "a-post",
+            defaultLocale: "en",
             translations: { en: { title: "A post" } },
           }),
         ],
@@ -343,6 +344,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing the English post.",
           }),
         ],
@@ -390,6 +392,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing the English post.",
           }),
         ],
@@ -431,6 +434,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing the English post.",
           }),
         ],
@@ -451,6 +455,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing as approved.",
           }),
         ],
@@ -492,15 +497,15 @@ describe("runWritingTurn", () => {
     await fixture.run("Stage a post");
     const approvedRevision = (await fixture.draft.get(DRAFT_ID)).revision;
 
-    // Reads in order: the volatile context, the gate's key, then the tool. The editor saves
-    // right after the gate read the revision it matched.
+    // Reads in order: the volatile context, the preflight, the gate's key, then the tool. The
+    // editor saves right after the gate read the revision it matched.
     const store = fixture.draft;
     const originalGet = store.get.bind(store);
     let reads = 0;
     store.get = async (draftId) => {
       const draft = await originalGet(draftId);
       reads += 1;
-      if (reads === 2) {
+      if (reads === 3) {
         store.operatorEdit(DRAFT_ID, "en", { content: "## Post\n\nEdited." });
       }
       return draft;
@@ -510,6 +515,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing as approved.",
           }),
         ],
@@ -572,6 +578,7 @@ describe("runWritingTurn", () => {
         [
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing.",
           }),
         ],
@@ -605,6 +612,7 @@ describe("runWritingTurn", () => {
           }),
           fauxToolCall(TOOL_NAMES.commitDraft, {
             draftId: DRAFT_ID,
+            allowEmptyMetadata: true,
             confirmation: "Committing.",
           }),
         ],

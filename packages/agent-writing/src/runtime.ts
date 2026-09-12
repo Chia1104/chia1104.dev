@@ -30,6 +30,7 @@ import { writingSkills } from "./prompts/skills.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import type { TurnContextDraft } from "./prompts/system.ts";
 import { writingPromptTemplates } from "./prompts/templates.ts";
+import { commitPreflight } from "./tools/commit.tool.ts";
 import { TOOL_NAMES } from "./tools/registry.ts";
 import { createWritingTools } from "./tools/tool-set.ts";
 import type { SessionDraftRef, WritingToolContext } from "./types.ts";
@@ -253,6 +254,7 @@ export const runWritingTurn = <TApproval>(
     compactionModel: options.compactionModel,
     tools: createWritingTools(),
     toolContext,
+    preflight: commitPreflight(toolContext),
     systemPrompt: buildSystemPrompt({
       skills: writingSkills,
       autoApprove: options.settings.autoApprove,

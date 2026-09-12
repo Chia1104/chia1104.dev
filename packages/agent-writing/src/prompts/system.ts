@@ -99,7 +99,9 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
    revisions, batching the edits of one pass. Both results echo what landed, so trust them
    rather than re-reading.
 5. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
-   explicit approval every time.
+   explicit approval every time. \`commit_draft\` is refused before approval while any locale's
+   excerpt, description or summary is empty: fill them, or pass \`allowEmptyMetadata\` and say
+   which are empty in \`confirmation\`.
 
 # Rules
 
