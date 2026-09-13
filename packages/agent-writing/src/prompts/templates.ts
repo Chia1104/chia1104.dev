@@ -76,9 +76,9 @@ Rewrite the section under the heading "$1" in the current draft.
 
 Additional instruction: $2
 
-Read the draft once so your \`edit_draft_content\` targets match exactly, then send the
-section's changes as one batch. Change only that section — leave every other line
-byte-identical.
+Read that section with \`read_draft\` (\`heading\`), then rewrite it with \`replace_section\`,
+or send the changes as one \`edit_draft_content\` batch when only a few lines move. Change
+only that section — leave every other line byte-identical.
 `,
   "<heading> [instruction]"
 );

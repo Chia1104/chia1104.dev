@@ -8,6 +8,7 @@ import {
 import {
   buildHeadingOutline,
   extractHeadings,
+  extractSections,
 } from "../src/embeddings/markdown";
 import { buildEmbeddingInput } from "../src/embeddings/utils";
 
@@ -250,5 +251,34 @@ describe("chunkMarkdown", () => {
       beforeContents.has(chunk.content)
     );
     expect(surviving).toHaveLength(before.length);
+  });
+});
+
+describe("extractSections", () => {
+  it("spans each heading through its last node, nesting deeper headings inside", async () => {
+    const sections = await extractSections(ARTICLE);
+    expect(sections.map((section) => [section.path, section.line])).toEqual([
+      ["向量搜尋與嵌入技術", 4],
+      ["向量搜尋與嵌入技術 > 什麼是 embedding", 8],
+      ["向量搜尋與嵌入技術 > 什麼是 embedding > 維度取捨", 12],
+      ["向量搜尋與嵌入技術 > HNSW 調校", 16],
+      ["向量搜尋與嵌入技術 > HNSW 調校 > 太深的標題", 25],
+    ]);
+    const [h1, embedding, dimensions, hnsw, deep] = sections;
+    expect(ARTICLE.slice(embedding!.start, embedding!.end)).toBe(
+      "## 什麼是 embedding\n\n內文。\n\n### 維度取捨\n\n內文。"
+    );
+    expect(ARTICLE.slice(dimensions!.start, dimensions!.end)).toBe(
+      "### 維度取捨\n\n內文。"
+    );
+    expect(ARTICLE.slice(deep!.start, deep!.end)).toBe(
+      "#### 太深的標題\n\n不該出現在 outline。"
+    );
+    expect(hnsw!.end).toBe(deep!.end);
+    expect(h1!.end).toBe(deep!.end);
+  });
+
+  it("returns nothing for a body without headings", async () => {
+    expect(await extractSections("just prose\n\nmore prose")).toEqual([]);
   });
 });

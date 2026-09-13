@@ -1,10 +1,13 @@
 import { StringEnum } from "@earendil-works/pi-ai";
 
+import { extractSections } from "@chia/ai/embeddings/markdown";
+import type { MarkdownSectionSpan } from "@chia/ai/embeddings/markdown";
 import { FeedType, Locale } from "@chia/db/types";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 import { numberLines } from "@chia/utils/text";
+import type { MatchMode } from "@chia/utils/text";
 
-import { languageMismatch } from "../draft/operations.ts";
+import { languageMismatch, noBodyMessage } from "../draft/operations.ts";
 import type {
   DraftFeedMeta,
   DraftTranslation,
@@ -124,18 +127,81 @@ export const openDraftTool = defineTool({
   },
 });
 
+/** `"Setup > Install"`, as the outline lists it and `replace_section` takes it. */
+const HeadingSchema = Type.String({
+  description:
+    "A heading path from the body's outline, ancestors joined with ` > `, e.g. " +
+    '`"Setup > Install"`. Copy it as listed.',
+  minLength: 1,
+});
+
+const outlineOf = (sections: readonly MarkdownSectionSpan[]): string =>
+  sections.length === 0
+    ? "(no headings)"
+    : sections
+        .map(
+          (section) =>
+            `line ${section.line} (h${section.level}): ${section.path}`
+        )
+        .join("\n");
+
+/** The one section at `heading`; a miss or a duplicate path is refused with the way forward. */
+const sectionAt = (
+  sections: readonly MarkdownSectionSpan[],
+  heading: string
+): MarkdownSectionSpan => {
+  const found = sections.filter((section) => section.path === heading);
+  if (found.length === 1) return found[0]!;
+  if (found.length === 0) {
+    throw new Error(
+      `No section at heading "${heading}". The outline is:\n${outlineOf(sections)}`
+    );
+  }
+  throw new Error(
+    `Heading "${heading}" names ${found.length} sections (lines ${found.map((section) => section.line).join(", ")}). Use edit_draft_content with enough surrounding text instead.`
+  );
+};
+
+const MATCH_NOTE = {
+  exact: "",
+  trailing_whitespace: " (matched ignoring whitespace at line ends)",
+  whitespace: " (matched ignoring whitespace at line edges)",
+  punctuation: " (matched reading curly quotes, dashes or spaces as ASCII)",
+} satisfies Record<MatchMode, string>;
+
 export const readDraftTool = defineTool({
   name: TOOL_NAMES.readDraft,
   label: labelOf(TOOL_NAMES.readDraft),
   description:
-    "Read a draft: feed-level metadata plus, for one locale, its metadata and MDX body with " +
-    "line numbers. Read once to locate text before `edit_draft_content`; its result shows where " +
-    "each edit landed, so no read-back is needed.",
+    "Read a draft: feed-level metadata plus, for one locale, its metadata, the outline of its " +
+    "headings and its MDX body with line numbers. Pass `heading` to read one section or " +
+    "`lines` to read a range when the body is long. Read once to locate text before " +
+    "`edit_draft_content` or `replace_section`; their results show where each edit landed, so " +
+    "no read-back is needed.",
   parameters: Type.Object({
     draftId: DraftIdSchema,
     locale: Type.Optional(
       LocaleSchema(
         "Locale whose body to return. Omit to get metadata and the locale list only."
+      )
+    ),
+    heading: Type.Optional(HeadingSchema),
+    lines: Type.Optional(
+      Type.Object(
+        {
+          from: Type.Integer({
+            minimum: 1,
+            description: "First line, 1-based.",
+          }),
+          to: Type.Integer({
+            minimum: 1,
+            description: "Last line, inclusive.",
+          }),
+        },
+        {
+          description:
+            "Return only these lines of the body. Not with `heading`.",
+        }
       )
     ),
   }),
@@ -158,6 +224,10 @@ export const readDraftTool = defineTool({
       );
     }
 
+    if (params.heading && params.lines) {
+      throw new Error("Pass `heading` or `lines`, not both.");
+    }
+
     const locale = params.locale;
     const translation = draft.translations[locale];
 
@@ -172,20 +242,49 @@ export const readDraftTool = defineTool({
 
     const { content, ...meta } = translation;
     const body = content ?? "";
+    const bodyLines = body.split("\n");
+    const sections = await extractSections(body);
+    const head = `Draft ${draft.id} (${locale}) metadata:\n\n${jsonBlock({ feedMeta, ...meta })}\n\n`;
+    const details = {
+      draftId: draft.id,
+      locale,
+      exists: true,
+      meta,
+      revision: draft.revision,
+      outline: sections.map((section) => ({
+        line: section.line,
+        level: section.level,
+        path: section.path,
+      })),
+    };
+
+    if (params.heading) {
+      const section = sectionAt(sections, params.heading);
+      const text = body.slice(section.start, section.end);
+      const lineCount = text.split("\n").length;
+      return textResult(
+        `${head}Section "${section.path}" (lines ${section.line}-${section.line + lineCount - 1} of ${bodyLines.length}, revision ${draft.revision}):\n\n` +
+          numberLines(text, section.line),
+        { ...details, heading: section.path, lineCount }
+      );
+    }
+
+    if (params.lines) {
+      const from = Math.min(params.lines.from, bodyLines.length);
+      const to = Math.min(Math.max(params.lines.to, from), bodyLines.length);
+      const text = bodyLines.slice(from - 1, to).join("\n");
+      return textResult(
+        `${head}Lines ${from}-${to} of ${bodyLines.length} (revision ${draft.revision}):\n\n${numberLines(text, from)}`,
+        { ...details, lines: { from, to }, lineCount: to - from + 1 }
+      );
+    }
 
     return textResult(
-      `Draft ${draft.id} (${locale}) metadata:\n\n${jsonBlock({ feedMeta, ...meta })}\n\n` +
-        `Body (${body.split("\n").length} lines, revision ${draft.revision}):\n\n${
+      `${head}Outline:\n\n${outlineOf(sections)}\n\n` +
+        `Body (${bodyLines.length} lines, revision ${draft.revision}):\n\n${
           body.length > 0 ? numberLines(body) : "(empty)"
         }`,
-      {
-        draftId: draft.id,
-        locale,
-        exists: true,
-        meta,
-        lineCount: body.split("\n").length,
-        revision: draft.revision,
-      }
+      { ...details, lineCount: bodyLines.length }
     );
   },
 });
@@ -410,7 +509,7 @@ export const editDraftContentTool = defineTool({
     const where = edits
       .map(
         (edit, index) =>
-          `Edit ${index + 1} — line ${edit.line}, ${edit.replacements} replacement(s):\n${edit.context}`
+          `Edit ${index + 1} — line ${edit.line}, ${edit.replacements} replacement(s)${MATCH_NOTE[edit.match]}:\n${edit.context}`
       )
       .join("\n\n");
     // The edit has landed; a body now in the wrong language is reported, and blocks the commit.
@@ -431,8 +530,90 @@ export const editDraftContentTool = defineTool({
           oldString: edit.oldString,
           newString: edit.newString,
           replacements: edits[index]?.replacements ?? 0,
+          match: edits[index]?.match ?? "exact",
           line: edits[index]?.line ?? null,
         })),
+      }
+    );
+  },
+});
+
+const ATX_HEADING = /^ {0,3}#{1,6}[ \t]/;
+
+export const replaceSectionTool = defineTool({
+  name: TOOL_NAMES.replaceSection,
+  label: labelOf(TOOL_NAMES.replaceSection),
+  description:
+    "Replace one section of a locale's MDX body: the heading line through the last line before " +
+    "the next heading of the same or a shallower level, subsections included. `heading` is a " +
+    "path from `read_draft`'s outline. `content` is the whole new section starting with its " +
+    "heading line, so the heading itself may change; an empty string deletes the section. Use " +
+    "it when most of a section changes; `edit_draft_content` is for smaller edits. The result " +
+    "shows the numbered lines where it landed, so no read-back is needed.",
+  parameters: Type.Object({
+    draftId: DraftIdSchema,
+    locale: LocaleSchema("Locale to edit."),
+    heading: HeadingSchema,
+    content: Type.String({
+      description:
+        "The complete new section, beginning with its `#` heading line. Empty deletes the section.",
+    }),
+  }),
+  executionMode: "sequential",
+  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+    const { draftId, locale, heading, content } = params;
+    const deleted = content.trim().length === 0;
+    if (!deleted && !ATX_HEADING.test(content.trimStart())) {
+      throw new Error(
+        "`content` must start with the section's heading line (`## …`), or be empty to delete the section."
+      );
+    }
+
+    const body = (await context.draft.get(draftId)).translations[locale]
+      ?.content;
+    if (body === undefined || body === null) {
+      throw new Error(noBodyMessage(locale));
+    }
+    const section = sectionAt(await extractSections(body), heading);
+    const lastLine =
+      section.line +
+      body.slice(section.start, section.end).split("\n").length -
+      1;
+    // Deleting takes the blank lines before the section with it, so the neighbours close up.
+    let start = section.start;
+    while (deleted && start > 0 && body[start - 1] === "\n") start -= 1;
+    let end = section.end;
+    while (deleted && start === 0 && body[end] === "\n") end += 1;
+    const oldString = body.slice(start, end);
+
+    // Matched under the draft lock; an operator edit to the section in between misses and the
+    // error says to read again.
+    const { draft, edits } = await context.draft.editContent(draftId, locale, [
+      { oldString, newString: deleted ? "" : content },
+    ]);
+    const landed = edits[0];
+    const warning =
+      languageMismatch(locale, draft.translations[locale]?.content ?? "") ??
+      null;
+    return textResult(
+      `${deleted ? "Deleted" : "Replaced"} section "${section.path}" (was lines ${section.line}-${lastLine}) in draft ${draftId} (${locale}, revision ${draft.revision}).` +
+        `${warning ? `\n\nWarning: ${warning}` : ""}\n\n${landed?.context ?? ""}`,
+      {
+        draftId,
+        locale,
+        heading: section.path,
+        deleted,
+        revision: draft.revision,
+        warning,
+        edits: [
+          {
+            oldString,
+            newString: deleted ? "" : content,
+            replacements: landed?.replacements ?? 0,
+            match: landed?.match ?? "exact",
+            line: landed?.line ?? null,
+          },
+        ],
       }
     );
   },
@@ -445,4 +626,5 @@ export const draftTools: WritingTool[] = [
   readDraftTool,
   writeDraftTool,
   editDraftContentTool,
+  replaceSectionTool,
 ];

@@ -446,10 +446,16 @@ export const editFeedDraftContract = oc
       revision: z.number().int(),
       /** Across every edit. */
       replacements: z.number().int(),
-      /** Per edit, in input order: how many places and the numbered lines around the first. */
+      /** Per edit, in input order: how many places, how loosely, and the numbered lines around the first. */
       edits: z.array(
         z.object({
           replacements: z.number().int(),
+          match: z.enum([
+            "exact",
+            "trailing_whitespace",
+            "whitespace",
+            "punctuation",
+          ]),
           line: z.number().int(),
           context: z.string(),
         })

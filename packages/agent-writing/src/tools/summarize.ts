@@ -98,6 +98,10 @@ export const summarizeToolResult = <TResult>(
     case TOOL_NAMES.readDraft: {
       const locale = asString(details.locale);
       const lineCount = asNumber(details.lineCount);
+      const heading = asString(details.heading);
+      if (locale && heading) {
+        return `Read ${locale} section "${heading}" (${lineCount ?? 0} lines).`;
+      }
       if (locale && lineCount !== undefined) {
         return `Read ${locale} draft (${lineCount} lines).`;
       }
@@ -117,7 +121,20 @@ export const summarizeToolResult = <TResult>(
       const replacements = asNumber(details.replacements) ?? 0;
       const edits = asJsonArray(details.edits);
       const locale = asString(details.locale);
-      return `${replacements} replacement(s) across ${edits?.length ?? 1} edit(s) in ${locale ?? "draft"}.`;
+      const loose =
+        edits?.filter((edit) => asJsonObject(edit)?.match !== "exact").length ??
+        0;
+      return (
+        `${replacements} replacement(s) across ${edits?.length ?? 1} edit(s) in ${locale ?? "draft"}` +
+        `${loose > 0 ? `, ${loose} matched loosely` : ""}.`
+      );
+    }
+    case TOOL_NAMES.replaceSection: {
+      const heading = asString(details.heading);
+      const locale = asString(details.locale);
+      return details.deleted === true
+        ? `Deleted section "${heading ?? "?"}" in ${locale ?? "draft"}.`
+        : `Replaced section "${heading ?? "?"}" in ${locale ?? "draft"}.`;
     }
     case TOOL_NAMES.commitDraft: {
       const feedId = asNumber(details.feedId);

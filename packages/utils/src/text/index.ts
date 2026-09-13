@@ -1,5 +1,25 @@
 export type ExactReplaceFailure = "empty_target" | "not_found" | "ambiguous";
 
+/**
+ * How loosely the target was matched, in the order the rounds run: `exact` byte for byte;
+ * `trailing_whitespace` ignoring whitespace at the end of each line; `whitespace` ignoring it
+ * at both ends; `punctuation` also reading typographic dashes, quotes and spaces as their ASCII
+ * forms. Word content never varies: whitespace dropped from the target's outer edges must
+ * meet a non-word character or the text's edge, so a fragment never matches inside a word. The
+ * first round that matches wins.
+ */
+export type MatchMode =
+  | "exact"
+  | "trailing_whitespace"
+  | "whitespace"
+  | "punctuation";
+
+/** One matched span of the input content. */
+export interface MatchSpan {
+  start: number;
+  end: number;
+}
+
 export type ExactReplaceResult =
   | {
       ok: true;
@@ -7,23 +27,111 @@ export type ExactReplaceResult =
       replacements: number;
       /** Where each replacement starts in `content`. */
       offsets: number[];
+      /** What each replacement removed, in the input content. */
+      matches: MatchSpan[];
+      match: MatchMode;
     }
   | { ok: false; reason: ExactReplaceFailure; message: string };
 
-const occurrencesOf = (haystack: string, needle: string): number[] => {
-  const found: number[] = [];
+const occurrencesOf = (haystack: string, needle: string): MatchSpan[] => {
+  const found: MatchSpan[] = [];
   let index = haystack.indexOf(needle);
   while (index !== -1) {
-    found.push(index);
+    found.push({ start: index, end: index + needle.length });
     index = haystack.indexOf(needle, index + needle.length);
   }
   return found;
 };
 
+const escapeRegExp = (text: string) =>
+  text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Sets of characters that stand in for each other: dashes, single quotes, double quotes, spaces. */
+const PUNCTUATION_SETS = [
+  "-\u2010\u2011\u2012\u2013\u2014\u2015\u2212",
+  "'\u2018\u2019\u201A\u201B",
+  '"\u201C\u201D\u201E\u201F',
+  " \u00A0\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000",
+] as const;
+
+const punctuationSetOf = new Map<string, string>();
+for (const set of PUNCTUATION_SETS) {
+  for (const char of set) punctuationSetOf.set(char, set);
+}
+
+/** A pattern for one line of the target, letting the characters of a set stand in for each other. */
+const punctuationPattern = (line: string) =>
+  Array.from(line, (char) => {
+    const set = punctuationSetOf.get(char);
+    return set ? `[${escapeRegExp(set)}]` : escapeRegExp(char);
+  }).join("");
+
+const HORIZONTAL_SPACE = "[ \\t\\u00A0\\u2000-\\u200A\\u202F\\u205F\\u3000]*";
+
+/** Letters, digits and underscore in any script; what a dropped edge space must not touch. */
+const WORD_CHAR = "[\\p{L}\\p{N}_]";
+
 /**
- * `oldString` → `newString`, byte for byte and inserted verbatim. A target that matches more
- * than once is refused unless `replaceAll`, never replaced at its first occurrence. Messages
- * are written for the caller that typed the target, human or model.
+ * A regex that finds the target under one relaxed round. Whitespace inside the match is
+ * absorbed at line boundaries only, so the indentation before the first line and the space
+ * after the last stay in the content rather than being replaced.
+ */
+const relaxedPattern = (target: string, mode: Exclude<MatchMode, "exact">) => {
+  const raw = target.split("\n");
+  const lines = raw.map((line) => {
+    const trimmed =
+      mode === "trailing_whitespace" ? line.trimEnd() : line.trim();
+    return mode === "punctuation"
+      ? punctuationPattern(trimmed)
+      : escapeRegExp(trimmed);
+  });
+  const boundary =
+    mode === "trailing_whitespace"
+      ? `[ \\t]*\\n`
+      : `${HORIZONTAL_SPACE}\\n${HORIZONTAL_SPACE}`;
+  const first = raw[0] ?? "";
+  const last = raw[raw.length - 1] ?? "";
+  const leadDropped =
+    mode !== "trailing_whitespace" && first !== first.trimStart();
+  const tailDropped = last !== last.trimEnd();
+  return new RegExp(
+    `${leadDropped ? `(?<!${WORD_CHAR})` : ""}${lines.join(boundary)}${tailDropped ? `(?!${WORD_CHAR})` : ""}`,
+    "gu"
+  );
+};
+
+const RELAXED_ROUNDS = [
+  "trailing_whitespace",
+  "whitespace",
+  "punctuation",
+] as const;
+
+interface TargetMatch {
+  spans: MatchSpan[];
+  match: MatchMode;
+}
+
+const findTarget = (content: string, target: string): TargetMatch => {
+  const exact = occurrencesOf(content, target);
+  if (exact.length > 0) return { spans: exact, match: "exact" };
+  for (const mode of RELAXED_ROUNDS) {
+    const spans = Array.from(
+      content.matchAll(relaxedPattern(target, mode)),
+      (found) => ({
+        start: found.index,
+        end: found.index + found[0].length,
+      })
+    ).filter((span) => span.end > span.start);
+    if (spans.length > 0) return { spans, match: mode };
+  }
+  return { spans: [], match: "exact" };
+};
+
+/**
+ * `oldString` → `newString`, inserted verbatim. The target is matched byte for byte first and
+ * then under each looser `MatchMode` in turn. A target that matches more than once is refused
+ * unless `replaceAll`, never replaced at its first occurrence. Messages are written for the
+ * caller that typed the target, human or model.
  */
 export const replaceExact = (
   content: string,
@@ -40,38 +148,45 @@ export const replaceExact = (
     };
   }
 
-  const found = occurrencesOf(content, oldString);
+  const { spans, match } = findTarget(content, oldString);
 
-  if (found.length === 0) {
+  if (spans.length === 0) {
     return {
       ok: false,
       reason: "not_found",
       message:
-        "`oldString` was not found. Read the current body again — whitespace and indentation must match exactly.",
+        "`oldString` was not found, even ignoring whitespace and quote or dash style. Read the current body again and copy the target from it.",
     };
   }
 
-  if (found.length > 1 && !replaceAll) {
+  if (spans.length > 1 && !replaceAll) {
     return {
       ok: false,
       reason: "ambiguous",
-      message: `\`oldString\` matches ${found.length} places. Include more surrounding context to make it unique, or pass replaceAll: true.`,
+      message: `\`oldString\` matches ${spans.length} places. Include more surrounding context to make it unique, or pass replaceAll: true.`,
     };
   }
 
-  const targets = replaceAll ? found : found.slice(0, 1);
+  const targets = replaceAll ? spans : spans.slice(0, 1);
   let next = "";
   let cursor = 0;
   const offsets: number[] = [];
-  for (const at of targets) {
-    next += content.slice(cursor, at);
+  for (const span of targets) {
+    next += content.slice(cursor, span.start);
     offsets.push(next.length);
     next += newString;
-    cursor = at + oldString.length;
+    cursor = span.end;
   }
   next += content.slice(cursor);
 
-  return { ok: true, content: next, replacements: targets.length, offsets };
+  return {
+    ok: true,
+    content: next,
+    replacements: targets.length,
+    offsets,
+    matches: targets,
+    match,
+  };
 };
 
 /** 1-based line of a character offset. */
@@ -129,6 +244,7 @@ export interface AppliedEdit {
   replacements: number;
   /** Where each replacement starts in the final content. */
   offsets: number[];
+  match: MatchMode;
 }
 
 export type ApplyEditsResult =
@@ -162,17 +278,28 @@ export const applyEdits = (
         message: result.message,
       };
     }
-    const delta = edit.newString.length - edit.oldString.length;
-    const landedAt = result.offsets.map((offset, k) => offset - k * delta);
+    // A relaxed match removes a span of a different length than `oldString`, so each shift
+    // comes from the span itself; an earlier replacement this edit swallowed moves to where
+    // its replacement starts.
+    const remap = (offset: number): number => {
+      let shifted = offset;
+      for (const [k, span] of result.matches.entries()) {
+        if (span.end <= offset) {
+          shifted += edit.newString.length - (span.end - span.start);
+        } else if (span.start <= offset) {
+          return result.offsets[k] ?? shifted;
+        }
+      }
+      return shifted;
+    };
     for (const previous of applied) {
-      previous.offsets = previous.offsets.map(
-        (offset) => offset + landedAt.filter((at) => at < offset).length * delta
-      );
+      previous.offsets = previous.offsets.map(remap);
     }
     current = result.content;
     applied.push({
       replacements: result.replacements,
       offsets: result.offsets,
+      match: result.match,
     });
   }
   return { ok: true, content: current, edits: applied };

@@ -102,7 +102,8 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
 4. **Draft.** \`write_draft\` for a first version — every locale's body and metadata (title,
    excerpt, description, summary) plus the slug, in one call, each locale's body written in
    that locale's language. \`edit_draft_content\` for revisions, batching the edits of one
-   pass. Both results echo what landed, so trust them rather than re-reading.
+   pass; \`replace_section\` when most of one heading's section changes. Every result echoes
+   what landed, so trust it rather than re-reading.
 5. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
    explicit approval every time. \`commit_draft\` is refused before approval while any locale's
    excerpt, description or summary is empty: fill them, or pass \`allowEmptyMetadata\` and say
@@ -124,10 +125,13 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
   and say in your reply that it awaits their review. If the feedback contradicts a learned
   preference listed in your context, pass that preference's id as \`supersedes\`. A request
   about this post alone is not a lesson.
-- **Read once, then edit.** \`edit_draft_content\` needs byte-exact \`oldString\`, so read the
-  body to locate text; then trust the result, which shows the lines around each edit. Do not
-  read again to confirm. The operator may have edited a draft since your last turn; the session
-  context lists what they touched, per draft, and an edit is matched against the current body.
+- **Read once, then edit.** Read the body to locate text, copying each \`oldString\` from it:
+  a target is matched exactly, then ignoring whitespace at line edges, then reading curly
+  quotes and dashes as ASCII, never by word content. \`read_draft\` with \`heading\` reads one
+  section of a long body; the outline every body read starts with lists the headings. Trust
+  the result, which shows the lines around each edit; do not read again to confirm. The
+  operator may have edited a draft since your last turn; the session context lists what they
+  touched, per draft, and an edit is matched against the current body.
 - **Prefer editing to rewriting.** Once the operator has reviewed prose, replacing the whole
   body throws that review away. Make targeted edits.
 - **A selection is the scope.** When the operator attaches text they selected in the editor,
