@@ -311,7 +311,7 @@ Web search returns snippets; `fetch_url` performs one page scrape and records th
 
 ### Connectors
 
-A connector is one external system the agent reads: a port in `@chia/agent-writing/ports`, a required key under `WritingToolContext.connectors`, a tool group named after it, and the operator's scope for it in the kind config. There is no connector registry; adding one is adding a port, and the host cannot build the turn until it binds it. GitHub is the first: the `github_*` tools read only the repositories listed in `githubRepos`, the host port enforces that allowlist before any request, and a ref resolved in a turn stays pinned to its commit for the rest of that turn so trees and files agree and citations carry a sha. The client in `@chia/integrations/github/source` takes the token as an option; only `apps/workflow` holds it.
+A connector is one external system the agent reads: a port in `@chia/agent-writing/ports`, a required key under `WritingToolContext.connectors`, a tool group named after it, and the operator's scope for it in the kind config. There is no connector registry; adding one is adding a port, and the host cannot build the turn until it binds it. GitHub is the first: the `github_*` tools read only the repositories listed in `githubRepos`, the host port enforces that allowlist before any request, and a ref resolved in a turn stays pinned to its commit for the rest of that turn so trees and files agree and citations carry a sha. The Octokit instance comes from `@chia/integrations/github/client` with the token as an option; only `apps/workflow` holds it.
 
 ### Shared draft
 

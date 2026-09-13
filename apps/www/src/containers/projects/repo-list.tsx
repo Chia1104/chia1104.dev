@@ -1,11 +1,12 @@
 import "server-only";
-import { getPinnedRepos } from "@chia/integrations/github";
+import { publicGitHubClient } from "@chia/integrations/github/client.public";
+import { getPinnedRepos } from "@chia/integrations/github/profile";
 import meta from "@chia/meta";
 
 import { RepoCard } from "@/components/project/repo-card";
 
 export const RepoList = async () => {
-  const repo = await getPinnedRepos(meta.name);
+  const repo = await getPinnedRepos(publicGitHubClient, meta.name);
   return (
     <div className="page-md:grid-cols-2 mt-4 grid grid-cols-1 gap-4">
       {repo.user.pinnedItems.edges.map((item) => (
@@ -14,8 +15,8 @@ export const RepoList = async () => {
           href={item.node.url}
           image={item.node.openGraphImageUrl}
           name={item.node.name}
-          description={item.node.description}
-          language={item.node.primaryLanguage}
+          description={item.node.description ?? undefined}
+          language={item.node.primaryLanguage ?? undefined}
           updatedAt={item.node.pushedAt}
         />
       ))}

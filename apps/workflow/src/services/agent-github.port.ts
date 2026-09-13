@@ -7,9 +7,10 @@ import type {
 } from "@chia/agent-writing/ports";
 import {
   GitHubApiError,
-  createGitHubSourceClient,
-} from "@chia/integrations/github/source";
-import type { GitHubSourceClient } from "@chia/integrations/github/source";
+  createGitHubClient,
+} from "@chia/integrations/github/client";
+import { createGitHubSource } from "@chia/integrations/github/source";
+import type { GitHubSource } from "@chia/integrations/github/source";
 
 import { env } from "../env";
 
@@ -26,11 +27,13 @@ const BINARY_PROBE_BYTES = 8_000;
 
 const REPO_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\/[a-z0-9._-]+$/;
 
-let sharedClient: GitHubSourceClient | undefined;
+let sharedSource: GitHubSource | undefined;
 
-const clientOf = (): GitHubSourceClient => {
-  sharedClient ??= createGitHubSourceClient({ token: env.GH_AGENT_TOKEN });
-  return sharedClient;
+const sourceOf = (): GitHubSource => {
+  sharedSource ??= createGitHubSource(
+    createGitHubClient({ token: env.GH_AGENT_TOKEN })
+  );
+  return sharedSource;
 };
 
 /** The model needs the status and what was asked for, never the provider's response body. */
@@ -67,7 +70,7 @@ const entryTypeOf = (type: "blob" | "tree" | "commit"): GitHubEntryType => {
 export interface AgentGitHubPortOptions {
   /** `owner/name` entries, lower-cased, as `parseGitHubRepos` produced them. */
   allowedRepos: readonly string[];
-  client?: GitHubSourceClient;
+  source?: GitHubSource;
 }
 
 export const createAgentGitHubPort = (
@@ -76,7 +79,7 @@ export const createAgentGitHubPort = (
   const allowed = new Set(
     options.allowedRepos.map((repo) => repo.toLowerCase())
   );
-  const client = options.client ?? clientOf();
+  const source = options.source ?? sourceOf();
   const refs = new Map<string, Promise<GitHubRef>>();
 
   const assertAllowed = (repo: string): string => {
@@ -106,17 +109,15 @@ export const createAgentGitHubPort = (
       pending = (async () => {
         const subject = `${repo}${ref ? ` at ${ref}` : ""}`;
         try {
-          const repository = await client.getRepository(repo, signal);
-          const target = ref ?? repository.defaultBranch;
-          const sha = await client.resolveCommit({ repo, ref: target }, signal);
+          const resolved = await source.resolveRef({ repo, ref }, signal);
           return {
             repo,
-            ref: target,
-            sha,
-            defaultBranch: repository.defaultBranch,
-            url: repository.htmlUrl,
-            description: repository.description,
-            private: repository.private,
+            ref: resolved.ref,
+            sha: resolved.sha,
+            defaultBranch: resolved.defaultBranch,
+            url: resolved.htmlUrl,
+            description: resolved.description,
+            private: resolved.private,
           };
         } catch (error) {
           throw error instanceof GitHubApiError
@@ -147,7 +148,7 @@ export const createAgentGitHubPort = (
         if (input.recursive) {
           // the trees API addresses a subtree by its own sha only, so the whole tree is
           // fetched once and narrowed here
-          const tree = await client.getTree(
+          const tree = await source.getTree(
             { repo, sha: ref.sha, recursive: true },
             signal
           );
@@ -165,7 +166,7 @@ export const createAgentGitHubPort = (
               })),
           };
         }
-        const contents = await client.getContents(
+        const contents = await source.getContents(
           { repo, path, ref: ref.sha },
           signal
         );
@@ -197,7 +198,7 @@ export const createAgentGitHubPort = (
       const subject = `${repo}/${input.path} at ${ref.sha.slice(0, 7)}`;
       let contents;
       try {
-        contents = await client.getContents(
+        contents = await source.getContents(
           { repo, path: input.path, ref: ref.sha },
           signal
         );

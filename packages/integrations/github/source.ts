@@ -1,46 +1,26 @@
-import ky, { HTTPError } from "ky";
-import type { KyInstance } from "ky";
-import * as z from "zod";
+import type { Endpoints } from "@octokit/types";
+
+import { GitHubApiError, requestSignal, withGitHubErrors } from "./client";
+import type { GitHubClient } from "./client";
 
 /**
- * Repository reads over the REST API: repository metadata, ref resolution, directory and
- * tree listings and file blobs. Takes its token as an option, not from env: the caller owns
- * the credential and its scope, and the client never widens it.
+ * Repository reads for the writing agent: a ref pinned to its commit, directory and tree
+ * listings and file blobs. Ref resolution is one GraphQL query because the REST commit
+ * endpoint returns the commit's whole diff; contents and trees are REST for their typed
+ * shapes and the recursive listing GraphQL has no equivalent of.
  */
 
-const DEFAULT_BASE_URL = "https://api.github.com";
-const DEFAULT_TIMEOUT_MS = 30_000;
-const API_VERSION = "2022-11-28";
-
-export class GitHubApiError extends Error {
-  constructor(
-    readonly status: number,
-    readonly operation: string,
-    options?: { cause?: unknown }
-  ) {
-    super(`GitHub ${operation} failed (HTTP ${status}).`, options);
-    this.name = "GitHubApiError";
-  }
-}
-
-export interface GitHubSourceClientOptions {
-  token: string;
-  baseUrl?: string;
-  timeoutMs?: number;
-  /** Injected by tests; ky's own signature, so a mock needs no assertion. */
-  fetch?: (
-    input: string | URL | Request,
-    init?: RequestInit
-  ) => Promise<Response>;
-}
-
-export interface GitHubRepository {
+export interface GitHubRepositoryRef {
   /** `owner/name` as GitHub spells it. */
   fullName: string;
   defaultBranch: string;
   private: boolean;
   description: string | null;
   htmlUrl: string;
+  /** The ref asked for, or the default branch. */
+  ref: string;
+  /** The commit it names; an annotated tag is peeled to its commit. */
+  sha: string;
 }
 
 export type GitHubContentType = "file" | "dir" | "symlink" | "submodule";
@@ -62,8 +42,13 @@ export interface GitHubFileContent {
    * `size` before trusting an empty buffer.
    */
   content: Buffer;
-  htmlUrl: string;
 }
+
+/** What a path holds at a ref; symlinks and submodules have no readable body here. */
+export type GitHubContents =
+  | { kind: "file"; file: GitHubFileContent }
+  | { kind: "dir"; entries: GitHubContentEntry[] }
+  | { kind: "other"; type: "symlink" | "submodule"; path: string };
 
 export interface GitHubTreeEntry {
   path: string;
@@ -79,19 +64,11 @@ export interface GitHubTree {
   truncated: boolean;
 }
 
-/** What a path holds at a ref; symlinks and submodules have no readable body here. */
-export type GitHubContents =
-  | { kind: "file"; file: GitHubFileContent }
-  | { kind: "dir"; entries: GitHubContentEntry[] }
-  | { kind: "other"; type: "symlink" | "submodule"; path: string };
-
-export interface GitHubSourceClient {
-  getRepository(repo: string, signal?: AbortSignal): Promise<GitHubRepository>;
-  /** The commit sha a branch, tag or sha names. */
-  resolveCommit(
-    input: { repo: string; ref: string },
+export interface GitHubSource {
+  resolveRef(
+    input: { repo: string; ref?: string },
     signal?: AbortSignal
-  ): Promise<string>;
+  ): Promise<GitHubRepositoryRef>;
   getContents(
     input: { repo: string; path: string; ref: string },
     signal?: AbortSignal
@@ -102,163 +79,164 @@ export interface GitHubSourceClient {
   ): Promise<GitHubTree>;
 }
 
-const repositorySchema = z.object({
-  full_name: z.string(),
-  default_branch: z.string(),
-  private: z.boolean(),
-  description: z.string().nullable(),
-  html_url: z.string(),
-});
-
-const contentTypeSchema = z.enum(["file", "dir", "symlink", "submodule"]);
-
-const contentEntrySchema = z.object({
-  name: z.string(),
-  path: z.string(),
-  type: contentTypeSchema,
-  size: z.number(),
-  sha: z.string(),
-});
-
-const fileContentSchema = z.object({
-  type: z.literal("file"),
-  path: z.string(),
-  sha: z.string(),
-  size: z.number(),
-  encoding: z.string().optional(),
-  content: z.string().optional(),
-  html_url: z.string(),
-});
-
-const contentsSchema = z.union([
-  z.array(contentEntrySchema),
-  fileContentSchema,
-  z.object({ type: z.enum(["symlink", "submodule"]), path: z.string() }),
-]);
-
-const treeSchema = z.object({
-  sha: z.string(),
-  truncated: z.boolean(),
-  tree: z.array(
-    z.object({
-      path: z.string(),
-      type: z.enum(["blob", "tree", "commit"]),
-      sha: z.string(),
-      size: z.number().optional(),
-    })
-  ),
-});
-
-const encodePath = (path: string): string =>
-  path
-    .split("/")
-    .filter((segment) => segment.length > 0)
-    .map(encodeURIComponent)
-    .join("/");
-
-const request = async <TValue>(
-  http: KyInstance,
-  operation: string,
-  run: () => Promise<TValue>
-): Promise<TValue> => {
-  try {
-    return await run();
-  } catch (error) {
-    if (error instanceof HTTPError) {
-      throw new GitHubApiError(error.response.status, operation, {
-        cause: error,
-      });
+const REPOSITORY_REF = `
+  query ($owner: String!, $name: String!, $ref: String!, $hasRef: Boolean!) {
+    repository(owner: $owner, name: $name) {
+      nameWithOwner
+      isPrivate
+      description
+      url
+      defaultBranchRef {
+        name
+        target {
+          oid
+        }
+      }
+      object(expression: $ref) @include(if: $hasRef) {
+        oid
+        ... on Tag {
+          target {
+            oid
+          }
+        }
+      }
     }
-    throw error;
   }
+`;
+
+interface RepositoryRefData {
+  repository: {
+    nameWithOwner: string;
+    isPrivate: boolean;
+    description: string | null;
+    url: string;
+    defaultBranchRef: { name: string; target: { oid: string } } | null;
+    object?: { oid: string; target?: { oid: string } } | null;
+  } | null;
+}
+
+type ContentsData =
+  Endpoints["GET /repos/{owner}/{repo}/contents/{path}"]["response"]["data"];
+
+const TREE_ENTRY_TYPES = new Set(["blob", "tree", "commit"]);
+
+const isTreeEntryType = (type: string): type is GitHubTreeEntry["type"] =>
+  TREE_ENTRY_TYPES.has(type);
+
+const splitRepo = (repo: string) => {
+  const [owner, name] = repo.split("/");
+  if (!owner || !name) {
+    throw new Error(
+      `"${repo}" is not a repository name of the form owner/name.`
+    );
+  }
+  return { owner, name };
 };
 
-export const createGitHubSourceClient = (
-  options: GitHubSourceClientOptions
-): GitHubSourceClient => {
-  const http = ky.create({
-    baseUrl: options.baseUrl ?? DEFAULT_BASE_URL,
-    timeout: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-    fetch: options.fetch,
-    retry: 0,
-    headers: {
-      accept: "application/vnd.github+json",
-      authorization: `Bearer ${options.token}`,
-      "user-agent": "chia1104.dev-writing-agent",
-      "x-github-api-version": API_VERSION,
-    },
-  });
-
+const toContents = (data: ContentsData): GitHubContents => {
+  if (Array.isArray(data)) {
+    return {
+      kind: "dir",
+      entries: data.map((entry) => ({
+        name: entry.name,
+        path: entry.path,
+        type: entry.type,
+        size: entry.size,
+        sha: entry.sha,
+      })),
+    };
+  }
+  if (data.type !== "file") {
+    return { kind: "other", type: data.type, path: data.path };
+  }
   return {
-    async getRepository(repo, signal) {
-      const data = await request(http, "repository lookup", () =>
-        http.get(`repos/${repo}`, { signal }).json()
-      );
-      const parsed = repositorySchema.parse(data);
-      return {
-        fullName: parsed.full_name,
-        defaultBranch: parsed.default_branch,
-        private: parsed.private,
-        description: parsed.description,
-        htmlUrl: parsed.html_url,
-      };
-    },
-
-    resolveCommit({ repo, ref }, signal) {
-      return request(http, "ref resolution", () =>
-        http
-          .get(`repos/${repo}/commits/${encodeURIComponent(ref)}`, {
-            signal,
-            headers: { accept: "application/vnd.github.sha" },
-          })
-          .text()
-      );
-    },
-
-    async getContents({ repo, path, ref }, signal) {
-      const data = await request(http, "contents read", () =>
-        http
-          .get(`repos/${repo}/contents/${encodePath(path)}`, {
-            signal,
-            searchParams: { ref },
-          })
-          .json()
-      );
-      const parsed = contentsSchema.parse(data);
-      if (Array.isArray(parsed)) return { kind: "dir", entries: parsed };
-      if (parsed.type !== "file") {
-        return { kind: "other", type: parsed.type, path: parsed.path };
-      }
-      return {
-        kind: "file",
-        file: {
-          path: parsed.path,
-          sha: parsed.sha,
-          size: parsed.size,
-          content:
-            parsed.encoding === "base64" && parsed.content
-              ? Buffer.from(parsed.content, "base64")
-              : Buffer.alloc(0),
-          htmlUrl: parsed.html_url,
-        },
-      };
-    },
-
-    async getTree({ repo, sha, recursive }, signal) {
-      const data = await request(http, "tree read", () =>
-        http
-          .get(`repos/${repo}/git/trees/${encodeURIComponent(sha)}`, {
-            signal,
-            searchParams: recursive ? { recursive: "1" } : {},
-          })
-          .json()
-      );
-      const parsed = treeSchema.parse(data);
-      return {
-        sha: parsed.sha,
-        truncated: parsed.truncated,
-        entries: parsed.tree,
-      };
+    kind: "file",
+    file: {
+      path: data.path,
+      sha: data.sha,
+      size: data.size,
+      content:
+        data.encoding === "base64" && data.content
+          ? Buffer.from(data.content, "base64")
+          : Buffer.alloc(0),
     },
   };
 };
+
+export const createGitHubSource = (client: GitHubClient): GitHubSource => ({
+  async resolveRef({ repo, ref }, signal) {
+    const { owner, name } = splitRepo(repo);
+    const data = await withGitHubErrors("ref resolution", () =>
+      client.graphql<RepositoryRefData>(REPOSITORY_REF, {
+        owner,
+        name,
+        ref: ref ?? "",
+        hasRef: ref !== undefined,
+        request: { signal: requestSignal(signal) },
+      })
+    );
+    const repository = data.repository;
+    if (!repository?.defaultBranchRef) {
+      throw new GitHubApiError(404, "ref resolution");
+    }
+    const sha =
+      ref === undefined
+        ? repository.defaultBranchRef.target.oid
+        : (repository.object?.target?.oid ?? repository.object?.oid);
+    if (!sha) {
+      throw new GitHubApiError(404, "ref resolution");
+    }
+    return {
+      fullName: repository.nameWithOwner,
+      defaultBranch: repository.defaultBranchRef.name,
+      private: repository.isPrivate,
+      description: repository.description,
+      htmlUrl: repository.url,
+      ref: ref ?? repository.defaultBranchRef.name,
+      sha,
+    };
+  },
+
+  async getContents({ repo, path, ref }, signal) {
+    const { owner, name } = splitRepo(repo);
+    const response = await withGitHubErrors("contents read", () =>
+      client.request("GET /repos/{owner}/{repo}/contents/{path}", {
+        owner,
+        repo: name,
+        path,
+        ref,
+        request: { signal: requestSignal(signal) },
+      })
+    );
+    return toContents(response.data);
+  },
+
+  async getTree({ repo, sha, recursive }, signal) {
+    const { owner, name } = splitRepo(repo);
+    const response = await withGitHubErrors("tree read", () =>
+      client.request("GET /repos/{owner}/{repo}/git/trees/{tree_sha}", {
+        owner,
+        repo: name,
+        tree_sha: sha,
+        recursive: recursive ? "1" : undefined,
+        request: { signal: requestSignal(signal) },
+      })
+    );
+    return {
+      sha: response.data.sha,
+      truncated: response.data.truncated,
+      entries: response.data.tree.flatMap((entry) =>
+        entry.path && entry.sha && entry.type && isTreeEntryType(entry.type)
+          ? [
+              {
+                path: entry.path,
+                type: entry.type,
+                sha: entry.sha,
+                size: entry.size,
+              },
+            ]
+          : []
+      ),
+    };
+  },
+});

@@ -1,10 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
 
-import { GitHubApiError } from "@chia/integrations/github/source";
-import type {
-  GitHubContents,
-  GitHubSourceClient,
-} from "@chia/integrations/github/source";
+import { GitHubApiError } from "@chia/integrations/github/client";
+import type { GitHubSource } from "@chia/integrations/github/source";
 
 import { createAgentGitHubPort } from "../src/services/agent-github.port";
 
@@ -15,27 +13,27 @@ import { createAgentGitHubPort } from "../src/services/agent-github.port";
 
 const SHA = "0123456789abcdef0123456789abcdef01234567";
 
-const createClient = (
-  overrides: Partial<GitHubSourceClient> = {}
-): GitHubSourceClient & {
-  getRepository: ReturnType<typeof vi.fn>;
-  resolveCommit: ReturnType<typeof vi.fn>;
-  getContents: ReturnType<typeof vi.fn>;
-  getTree: ReturnType<typeof vi.fn>;
-} => ({
-  getRepository: vi.fn(async (repo: string) => ({
+type MockedSource = { [K in keyof GitHubSource]: Mock<GitHubSource[K]> };
+
+const createClient = (overrides: Partial<MockedSource> = {}): MockedSource => ({
+  resolveRef: vi.fn<GitHubSource["resolveRef"]>(async ({ repo, ref }) => ({
     fullName: repo,
     defaultBranch: "develop",
     private: false,
     description: "A site",
     htmlUrl: `https://github.com/${repo}`,
+    ref: ref ?? "develop",
+    sha: SHA,
   })),
-  resolveCommit: vi.fn(async () => SHA),
-  getContents: vi.fn(async (): Promise<GitHubContents> => ({
+  getContents: vi.fn<GitHubSource["getContents"]>(async () => ({
     kind: "dir",
     entries: [],
   })),
-  getTree: vi.fn(async () => ({ sha: SHA, truncated: false, entries: [] })),
+  getTree: vi.fn<GitHubSource["getTree"]>(async () => ({
+    sha: SHA,
+    truncated: false,
+    entries: [],
+  })),
   ...overrides,
 });
 
@@ -44,7 +42,7 @@ describe("createAgentGitHubPort allowlist", () => {
     const client = createClient();
     const port = createAgentGitHubPort({
       allowedRepos: ["chia1104/chia1104.dev"],
-      client,
+      source: client,
     });
 
     await expect(port.resolveRef({ repo: "chia1104/other" })).rejects.toThrow(
@@ -53,9 +51,9 @@ describe("createAgentGitHubPort allowlist", () => {
     await expect(
       port.readFile({ repo: "Chia1104/chia1104.dev", path: "README.md" })
     ).rejects.toThrow("is a directory; list it with github_list_tree");
-    expect(client.getRepository).toHaveBeenCalledTimes(1);
-    expect(client.getRepository).toHaveBeenCalledWith(
-      "chia1104/chia1104.dev",
+    expect(client.resolveRef).toHaveBeenCalledTimes(1);
+    expect(client.resolveRef).toHaveBeenCalledWith(
+      { repo: "chia1104/chia1104.dev", ref: undefined },
       undefined
     );
   });
@@ -63,7 +61,7 @@ describe("createAgentGitHubPort allowlist", () => {
   it("refuses a malformed name without consulting the allowlist", async () => {
     const port = createAgentGitHubPort({
       allowedRepos: ["a/b"],
-      client: createClient(),
+      source: createClient(),
     });
     await expect(port.resolveRef({ repo: "a/b/c" })).rejects.toThrow(
       "owner/name"
@@ -74,18 +72,20 @@ describe("createAgentGitHubPort allowlist", () => {
 describe("createAgentGitHubPort refs", () => {
   it("resolves the default branch once per turn and pins later reads to that sha", async () => {
     const client = createClient({
-      getContents: vi.fn(async () => ({
+      getContents: vi.fn<GitHubSource["getContents"]>(async () => ({
         kind: "file",
         file: {
           path: "README.md",
           sha: "blob",
           size: 5,
           content: Buffer.from("hello"),
-          htmlUrl: "https://github.com/a/b/blob/develop/README.md",
         },
       })),
     });
-    const port = createAgentGitHubPort({ allowedRepos: ["a/b"], client });
+    const port = createAgentGitHubPort({
+      allowedRepos: ["a/b"],
+      source: client,
+    });
 
     const ref = await port.resolveRef({ repo: "a/b" });
     const file = await port.readFile({ repo: "a/b", path: "README.md" });
@@ -95,8 +95,7 @@ describe("createAgentGitHubPort refs", () => {
       sha: SHA,
       defaultBranch: "develop",
     });
-    expect(client.getRepository).toHaveBeenCalledTimes(1);
-    expect(client.resolveCommit).toHaveBeenCalledTimes(1);
+    expect(client.resolveRef).toHaveBeenCalledTimes(1);
     expect(client.getContents).toHaveBeenCalledWith(
       { repo: "a/b", path: "README.md", ref: SHA },
       undefined
@@ -107,12 +106,23 @@ describe("createAgentGitHubPort refs", () => {
 
   it("does not pin a failed resolution", async () => {
     const client = createClient({
-      resolveCommit: vi
-        .fn()
+      resolveRef: vi
+        .fn<GitHubSource["resolveRef"]>()
         .mockRejectedValueOnce(new GitHubApiError(404, "ref resolution"))
-        .mockResolvedValueOnce(SHA),
+        .mockResolvedValueOnce({
+          fullName: "a/b",
+          defaultBranch: "develop",
+          private: false,
+          description: null,
+          htmlUrl: "https://github.com/a/b",
+          ref: "nope",
+          sha: SHA,
+        }),
     });
-    const port = createAgentGitHubPort({ allowedRepos: ["a/b"], client });
+    const port = createAgentGitHubPort({
+      allowedRepos: ["a/b"],
+      source: client,
+    });
 
     await expect(port.resolveRef({ repo: "a/b", ref: "nope" })).rejects.toThrow(
       "a/b at nope was not found on GitHub."
@@ -128,7 +138,7 @@ describe("createAgentGitHubPort refs", () => {
 describe("createAgentGitHubPort listTree", () => {
   it("narrows a recursive listing to the path and maps git object types", async () => {
     const client = createClient({
-      getTree: vi.fn(async () => ({
+      getTree: vi.fn<GitHubSource["getTree"]>(async () => ({
         sha: SHA,
         truncated: true,
         entries: [
@@ -139,7 +149,10 @@ describe("createAgentGitHubPort listTree", () => {
         ],
       })),
     });
-    const port = createAgentGitHubPort({ allowedRepos: ["a/b"], client });
+    const port = createAgentGitHubPort({
+      allowedRepos: ["a/b"],
+      source: client,
+    });
 
     const tree = await port.listTree({
       repo: "a/b",
@@ -163,18 +176,20 @@ describe("createAgentGitHubPort listTree", () => {
 
   it("tells the model to read a path that is a file", async () => {
     const client = createClient({
-      getContents: vi.fn(async () => ({
+      getContents: vi.fn<GitHubSource["getContents"]>(async () => ({
         kind: "file",
         file: {
           path: "README.md",
           sha: "blob",
           size: 1,
           content: Buffer.from("x"),
-          htmlUrl: "",
         },
       })),
     });
-    const port = createAgentGitHubPort({ allowedRepos: ["a/b"], client });
+    const port = createAgentGitHubPort({
+      allowedRepos: ["a/b"],
+      source: client,
+    });
 
     await expect(
       port.listTree({ repo: "a/b", path: "README.md" })
@@ -187,16 +202,16 @@ describe("createAgentGitHubPort listTree", () => {
 describe("createAgentGitHubPort readFile", () => {
   const fileClient = (file: { size: number; content: Buffer }) =>
     createClient({
-      getContents: vi.fn(async () => ({
+      getContents: vi.fn<GitHubSource["getContents"]>(async () => ({
         kind: "file",
-        file: { path: "bin", sha: "s", htmlUrl: "", ...file },
+        file: { path: "bin", sha: "s", ...file },
       })),
     });
 
   it("refuses a binary blob", async () => {
     const port = createAgentGitHubPort({
       allowedRepos: ["a/b"],
-      client: fileClient({ size: 3, content: Buffer.from([0x89, 0x00, 0x0a]) }),
+      source: fileClient({ size: 3, content: Buffer.from([0x89, 0x00, 0x0a]) }),
     });
     await expect(port.readFile({ repo: "a/b", path: "bin" })).rejects.toThrow(
       "is a binary file"
@@ -206,7 +221,7 @@ describe("createAgentGitHubPort readFile", () => {
   it("refuses a blob the provider withheld for size", async () => {
     const port = createAgentGitHubPort({
       allowedRepos: ["a/b"],
-      client: fileClient({ size: 2_000_000, content: Buffer.alloc(0) }),
+      source: fileClient({ size: 2_000_000, content: Buffer.alloc(0) }),
     });
     await expect(port.readFile({ repo: "a/b", path: "bin" })).rejects.toThrow(
       "above the 1000000-byte limit"
@@ -216,9 +231,9 @@ describe("createAgentGitHubPort readFile", () => {
   it("maps a directory and a submodule to a hint, and a 403 to a scope message", async () => {
     const port = createAgentGitHubPort({
       allowedRepos: ["a/b"],
-      client: createClient({
+      source: createClient({
         getContents: vi
-          .fn()
+          .fn<GitHubSource["getContents"]>()
           .mockResolvedValueOnce({ kind: "dir", entries: [] })
           .mockResolvedValueOnce({
             kind: "other",
