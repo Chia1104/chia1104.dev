@@ -8,6 +8,8 @@ import {
   listDraftsTool,
   newDraftTool,
   openDraftTool,
+  readDraftTool,
+  replaceSectionTool,
   writeDraftTool,
 } from "../src/tools/draft.tool.ts";
 import {
@@ -558,6 +560,37 @@ describe("draft slug handling", () => {
     );
   });
 
+  it("lands a target that differs only in whitespace or quote style, and says so", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
+      content: "## Title\n\nShe said \u201Chello\u201D \u2014 twice.  \n\nEnd.",
+    });
+
+    const result = await editDraftContentTool.execute(
+      "call-1",
+      {
+        draftId: DRAFT_ID,
+        locale: "en",
+        edits: [
+          { oldString: 'She said "hello" - twice.', newString: "Rewritten." },
+        ],
+      },
+      undefined,
+      undefined,
+      context
+    );
+
+    expect(result.details).toMatchObject({
+      edits: [{ match: "punctuation", line: 3 }],
+    });
+    expect(result.content[0]).toMatchObject({
+      text: expect.stringContaining("matched reading curly quotes"),
+    });
+    expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
+      "## Title\n\nRewritten.  \n\nEnd."
+    );
+  });
+
   it("refuses an ambiguous target with the way forward, instead of guessing", async () => {
     const context = createContext();
     await context.draft.patchTranslation(DRAFT_ID, "en", {
@@ -899,5 +932,199 @@ describe("github tools", () => {
         false
       )
     ).toBe("Read owner/repo/src/index.ts@0123456.");
+  });
+});
+
+const SECTIONED = [
+  "Intro paragraph.",
+  "",
+  "## Setup",
+  "",
+  "Install it.",
+  "",
+  "### Install",
+  "",
+  "Run the command.",
+  "",
+  "## Caveats",
+  "",
+  "None yet.",
+].join("\n");
+
+describe("readDraftTool", () => {
+  it("prefixes a body read with its outline and reads one section or a line range", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
+      title: "T",
+      content: SECTIONED,
+    });
+
+    const whole = await readDraftTool.execute(
+      "call-1",
+      { draftId: DRAFT_ID, locale: "en" },
+      undefined,
+      undefined,
+      context
+    );
+    expect(whole.content[0]).toMatchObject({
+      text: expect.stringContaining(
+        "line 3 (h2): Setup\nline 7 (h3): Setup > Install\nline 11 (h2): Caveats"
+      ),
+    });
+    expect(whole.details).toMatchObject({
+      lineCount: 13,
+      outline: [
+        { line: 3, level: 2, path: "Setup" },
+        { line: 7, level: 3, path: "Setup > Install" },
+        { line: 11, level: 2, path: "Caveats" },
+      ],
+    });
+
+    const section = await readDraftTool.execute(
+      "call-2",
+      { draftId: DRAFT_ID, locale: "en", heading: "Setup > Install" },
+      undefined,
+      undefined,
+      context
+    );
+    expect(section.content[0]).toMatchObject({
+      text: expect.stringContaining("7\t### Install\n8\t\n9\tRun the command."),
+    });
+    expect(section.details).toMatchObject({
+      heading: "Setup > Install",
+      lineCount: 3,
+    });
+
+    const range = await readDraftTool.execute(
+      "call-3",
+      { draftId: DRAFT_ID, locale: "en", lines: { from: 11, to: 40 } },
+      undefined,
+      undefined,
+      context
+    );
+    expect(range.content[0]).toMatchObject({
+      text: expect.stringContaining("11\t## Caveats\n12\t\n13\tNone yet."),
+    });
+    expect(range.details).toMatchObject({ lines: { from: 11, to: 13 } });
+  });
+
+  it("refuses an unknown heading with the outline", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
+      content: SECTIONED,
+    });
+    await expect(
+      readDraftTool.execute(
+        "call-1",
+        { draftId: DRAFT_ID, locale: "en", heading: "Install" },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow(/No section at heading "Install".*Setup > Install/s);
+  });
+});
+
+describe("replaceSectionTool", () => {
+  it("replaces a heading's section with its subsections as one exact edit", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
+      content: SECTIONED,
+    });
+    const before = (await context.draft.get(DRAFT_ID)).revision;
+
+    const result = await replaceSectionTool.execute(
+      "call-1",
+      {
+        draftId: DRAFT_ID,
+        locale: "en",
+        heading: "Setup",
+        content: "## Getting started\n\nOne step.",
+      },
+      undefined,
+      undefined,
+      context
+    );
+
+    const after = await context.draft.get(DRAFT_ID);
+    expect(after.translations.en?.content).toBe(
+      "Intro paragraph.\n\n## Getting started\n\nOne step.\n\n## Caveats\n\nNone yet."
+    );
+    expect(after.revision).toBe(before + 1);
+    expect(result.details).toMatchObject({
+      heading: "Setup",
+      deleted: false,
+      edits: [{ match: "exact", line: 3, replacements: 1 }],
+    });
+    expect(result.content[0]).toMatchObject({
+      text: expect.stringContaining('Replaced section "Setup" (was lines 3-9)'),
+    });
+  });
+
+  it("deletes a section together with the blank lines before it", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
+      content: SECTIONED,
+    });
+
+    await replaceSectionTool.execute(
+      "call-1",
+      { draftId: DRAFT_ID, locale: "en", heading: "Caveats", content: "" },
+      undefined,
+      undefined,
+      context
+    );
+
+    expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
+      "Intro paragraph.\n\n## Setup\n\nInstall it.\n\n### Install\n\nRun the command."
+    );
+  });
+
+  it("refuses content that drops the heading line, and an operator edit made since the read", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
+      content: SECTIONED,
+    });
+
+    await expect(
+      replaceSectionTool.execute(
+        "call-1",
+        {
+          draftId: DRAFT_ID,
+          locale: "en",
+          heading: "Caveats",
+          content: "Prose only.",
+        },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow(/must start with the section's heading line/);
+
+    const original = context.draft.get.bind(context.draft);
+    vi.spyOn(context.draft, "get").mockImplementationOnce(async (id) => {
+      const draft = await original(id);
+      context.draft.operatorEdit(DRAFT_ID, "en", {
+        content: SECTIONED.replace("None yet.", "Some now."),
+      });
+      return draft;
+    });
+    await expect(
+      replaceSectionTool.execute(
+        "call-2",
+        {
+          draftId: DRAFT_ID,
+          locale: "en",
+          heading: "Caveats",
+          content: "## Caveats\n\nNew.",
+        },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow(/was not applied/);
+    expect(
+      (await context.draft.get(DRAFT_ID)).translations.en?.content
+    ).toContain("Some now.");
   });
 });

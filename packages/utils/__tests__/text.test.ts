@@ -17,6 +17,52 @@ describe("replaceExact", () => {
       content: "## Title\n\nRewritten.\n\nSecond paragraph.",
       replacements: 1,
       offsets: [10],
+      matches: [{ start: 10, end: 26 }],
+      match: "exact",
+    });
+  });
+
+  it("falls back to ignoring trailing whitespace, then indentation, keeping the first line's indent", () => {
+    const indented = "- item\n  continued  \n  last";
+    expect(replaceExact(indented, "continued\nlast", "one\ntwo")).toMatchObject(
+      {
+        ok: true,
+        content: "- item\n  one\ntwo",
+        match: "whitespace",
+        matches: [{ start: 9, end: 27 }],
+      }
+    );
+    expect(replaceExact("a  \nb", "a\nb", "c")).toMatchObject({
+      ok: true,
+      content: "c",
+      match: "trailing_whitespace",
+    });
+  });
+
+  it("reads typographic quotes and dashes as their ASCII forms, but never word content", () => {
+    const curly = "She said \u201Chello\u201D \u2014 twice.";
+    expect(
+      replaceExact(curly, 'She said "hello" - twice.', "Rewritten.")
+    ).toMatchObject({
+      ok: true,
+      content: "Rewritten.",
+      match: "punctuation",
+    });
+    expect(replaceExact(curly, 'She said "hi" - twice.', "x")).toMatchObject({
+      ok: false,
+      reason: "not_found",
+    });
+  });
+
+  it("prefers the exact match and counts every relaxed match for ambiguity", () => {
+    expect(replaceExact("x \nx\nx  ", "x", "y", true)).toMatchObject({
+      ok: true,
+      content: "y \ny\ny  ",
+      match: "exact",
+    });
+    expect(replaceExact("foo \nfoo \n", "foo\n", "bar\n")).toMatchObject({
+      ok: false,
+      reason: "ambiguous",
     });
   });
 
@@ -38,6 +84,11 @@ describe("replaceExact", () => {
       content: "changed\nchanged",
       replacements: 2,
       offsets: [0, 8],
+      matches: [
+        { start: 0, end: 9 },
+        { start: 10, end: 19 },
+      ],
+      match: "exact",
     });
   });
 
@@ -118,8 +169,23 @@ describe("applyEdits", () => {
       ok: true,
       content: "a\nbeta\nGAMMA!",
       edits: [
-        { replacements: 1, offsets: [7] },
-        { replacements: 1, offsets: [0] },
+        { replacements: 1, offsets: [7], match: "exact" },
+        { replacements: 1, offsets: [0], match: "exact" },
+      ],
+    });
+  });
+
+  it("shifts earlier offsets by what a relaxed match actually removed", () => {
+    const result = applyEdits("first   \nsecond", [
+      { oldString: "second", newString: "2nd" },
+      { oldString: "first\n", newString: "1\n" },
+    ]);
+    expect(result).toEqual({
+      ok: true,
+      content: "1\n2nd",
+      edits: [
+        { replacements: 1, offsets: [2], match: "exact" },
+        { replacements: 1, offsets: [0], match: "trailing_whitespace" },
       ],
     });
   });

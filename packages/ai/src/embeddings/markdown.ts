@@ -290,6 +290,55 @@ export const splitByHeadings = async (
   return sections;
 };
 
+/** A top-level heading and the source span of its section, for reading or replacing it verbatim. */
+export interface MarkdownSectionSpan extends MarkdownHeading {
+  /** 1-based line of the heading. */
+  line: number;
+  /** Offset of the heading's first character. */
+  start: number;
+  /** Offset just past the section's last node; the blank lines before the next heading stay outside. */
+  end: number;
+}
+
+/**
+ * Sections owned by the document's top-level headings, each spanning its heading through the
+ * last node before a heading of the same or a shallower level. Headings nested in JSX blocks
+ * belong to the section around them, so every span is a verbatim slice of `content`.
+ */
+export const extractSections = async (
+  content: string,
+  format: MarkdownFormat = "mdx"
+): Promise<MarkdownSectionSpan[]> => {
+  const parser = await loadParser();
+  const tree = parseDocument(parser, content, format);
+
+  const sections: MarkdownSectionSpan[] = [];
+  const open: MarkdownSectionSpan[] = [];
+  for (const node of tree.children) {
+    const span = spanOf(node);
+    if (!span) continue;
+    if (node.type === "heading") {
+      while (open.length > 0 && open[open.length - 1]!.level >= node.depth) {
+        open.pop();
+      }
+      const title = parser.toString(node).trim();
+      const section: MarkdownSectionSpan = {
+        level: node.depth,
+        title,
+        path: [...open.map((entry) => entry.title), title].join(" > "),
+        line: node.position?.start.line ?? 1,
+        start: span.start,
+        end: span.end,
+      };
+      sections.push(section);
+      open.push(section);
+      continue;
+    }
+    for (const section of open) section.end = span.end;
+  }
+  return sections;
+};
+
 export interface HeadingOutlineOptions {
   /** Deepest heading to include; H4+ is noise in a document card */
   maxDepth?: number;
