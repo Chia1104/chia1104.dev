@@ -26,6 +26,7 @@ import type { Locale } from "@chia/db/types";
 import { AppError } from "@chia/service-kit/errors";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 import { excerptAround } from "@chia/utils/text";
+import type { MatchMode } from "@chia/utils/text";
 
 import type { FeedHooks } from "../shared/context";
 
@@ -174,9 +175,10 @@ export interface EditFeedDraftContentServiceInput extends FeedDraftWriter {
   expectedRevision?: number;
 }
 
-/** One edit as it landed: how many places, and the numbered lines around the first. */
+/** One edit as it landed: how many places, how loosely, and the numbered lines around the first. */
 export interface AppliedDraftEdit {
   replacements: number;
+  match: MatchMode;
   line: number;
   context: string;
 }
@@ -217,7 +219,12 @@ export const editFeedDraftContentService = async (
             edit.offsets[0] ?? 0,
             CONTEXT_RADIUS
           );
-          return { replacements: edit.replacements, line, context: text };
+          return {
+            replacements: edit.replacements,
+            match: edit.match,
+            line,
+            context: text,
+          };
         }),
       };
     }

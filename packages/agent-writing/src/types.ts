@@ -9,6 +9,7 @@ import type {
   FeedDraftChange,
 } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
+import type { MatchMode } from "@chia/utils/text";
 
 import type {
   ContentPort,
@@ -91,9 +92,10 @@ export interface DraftContentEdit {
   replaceAll?: boolean;
 }
 
-/** One edit as it landed: how many places, and the numbered lines around the first. */
+/** One edit as it landed: how many places, how loosely, and the numbered lines around the first. */
 export interface DraftAppliedEdit {
   replacements: number;
+  match: MatchMode;
   line: number;
   context: string;
 }

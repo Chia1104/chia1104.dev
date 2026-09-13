@@ -244,7 +244,7 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
     {
       title: "Edit a draft body in place",
       description:
-        "Replace exact strings in one locale's MDX body without resending the rest. Edits apply in order as one revision; each `oldString` must match the body byte for byte, indentation included, and a target that matches more than once fails unless replaceAll. A failed edit refuses the whole batch. The result shows the numbered lines around each edit, so no read-back is needed.",
+        "Replace strings in one locale's MDX body without resending the rest. Edits apply in order as one revision; each `oldString` is matched exactly first, then ignoring whitespace at line ends and starts, then reading curly quotes and dashes as ASCII. A target that matches more than once fails unless replaceAll. A failed edit refuses the whole batch. The result shows the numbered lines around each edit and how loosely it matched, so no read-back is needed.",
       inputSchema: {
         draftId: z.number().int(),
         locale: localeSchema,

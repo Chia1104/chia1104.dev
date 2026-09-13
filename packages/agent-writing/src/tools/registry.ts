@@ -27,6 +27,7 @@ export const TOOL_NAMES = {
   readDraft: "read_draft",
   writeDraft: "write_draft",
   editDraftContent: "edit_draft_content",
+  replaceSection: "replace_section",
   commitDraft: "commit_draft",
   setPublished: "set_published",
 } as const;
@@ -55,6 +56,7 @@ export const TOOL_TIER_BY_NAME = {
   [TOOL_NAMES.readDraft]: "draft",
   [TOOL_NAMES.writeDraft]: "draft",
   [TOOL_NAMES.editDraftContent]: "draft",
+  [TOOL_NAMES.replaceSection]: "draft",
 
   [TOOL_NAMES.commitDraft]: "commit",
   [TOOL_NAMES.setPublished]: "commit",
@@ -79,6 +81,7 @@ export const TOOL_LABEL_BY_NAME = {
   [TOOL_NAMES.readDraft]: "Read draft",
   [TOOL_NAMES.writeDraft]: "Write draft",
   [TOOL_NAMES.editDraftContent]: "Edit draft body",
+  [TOOL_NAMES.replaceSection]: "Replace draft section",
 
   [TOOL_NAMES.commitDraft]: "Commit draft",
   [TOOL_NAMES.setPublished]: "Change published state",

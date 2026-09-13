@@ -153,7 +153,12 @@ export const describeEdits = (
 ): DraftAppliedEdit[] =>
   edits.map((edit) => {
     const { line, text } = excerptAround(content, edit.offsets[0] ?? 0, 2);
-    return { replacements: edit.replacements, line, context: text };
+    return {
+      replacements: edit.replacements,
+      match: edit.match,
+      line,
+      context: text,
+    };
   });
 
 /** Applies a write to an in-memory draft: meta first, then every locale, as one step. */
