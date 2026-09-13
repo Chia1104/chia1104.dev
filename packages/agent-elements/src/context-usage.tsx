@@ -70,13 +70,13 @@ export const ContextUsage = () => {
       <Popover.Trigger>
         <Button
           aria-label={`${labels.contextWindow}: ${percentage}%`}
-          className="rounded-full p-1"
+          className="size-5.5 min-w-5.5 rounded-full p-0"
           isIconOnly
           size="sm"
           variant="ghost">
           <svg
             aria-hidden="true"
-            className="size-5 -rotate-90"
+            className="size-4.5 -rotate-90"
             viewBox="0 0 20 20">
             <circle
               className="stroke-border"

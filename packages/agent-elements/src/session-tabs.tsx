@@ -262,7 +262,8 @@ export const SessionTabs = ({
                             key={session.id}
                             className="group/row flex items-center gap-1">
                             <Button
-                              className="h-auto min-w-0 flex-1 justify-start px-2 py-1.5 text-left"
+                              render={(props) => <span {...props} />}
+                              className="h-auto min-w-0 flex-1 justify-between px-2 py-1.5 text-left"
                               onPress={() => pick(session.id)}
                               size="sm"
                               variant={
@@ -288,8 +289,8 @@ export const SessionTabs = ({
                                   ) : null}
                                 </span>
                               </span>
+                              {actions(session, "shrink-0")}
                             </Button>
-                            {actions(session, "shrink-0")}
                           </div>
                         );
                       })}
