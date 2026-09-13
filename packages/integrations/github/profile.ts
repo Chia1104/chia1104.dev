@@ -1,3 +1,4 @@
+import { withGitHubErrors } from "./client";
 import type { GitHubClient } from "./client";
 
 /** Public profile data for the site: pinned repositories and the contribution calendar. */
@@ -87,7 +88,9 @@ export const getPinnedRepos = (
   client: GitHubClient,
   login: string
 ): Promise<PinnedRepositories> =>
-  client.graphql<PinnedRepositories>(PINNED_REPOSITORIES, { login });
+  withGitHubErrors("pinned repositories", () =>
+    client.graphql<PinnedRepositories>(PINNED_REPOSITORIES, { login })
+  );
 
 /** `from` and `to` are ISO timestamps; GitHub allows at most one year between them. */
 export const getContributions = (
@@ -96,4 +99,6 @@ export const getContributions = (
   from: string,
   to: string
 ): Promise<Contributions> =>
-  client.graphql<Contributions>(CONTRIBUTIONS, { login, from, to });
+  withGitHubErrors("contributions", () =>
+    client.graphql<Contributions>(CONTRIBUTIONS, { login, from, to })
+  );
