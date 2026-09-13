@@ -609,7 +609,7 @@ const ThreadViewport = ({
                 className="rounded-full shadow-md"
                 size="sm"
                 variant="secondary"
-                onPress={() => scroll("latest")}>
+                onPress={() => scroll("bottom")}>
                 <ArrowDown aria-hidden className="size-4" />
               </Button>
             </Tooltip.Trigger>
@@ -645,8 +645,6 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
     [items, pendingPrompt, working]
   );
 
-  const jumpLabel = busy ? labels.scrollToBottom : labels.scrollToLatestPrompt;
-
   return (
     <ThreadViewport
       busy={busy}
@@ -662,7 +660,7 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
         ) : undefined
       }
       hasContent={!showEmpty}
-      jumpLabel={jumpLabel}
+      jumpLabel={labels.scrollToBottom}
       pendingPrompt={pendingPrompt}
       renderers={renderers}
       rows={rows}
