@@ -28,7 +28,11 @@ import { DEFAULT_WRITING_MODEL } from "../src/models.ts";
 import { runWritingTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 
-import { createFakeContentPort, createFakeWebPort } from "./fixtures.ts";
+import {
+  createFakeContentPort,
+  createFakeGitHubPort,
+  createFakeWebPort,
+} from "./fixtures.ts";
 import type { FakeContentPort, FakeWebPort } from "./fixtures.ts";
 
 const SESSION_ID = "session-1";
@@ -130,6 +134,7 @@ const build = async (
         agentSessionId: SESSION_ID,
         content,
         web,
+        github: createFakeGitHubPort(),
         draft,
         sessionDrafts: [{ draftId: DRAFT_ID, lastSeenRevision: 0 }],
         memory,

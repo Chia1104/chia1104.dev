@@ -7,10 +7,12 @@ import type {
 } from "@chia/agent-content/types";
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 
-import type { ContentPort, WebPort } from "../src/ports.ts";
+import type { ContentPort, GitHubPort, WebPort } from "../src/ports.ts";
 import type {
   CommitDraftResult,
   FetchedPage,
+  GitHubRef,
+  GitHubTreeEntry,
   WebSearchInput,
   WebSearchResult,
 } from "../src/types.ts";
@@ -98,6 +100,84 @@ export const createFakeWebPort = (
       return Promise.resolve(
         options.pages?.[url] ?? { url, title: "Untitled", text: "" }
       );
+    },
+  };
+};
+
+export interface FakeGitHubPortOptions {
+  /** Keyed `repo` → ref; `sha` defaults to a fixed value. */
+  refs?: Record<string, Partial<GitHubRef>>;
+  /** Keyed `repo/path` → file text. */
+  files?: Record<string, string>;
+  /** Keyed `repo/path` (empty path for the root) → entries. */
+  trees?: Record<string, GitHubTreeEntry[]>;
+}
+
+export interface FakeGitHubPort extends GitHubPort {
+  readonly calls: { method: keyof GitHubPort; input: unknown }[];
+  readonly signals: (AbortSignal | undefined)[];
+}
+
+const FAKE_SHA = "0123456789abcdef0123456789abcdef01234567";
+
+export const createFakeGitHubPort = (
+  options: FakeGitHubPortOptions = {}
+): FakeGitHubPort => {
+  const calls: FakeGitHubPort["calls"] = [];
+  const signals: (AbortSignal | undefined)[] = [];
+
+  const refOf = (repo: string, ref: string | undefined): GitHubRef => {
+    const known = options.refs?.[repo];
+    const defaultBranch = known?.defaultBranch ?? "main";
+    return {
+      repo,
+      ref: ref ?? defaultBranch,
+      sha: FAKE_SHA,
+      defaultBranch,
+      url: `https://github.com/${repo}`,
+      description: null,
+      private: false,
+      ...known,
+    };
+  };
+
+  return {
+    calls,
+    signals,
+    resolveRef(input, signal) {
+      calls.push({ method: "resolveRef", input });
+      signals.push(signal);
+      return Promise.resolve(refOf(input.repo, input.ref));
+    },
+    listTree(input, signal) {
+      calls.push({ method: "listTree", input });
+      signals.push(signal);
+      const key = input.path ? `${input.repo}/${input.path}` : input.repo;
+      return Promise.resolve({
+        ref: refOf(input.repo, input.ref),
+        path: input.path ?? "",
+        entries: options.trees?.[key] ?? [],
+        truncated: false,
+      });
+    },
+    readFile(input, signal) {
+      calls.push({ method: "readFile", input });
+      signals.push(signal);
+      const text = options.files?.[`${input.repo}/${input.path}`];
+      if (text === undefined) {
+        return Promise.reject(
+          new Error(`${input.repo}/${input.path} was not found on GitHub.`)
+        );
+      }
+      const ref = refOf(input.repo, input.ref);
+      return Promise.resolve({
+        ref,
+        path: input.path,
+        blobSha: "blob".padEnd(40, "0"),
+        size: Buffer.byteLength(text),
+        text,
+        url: `${ref.url}/blob/${ref.sha}/${input.path}`,
+      });
     },
   };
 };

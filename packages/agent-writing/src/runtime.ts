@@ -25,7 +25,13 @@ import type { JsonValue } from "@chia/utils/json";
 import { DraftNotFoundError, draftTitle } from "./draft/operations.ts";
 import { resolveWritingModel } from "./models.ts";
 import { writingPolicy, writingTurnBudget } from "./policy.ts";
-import type { ContentPort, DraftStore, MemoryPort, WebPort } from "./ports.ts";
+import type {
+  ContentPort,
+  DraftStore,
+  GitHubPort,
+  MemoryPort,
+  WebPort,
+} from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import type { TurnContextDraft } from "./prompts/system.ts";
@@ -42,6 +48,9 @@ export interface RunWritingTurnOptions<TApproval> {
   agentRunId?: string;
   content: ContentPort;
   web: WebPort;
+  github: GitHubPort;
+  /** What `github` accepts, told to the model up front; the port enforces it regardless. */
+  githubRepos?: readonly string[];
   draft: DraftStore;
   /**
    * Drafts this session has worked on, most recently touched first, with the revision the
@@ -235,6 +244,7 @@ export const runWritingTurn = <TApproval>(
     agentSessionId: options.agentSessionId,
     content: options.content,
     web: options.web,
+    connectors: { github: options.github },
     draft: options.draft,
     memory: options.memory,
     approvedDraftRevisions,
@@ -259,6 +269,7 @@ export const runWritingTurn = <TApproval>(
       skills: writingSkills,
       autoApprove: options.settings.autoApprove,
       instructions: options.instructions,
+      githubRepos: options.githubRepos,
     }),
     volatileContext: async () => {
       const [drafts, sessionMemories, lessons] = await Promise.all([

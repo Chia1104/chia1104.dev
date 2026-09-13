@@ -656,6 +656,50 @@ compare.
 `
 );
 
+export const githubSourceSkill = skill(
+  "github-source",
+  "How to read a repository with the `github_*` tools: pin a ref, browse the tree, read files by line range and cite `path@sha` permalinks. Read before any post that describes or quotes code.",
+  `
+# Reading source on GitHub
+
+The \`github_*\` tools read the repositories the operator listed in the agent's settings; the
+system prompt names them. Anything else is refused — say so and ask the operator to add it,
+do not work around it with \`fetch_url\`.
+
+## Order of work
+
+1. \`github_resolve_ref\` once per repository. It returns the default branch and the commit sha
+   every later call in this turn is pinned to. Pass the operator's branch, tag or sha as \`ref\`
+   when they named one; otherwise omit it.
+2. \`github_list_tree\` to find the file. Start at the root without \`recursive\`, then descend
+   into the directory that matters; use \`recursive\` only on a subdirectory. A recursive root
+   listing of a large repository is truncated and wastes a call.
+3. \`github_read_file\` for the file, with \`startLine\`/\`endLine\` once you know the region. A
+   file is cut at 16,000 characters; read a range instead of paging through a whole file.
+
+Read tests and the README alongside the implementation: they state the intended behaviour,
+which is what a post should describe.
+
+## Quoting and citing
+
+- Quote code exactly as read. Do not "tidy" it, rename identifiers or fill in a body you did
+  not read.
+- Cite every quoted or described symbol with its path and the short sha, for example
+  \`src/cache.ts@3f2a9c1\`, and link it with the permalink the tool returned
+  (\`…/blob/<sha>/<path>\`). A branch link goes stale; a sha link does not.
+- A code block carries \`title="<path>"\` so the reader knows which file it came from.
+- When the operator asks about a version that differs from the default branch, resolve that
+  tag and say which one the post describes.
+
+## What the tools do not do
+
+- No writes, no issues, no pull requests, no search across repositories. Find a file through
+  the tree, or ask the operator for the path.
+- No private data beyond the allowed repositories. A file that looks like a secret or a
+  personal record is not quoted, even when it is readable.
+`
+);
+
 export const writingSkills: Skill[] = [
   mdxAuthoringSkill,
   mdxComponentsSkill,
@@ -664,4 +708,5 @@ export const writingSkills: Skill[] = [
   noAiSlopSkill,
   seoMetadataSkill,
   bilingualParitySkill,
+  githubSourceSkill,
 ];

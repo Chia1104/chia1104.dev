@@ -85,6 +85,10 @@
       "types": "./src/tools/retrieval.tool.ts",
       "default": "./src/tools/retrieval.tool.ts"
     },
+    "./tools/github.tool": {
+      "types": "./src/tools/github.tool.ts",
+      "default": "./src/tools/github.tool.ts"
+    },
     "./tools/memory.tool": {
       "types": "./src/tools/memory.tool.ts",
       "default": "./src/tools/memory.tool.ts"

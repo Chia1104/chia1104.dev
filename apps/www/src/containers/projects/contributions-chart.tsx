@@ -1,7 +1,8 @@
 import { ScrollShadow } from "@heroui/react";
 import "server-only";
 
-import { getContributions } from "@chia/integrations/github";
+import { publicGitHubClient } from "@chia/integrations/github/client.public";
+import { getContributions } from "@chia/integrations/github/profile";
 import meta from "@chia/meta";
 import { cn } from "@chia/ui/utils/cn.util";
 import dayjs from "@chia/utils/day";
@@ -18,6 +19,7 @@ const levelConverter = (count: number) => {
 
 export const ContributionsChart = async () => {
   const contributions = await getContributions(
+    publicGitHubClient,
     meta.name,
     dayjs().subtract(1, "year").toISOString(),
     dayjs().toISOString()

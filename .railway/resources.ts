@@ -68,6 +68,7 @@ export const createWorkflowEnv = () => ({
   DATABASE_URL: preserve(),
   ENV: preserve(),
   FIRECRAWL_API_KEY: preserve(),
+  GH_AGENT_TOKEN: preserve(),
   INTERNAL_WORKFLOW_SERVICE_TOKEN: preserve(),
   NODE_ENV: preserve(),
   EMBEDDING_API_KEY: preserve(),

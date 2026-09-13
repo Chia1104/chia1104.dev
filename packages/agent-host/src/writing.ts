@@ -1,5 +1,6 @@
 import {
   WRITING_CONFIG_DEFAULTS,
+  parseGitHubRepos,
   writingConfigSchema,
 } from "@chia/agent-writing/config";
 import type { WritingConfig } from "@chia/agent-writing/config";
@@ -14,6 +15,7 @@ import {
 import { writingPolicy } from "@chia/agent-writing/policy";
 import type {
   ContentPort,
+  GitHubPort,
   MemoryPort,
   WebPort,
 } from "@chia/agent-writing/ports";
@@ -41,7 +43,8 @@ import { AGENT_TASK_IDS, resolveAgentTask } from "./tasks";
 
 /**
  * Binds `@chia/agent-writing` to the host: author-visibility content port, Firecrawl web port,
- * the shared `feed_draft` store, memory port, and the `agent.writing_session` rows.
+ * the GitHub port scoped to the configured repositories, the shared `feed_draft` store, memory
+ * port, and the `agent.writing_session` rows.
  */
 
 type WritingAgentKind = AgentKindDefinition<
@@ -58,6 +61,8 @@ interface WritingExecutionHost {
   }): ContentPort;
   createMemoryPort(options: { db: DB; sessionId: string }): MemoryPort;
   createWebPort(): WebPort;
+  /** Per turn: the allowlist is the kind config as of this turn, and ref pins must not outlive it. */
+  createGitHubPort(options: { allowedRepos: readonly string[] }): GitHubPort;
   /** Starts the lesson extraction run, after `delayMs`; resolves to its run id. */
   startMemoryConsolidation(request: {
     sessionId: string;
@@ -266,6 +271,7 @@ export const createWritingAgentKind = (
           }
         );
 
+        const githubRepos = parseGitHubRepos(context.config.githubRepos);
         const turn = await runWritingTurn({
           session: context.session,
           models: context.models,
@@ -277,6 +283,8 @@ export const createWritingAgentKind = (
           agentRunId: context.runId,
           content,
           web: execution.createWebPort(),
+          github: execution.createGitHubPort({ allowedRepos: githubRepos }),
+          githubRepos,
           draft,
           sessionDrafts: context.state.drafts,
           memory: execution.createMemoryPort({

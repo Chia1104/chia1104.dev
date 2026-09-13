@@ -2,6 +2,7 @@ import type { WritingTool } from "../types.ts";
 
 import { commitTools } from "./commit.tool.ts";
 import { draftTools } from "./draft.tool.ts";
+import { githubTools } from "./github.tool.ts";
 import { memoryTools } from "./memory.tool.ts";
 import { retrievalTools } from "./retrieval.tool.ts";
 import { skillTools } from "./skill.tool.ts";
@@ -12,6 +13,7 @@ import { skillTools } from "./skill.tool.ts";
 export const createWritingTools = (): WritingTool[] => [
   ...skillTools,
   ...retrievalTools,
+  ...githubTools,
   ...memoryTools,
   ...draftTools,
   ...commitTools,
@@ -21,6 +23,10 @@ export const createWritingTools = (): WritingTool[] => [
  * Everything except commit-tier tools, for a session that must not write the blog.
  */
 export const readOnlyToolNames = (): string[] =>
-  [...skillTools, ...retrievalTools, ...memoryTools, ...draftTools].map(
-    (tool) => tool.name
-  );
+  [
+    ...skillTools,
+    ...retrievalTools,
+    ...githubTools,
+    ...memoryTools,
+    ...draftTools,
+  ].map((tool) => tool.name);
