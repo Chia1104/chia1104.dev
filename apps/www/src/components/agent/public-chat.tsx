@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { Button, Spinner } from "@heroui/react";
 import { ORPCError } from "@orpc/client";
@@ -14,7 +14,6 @@ import { EmptyState } from "@chia/agent-elements/empty-state";
 import { AgentSessionProvider } from "@chia/agent-elements/provider";
 import { agentQueryKeys } from "@chia/agent-elements/queries";
 import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
-import { SessionModelPicker } from "@chia/agent-elements/session-model-picker";
 import { SessionTabs } from "@chia/agent-elements/session-tabs";
 import { Thread } from "@chia/agent-elements/thread";
 import { authClient } from "@chia/auth/client";
@@ -198,18 +197,6 @@ const PublicChatSessions = ({ headerActions }: PublicChatProps) => {
     })
   );
 
-  const [modelPickerOpen, setModelPickerOpen] = useState(false);
-  const localCommands = useMemo(
-    () => [
-      {
-        name: "model",
-        description: labels.switchModel,
-        onSelect: () => setModelPickerOpen(true),
-      },
-    ],
-    [labels.switchModel]
-  );
-
   const suggestions = [
     t("suggestions.latest"),
     t("suggestions.topics"),
@@ -282,15 +269,8 @@ const PublicChatSessions = ({ headerActions }: PublicChatProps) => {
           />
           <Composer
             attachments={context.length > 0 ? <ComposerContext /> : undefined}
-            localCommands={localCommands}
             placeholder={t("placeholder")}
-            toolbar={
-              <SessionModelPicker
-                isOpen={modelPickerOpen}
-                onOpenChange={setModelPickerOpen}
-                providerOrder={PROVIDER_ORDER}
-              />
-            }
+            providerOrder={PROVIDER_ORDER}
           />
         </AgentSessionProvider>
       ) : failed ? (
