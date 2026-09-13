@@ -213,6 +213,8 @@ describe("createWritingAgentKind runTurn", () => {
         /* SAFETY: the mocked turn never calls the memory port. */ ({}) as never,
       createWebPort: () =>
         /* SAFETY: the mocked turn never calls the web port. */ ({}) as never,
+      createGitHubPort: () =>
+        /* SAFETY: the mocked turn never calls the GitHub port. */ ({}) as never,
       startMemoryConsolidation,
       cancelWorkflowRun,
     },

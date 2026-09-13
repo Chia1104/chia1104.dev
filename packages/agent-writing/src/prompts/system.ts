@@ -20,6 +20,8 @@ export interface SystemPromptInput {
    * edits them.
    */
   instructions?: string;
+  /** Repositories the `github_*` tools accept, from the kind config; same lifetime as `instructions`. */
+  githubRepos?: readonly string[];
 }
 
 export interface TurnContextDraft {
@@ -94,7 +96,9 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
    near-duplicate of an existing post. \`list_posts\` shows drafts in flight too. \`get_post\` to
    match established voice and structure; \`list_tags\` before proposing a new tag.
    \`search_memory\` once before researching: facts verified and pages read in earlier
-   sessions are there, and a hit saves a search and a fetch.
+   sessions are there, and a hit saves a search and a fetch. When the post describes code
+   in one of the allowed repositories, \`read_skill\` \`github-source\` and read the code with
+   the \`github_*\` tools rather than describing it from memory.
 4. **Draft.** \`write_draft\` for a first version — every locale's body and metadata (title,
    excerpt, description, summary) plus the slug, in one call, each locale's body written in
    that locale's language. \`edit_draft_content\` for revisions, batching the edits of one
@@ -149,6 +153,7 @@ export const buildSystemPrompt = (input: SystemPromptInput): string => {
   }
 
   sections.push(formatApprovalPosture(input.autoApprove));
+  sections.push(formatGitHubAccess(input.githubRepos ?? []));
 
   const instructions = input.instructions?.trim();
   if (instructions) {
@@ -266,6 +271,31 @@ const formatSkillsIndex = (skills: readonly Skill[]): string => {
   }
   lines.push("</available_skills>");
   return lines.join("\n");
+};
+
+/**
+ * Named in the prompt so the model neither probes a repository it cannot read nor asks the
+ * operator for one it can.
+ */
+const formatGitHubAccess = (repos: readonly string[]): string => {
+  if (repos.length === 0) {
+    return [
+      "# GitHub",
+      "",
+      "No repositories are allowed, so the `github_*` tools refuse every call. When a post needs",
+      "the source, ask the operator to list the repository under the writing agent's settings",
+      "instead of retrying.",
+    ].join("\n");
+  }
+  return [
+    "# GitHub",
+    "",
+    "The `github_*` tools read these repositories and nothing else:",
+    ...repos.map((repo) => `- ${repo}`),
+    "",
+    "Another repository is refused; ask the operator to add it rather than reading it through",
+    "`fetch_url`.",
+  ].join("\n");
 };
 
 const formatApprovalPosture = (autoApprove: readonly ToolTier[]): string => {

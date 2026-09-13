@@ -23,3 +23,18 @@ describe("buildSystemPrompt", () => {
     ).toBe(true);
   });
 });
+
+describe("buildSystemPrompt GitHub access", () => {
+  it("names the allowed repositories, or says none are", () => {
+    const none = buildSystemPrompt({ skills: [], autoApprove: [] });
+    expect(none).toContain("No repositories are allowed");
+
+    const some = buildSystemPrompt({
+      skills: [],
+      autoApprove: [],
+      githubRepos: ["chia1104/chia1104.dev", "chia1104/notes"],
+    });
+    expect(some).toContain("- chia1104/chia1104.dev\n- chia1104/notes");
+    expect(some).not.toContain("No repositories are allowed");
+  });
+});

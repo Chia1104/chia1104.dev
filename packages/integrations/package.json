@@ -5,21 +5,25 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./github": {
-      "types": "./github/index.ts",
-      "default": "./github/index.ts"
+    "./github/client": {
+      "types": "./github/client.ts",
+      "default": "./github/client.ts"
     },
-    "./github/query": {
-      "types": "./github/query/index.ts",
-      "default": "./github/query/index.ts"
+    "./github/client.public": {
+      "types": "./github/client.public.ts",
+      "default": "./github/client.public.ts"
     },
     "./github/env": {
       "types": "./github/env.ts",
       "default": "./github/env.ts"
     },
-    "./github/types": {
-      "types": "./github/types.ts",
-      "default": "./github/types.ts"
+    "./github/profile": {
+      "types": "./github/profile.ts",
+      "default": "./github/profile.ts"
+    },
+    "./github/source": {
+      "types": "./github/source.ts",
+      "default": "./github/source.ts"
     },
     "./spotify": {
       "types": "./spotify/index.ts",
@@ -103,8 +107,11 @@
     "@chia/meta": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
+    "@octokit/core": "catalog:",
+    "@octokit/graphql": "catalog:",
+    "@octokit/request-error": "catalog:",
+    "@octokit/types": "catalog:",
     "@t3-oss/env-core": "catalog:env",
-    "graphql-request": "catalog:",
     "ky": "catalog:",
     "resend": "catalog:email",
     "zod": "catalog:"

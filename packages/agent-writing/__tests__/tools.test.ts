@@ -10,13 +10,27 @@ import {
   openDraftTool,
   writeDraftTool,
 } from "../src/tools/draft.tool.ts";
+import {
+  githubListTreeTool,
+  githubReadFileTool,
+  githubResolveRefTool,
+  normalizeRepo,
+} from "../src/tools/github.tool.ts";
 import { fetchUrlTool, webSearchTool } from "../src/tools/retrieval.tool.ts";
 import { summarizeToolResult } from "../src/tools/summarize.ts";
 import { createWritingTools } from "../src/tools/tool-set.ts";
 import type { WritingToolContext } from "../src/types.ts";
 
-import { createFakeContentPort, createFakeWebPort } from "./fixtures.ts";
-import type { FakeContentPort, FakeWebPort } from "./fixtures.ts";
+import {
+  createFakeContentPort,
+  createFakeGitHubPort,
+  createFakeWebPort,
+} from "./fixtures.ts";
+import type {
+  FakeContentPort,
+  FakeGitHubPort,
+  FakeWebPort,
+} from "./fixtures.ts";
 
 const SESSION_ID = "session-1";
 
@@ -24,6 +38,7 @@ type TestContext = WritingToolContext & {
   approvedDraftRevisions: Map<string, number>;
   content: FakeContentPort;
   web: FakeWebPort;
+  connectors: { github: FakeGitHubPort };
   draft: InMemoryDraftStore;
   memory: InMemoryMemoryPort;
 };
@@ -35,6 +50,7 @@ const createContext = (): TestContext => ({
   agentSessionId: SESSION_ID,
   content: createFakeContentPort(),
   web: createFakeWebPort(),
+  connectors: { github: createFakeGitHubPort() },
   draft: new InMemoryDraftStore([{ id: DRAFT_ID }]),
   memory: new InMemoryMemoryPort(SESSION_ID),
   approvedDraftRevisions: new Map<string, number>(),
@@ -721,5 +737,167 @@ describe("draft slug handling", () => {
     expect(createWritingTools().map((tool) => tool.name)).not.toContain(
       "slugify"
     );
+  });
+});
+
+describe("normalizeRepo", () => {
+  it("accepts owner/name and github.com URLs, lower-cased and without .git", () => {
+    expect(normalizeRepo("Chia1104/chia1104.dev")).toBe(
+      "chia1104/chia1104.dev"
+    );
+    expect(
+      normalizeRepo(
+        "https://github.com/Chia1104/Chia1104.dev/blob/main/README.md"
+      )
+    ).toBe("chia1104/chia1104.dev");
+    expect(normalizeRepo("github.com/owner/repo.git")).toBe("owner/repo");
+  });
+
+  it("rejects anything without an owner and a name", () => {
+    expect(() => normalizeRepo("chia1104")).toThrow("is not a repository");
+    expect(() => normalizeRepo("https://gitlab.com/a/b")).toThrow(
+      "is not a repository"
+    );
+  });
+});
+
+describe("github tools", () => {
+  it("resolves the ref through the port with the normalized repo and the turn's signal", async () => {
+    const context = createContext();
+    const controller = new AbortController();
+
+    const result = await githubResolveRefTool.execute(
+      "call-1",
+      { repo: "https://github.com/Owner/Repo", ref: " v1.2.0 " },
+      controller.signal,
+      undefined,
+      context
+    );
+
+    expect(context.connectors.github.calls).toEqual([
+      { method: "resolveRef", input: { repo: "owner/repo", ref: "v1.2.0" } },
+    ]);
+    expect(context.connectors.github.signals).toEqual([controller.signal]);
+    expect(result.details).toMatchObject({ repo: "owner/repo", ref: "v1.2.0" });
+    expect(result.content[0]).toMatchObject({
+      text: expect.stringContaining("Cite files as `path@0123456`"),
+    });
+  });
+
+  it("lists a directory with trailing slashes on subdirectories and sizes on files", async () => {
+    const context = createContext();
+    context.connectors.github = createFakeGitHubPort({
+      trees: {
+        "owner/repo/src": [
+          { path: "src/tools", type: "dir" },
+          { path: "src/index.ts", type: "file", size: 120 },
+        ],
+      },
+    });
+
+    const result = await githubListTreeTool.execute(
+      "call-1",
+      { repo: "owner/repo", path: "/src/" },
+      undefined,
+      undefined,
+      context
+    );
+
+    expect(context.connectors.github.calls[0]).toEqual({
+      method: "listTree",
+      input: {
+        repo: "owner/repo",
+        ref: undefined,
+        path: "src",
+        recursive: false,
+      },
+    });
+    expect(result.content[0]).toMatchObject({
+      text: expect.stringContaining("src/tools/\nsrc/index.ts (120 B)"),
+    });
+    expect(result.details).toMatchObject({
+      path: "src",
+      count: 2,
+      truncated: false,
+    });
+  });
+
+  it("reads a line range and reports the permalink at the resolved sha", async () => {
+    const context = createContext();
+    context.connectors.github = createFakeGitHubPort({
+      files: { "owner/repo/src/index.ts": "one\ntwo\nthree\nfour" },
+    });
+
+    const result = await githubReadFileTool.execute(
+      "call-1",
+      { repo: "owner/repo", path: "./src/index.ts", startLine: 2, endLine: 3 },
+      undefined,
+      undefined,
+      context
+    );
+
+    expect(result.content[0]).toMatchObject({
+      text:
+        "# owner/repo/src/index.ts @ 0123456 (lines 2–3 of 4)\n" +
+        "<https://github.com/owner/repo/blob/0123456789abcdef0123456789abcdef01234567/src/index.ts>\n\n" +
+        "two\nthree",
+    });
+    expect(result.details).toMatchObject({
+      startLine: 2,
+      endLine: 3,
+      lineCount: 4,
+      truncated: false,
+    });
+  });
+
+  it("refuses a line range outside the file and a path that is the root", async () => {
+    const context = createContext();
+    context.connectors.github = createFakeGitHubPort({
+      files: { "owner/repo/a.txt": "only" },
+    });
+
+    await expect(
+      githubReadFileTool.execute(
+        "call-1",
+        { repo: "owner/repo", path: "a.txt", startLine: 3 },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow("outside the file");
+    await expect(
+      githubReadFileTool.execute(
+        "call-2",
+        { repo: "owner/repo", path: "/" },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow("must name a file");
+  });
+
+  it("lists every github tool as read tier with a stable transcript line", () => {
+    const names = createWritingTools().map((tool) => tool.name);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        "github_resolve_ref",
+        "github_list_tree",
+        "github_read_file",
+      ])
+    );
+    expect(
+      summarizeToolResult(
+        "github_read_file",
+        {
+          content: [{ type: "text", text: "" }],
+          details: {
+            repo: "owner/repo",
+            path: "src/index.ts",
+            sha: "0123456789",
+          },
+        },
+        false
+      )
+    ).toBe("Read owner/repo/src/index.ts@0123456.");
   });
 });

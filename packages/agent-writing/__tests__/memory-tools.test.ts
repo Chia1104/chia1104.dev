@@ -16,7 +16,11 @@ import {
 } from "../src/tools/tool-set.ts";
 import type { WritingToolContext } from "../src/types.ts";
 
-import { createFakeContentPort, createFakeWebPort } from "./fixtures.ts";
+import {
+  createFakeContentPort,
+  createFakeGitHubPort,
+  createFakeWebPort,
+} from "./fixtures.ts";
 
 const SESSION_ID = "session-1";
 
@@ -26,6 +30,7 @@ const createContext = (): WritingToolContext & {
   agentSessionId: SESSION_ID,
   content: createFakeContentPort(),
   web: createFakeWebPort(),
+  connectors: { github: createFakeGitHubPort() },
   draft: new InMemoryDraftStore(),
   memory: new InMemoryMemoryPort(SESSION_ID),
   approvedDraftRevisions: new Map(),

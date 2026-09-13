@@ -26,13 +26,16 @@ catalog:
   "@types/express": ^5.0.6
   "@types/node": 26.4.1
   "@modelcontextprotocol/sdk": 1.30.0
+  "@octokit/core": ^7.0.8
+  "@octokit/graphql": ^9.0.5
+  "@octokit/request-error": ^7.1.2
+  "@octokit/types": ^18.0.0
   better-all: 0.0.9
   bun-types: ^1.4.1
   client-only: ^0.0.1
   dayjs: ^1.11.23
   diff: 8.0.4
   es-toolkit: 1.52.0
-  graphql-request: ^7.4.0
   ky: ^2.1.0
   server-only: ^0.0.1
   superjson: 2.2.6

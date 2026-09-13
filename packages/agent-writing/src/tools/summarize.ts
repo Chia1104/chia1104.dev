@@ -42,6 +42,29 @@ export const summarizeToolResult = <TResult>(
       const url = asString(details.url);
       return url ? `Fetched ${hostOf(url)}.` : "Fetched page.";
     }
+    case TOOL_NAMES.githubResolveRef: {
+      const repo = asString(details.repo);
+      const sha = asString(details.sha);
+      return repo && sha
+        ? `Resolved ${repo}@${asString(details.ref) ?? "default"} to ${sha.slice(0, 7)}.`
+        : "Resolved a GitHub ref.";
+    }
+    case TOOL_NAMES.githubListTree: {
+      const repo = asString(details.repo);
+      const path = asString(details.path);
+      const count = asNumber(details.count);
+      return repo
+        ? `Listed ${repo}/${path || ""}${count === undefined ? "" : ` (${count} entries)`}.`
+        : "Listed a GitHub tree.";
+    }
+    case TOOL_NAMES.githubReadFile: {
+      const repo = asString(details.repo);
+      const path = asString(details.path);
+      const sha = asString(details.sha);
+      return repo && path
+        ? `Read ${repo}/${path}${sha ? `@${sha.slice(0, 7)}` : ""}.`
+        : "Read a GitHub file.";
+    }
     case TOOL_NAMES.searchMemory: {
       const query = asString(details.query);
       const hits = asJsonArray(details.hits);
