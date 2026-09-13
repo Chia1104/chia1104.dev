@@ -106,7 +106,7 @@ export const ComposerAttachment = ({
   return (
     <div
       className={cn(
-        "text-foreground flex min-h-6.5 items-center gap-2 px-2 py-1",
+        "text-foreground flex h-6.5 items-center gap-2 px-2",
         className
       )}>
       {onPress ? (
@@ -129,8 +129,8 @@ export const ComposerAttachment = ({
           onPress={onDismiss}
           size="sm"
           variant="ghost"
-          className="size-6">
-          <X className="size-3.5" />
+          className="size-5.5 min-w-5.5">
+          <X className="size-3" />
         </Button>
       ) : null}
     </div>
@@ -169,7 +169,7 @@ export const ComposerContext = () => {
             action={
               attached ? null : (
                 <Button
-                  className="h-6 p-1 text-[11px]"
+                  className="h-5.5 px-1.5 text-[11px]"
                   onPress={() => setAttached(key, true)}
                   size="sm"
                   variant="ghost">
