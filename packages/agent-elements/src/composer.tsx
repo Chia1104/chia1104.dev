@@ -260,8 +260,6 @@ const ComposerFooter = memo(
     onModelPickerOpenChange,
     providerOrder,
   }: ComposerFooterProps) => {
-    const labels = useAgentLabels();
-    const status = useAgentStatus();
     return (
       <div className="text-muted flex h-6.5 items-center gap-1 px-1.5 text-[11px]">
         <SessionModelPicker
@@ -272,13 +270,6 @@ const ComposerFooter = memo(
         />
         <span className="flex-1" />
         <ContextUsage />
-        <span className="shrink-0 px-1">
-          {status === "running"
-            ? labels.statusStreaming
-            : status === "awaiting_approval"
-              ? labels.statusAwaitingApproval
-              : labels.statusReady}
-        </span>
       </div>
     );
   }
