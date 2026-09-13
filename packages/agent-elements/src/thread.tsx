@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode, UIEvent, WheelEvent } from "react";
+import type { ReactNode, TouchEvent, UIEvent, WheelEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -405,6 +405,8 @@ interface ThreadViewportProps {
   thoughtLabel: string;
 }
 
+const COMPACT_INTENT_PX = 24;
+
 /** Owns transient scroll state so scrolling never rerenders the transcript. */
 const ThreadViewport = ({
   busy,
@@ -425,6 +427,11 @@ const ThreadViewport = ({
   const lastScrollTopRef = useRef(0);
   const previousTransitionRef = useRef({ connection, pendingPrompt });
   const [following, setFollowing] = useState(true);
+  const setComposerCompact = useAgentSession(
+    (state) => state.setComposerCompact
+  );
+  const intentRef = useRef(0);
+  const touchYRef = useRef<number | null>(null);
 
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -455,6 +462,21 @@ const ThreadViewport = ({
     setFollowing(next);
   }, []);
 
+  /** `delta` > 0 means the transcript moves toward older content. */
+  const trackIntent = useCallback(
+    (delta: number) => {
+      const element = scrollRef.current;
+      if (!element || element.scrollHeight <= element.clientHeight) return;
+      if (Math.sign(delta) !== Math.sign(intentRef.current))
+        intentRef.current = 0;
+      intentRef.current += delta;
+      if (Math.abs(intentRef.current) < COMPACT_INTENT_PX) return;
+      setComposerCompact(intentRef.current > 0);
+      intentRef.current = 0;
+    },
+    [setComposerCompact]
+  );
+
   const scroll = useCallback(
     (target: "bottom" | "latest") => {
       const element = scrollRef.current;
@@ -468,9 +490,10 @@ const ThreadViewport = ({
         virtualizer.scrollToIndex(promptIndex, { align: "start" });
       } else virtualizer.scrollToIndex(lastIndex, { align: "end" });
       lastScrollTopRef.current = element.scrollTop;
+      setComposerCompact(false);
       syncFollowing(isAtBottom(element));
     },
-    [busy, rows, syncFollowing, virtualizer]
+    [busy, rows, setComposerCompact, syncFollowing, virtualizer]
   );
 
   // Follow actual layout growth rather than scheduling a scroll for every streamed text chunk.
@@ -512,13 +535,27 @@ const ThreadViewport = ({
   const onWheelCapture = useCallback(
     (event: WheelEvent<HTMLDivElement>) => {
       if (event.deltaY < 0) syncFollowing(false);
+      trackIntent(-event.deltaY);
     },
-    [syncFollowing]
+    [syncFollowing, trackIntent]
   );
 
-  const stopFollowing = useCallback(
-    () => syncFollowing(false),
-    [syncFollowing]
+  const onTouchStartCapture = useCallback(
+    (event: TouchEvent<HTMLDivElement>) => {
+      touchYRef.current = event.touches[0]?.clientY ?? null;
+    },
+    []
+  );
+
+  const onTouchMoveCapture = useCallback(
+    (event: TouchEvent<HTMLDivElement>) => {
+      syncFollowing(false);
+      const y = event.touches[0]?.clientY;
+      if (y === undefined || touchYRef.current === null) return;
+      trackIntent(y - touchYRef.current);
+      touchYRef.current = y;
+    },
+    [syncFollowing, trackIntent]
   );
 
   return (
@@ -527,7 +564,8 @@ const ThreadViewport = ({
         ref={scrollRef}
         className="min-h-0 flex-1 px-4 py-6"
         onScroll={onScroll}
-        onTouchMoveCapture={stopFollowing}
+        onTouchMoveCapture={onTouchMoveCapture}
+        onTouchStartCapture={onTouchStartCapture}
         onWheelCapture={onWheelCapture}
         size={48}>
         {!hasRows ? (

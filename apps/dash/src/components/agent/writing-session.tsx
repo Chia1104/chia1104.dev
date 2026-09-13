@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
 
 import { attachmentKeyOf } from "@chia/agent-elements/attachment";
 import { Composer, ComposerContext } from "@chia/agent-elements/composer";
@@ -11,7 +10,6 @@ import { useSessionDetail } from "@chia/agent-elements/provider";
 import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
 import { memoryToolRenderers } from "@chia/agent-elements/renderers/memory";
 import { webToolRenderers } from "@chia/agent-elements/renderers/web";
-import { SessionModelPicker } from "@chia/agent-elements/session-model-picker";
 import { Thread } from "@chia/agent-elements/thread";
 
 import { SessionDrafts } from "./session-drafts";
@@ -47,18 +45,6 @@ export const WritingSession = ({
     (draft) => !onScreen.has(attachmentKeyOf({ type: "draft", id: draft.id }))
   );
 
-  const [modelPickerOpen, setModelPickerOpen] = useState(false);
-  const localCommands = useMemo(
-    () => [
-      {
-        name: "model",
-        description: "Switch the response model for this conversation.",
-        onSelect: () => setModelPickerOpen(true),
-      },
-    ],
-    []
-  );
-
   return (
     <>
       <header className="flex h-12 min-w-0 shrink-0 items-center gap-3 px-3.5">
@@ -85,15 +71,8 @@ export const WritingSession = ({
             </>
           ) : undefined
         }
-        localCommands={localCommands}
         placeholder="Ask the writing agent…"
-        toolbar={
-          <SessionModelPicker
-            isOpen={modelPickerOpen}
-            onOpenChange={setModelPickerOpen}
-            providerOrder={PROVIDER_ORDER}
-          />
-        }
+        providerOrder={PROVIDER_ORDER}
       />
     </>
   );

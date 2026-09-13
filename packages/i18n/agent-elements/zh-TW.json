@@ -4,7 +4,6 @@
   "composerPlaceholder": "問點什麼…",
   "composerPlaceholderRunning": "agent 正在處理…",
   "composerPlaceholderApproval": "請先允許或拒絕待處理的工具。",
-  "composerHint": "Enter 送出 · Shift+Enter 換行",
   "slashMenu": "指令與 skills",
   "slashMenuHint": "↑↓ 移動 · Enter 選取",
   "slashMenuDismiss": "Esc 關閉",

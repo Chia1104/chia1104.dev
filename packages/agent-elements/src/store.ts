@@ -57,6 +57,8 @@ export interface AgentSessionState {
    * transcript.
    */
   failure: string | null;
+  /** The operator is scrolling back through the transcript; the composer may collapse. */
+  composerCompact: boolean;
 }
 
 export interface PromptOptions {
@@ -81,6 +83,7 @@ export interface AgentSessionActions {
   /** Surfaces a failure from outside the stream (a mutation) in the same place. */
   reportFailure: (message: string) => void;
   dismissFailure: () => void;
+  setComposerCompact: (compact: boolean) => void;
   /** Cancels any open stream. The store is unusable afterwards. */
   dispose: () => void;
 }
@@ -395,6 +398,7 @@ export const createAgentSessionStore = ({
       pendingPrompt: null,
       composerSeed: null,
       failure: null,
+      composerCompact: false,
 
       replaceDetail: (detail) => {
         // Supersedes any stream or re-sync in flight: their view is of a branch that is gone.
@@ -515,6 +519,10 @@ export const createAgentSessionStore = ({
       reportFailure: (message) => set({ failure: message }),
 
       dismissFailure: () => set({ failure: null }),
+      setComposerCompact: (compact) => {
+        if (get().composerCompact !== compact)
+          set({ composerCompact: compact });
+      },
 
       dispose: () => {
         generation++;

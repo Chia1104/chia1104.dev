@@ -58,12 +58,10 @@ const MAX_INPUT_HEIGHT = 200;
 export interface ComposerProps {
   className?: string;
   placeholder?: string;
-  /** Left of send. Defaults to the model picker; pass `null` for none. */
-  toolbar?: ReactNode;
   /** Stacked above the input. Compose from `ComposerContext` and `ComposerAttachment` rows. */
   attachments?: ReactNode;
-  /** Tucked under the input. Defaults to `ComposerStatus`; pass `null` for none. */
-  footer?: ReactNode;
+  /** Providers offered first in the model picker. */
+  providerOrder?: readonly string[];
   /** Client-only commands that act on the composer UI instead of starting an agent turn. */
   localCommands?: readonly ComposerLocalCommand[];
 }
@@ -249,22 +247,43 @@ const ComposerFailure = () => {
   );
 };
 
-export const ComposerStatus = () => {
-  const labels = useAgentLabels();
-  const status = useAgentStatus();
-  return (
-    <div className="text-muted flex min-h-6.5 items-center justify-between px-2 py-1 text-[11px]">
-      <span>{labels.composerHint}</span>
-      <span>
-        {status === "running"
-          ? labels.statusStreaming
-          : status === "awaiting_approval"
-            ? labels.statusAwaitingApproval
-            : labels.statusReady}
-      </span>
-    </div>
-  );
-};
+interface ComposerFooterProps {
+  modelPickerOpen: boolean;
+  onModelPickerOpenChange: (isOpen: boolean) => void;
+  providerOrder?: readonly string[];
+}
+
+/** Memoized so typing in the input does not re-render the picker and usage ring. */
+const ComposerFooter = memo(
+  ({
+    modelPickerOpen,
+    onModelPickerOpenChange,
+    providerOrder,
+  }: ComposerFooterProps) => {
+    const labels = useAgentLabels();
+    const status = useAgentStatus();
+    return (
+      <div className="text-muted flex h-6.5 items-center gap-1 px-1.5 text-[11px]">
+        <SessionModelPicker
+          className="h-5.5 gap-1 px-1.5"
+          isOpen={modelPickerOpen}
+          onOpenChange={onModelPickerOpenChange}
+          providerOrder={providerOrder}
+        />
+        <span className="flex-1" />
+        <ContextUsage />
+        <span className="shrink-0 px-1">
+          {status === "running"
+            ? labels.statusStreaming
+            : status === "awaiting_approval"
+              ? labels.statusAwaitingApproval
+              : labels.statusReady}
+        </span>
+      </div>
+    );
+  }
+);
+ComposerFooter.displayName = "ComposerFooter";
 
 /** Negative margin tucks rows under the composer. A bottom well is `z-0` so it cannot paint over the input. */
 const ComposerWell = ({
@@ -285,67 +304,45 @@ const ComposerWell = ({
   </div>
 );
 
-interface ComposerToolbarProps {
+interface ComposerSendProps {
   isEmpty: boolean;
-  modelPickerOpen: boolean;
-  onModelPickerOpenChange: (isOpen: boolean) => void;
   onSend: () => void;
-  toolbar: ReactNode;
 }
 
-/** Memoized so typing in the input does not re-render the picker, usage ring and buttons. */
-const ComposerToolbar = memo(
-  ({
-    isEmpty,
-    modelPickerOpen,
-    onModelPickerOpenChange,
-    onSend,
-    toolbar,
-  }: ComposerToolbarProps) => {
-    const labels = useAgentLabels();
-    const abort = useAbortSession();
-    const canPrompt = useCanPrompt();
-    const busy = useAgentBusy();
-    return (
-      <div className="z-20 flex items-center gap-2">
-        <div className="flex min-w-0 flex-1 items-center gap-1">
-          {toolbar === undefined ? (
-            <SessionModelPicker
-              isOpen={modelPickerOpen}
-              onOpenChange={onModelPickerOpenChange}
-            />
-          ) : (
-            toolbar
-          )}
-        </div>
-        <ContextUsage />
-        {busy ? (
-          <Button
-            aria-label={labels.stop}
-            isIconOnly
-            isPending={abort.isPending}
-            onPress={() => abort.mutate()}
-            size="sm"
-            className="rounded-full"
-            variant="danger-soft">
-            <Square className="size-3.5 fill-current" />
-          </Button>
-        ) : (
-          <Button
-            aria-label={labels.send}
-            className="rounded-full"
-            isDisabled={!canPrompt || isEmpty}
-            isIconOnly
-            onPress={onSend}
-            size="sm">
-            <ArrowUp className="size-4" />
-          </Button>
-        )}
-      </div>
-    );
-  }
-);
-ComposerToolbar.displayName = "ComposerToolbar";
+/** Memoized so typing in the input does not re-render the button. */
+const ComposerSend = memo(({ isEmpty, onSend }: ComposerSendProps) => {
+  const labels = useAgentLabels();
+  const abort = useAbortSession();
+  const canPrompt = useCanPrompt();
+  const busy = useAgentBusy();
+  return (
+    <div className="absolute right-1.5 bottom-1.5 z-20">
+      {busy ? (
+        <Button
+          aria-label={labels.stop}
+          className="size-7 min-w-7 rounded-full"
+          isIconOnly
+          isPending={abort.isPending}
+          onPress={() => abort.mutate()}
+          size="sm"
+          variant="danger-soft">
+          <Square className="size-3.5 fill-current" />
+        </Button>
+      ) : (
+        <Button
+          aria-label={labels.send}
+          className="size-7 min-w-7 rounded-full"
+          isDisabled={!canPrompt || isEmpty}
+          isIconOnly
+          onPress={onSend}
+          size="sm">
+          <ArrowUp className="size-4" />
+        </Button>
+      )}
+    </div>
+  );
+});
+ComposerSend.displayName = "ComposerSend";
 
 /**
  * Remounted via `key={seed?.id}` so a composer seed is a fresh editor, not a patch into a
@@ -362,11 +359,10 @@ const initialDraftOf = (seed: ComposerSeed | null): ComposerDraft =>
 const ComposerEditor = ({
   attachments,
   className,
-  footer = <ComposerStatus />,
   localCommands,
   placeholder,
+  providerOrder,
   seed,
-  toolbar,
 }: ComposerProps & { seed: ComposerSeed | null }) => {
   const labels = useAgentLabels();
   const prompt = useAgentSession((state) => state.prompt);
@@ -391,21 +387,27 @@ const ComposerEditor = ({
   const menuId = useId();
   const { text, cursor, highlightedId, activeDescendantId, dismissedSlashKey } =
     draft;
+  const failure = useAgentSession((state) => state.failure);
+  const compactIntent = useAgentSession((state) => state.composerCompact);
+  const setComposerCompact = useAgentSession(
+    (state) => state.setComposerCompact
+  );
+  const compact =
+    compactIntent &&
+    text.trim().length === 0 &&
+    status !== "awaiting_approval" &&
+    !failure;
 
   const resolvedLocalCommands = useMemo<readonly ComposerLocalCommand[]>(
     () => [
-      ...(toolbar === undefined
-        ? [
-            {
-              name: "model",
-              description: labels.switchModel,
-              onSelect: () => setModelPickerOpen(true),
-            },
-          ]
-        : []),
+      {
+        name: "model",
+        description: labels.switchModel,
+        onSelect: () => setModelPickerOpen(true),
+      },
       ...(localCommands ?? []),
     ],
-    [labels.switchModel, localCommands, toolbar]
+    [labels.switchModel, localCommands]
   );
   const { items: menuItems, commandNames } = useSlashMenuItems(
     resolvedLocalCommands,
@@ -573,7 +575,14 @@ const ComposerEditor = ({
           size="pulse-inner"
           theme="light"
           strength={100}>
-          <div className="bg-surface border-border focus-within:border-field-border-focus flex flex-col gap-1 rounded-2xl border px-3 pt-3 pb-2 shadow-xs transition-colors">
+          <div
+            className="bg-surface border-border focus-within:border-field-border-focus relative flex cursor-text flex-col rounded-2xl border px-3 py-2 shadow-xs transition-colors"
+            onPointerDown={(event) => {
+              if (event.target === event.currentTarget) {
+                event.preventDefault();
+                inputRef.current?.focus();
+              }
+            }}>
             <TextArea
               ref={inputRef}
               aria-activedescendant={menuOpen ? activeDescendantId : undefined}
@@ -581,7 +590,7 @@ const ComposerEditor = ({
               aria-expanded={menuOpen}
               aria-haspopup="listbox"
               aria-label={labels.send}
-              className="min-h-10 w-full resize-none rounded-none border-0 bg-transparent p-0 text-sm leading-6 shadow-none focus:ring-0"
+              className="min-h-6 w-full resize-none rounded-none border-0 bg-transparent p-0 pr-8 text-sm leading-6 shadow-none focus:ring-0"
               disabled={!canPrompt}
               onChange={(event) =>
                 dispatch({
@@ -590,6 +599,7 @@ const ComposerEditor = ({
                   cursor: event.target.selectionStart,
                 })
               }
+              onFocus={() => setComposerCompact(false)}
               onKeyDown={(event) => {
                 if (event.nativeEvent.isComposing) return;
                 if (menuOpen && event.key === "Escape") {
@@ -642,17 +652,31 @@ const ComposerEditor = ({
               value={text}
               variant="secondary"
             />
-            <ComposerToolbar
-              isEmpty={text.trim().length === 0}
-              modelPickerOpen={modelPickerOpen}
-              onModelPickerOpenChange={setModelPickerOpen}
-              onSend={send}
-              toolbar={toolbar}
-            />
+            <div
+              aria-hidden
+              className={cn(
+                "grid transition-[grid-template-rows] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
+                compact ? "grid-rows-[0fr]" : "grid-rows-[1fr]"
+              )}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                inputRef.current?.focus();
+              }}>
+              <div className="min-h-0 overflow-hidden">
+                <div className="h-13" />
+              </div>
+            </div>
+            <ComposerSend isEmpty={text.trim().length === 0} onSend={send} />
           </div>
         </BorderBeam>
 
-        {footer ? <ComposerWell side="bottom">{footer}</ComposerWell> : null}
+        <ComposerWell side="bottom">
+          <ComposerFooter
+            modelPickerOpen={modelPickerOpen}
+            onModelPickerOpenChange={setModelPickerOpen}
+            providerOrder={providerOrder}
+          />
+        </ComposerWell>
       </div>
     </div>
   );

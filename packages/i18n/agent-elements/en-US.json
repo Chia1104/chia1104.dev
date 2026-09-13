@@ -4,7 +4,6 @@
   "composerPlaceholder": "Ask anything…",
   "composerPlaceholderRunning": "The agent is working…",
   "composerPlaceholderApproval": "Approve or reject the pending tool first.",
-  "composerHint": "Enter to send · Shift+Enter for a new line",
   "slashMenu": "Commands and skills",
   "slashMenuHint": "↑↓ Navigate · Enter Select",
   "slashMenuDismiss": "Esc Close",
