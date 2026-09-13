@@ -1067,7 +1067,7 @@ describe("replaceSectionTool", () => {
       content: SECTIONED,
     });
 
-    await replaceSectionTool.execute(
+    const result = await replaceSectionTool.execute(
       "call-1",
       { draftId: DRAFT_ID, locale: "en", heading: "Caveats", content: "" },
       undefined,
@@ -1075,6 +1075,11 @@ describe("replaceSectionTool", () => {
       context
     );
 
+    expect(result.content[0]).toMatchObject({
+      text: expect.stringContaining(
+        'Deleted section "Caveats" (was lines 11-13)'
+      ),
+    });
     expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
       "Intro paragraph.\n\n## Setup\n\nInstall it.\n\n### Install\n\nRun the command."
     );

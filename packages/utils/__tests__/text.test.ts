@@ -54,6 +54,26 @@ describe("replaceExact", () => {
     });
   });
 
+  it("never lets whitespace dropped from the target's edges match inside a word", () => {
+    expect(replaceExact("foobar", " foo ", "X")).toMatchObject({
+      ok: false,
+      reason: "not_found",
+    });
+    expect(replaceExact("foobar", "foo ", "X")).toMatchObject({
+      ok: false,
+      reason: "not_found",
+    });
+    expect(replaceExact("使用foo工具", " foo ", "X")).toMatchObject({
+      ok: false,
+      reason: "not_found",
+    });
+    expect(replaceExact("**foo** bar", " foo ", "X")).toMatchObject({
+      ok: true,
+      content: "**X** bar",
+      match: "whitespace",
+    });
+  });
+
   it("prefers the exact match and counts every relaxed match for ambiguity", () => {
     expect(replaceExact("x \nx\nx  ", "x", "y", true)).toMatchObject({
       ok: true,
@@ -186,6 +206,22 @@ describe("applyEdits", () => {
       edits: [
         { replacements: 1, offsets: [2], match: "exact" },
         { replacements: 1, offsets: [0], match: "trailing_whitespace" },
+      ],
+    });
+  });
+
+  it("moves an earlier offset a later edit swallowed to that replacement's start", () => {
+    expect(
+      applyEdits("abc", [
+        { oldString: "b", newString: "X" },
+        { oldString: "aXc", newString: "q" },
+      ])
+    ).toEqual({
+      ok: true,
+      content: "q",
+      edits: [
+        { replacements: 1, offsets: [0], match: "exact" },
+        { replacements: 1, offsets: [0], match: "exact" },
       ],
     });
   });

@@ -575,6 +575,10 @@ export const replaceSectionTool = defineTool({
       throw new Error(noBodyMessage(locale));
     }
     const section = sectionAt(await extractSections(body), heading);
+    const lastLine =
+      section.line +
+      body.slice(section.start, section.end).split("\n").length -
+      1;
     // Deleting takes the blank lines before the section with it, so the neighbours close up.
     let start = section.start;
     while (deleted && start > 0 && body[start - 1] === "\n") start -= 1;
@@ -592,7 +596,7 @@ export const replaceSectionTool = defineTool({
       languageMismatch(locale, draft.translations[locale]?.content ?? "") ??
       null;
     return textResult(
-      `${deleted ? "Deleted" : "Replaced"} section "${section.path}" (was lines ${section.line}-${section.line + oldString.split("\n").length - 1}) in draft ${draftId} (${locale}, revision ${draft.revision}).` +
+      `${deleted ? "Deleted" : "Replaced"} section "${section.path}" (was lines ${section.line}-${lastLine}) in draft ${draftId} (${locale}, revision ${draft.revision}).` +
         `${warning ? `\n\nWarning: ${warning}` : ""}\n\n${landed?.context ?? ""}`,
       {
         draftId,

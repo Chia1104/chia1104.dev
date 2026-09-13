@@ -4,7 +4,9 @@ export type ExactReplaceFailure = "empty_target" | "not_found" | "ambiguous";
  * How loosely the target was matched, in the order the rounds run: `exact` byte for byte;
  * `trailing_whitespace` ignoring whitespace at the end of each line; `whitespace` ignoring it
  * at both ends; `punctuation` also reading typographic dashes, quotes and spaces as their ASCII
- * forms. Word content never varies, so the first round that matches wins.
+ * forms. Word content never varies: whitespace dropped from the target's outer edges must
+ * meet a non-word character or the text's edge, so a fragment never matches inside a word. The
+ * first round that matches wins.
  */
 export type MatchMode =
   | "exact"
@@ -66,13 +68,17 @@ const punctuationPattern = (line: string) =>
 
 const HORIZONTAL_SPACE = "[ \\t\\u00A0\\u2000-\\u200A\\u202F\\u205F\\u3000]*";
 
+/** Letters, digits and underscore in any script; what a dropped edge space must not touch. */
+const WORD_CHAR = "[\\p{L}\\p{N}_]";
+
 /**
  * A regex that finds the target under one relaxed round. Whitespace inside the match is
  * absorbed at line boundaries only, so the indentation before the first line and the space
  * after the last stay in the content rather than being replaced.
  */
 const relaxedPattern = (target: string, mode: Exclude<MatchMode, "exact">) => {
-  const lines = target.split("\n").map((line) => {
+  const raw = target.split("\n");
+  const lines = raw.map((line) => {
     const trimmed =
       mode === "trailing_whitespace" ? line.trimEnd() : line.trim();
     return mode === "punctuation"
@@ -83,7 +89,15 @@ const relaxedPattern = (target: string, mode: Exclude<MatchMode, "exact">) => {
     mode === "trailing_whitespace"
       ? `[ \\t]*\\n`
       : `${HORIZONTAL_SPACE}\\n${HORIZONTAL_SPACE}`;
-  return new RegExp(lines.join(boundary), "g");
+  const first = raw[0] ?? "";
+  const last = raw[raw.length - 1] ?? "";
+  const leadDropped =
+    mode !== "trailing_whitespace" && first !== first.trimStart();
+  const tailDropped = last !== last.trimEnd();
+  return new RegExp(
+    `${leadDropped ? `(?<!${WORD_CHAR})` : ""}${lines.join(boundary)}${tailDropped ? `(?!${WORD_CHAR})` : ""}`,
+    "gu"
+  );
 };
 
 const RELAXED_ROUNDS = [
@@ -265,18 +279,21 @@ export const applyEdits = (
       };
     }
     // A relaxed match removes a span of a different length than `oldString`, so each shift
-    // comes from the span itself.
-    const shiftBefore = (offset: number) =>
-      result.matches
-        .filter((span) => span.start < offset)
-        .reduce(
-          (sum, span) => sum + edit.newString.length - (span.end - span.start),
-          0
-        );
+    // comes from the span itself; an earlier replacement this edit swallowed moves to where
+    // its replacement starts.
+    const remap = (offset: number): number => {
+      let shifted = offset;
+      for (const [k, span] of result.matches.entries()) {
+        if (span.end <= offset) {
+          shifted += edit.newString.length - (span.end - span.start);
+        } else if (span.start <= offset) {
+          return result.offsets[k] ?? shifted;
+        }
+      }
+      return shifted;
+    };
     for (const previous of applied) {
-      previous.offsets = previous.offsets.map(
-        (offset) => offset + shiftBefore(offset)
-      );
+      previous.offsets = previous.offsets.map(remap);
     }
     current = result.content;
     applied.push({
