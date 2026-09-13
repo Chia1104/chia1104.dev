@@ -2,8 +2,6 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Command, CommandList } from "@chia/ui/cmd";
-
 import { FeedSearch } from "@/components/commons/feed-search";
 import { useSearchFeeds } from "@/hooks/use-search-feeds";
 
@@ -34,11 +32,7 @@ const mockSearchResult = (
 
 function renderSearch() {
   return renderWithProviders(
-    <Command shouldFilter={false}>
-      <CommandList>
-        <FeedSearch query="test" locale="zh-TW" onSelect={vi.fn()} />
-      </CommandList>
-    </Command>
+    <FeedSearch query="test" locale="zh-TW" onSelect={vi.fn()} />
   );
 }
 
@@ -122,11 +116,7 @@ describe("FeedSearch", () => {
     );
 
     renderWithProviders(
-      <Command shouldFilter={false}>
-        <CommandList>
-          <FeedSearch query="test" locale="zh-TW" onSelect={onSelect} />
-        </CommandList>
-      </Command>
+      <FeedSearch query="test" locale="zh-TW" onSelect={onSelect} />
     );
     await user.click(screen.getByText("Hello world"));
 

@@ -15,9 +15,8 @@ import type { Variant } from "motion/react";
 import { motion } from "motion/react";
 
 import { cn } from "../utils/cn.util";
+import useCMD from "../utils/use-cmd";
 import useTheme from "../utils/use-theme";
-
-import { useCMD } from "./cmd";
 
 interface Props {
   variants?: ThemeVariants;

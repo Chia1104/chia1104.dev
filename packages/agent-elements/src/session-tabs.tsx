@@ -228,17 +228,17 @@ export const SessionTabs = ({
               </Tooltip>
             </Popover.Trigger>
             <Popover.Content
-              className="bg-surface/70 w-72 max-w-[calc(100vw-1.5rem)] p-0 backdrop-blur-sm"
+              className="bg-surface/(--popover-opacity) w-72 max-w-[calc(100vw-1.5rem)] p-0"
               placement="bottom end">
               <Popover.Dialog className="flex flex-col p-0">
-                <div className="border-border border-b p-2">
+                <div className="border-border border-b px-1 py-1.5">
                   <SearchField
                     aria-label={labels.searchSessions}
                     autoFocus
                     fullWidth
                     onChange={setQuery}
                     value={query}>
-                    <SearchField.Group>
+                    <SearchField.Group className="border-0 bg-transparent shadow-none focus-within:ring-0 hover:bg-transparent data-[focus-within=true]:ring-0 data-[hovered=true]:bg-transparent">
                       <SearchField.SearchIcon />
                       <SearchField.Input
                         className="text-xs"

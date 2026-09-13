@@ -6,25 +6,13 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster as ST } from "sonner";
 
-import { useCMD } from "@chia/ui/cmd";
 import Cursor from "@chia/ui/cursor";
 import type { Theme } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
 
 import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
-import { useChatDockStore } from "@/stores/chat-dock/store";
 import { useSettingsStore } from "@/stores/settings/store";
-
-/** Mounted only while chat is enabled so a disabled chat never swallows the shortcut. */
-const ContactCMD = () => {
-  const toggle = useChatDockStore((state) => state.toggle);
-  useCMD(false, {
-    cmd: "i",
-    onKeyDown: toggle,
-  });
-  return null;
-};
 
 const Toaster = () => {
   const { theme } = useTheme();
@@ -41,7 +29,6 @@ const Toaster = () => {
 
 const AppPlugins = () => {
   const cursorEnabled = useSettingsStore((s) => s.cursorEnabled);
-  const aiEnabled = useSettingsStore((s) => s.aiEnabled);
   return (
     <>
       <Toaster />
@@ -53,8 +40,6 @@ const AppPlugins = () => {
           }}
         />
       )}
-      {aiEnabled && <ContactCMD />}
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       {env.NEXT_PUBLIC_ENV === "production" && (
         <>
           <VercelAnalytics />

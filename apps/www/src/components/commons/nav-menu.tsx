@@ -5,19 +5,20 @@ import { useSelectedLayoutSegments } from "next/navigation";
 import { useState } from "react";
 import type { FC } from "react";
 
-import { Button, Kbd, Tooltip, TooltipContent, Tabs } from "@heroui/react";
+import {
+  Button,
+  Header,
+  Kbd,
+  ListBox,
+  Tooltip,
+  TooltipContent,
+  Tabs,
+} from "@heroui/react";
 import { useTranslations } from "next-intl";
 
-import {
-  CommandDialog,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-  useCMD,
-} from "@chia/ui/cmd";
+import { CommandDialog, CommandInput } from "@chia/ui/cmd";
 import { Theme, MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
+import useCMD from "@chia/ui/utils/use-cmd";
 import useTheme from "@chia/ui/utils/use-theme";
 
 import { FeedSearch } from "@/components/commons/feed-search";
@@ -57,123 +58,99 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
         </TooltipContent>
       </Tooltip>
       <CommandDialog
-        open={open}
+        aria-label={t("search-placeholder")}
+        isOpen={open}
         onOpenChange={(isOpen) => {
           setOpen(isOpen);
           if (!isOpen) {
             setQuery("");
           }
         }}
-        commandProps={{ shouldFilter: false }}>
-        <CommandInput
-          value={query}
-          onValueChange={setQuery}
-          placeholder={t("search-placeholder")}
-        />
-        <CommandList>
-          {query.trim().length >= 2 ? (
-            <FeedSearch
-              query={query}
-              locale={props.locale ?? Locale.ZH_TW}
-              onSelect={closeCommand}
-            />
-          ) : (
-            <>
-              <CommandGroup heading={t("pages")}>
-                {Object.entries(navItems).map(([path, { nameKey }]) => {
-                  return (
-                    <CommandItem
-                      aria-label={tRoutes(nameKey)}
-                      className="gap-5"
-                      key={path}
-                      onSelect={() => {
-                        router.push(path, { locale: props.locale });
-                        closeCommand();
-                      }}>
-                      <div className="i-mdi-paper size-5" />
-                      {tRoutes(nameKey)}
-                    </CommandItem>
-                  );
-                })}
-              </CommandGroup>
-              <CommandSeparator className="mb-2" />
-              <CommandGroup
-                heading={
-                  <span className="flex items-center justify-between">
-                    <p>{t("contact")}</p>
-                    <Kbd className="text-xs">
-                      <Kbd.Abbr keyValue="command" />
-                      <Kbd.Content>I</Kbd.Content>
-                    </Kbd>
-                  </span>
-                }>
-                {Object.entries(contact).map(([key, { name, icon, link }]) => (
-                  <CommandItem
-                    className="gap-5"
-                    key={key}
-                    onSelect={() => {
-                      window.open(link, "_blank");
-                      closeCommand();
-                    }}>
-                    {icon}
-                    {name}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-              <CommandSeparator className="mb-2" />
-              <CommandGroup
-                heading={
-                  <span className="flex items-center justify-between">
-                    <p>{t("theme", { theme: theme ?? "-" })}</p>
-                    <Kbd className="text-xs">
-                      <Kbd.Abbr keyValue="command" />
-                      <Kbd.Content>J</Kbd.Content>
-                    </Kbd>
-                  </span>
-                }>
-                <CommandItem
-                  defaultChecked={theme === Theme.SYSTEM}
-                  className="gap-5"
-                  onSelect={() => {
-                    setTheme(Theme.SYSTEM);
+        inputValue={query}
+        onInputChange={setQuery}>
+        <CommandInput placeholder={t("search-placeholder")} />
+        {query.trim().length >= 2 ? (
+          <FeedSearch
+            query={query}
+            locale={props.locale ?? Locale.ZH_TW}
+            onSelect={closeCommand}
+          />
+        ) : (
+          <ListBox
+            aria-label={t("search-placeholder")}
+            className="max-h-[300px] overflow-y-auto">
+            <ListBox.Section>
+              <Header>{t("pages")}</Header>
+              {Object.entries(navItems).map(([path, { nameKey }]) => (
+                <ListBox.Item
+                  key={path}
+                  id={path}
+                  textValue={tRoutes(nameKey)}
+                  className="gap-5 px-2 py-2.5 text-sm"
+                  onAction={() => {
+                    router.push(path, { locale: props.locale });
+                    closeCommand();
+                  }}>
+                  <div className="i-mdi-paper size-5" />
+                  {tRoutes(nameKey)}
+                </ListBox.Item>
+              ))}
+            </ListBox.Section>
+            <ListBox.Section>
+              <Header className="flex items-center justify-between">
+                <p>{t("contact")}</p>
+                <Kbd className="text-xs">
+                  <Kbd.Abbr keyValue="command" />
+                  <Kbd.Content>I</Kbd.Content>
+                </Kbd>
+              </Header>
+              {Object.entries(contact).map(([key, { name, icon, link }]) => (
+                <ListBox.Item
+                  key={key}
+                  id={key}
+                  textValue={name}
+                  className="gap-5 px-2 py-2.5 text-sm"
+                  onAction={() => {
+                    window.open(link, "_blank");
+                    closeCommand();
+                  }}>
+                  {icon}
+                  {name}
+                </ListBox.Item>
+              ))}
+            </ListBox.Section>
+            <ListBox.Section>
+              <Header className="flex items-center justify-between">
+                <p>{t("theme", { theme: theme ?? "-" })}</p>
+                <Kbd className="text-xs">
+                  <Kbd.Abbr keyValue="command" />
+                  <Kbd.Content>J</Kbd.Content>
+                </Kbd>
+              </Header>
+              {[
+                { value: Theme.SYSTEM, label: t("theme-system") },
+                { value: Theme.DARK, label: t("theme-dark") },
+                { value: Theme.LIGHT, label: t("theme-light") },
+              ].map(({ value, label }) => (
+                <ListBox.Item
+                  key={value}
+                  id={`theme-${value}`}
+                  textValue={label}
+                  className="gap-5 px-2 py-2.5 text-sm"
+                  onAction={() => {
+                    setTheme(value);
                     closeCommand();
                   }}>
                   <MotionThemeIcon
-                    theme={Theme.SYSTEM}
+                    theme={value}
                     variants={defaultThemeVariants}
                   />
-                  {t("theme-system")}
-                </CommandItem>
-                <CommandItem
-                  defaultChecked={theme === Theme.DARK}
-                  className="gap-5"
-                  onSelect={() => {
-                    setTheme(Theme.DARK);
-                    closeCommand();
-                  }}>
-                  <MotionThemeIcon
-                    theme={Theme.DARK}
-                    variants={defaultThemeVariants}
-                  />
-                  {t("theme-dark")}
-                </CommandItem>
-                <CommandItem
-                  defaultChecked={theme === Theme.LIGHT}
-                  className="gap-5"
-                  onSelect={() => {
-                    setTheme(Theme.LIGHT);
-                    closeCommand();
-                  }}>
-                  <MotionThemeIcon
-                    theme={Theme.LIGHT}
-                    variants={defaultThemeVariants}
-                  />
-                  {t("theme-light")}
-                </CommandItem>
-              </CommandGroup>
-            </>
-          )}
-        </CommandList>
+                  {label}
+                </ListBox.Item>
+              ))}
+            </ListBox.Section>
+          </ListBox>
+        )}
       </CommandDialog>
     </>
   );

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Modal, Button, Chip } from "@heroui/react";
+import { BorderBeam } from "border-beam";
 
 import BetterAuth from "@chia/ui/icons/better-auth";
 import Zeabur from "@chia/ui/icons/zeabur";
@@ -139,18 +140,13 @@ const HugeThanks = () => {
   return (
     <>
       <Modal>
-        <NeonGradientCard
-          data-testid="huge-thanks"
-          className="h-fit w-fit p-0"
-          innerBoxProps={{
-            className: "p-0",
-          }}>
-          <Modal.Trigger>
-            <Button className="w-fit bg-transparent text-black dark:text-white">
+        <Modal.Trigger>
+          <BorderBeam duration={3.5} size="pulse-inner" theme="light">
+            <Button variant="tertiary" className="rounded-full">
               Huge Thanks
             </Button>
-          </Modal.Trigger>
-        </NeonGradientCard>
+          </BorderBeam>
+        </Modal.Trigger>
         <Modal.Backdrop>
           <Modal.Container>
             <Modal.Dialog className="sm:max-w-[360px]">

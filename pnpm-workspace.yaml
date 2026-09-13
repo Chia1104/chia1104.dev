@@ -98,6 +98,7 @@ catalogs:
   heroui-v3:
     "@heroui/react": 3.2.4
     "@heroui/styles": 3.2.4
+    react-aria-components: 1.21.0
   hono:
     "@hono/react-renderer": 1.0.1
     "@hono/sentry": 1.2.2
@@ -133,21 +134,6 @@ catalogs:
     "@oxlint/plugins": 1.81.0
     oxfmt: 0.66.0
     oxlint: 1.81.0
-  radix-ui:
-    "@radix-ui/react-accordion": 1.2.20
-    "@radix-ui/react-avatar": ^1.2.6
-    "@radix-ui/react-collapsible": ^1.1.20
-    "@radix-ui/react-dialog": ^1.1.23
-    "@radix-ui/react-dropdown-menu": ^2.1.24
-    "@radix-ui/react-hover-card": ^1.1.23
-    "@radix-ui/react-label": ^2.1.15
-    "@radix-ui/react-navigation-menu": ^1.2.22
-    "@radix-ui/react-popover": ^1.1.23
-    "@radix-ui/react-progress": ^1.1.16
-    "@radix-ui/react-separator": ^1.1.15
-    "@radix-ui/react-slot": ^1.3.3
-    "@radix-ui/react-tabs": ^1.1.21
-    "@radix-ui/react-tooltip": ^1.2.16
   react-is:
     "@types/react": ^19.2.18
     "@types/react-dom": ^19.2.7
@@ -217,7 +203,6 @@ catalogs:
     border-beam: 1.3.0
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
-    cmdk: 1.1.1
     cobe: ^2.0.1
     immer: ^11.1.18
     katex: ^0.18.5

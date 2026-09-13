@@ -3,19 +3,18 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
 
-import { Button, Spinner, ButtonGroup, ScrollShadow } from "@heroui/react";
+import {
+  Button,
+  Spinner,
+  ButtonGroup,
+  ListBox,
+  ScrollShadow,
+} from "@heroui/react";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { Search } from "lucide-react";
 
 import { Locale } from "@chia/db/types";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandLoading,
-} from "@chia/ui/cmd";
+import { CommandDialog, CommandInput } from "@chia/ui/cmd";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { useSearchFeeds } from "@/hooks/use-search-feeds";
@@ -96,74 +95,75 @@ const SearchForm = ({ isOpen, onOpenChange }: SearchFormProps) => {
 
   return (
     <CommandDialog
-      open={isOpen}
+      aria-label="Search Feeds"
+      isOpen={isOpen}
       onOpenChange={handleOpenChange}
-      commandProps={{
-        shouldFilter: false,
-      }}>
-      <CommandInput
-        placeholder="Search Feeds"
-        name="query"
-        classNames={{
-          wrapper: ["w-full border-none"],
-        }}
-        onValueChange={(value) => handleSearch(value)}
-      />
-      <CommandList>
-        <div className="flex items-center justify-start gap-4 px-4 pb-4">
-          <ButtonGroup size="sm" variant="outline">
+      onInputChange={(value) => handleSearch(value)}>
+      <CommandInput placeholder="Search Feeds" />
+      <div className="flex items-center justify-start gap-4 p-4">
+        <ButtonGroup size="sm" variant="outline">
+          <Button
+            className="h-5.5"
+            onPress={() => setLocale(Locale.En)}
+            variant={locale === Locale.En ? "primary" : "outline"}>
+            EN
+          </Button>
+          <Button
+            className="h-5.5"
+            onPress={() => setLocale(Locale.zhTW)}
+            variant={locale === Locale.zhTW ? "primary" : "outline"}>
+            <ButtonGroup.Separator />
+            中文
+          </Button>
+        </ButtonGroup>
+        <ScrollShadow
+          className="flex w-full items-center gap-1.5 px-4"
+          hideScrollBar
+          orientation="horizontal">
+          {supportedModels.map((m) => (
             <Button
               className="h-5.5"
-              onPress={() => setLocale(Locale.En)}
-              variant={locale === Locale.En ? "primary" : "outline"}>
-              EN
+              size="sm"
+              key={m}
+              onPress={() => setModel(m)}
+              variant={m === model ? "primary" : "outline"}>
+              {m}
             </Button>
-            <Button
-              className="h-5.5"
-              onPress={() => setLocale(Locale.zhTW)}
-              variant={locale === Locale.zhTW ? "primary" : "outline"}>
-              <ButtonGroup.Separator />
-              中文
-            </Button>
-          </ButtonGroup>
-          <ScrollShadow
-            className="flex w-full items-center gap-1.5 px-4"
-            hideScrollBar
-            orientation="horizontal">
-            {supportedModels.map((m) => (
-              <Button
-                className="h-5.5"
-                size="sm"
-                key={m}
-                onPress={() => setModel(m)}
-                variant={m === model ? "primary" : "outline"}>
-                {m}
-              </Button>
-            ))}
-          </ScrollShadow>
+          ))}
+        </ScrollShadow>
+      </div>
+      {isSearching ? (
+        <div role="status" className="flex w-full justify-center py-10">
+          <Spinner />
         </div>
-        {isSearching && (
-          <CommandLoading className="flex w-full justify-center py-10">
-            <Spinner />
-          </CommandLoading>
-        )}
-        {feeds?.items.length === 0 && (
-          <CommandEmpty>No results found.</CommandEmpty>
-        )}
-        {normaliseHits(feeds).map((hit) => (
-          <CommandItem
-            key={`${hit.feedId}-${hit.title}`}
-            onSelect={() => handleSelect(hit.feedId)}
-            disabled={isPending}>
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium">{hit.title}</p>
-              {hit.excerpt && (
-                <p className="text-muted line-clamp-2 text-xs">{hit.excerpt}</p>
-              )}
-            </div>
-          </CommandItem>
-        ))}
-      </CommandList>
+      ) : (
+        <ListBox
+          aria-label="Feeds"
+          className="max-h-[300px] overflow-y-auto p-1"
+          renderEmptyState={() =>
+            feeds ? (
+              <p className="py-6 text-center text-sm">No results found.</p>
+            ) : null
+          }>
+          {normaliseHits(feeds).map((hit) => (
+            <ListBox.Item
+              key={`${hit.feedId}-${hit.title}`}
+              id={`${hit.feedId}-${hit.title}`}
+              textValue={hit.title}
+              onAction={() => handleSelect(hit.feedId)}
+              isDisabled={isPending}>
+              <div className="flex flex-col gap-2">
+                <p className="text-sm font-medium">{hit.title}</p>
+                {hit.excerpt && (
+                  <p className="text-muted line-clamp-2 text-xs">
+                    {hit.excerpt}
+                  </p>
+                )}
+              </div>
+            </ListBox.Item>
+          ))}
+        </ListBox>
+      )}
     </CommandDialog>
   );
 };

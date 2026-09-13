@@ -10,7 +10,6 @@ import { FeedType } from "@chia/db/types";
 import {
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuTrigger,
 } from "@chia/ui/navigation-menu";
 import { cn } from "@chia/ui/utils/cn.util";
@@ -56,11 +55,11 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
     switch (type) {
       case FeedType.Note:
         return {
-          ul: "page-md:grid-cols-2",
+          ul: "md:grid-cols-2",
         };
       case FeedType.Post:
         return {
-          ul: "page-lg:grid-cols-[.75fr_1fr]",
+          ul: "lg:grid-cols-[.75fr_1fr]",
         };
       default:
         return {
@@ -78,15 +77,18 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
         return "";
     }
   };
+  // The content renders in a popover outside the `page` container, so it sizes by the viewport.
   return (
-    <NavigationMenuItem>
-      <NavigationMenuTrigger onClick={() => router.push(getLinkPrefix())}>
+    <NavigationMenuItem value={type}>
+      <NavigationMenuTrigger
+        onPress={() => router.push(getLinkPrefix())}
+        size="lg">
         {getTranslations().title}
       </NavigationMenuTrigger>
       <NavigationMenuContent>
         <ul
           className={cn(
-            "page-md:w-[500px] page-lg:w-[600px] grid w-[300px] gap-3 p-4 pb-0",
+            "grid w-[300px] gap-3 p-4 pb-0 md:w-[500px] lg:w-[600px]",
             hasFeeds ? getStyles().ul : "max-w-[300px]"
           )}>
           {hasFeeds ? (
@@ -94,18 +96,16 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
               if (type === FeedType.Post && index === 0) {
                 return (
                   <li key={feed.id} className="row-span-3">
-                    <NavigationMenuLink asChild>
-                      <Link
-                        className="from-default/50 to-default text-default-foreground flex size-full flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-none select-none focus:shadow-md"
-                        href={`${getLinkPrefix()}/${feed.slug}`}>
-                        <div className="mt-4 mb-2 line-clamp-2 text-base font-semibold">
-                          {feed.translations[0]?.title}
-                        </div>
-                        <p className="text-muted line-clamp-3 text-sm leading-snug">
-                          {feed.translations[0]?.description}
-                        </p>
-                      </Link>
-                    </NavigationMenuLink>
+                    <Link
+                      className="from-default/50 to-default text-default-foreground flex size-full flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-none select-none focus:shadow-md"
+                      href={`${getLinkPrefix()}/${feed.slug}`}>
+                      <div className="mt-4 mb-2 line-clamp-2 text-base font-semibold">
+                        {feed.translations[0]?.title}
+                      </div>
+                      <p className="text-muted line-clamp-3 text-sm leading-snug">
+                        {feed.translations[0]?.description}
+                      </p>
+                    </Link>
                   </li>
                 );
               }

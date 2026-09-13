@@ -182,7 +182,7 @@ export const ModelPicker = ({
       </Popover.Trigger>
 
       <Popover.Content
-        className="bg-surface/70 w-72 max-w-[calc(100vw-1.5rem)] p-0 backdrop-blur-sm"
+        className="bg-surface/(--popover-opacity) w-72 max-w-[calc(100vw-1.5rem)] p-0"
         placement="top start">
         <Popover.Dialog className="flex flex-col p-0">
           <div className="flex min-h-0">
@@ -221,13 +221,13 @@ export const ModelPicker = ({
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col">
-              <div className="p-2 pb-1">
+              <div className="px-1 py-1.5">
                 <SearchField
                   aria-label={labels.searchModels}
                   fullWidth
                   onChange={setQuery}
                   value={query}>
-                  <SearchField.Group>
+                  <SearchField.Group className="border-0 bg-transparent shadow-none focus-within:ring-0 hover:bg-transparent data-[focus-within=true]:ring-0 data-[hovered=true]:bg-transparent">
                     <SearchField.SearchIcon />
                     <SearchField.Input
                       className="text-xs"

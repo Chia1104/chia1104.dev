@@ -10,6 +10,22 @@
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     monospace;
+  /* Alpha of every popover surface, as a Tailwind opacity modifier: `bg-overlay/(--popover-opacity)`. */
+  --popover-opacity: 75%;
+}
+
+/* HeroUI's opaque and blur backdrops (modal, drawer, alert dialog) paint `--backdrop`. */
+:root,
+.light,
+.default,
+[data-theme="light"],
+[data-theme="default"] {
+  --backdrop: rgba(255, 255, 255, 0.8);
+}
+
+.dark,
+[data-theme="dark"] {
+  --backdrop: rgba(0, 0, 0, 0.8);
 }
 
 /* Fumadocs reads its own `--color-fd-*` tokens; they resolve to the HeroUI tokens here. */
@@ -76,6 +92,9 @@
   --color-surface-foreground: var(--surface-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  /* Soft glow around floating surfaces; `shadow-<color>/<alpha>` recolours it. */
+  --shadow-glow: 0 0 15px 4px
+    color-mix(in oklab, var(--accent) 30%, transparent);
 }
 
 /*
@@ -155,6 +174,18 @@
 
   .kbd {
     @apply h-5 px-1.5 text-xs;
+  }
+
+  /* Every floating HeroUI popover shares one translucent, blurred surface. */
+  .popover,
+  .dropdown__popover,
+  .select__popover,
+  .combo-box__popover,
+  .autocomplete__popover,
+  .date-picker__popover,
+  .date-range-picker__popover,
+  .color-picker__popover {
+    @apply bg-overlay/(--popover-opacity) backdrop-blur-sm;
   }
 }
 

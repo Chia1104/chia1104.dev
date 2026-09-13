@@ -21,7 +21,7 @@ describe("FeedSearchDialog", () => {
     await user.click(screen.getByRole("button", { name: "search-articles" }));
     expect(screen.getByText("search-hint")).toBeInTheDocument();
 
-    await user.type(screen.getByRole("combobox"), "React");
+    await user.type(screen.getByRole("searchbox"), "React");
 
     expect(screen.getByTestId("feed-search-results")).toHaveTextContent(
       "React"

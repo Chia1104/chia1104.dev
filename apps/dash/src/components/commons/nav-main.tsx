@@ -1,13 +1,8 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button, Disclosure } from "@heroui/react";
 import { ChevronRight } from "lucide-react";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@chia/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -42,34 +37,32 @@ export function NavMain({
       <SidebarGroupLabel>{title}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible">
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <Button
-                  variant={item.isActive ? "tertiary" : "ghost"}
-                  fullWidth
-                  isIconOnly={isMobile ? false : !open}
-                  size="sm"
-                  onPress={() => router.push(item.url)}>
-                  {item.icon && item.icon}
-                  {isMobile || open ? (
-                    <>
-                      <span>{item.title}</span>
-                      {item.items ? (
-                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                      ) : (
-                        <span className="ml-auto" />
-                      )}
-                    </>
-                  ) : null}
-                </Button>
-              </CollapsibleTrigger>
+          <SidebarMenuItem key={item.title}>
+            <Disclosure
+              defaultExpanded={item.isActive}
+              className="group/collapsible">
+              {/* The trigger slot toggles the sub-items while onPress navigates. */}
+              <Button
+                slot="trigger"
+                variant={item.isActive ? "tertiary" : "ghost"}
+                fullWidth
+                isIconOnly={isMobile ? false : !open}
+                size="sm"
+                onPress={() => router.push(item.url)}>
+                {item.icon && item.icon}
+                {isMobile || open ? (
+                  <>
+                    <span>{item.title}</span>
+                    {item.items ? (
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-expanded/collapsible:rotate-90" />
+                    ) : (
+                      <span className="ml-auto" />
+                    )}
+                  </>
+                ) : null}
+              </Button>
               {item.items ? (
-                <CollapsibleContent>
+                <Disclosure.Content>
                   <SidebarMenuSub className="mr-0 pr-0">
                     {item.items?.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
@@ -85,10 +78,10 @@ export function NavMain({
                       </SidebarMenuSubItem>
                     ))}
                   </SidebarMenuSub>
-                </CollapsibleContent>
+                </Disclosure.Content>
               ) : null}
-            </SidebarMenuItem>
-          </Collapsible>
+            </Disclosure>
+          </SidebarMenuItem>
         ))}
       </SidebarMenu>
     </SidebarGroup>

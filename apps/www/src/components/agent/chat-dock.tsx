@@ -122,9 +122,7 @@ export const ChatDock = () => {
               aria-hidden="true"
               className={cn(
                 "pointer-events-none absolute flex size-16 rounded-full transition-[transform,box-shadow] duration-200 ease-out motion-reduce:transition-none",
-                docked
-                  ? "scale-[0.625] shadow-none"
-                  : "shadow-[0_0_15px_4px_rgb(252_165_165/0.3)] dark:shadow-[0_0_15px_4px_rgb(192_132_252/0.3)]"
+                docked ? "scale-[0.625] shadow-none" : "shadow-glow"
               )}>
               <CHBot className="size-16 rounded-full" resting={docked} />
             </span>

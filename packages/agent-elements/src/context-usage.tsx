@@ -105,7 +105,7 @@ export const ContextUsage = () => {
       </Popover.Trigger>
 
       <Popover.Content
-        className="bg-surface/70 w-64 max-w-[calc(100vw-1.5rem)] p-0 backdrop-blur-sm"
+        className="bg-surface/(--popover-opacity) w-64 max-w-[calc(100vw-1.5rem)] p-0"
         offset={6}
         placement="top end">
         <Popover.Dialog className="p-3">

@@ -61,6 +61,7 @@
     "@vercel/analytics": "catalog:vercel",
     "@vercel/speed-insights": "catalog:vercel",
     "better-all": "catalog:",
+    "border-beam": "catalog:ui",
     "client-only": "catalog:",
     "cobe": "catalog:ui",
     "es-toolkit": "catalog:",

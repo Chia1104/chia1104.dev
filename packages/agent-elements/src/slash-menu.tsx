@@ -38,7 +38,7 @@ export const SlashMenu = ({
   }, [activeId, items, onActiveDescendantChange]);
 
   return (
-    <div className="bg-surface/70 border-border absolute inset-x-0 bottom-[calc(100%+0.5rem)] z-40 w-full max-w-[95%] justify-self-center overflow-hidden rounded-2xl border p-1.5 shadow-lg backdrop-blur-xl">
+    <div className="bg-surface/(--popover-opacity) border-border absolute inset-x-0 bottom-[calc(100%+0.5rem)] z-40 w-full max-w-[95%] justify-self-center overflow-hidden rounded-2xl border p-1.5 shadow-lg backdrop-blur-xl">
       <ListBox
         aria-label={labels.slashMenu}
         className="max-h-[min(18rem,50vh)] overflow-y-auto"

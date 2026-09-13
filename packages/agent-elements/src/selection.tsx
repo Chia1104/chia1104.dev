@@ -212,7 +212,7 @@ export const SelectionTrigger = <T,>({
           </Button>
         </Popover.Trigger>
         <Popover.Content
-          className="bg-surface/80 p-0 backdrop-blur-sm"
+          className="bg-surface/(--popover-opacity) p-0"
           offset={6}
           placement={coarse ? "top" : "bottom end"}>
           <Popover.Dialog className="p-2">

@@ -25,7 +25,7 @@ export const ComingSoon = ({ preview = false }: { preview?: boolean }) => {
       <div className="relative">
         <span
           aria-hidden
-          className="absolute inset-0 -z-10 scale-150 rounded-full bg-[radial-gradient(circle,rgb(252_165_165/0.35),transparent_70%)] blur-2xl dark:bg-[radial-gradient(circle,rgb(192_132_252/0.35),transparent_70%)]"
+          className="absolute inset-0 -z-10 scale-150 rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--accent)_35%,transparent),transparent_70%)] blur-2xl"
         />
         <CHBot className="size-28 rounded-full" />
       </div>

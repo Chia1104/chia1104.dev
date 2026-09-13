@@ -5,19 +5,13 @@ import type { FC } from "react";
 import { memo } from "react";
 import { ViewTransition } from "react";
 
-import { Spinner } from "@heroui/react";
+import { Disclosure, Spinner } from "@heroui/react";
 import { motion } from "motion/react";
 
 import dayjs from "@chia/utils/day";
 
 import { cn } from "../../utils/cn.util";
 import useInfiniteScroll from "../../utils/use-infinite-scroll";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../accordion";
 
 import { useTimeline } from "./context";
 import type {
@@ -90,32 +84,25 @@ const TimelineItemLink: FC<TimelineItemLinkProps> = memo(
 );
 
 interface TimelineItemContentProps {
-  id: number;
   content: React.ReactNode;
   defaultOpen: boolean;
 }
 
 const TimelineItemContent: FC<TimelineItemContentProps> = memo(
-  ({ id, content, defaultOpen }) => {
-    const itemValue = id.toString();
-
-    return (
-      <Accordion
-        type="single"
-        collapsible
-        className="w-full"
-        defaultValue={defaultOpen ? itemValue : undefined}>
-        <AccordionItem
-          value={itemValue}
-          className="prose-h3:m-1 prose-h3:w-fit">
-          <AccordionTrigger className="flex w-fit p-0 text-sm text-gray-500 dark:text-gray-300">
-            {MORE_TEXT}
-          </AccordionTrigger>
-          <AccordionContent>{content}</AccordionContent>
-        </AccordionItem>
-      </Accordion>
-    );
-  }
+  ({ content, defaultOpen }) => (
+    <Disclosure
+      defaultExpanded={defaultOpen}
+      className="prose-h3:m-1 prose-h3:w-fit w-full">
+      <Disclosure.Heading className="flex">
+        <Disclosure.Trigger className="flex w-fit p-0 text-xs font-medium text-gray-500 dark:text-gray-300">
+          {MORE_TEXT}
+        </Disclosure.Trigger>
+      </Disclosure.Heading>
+      <Disclosure.Content className="text-sm">
+        <div className="pt-0 pb-4">{content}</div>
+      </Disclosure.Content>
+    </Disclosure>
+  )
 );
 
 export const TimelineItem: FC<TimelineItemProps> = memo(
@@ -137,7 +124,7 @@ export const TimelineItem: FC<TimelineItemProps> = memo(
         ref={isLastItem ? refTarget : undefined}
         whileInView={ANIMATION_CONFIG.whileInView}
         initial={ANIMATION_CONFIG.initial}
-        className={cn("z-10 flex flex-col text-start", className)}
+        className={cn("z-10 my-1 flex flex-col text-start", className)}
         {...props}>
         <span
           {...titleProps}
@@ -163,11 +150,7 @@ export const TimelineItem: FC<TimelineItemProps> = memo(
         )}
 
         {content && (
-          <TimelineItemContent
-            id={id}
-            content={content}
-            defaultOpen={defaultOpen}
-          />
+          <TimelineItemContent content={content} defaultOpen={defaultOpen} />
         )}
       </motion.div>
     );

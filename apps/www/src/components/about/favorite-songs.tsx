@@ -11,7 +11,6 @@ export const FavoriteSongs = () => {
       <h2>{t("title")}</h2>
       <p>{t("description")}</p>
       <CurrentPlaying
-        className="mb-5 bg-white dark:bg-black"
         experimental={{
           displayBackgroundColorFromImage: true,
         }}
