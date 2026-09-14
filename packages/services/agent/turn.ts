@@ -25,6 +25,8 @@ import {
   withAgentSessionLock,
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
+import { logger } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
 import { AppError, isAppError } from "@chia/service-kit/errors";
 import type { AppErrorCode } from "@chia/service-kit/errors";
 import type { JsonObject } from "@chia/utils/json";
@@ -173,12 +175,11 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
       );
       await completeAgentRun(db, runId, "failed").catch(() => undefined);
     }
-    console.error("Agent run could not be bound to its workflow run", {
+    reportError(cause, "Agent run could not be bound to its workflow run", {
       sessionId,
       runId,
       workflowRunId,
       stopped: ended,
-      cause,
     });
   };
 
@@ -314,11 +315,10 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         // The workflow may have started. The lease row keeps the session blocked; the turn
         // step binds the real run id onto it, after which abort and reconcile see the run,
         // and an unbound lease is closed once its TTL passes.
-        console.error("Agent run start is unresolved; the lease is kept", {
-          sessionId,
-          runId: accepted.runId,
-          code,
-        });
+        logger.warn(
+          { err: error, sessionId, runId: accepted.runId, code },
+          "Agent run start is unresolved; the lease is kept"
+        );
       }
       throw error;
     }

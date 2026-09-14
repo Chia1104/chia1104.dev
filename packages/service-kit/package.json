@@ -85,11 +85,12 @@
     "@chia/auth": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/kv": "workspace:*",
+    "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
     "@hono/otel": "catalog:hono",
-    "@hono/sentry": "catalog:hono",
     "@opentelemetry/api": "catalog:otel",
     "@orpc/server": "catalog:orpc",
+    "@sentry/node-core": "catalog:sentry",
     "es-toolkit": "catalog:",
     "hono": "catalog:hono",
     "zod": "catalog:"

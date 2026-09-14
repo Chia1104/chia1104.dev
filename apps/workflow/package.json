@@ -35,6 +35,7 @@
     "es-toolkit": "catalog:",
     "firecrawl": "catalog:ai",
     "hono": "catalog:hono",
+    "pino": "catalog:otel",
     "reading-time-estimator": "catalog:unified",
     "workflow": "catalog:workflow",
     "zod": "catalog:"

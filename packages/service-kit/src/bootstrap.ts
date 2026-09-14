@@ -1,13 +1,16 @@
 import { httpInstrumentationMiddleware } from "@hono/otel";
-import { sentry } from "@hono/sentry";
 import { trace } from "@opentelemetry/api";
-import type { Env, Hono, Schema } from "hono";
+import { setTag } from "@sentry/node-core/light";
+import type { Context, Env, Hono, Schema } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
-import { logger } from "hono/logger";
 import { requestId } from "hono/request-id";
+import { routePath } from "hono/route";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
+import { logger } from "@chia/observability/logger";
+import type { LogFields } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
 import { errorGenerator } from "@chia/utils/server";
 
 import { isAppError, toErrorResponse } from "./errors";
@@ -20,20 +23,24 @@ export const parseAllowedOrigins = (value?: string): string[] | string => {
   return value.split(",").map((item) => item.trim());
 };
 
-export interface BootstrapOptions {
-  sentry?: {
-    dsn?: string;
-    enabled?: boolean;
-  };
+const contentLength = (value: string | null | undefined) => {
+  const bytes = Number(value);
+  return value && Number.isFinite(bytes) ? bytes : undefined;
+};
+
+export interface BootstrapOptions<TEnv extends Env = Env> {
   cors?: {
     origin: string | string[];
     credentials?: boolean;
   };
   maintenance?: MaintenanceOptions;
   /**
+   * Logs one line per request.
    * @default true
    */
   logger?: boolean;
+  /** App-specific fields for the request log line, read after the handler has run. */
+  requestLogFields?: (c: Context<TEnv>) => LogFields;
   /**
    * Request body cap in bytes.
    * @default 5 MB
@@ -41,43 +48,58 @@ export interface BootstrapOptions {
   maxBodySize?: number;
 }
 
-/** Shared middleware: server span, request id, logging, Sentry, errors, body cap, CORS, maintenance. */
+/** Shared middleware: server span, request id, request log, errors, body cap, CORS, maintenance. */
 export const bootstrap = <
   TEnv extends Env,
   TSchema extends Schema,
   TApp extends Hono<TEnv, TSchema>,
 >(
   app: TApp,
-  options?: BootstrapOptions
+  options?: BootstrapOptions<TEnv>
 ) => {
   // Server span first, so everything after it (the error handler included) runs inside it.
   app.use(httpInstrumentationMiddleware());
   app.use(requestId());
   app.use(async (c, next) => {
-    trace.getActiveSpan()?.setAttribute("request.id", c.get("requestId"));
+    const id = c.get("requestId");
+    trace.getActiveSpan()?.setAttribute("request.id", id);
+    // Sentry forks an isolation scope per incoming request, so the tag stays on this one.
+    setTag("request.id", id);
     await next();
   });
 
   if (options?.logger !== false) {
-    app.use(logger());
+    app.use(async (c, next) => {
+      const start = performance.now();
+      await next();
+      const { status } = c.res;
+      const level = status >= 500 ? "error" : status >= 400 ? "warn" : "info";
+      // Path without the query string, which can carry OAuth codes and tokens.
+      logger[level](
+        {
+          ...options?.requestLogFields?.(c),
+          requestId: c.get("requestId"),
+          method: c.req.method,
+          route: routePath(c),
+          path: c.req.path,
+          status,
+          // Until the handler returns: a streamed body is still being written.
+          durationMs: Math.round(performance.now() - start),
+          requestBytes: contentLength(c.req.header("content-length")),
+          responseBytes: contentLength(c.res.headers.get("content-length")),
+          userAgent: c.req.header("user-agent"),
+        },
+        "request"
+      );
+    });
   }
-
-  app.use(
-    sentry({
-      dsn: options?.sentry?.dsn,
-      enabled: options?.sentry?.enabled ?? false,
-    })
-  );
 
   app.onError((e, c) => {
     const status = isAppError(e) || e instanceof HTTPException ? e.status : 500;
 
     // A 4xx answers the caller; only this service's own failures are logged and reported.
     if (status >= 500) {
-      const id = c.get("requestId");
-      console.error("Request failed", { requestId: id, error: e });
-      c.get("sentry").setTag("requestId", id);
-      c.get("sentry").captureException(e);
+      reportError(e, "Request failed", { requestId: c.get("requestId") });
     }
 
     if (isAppError(e)) {

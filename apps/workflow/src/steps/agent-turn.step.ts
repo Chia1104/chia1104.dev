@@ -35,6 +35,7 @@ import {
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
+import { logger } from "@chia/observability/logger";
 import type { JsonObject } from "@chia/utils/json";
 import type {
   AgentAbortControllerRef,
@@ -388,10 +389,10 @@ const createEventWriter = (holdEnd?: Promise<unknown>): EventWriter => {
         (result) => result.status === "rejected"
       );
       if (lost.length > 0) {
-        console.error("Agent stream writes failed", {
-          count: lost.length,
-          cause: lost[0]?.reason,
-        });
+        logger.error(
+          { err: lost[0]?.reason, count: lost.length },
+          "Agent stream writes failed"
+        );
       }
       coarse.releaseLock();
       deltas.releaseLock();

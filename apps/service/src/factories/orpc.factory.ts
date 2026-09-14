@@ -2,6 +2,7 @@ import { COMMON_ERROR_STATUS_MAP, ORPCError } from "@orpc/server";
 import type { Context } from "hono";
 import * as z from "zod";
 
+import { reportError } from "@chia/observability/report";
 import type { BaseOSContext, ORPCConfig } from "@chia/services/shared/context";
 
 import { agentFactory } from "../agents/factory";
@@ -32,7 +33,7 @@ const errorData = z.looseObject({});
  * through unreported.
  */
 export const withErrorReporting = async <T>(
-  context: Pick<BaseOSContext, "hooks" | "requestId">,
+  context: Pick<BaseOSContext, "requestId">,
   next: () => Promise<T>
 ): Promise<T> => {
   try {
@@ -46,8 +47,7 @@ export const withErrorReporting = async <T>(
     }
 
     const { requestId } = context;
-    console.error("Procedure failed", { requestId, error });
-    context.hooks?.onError?.(error);
+    reportError(error, "Procedure failed", { requestId });
 
     if (!(error instanceof ORPCError)) {
       throw new ORPCError("INTERNAL_SERVER_ERROR", {
@@ -71,10 +71,6 @@ export const createORPCContext = (c: Context<HonoContext>): BaseOSContext => ({
   hooks: {
     ...feedHooks,
     ...memoryHooks,
-    onError(error) {
-      c.get("sentry").setTag("requestId", c.var.requestId);
-      c.get("sentry").captureException(error);
-    },
   },
   workflow: workflowControl,
   agentFactory,

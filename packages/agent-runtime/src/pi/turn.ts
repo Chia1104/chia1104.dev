@@ -13,6 +13,8 @@ import type {
   Models,
 } from "@earendil-works/pi-ai";
 
+import { logger } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
 import { stableStringify } from "@chia/utils/json";
 import type { JsonValue } from "@chia/utils/json";
 
@@ -530,13 +532,22 @@ export const runPiTurn = async <TContext extends object, TApproval>({
 
     if (failure) {
       // The wire carries the kind alone; the detail and what threw stay in the log.
-      console.error("Agent turn failed", {
+      const failed = {
         sessionId: agentSessionId,
         runId: agentRunId,
         kind: failure.kind,
-        message: failure.message,
-        cause: failureCause,
-      });
+        detail: failure.message,
+      };
+      // Provider and internal failures are this system's; the other kinds answer the caller.
+      if (failure.kind === "provider" || failure.kind === "internal") {
+        reportError(
+          failureCause ?? failure.message,
+          "Agent turn failed",
+          failed
+        );
+      } else {
+        logger.warn({ ...failed, err: failureCause }, "Agent turn refused");
+      }
       onEvent({ type: "error", kind: failure.kind });
     }
 

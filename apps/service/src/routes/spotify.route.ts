@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 
 import { spotifyOAuthCallbackSchema } from "@chia/integrations/spotify/validator";
+import { reportError } from "@chia/observability/report";
 import { completeSpotifyAuthorizationService } from "@chia/services/spotify/account.service";
 
 import { env } from "../env";
@@ -25,8 +26,7 @@ const api = new Hono<HonoContext>().use(timeout(env.TIMEOUT_MS)).get(
       );
       return c.redirect(getSpotifyDashboardRedirect(status));
     } catch (err) {
-      console.error(err);
-      c.get("sentry").captureException(err);
+      reportError(err, "Spotify authorization failed");
       return c.redirect(getSpotifyDashboardRedirect("exchange_failed"));
     }
   }
