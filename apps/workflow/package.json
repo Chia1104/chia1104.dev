@@ -21,6 +21,7 @@
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/integrations": "workspace:*",
+    "@chia/observability": "workspace:*",
     "@chia/service-kit": "workspace:*",
     "@chia/services": "workspace:*",
     "@chia/utils": "workspace:*",
@@ -34,6 +35,7 @@
     "es-toolkit": "catalog:",
     "firecrawl": "catalog:ai",
     "hono": "catalog:hono",
+    "pino": "catalog:otel",
     "reading-time-estimator": "catalog:unified",
     "workflow": "catalog:workflow",
     "zod": "catalog:"

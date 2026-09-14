@@ -1,19 +1,36 @@
 import { defineConfig } from "nitro";
 
+import { telemetryEntry } from "@chia/observability/nitro";
+
 export default defineConfig({
   serverDir: "src",
   plugins: ["./plugins/start-pg-world.ts", "./plugins/feed-draft-listener.ts"],
   routesDir: "nitro/routes",
   apiDir: "nitro/api",
   typescript: {
-    tsconfigPath: "./tsconfig.build.json",
+    tsConfig: {
+      extends: ["./tsconfig.json"],
+      include: ["**/*.ts"],
+      exclude: [
+        "**/*.spec.mts",
+        "**/*.test.mts",
+        "__tests__",
+        "tsdown.config.ts",
+        "vitest.config.mts",
+      ],
+    },
   },
-  preset: process.env.NITRO_PRESET === "bun" ? "bun" : "node-server",
+  preset: "node-server",
   traceDeps: [
+    "pg*",
+    "pg-pool*",
+    "pino*",
+    "@redis/client*",
     "@workflow-worlds/redis",
     "@workflow/world-postgres",
     "workflow",
     "@better-auth/passkey",
   ],
   noPublicDir: true,
+  hooks: telemetryEntry(new URL("./server.entry.ts", import.meta.url)),
 });

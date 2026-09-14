@@ -1,19 +1,19 @@
-import { sentry } from "@hono/sentry";
-import type { Env, Hono, Schema } from "hono";
+import { httpInstrumentationMiddleware } from "@hono/otel";
+import { trace } from "@opentelemetry/api";
+import { setTag } from "@sentry/node-core/light";
+import type { Context, Env, Hono, Schema } from "hono";
 import { cors } from "hono/cors";
-import { createFactory } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
-import { logger } from "hono/logger";
+import { requestId } from "hono/request-id";
+import { routePath } from "hono/route";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-import type { CreateAuthOptions } from "@chia/auth/server";
-import { createAuth } from "@chia/auth/server";
-import { connectDatabase } from "@chia/db/client";
-import { tryCatch } from "@chia/utils/error-helper";
-import { errorGenerator, getClientIP } from "@chia/utils/server";
+import { logger } from "@chia/observability/logger";
+import type { LogFields } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
+import { errorGenerator } from "@chia/utils/server";
 
 import { isAppError, toErrorResponse } from "./errors";
-import type { ServiceHonoEnv } from "./hono";
 import { bodyLimit } from "./middlewares/body-limit";
 import type { MaintenanceOptions } from "./middlewares/maintenance";
 import { maintenance } from "./middlewares/maintenance";
@@ -23,53 +23,24 @@ export const parseAllowedOrigins = (value?: string): string[] | string => {
   return value.split(",").map((item) => item.trim());
 };
 
-export interface ServiceFactoryOptions {
-  auth: CreateAuthOptions;
-}
+const contentLength = (value: string | null | undefined) => {
+  const bytes = Number(value);
+  return value && Number.isFinite(bytes) ? bytes : undefined;
+};
 
-/** Attaches db, kv and auth to every request. */
-export const createServiceFactory = (options: ServiceFactoryOptions) =>
-  createFactory<ServiceHonoEnv>({
-    initApp: (app) => {
-      app.use(async (c, next) => {
-        const [{ data: db, error: dbError }, { data: kv, error: kvError }] =
-          await Promise.all([
-            tryCatch(connectDatabase()),
-            tryCatch(import("@chia/kv/redis").then((m) => m.getRedisKv())),
-          ]);
-
-        if (dbError || kvError) {
-          console.error(dbError, kvError);
-          return c.json(errorGenerator(503), 503, {
-            "Retry-After": "30",
-          });
-        }
-
-        c.set("headers", c.req.raw.headers);
-        c.set("clientIP", getClientIP(c.req.raw));
-        c.set("db", db);
-        c.set("kv", kv);
-        c.set("auth", createAuth(db, kv, options.auth));
-
-        await next();
-      });
-    },
-  });
-
-export interface BootstrapOptions {
-  sentry?: {
-    dsn?: string;
-    enabled?: boolean;
-  };
+export interface BootstrapOptions<TEnv extends Env = Env> {
   cors?: {
     origin: string | string[];
     credentials?: boolean;
   };
   maintenance?: MaintenanceOptions;
   /**
+   * Logs one line per request.
    * @default true
    */
   logger?: boolean;
+  /** App-specific fields for the request log line, read after the handler has run. */
+  requestLogFields?: (c: Context<TEnv>) => LogFields;
   /**
    * Request body cap in bytes.
    * @default 5 MB
@@ -77,28 +48,59 @@ export interface BootstrapOptions {
   maxBodySize?: number;
 }
 
-/** Shared middleware: logging, Sentry, errors, body cap, CORS, maintenance. */
+/** Shared middleware: server span, request id, request log, errors, body cap, CORS, maintenance. */
 export const bootstrap = <
   TEnv extends Env,
   TSchema extends Schema,
   TApp extends Hono<TEnv, TSchema>,
 >(
   app: TApp,
-  options?: BootstrapOptions
+  options?: BootstrapOptions<TEnv>
 ) => {
+  // Server span first, so everything after it (the error handler included) runs inside it.
+  app.use(httpInstrumentationMiddleware());
+  app.use(requestId());
+  app.use(async (c, next) => {
+    const id = c.get("requestId");
+    trace.getActiveSpan()?.setAttribute("request.id", id);
+    // Sentry forks an isolation scope per incoming request, so the tag stays on this one.
+    setTag("request.id", id);
+    await next();
+  });
+
   if (options?.logger !== false) {
-    app.use(logger());
+    app.use(async (c, next) => {
+      const start = performance.now();
+      await next();
+      const { status } = c.res;
+      const level = status >= 500 ? "error" : status >= 400 ? "warn" : "info";
+      // Path without the query string, which can carry OAuth codes and tokens.
+      logger[level](
+        {
+          ...options?.requestLogFields?.(c),
+          requestId: c.get("requestId"),
+          method: c.req.method,
+          route: routePath(c),
+          path: c.req.path,
+          status,
+          // Until the handler returns: a streamed body is still being written.
+          durationMs: Math.round(performance.now() - start),
+          requestBytes: contentLength(c.req.header("content-length")),
+          responseBytes: contentLength(c.res.headers.get("content-length")),
+          userAgent: c.req.header("user-agent"),
+        },
+        "request"
+      );
+    });
   }
 
-  app.use(
-    sentry({
-      dsn: options?.sentry?.dsn,
-      enabled: options?.sentry?.enabled ?? false,
-    })
-  );
-
   app.onError((e, c) => {
-    console.error(e);
+    const status = isAppError(e) || e instanceof HTTPException ? e.status : 500;
+
+    // A 4xx answers the caller; only this service's own failures are logged and reported.
+    if (status >= 500) {
+      reportError(e, "Request failed", { requestId: c.get("requestId") });
+    }
 
     if (isAppError(e)) {
       return c.json(
@@ -112,7 +114,6 @@ export const bootstrap = <
       return c.json(errorGenerator(e.status), e.status);
     }
 
-    c.get("sentry").captureException(e);
     return c.json(errorGenerator(500), 500);
   });
 

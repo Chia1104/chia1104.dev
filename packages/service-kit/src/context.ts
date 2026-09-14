@@ -16,6 +16,8 @@ import type { Caller } from "./policies/caller.policy";
 export type ServiceContext = {
   headers: Headers;
   clientIP: string;
+  /** Set by `bootstrap()`; correlates this request's logs, error reports and error bodies. */
+  requestId?: string;
   db: DB;
   kv: Keyv;
   auth?: Auth;

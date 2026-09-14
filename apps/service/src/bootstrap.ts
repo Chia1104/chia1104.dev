@@ -1,11 +1,16 @@
 import type { Hono, Schema } from "hono";
 
+import { CallerTier } from "@chia/auth/tier";
 import { bootstrap as bootstrapApp } from "@chia/service-kit/bootstrap";
 
 import { env } from "./env";
 import { getCORSAllowedOrigin } from "./utils/cors.util";
 
 const corsOrigin = getCORSAllowedOrigin();
+
+const tierNames = new Map<number, string>(
+  Object.entries(CallerTier).map(([name, tier]) => [tier, name])
+);
 
 const bootstrap = <
   TSchema extends Schema,
@@ -14,10 +19,6 @@ const bootstrap = <
   app: TApp
 ) =>
   bootstrapApp<HonoContext, TSchema, TApp>(app, {
-    sentry: {
-      dsn: env.SENTRY_DSN,
-      enabled: env.NODE_ENV === "production",
-    },
     cors: {
       origin: corsOrigin,
       credentials: corsOrigin !== "*",
@@ -27,6 +28,16 @@ const bootstrap = <
       allowedPaths: ["/api/v1/health"],
       bypassToken: env.MAINTENANCE_BYPASS_TOKEN,
     },
+    // `caller` is unset on routes that never resolve one, such as health.
+    requestLogFields: (c) => ({
+      procedure: c.var.rpcProcedure,
+      callerTier:
+        c.var.caller === undefined
+          ? undefined
+          : tierNames.get(c.var.caller.tier),
+      userId: c.var.caller?.session?.user.id,
+      apiKeyId: c.var.caller?.apiKey?.id,
+    }),
   });
 
 export default bootstrap;

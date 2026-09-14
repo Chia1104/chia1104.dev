@@ -46,10 +46,7 @@ export interface BaseOSContext extends ServiceContext {
    * The `apps/workflow` client. The World lives behind that service, never in this package.
    */
   workflow: WorkflowControlClient;
-  hooks?: FeedHooks &
-    MemoryHooks & {
-      onError?: (cause: unknown) => void;
-    };
+  hooks?: FeedHooks & MemoryHooks;
   /** Typed constructor for kind services, admin views and quota standing. */
   agentFactory?: AgentFactory;
   /**

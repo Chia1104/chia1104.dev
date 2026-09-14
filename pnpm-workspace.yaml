@@ -101,8 +101,8 @@ catalogs:
     react-aria-components: 1.21.0
   hono:
     "@hono/react-renderer": 1.0.1
-    "@hono/sentry": 1.2.2
     "@hono/mcp": 0.3.2
+    "@hono/otel": 1.1.2
     "@hono/zod-validator": 0.9.1
     hono: 4.13.5
   kv:
@@ -128,8 +128,25 @@ catalogs:
   orpc:
     "@orpc/client": 2.0.0-beta.32
     "@orpc/contract": 2.0.0-beta.32
+    "@orpc/opentelemetry": 2.0.0-beta.32
     "@orpc/server": 2.0.0-beta.32
     "@orpc/tanstack-query": 2.0.0-beta.32
+  otel:
+    "@opentelemetry/api": 1.9.1
+    "@opentelemetry/exporter-trace-otlp-http": 0.222.0
+    "@opentelemetry/instrumentation": 0.222.0
+    "@opentelemetry/instrumentation-http": 0.222.0
+    "@opentelemetry/instrumentation-pg": 0.74.0
+    "@opentelemetry/instrumentation-pino": 0.68.0
+    "@opentelemetry/instrumentation-redis": 0.70.0
+    "@opentelemetry/instrumentation-runtime-node": 0.35.0
+    "@opentelemetry/instrumentation-undici": 0.32.0
+    "@opentelemetry/resources": 2.11.0
+    "@opentelemetry/sdk-node": 0.222.0
+    "@opentelemetry/sdk-trace-base": 2.11.0
+    "@opentelemetry/semantic-conventions": 1.43.0
+    import-in-the-middle: 3.4.0
+    pino: 10.3.1
   oxc:
     "@oxlint/plugins": 1.81.0
     oxfmt: 0.66.0
@@ -142,6 +159,7 @@ catalogs:
     react-dom: ^19.2.8
   sentry:
     "@sentry/nextjs": ^10.73.0
+    "@sentry/node-core": 10.73.0
   streamdown:
     "@streamdown/cjk": 1.0.3
     streamdown: 2.6.0
@@ -280,4 +298,7 @@ minimumReleaseAgeExclude:
 strictPeerDependencies: false
 
 overrides:
+  # One pg copy: a second version is traced into `.nf3/`, where require-in-the-middle cannot
+  # name the module and the pg instrumentation never patches it.
+  pg: "catalog:drizzle"
   "@paradedb/drizzle-paradedb>drizzle-orm": 1.0.0-rc.4

@@ -22,7 +22,8 @@
         "EMBEDDING_API_KEY",
         "OLLAMA_BASE_URL",
         "FIRECRAWL_API_KEY",
-        "GH_AGENT_TOKEN"
+        "GH_AGENT_TOKEN",
+        "SENTRY_DSN"
       ],
       "passThroughEnv": [
         "WORKFLOW_TARGET_WORLD",
@@ -41,7 +42,8 @@
         "EMBEDDING_API_KEY",
         "OLLAMA_BASE_URL",
         "FIRECRAWL_API_KEY",
-        "GH_AGENT_TOKEN"
+        "GH_AGENT_TOKEN",
+        "SENTRY_DSN"
       ]
     }
   }

@@ -1,7 +1,7 @@
 {
   "extends": "@chiastack/tsconfig/react.json",
   "compilerOptions": {
-    "types": ["node", "bun-types", "vitest/globals"],
+    "types": ["node", "vitest/globals"],
     "allowImportingTsExtensions": true,
     "emitDeclarationOnly": true,
     "declaration": true,

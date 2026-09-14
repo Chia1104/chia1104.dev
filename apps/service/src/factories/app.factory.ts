@@ -1,4 +1,4 @@
-import { createServiceFactory } from "@chia/service-kit/bootstrap";
+import { createServiceFactory } from "@chia/service-kit/factory";
 
 import { agentKindFloors } from "../agents/kinds";
 

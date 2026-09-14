@@ -21,6 +21,10 @@
       "types": "./src/bootstrap.ts",
       "default": "./src/bootstrap.ts"
     },
+    "./factory": {
+      "types": "./src/factory.ts",
+      "default": "./src/factory.ts"
+    },
     "./middlewares/maintenance": {
       "types": "./src/middlewares/maintenance.ts",
       "default": "./src/middlewares/maintenance.ts"
@@ -81,9 +85,12 @@
     "@chia/auth": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/kv": "workspace:*",
+    "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@hono/sentry": "catalog:hono",
+    "@hono/otel": "catalog:hono",
+    "@opentelemetry/api": "catalog:otel",
     "@orpc/server": "catalog:orpc",
+    "@sentry/node-core": "catalog:sentry",
     "es-toolkit": "catalog:",
     "hono": "catalog:hono",
     "zod": "catalog:"

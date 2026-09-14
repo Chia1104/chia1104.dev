@@ -37,6 +37,7 @@ Both frontends call `service` through the contract-first oRPC client. `service` 
 - Validate env with one `@t3-oss/env-*` `env.ts` per app or package. Variables belong to their owner; global variables also belong in `turbo.json`.
 - Use oxlint, oxfmt and Vitest. End-to-end tests live in `tests/www-e2e` and use Playwright.
 - Domain code throws `AppError`; transport edges convert it with `toORPCError` or `isAppError`.
+- Server code logs through `@chia/observability/logger`. The boundary that handles a failure this system caused calls `reportError` once; caller failures are logged at most.
 - Resolve service URLs with `withServiceEndpoint` from `@chia/utils/config`.
 - Scope validation to affected workspaces with `pnpm turbo run <task> --filter <name>...` when practical.
 - Branch from and open pull requests into `develop`.

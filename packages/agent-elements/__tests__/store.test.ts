@@ -443,6 +443,18 @@ describe("createAgentSessionStore", () => {
     ).toBe(defaultAgentLabels.tooManyTurns);
   });
 
+  it("quotes the request reference of a failure the service reported", () => {
+    const failure = failureOf(
+      new ORPCError("INTERNAL_SERVER_ERROR", {
+        message: "Internal server error",
+        data: { requestId: "req-123" },
+      }),
+      defaultAgentLabels
+    );
+    expect(failure).toContain("Internal server error");
+    expect(failure).toContain("req-123");
+  });
+
   it("returns the prompt to the caller when the request fails", async () => {
     const { client } = fakeClient({
       chat: async () => {

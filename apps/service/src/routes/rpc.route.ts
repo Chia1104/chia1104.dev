@@ -1,4 +1,4 @@
-import { COMMON_ERROR_STATUS_MAP } from "@orpc/server";
+import { trace } from "@opentelemetry/api";
 import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
@@ -8,10 +8,12 @@ import { router } from "@chia/services/router";
 import { env } from "../env";
 import {
   createORPCContext,
+  errorStatusMap,
   withErrorReporting,
 } from "../factories/orpc.factory";
 import { resolveCaller } from "../guards/caller.guard";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
+import { procedureOf, RPC_PREFIX } from "../utils/rpc.util";
 
 /**
  * Chat streams and compact/navigate hold a session lock past TIMEOUT_MS; applying it here
@@ -29,9 +31,9 @@ const isUntimedProcedure = (path: string): boolean =>
 
 /** Built once per process; holds no per-request state. */
 const handler = new RPCHandler(router, {
-  // QUOTA_EXCEEDED is the only AppError code outside oRPC's common codes.
-  errorStatusMap: { ...COMMON_ERROR_STATUS_MAP, QUOTA_EXCEEDED: 402 },
-  interceptors: [
+  errorStatusMap,
+  // Around the procedure call only: a body that fails to decode is oRPC's own BAD_REQUEST.
+  clientInterceptors: [
     (options) => withErrorReporting(options.context, () => options.next()),
   ],
 });
@@ -46,11 +48,18 @@ const api = new Hono<HonoContext>()
   .use(rateLimiterGuard("rpc"))
   .use("/*", async (c, next) => {
     const { matched, response } = await handler.handle(c.req.raw, {
-      prefix: "/api/v1/rpc",
+      prefix: RPC_PREFIX,
       context: createORPCContext(c),
     });
 
     if (matched) {
+      // Only a matched path names a procedure; probes for others would add arbitrary values.
+      // The server span keeps the route template and carries the procedure beside it.
+      const procedure = procedureOf(c.req.path);
+      if (procedure) {
+        c.set("rpcProcedure", procedure);
+        trace.getActiveSpan()?.setAttribute("rpc.method", procedure);
+      }
       return c.newResponse(response.body, response);
     }
 
