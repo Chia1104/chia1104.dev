@@ -58,13 +58,13 @@ export const linkPreviewRoute = contractOS.toolings["link-preview"]
       }).get(url);
       html = await res.text();
     } catch (error) {
-      console.error(error);
       if (error instanceof HTTPError) {
         throw opts.errors.BAD_REQUEST({
           message: `Upstream responded with ${error.response.status}`,
+          cause: error,
         });
       }
-      throw opts.errors.INTERNAL_SERVER_ERROR();
+      throw opts.errors.INTERNAL_SERVER_ERROR({ cause: error });
     }
 
     /** `node-html-parser` instead of jsdom: importing jsdom costs ~110MB RSS that is never released. */
@@ -121,8 +121,7 @@ export const tweetRoute = contractOS.toolings.tweet
       return result;
     } catch (error) {
       if (cached) return cached.result;
-      console.error(error);
-      throw opts.errors.SERVICE_UNAVAILABLE();
+      throw opts.errors.SERVICE_UNAVAILABLE({ cause: error });
     }
   });
 

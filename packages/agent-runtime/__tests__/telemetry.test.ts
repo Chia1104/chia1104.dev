@@ -1,3 +1,4 @@
+import { createAssistantMessageEventStream } from "@earendil-works/pi-ai";
 import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { context, SpanStatusCode, trace } from "@opentelemetry/api";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
@@ -6,9 +7,17 @@ import {
   InMemorySpanExporter,
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
-import { withModelSpans } from "../src/telemetry.ts";
+import { traceModelStream, withModelSpans } from "../src/telemetry.ts";
 import { toolDefiner, Type } from "../src/tools.ts";
 
 import { build, toolCallTurn } from "./runtime.fixture.ts";
@@ -133,5 +142,32 @@ describe("agent turn telemetry", () => {
     expect(JSON.stringify([tool?.attributes, tool?.events])).not.toContain(
       "private note"
     );
+  });
+
+  it("counts cache reads and writes in the input token total", async () => {
+    const fixture = build();
+    const reply = fauxAssistantMessage("Cached.");
+    reply.usage = {
+      ...reply.usage,
+      input: 3,
+      cacheRead: 5758,
+      cacheWrite: 6174,
+    };
+
+    const stream = traceModelStream(fixture.faux.getModel(), () => {
+      const source = createAssistantMessageEventStream();
+      source.push({ type: "done", reason: "stop", message: reply });
+      return source;
+    });
+    await stream.result();
+    // The span ends after the stream hands its result on.
+    await vi.waitFor(() => expect(spansNamed("chat ")).toHaveLength(1));
+
+    const [chat] = spansNamed("chat ");
+    expect(chat?.attributes).toMatchObject({
+      "gen_ai.usage.input_tokens": 3 + 5758 + 6174,
+      "gen_ai.usage.cache_read.input_tokens": 5758,
+      "gen_ai.usage.cache_creation.input_tokens": 6174,
+    });
   });
 });

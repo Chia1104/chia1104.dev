@@ -10,6 +10,8 @@
  */
 import type { Code, Heading, Root, RootContent } from "mdast";
 
+import { logger } from "@chia/observability/logger";
+
 /** Fences this short stay verbatim in chunks. */
 const MAX_CODE_BLOCK_LINES = 24;
 /** Head kept when a fence exceeds `MAX_CODE_BLOCK_LINES`. */
@@ -69,9 +71,10 @@ const parseDocument = (
   try {
     return parser.mdx.parse(source);
   } catch (error) {
-    console.warn(
-      "[embeddings] source is not valid MDX, parsing as markdown",
-      error
+    // The parser's message quotes the source, which is draft content.
+    logger.warn(
+      { errorType: error instanceof Error ? error.name : "unknown" },
+      "Source is not valid MDX; parsing as markdown"
     );
     return parser.md.parse(source);
   }

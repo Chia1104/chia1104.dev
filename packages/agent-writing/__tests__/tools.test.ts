@@ -1,3 +1,7 @@
+const { reportError } = vi.hoisted(() => ({ reportError: vi.fn() }));
+
+vi.mock("@chia/observability/report", () => ({ reportError }));
+
 import { describe, expect, it, vi } from "vitest";
 
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
@@ -243,9 +247,7 @@ describe("fetchUrlTool source trail", () => {
       },
     });
     context.memory.save = () => Promise.reject(new Error("memory is down"));
-    const errors = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => undefined);
+    reportError.mockClear();
 
     const result = await fetchUrlTool.execute(
       "call-1",
@@ -256,8 +258,7 @@ describe("fetchUrlTool source trail", () => {
     );
 
     expect(result.details).toMatchObject({ url: "https://example.com/" });
-    expect(errors).toHaveBeenCalledOnce();
-    errors.mockRestore();
+    expect(reportError).toHaveBeenCalledOnce();
   });
 });
 

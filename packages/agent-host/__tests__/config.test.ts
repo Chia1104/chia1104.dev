@@ -1,3 +1,9 @@
+const { logger } = vi.hoisted(() => ({
+  logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock("@chia/observability/logger", () => ({ logger }));
+
 import { describe, expect, it, vi } from "vitest";
 import * as z from "zod";
 
@@ -80,14 +86,13 @@ describe("effectiveKindConfig", () => {
   });
 
   it("ignores a row the current schema rejects", () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    logger.warn.mockClear();
     expect(
       effectiveKindConfig(
         definition,
         row({ config: { instructions: "x".repeat(21) } })
       )
     ).toEqual({});
-    expect(warn).toHaveBeenCalledOnce();
-    warn.mockRestore();
+    expect(logger.warn).toHaveBeenCalledOnce();
   });
 });

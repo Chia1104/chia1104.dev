@@ -1,5 +1,6 @@
 import type { CallerTier } from "@chia/auth/tier";
 import type { Keyv } from "@chia/kv/types";
+import { reportError } from "@chia/observability/report";
 
 import type { ServiceContext } from "../context";
 import { AppError } from "../errors";
@@ -88,7 +89,8 @@ export const rateLimitPolicy = (
         await kv.set(key, entry, Math.max(entry.resetTime - now, 0));
       }
     } catch (error) {
-      console.error("Rate limiter store error", error);
+      // Fails open: a store outage must not lock every caller out.
+      reportError(error, "Rate limiter store failed");
       return allow();
     }
 

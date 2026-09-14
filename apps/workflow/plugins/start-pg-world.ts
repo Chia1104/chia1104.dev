@@ -1,8 +1,10 @@
 import { definePlugin } from "nitro";
 
+import { logger } from "@chia/observability/logger";
+
 export default definePlugin(async () => {
   if (process.env.WORKFLOW_TARGET_WORLD === "@workflow/world-postgres") {
-    console.log("Starting Postgres World...");
+    logger.info("Starting Postgres World");
     const [{ createWorld }, { setWorld }] = await Promise.all([
       import("@workflow/world-postgres"),
       import("workflow/runtime"),
@@ -12,6 +14,6 @@ export default definePlugin(async () => {
     // request, so a second runner polls forever in that request's trace context.
     setWorld(world);
     await world.start?.();
-    console.log("Postgres World started");
+    logger.info("Postgres World started");
   }
 });

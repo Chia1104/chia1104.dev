@@ -12,6 +12,7 @@ import type { Policy } from "../policies/types";
 export const toORPCError = (error: AppError): ORPCError<string, unknown> =>
   new ORPCError(error.code, {
     message: error.message,
+    cause: error,
     data:
       error.issues || error.data
         ? { ...error.data, ...(error.issues && { errors: error.issues }) }
