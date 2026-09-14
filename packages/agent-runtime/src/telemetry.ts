@@ -58,7 +58,9 @@ const endModelSpan = (
     [GenAI.finishReasons]: [message.stopReason],
     [GenAI.timeToFirstChunk]:
       timeToFirstChunkMs === undefined ? undefined : timeToFirstChunkMs / 1000,
-    [GenAI.inputTokens]: message.usage.input,
+    // Pi counts cache reads and writes apart from `input`; the convention's total includes them.
+    [GenAI.inputTokens]:
+      message.usage.input + message.usage.cacheRead + message.usage.cacheWrite,
     [GenAI.outputTokens]: message.usage.output,
     [GenAI.cacheReadTokens]: message.usage.cacheRead,
     [GenAI.cacheCreationTokens]: message.usage.cacheWrite,
