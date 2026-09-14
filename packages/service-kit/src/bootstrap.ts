@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import { createFactory } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
+import { requestId } from "hono/request-id";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import type { CreateAuthOptions } from "@chia/auth/server";
@@ -77,7 +78,7 @@ export interface BootstrapOptions {
   maxBodySize?: number;
 }
 
-/** Shared middleware: logging, Sentry, errors, body cap, CORS, maintenance. */
+/** Shared middleware: request id, logging, Sentry, errors, body cap, CORS, maintenance. */
 export const bootstrap = <
   TEnv extends Env,
   TSchema extends Schema,
@@ -86,6 +87,8 @@ export const bootstrap = <
   app: TApp,
   options?: BootstrapOptions
 ) => {
+  app.use(requestId());
+
   if (options?.logger !== false) {
     app.use(logger());
   }
@@ -98,7 +101,15 @@ export const bootstrap = <
   );
 
   app.onError((e, c) => {
-    console.error(e);
+    const status = isAppError(e) || e instanceof HTTPException ? e.status : 500;
+
+    // A 4xx answers the caller; only this service's own failures are logged and reported.
+    if (status >= 500) {
+      const id = c.get("requestId");
+      console.error("Request failed", { requestId: id, error: e });
+      c.get("sentry").setTag("requestId", id);
+      c.get("sentry").captureException(e);
+    }
 
     if (isAppError(e)) {
       return c.json(
@@ -112,7 +123,6 @@ export const bootstrap = <
       return c.json(errorGenerator(e.status), e.status);
     }
 
-    c.get("sentry").captureException(e);
     return c.json(errorGenerator(500), 500);
   });
 

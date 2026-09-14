@@ -29,10 +29,16 @@ const api = new Hono().post(
     try {
       return c.json(await executeLocalWorkflowCommand(command));
     } catch (error) {
-      console.error("Internal workflow command failed", {
-        type: command.type,
-        error: String(error),
-      });
+      if (!isAppError(error) || error.status >= 500) {
+        const requestId = c.get("requestId");
+        console.error("Workflow command failed", {
+          requestId,
+          type: command.type,
+          error,
+        });
+        c.get("sentry").setTag("requestId", requestId);
+        c.get("sentry").captureException(error);
+      }
       if (isAppError(error)) {
         // SAFETY: `AppError.status` is always one of `APP_ERROR_STATUS`, all 4xx/5xx codes with a body.
         return c.json(

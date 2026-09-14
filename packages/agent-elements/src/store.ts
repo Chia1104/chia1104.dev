@@ -146,9 +146,13 @@ export const VIEW_FLUSH_MS = 32;
 /** The part of `QUOTA_EXCEEDED`'s data the sentence needs; the rest is for the host's meter. */
 const quotaExceededData = z.object({ resetAt: z.iso.datetime() });
 
+/** Set by the service on failures it reported, so a user can quote them. */
+const failureReferenceData = z.object({ requestId: z.string() });
+
 /**
  * Refusals the agent contract declares get the catalog's sentence; the server's message for
- * them is a code, not something to show. Anything else keeps its own message.
+ * them is a code, not something to show. Anything else keeps its own message, with the
+ * request reference when the service attached one.
  */
 export const failureOf = (cause: unknown, labels: AgentLabels): string => {
   if (cause instanceof ORPCError) {
@@ -165,6 +169,13 @@ export const failureOf = (cause: unknown, labels: AgentLabels): string => {
         return labels.tooManyTurns;
       case "UNAUTHORIZED":
         return labels.signedOut;
+    }
+    const reference = failureReferenceData.safeParse(cause.data);
+    if (reference.success) {
+      return fill(labels.failureReference, {
+        message: cause.message,
+        requestId: reference.data.requestId,
+      });
     }
   }
   return cause instanceof Error ? cause.message : String(cause);
