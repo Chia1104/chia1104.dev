@@ -17,6 +17,7 @@ import type { MDXComponents } from "mdx/types";
 
 import ImageZoom from "@chia/ui/image-zoom";
 
+import { LinkedInPost } from "./components/linkedin-post";
 import { Mermaid } from "./components/mermaid";
 import { markdownElements } from "./markdown-elements";
 
@@ -95,4 +96,5 @@ export const V1MDXComponents: MDXComponents = {
   ),
   ...markdownElements,
   Mermaid,
+  LinkedInPost,
 };

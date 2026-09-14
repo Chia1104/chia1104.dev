@@ -2,7 +2,8 @@
   "extends": "@chiastack/tsconfig/react.json",
   "compilerOptions": {
     "types": ["node", "vitest/globals"],
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx"
   },
   "include": ["src", "vitest.config.mts", "__tests__"],
   "exclude": ["node_modules", "dist"]
