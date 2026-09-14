@@ -119,7 +119,7 @@ describe("mcp server", () => {
           ],
         },
       ],
-      nextCursor: "feed:[1,7]",
+      nextCursor: "2026-09-01 00:00:00.123456+00|7",
     });
     const client = await connect(fakeApi({ feeds: { list } }));
 
@@ -139,7 +139,7 @@ describe("mcp server", () => {
           translations: [{ locale: "zh-TW", title: "哈囉", description: null }],
         }),
       ],
-      nextCursor: "feed:[1,7]",
+      nextCursor: "2026-09-01 00:00:00.123456+00|7",
     });
   });
 

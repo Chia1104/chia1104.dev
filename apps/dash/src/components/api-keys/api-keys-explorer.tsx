@@ -38,7 +38,7 @@ export const ApiKeysExplorer = () => {
   } = useInfiniteQuery(
     orpc.apikey.list.infiniteOptions({
       input: (pageParam) => ({ cursor: pageParam }),
-      getNextPageParam: (lastPage) => lastPage.nextCursor?.toString() ?? null,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
       initialPageParam:
         /* SAFETY: The producer contract guarantees this value satisfies string | null. */ null as
           | string

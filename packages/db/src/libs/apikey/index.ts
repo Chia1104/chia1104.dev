@@ -2,14 +2,12 @@ import type { SQLWrapper } from "drizzle-orm";
 
 import { FeedOrderBy } from "../../types";
 import {
-  buildCursorWhere,
-  parseCursorForOrder,
-  sliceNextCursor,
+  keysetCursorValue,
+  keysetWhere,
+  sliceKeysetPage,
   withDTO,
 } from "../index.ts";
 import type { InfiniteDTO } from "../validator/apikey";
-
-const APIKEY_DATE_ORDER_BY = new Set([FeedOrderBy.CreatedAt]);
 
 const toISO = (date: Date | null) => date?.toISOString() ?? null;
 
@@ -33,34 +31,33 @@ export const getInfiniteApiKeys = withDTO(
       whereAnd?: SQLWrapper[];
     }
   ) => {
-    const parsedCursor = parseCursorForOrder(
-      cursor ?? null,
-      orderBy,
-      APIKEY_DATE_ORDER_BY
-    );
-    const cursorFilter = buildCursorWhere(orderBy, parsedCursor, sortOrder);
     const rawFilters = whereAnd.filter(Boolean).map((condition) => ({
       RAW: condition,
     }));
 
     const rawItems = await db.query.apikey.findMany({
-      orderBy: (apikey, { asc, desc }) => [
-        sortOrder === "asc" ? asc(apikey[orderBy]) : desc(apikey[orderBy]),
-      ],
+      orderBy: (key, { asc, desc }) => {
+        const order = sortOrder === "asc" ? asc : desc;
+        return [order(key[orderBy]), order(key.id)];
+      },
       limit: limit + 1,
-      where: cursorFilter
-        ? { AND: [cursorFilter, ...rawFilters] }
-        : rawFilters.length
-          ? { AND: rawFilters }
-          : {},
+      extras: {
+        cursorAt: (key) => keysetCursorValue(key[orderBy]),
+      },
+      where: {
+        AND: cursor
+          ? [
+              {
+                RAW: (key) =>
+                  keysetWhere(key[orderBy], key.id, cursor, sortOrder),
+              },
+              ...rawFilters,
+            ]
+          : rawFilters,
+      },
     });
 
-    const { items, nextCursor } = sliceNextCursor(
-      rawItems,
-      limit,
-      orderBy,
-      APIKEY_DATE_ORDER_BY
-    );
+    const { items, nextCursor } = sliceKeysetPage(rawItems, limit);
 
     const serializedItems = items.map((item) => ({
       ...item,

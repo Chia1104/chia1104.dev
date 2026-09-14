@@ -13,18 +13,13 @@ import {
 
 import * as schema from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
-import { withDTO } from "../index.ts";
+import {
+  keysetCursorValue,
+  keysetWhere,
+  sliceKeysetPage,
+  withDTO,
+} from "../index.ts";
 import type { ListUsersDTO } from "../validator/users";
-
-/**
- * Keyset on `(timestamp, id)`. The timestamp travels as Postgres text so the boundary keeps
- * its microseconds, which a JS `Date` would round away; `id` breaks ties, so a page can never
- * repeat or skip a row.
- */
-const parseCursor = (cursor: string) => {
-  const separator = cursor.lastIndexOf("|");
-  return { at: cursor.slice(0, separator), id: cursor.slice(separator + 1) };
-};
 
 const toISO = (date: Date | null) => date?.toISOString() ?? null;
 
@@ -76,17 +71,14 @@ export const listUsers = withDTO(
     const search = query?.trim();
     const column = schema.user[orderBy];
     const direction = sortOrder === "asc" ? asc : desc;
-    const boundary = cursor ? parseCursor(cursor) : null;
 
     const rawItems = await db
-      .select({ ...userColumns, cursorAt: sql<string>`${column}::text` })
+      .select({ ...userColumns, cursorAt: keysetCursorValue(column) })
       .from(schema.user)
       .where(
         and(
-          boundary
-            ? sortOrder === "asc"
-              ? sql`(${column}, ${schema.user.id}) >= (${boundary.at}::timestamptz, ${boundary.id})`
-              : sql`(${column}, ${schema.user.id}) <= (${boundary.at}::timestamptz, ${boundary.id})`
+          cursor
+            ? keysetWhere(column, schema.user.id, cursor, sortOrder)
             : undefined,
           search
             ? or(
@@ -109,14 +101,8 @@ export const listUsers = withDTO(
       .orderBy(direction(column), direction(schema.user.id))
       .limit(limit + 1);
 
-    // The extra row is where the next page starts; the predicate above is inclusive.
-    const next = rawItems[limit];
-    return {
-      items: rawItems
-        .slice(0, limit)
-        .map(({ cursorAt: _cursorAt, ...item }) => serializeUser(item)),
-      nextCursor: next ? `${next.cursorAt}|${next.id}` : null,
-    };
+    const { items, nextCursor } = sliceKeysetPage(rawItems, limit);
+    return { items: items.map(serializeUser), nextCursor };
   }
 );
 

@@ -18,7 +18,7 @@ import type { RouterInputs } from "@/libs/orpc/types";
 
 interface Props {
   query?: RouterInputs["feeds"]["list"];
-  nextCursor?: string | number | null;
+  nextCursor?: string | null;
   type: FeedType;
 }
 
@@ -33,11 +33,8 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
           ...query,
           nextCursor: pageParam ?? undefined,
         }),
-        getNextPageParam: (lastPage) => {
-          if (!lastPage.nextCursor) return null;
-          return lastPage.nextCursor.toString();
-        },
-        initialPageParam: nextCursor?.toString() ?? null,
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+        initialPageParam: nextCursor ?? null,
       })
     );
 

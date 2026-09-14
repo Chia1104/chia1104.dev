@@ -22,7 +22,7 @@ import FeedSkeleton from "./skeleton";
 
 interface Props {
   initFeed?: RouterOutputs["feeds"]["list"]["items"];
-  nextCursor?: string | number | null;
+  nextCursor?: string | null;
   query?: RouterInputs["feeds"]["list"];
 }
 
@@ -174,22 +174,20 @@ const FeedList = ({ initFeed, nextCursor, query = {} }: Props) => {
         ...query,
         nextCursor: pageParam ?? undefined,
       }),
-      getNextPageParam: (lastPage: RouterOutputs["feeds"]["list"]) => {
-        if (!lastPage.nextCursor) return null;
-        return lastPage.nextCursor.toString();
-      },
+      getNextPageParam: (lastPage: RouterOutputs["feeds"]["list"]) =>
+        lastPage.nextCursor,
       initialData: initFeed
         ? {
             pages: [
               {
                 items: initFeed,
-                nextCursor: nextCursor?.toString() ?? null,
+                nextCursor: nextCursor ?? null,
               },
             ],
-            pageParams: [nextCursor?.toString() ?? null],
+            pageParams: [nextCursor ?? null],
           }
         : undefined,
-      initialPageParam: nextCursor?.toString() ?? null,
+      initialPageParam: nextCursor ?? null,
     })
   );
 

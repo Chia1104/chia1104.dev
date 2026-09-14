@@ -73,6 +73,10 @@
       "types": "./src/libs/validator/feeds.ts",
       "default": "./src/libs/validator/feeds.ts"
     },
+    "./validator/shared": {
+      "types": "./src/libs/validator/shared.ts",
+      "default": "./src/libs/validator/shared.ts"
+    },
     "./validator/users": {
       "types": "./src/libs/validator/users.ts",
       "default": "./src/libs/validator/users.ts"

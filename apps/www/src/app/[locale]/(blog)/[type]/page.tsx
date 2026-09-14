@@ -42,7 +42,7 @@ const CacheFeeds = async ({
   const queryClient = getQueryClient();
   const formattedType = type === "posts" ? "post" : "note";
 
-  await queryClient.prefetchInfiniteQuery(
+  await queryClient.infiniteQuery(
     orpc.feeds.list.infiniteOptions({
       input: () => ({
         limit,
@@ -52,10 +52,7 @@ const CacheFeeds = async ({
         locale: dbLocaleResolver(locale),
       }),
       initialPageParam: null,
-      getNextPageParam: (lastPage) => {
-        if (!lastPage.nextCursor) return null;
-        return lastPage.nextCursor.toString();
-      },
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
     })
   );
 

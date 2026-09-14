@@ -8,6 +8,7 @@ import {
   feedTranslationSchema,
   insertFeedSchema,
 } from "@chia/db/validator/feeds";
+import { keysetCursorSchema } from "@chia/db/validator/shared";
 
 import { withMetaSchema } from "../shared/schema";
 
@@ -109,8 +110,7 @@ export const feedsInfiniteSchema = z.object({
    * table in one call, while `apps/www`'s sitemap can ask for 1000 with its API key.
    */
   limit: z.coerce.number().int().positive().optional().default(20),
-  // Composite feed cursors are strings (`feed:[timestamp,id]`); bare numeric ids still work.
-  nextCursor: z.union([z.string(), z.number()]).optional(),
+  nextCursor: keysetCursorSchema.optional(),
   withContent: flexibleBoolean.optional().default(false),
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.CreatedAt),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
@@ -206,7 +206,12 @@ const READ_ERRORS = {
 export const getFeedsContract = oc
   .errors(READ_ERRORS)
   .input(feedsInfiniteSchema)
-  .output(withMetaSchema(feedListSchema));
+  .output(
+    withMetaSchema(feedListSchema).extend({
+      /** Narrowed from `withMetaSchema`: a `(order column, id)` keyset cursor. */
+      nextCursor: z.string().nullable(),
+    })
+  );
 
 export const getFeedBySlugContract = oc
   .errors(READ_ERRORS)
