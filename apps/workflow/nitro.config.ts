@@ -25,6 +25,7 @@ export default defineConfig({
   traceDeps: [
     "pg*",
     "pg-pool*",
+    "pino*",
     "@workflow-worlds/redis",
     "@workflow/world-postgres",
     "workflow",

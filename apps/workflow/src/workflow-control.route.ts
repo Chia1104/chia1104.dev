@@ -4,6 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
+import { reportError } from "@chia/observability/report";
 import { isAppError } from "@chia/service-kit/errors";
 import { workflowControlCommandSchema } from "@chia/workflow-control/contract";
 
@@ -30,14 +31,10 @@ const api = new Hono().post(
       return c.json(await executeLocalWorkflowCommand(command));
     } catch (error) {
       if (!isAppError(error) || error.status >= 500) {
-        const requestId = c.get("requestId");
-        console.error("Workflow command failed", {
-          requestId,
+        reportError(error, "Workflow command failed", {
+          requestId: c.get("requestId"),
           type: command.type,
-          error,
         });
-        c.get("sentry").setTag("requestId", requestId);
-        c.get("sentry").captureException(error);
       }
       if (isAppError(error)) {
         // SAFETY: `AppError.status` is always one of `APP_ERROR_STATUS`, all 4xx/5xx codes with a body.

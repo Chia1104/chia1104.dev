@@ -1,7 +1,10 @@
-const { executeLocalWorkflowCommand, token } = vi.hoisted(() => ({
+const { executeLocalWorkflowCommand, reportError, token } = vi.hoisted(() => ({
   executeLocalWorkflowCommand: vi.fn(async () => ({ type: "completed" })),
+  reportError: vi.fn(),
   token: "w".repeat(32),
 }));
+
+vi.mock("@chia/observability/report", () => ({ reportError }));
 
 vi.mock("../src/env", () => ({
   env: {
@@ -48,7 +51,6 @@ describe("workflow control route", () => {
   });
 
   it("answers an unexpected failure with 503 and a request id", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
     executeLocalWorkflowCommand.mockRejectedValueOnce(new Error("world down"));
 
     const response = await app.request("/", {
@@ -62,12 +64,13 @@ describe("workflow control route", () => {
 
     expect(response.status).toBe(503);
     expect(response.headers.get("X-Request-Id")).toBeTruthy();
-    expect(console.error).toHaveBeenCalledWith(
+    expect(reportError).toHaveBeenCalledWith(
+      expect.any(Error),
       "Workflow command failed",
-      expect.objectContaining({
+      {
         requestId: response.headers.get("X-Request-Id"),
-        error: expect.any(Error),
-      })
+        type: command.type,
+      }
     );
   });
 });

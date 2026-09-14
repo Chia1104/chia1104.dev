@@ -1,3 +1,4 @@
+import { trace } from "@opentelemetry/api";
 import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
@@ -12,6 +13,7 @@ import {
 } from "../factories/orpc.factory";
 import { resolveCaller } from "../guards/caller.guard";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
+import { procedureOf, RPC_PREFIX } from "../utils/rpc.util";
 
 /**
  * Chat streams and compact/navigate hold a session lock past TIMEOUT_MS; applying it here
@@ -45,8 +47,12 @@ const api = new Hono<HonoContext>()
   .use(resolveCaller())
   .use(rateLimiterGuard("rpc"))
   .use("/*", async (c, next) => {
+    // The server span keeps the route template; the procedure goes beside it.
+    const procedure = procedureOf(c.req.path);
+    if (procedure) trace.getActiveSpan()?.setAttribute("rpc.method", procedure);
+
     const { matched, response } = await handler.handle(c.req.raw, {
-      prefix: "/api/v1/rpc",
+      prefix: RPC_PREFIX,
       context: createORPCContext(c),
     });
 

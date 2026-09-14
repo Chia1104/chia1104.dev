@@ -110,6 +110,7 @@
     "@chia/db": "workspace:*",
     "@chia/integrations": "workspace:*",
     "@chia/kv": "workspace:*",
+    "@chia/observability": "workspace:*",
     "@chia/service-kit": "workspace:*",
     "@chia/utils": "workspace:*",
     "@chia/workflow-control": "workspace:*",

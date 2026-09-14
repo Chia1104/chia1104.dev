@@ -1,3 +1,7 @@
+const { reportError } = vi.hoisted(() => ({ reportError: vi.fn() }));
+
+vi.mock("@chia/observability/report", () => ({ reportError }));
+
 import type { Context } from "@earendil-works/pi-ai";
 import {
   fauxAssistantMessage,
@@ -414,9 +418,7 @@ describe("runPiTurn", () => {
 
   it("fails the turn as internal and persists nothing more when the tree refuses a message", async () => {
     const fixture = build();
-    const consoleError = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => undefined);
+    reportError.mockClear();
     const appendEntry = fixture.session.appendEntry.bind(fixture.session);
     const refused = new Error("unsupported Unicode escape sequence");
     vi.spyOn(fixture.session, "appendEntry").mockImplementation((entry) =>
@@ -441,11 +443,11 @@ describe("runPiTurn", () => {
     expect(fixture.types()).not.toContain("assistant:end");
     const branch = await fixture.branch();
     expect(branch.map((entry) => messageOf(entry)?.role)).toEqual(["user"]);
-    expect(consoleError).toHaveBeenCalledWith(
+    expect(reportError).toHaveBeenCalledWith(
+      refused,
       "Agent turn failed",
-      expect.objectContaining({ kind: "internal", cause: refused })
+      expect.objectContaining({ kind: "internal" })
     );
-    consoleError.mockRestore();
   });
 
   it("does not persist approvals raised by a failed provider turn", async () => {
