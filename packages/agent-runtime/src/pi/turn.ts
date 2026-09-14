@@ -21,6 +21,7 @@ import type { JsonValue } from "@chia/utils/json";
 import { buildBranchContext } from "../session/context.ts";
 import type { MessageEntry, NewSessionEntry } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";
+import { traceAgentTurn } from "../telemetry.ts";
 import { bindToolContext, resolveToolContext } from "../tools.ts";
 import type { ToolContextSource } from "../tools.ts";
 import type {
@@ -166,13 +167,7 @@ const promptText = (
   return formatPromptTemplateInvocation(template, message.template.args ?? []);
 };
 
-/**
- * Executes one complete turn on Pi's `Agent`.
- * The agent is built for this turn only: it receives the branch projected into messages and
- * hands back events. Every finished message is appended to the session tree before the event
- * reaches the wire. Nothing about the run outlives the call.
- */
-export const runPiTurn = async <TContext extends object, TApproval>({
+const executePiTurn = async <TContext extends object, TApproval>({
   agentSessionId,
   agentRunId,
   session,
@@ -570,3 +565,21 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     }
   }
 };
+
+/**
+ * Executes one complete turn on Pi's `Agent`, traced as one `invoke_agent` span.
+ * The agent is built for this turn only: it receives the branch projected into messages and
+ * hands back events. Every finished message is appended to the session tree before the event
+ * reaches the wire. Nothing about the run outlives the call.
+ */
+export const runPiTurn = <TContext extends object, TApproval>(
+  options: RunPiTurnOptions<TContext, TApproval>
+): Promise<AgentTurnExecution<TApproval>> =>
+  traceAgentTurn(
+    {
+      sessionId: options.agentSessionId,
+      runId: options.agentRunId,
+      model: options.model,
+    },
+    () => executePiTurn(options)
+  );

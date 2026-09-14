@@ -9,6 +9,7 @@ import * as z from "zod";
 
 import { locale } from "@chia/db/schema/enums";
 
+import { traceToolCall } from "./telemetry.ts";
 import type { AgentTool } from "./types.ts";
 
 /**
@@ -77,7 +78,9 @@ export const bindToolContext = <TContext extends object>(
   tools.map((tool) => ({
     ...tool,
     execute: (toolCallId, params, signal, onUpdate) =>
-      tool.execute(toolCallId, params, signal, onUpdate, context),
+      traceToolCall(tool.name, toolCallId, () =>
+        tool.execute(toolCallId, params, signal, onUpdate, context)
+      ),
   }));
 
 /** Text-only tool result. `details` is what the UI renders, `content` is what the model reads. */

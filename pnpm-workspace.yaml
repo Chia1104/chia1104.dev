@@ -133,6 +133,7 @@ catalogs:
     "@orpc/tanstack-query": 2.0.0-beta.32
   otel:
     "@opentelemetry/api": 1.9.1
+    "@opentelemetry/context-async-hooks": 2.11.0
     "@opentelemetry/exporter-trace-otlp-http": 0.222.0
     "@opentelemetry/instrumentation": 0.222.0
     "@opentelemetry/instrumentation-http": 0.222.0

@@ -9,4 +9,5 @@ Kind-independent Pi session, turn, tool, compaction and wire-event runtime.
 - Keep prompts, domain tools and kind policies out of the runtime.
 - `pi/*`, `session/*`, `models` and `wire/replay` are server-only. Browser or SSR bundles may import `wire/schema` and `wire/fold`.
 - Persist completed entries before emitting their events, and keep replay and live events compatible with the same reducer.
+- Turns, tool calls and provider requests are traced with GenAI span names (`invoke_agent`, `execute_tool`, `chat`). Provider requests are traced only on `Models` from `createAgentModels`. Spans carry identifiers, models, usage and outcome, never prompts, outputs or tool arguments.
 - Read `docs/agent-architecture.md` before changing lifecycle, persistence or wire contracts.

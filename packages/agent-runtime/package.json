@@ -112,6 +112,7 @@
     "@chia/utils": "workspace:*",
     "@earendil-works/pi-agent-core": "catalog:agent",
     "@earendil-works/pi-ai": "catalog:agent",
+    "@opentelemetry/api": "catalog:otel",
     "es-toolkit": "catalog:",
     "typebox": "catalog:agent",
     "zod": "catalog:"
@@ -119,6 +120,8 @@
   "devDependencies": {
     "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
+    "@opentelemetry/context-async-hooks": "catalog:otel",
+    "@opentelemetry/sdk-trace-base": "catalog:otel",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
