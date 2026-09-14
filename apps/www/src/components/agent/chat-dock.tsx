@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect } from "react";
 
 import { Button, Drawer, Spinner, Tooltip } from "@heroui/react";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { useTranslations } from "next-intl";
 import { useMediaQuery } from "usehooks-ts";
 
@@ -46,6 +47,8 @@ export const ChatDock = () => {
   useEffect(() => {
     void useChatDockStore.persist.rehydrate();
   }, []);
+
+  useHotkey("Mod+I", toggle, { enabled: aiEnabled });
 
   if (!aiEnabled) {
     return null;

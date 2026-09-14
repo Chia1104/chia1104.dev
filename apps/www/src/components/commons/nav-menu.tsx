@@ -14,11 +14,11 @@ import {
   TooltipContent,
   Tabs,
 } from "@heroui/react";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { useTranslations } from "next-intl";
 
 import { CommandDialog, CommandInput } from "@chia/ui/cmd";
 import { Theme, MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
-import useCMD from "@chia/ui/utils/use-cmd";
 import useTheme from "@chia/ui/utils/use-theme";
 
 import { FeedSearch } from "@/components/commons/feed-search";
@@ -28,8 +28,9 @@ import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
 
 const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
-  const [open, setOpen] = useCMD();
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  useHotkey("Mod+K", () => setOpen((open) => !open));
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const t = useTranslations("nav");
@@ -98,10 +99,6 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
             <ListBox.Section>
               <Header className="flex items-center justify-between">
                 <p>{t("contact")}</p>
-                <Kbd className="text-xs">
-                  <Kbd.Abbr keyValue="command" />
-                  <Kbd.Content>I</Kbd.Content>
-                </Kbd>
               </Header>
               {Object.entries(contact).map(([key, { name, icon, link }]) => (
                 <ListBox.Item
