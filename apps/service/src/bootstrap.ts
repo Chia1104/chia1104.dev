@@ -5,7 +5,6 @@ import { bootstrap as bootstrapApp } from "@chia/service-kit/bootstrap";
 
 import { env } from "./env";
 import { getCORSAllowedOrigin } from "./utils/cors.util";
-import { procedureOf } from "./utils/rpc.util";
 
 const corsOrigin = getCORSAllowedOrigin();
 
@@ -31,7 +30,7 @@ const bootstrap = <
     },
     // `caller` is unset on routes that never resolve one, such as health.
     requestLogFields: (c) => ({
-      procedure: procedureOf(c.req.path),
+      procedure: c.var.rpcProcedure,
       callerTier:
         c.var.caller === undefined
           ? undefined

@@ -47,16 +47,19 @@ const api = new Hono<HonoContext>()
   .use(resolveCaller())
   .use(rateLimiterGuard("rpc"))
   .use("/*", async (c, next) => {
-    // The server span keeps the route template; the procedure goes beside it.
-    const procedure = procedureOf(c.req.path);
-    if (procedure) trace.getActiveSpan()?.setAttribute("rpc.method", procedure);
-
     const { matched, response } = await handler.handle(c.req.raw, {
       prefix: RPC_PREFIX,
       context: createORPCContext(c),
     });
 
     if (matched) {
+      // Only a matched path names a procedure; probes for others would add arbitrary values.
+      // The server span keeps the route template and carries the procedure beside it.
+      const procedure = procedureOf(c.req.path);
+      if (procedure) {
+        c.set("rpcProcedure", procedure);
+        trace.getActiveSpan()?.setAttribute("rpc.method", procedure);
+      }
       return c.newResponse(response.body, response);
     }
 
