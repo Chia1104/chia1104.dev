@@ -5,6 +5,7 @@ export const env = createEnv({
   server: {
     /** Telemetry starts only when set; the SDK reads the other `OTEL_*` variables itself. */
     OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
+    OTEL_TRACES_EXPORTER: z.enum(["otlp", "console"]).optional(),
     RAILWAY_GIT_COMMIT_SHA: z.string().optional(),
     RAILWAY_ENVIRONMENT_NAME: z.string().optional(),
     /** Errors are sent only in production, and only when set. */
@@ -20,6 +21,7 @@ export const env = createEnv({
   },
   runtimeEnv: {
     OTEL_EXPORTER_OTLP_ENDPOINT: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+    OTEL_TRACES_EXPORTER: process.env.OTEL_TRACES_EXPORTER,
     RAILWAY_GIT_COMMIT_SHA: process.env.RAILWAY_GIT_COMMIT_SHA,
     RAILWAY_ENVIRONMENT_NAME: process.env.RAILWAY_ENVIRONMENT_NAME,
     SENTRY_DSN: process.env.SENTRY_DSN,
