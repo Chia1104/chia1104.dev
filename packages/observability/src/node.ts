@@ -1,3 +1,4 @@
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { PgInstrumentation } from "@opentelemetry/instrumentation-pg";
 import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
@@ -9,6 +10,7 @@ import {
   resourceFromAttributes,
 } from "@opentelemetry/resources";
 import { NodeSDK } from "@opentelemetry/sdk-node";
+import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace-base";
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
@@ -19,6 +21,7 @@ import { otlpIntegration } from "@sentry/node-core/light/otlp";
 import { register } from "import-in-the-middle/register-hooks.mjs";
 
 import { env } from "./env";
+import { contentFreeExporter } from "./span-export";
 
 /** Incubating semconv key; copied rather than imported, as the package advises. */
 const ATTR_DEPLOYMENT_ENVIRONMENT_NAME = "deployment.environment.name";
@@ -53,6 +56,13 @@ export const startTelemetry = ({ serviceName }: StartTelemetryOptions) => {
 const startOpenTelemetry = (serviceName: string) => {
   register();
   const sdk = new NodeSDK({
+    // Given an exporter, the SDK no longer builds one from `OTEL_TRACES_EXPORTER`; `console` is
+    // the only other value this reads, for local runs.
+    traceExporter: contentFreeExporter(
+      env.OTEL_TRACES_EXPORTER === "console"
+        ? new ConsoleSpanExporter()
+        : new OTLPTraceExporter()
+    ),
     // A supplied resource replaces the SDK default, which carries `telemetry.sdk.*`.
     resource: defaultResource().merge(
       resourceFromAttributes({
