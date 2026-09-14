@@ -1,6 +1,5 @@
-import type { KnownKeysOnly, RelationsFilterColumns } from "drizzle-orm";
+import type { KnownKeysOnly, RelationsFilterColumns, SQL } from "drizzle-orm";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import * as z from "zod";
 
 import type { DB } from "../../client.ts";
 import type { Locale, relations } from "../../schemas/schema.ts";
@@ -12,7 +11,13 @@ import {
   tagTranslations,
 } from "../../schemas/schema.ts";
 import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types.ts";
-import { parseCursorForOrder, parseInstant, withDTO } from "../index.ts";
+import {
+  keysetCursorValue,
+  keysetWhere,
+  parseInstant,
+  sliceKeysetPage,
+  withDTO,
+} from "../index.ts";
 import type {
   InfiniteDTO,
   InsertFeedDTO,
@@ -21,12 +26,6 @@ import type {
   UpdateFeedTranslationDTO,
 } from "../validator/feeds.ts";
 
-const FEED_DATE_ORDER_BY: ReadonlySet<FeedOrderBy> = new Set([
-  FeedOrderBy.UpdatedAt,
-  FeedOrderBy.CreatedAt,
-]);
-const FEED_CURSOR_PREFIX = "feed:";
-
 type FeedWhereColumns = RelationsFilterColumns<
   KnownKeysOnly<typeof feeds, (typeof relations.feeds)["table"]>
 >;
@@ -34,6 +33,7 @@ type FeedWhereColumns = RelationsFilterColumns<
 type FeedWhere = FeedWhereColumns & {
   AND?: FeedWhere[];
   OR?: FeedWhere[];
+  RAW?: (feed: typeof feeds) => SQL;
 };
 
 interface SerializableFeed {
@@ -68,57 +68,6 @@ type InfiniteFeedParams = InfiniteDTO & {
   locale?: Locale;
   enableDeleted?: boolean;
   userId?: string;
-};
-
-interface FeedCursorItem {
-  id: number;
-  slug: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface ParsedFeedCursor {
-  value: Date | string | number;
-  id?: number;
-}
-
-const parseFeedCursor = (
-  cursor: string | number | null | undefined,
-  orderBy: FeedOrderBy
-): ParsedFeedCursor | null => {
-  const cursorString = z.string().safeParse(cursor).data;
-  if (cursorString?.startsWith(FEED_CURSOR_PREFIX)) {
-    try {
-      const parsed = z
-        .tuple([z.union([z.string(), z.number()]), z.number()])
-        .safeParse(
-          JSON.parse(cursorString.slice(FEED_CURSOR_PREFIX.length))
-        ).data;
-      if (parsed) {
-        const value = parseCursorForOrder(
-          parsed[0],
-          orderBy,
-          FEED_DATE_ORDER_BY
-        );
-        return value === null ? null : { value, id: parsed[1] };
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }
-
-  const value = parseCursorForOrder(cursor, orderBy, FEED_DATE_ORDER_BY);
-  return value === null ? null : { value };
-};
-
-const createFeedCursor = (
-  item: FeedCursorItem,
-  orderBy: FeedOrderBy
-): string => {
-  const rawValue = item[orderBy];
-  const value = rawValue instanceof Date ? rawValue.getTime() : rawValue;
-  return `${FEED_CURSOR_PREFIX}${JSON.stringify([value, item.id])}`;
 };
 
 function serializeFeed<TFeed extends SerializableFeed>(
@@ -157,7 +106,6 @@ const queryInfiniteFeeds = async (
     userId,
   }: InfiniteFeedParams
 ) => {
-  const parsedCursor = parseFeedCursor(cursor, orderBy);
   const filters: FeedWhere[] = [whereAnd];
 
   if (userId !== undefined) {
@@ -169,56 +117,21 @@ const queryInfiniteFeeds = async (
   if (!enableDeleted) {
     filters.push({ deletedAt: { isNull: true } });
   }
-  if (parsedCursor) {
-    if (parsedCursor.id === undefined) {
-      filters.push(
-        /* SAFETY: The producer contract guarantees this value satisfies FeedWhere. */ {
-          [orderBy]: {
-            [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor.value,
-          },
-        } as FeedWhere
-      );
-    } else {
-      const comparison = sortOrder === "asc" ? "gt" : "lt";
-      const primaryFilter =
-        /* SAFETY: The producer contract guarantees this value satisfies FeedWhere. */ {
-          [orderBy]: {
-            [comparison]: parsedCursor.value,
-          },
-        } as FeedWhere;
-      filters.push(
-        orderBy === FeedOrderBy.Id
-          ? primaryFilter
-          : {
-              OR: [
-                primaryFilter,
-                {
-                  AND: [
-                    /* SAFETY: The producer contract guarantees this value satisfies FeedWhere. */ {
-                      [orderBy]: parsedCursor.value,
-                    } as FeedWhere,
-                    {
-                      id: {
-                        [comparison]: parsedCursor.id,
-                      },
-                    },
-                  ],
-                },
-              ],
-            }
-      );
-    }
+  if (cursor) {
+    filters.push({
+      RAW: (feed) => keysetWhere(feed[orderBy], feed.id, cursor, sortOrder),
+    });
   }
 
   const rawItems = await db.query.feeds.findMany({
     orderBy: (feed, { asc, desc }) => {
       const order = sortOrder === "asc" ? asc : desc;
-      const primaryOrder = order(feed[orderBy]);
-      return orderBy === FeedOrderBy.Id
-        ? [primaryOrder]
-        : [primaryOrder, order(feed.id)];
+      return [order(feed[orderBy]), order(feed.id)];
     },
     limit: limit + 1,
+    extras: {
+      cursorAt: (feed) => keysetCursorValue(feed[orderBy]),
+    },
     with: {
       translations: {
         where: {
@@ -254,11 +167,7 @@ const queryInfiniteFeeds = async (
     },
   });
 
-  const hasMore = rawItems.length > limit;
-  const items = hasMore ? rawItems.slice(0, limit) : rawItems;
-  const lastItem = items.at(-1);
-  const nextCursor =
-    hasMore && lastItem ? createFeedCursor(lastItem, orderBy) : null;
+  const { items, nextCursor } = sliceKeysetPage(rawItems, limit);
 
   return {
     items: items.map(serializeFeed),

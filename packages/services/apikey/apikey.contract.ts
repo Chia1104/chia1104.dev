@@ -76,7 +76,7 @@ export const getAllApiKeysWithMetaContract = oc
   .output(
     z.object({
       items: z.array(apiKeySchema),
-      nextCursor: z.union([z.string(), z.number()]).nullable(),
+      nextCursor: z.string().nullable(),
     })
   );
 

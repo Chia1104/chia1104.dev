@@ -10,9 +10,12 @@ export const dateTransformSchema = z.date().transform((val) => {
 
 export type TransformedDateDTO = z.infer<typeof dateTransformSchema>;
 
+/** `<order column as Postgres text>|<id>`, as keyset repositories hand it back in `nextCursor`. */
+export const keysetCursorSchema = z.string().regex(/\|[^|]+$/);
+
 export const baseInfiniteSchema = z.object({
   limit: z.number().max(50).optional().default(10),
-  cursor: z.union([z.string(), z.number()]).nullish(),
+  cursor: keysetCursorSchema.nullish(),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
