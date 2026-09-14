@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/observability",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./node": {
+      "types": "./src/node.ts",
+      "default": "./src/node.ts"
+    }
+  },
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "type:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "catalog:otel",
+    "@opentelemetry/instrumentation-http": "catalog:otel",
+    "@opentelemetry/instrumentation-pg": "catalog:otel",
+    "@opentelemetry/instrumentation-redis": "catalog:otel",
+    "@opentelemetry/instrumentation-runtime-node": "catalog:otel",
+    "@opentelemetry/instrumentation-undici": "catalog:otel",
+    "@opentelemetry/resources": "catalog:otel",
+    "@opentelemetry/sdk-node": "catalog:otel",
+    "@opentelemetry/semantic-conventions": "catalog:otel",
+    "@t3-oss/env-core": "catalog:env",
+    "import-in-the-middle": "catalog:otel",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

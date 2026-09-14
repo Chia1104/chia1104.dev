@@ -130,6 +130,18 @@ catalogs:
     "@orpc/contract": 2.0.0-beta.32
     "@orpc/server": 2.0.0-beta.32
     "@orpc/tanstack-query": 2.0.0-beta.32
+  otel:
+    "@opentelemetry/api": 1.9.1
+    "@opentelemetry/instrumentation-http": 0.222.0
+    "@opentelemetry/instrumentation-pg": 0.74.0
+    "@opentelemetry/instrumentation-redis": 0.70.0
+    "@opentelemetry/instrumentation-runtime-node": 0.35.0
+    "@opentelemetry/instrumentation-undici": 0.32.0
+    "@opentelemetry/resources": 2.11.0
+    "@opentelemetry/sdk-node": 0.222.0
+    "@opentelemetry/semantic-conventions": 1.43.0
+    import-in-the-middle: 3.4.0
+    require-in-the-middle: 8.0.1
   oxc:
     "@oxlint/plugins": 1.81.0
     oxfmt: 0.66.0
@@ -280,4 +292,7 @@ minimumReleaseAgeExclude:
 strictPeerDependencies: false
 
 overrides:
+  # One pg copy: a second version is traced into `.nf3/`, where require-in-the-middle cannot
+  # name the module and the pg instrumentation never patches it.
+  pg: "catalog:drizzle"
   "@paradedb/drizzle-paradedb>drizzle-orm": 1.0.0-rc.4

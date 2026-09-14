@@ -6,9 +6,8 @@
   "scripts": {
     "dev": "nitro dev",
     "build": "nitro build",
-    "node:start": "node .output/server/index.mjs",
-    "start": "bun run --bun .output/server/index.mjs",
-    "node:preview": "node --env-file=.env .output/server/index.mjs",
+    "start": "node .output/server/index.mjs",
+    "preview": "node --env-file=.env .output/server/index.mjs",
     "type:check": "tsc --noEmit",
     "test": "vitest --run",
     "lint": "oxlint",
@@ -26,6 +25,7 @@
     "@chia/integrations": "workspace:*",
     "@chia/kv": "workspace:*",
     "@chia/meta": "workspace:*",
+    "@chia/observability": "workspace:*",
     "@chia/service-kit": "workspace:*",
     "@chia/services": "workspace:*",
     "@chia/ui": "workspace:*",
@@ -65,7 +65,6 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
-    "bun-types": "catalog:",
     "tsdown": "catalog:tooling",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"

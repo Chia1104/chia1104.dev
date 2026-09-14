@@ -7,7 +7,6 @@ on:
       - "apps/service/**"
       - "packages/**"
       - "apps/service/Dockerfile"
-      - "apps/service/Dockerfile.node"
       - ".github/workflows/service-docker-ci.yml"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -45,19 +44,10 @@ env:
 
 jobs:
   build:
-    name: "service docker build (${{ matrix.runtime }})"
+    name: "service docker build"
     runs-on: ubuntu-latest
     timeout-minutes: 15
     if: ${{ (contains(github.event.pull_request.labels.*.name, 'service:docker') || contains(github.event.pull_request.labels.*.name, 'service:enhancement')) && !contains(github.event.head_commit.message, '[skip ci]') }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runtime: bun
-            dockerfile: apps/service/Dockerfile
-          - runtime: node
-            dockerfile: apps/service/Dockerfile.node
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -72,10 +62,10 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: ${{ matrix.dockerfile }}
+          file: apps/service/Dockerfile
           push: false
           load: false
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104-service:${{ env.GIT_HASH }}-${{ matrix.runtime }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104-service:${{ env.GIT_HASH }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
