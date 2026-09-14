@@ -11,14 +11,13 @@ import {
 } from "@chia/db/schema";
 import type { AgentMemory } from "@chia/db/schema";
 
+import { AGENT_MEMORY_SOURCE_TYPE } from "./resource-types";
 import type {
   ChunkableResource,
   ResourceChunkInput,
   ResourceChunkSet,
   ResourceSummary,
 } from "./types";
-
-export const AGENT_MEMORY_SOURCE_TYPE = "agent_memory";
 
 /**
  * Whether a memory owns chunks: live and `active`. A pending lesson is unreviewed, and

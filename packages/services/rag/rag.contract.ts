@@ -10,7 +10,7 @@ import { locale } from "@chia/db/schema/enums";
 
 import { withMetaSchema } from "../shared/schema";
 
-import { isResourceType, resourceTypes } from "./registry";
+import { isResourceType, resourceTypes } from "./resource-types";
 
 /**
  * RPC-only; every consumer is the dashboard's browser client. Every output carries the

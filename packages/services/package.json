@@ -81,6 +81,10 @@
       "types": "./rag/registry.ts",
       "default": "./rag/registry.ts"
     },
+    "./rag/resource-types": {
+      "types": "./rag/resource-types.ts",
+      "default": "./rag/resource-types.ts"
+    },
     "./rag/search.service": {
       "types": "./rag/search.service.ts",
       "default": "./rag/search.service.ts"

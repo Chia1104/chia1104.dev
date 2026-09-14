@@ -19,7 +19,7 @@ import {
   createMemoryService,
   recordSourceMemoryService,
 } from "@chia/services/memory/write.service";
-import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/registry";
+import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/resource-types";
 import { searchResources } from "@chia/services/rag/search.service";
 
 import { memoryHooks } from "./agent-memory-indexing.service";

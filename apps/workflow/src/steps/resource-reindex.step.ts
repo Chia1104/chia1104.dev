@@ -14,7 +14,7 @@ import type { ResourceIndexRunProgress } from "@chia/db/schema";
 import {
   AGENT_MEMORY_SOURCE_TYPE,
   FEED_TRANSLATION_SOURCE_TYPE,
-} from "@chia/services/rag/registry";
+} from "@chia/services/rag/resource-types";
 
 import type { ResourceIndexRequest } from "./resource-index.step";
 

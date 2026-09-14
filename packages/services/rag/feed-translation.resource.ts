@@ -9,14 +9,13 @@ import type { DB } from "@chia/db/client";
 import { feeds, feedTranslations, RESOURCE_CHUNK_KIND } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 
+import { FEED_TRANSLATION_SOURCE_TYPE } from "./resource-types";
 import type {
   ChunkableResource,
   ResourceChunkInput,
   ResourceChunkSet,
   ResourceSummary,
 } from "./types";
-
-export const FEED_TRANSLATION_SOURCE_TYPE = "feed_translation";
 
 interface FeedTranslationSource {
   id: number;

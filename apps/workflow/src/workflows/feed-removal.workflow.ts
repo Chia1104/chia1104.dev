@@ -1,7 +1,7 @@
 import "zod/compile";
 import * as z from "zod";
 
-import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/services/rag/registry";
+import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/services/rag/resource-types";
 
 import { clearResourceChunksStep } from "../steps/resource-index.step";
 

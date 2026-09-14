@@ -15,9 +15,10 @@ vi.mock("@chia/db/repos/agent/memory", () => ({
   getAgentMemories: repo.getAgentMemories,
 }));
 
-const { agentMemoryResource, AGENT_MEMORY_SOURCE_TYPE } =
-  await import("../agent-memory.resource.ts");
-const { getResourceAdapter, isResourceType } = await import("../registry.ts");
+const { agentMemoryResource } = await import("../agent-memory.resource.ts");
+const { getResourceAdapter } = await import("../registry.ts");
+const { AGENT_MEMORY_SOURCE_TYPE, isResourceType } =
+  await import("../resource-types.ts");
 
 // SAFETY: every repository call is mocked; nothing reaches the database.
 const db = {} as DB;

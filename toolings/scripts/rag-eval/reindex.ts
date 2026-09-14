@@ -8,10 +8,8 @@ import {
   replaceResourceChunks,
   saveChunkEmbeddings,
 } from "@chia/db/repos/resources/chunk";
-import {
-  FEED_TRANSLATION_SOURCE_TYPE,
-  getResourceAdapter,
-} from "@chia/services/rag/registry";
+import { getResourceAdapter } from "@chia/services/rag/registry";
+import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/services/rag/resource-types";
 
 /**
  * Full reindex of an evaluation copy of the corpus, without the workflow

@@ -8,7 +8,7 @@ import { getRelatedFeeds } from "@chia/db/repos/feeds/search";
 import type { Locale } from "@chia/db/types";
 import type { Keyv } from "@chia/kv/types";
 
-import { FEED_TRANSLATION_SOURCE_TYPE } from "../rag/registry";
+import { FEED_TRANSLATION_SOURCE_TYPE } from "../rag/resource-types";
 import { searchResources } from "../rag/search.service";
 import type {
   ResourceSearchHit,

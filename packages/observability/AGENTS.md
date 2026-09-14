@@ -11,7 +11,7 @@ OpenTelemetry, structured logging and error reporting shared by the Node servers
 - `reportError` logs and sends to Sentry; errors carry the active trace id through the OTLP integration. Sentry records no spans and injects no headers.
 - Spans leave through `contentFreeExporter`, which drops exception messages and stacks and URL query strings from every instrumentation. `OTEL_TRACES_EXPORTER` is read by this package, not the SDK, and accepts only `otlp` and `console`.
 - Log fields are identifiers, codes and counts. Prompts, drafts, tool output and credentials stay out; `redact` is a backstop, not the filter.
-- `"use workflow"` functions run in a sandbox and must not import the logger; steps may.
+- `"use workflow"` functions run in a sandbox and must not reach the logger, directly or through a module they import; steps may. The Workflow bundler rejects the build when an import outside a step resolves `pino`.
 - `apps/workflow` lists `pino` itself. In `nitro dev` the Workflow step bundler externalizes only packages the app can resolve; a bundled `pino` fails on its CommonJS `require("node:os")`.
 - Telemetry is off unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set, and `nitro dev` does not use the build entry. Exporters are configured through the standard `OTEL_*` variables.
 - Business records (runs, approvals, usage ledger) stay in the database; telemetry only links to them by ID.
