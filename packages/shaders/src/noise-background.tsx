@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 import {
@@ -14,7 +14,8 @@ import {
 } from "shaders/react";
 
 import { cn } from "@chia/ui/utils/cn.util";
-import useTheme from "@chia/ui/utils/use-theme";
+
+import useShaderEnvironment from "./utils/use-shader-environment";
 
 type GradientColors = readonly [string, string, string];
 
@@ -29,17 +30,6 @@ const DEFAULT_GRADIENT_COLORS: GradientColors = [
   "rgb(100, 150, 255)",
   "rgb(255, 200, 100)",
 ];
-
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-
-const subscribeReducedMotion = (onChange: () => void) => {
-  const query = window.matchMedia(REDUCED_MOTION_QUERY);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-};
-
-// Nothing to subscribe to: hydration is the only transition.
-const subscribeNever = () => () => undefined;
 
 const px = (value: number) => ({ value, unit: "px" as const });
 
@@ -66,21 +56,10 @@ export const NoiseBackground = ({
   animating = true,
   ...props
 }: NoiseBackgroundProps) => {
-  const { resolvedTheme } = useTheme();
-  const isHydrated = useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false
-  );
-  const reduceMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    () => window.matchMedia(REDUCED_MOTION_QUERY).matches,
-    () => false
-  );
+  const { canRender, isDarkMode, reduceMotion } = useShaderEnvironment();
   const [status, setStatus] = useState<"pending" | "ready" | "unavailable">(
     "pending"
   );
-  const isDarkMode = resolvedTheme === "dark";
   const colors = isDarkMode
     ? (gradientColors.dark ?? gradientColors.light)
     : gradientColors.light;
@@ -98,8 +77,7 @@ export const NoiseBackground = ({
         "dark:shadow-[0px_1px_0px_0px_var(--color-neutral-950)_inset,0px_1px_0px_0px_var(--color-neutral-800)]",
         containerClassName
       )}>
-      {/* The server knows no theme; mounting after hydration avoids painting the wrong base. */}
-      {isHydrated && resolvedTheme && status !== "unavailable" ? (
+      {canRender && status !== "unavailable" ? (
         <Shader
           aria-hidden
           className="pointer-events-none absolute inset-0 size-full"
