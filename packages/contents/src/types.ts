@@ -33,6 +33,8 @@ export interface ContentContextProps extends BaseProps {
 export interface GetContentPropsArgs {
   /** Raw MDX body. */
   content: string | null | undefined;
+  /** Host overrides for the shared components, such as a `Tweet` that fetches its post. */
+  components?: MDXComponents;
 }
 
 export type GetContentPropsReturn = Promise<ContentProps>;

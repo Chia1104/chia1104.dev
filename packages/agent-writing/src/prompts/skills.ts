@@ -137,8 +137,8 @@ MDX is JSX, not HTML:
 - \`{\` and \`}\` in prose open an expression. Put braces in inline code or escape them as \`\\{\`. A
   \`<\` directly followed by a letter opens a tag; \`a < b\` with a space is fine.
 - Lowercase HTML elements (\`iframe\`, \`details\`, \`video\`) pass through, so an embed such as a
-  YouTube \`iframe\` is allowed. Embed a LinkedIn post with \`LinkedInPost\`, not a raw \`iframe\`.
-  Capitalized names must come from \`mdx-components\`.
+  YouTube \`iframe\` is allowed. Embed a LinkedIn post with \`LinkedInPost\` and an X post with
+  \`Tweet\`, not a raw \`iframe\`. Capitalized names must come from \`mdx-components\`.
 - Markdown inside a JSX block is only parsed as Markdown when a blank line separates it from the
   tags; otherwise it is inline text.
 - Never write \`import\` or \`export\` in a body. Stick to Markdown unless a component is needed;
@@ -381,6 +381,17 @@ LinkedIn" link is always rendered below, so do not add one.
 
 \`\`\`mdx
 <LinkedInPost urn="urn:li:share:7492281174262890496" />
+\`\`\`
+
+## X posts
+
+\`Tweet\` embeds one post from X (Twitter). \`id\` is the number after \`/status/\` in the post's URL:
+\`https://x.com/vercel/status/1683920951807971329\` is \`id="1683920951807971329"\`. The site fetches
+and caches the post; a deleted or private post renders a "not available" card with a link, so no
+extra link is needed.
+
+\`\`\`mdx
+<Tweet id="1683920951807971329" />
 \`\`\`
 
 ## Banner

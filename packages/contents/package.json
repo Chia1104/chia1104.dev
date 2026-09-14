@@ -29,6 +29,10 @@
       "types": "./src/services.ts",
       "default": "./src/services.ts"
     },
+    "./components/tweet": {
+      "types": "./src/components/tweet.tsx",
+      "default": "./src/components/tweet.tsx"
+    },
     "./types": {
       "types": "./src/types.ts",
       "default": "./src/types.ts"
@@ -58,6 +62,7 @@
     "next-themes": "catalog:ui",
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
+    "react-tweet": "catalog:ui",
     "rehype-katex": "catalog:unified",
     "remark-math": "catalog:unified"
   },

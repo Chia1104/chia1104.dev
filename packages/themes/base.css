@@ -50,6 +50,42 @@
   --color-fd-error: var(--danger);
 }
 
+/*
+ * react-tweet reads its own `--tweet-*` tokens and switches them on `.dark` and on the OS scheme;
+ * `:root` outranks both, so one mapping to the HeroUI tokens serves every theme. Hover tokens
+ * repeat their resting value: an embedded post stays still under the pointer.
+ */
+:root .react-tweet-theme {
+  --tweet-container-margin: 0;
+  --tweet-font-family: var(--font-sans);
+  --tweet-font-color: var(--foreground);
+  --tweet-font-color-secondary: var(--muted);
+  --tweet-bg-color: var(--surface);
+  --tweet-bg-color-hover: var(--tweet-bg-color);
+  --tweet-quoted-bg-color-hover: transparent;
+  --tweet-color-blue-primary-hover: var(--tweet-color-blue-primary);
+  --tweet-color-blue-secondary-hover: transparent;
+  --tweet-color-red-primary-hover: transparent;
+  --tweet-color-green-primary-hover: transparent;
+  --tweet-border: 1px solid var(--border);
+  --tweet-skeleton-gradient: linear-gradient(
+    270deg,
+    var(--surface),
+    var(--default),
+    var(--default),
+    var(--surface)
+  );
+
+  /* The card follows HeroUI's surface radius, the media and quoted post nested inside it. */
+  border-radius: min(32px, var(--radius-3xl));
+
+  /* react-tweet hard-codes 12px in CSS modules; Next keeps the module and class name in the hash. */
+  & [class*="tweet-media-module__"][class*="__rounded"],
+  & [class*="quoted-tweet-container-module__"][class*="__root"] {
+    border-radius: var(--radius-xl);
+  }
+}
+
 @theme inline {
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);

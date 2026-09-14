@@ -19,6 +19,7 @@ import ImageZoom from "@chia/ui/image-zoom";
 
 import { LinkedInPost } from "./components/linkedin-post";
 import { Mermaid } from "./components/mermaid";
+import { Tweet } from "./components/tweet";
 import { markdownElements } from "./markdown-elements";
 
 export const FumadocsComponents =
@@ -97,4 +98,5 @@ export const V1MDXComponents: MDXComponents = {
   ...markdownElements,
   Mermaid,
   LinkedInPost,
+  Tweet,
 };

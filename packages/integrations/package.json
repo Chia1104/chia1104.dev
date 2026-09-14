@@ -92,6 +92,10 @@
     "./email/env": {
       "types": "./email/env.ts",
       "default": "./email/env.ts"
+    },
+    "./x": {
+      "types": "./x/index.ts",
+      "default": "./x/index.ts"
     }
   },
   "scripts": {
@@ -113,6 +117,7 @@
     "@octokit/types": "catalog:",
     "@t3-oss/env-core": "catalog:env",
     "ky": "catalog:",
+    "react-tweet": "catalog:ui",
     "resend": "catalog:email",
     "zod": "catalog:"
   },
