@@ -16,6 +16,8 @@ import type { HouseModelRole } from "@chia/ai/house-models";
 import { GATEWAY_KEY_ID, PROVIDER_IDS, ProviderId } from "@chia/ai/provider";
 import type { KeyId } from "@chia/ai/provider";
 
+import { withModelSpans } from "./telemetry.ts";
+
 /**
  * Three providers, each its own wire and its own bill:
  *
@@ -162,7 +164,7 @@ export const createAgentModels = (
   for (const providerId of PROVIDER_IDS) {
     if (credentials[providerId]) models.setProvider(nativeProvider(providerId));
   }
-  return models;
+  return withModelSpans(models);
 };
 
 /**

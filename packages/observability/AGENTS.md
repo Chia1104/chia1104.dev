@@ -9,6 +9,7 @@ OpenTelemetry, structured logging and error reporting shared by the Node servers
 - Long-lived clients (queue runners, LISTEN connections, pools) must start outside a request. Started lazily inside one, their callbacks keep that request's trace forever.
 - `pg` and Redis spans require a parent span, so background polling is not exported. Instrumented libraries (`pg`, `@redis/client`) must be traced out of the Nitro bundle and resolve to one version each. A duplicate lands in `node_modules/.nf3/`, where `require-in-the-middle` cannot name it and no spans are recorded.
 - `reportError` logs and sends to Sentry; errors carry the active trace id through the OTLP integration. Sentry records no spans and injects no headers.
+- Spans leave through `contentFreeExporter`, which drops exception messages and stacks and URL query strings from every instrumentation. `OTEL_TRACES_EXPORTER` is read by this package, not the SDK, and accepts only `otlp` and `console`.
 - Log fields are identifiers, codes and counts. Prompts, drafts, tool output and credentials stay out; `redact` is a backstop, not the filter.
 - `"use workflow"` functions run in a sandbox and must not import the logger; steps may.
 - `apps/workflow` lists `pino` itself. In `nitro dev` the Workflow step bundler externalizes only packages the app can resolve; a bundled `pino` fails on its CommonJS `require("node:os")`.
