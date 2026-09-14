@@ -1,8 +1,6 @@
 import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { NavigationMenu } from "@chia/ui/navigation-menu";
-
 import ListItem from "@/components/blog/list-item";
 
 import { renderWithProviders } from "../../utils";
@@ -10,11 +8,9 @@ import { renderWithProviders } from "../../utils";
 describe("ListItem Component", () => {
   it("應該渲染標題和內容", () => {
     renderWithProviders(
-      <NavigationMenu>
-        <ListItem href="/test" title="測試標題">
-          測試內容描述
-        </ListItem>
-      </NavigationMenu>
+      <ListItem href="/test" title="測試標題">
+        測試內容描述
+      </ListItem>
     );
 
     expect(screen.getByText("測試標題")).toBeInTheDocument();
@@ -23,11 +19,9 @@ describe("ListItem Component", () => {
 
   it("應該渲染為 Link 元素", () => {
     renderWithProviders(
-      <NavigationMenu>
-        <ListItem href="/test-link" title="測試標題">
-          測試內容
-        </ListItem>
-      </NavigationMenu>
+      <ListItem href="/test-link" title="測試標題">
+        測試內容
+      </ListItem>
     );
 
     const link = screen.getByRole("link", { name: /測試標題/ });
@@ -37,11 +31,9 @@ describe("ListItem Component", () => {
 
   it("應該接受自定義 className", () => {
     const { container } = renderWithProviders(
-      <NavigationMenu>
-        <ListItem href="/test" title="測試標題" className="custom-class">
-          測試內容
-        </ListItem>
-      </NavigationMenu>
+      <ListItem href="/test" title="測試標題" className="custom-class">
+        測試內容
+      </ListItem>
     );
 
     const link = container.querySelector("a");
@@ -49,22 +41,16 @@ describe("ListItem Component", () => {
   });
 
   it("應該處理沒有 children 的情況", () => {
-    renderWithProviders(
-      <NavigationMenu>
-        <ListItem href="/test" title="只有標題" />
-      </NavigationMenu>
-    );
+    renderWithProviders(<ListItem href="/test" title="只有標題" />);
 
     expect(screen.getByText("只有標題")).toBeInTheDocument();
   });
 
   it("應該在列表項中渲染", () => {
     const { container } = renderWithProviders(
-      <NavigationMenu>
-        <ListItem href="/test" title="測試標題">
-          測試內容
-        </ListItem>
-      </NavigationMenu>
+      <ListItem href="/test" title="測試標題">
+        測試內容
+      </ListItem>
     );
 
     const listItem = container.querySelector("li");
@@ -73,15 +59,13 @@ describe("ListItem Component", () => {
 
   it("應該包含正確的樣式類別", () => {
     const { container } = renderWithProviders(
-      <NavigationMenu>
-        <ListItem href="/test" title="測試標題">
-          測試內容
-        </ListItem>
-      </NavigationMenu>
+      <ListItem href="/test" title="測試標題">
+        測試內容
+      </ListItem>
     );
 
     const link = container.querySelector("a");
-    expect(link).toHaveClass("rounded-md");
+    expect(link).toHaveClass("rounded-2xl");
     expect(link).toHaveClass("p-3");
   });
 });

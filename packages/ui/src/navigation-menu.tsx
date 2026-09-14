@@ -1,130 +1,310 @@
 "use client";
 
-import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
-import { cva } from "class-variance-authority";
+import type { ComponentProps, ReactNode, RefObject } from "react";
+import {
+  createContext,
+  use,
+  useEffect,
+  useEffectEvent,
+  useId,
+  useRef,
+  useState,
+} from "react";
+
+import { Button, Popover } from "@heroui/react";
 import { ChevronDown } from "lucide-react";
 
 import { cn } from "../utils/cn.util";
 
+const OPEN_DELAY = 200;
+const CLOSE_DELAY = 150;
+/** Reopening within this window after a close skips the open delay. */
+const SKIP_DELAY = 300;
+
+type Motion = "from-start" | "from-end";
+
+interface NavigationMenuContextValue {
+  anchorRef: RefObject<HTMLElement | null>;
+  value: string | null;
+  isOpen: boolean;
+  motion: Motion | null;
+  registerTrigger: (value: string, element: HTMLElement | null) => void;
+  show: (value: string, options?: { focusContent?: boolean }) => void;
+  hide: () => void;
+  scheduleShow: (value: string) => void;
+  scheduleHide: () => void;
+  cancelSchedule: () => void;
+  takeFocusRequest: () => boolean;
+  restoreFocus: (value: string) => void;
+}
+
+const NavigationMenuContext = createContext<NavigationMenuContextValue | null>(
+  null
+);
+
+const useNavigationMenu = () => {
+  const context = use(NavigationMenuContext);
+  if (!context) {
+    throw new Error(
+      "NavigationMenu parts must be rendered inside NavigationMenu."
+    );
+  }
+  return context;
+};
+
+const NavigationMenuItemContext = createContext<string | null>(null);
+
+const useNavigationMenuItem = () => {
+  const value = use(NavigationMenuItemContext);
+  if (value === null) {
+    throw new Error(
+      "NavigationMenu trigger and content must be rendered inside NavigationMenuItem."
+    );
+  }
+  return value;
+};
+
+/**
+ * Hover menu of HeroUI popovers that all anchor to the menu, so every item opens in the same place.
+ * Switching items skips the popovers' own enter and exit animations and slides the new content in
+ * from the side it came from instead.
+ */
 const NavigationMenu = ({
   className,
   children,
-  ref,
   ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Root>) => (
-  <NavigationMenuPrimitive.Root
-    ref={ref}
-    className={cn(
-      "relative z-10 flex max-w-max flex-1 items-center justify-center",
-      className
-    )}
-    {...props}>
-    {children}
-    <NavigationMenuViewport />
-  </NavigationMenuPrimitive.Root>
-);
+}: ComponentProps<"nav">) => {
+  const anchorRef = useRef<HTMLElement>(null);
+  const triggers = useRef(new Map<string, HTMLElement>());
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const closedAt = useRef(0);
+  const focusRequest = useRef(false);
+  const [state, setState] = useState<{
+    value: string | null;
+    isOpen: boolean;
+    motion: Motion | null;
+  }>({ value: null, isOpen: false, motion: null });
 
-const NavigationMenuList = ({
-  className,
-  ref,
-  ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.List>) => (
-  <NavigationMenuPrimitive.List
-    ref={ref}
+  const clearTimer = () => clearTimeout(timer.current);
+  useEffect(() => clearTimer, []);
+
+  const show = (value: string, options?: { focusContent?: boolean }) => {
+    clearTimer();
+    focusRequest.current = options?.focusContent ?? false;
+    setState((previous) => {
+      if (previous.isOpen && previous.value === value) return previous;
+      const from = previous.isOpen && previous.value;
+      const fromElement = from ? triggers.current.get(from) : undefined;
+      const toElement = triggers.current.get(value);
+      const motion =
+        fromElement && toElement
+          ? fromElement.compareDocumentPosition(toElement) &
+            Node.DOCUMENT_POSITION_FOLLOWING
+            ? "from-end"
+            : "from-start"
+          : null;
+      return { value, isOpen: true, motion };
+    });
+  };
+
+  const hide = () => {
+    clearTimer();
+    closedAt.current = Date.now();
+    setState((previous) =>
+      previous.isOpen ? { ...previous, isOpen: false } : previous
+    );
+  };
+
+  const context: NavigationMenuContextValue = {
+    ...state,
+    anchorRef,
+    registerTrigger: (value, element) => {
+      if (element) triggers.current.set(value, element);
+      else triggers.current.delete(value);
+    },
+    show,
+    hide,
+    scheduleShow: (value) => {
+      clearTimer();
+      if (state.isOpen || Date.now() - closedAt.current < SKIP_DELAY) {
+        show(value);
+        return;
+      }
+      timer.current = setTimeout(() => show(value), OPEN_DELAY);
+    },
+    scheduleHide: () => {
+      clearTimer();
+      timer.current = setTimeout(hide, CLOSE_DELAY);
+    },
+    cancelSchedule: clearTimer,
+    takeFocusRequest: () => {
+      const requested = focusRequest.current;
+      focusRequest.current = false;
+      return requested;
+    },
+    restoreFocus: (value) => triggers.current.get(value)?.focus(),
+  };
+
+  return (
+    <NavigationMenuContext value={context}>
+      <nav
+        ref={anchorRef}
+        className={cn(
+          "relative z-10 flex max-w-max flex-1 items-center justify-center",
+          className
+        )}
+        {...props}>
+        {children}
+      </nav>
+    </NavigationMenuContext>
+  );
+};
+
+const NavigationMenuList = ({ className, ...props }: ComponentProps<"ul">) => (
+  <ul
     className={cn(
-      "group flex flex-1 list-none items-center justify-center space-x-1",
+      "flex flex-1 list-none items-center justify-center space-x-1",
       className
     )}
     {...props}
   />
 );
 
-const NavigationMenuItem = NavigationMenuPrimitive.Item;
+const NavigationMenuItem = ({
+  value: valueProp,
+  children,
+  ...props
+}: ComponentProps<"li"> & { value?: string }) => {
+  const menu = useNavigationMenu();
+  const id = useId();
+  const value = valueProp ?? id;
+  return (
+    <NavigationMenuItemContext value={value}>
+      <li {...props}>
+        <Popover
+          isOpen={menu.isOpen && menu.value === value}
+          onOpenChange={(isOpen) => (isOpen ? menu.show(value) : menu.hide())}>
+          {children}
+        </Popover>
+      </li>
+    </NavigationMenuItemContext>
+  );
+};
 
-const navigationMenuTriggerStyle = cva(
-  "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-default hover:text-default-foreground focus:bg-default focus:text-default-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-default/50 data-[state=open]:bg-default/50"
-);
-
+/** Opens its item's content on hover or ArrowDown; `onPress` is left to the caller. */
 const NavigationMenuTrigger = ({
   className,
   children,
-  ref,
+  onHoverStart,
+  onHoverEnd,
+  onKeyDown,
   ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Trigger>) => (
-  <NavigationMenuPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      navigationMenuTriggerStyle(),
-      "bg-background hover:bg-default hover:text-default-foreground focus:bg-default focus:text-default-foreground data-[active]:bg-default/50 data-[state=open]:bg-default/50 group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50",
-      className
-    )}
-    {...props}>
-    {children}{" "}
-    <ChevronDown
-      className="relative top-px ml-1 size-3 transition duration-200 group-data-[state=open]:rotate-180"
-      aria-hidden="true"
-    />
-  </NavigationMenuPrimitive.Trigger>
-);
+}: Omit<ComponentProps<typeof Button>, "children"> & {
+  children: ReactNode;
+}) => {
+  const menu = useNavigationMenu();
+  const value = useNavigationMenuItem();
+  return (
+    <Button
+      ref={(element) => {
+        menu.registerTrigger(value, element);
+        return () => menu.registerTrigger(value, null);
+      }}
+      variant="tertiary"
+      className={cn("group", className)}
+      onHoverStart={(event) => {
+        onHoverStart?.(event);
+        menu.scheduleShow(value);
+      }}
+      onHoverEnd={(event) => {
+        onHoverEnd?.(event);
+        menu.scheduleHide();
+      }}
+      onKeyDown={(event) => {
+        onKeyDown?.(event);
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          menu.show(value, { focusContent: true });
+        } else {
+          event.continuePropagation();
+        }
+      }}
+      {...props}>
+      {children}
+      <ChevronDown
+        className="relative top-px size-3 transition duration-200 group-aria-expanded:rotate-180 motion-reduce:transition-none"
+        aria-hidden="true"
+      />
+    </Button>
+  );
+};
 
 const NavigationMenuContent = ({
   className,
-  ref,
-  ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Content>) => (
-  <NavigationMenuPrimitive.Content
-    ref={ref}
-    className={cn(
-      "data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out data-[motion^=from-]:fade-in data-[motion^=to-]:fade-out data-[motion=from-end]:slide-in-from-right-52 data-[motion=from-start]:slide-in-from-left-52 data-[motion=to-end]:slide-out-to-right-52 data-[motion=to-start]:slide-out-to-left-52 top-0 left-0 w-full md:absolute md:w-auto",
-      className
-    )}
-    {...props}
-  />
-);
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) => {
+  const menu = useNavigationMenu();
+  const value = useNavigationMenuItem();
+  const ref = useRef<HTMLDivElement>(null);
+  const isActive = menu.isOpen && menu.value === value;
+  const focusFirstLink = useEffectEvent(() => {
+    if (menu.takeFocusRequest()) {
+      ref.current?.querySelector<HTMLElement>("a[href], button")?.focus();
+    }
+  });
+  useEffect(() => {
+    if (isActive) focusFirstLink();
+  }, [isActive]);
 
-const NavigationMenuLink = NavigationMenuPrimitive.Link;
-
-const NavigationMenuViewport = ({
-  className,
-  ref,
-  ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Viewport>) => (
-  <div className={cn("absolute top-full left-0 flex justify-center")}>
-    <NavigationMenuPrimitive.Viewport
-      className={cn(
-        "origin-top-center c-bg-third text-overlay-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-md border-[#FCA5A5]/50 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] md:w-[var(--radix-navigation-menu-viewport-width)] dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
-        className
-      )}
-      ref={ref}
-      {...props}
-    />
-  </div>
-);
-
-const NavigationMenuIndicator = ({
-  className,
-  ref,
-  ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Indicator>) => (
-  <NavigationMenuPrimitive.Indicator
-    ref={ref}
-    className={cn(
-      "data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in top-full z-[1] flex h-1.5 items-end justify-center overflow-hidden",
-      className
-    )}
-    {...props}>
-    <div className="bg-border relative top-[60%] size-2 rotate-45 rounded-tl-sm shadow-md" />
-  </NavigationMenuPrimitive.Indicator>
-);
+  return (
+    <Popover.Content
+      triggerRef={menu.anchorRef}
+      isNonModal
+      placement="bottom start"
+      offset={6}
+      // Only the active item's popover animates, and only when the menu opens or closes;
+      // an item change is animated by the content instead.
+      shouldSkipAnimation={
+        menu.value !== value || (menu.isOpen && menu.motion !== null)
+      }
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse") menu.cancelSchedule();
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType === "mouse") menu.scheduleHide();
+      }}
+      className="bg-surface/(--popover-opacity) text-overlay-foreground">
+      <div
+        ref={ref}
+        data-motion={isActive ? (menu.motion ?? undefined) : undefined}
+        className={cn(
+          "data-motion:animate-in data-motion:fade-in data-motion:ease-smooth data-[motion=from-end]:slide-in-from-right-52 data-[motion=from-start]:slide-in-from-left-52 data-motion:duration-150 motion-reduce:animate-none",
+          className
+        )}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") menu.restoreFocus(value);
+        }}
+        onClick={(event) => {
+          if (
+            event.target instanceof Element &&
+            event.target.closest("a[href]")
+          ) {
+            menu.hide();
+          }
+        }}>
+        {children}
+      </div>
+    </Popover.Content>
+  );
+};
 
 export {
-  navigationMenuTriggerStyle,
   NavigationMenu,
   NavigationMenuList,
   NavigationMenuItem,
-  NavigationMenuContent,
   NavigationMenuTrigger,
-  NavigationMenuLink,
-  NavigationMenuIndicator,
-  NavigationMenuViewport,
+  NavigationMenuContent,
 };

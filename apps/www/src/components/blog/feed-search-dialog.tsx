@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
-import { CommandDialog, CommandInput, CommandList } from "@chia/ui/cmd";
+import { CommandDialog, CommandInput } from "@chia/ui/cmd";
 
 import { FeedSearch } from "@/components/commons/feed-search";
 
@@ -35,28 +35,24 @@ export function FeedSearchDialog({ locale }: FeedSearchDialogProps) {
         <span className="inline">{t("search-articles")}</span>
       </Button>
       <CommandDialog
-        open={open}
+        aria-label={t("search-articles")}
+        isOpen={open}
         onOpenChange={(isOpen) => {
           setOpen(isOpen);
           if (!isOpen) {
             setQuery("");
           }
         }}
-        commandProps={{ shouldFilter: false }}>
-        <CommandInput
-          value={query}
-          onValueChange={setQuery}
-          placeholder={t("search-placeholder")}
-        />
-        <CommandList>
-          {query.trim().length >= 2 ? (
-            <FeedSearch query={query} locale={locale} onSelect={close} />
-          ) : (
-            <p className="text-muted px-4 py-6 text-center text-sm">
-              {t("search-hint")}
-            </p>
-          )}
-        </CommandList>
+        inputValue={query}
+        onInputChange={setQuery}>
+        <CommandInput placeholder={t("search-placeholder")} />
+        {query.trim().length >= 2 ? (
+          <FeedSearch query={query} locale={locale} onSelect={close} />
+        ) : (
+          <p className="text-muted px-4 py-6 text-center text-sm">
+            {t("search-hint")}
+          </p>
+        )}
       </CommandDialog>
     </>
   );

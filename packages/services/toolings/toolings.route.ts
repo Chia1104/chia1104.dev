@@ -1,6 +1,10 @@
 import { HTTPError } from "ky";
 import { parse as parseHTML } from "node-html-parser";
 
+import { ApiKeyScope } from "@chia/auth/apikey";
+import { CallerTier } from "@chia/auth/tier";
+import { getTweet } from "@chia/integrations/x";
+import type { TweetResult } from "@chia/integrations/x";
 import { isUrl } from "@chia/utils/is";
 import request from "@chia/utils/request";
 
@@ -10,7 +14,18 @@ import { rateLimitGuard } from "../shared/guards/rate-limit.guard";
 
 import type { LinkPreview } from "./toolings.contract";
 
-const LINK_PREVIEW_TTL_MS = 60 * 60 * 24 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const LINK_PREVIEW_TTL_MS = 24 * HOUR_MS;
+
+/** Engagement counts drift, so a found post is refetched daily; a missing one sooner. */
+const TWEET_FRESH_MS = { found: 24 * HOUR_MS, unavailable: HOUR_MS };
+/** Kept past freshness so an outage of X's unofficial endpoint still renders the last copy. */
+const TWEET_RETAIN_MS = 7 * 24 * HOUR_MS;
+
+interface CachedTweet {
+  result: TweetResult;
+  fetchedAt: number;
+}
 
 const absolutize = (value: string | null | undefined, origin: string) => {
   if (!value) return undefined;
@@ -77,6 +92,41 @@ export const linkPreviewRoute = contractOS.toolings["link-preview"]
     return preview;
   });
 
+export const tweetRoute = contractOS.toolings.tweet
+  .use(
+    callerGuard({
+      minTier: CallerTier.ApiKey,
+      scopes: [ApiKeyScope.ToolingsRead],
+    })
+  )
+  .use(rateLimitGuard("toolings"))
+  .handler(async (opts) => {
+    const cacheKey = `tweet:${opts.input.id}`;
+    const cached = await opts.context.kv.get<CachedTweet>(cacheKey);
+
+    if (
+      cached &&
+      Date.now() - cached.fetchedAt < TWEET_FRESH_MS[cached.result.status]
+    ) {
+      return cached.result;
+    }
+
+    try {
+      const result = await getTweet(opts.input.id, opts.signal);
+      await opts.context.kv.set<CachedTweet>(
+        cacheKey,
+        { result, fetchedAt: Date.now() },
+        TWEET_RETAIN_MS
+      );
+      return result;
+    } catch (error) {
+      if (cached) return cached.result;
+      console.error(error);
+      throw opts.errors.SERVICE_UNAVAILABLE();
+    }
+  });
+
 export const toolingsRouter = contractOS.toolings.router({
   "link-preview": linkPreviewRoute,
+  tweet: tweetRoute,
 });

@@ -15,7 +15,7 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
   return (
     <div className="not-prose page-md:mb-10 z-20 mb-5 flex items-center gap-4">
       <NavigationMenu>
-        <NavigationMenuList className="gap-5">
+        <NavigationMenuList className="gap-3">
           <FeedNavigation
             feeds={client.feeds.list({
               limit: 4,

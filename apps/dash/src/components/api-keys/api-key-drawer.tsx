@@ -211,7 +211,7 @@ const RevealedKey = ({ secret }: { secret: string }) => (
     </Card.Header>
     <Card.Content>
       <Surface
-        className="flex items-center justify-between gap-3 rounded-lg p-3 font-mono text-xs break-all"
+        className="flex items-center justify-between gap-3 rounded-2xl p-3 font-mono text-xs break-all"
         variant="tertiary">
         <span>{secret}</span>
         <CopyButton

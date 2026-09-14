@@ -14,6 +14,7 @@ import {
 import { ProgressBar, Tooltip } from "@heroui/react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
+import { BorderBeam } from "border-beam";
 import { useInterval } from "usehooks-ts";
 
 import Image from "@chia/ui/image";
@@ -173,7 +174,7 @@ const AlbumImage = ({
     }
     src={data?.item.album.images[0]?.url ?? ""}
     alt={data?.item.album.name ?? ""}
-    className="m-0 size-20 rounded-lg bg-gray-400 object-cover"
+    className="m-0 size-20 rounded-2xl bg-gray-400 object-cover"
   />
 );
 
@@ -283,26 +284,34 @@ const Card = ({
 
   return (
     <Tooltip delay={300}>
-      <Tooltip.Trigger
-        data-testid="current-playing"
-        className={cn(
-          "c-bg-third border-default/50 prose dark:prose-invert not-prose relative z-10 line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
-          className
-        )}>
-        <span className="i-mdi-spotify size-5 text-[#1DB954]" />
-        {isLoading ? (
-          <div className="c-bg-primary h-5 w-20 animate-pulse rounded-full" />
-        ) : (
-          <PlayingLink data={data} />
-        )}
+      <Tooltip.Trigger data-testid="current-playing">
+        <BorderBeam
+          active={!!data}
+          duration={3.5}
+          size="pulse-inner"
+          theme="light">
+          <div
+            className={cn(
+              "bg-surface prose dark:prose-invert not-prose relative line-clamp-1 flex w-fit max-w-50 items-center gap-2 rounded-full px-4 py-2 text-sm transition-all",
+              className
+            )}>
+            <span className="i-mdi-spotify size-5 text-[#1DB954]" />
+            {isLoading ? (
+              <div className="c-bg-primary h-5 w-20 animate-pulse rounded-full" />
+            ) : (
+              <PlayingLink data={data} />
+            )}
+          </div>
+        </BorderBeam>
       </Tooltip.Trigger>
+
       {data && (
         <Tooltip.Content
           style={{ backgroundColor }}
           className={cn(
-            "border-default/50 not-prose z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
+            "border-accent/50 not-prose shadow-glow z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 transition-all",
             isError &&
-              "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54/0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54/0.3)]",
+              "border-danger/50 shadow-[0_0_25px_4px_color-mix(in_oklab,var(--danger)_30%,transparent)]",
             enableColorExtraction && !isPending
               ? "backdrop-blur-lg"
               : "c-bg-third",
@@ -338,7 +347,7 @@ const Card = ({
 export const LoadingSkeleton = ({ className }: { className?: string }) => (
   <div
     className={cn(
-      "c-bg-third border-default/50 not-prose relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
+      "c-bg-third border-accent/50 not-prose shadow-glow relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm transition-all",
       className
     )}>
     <span className="i-mdi-spotify size-5 text-[#1DB954]" />

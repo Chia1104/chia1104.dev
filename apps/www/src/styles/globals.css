@@ -97,7 +97,7 @@ body {
 
 [data-rmiz-modal-img] {
   border: 1px solid hsl(var(--border));
-  border-radius: 8px;
+  border-radius: var(--radius-3xl);
 }
 
 :root {
@@ -108,7 +108,7 @@ body {
 .recaptcha-style {
   width: 100%;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: var(--radius-field);
   min-height: 73px;
   box-shadow: 0 0 0 1px #a7a7a7;
 }

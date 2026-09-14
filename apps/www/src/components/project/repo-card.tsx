@@ -31,7 +31,7 @@ export const RepoCard = ({
   return (
     <FadeIn className="w-full">
       <FeatureCard className="relative flex h-full min-h-[442px] flex-col gap-0 p-0">
-        <div className="c-bg-gradient-green-to-purple not-prose relative aspect-video w-full shrink-0 overflow-hidden rounded-t-2xl">
+        <div className="c-bg-gradient-green-to-purple not-prose relative aspect-video w-full shrink-0 overflow-hidden rounded-t-3xl">
           <Image
             src={image}
             alt={name}

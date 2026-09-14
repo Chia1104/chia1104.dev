@@ -182,7 +182,7 @@ export const SpotifySettings = () => {
         <div className="pointer-events-none absolute -top-24 right-0 size-72 rounded-full bg-[radial-gradient(circle,rgba(30,215,96,0.16),transparent_65%)]" />
         <Card.Header className="relative flex-row items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="bg-success/10 text-success flex size-10 items-center justify-center rounded-xl">
+            <div className="bg-success/10 text-success flex size-10 items-center justify-center rounded-2xl">
               <Music2 size={20} />
             </div>
             <div>
@@ -205,7 +205,7 @@ export const SpotifySettings = () => {
         </Card.Header>
         <Card.Content className="relative space-y-5">
           {currentAccount ? (
-            <div className="border-border bg-surface-secondary/50 page-sm:flex-row page-sm:items-center page-sm:justify-between flex flex-col gap-4 rounded-2xl border p-4">
+            <div className="border-border bg-surface-secondary/50 page-sm:flex-row page-sm:items-center page-sm:justify-between flex flex-col gap-4 rounded-3xl border p-4">
               <div className="flex min-w-0 items-center gap-3">
                 <Avatar>
                   <Avatar.Image
@@ -250,7 +250,7 @@ export const SpotifySettings = () => {
               </div>
             </div>
           ) : (
-            <div className="border-border flex flex-col items-start gap-4 rounded-2xl border border-dashed p-5">
+            <div className="border-border flex flex-col items-start gap-4 rounded-3xl border border-dashed p-5">
               <div>
                 <p className="font-medium">Spotify is not connected</p>
                 <p className="text-muted mt-1 text-sm">
@@ -298,7 +298,7 @@ export const SpotifySettings = () => {
                 <Radio
                   key={account.userId}
                   value={account.userId}
-                  className="border-border data-[selected=true]:border-success/60 data-[selected=true]:bg-success/5 rounded-xl border p-4">
+                  className="border-border data-[selected=true]:border-success/60 data-[selected=true]:bg-success/5 rounded-2xl border p-4">
                   <Radio.Content>
                     <Radio.Control>
                       <Radio.Indicator />

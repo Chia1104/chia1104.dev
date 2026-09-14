@@ -47,8 +47,8 @@
   --warning-foreground: oklch(21.03% 0.0059 67.27);
 
   /* Border Radius */
-  --radius: 0.5rem;
-  --field-radius: 0.75rem;
+  --radius: 0.15rem;
+  --field-radius: 0.15rem;
 }
 
 .dark,

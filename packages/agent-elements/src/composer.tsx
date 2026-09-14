@@ -288,8 +288,8 @@ const ComposerWell = ({
     className={cn(
       "bg-surface-secondary border-border divide-border max-h-40 w-full max-w-[95%] divide-y self-center overflow-y-auto border",
       side === "top"
-        ? "-mb-5 rounded-t-2xl border-b-0 pb-3"
-        : "relative z-0 -mt-5 rounded-b-2xl border-t-0 pt-3"
+        ? "-mb-5 rounded-t-3xl border-b-0 pb-3"
+        : "relative z-0 -mt-5 rounded-b-3xl border-t-0 pt-3"
     )}>
     {children}
   </div>
@@ -567,7 +567,7 @@ const ComposerEditor = ({
           theme="light"
           strength={100}>
           <div
-            className="bg-surface border-border focus-within:border-field-border-focus relative flex cursor-text flex-col rounded-2xl border px-3 py-2 shadow-xs transition-colors"
+            className="bg-surface border-border focus-within:border-field-border-focus relative flex cursor-text flex-col rounded-3xl border px-3 py-2 shadow-xs transition-colors"
             onPointerDown={(event) => {
               if (event.target === event.currentTarget) {
                 event.preventDefault();

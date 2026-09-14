@@ -56,10 +56,10 @@ describe("DockShell", () => {
     render(<Harness />);
     const handle = screen.getByRole("separator", { name: "Resize" });
     fireEvent.keyDown(handle, { key: "ArrowLeft" });
-    expect(handle.getAttribute("aria-valuenow")).toBe("416");
+    expect(handle.getAttribute("aria-valuenow")).toBe("445");
     fireEvent.keyDown(handle, { key: "Home" });
-    expect(handle.getAttribute("aria-valuenow")).toBe("320");
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "")).toBe(320);
+    expect(handle.getAttribute("aria-valuenow")).toBe("445");
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "")).toBe(445);
 
     fireEvent.doubleClick(handle);
     expect(handle.getAttribute("aria-valuenow")).toBe("400");

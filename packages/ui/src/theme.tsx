@@ -11,13 +11,12 @@ import type {
   DropdownMenuProps,
   DropdownPopoverProps,
 } from "@heroui/react";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import type { Variant } from "motion/react";
 import { motion } from "motion/react";
 
 import { cn } from "../utils/cn.util";
 import useTheme from "../utils/use-theme";
-
-import { useCMD } from "./cmd";
 
 interface Props {
   variants?: ThemeVariants;
@@ -233,11 +232,8 @@ const ThemeSelector: FC<
 
 const ThemeCMD = () => {
   const { setTheme, isDarkMode } = useTheme();
-  useCMD(false, {
-    cmd: "j",
-    onKeyDown: () => {
-      setTheme(isDarkMode ? "light" : "dark");
-    },
+  useHotkey("Mod+J", () => {
+    setTheme(isDarkMode ? "light" : "dark");
   });
   return null;
 };

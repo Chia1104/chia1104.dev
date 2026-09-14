@@ -2,9 +2,9 @@ import Link from "next/link";
 import type { FC } from "react";
 
 import type { PlayList } from "@chia/integrations/spotify/types";
+import { NoiseBackground } from "@chia/shaders/noise-background";
 import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
-import { NoiseBackground } from "@chia/ui/noise-background";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import PreviewLink from "@/components/commons/preview-link";
@@ -18,7 +18,7 @@ const ImageItem: FC<{
 }> = ({ src, alt, className }) => (
   <div
     className={cn(
-      "not-prose relative w-full overflow-hidden rounded-lg shadow-md",
+      "not-prose relative w-full overflow-hidden rounded-2xl shadow-md",
       className
     )}>
     <Image
@@ -86,7 +86,7 @@ const Item: FC<{
   data: ReturnType<typeof getTop4>[0];
 }> = ({ data }) => {
   return (
-    <div className="hover:dark:bg-dark/80 relative grid w-full grid-cols-3 items-center justify-center gap-3 rounded-lg transition-all hover:cursor-pointer hover:bg-white/80 hover:shadow-md">
+    <div className="hover:dark:bg-dark/80 relative grid w-full grid-cols-3 items-center justify-center gap-3 rounded-2xl transition-all hover:cursor-pointer hover:bg-white/80 hover:shadow-md">
       <span className="col-span-1">
         <ImageItem
           src={data.track.album.images[0]?.url ?? ""}
@@ -129,17 +129,16 @@ export async function SpotifyPlaylist() {
   return (
     <FadeIn className="w-full flex-col">
       <NoiseBackground
-        style={
-          /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */ {
-            "--noise-gradient-1": "#F9C851",
-            "--noise-gradient-2": "#FCA5A5",
-            "--noise-gradient-3": "#FECACA",
-            "--noise-gradient-1-dark": "var(--color-purple-400)",
-            "--noise-gradient-2-dark": "var(--color-pink-400)",
-            "--noise-gradient-3-dark": "var(--color-pink-600)",
-          } as React.CSSProperties
-        }
-        className="page-sm:grid-cols-2 page-sm:py-3 grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg px-5 py-7">
+        gradientColors={{
+          light: ["#F9C851", "#FCA5A5", "#FECACA"],
+          // Tailwind purple-400, pink-400 and pink-600; the shader needs concrete colors.
+          dark: [
+            "oklch(71.4% 0.203 305.504)",
+            "oklch(71.8% 0.202 349.761)",
+            "oklch(59.2% 0.249 0.584)",
+          ],
+        }}
+        className="page-sm:grid-cols-2 page-sm:py-3 grid w-full grid-cols-1 gap-2 overflow-hidden px-5 py-7">
         <div className="flex w-full items-center">
           <First data={data[0]} />
         </div>

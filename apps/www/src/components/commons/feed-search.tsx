@@ -1,8 +1,7 @@
 "use client";
 
+import { Header, ListBox } from "@heroui/react";
 import { useTranslations } from "next-intl";
-
-import { CommandGroup, CommandItem, CommandLoading } from "@chia/ui/cmd";
 
 import { useSearchFeeds } from "@/hooks/use-search-feeds";
 import { useRouter } from "@/libs/i18n/navigation";
@@ -26,9 +25,9 @@ export function FeedSearch({ query, locale, onSelect }: FeedSearchProps) {
 
   if (isDebouncing || search.isPending || search.isFetching) {
     return (
-      <CommandLoading className="text-muted py-6 text-center text-sm">
+      <p role="status" className="text-muted py-6 text-center text-sm">
         {t("search-loading")}
-      </CommandLoading>
+      </p>
     );
   }
 
@@ -48,25 +47,31 @@ export function FeedSearch({ query, locale, onSelect }: FeedSearchProps) {
   }
 
   return (
-    <CommandGroup heading={t("articles")}>
-      {items.map((feed) => (
-        <CommandItem
-          key={`${feed.locale}-${feed.feedId}`}
-          value={`${feed.title} ${feed.description}`}
-          className="items-start gap-3"
-          onSelect={() => {
-            router.push(`/${feed.type}s/${feed.slug}`, { locale });
-            onSelect();
-          }}>
-          <div className="i-mdi-text-box-search-outline mt-0.5 size-5 shrink-0" />
-          <span className="min-w-0">
-            <span className="block truncate font-medium">{feed.title}</span>
-            <span className="text-muted line-clamp-2 text-xs">
-              {feed.description || feed.excerpt}
+    <ListBox
+      aria-label={t("articles")}
+      className="max-h-[300px] overflow-y-auto">
+      <ListBox.Section>
+        <Header>{t("articles")}</Header>
+        {items.map((feed) => (
+          <ListBox.Item
+            key={`${feed.locale}-${feed.feedId}`}
+            id={`${feed.locale}-${feed.feedId}`}
+            textValue={feed.title}
+            className="items-start gap-3 px-2 py-2.5 text-sm"
+            onAction={() => {
+              router.push(`/${feed.type}s/${feed.slug}`, { locale });
+              onSelect();
+            }}>
+            <div className="i-mdi-text-box-search-outline mt-0.5 size-5 shrink-0" />
+            <span className="min-w-0">
+              <span className="block truncate font-medium">{feed.title}</span>
+              <span className="text-muted line-clamp-2 text-xs">
+                {feed.description || feed.excerpt}
+              </span>
             </span>
-          </span>
-        </CommandItem>
-      ))}
-    </CommandGroup>
+          </ListBox.Item>
+        ))}
+      </ListBox.Section>
+    </ListBox>
   );
 }

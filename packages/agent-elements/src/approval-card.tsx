@@ -77,7 +77,7 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-xl border p-4",
+        "flex flex-col gap-3 rounded-3xl border p-4",
         pending
           ? "border-warning/40 bg-surface"
           : "border-border bg-surface-secondary/60",
@@ -94,7 +94,7 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
       </div>
 
       {args ? (
-        <pre className="bg-surface-secondary text-foreground max-h-56 overflow-auto rounded-lg p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">
+        <pre className="bg-surface-secondary text-foreground max-h-56 overflow-auto rounded-2xl p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">
           {args}
         </pre>
       ) : null}

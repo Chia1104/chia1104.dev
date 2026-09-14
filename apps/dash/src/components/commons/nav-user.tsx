@@ -17,12 +17,7 @@ import {
 import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
 
 import { authClient } from "@chia/auth/client";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@chia/ui/sidebar";
+import { SidebarMenu, SidebarMenuItem, useSidebar } from "@chia/ui/sidebar";
 
 import { useGuardedRouter } from "@/libs/navigation-guard";
 
@@ -42,34 +37,32 @@ export function NavUser({
     <SidebarMenu>
       <SidebarMenuItem>
         <Dropdown>
-          <SidebarMenuButton asChild>
-            <Button
-              size="lg"
-              variant="ghost"
-              fullWidth
-              isIconOnly={isMobile ? false : !open}
-              onPress={() => router.push("/settings")}>
-              <Avatar className="size-8">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
-              {isMobile || open ? (
-                <>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{user.name}</span>
-                    <span className="truncate text-xs">{user.email}</span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4" />
-                </>
-              ) : null}
-            </Button>
-          </SidebarMenuButton>
+          <Button
+            size="lg"
+            variant="ghost"
+            fullWidth
+            isIconOnly={isMobile ? false : !open}
+            onPress={() => router.push("/settings")}>
+            <Avatar className="size-8">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            {isMobile || open ? (
+              <>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate text-xs">{user.email}</span>
+                </div>
+                <ChevronsUpDown className="ml-auto size-4" />
+              </>
+            ) : null}
+          </Button>
           <DropdownPopover>
             <DropdownMenu className="gap-2">
               <DropdownItem>
                 <Avatar className="size-8">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>

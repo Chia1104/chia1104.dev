@@ -10,6 +10,22 @@
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     monospace;
+  /* Alpha of every popover surface, as a Tailwind opacity modifier: `bg-overlay/(--popover-opacity)`. */
+  --popover-opacity: 75%;
+}
+
+/* HeroUI's opaque and blur backdrops (modal, drawer, alert dialog) paint `--backdrop`. */
+:root,
+.light,
+.default,
+[data-theme="light"],
+[data-theme="default"] {
+  --backdrop: rgba(255, 255, 255, 0.8);
+}
+
+.dark,
+[data-theme="dark"] {
+  --backdrop: rgba(0, 0, 0, 0.8);
 }
 
 /* Fumadocs reads its own `--color-fd-*` tokens; they resolve to the HeroUI tokens here. */
@@ -24,14 +40,70 @@
   --color-fd-card: var(--surface);
   --color-fd-card-foreground: var(--surface-foreground);
   --color-fd-border: var(--border);
-  --color-fd-primary: var(--accent);
-  --color-fd-primary-foreground: var(--accent-foreground);
-  --color-fd-secondary: var(--default);
-  --color-fd-secondary-foreground: var(--default-foreground);
+  /* Fumadocs sets text in primary (active tab, prop names); the pale light accent is unreadable there. */
+  --color-fd-primary: var(--foreground);
+  --color-fd-primary-foreground: var(--background);
+  /* Secondary fills nested panels (tabs, banner), not controls. */
+  --color-fd-secondary: var(--surface-secondary);
+  --color-fd-secondary-foreground: var(--surface-secondary-foreground);
   --color-fd-accent: var(--default);
   --color-fd-accent-foreground: var(--default-foreground);
   --color-fd-ring: var(--focus);
+  --color-fd-overlay: var(--backdrop);
   --color-fd-error: var(--danger);
+  --color-fd-warning: var(--warning);
+  --color-fd-success: var(--success);
+}
+
+/*
+ * Fumadocs panels (accordion, callout, card, code block, files, tabs, type table) round with fixed
+ * `rounded-md` to `rounded-2xl` utilities; in an article they take HeroUI's surface radius, and the
+ * rows and tab panels nested inside keep their smaller `rounded-xl`.
+ */
+.prose
+  :is(.bg-fd-card, .bg-fd-secondary):is(
+    .rounded-md,
+    .rounded-lg,
+    .rounded-xl,
+    .rounded-2xl
+  ).border {
+  border-radius: min(32px, var(--radius-3xl));
+}
+
+/*
+ * react-tweet reads its own `--tweet-*` tokens and switches them on `.dark` and on the OS scheme;
+ * `:root` outranks both, so one mapping to the HeroUI tokens serves every theme. Hover tokens
+ * repeat their resting value: an embedded post stays still under the pointer.
+ */
+:root .react-tweet-theme {
+  --tweet-container-margin: 0;
+  --tweet-font-family: var(--font-sans);
+  --tweet-font-color: var(--foreground);
+  --tweet-font-color-secondary: var(--muted);
+  --tweet-bg-color: var(--surface);
+  --tweet-bg-color-hover: var(--tweet-bg-color);
+  --tweet-quoted-bg-color-hover: transparent;
+  --tweet-color-blue-primary-hover: var(--tweet-color-blue-primary);
+  --tweet-color-blue-secondary-hover: transparent;
+  --tweet-color-red-primary-hover: transparent;
+  --tweet-color-green-primary-hover: transparent;
+  --tweet-border: 1px solid var(--border);
+  --tweet-skeleton-gradient: linear-gradient(
+    270deg,
+    var(--surface),
+    var(--default),
+    var(--default),
+    var(--surface)
+  );
+
+  /* The card follows HeroUI's surface radius, the media and quoted post nested inside it. */
+  border-radius: min(32px, var(--radius-3xl));
+
+  /* react-tweet hard-codes 12px in CSS modules; Next keeps the module and class name in the hash. */
+  & [class*="tweet-media-module__"][class*="__rounded"],
+  & [class*="quoted-tweet-container-module__"][class*="__root"] {
+    border-radius: var(--radius-xl);
+  }
 }
 
 @theme inline {
@@ -76,6 +148,9 @@
   --color-surface-foreground: var(--surface-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  /* Soft glow around floating surfaces; `shadow-<color>/<alpha>` recolours it. */
+  --shadow-glow: 0 0 15px 4px
+    color-mix(in oklab, var(--accent) 30%, transparent);
 }
 
 /*
@@ -155,6 +230,18 @@
 
   .kbd {
     @apply h-5 px-1.5 text-xs;
+  }
+
+  /* Every floating HeroUI popover shares one translucent, blurred surface. */
+  .popover,
+  .dropdown__popover,
+  .select__popover,
+  .combo-box__popover,
+  .autocomplete__popover,
+  .date-picker__popover,
+  .date-range-picker__popover,
+  .color-picker__popover {
+    @apply bg-overlay/(--popover-opacity) backdrop-blur-sm;
   }
 }
 

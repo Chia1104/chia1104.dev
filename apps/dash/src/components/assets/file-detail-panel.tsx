@@ -80,7 +80,7 @@ export const FileDetailPanel = ({
       </Chip>
 
       {isFileType(selectedPath, "image") && (
-        <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-lg border">
+        <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-2xl border">
           <Image.Root>
             <ViewTransition>
               <Image.Resource

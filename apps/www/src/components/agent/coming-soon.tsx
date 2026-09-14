@@ -25,7 +25,7 @@ export const ComingSoon = ({ preview = false }: { preview?: boolean }) => {
       <div className="relative">
         <span
           aria-hidden
-          className="absolute inset-0 -z-10 scale-150 rounded-full bg-[radial-gradient(circle,rgb(252_165_165/0.35),transparent_70%)] blur-2xl dark:bg-[radial-gradient(circle,rgb(192_132_252/0.35),transparent_70%)]"
+          className="absolute inset-0 -z-10 scale-150 rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--accent)_35%,transparent),transparent_70%)] blur-2xl"
         />
         <CHBot className="size-28 rounded-full" />
       </div>
@@ -48,8 +48,8 @@ export const ComingSoon = ({ preview = false }: { preview?: boolean }) => {
         {FEATURES.map((feature) => (
           <li
             key={feature.key}
-            className="bg-surface-secondary/60 flex items-center gap-3 rounded-xl px-3.5 py-2.5">
-            <span className="bg-accent/10 text-accent flex size-8 shrink-0 items-center justify-center rounded-lg">
+            className="bg-surface-secondary/60 flex items-center gap-3 rounded-2xl px-3.5 py-2.5">
+            <span className="bg-accent/10 text-accent flex size-8 shrink-0 items-center justify-center rounded-2xl">
               <span aria-hidden className={`${feature.icon} size-4`} />
             </span>
             <span className="text-foreground text-sm">

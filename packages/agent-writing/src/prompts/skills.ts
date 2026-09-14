@@ -137,7 +137,8 @@ MDX is JSX, not HTML:
 - \`{\` and \`}\` in prose open an expression. Put braces in inline code or escape them as \`\\{\`. A
   \`<\` directly followed by a letter opens a tag; \`a < b\` with a space is fine.
 - Lowercase HTML elements (\`iframe\`, \`details\`, \`video\`) pass through, so an embed such as a
-  LinkedIn or YouTube \`iframe\` is allowed. Capitalized names must come from \`mdx-components\`.
+  YouTube \`iframe\` is allowed. Embed a LinkedIn post with \`LinkedInPost\` and an X post with
+  \`Tweet\`, not a raw \`iframe\`. Capitalized names must come from \`mdx-components\`.
 - Markdown inside a JSX block is only parsed as Markdown when a blank line separates it from the
   tags; otherwise it is inline text.
 - Never write \`import\` or \`export\` in a body. Stick to Markdown unless a component is needed;
@@ -368,6 +369,29 @@ They may be composed when a small image needs centering:
     <Image src="https://storage.chia1104.dev/global/logo.png" alt="Project logo" width={250} height={250} />
   </ImageWrapperWithMaxWidth>
 </FlexCenter>
+\`\`\`
+
+## LinkedIn posts
+
+\`LinkedInPost\` embeds one LinkedIn post. Take \`urn\` from the \`src\` of LinkedIn's "Embed this
+post" code (\`urn:li:share:…\`, \`urn:li:ugcPost:…\` or \`urn:li:activity:…\`); the id in a post's
+page URL is often a different one. The embed shows the post collapsed at a fixed height; set
+\`collapsed={false}\` for the full post, and \`height\` only when the default clips it. A "View on
+LinkedIn" link is always rendered below, so do not add one.
+
+\`\`\`mdx
+<LinkedInPost urn="urn:li:share:7492281174262890496" />
+\`\`\`
+
+## X posts
+
+\`Tweet\` embeds one post from X (Twitter). \`id\` is the number after \`/status/\` in the post's URL:
+\`https://x.com/vercel/status/1683920951807971329\` is \`id="1683920951807971329"\`. The site fetches
+and caches the post; a deleted or private post renders a "not available" card with a link, so no
+extra link is needed.
+
+\`\`\`mdx
+<Tweet id="1683920951807971329" />
 \`\`\`
 
 ## Banner

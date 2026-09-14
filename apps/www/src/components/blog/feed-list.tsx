@@ -80,7 +80,7 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
 
   if (isSuccess && transformData.length === 0) {
     return (
-      <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-lg px-5 py-10">
+      <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-3xl px-5 py-10">
         <p>{t("no-content")}</p>
         <ImageZoom>
           <div className="not-prose relative aspect-square w-[100px]">

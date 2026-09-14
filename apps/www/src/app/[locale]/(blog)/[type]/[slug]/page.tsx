@@ -23,6 +23,7 @@ import {
   RelatedFeeds,
   RelatedFeedsSkeleton,
 } from "@/components/blog/related-feeds";
+import { Tweet } from "@/components/blog/tweet";
 import WrittenBy from "@/components/blog/written-by";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
@@ -171,7 +172,10 @@ const Page = async ({
           locale={dbLocale}
           title={translation.title}>
           <Content
-            content={getContentProps({ content: translation.content })}
+            content={getContentProps({
+              content: translation.content,
+              components: { Tweet },
+            })}
             context={{
               updatedAt: feed.updatedAt,
               tocContents: {

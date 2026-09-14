@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect } from "react";
 
 import { Button, Drawer, Spinner } from "@heroui/react";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { Bot } from "lucide-react";
 import { useMediaQuery } from "usehooks-ts";
 
@@ -60,12 +61,15 @@ export const AgentDockTrigger = () => {
 export const AgentDock = () => {
   const mode = useAgentDock((state) => state.mode);
   const setMode = useAgentDock((state) => state.setMode);
+  const toggle = useAgentDock((state) => state.toggle);
   const isDocked = useMediaQuery(DOCK_QUERY, { initializeWithValue: false });
   const isOpen = mode !== "closed";
 
   useEffect(() => {
     void agentDockStore.persist.rehydrate();
   }, []);
+
+  useHotkey("Mod+I", toggle);
 
   if (!isDocked) {
     return (

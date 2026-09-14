@@ -8,6 +8,7 @@ export const ApiKeyScope = {
   FeedsRead: "feeds:read",
   FeedsWrite: "feeds:write",
   SpotifyRead: "spotify:read",
+  ToolingsRead: "toolings:read",
   /** Acts as the configured admin: `CallerTier.Root`. Only a key the admin owns can carry it. */
   OperatorRoot: "operator:root",
 } as const;

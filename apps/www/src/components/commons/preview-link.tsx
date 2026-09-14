@@ -21,9 +21,9 @@ type LinkPreviewResponse = RouterOutputs["toolings"]["link-preview"];
 const linkPreview = orpc.toolings["link-preview"];
 
 const PREVIEW_STYLES = {
-  base: "z-20 w-80 border border-[#FCA5A5]/50 p-4 text-sm break-normal shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
+  base: "border-accent/50 shadow-glow z-20 w-80 border p-4 text-sm break-normal transition-all",
   error:
-    "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)]",
+    "border-danger/50 shadow-[0_0_25px_4px_color-mix(in_oklab,var(--danger)_30%,transparent)]",
 };
 
 type InternalLinkProps = NextLinkProps &
@@ -63,7 +63,7 @@ const PreviewError = ({ message }: { message: string | null }) => (
 
 const PreviewSkeleton = () => (
   <div className="z-999 flex w-full flex-col gap-3">
-    <div className="aspect-video w-full animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
+    <div className="aspect-video w-full animate-pulse rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
     <div className="mt-3 flex items-center space-x-4">
       <span className="size-10 shrink-0 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
       <div className="flex flex-col space-y-2">
@@ -80,9 +80,9 @@ const PreviewContent = ({ data }: { data: LinkPreviewResponse }) => {
   return (
     <div className="flex w-full min-w-0 flex-col gap-3">
       {data.ogImage && (
-        <div className="not-prose relative aspect-video w-full overflow-hidden rounded-md bg-neutral-200 dark:bg-neutral-800">
+        <div className="not-prose relative aspect-video w-full overflow-hidden rounded-2xl bg-neutral-200 dark:bg-neutral-800">
           <img
-            className="not-prose absolute inset-0 size-full rounded-md object-cover p-0"
+            className="not-prose absolute inset-0 size-full rounded-2xl object-cover p-0"
             src={data.ogImage}
             alt={data.title ?? "og-image"}
           />

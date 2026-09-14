@@ -10,7 +10,7 @@ const FeedSkeleton = () => {
     <>
       {SKELETON_ITEMS.map((i) => (
         <div key={i} className="w-full">
-          <Skeleton className="min-h-[120px] w-full rounded-lg" />
+          <Skeleton className="min-h-[120px] w-full rounded-3xl" />
         </div>
       ))}
     </>

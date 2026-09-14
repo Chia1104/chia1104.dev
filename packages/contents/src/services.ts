@@ -25,7 +25,8 @@ export const compileMDX = (content: string, components?: MDXComponents) => {
 
 export const getContentProps = async ({
   content,
+  components,
 }: GetContentPropsArgs): GetContentPropsReturn => {
-  const compiled = await compileMDX(content ?? "");
+  const compiled = await compileMDX(content ?? "", components);
   return { toc: compiled.toc, content: compiled.body };
 };
