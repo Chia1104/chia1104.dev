@@ -24,6 +24,8 @@ describe("agent-elements catalogs", () => {
       expect(catalog.forkedFrom).toContain("{title}");
       expect(catalog.quotaExceeded).toContain("{resetAt}");
       expect(catalog.contextDetached).toContain("{label}");
+      expect(catalog.failureReference).toContain("{message}");
+      expect(catalog.failureReference).toContain("{requestId}");
     }
   });
 });

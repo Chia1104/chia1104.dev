@@ -15,6 +15,7 @@ vi.mock("../src/services/workflow-control", () => ({
 
 import { describe, expect, it, vi } from "vitest";
 
+import { app } from "../src/server";
 import workflowControlRoutes from "../src/workflow-control.route";
 
 const command = { type: "run:cancel", runId: "wrun_test" };
@@ -44,5 +45,29 @@ describe("workflow control route", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ type: "completed" });
     expect(executeLocalWorkflowCommand).toHaveBeenCalledWith(command);
+  });
+
+  it("answers an unexpected failure with 503 and a request id", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    executeLocalWorkflowCommand.mockRejectedValueOnce(new Error("world down"));
+
+    const response = await app.request("/", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(command),
+    });
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("X-Request-Id")).toBeTruthy();
+    expect(console.error).toHaveBeenCalledWith(
+      "Workflow command failed",
+      expect.objectContaining({
+        requestId: response.headers.get("X-Request-Id"),
+        error: expect.any(Error),
+      })
+    );
   });
 });
