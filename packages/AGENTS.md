@@ -4,12 +4,12 @@ Every workspace here is an internal `@chia/*` package. Package-specific boundari
 
 ## Package map
 
-| Area                   | Packages                                                                                          | Boundary                                                   |
-| ---------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| API and infrastructure | `services`, `integrations`, `service-kit`, `db`, `auth`, `kv`, `workflow-control`                 | Contracts, policies, persistence and third-party clients   |
-| Agents                 | `agent-runtime`, `agent-host`, `agent-content`, `agent-writing`, `agent-public`, `agent-elements` | Runtime, host bindings, kinds and client UI                |
-| Presentation           | `contents`, `ui`, `themes`, `tailwind`, `shaders`, `i18n`                                         | Content rendering, components, styles and messages         |
-| Foundations            | `ai`, `utils`, `meta`, `test`                                                                     | AI providers, shared utilities, site data and test support |
+| Area                   | Packages                                                                                           | Boundary                                                   |
+| ---------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| API and infrastructure | `services`, `integrations`, `service-kit`, `db`, `auth`, `kv`, `workflow-control`, `observability` | Contracts, policies, persistence and third-party clients   |
+| Agents                 | `agent-runtime`, `agent-host`, `agent-content`, `agent-writing`, `agent-public`, `agent-elements`  | Runtime, host bindings, kinds and client UI                |
+| Presentation           | `contents`, `ui`, `themes`, `tailwind`, `shaders`, `i18n`                                          | Content rendering, components, styles and messages         |
+| Foundations            | `ai`, `utils`, `meta`, `test`                                                                      | AI providers, shared utilities, site data and test support |
 
 ## Shared rules
 

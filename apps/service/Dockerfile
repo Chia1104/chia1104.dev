@@ -1,9 +1,4 @@
-ARG BUN_VERSION=1.4.1
 ARG NODE_VERSION=26
-
-FROM oven/bun:$BUN_VERSION AS runner-base
-
-WORKDIR /app
 
 FROM node:${NODE_VERSION}-alpine AS builder-base
 
@@ -40,22 +35,21 @@ ARG TURBO_TEAM \
 
 ENV TURBO_TEAM=$TURBO_TEAM \
     TURBO_TOKEN=$TURBO_TOKEN \
-    NITRO_PRESET=bun \
     SKIP_ENV_VALIDATION=1
 
 RUN pnpm install --frozen-lockfile
 
 RUN pnpm turbo run build --filter=service...
 
-FROM runner-base AS runner
+FROM node:${NODE_VERSION}-alpine AS runner
 
-COPY --from=builder /app/apps/service/.output/server ./apps/service
+WORKDIR /app/apps/service
+
+COPY --from=builder /app/apps/service/.output/server .
 
 ENV NODE_ENV=production \
     PORT=8080
 
-WORKDIR /app/apps/service
-
 EXPOSE 8080
 
-CMD [ "bun", "index.mjs" ]
+CMD [ "node", "index.mjs" ]
