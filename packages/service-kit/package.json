@@ -21,6 +21,10 @@
       "types": "./src/bootstrap.ts",
       "default": "./src/bootstrap.ts"
     },
+    "./factory": {
+      "types": "./src/factory.ts",
+      "default": "./src/factory.ts"
+    },
     "./middlewares/maintenance": {
       "types": "./src/middlewares/maintenance.ts",
       "default": "./src/middlewares/maintenance.ts"

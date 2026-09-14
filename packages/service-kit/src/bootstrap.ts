@@ -1,20 +1,14 @@
 import { sentry } from "@hono/sentry";
 import type { Env, Hono, Schema } from "hono";
 import { cors } from "hono/cors";
-import { createFactory } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { requestId } from "hono/request-id";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-import type { CreateAuthOptions } from "@chia/auth/server";
-import { createAuth } from "@chia/auth/server";
-import { connectDatabase } from "@chia/db/client";
-import { tryCatch } from "@chia/utils/error-helper";
-import { errorGenerator, getClientIP } from "@chia/utils/server";
+import { errorGenerator } from "@chia/utils/server";
 
 import { isAppError, toErrorResponse } from "./errors";
-import type { ServiceHonoEnv } from "./hono";
 import { bodyLimit } from "./middlewares/body-limit";
 import type { MaintenanceOptions } from "./middlewares/maintenance";
 import { maintenance } from "./middlewares/maintenance";
@@ -23,39 +17,6 @@ export const parseAllowedOrigins = (value?: string): string[] | string => {
   if (!value) return "*";
   return value.split(",").map((item) => item.trim());
 };
-
-export interface ServiceFactoryOptions {
-  auth: CreateAuthOptions;
-}
-
-/** Attaches db, kv and auth to every request. */
-export const createServiceFactory = (options: ServiceFactoryOptions) =>
-  createFactory<ServiceHonoEnv>({
-    initApp: (app) => {
-      app.use(async (c, next) => {
-        const [{ data: db, error: dbError }, { data: kv, error: kvError }] =
-          await Promise.all([
-            tryCatch(connectDatabase()),
-            tryCatch(import("@chia/kv/redis").then((m) => m.getRedisKv())),
-          ]);
-
-        if (dbError || kvError) {
-          console.error(dbError, kvError);
-          return c.json(errorGenerator(503), 503, {
-            "Retry-After": "30",
-          });
-        }
-
-        c.set("headers", c.req.raw.headers);
-        c.set("clientIP", getClientIP(c.req.raw));
-        c.set("db", db);
-        c.set("kv", kv);
-        c.set("auth", createAuth(db, kv, options.auth));
-
-        await next();
-      });
-    },
-  });
 
 export interface BootstrapOptions {
   sentry?: {

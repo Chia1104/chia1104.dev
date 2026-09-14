@@ -1,8 +1,5 @@
-vi.mock("@chia/db/client", () => ({ connectDatabase: vi.fn() }));
-vi.mock("@chia/auth/server", () => ({ createAuth: vi.fn() }));
-
 import { Hono } from "hono";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { bootstrap } from "../src/bootstrap";
 import { AppError } from "../src/errors";
