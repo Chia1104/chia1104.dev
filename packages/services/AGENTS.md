@@ -20,4 +20,4 @@ Contract-first oRPC API and the domain services behind it. Third-party clients l
 - Handlers use `@chia/db/repos/*`, not raw Drizzle. Domain and policy failures use `AppError`.
 - Shared writes live in `*.service.ts` modules and receive lifecycle hooks explicitly. Host apps supply bindings rather than duplicate services.
 - Post body edits go through `feeds/draft.service.ts`; only applying a draft or a feed-level update changes a feed and starts indexing.
-- Resource adapters in `rag/` isolate source-specific chunking and hydration. Read `docs/rag-architecture.md` before changing resource indexing or retrieval.
+- Resource adapters in `rag/` isolate source-specific chunking and hydration. `rag/resource-types.ts` names the types and imports nothing, so `"use workflow"` functions depend on it rather than `rag/registry`. Read `docs/rag-architecture.md` before changing resource indexing or retrieval.

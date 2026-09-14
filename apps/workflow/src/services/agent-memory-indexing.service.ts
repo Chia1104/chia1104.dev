@@ -1,4 +1,4 @@
-import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/registry";
+import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/resource-types";
 import type { MemoryHooks } from "@chia/services/shared/context";
 
 import { workflowControl } from "./workflow-control";

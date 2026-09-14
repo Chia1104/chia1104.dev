@@ -14,7 +14,7 @@ import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
 import type { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
 
-import { AGENT_MEMORY_SOURCE_TYPE } from "../rag/agent-memory.resource";
+import { AGENT_MEMORY_SOURCE_TYPE } from "../rag/resource-types";
 import type { MemoryHooks } from "../shared/context";
 
 /**
