@@ -84,7 +84,6 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
       className="c-bg-third relative flex min-h-[400px] flex-col items-center justify-center overflow-hidden py-20">
       <div className="z-40 container mb-10 flex w-full justify-between px-10">
         <CurrentPlaying
-          className="bg-white dark:bg-black"
           experimental={{
             displayBackgroundColorFromImage: true,
           }}

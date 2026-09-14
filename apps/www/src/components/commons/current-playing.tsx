@@ -31,10 +31,6 @@ type CurrentPlayingResponse = RouterOutputs["spotify"]["playing"];
 
 interface ExtendsProps {
   className?: string;
-  classNames?: {
-    wrapper?: string;
-    tooltipTrigger?: string;
-  };
   tooltipContentClassName?: string;
   experimental?: {
     displayBackgroundColorFromImage?: boolean;
@@ -256,7 +252,6 @@ const Card = ({
   className,
   tooltipContentClassName,
   experimental,
-  classNames,
 }: UseQueryResult<CurrentPlayingResponse, Error> & ExtendsProps) => {
   const enableColorExtraction =
     experimental?.displayBackgroundColorFromImage ?? false;
@@ -297,7 +292,7 @@ const Card = ({
           theme="light">
           <div
             className={cn(
-              "c-bg-third prose dark:prose-invert not-prose relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm transition-all",
+              "bg-surface prose dark:prose-invert not-prose relative line-clamp-1 flex w-fit max-w-50 items-center gap-2 rounded-full px-4 py-2 text-sm transition-all",
               className
             )}>
             <span className="i-mdi-spotify size-5 text-[#1DB954]" />
