@@ -27,6 +27,7 @@ import { WRITING_AGENT_KIND } from "@chia/agent-writing/models";
 import type { DB } from "@chia/db/client";
 import { getAgentTaskConfig } from "@chia/db/repos/agent/config";
 import type { AgentTaskConfig, AgentTaskParams } from "@chia/db/schema";
+import { logger } from "@chia/observability/logger";
 
 import type { AgentModels } from "./kind";
 
@@ -209,8 +210,9 @@ const resolveFixed = (
 };
 
 const warnStale = (taskId: string, ref: AgentModelRef): null => {
-  console.warn(
-    `Agent task "${taskId}" is pinned to ${ref.providerId}/${ref.modelId}, which the catalogue no longer carries; using its default model.`
+  logger.warn(
+    { taskId, providerId: ref.providerId, modelId: ref.modelId },
+    "Agent task is pinned to a model the catalogue no longer carries; using its default"
   );
   return null;
 };

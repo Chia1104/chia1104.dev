@@ -36,6 +36,7 @@ import {
 import type { WritingAgentSessionState } from "@chia/db/repos/agent";
 import { getFeedDraft, getFeedDrafts } from "@chia/db/repos/drafts";
 import type { FeedDraftListItem, FeedDraftRecord } from "@chia/db/repos/drafts";
+import { reportError } from "@chia/observability/report";
 import { AppError } from "@chia/service-kit/errors";
 
 import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
@@ -338,9 +339,8 @@ export const createWritingAgentKind = (
               }
             );
           } catch (cause) {
-            console.error("Could not schedule lesson extraction", {
+            reportError(cause, "Could not schedule lesson extraction", {
               sessionId: context.row.id,
-              error: String(cause),
             });
           }
         }

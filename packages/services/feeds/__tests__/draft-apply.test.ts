@@ -1,3 +1,7 @@
+const { reportError } = vi.hoisted(() => ({ reportError: vi.fn() }));
+
+vi.mock("@chia/observability/report", () => ({ reportError }));
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
@@ -125,9 +129,7 @@ describe("applyFeedDraftService", () => {
         return { id: 5, slug: "a-post" };
       }
     );
-    const errors = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => undefined);
+    reportError.mockClear();
 
     await expect(
       applyFeedDraftService(
@@ -138,8 +140,7 @@ describe("applyFeedDraftService", () => {
     ).resolves.toEqual({ feedId: 5, slug: "a-post", created: false });
 
     expect(onFeedChanged).toHaveBeenCalledOnce();
-    expect(errors).toHaveBeenCalledOnce();
-    errors.mockRestore();
+    expect(reportError).toHaveBeenCalledOnce();
   });
 
   it("applies whatever revision is current when none was approved", async () => {

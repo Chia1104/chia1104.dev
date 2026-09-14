@@ -1,6 +1,7 @@
 import { StringEnum } from "@earendil-works/pi-ai";
 
 import { contentReadTools } from "@chia/agent-content/tools/read";
+import { reportError } from "@chia/observability/report";
 
 import { closeOpenFence } from "../markdown/fences.ts";
 import type {
@@ -190,9 +191,8 @@ const recordSource = async (
     );
   } catch (error) {
     // origin and path only: a query string may carry a signed token or a personal id
-    console.error("Could not record a fetched page as a source memory", {
+    reportError(error, "Could not record a fetched page as a source memory", {
       page: pageLocationOf(page.url),
-      error: String(error),
     });
   }
 };

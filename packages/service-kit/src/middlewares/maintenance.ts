@@ -1,6 +1,7 @@
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
+import { reportError } from "@chia/observability/report";
 import { errorGenerator } from "@chia/utils/server";
 
 import type { ServiceHonoEnv } from "../hono";
@@ -58,7 +59,7 @@ export const maintenance = (options?: MaintenanceOptions) =>
         }
       );
     } catch (error) {
-      console.error(error);
+      reportError(error, "Maintenance check failed");
       return c.json(errorGenerator(503), 503, {
         "Retry-After": "3600",
       });

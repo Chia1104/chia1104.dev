@@ -1,5 +1,7 @@
 import type { Tiktoken } from "js-tiktoken/lite";
 
+import { logger } from "@chia/observability/logger";
+
 import {
   EMBEDDING_MAX_TOKENS,
   estimateEmbeddingTokens,
@@ -56,9 +58,9 @@ export const tryLoadTokenizer = async (): Promise<Tiktoken | null> => {
   try {
     return await loadTokenizer();
   } catch (error) {
-    console.warn(
-      "[embeddings] tiktoken unavailable, falling back to token estimate",
-      error
+    logger.warn(
+      { err: error },
+      "tiktoken unavailable, falling back to a token estimate"
     );
     return null;
   }
@@ -158,13 +160,16 @@ const guardEmbeddingInputWithEncoding = (
     return { text, tokenCount: tokens.length, truncated: false };
   }
 
-  console.warn("[embeddings] input exceeded token limit, truncating", {
-    model: context.model,
-    index: context.index,
-    label: context.label,
-    tokenCount: tokens.length,
-    maxTokens,
-  });
+  logger.warn(
+    {
+      model: context.model,
+      index: context.index,
+      label: context.label,
+      tokenCount: tokens.length,
+      maxTokens,
+    },
+    "Embedding input exceeded the token limit; truncating"
+  );
 
   return {
     text: encoding.decode(tokens.slice(0, maxTokens)),

@@ -1,3 +1,5 @@
+import { logger } from "@chia/observability/logger";
+
 import { AppError } from "../errors";
 
 import type { Policy } from "./types";
@@ -40,10 +42,7 @@ export const captchaPolicy = (options: CaptchaPolicyOptions): Policy => {
       });
 
       if (!result.success) {
-        console.error("Captcha service response failed: ", {
-          error: CaptchaErrorCode.Failed,
-          response: result,
-        });
+        logger.warn({ code: CaptchaErrorCode.Failed }, "Captcha rejected");
         return deny(
           new AppError("BAD_REQUEST", {
             issues: [{ field: "captcha", message: CaptchaErrorCode.Failed }],
@@ -56,13 +55,12 @@ export const captchaPolicy = (options: CaptchaPolicyOptions): Policy => {
           ? String(error.code)
           : undefined;
 
-      console.error("Captcha error: ", { error: code, response: error });
-
       // A provider misconfiguration is ours, not the caller's.
       if (!code) {
         return deny(new AppError("INTERNAL_SERVER_ERROR", { cause: error }));
       }
 
+      logger.warn({ code }, "Captcha rejected");
       return deny(
         new AppError("BAD_REQUEST", {
           issues: [{ field: "captcha", message: code }],

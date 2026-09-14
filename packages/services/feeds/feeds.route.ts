@@ -22,6 +22,7 @@ import {
   upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
+import { reportError } from "@chia/observability/report";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 
 import { contractOS } from "../shared/context";
@@ -388,10 +389,9 @@ export const applyFeedDraftRoute = contractOS.feeds["draft:apply"]
         try {
           await opts.context.workflow.startMemoryConsolidation(sessionId);
         } catch (cause) {
-          console.error("Could not start lesson extraction after apply", {
+          reportError(cause, "Could not start lesson extraction after apply", {
             draftId: opts.input.draftId,
             sessionId,
-            cause,
           });
         }
       }

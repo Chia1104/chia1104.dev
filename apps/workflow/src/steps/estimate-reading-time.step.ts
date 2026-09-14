@@ -4,6 +4,7 @@ import { readingTime } from "reading-time-estimator";
 import { connectDatabase } from "@chia/db/client";
 import { upsertFeedTranslation } from "@chia/db/repos/feeds";
 import { Locale } from "@chia/db/types";
+import { logger } from "@chia/observability/logger";
 
 /** The estimator counts CJK by character; without the language it applies English wpm. */
 const estimatorLanguage = (locale: Locale) =>
@@ -21,7 +22,10 @@ export const estimateReadingTimeStep = async (
     language: estimatorLanguage(locale),
   });
 
-  console.log("Reading time result", readingTimeResult);
+  logger.debug(
+    { feedID, locale, minutes: readingTimeResult.minutes },
+    "Reading time estimated"
+  );
 
   return await upsertFeedTranslation(db, {
     feedId: feedID,

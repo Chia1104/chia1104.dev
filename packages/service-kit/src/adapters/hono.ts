@@ -32,6 +32,8 @@ export const applyPolicy = async <
   const result = await policy(serviceContext);
 
   if (!result.ok) {
+    // A 5xx is this service's failure: `bootstrap()`'s error handler logs, reports and renders it.
+    if (result.error.status >= 500) throw result.error;
     return c.json(
       toErrorResponse(result.error),
       /* SAFETY: The producer contract guarantees this value satisfies ContentfulStatusCode. */ result

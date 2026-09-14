@@ -23,6 +23,7 @@ import type {
 import { getFeedForIndexing } from "@chia/db/repos/feeds";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
+import { reportError } from "@chia/observability/report";
 import { AppError } from "@chia/service-kit/errors";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 import { excerptAround } from "@chia/utils/text";
@@ -310,11 +311,14 @@ export const applyFeedDraftService = async (
     try {
       await hooks.onFeedChanged?.(feedID);
     } catch (error) {
-      console.error("Feed change hook failed after the draft was applied", {
-        draftId: input.draftId,
-        feedID,
-        cause: error,
-      });
+      reportError(
+        error,
+        "Feed change hook failed after the draft was applied",
+        {
+          draftId: input.draftId,
+          feedID,
+        }
+      );
     }
   }
   return result;

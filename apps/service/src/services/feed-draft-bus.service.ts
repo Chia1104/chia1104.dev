@@ -4,6 +4,8 @@ import {
   FEED_DRAFT_CHANNEL,
   feedDraftNoticeSchema,
 } from "@chia/db/repos/drafts/notice";
+import { logger } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
 import { FeedDraftBus } from "@chia/services/feeds/draft-bus";
 
 /** One bus per process; every `draft:watch` stream on this replica subscribes here. */
@@ -19,12 +21,12 @@ export const startFeedDraftListener = (signal: AbortSignal): void => {
       try {
         json = JSON.parse(payload);
       } catch {
-        console.warn("Ignoring a feed_draft notice that is not JSON", payload);
+        logger.warn("Ignoring a feed_draft notice that is not JSON");
         return;
       }
       const parsed = feedDraftNoticeSchema.safeParse(json);
       if (!parsed.success) {
-        console.warn("Ignoring a feed_draft notice of unknown shape", payload);
+        logger.warn("Ignoring a feed_draft notice of unknown shape");
         return;
       }
       feedDraftBus.publish(parsed.data);
@@ -32,10 +34,10 @@ export const startFeedDraftListener = (signal: AbortSignal): void => {
     {
       signal,
       onError: (error) =>
-        console.error("feed_draft listener lost its connection", error),
+        reportError(error, "feed_draft listener lost its connection"),
       onConnect: () => {
         feedDraftBus.resync();
-        console.info("feed_draft listener connected");
+        logger.info("feed_draft listener connected");
       },
     }
   );

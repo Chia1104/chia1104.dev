@@ -60,7 +60,6 @@ export async function getConnection(
     return await connection;
   } catch (error) {
     connections.delete(connectionKey);
-    console.error("Failed to create database connection:", error);
     throw error;
   }
 }
