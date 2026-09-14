@@ -16,10 +16,8 @@ const bootstrap = <
   bootstrapApp<HonoContext, TSchema, TApp>(app, {
     sentry: {
       dsn: env.SENTRY_DSN,
-      enabled: env.NODE_ENV === "production" && !!env.ZEABUR_SERVICE_ID,
+      enabled: env.NODE_ENV === "production",
     },
-    // `"*"` + credentials is a spec-invalid pair browsers reject; the wildcard only
-    // happens when CORS_ALLOWED_ORIGIN is unset, where cookie auth cannot work anyway.
     cors: {
       origin: corsOrigin,
       credentials: corsOrigin !== "*",
