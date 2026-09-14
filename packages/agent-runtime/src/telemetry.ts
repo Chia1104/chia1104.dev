@@ -35,9 +35,14 @@ const GenAI = {
 
 const tracer = trace.getTracer("@chia/agent-runtime");
 
+/**
+ * Marks a span failed with the error's class only. A provider or tool message can carry the
+ * operator's content, so the message and stack stay in the log, not in exported spans.
+ */
 const failSpan = (span: Span, cause: unknown) => {
-  span.recordException(
-    cause instanceof Error ? cause : new Error(String(cause))
+  span.setAttribute(
+    "error.type",
+    cause instanceof Error ? cause.name : "unknown"
   );
   span.setStatus({ code: SpanStatusCode.ERROR });
 };

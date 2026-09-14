@@ -9,8 +9,10 @@ import {
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { withModelSpans } from "../src/telemetry.ts";
+import { toolDefiner, Type } from "../src/tools.ts";
 
 import { build, toolCallTurn } from "./runtime.fixture.ts";
+import type { TestContext } from "./runtime.fixture.ts";
 
 const exporter = new InMemorySpanExporter();
 
@@ -99,10 +101,37 @@ describe("agent turn telemetry", () => {
     expect(result.status).toBe("error");
     const [chat] = spansNamed("chat ");
     expect(chat?.status.code).toBe(SpanStatusCode.ERROR);
-    expect(JSON.stringify(chat?.attributes)).not.toContain("overloaded");
+    expect(JSON.stringify([chat?.attributes, chat?.events])).not.toContain(
+      "overloaded"
+    );
 
     const [turn] = spansNamed("invoke_agent");
     expect(turn?.status.code).toBe(SpanStatusCode.ERROR);
     expect(turn?.attributes["error.type"]).toBe(result.error?.kind);
+  });
+
+  it("records a thrown tool's class but not its message", async () => {
+    const leak = toolDefiner<TestContext>()({
+      name: "leak",
+      label: "Leak",
+      description: "Fails with the operator's text.",
+      parameters: Type.Object({}),
+      execute: () => Promise.reject(new TypeError("draft: my private note")),
+    });
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("leak", {}, "call-1"),
+      fauxAssistantMessage("It failed."),
+    ]);
+
+    await fixture.run({ tools: [leak] });
+
+    const [tool] = spansNamed("execute_tool");
+    expect(tool?.status.code).toBe(SpanStatusCode.ERROR);
+    expect(tool?.attributes["error.type"]).toBe("TypeError");
+    expect(tool?.events).toEqual([]);
+    expect(JSON.stringify([tool?.attributes, tool?.events])).not.toContain(
+      "private note"
+    );
   });
 });
