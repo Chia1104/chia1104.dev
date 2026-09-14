@@ -8,7 +8,6 @@ import { BorderBeam } from "border-beam";
 
 import BetterAuth from "@chia/ui/icons/better-auth";
 import Zeabur from "@chia/ui/icons/zeabur";
-import { NeonGradientCard } from "@chia/ui/neon-gradient-card";
 
 const techStack = {
   Frameworks: [
