@@ -998,7 +998,7 @@ describe("readDraftTool", () => {
 
     const range = await readDraftTool.execute(
       "call-3",
-      { draftId: DRAFT_ID, locale: "en", lines: { from: 11, to: 40 } },
+      { draftId: DRAFT_ID, locale: "en", fromLine: 11, toLine: 40 },
       undefined,
       undefined,
       context
@@ -1007,6 +1007,53 @@ describe("readDraftTool", () => {
       text: expect.stringContaining("11\t## Caveats\n12\t\n13\tNone yet."),
     });
     expect(range.details).toMatchObject({ lines: { from: 11, to: 13 } });
+  });
+
+  it("narrows a section to the lines given with it", async () => {
+    const context = createContext();
+    await context.draft.patchTranslation(DRAFT_ID, "en", {
+      content: SECTIONED,
+    });
+
+    const both = await readDraftTool.execute(
+      "call-1",
+      {
+        draftId: DRAFT_ID,
+        locale: "en",
+        heading: "Setup",
+        fromLine: 1,
+        toLine: 5,
+      },
+      undefined,
+      undefined,
+      context
+    );
+    expect(both.content[0]).toMatchObject({
+      text: expect.stringContaining('Section "Setup", lines 3-5 of 13'),
+    });
+    expect(both.details).toMatchObject({
+      heading: "Setup",
+      lines: { from: 3, to: 5 },
+    });
+
+    await expect(
+      readDraftTool.execute(
+        "call-2",
+        { draftId: DRAFT_ID, locale: "en", heading: "Caveats", toLine: 5 },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow(/outside section "Caveats"/);
+    await expect(
+      readDraftTool.execute(
+        "call-3",
+        { draftId: DRAFT_ID, locale: "en", fromLine: 20 },
+        undefined,
+        undefined,
+        context
+      )
+    ).rejects.toThrow(/outside the body \(13 lines\)/);
   });
 
   it("refuses an unknown heading with the outline", async () => {

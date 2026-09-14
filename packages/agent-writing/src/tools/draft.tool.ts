@@ -145,10 +145,14 @@ const outlineOf = (sections: readonly MarkdownSectionSpan[]): string =>
         )
         .join("\n");
 
-/** The one section at `heading`; a miss or a duplicate path is refused with the way forward. */
+/**
+ * The one section at `heading`; a miss or a duplicate path is refused with the way forward.
+ * `onDuplicate` names the caller's alternative, since a duplicate path cannot address a section.
+ */
 const sectionAt = (
   sections: readonly MarkdownSectionSpan[],
-  heading: string
+  heading: string,
+  onDuplicate: string
 ): MarkdownSectionSpan => {
   const found = sections.filter((section) => section.path === heading);
   if (found.length === 1) return found[0]!;
@@ -158,9 +162,12 @@ const sectionAt = (
     );
   }
   throw new Error(
-    `Heading "${heading}" names ${found.length} sections (lines ${found.map((section) => section.line).join(", ")}). Use edit_draft_content with enough surrounding text instead.`
+    `Heading "${heading}" names ${found.length} sections (lines ${found.map((section) => section.line).join(", ")}). ${onDuplicate}`
   );
 };
+
+const LineSchema = (description: string) =>
+  Type.Integer({ minimum: 1, description });
 
 const MATCH_NOTE = {
   exact: "",
@@ -174,10 +181,11 @@ export const readDraftTool = defineTool({
   label: labelOf(TOOL_NAMES.readDraft),
   description:
     "Read a draft: feed-level metadata plus, for one locale, its metadata, the outline of its " +
-    "headings and its MDX body with line numbers. Pass `heading` to read one section or " +
-    "`lines` to read a range when the body is long. Read once to locate text before " +
-    "`edit_draft_content` or `replace_section`; their results show where each edit landed, so " +
-    "no read-back is needed.",
+    "headings and its MDX body with line numbers. All of `heading`, `fromLine` and `toLine` " +
+    "are optional and combine: `heading` narrows the body to one section, `fromLine`/`toLine` " +
+    "to a line range, and both together to the part of the section inside the range. Omit " +
+    "all three for the whole body. Read once to locate text before `edit_draft_content` or " +
+    "`replace_section`; their results show where each edit landed, so no read-back is needed.",
   parameters: Type.Object({
     draftId: DraftIdSchema,
     locale: Type.Optional(
@@ -186,22 +194,12 @@ export const readDraftTool = defineTool({
       )
     ),
     heading: Type.Optional(HeadingSchema),
-    lines: Type.Optional(
-      Type.Object(
-        {
-          from: Type.Integer({
-            minimum: 1,
-            description: "First line, 1-based.",
-          }),
-          to: Type.Integer({
-            minimum: 1,
-            description: "Last line, inclusive.",
-          }),
-        },
-        {
-          description:
-            "Return only these lines of the body. Not with `heading`.",
-        }
+    fromLine: Type.Optional(
+      LineSchema("First body line to return, 1-based. Omit to start at line 1.")
+    ),
+    toLine: Type.Optional(
+      LineSchema(
+        "Last body line to return, inclusive. Omit to read to the end."
       )
     ),
   }),
@@ -222,10 +220,6 @@ export const readDraftTool = defineTool({
         })}\n\nCall again with a \`locale\` to read a body.`,
         { draftId: draft.id, feedMeta, locales, revision: draft.revision }
       );
-    }
-
-    if (params.heading && params.lines) {
-      throw new Error("Pass `heading` or `lines`, not both.");
     }
 
     const locale = params.locale;
@@ -258,24 +252,39 @@ export const readDraftTool = defineTool({
       })),
     };
 
-    if (params.heading) {
-      const section = sectionAt(sections, params.heading);
-      const text = body.slice(section.start, section.end);
-      const lineCount = text.split("\n").length;
-      return textResult(
-        `${head}Section "${section.path}" (lines ${section.line}-${section.line + lineCount - 1} of ${bodyLines.length}, revision ${draft.revision}):\n\n` +
-          numberLines(text, section.line),
-        { ...details, heading: section.path, lineCount }
-      );
-    }
-
-    if (params.lines) {
-      const from = Math.min(params.lines.from, bodyLines.length);
-      const to = Math.min(Math.max(params.lines.to, from), bodyLines.length);
+    const { heading, fromLine, toLine } = params;
+    if (heading || fromLine !== undefined || toLine !== undefined) {
+      const section = heading
+        ? sectionAt(
+            sections,
+            heading,
+            "Read it by `fromLine`/`toLine` from the outline instead."
+          )
+        : undefined;
+      const sectionTo = section
+        ? section.line +
+          body.slice(section.start, section.end).split("\n").length -
+          1
+        : bodyLines.length;
+      const from = Math.max(fromLine ?? 1, section?.line ?? 1);
+      const to = Math.min(toLine ?? bodyLines.length, sectionTo);
+      if (from > to) {
+        throw new Error(
+          section
+            ? `Lines ${fromLine ?? 1}-${toLine ?? bodyLines.length} fall outside section "${section.path}" (lines ${section.line}-${sectionTo}). Drop \`fromLine\`/\`toLine\` to read the whole section.`
+            : `Lines ${fromLine ?? 1}-${toLine ?? bodyLines.length} are outside the body (${bodyLines.length} lines).`
+        );
+      }
       const text = bodyLines.slice(from - 1, to).join("\n");
+      const scope = section ? `Section "${section.path}", lines` : "Lines";
       return textResult(
-        `${head}Lines ${from}-${to} of ${bodyLines.length} (revision ${draft.revision}):\n\n${numberLines(text, from)}`,
-        { ...details, lines: { from, to }, lineCount: to - from + 1 }
+        `${head}${scope} ${from}-${to} of ${bodyLines.length} (revision ${draft.revision}):\n\n${numberLines(text, from)}`,
+        {
+          ...details,
+          heading: section?.path ?? null,
+          lines: { from, to },
+          lineCount: to - from + 1,
+        }
       );
     }
 
@@ -574,7 +583,11 @@ export const replaceSectionTool = defineTool({
     if (body === undefined || body === null) {
       throw new Error(noBodyMessage(locale));
     }
-    const section = sectionAt(await extractSections(body), heading);
+    const section = sectionAt(
+      await extractSections(body),
+      heading,
+      "Use edit_draft_content with enough surrounding text instead."
+    );
     const lastLine =
       section.line +
       body.slice(section.start, section.end).split("\n").length -
