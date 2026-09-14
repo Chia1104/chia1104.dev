@@ -14,6 +14,7 @@ import {
 import { listAgentLessons } from "@chia/db/repos/agent/memory";
 import { listFeedDraftRevisionsSince } from "@chia/db/repos/drafts";
 import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
+import { logger } from "@chia/observability/logger";
 import {
   createMemoryService,
   reinforceLessonService,
@@ -177,10 +178,10 @@ export const consolidateSessionMemoryStep = async (request: {
   }
   const proposals = parseLessonProposals(reply);
   if (!(await claim())) {
-    console.warn("Lesson extraction superseded by a newer run", {
-      sessionId: request.sessionId,
-      dropped: proposals.length,
-    });
+    logger.info(
+      { sessionId: request.sessionId, dropped: proposals.length },
+      "Lesson extraction superseded by a newer run"
+    );
     return { status: "nothing", created: [], reinforced: 0 };
   }
 

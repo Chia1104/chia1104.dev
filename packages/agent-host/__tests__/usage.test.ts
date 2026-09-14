@@ -1,3 +1,7 @@
+const { reportError } = vi.hoisted(() => ({ reportError: vi.fn() }));
+
+vi.mock("@chia/observability/report", () => ({ reportError }));
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AgentModelUsage } from "@chia/agent-runtime/types";
@@ -147,9 +151,7 @@ describe("recordAgentUsage", () => {
 
   it("logs and drops an invalid provider cost", async () => {
     const { recordAgentUsage } = await import("../src/usage");
-    const error = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => undefined);
+    reportError.mockClear();
 
     await expect(
       recordAgentUsage(db, {
@@ -167,28 +169,26 @@ describe("recordAgentUsage", () => {
     ).resolves.toBeUndefined();
 
     expect(repo.insertAgentUsage).not.toHaveBeenCalled();
-    expect(error).toHaveBeenCalledExactlyOnceWith(
+    expect(reportError).toHaveBeenCalledExactlyOnceWith(
+      expect.anything(),
       "Could not record agent usage",
       expect.objectContaining({ userId: "user-1", source: "turn" })
     );
-    error.mockRestore();
   });
 
   it("logs and swallows a failed write", async () => {
     const { recordAgentUsage } = await import("../src/usage");
-    const error = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => undefined);
+    reportError.mockClear();
     repo.insertAgentUsage.mockRejectedValue(new Error("connection reset"));
 
     await expect(
       recordAgentUsage(db, { ...call, usage: usage() })
     ).resolves.toBeUndefined();
 
-    expect(error).toHaveBeenCalledExactlyOnceWith(
+    expect(reportError).toHaveBeenCalledExactlyOnceWith(
+      expect.anything(),
       "Could not record agent usage",
       expect.objectContaining({ userId: "user-1", source: "turn" })
     );
-    error.mockRestore();
   });
 });

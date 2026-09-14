@@ -22,6 +22,8 @@ import type {
   ResourceIndexRunScope,
   ResourceIndexRunStatus,
 } from "@chia/db/schema";
+import { logger } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 /**
@@ -170,9 +172,9 @@ export const reconcileIndexRun = async (
         /* SAFETY: The producer contract guarantees this value satisfies ResourceIndexRunTerminalStatus. */ status as ResourceIndexRunTerminalStatus
       )
     ) {
-      console.error(
-        "Unrecognised workflow run status; leaving the row active",
-        { runId: row.externalRunId, status }
+      logger.error(
+        { runId: row.externalRunId, status },
+        "Unrecognised workflow run status; leaving the row active"
       );
       return row;
     }
@@ -188,9 +190,8 @@ export const reconcileIndexRun = async (
     });
   } catch (error) {
     // A lookup failure is infrastructural; finalizing on it would bury a live run.
-    console.error("Could not reconcile a resource index run", {
+    reportError(error, "Could not reconcile a resource index run", {
       runId: row.externalRunId,
-      error: String(error),
     });
     return row;
   }
@@ -227,10 +228,7 @@ export const triggerIndexRun = async (
 
   if (reused) {
     await workflow.cancelRun(runId).catch((cause: unknown) => {
-      console.error("Could not cancel a superseded index run", {
-        runId,
-        error: String(cause),
-      });
+      reportError(cause, "Could not cancel a superseded index run", { runId });
     });
     return handleOf(row, true);
   }

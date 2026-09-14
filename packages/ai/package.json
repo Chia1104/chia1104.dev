@@ -90,6 +90,7 @@
     "@ai-sdk/gateway": "catalog:ai",
     "@ai-sdk/openai": "catalog:ai",
     "@anthropic-ai/sdk": "catalog:ai",
+    "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "catalog:env",
     "ai": "catalog:ai",

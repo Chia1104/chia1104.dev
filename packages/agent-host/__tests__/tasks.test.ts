@@ -1,3 +1,9 @@
+const { logger } = vi.hoisted(() => ({
+  logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock("@chia/observability/logger", () => ({ logger }));
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HOUSE_MODELS } from "@chia/ai/house-models";
@@ -64,14 +70,13 @@ describe("resolveAgentTask", () => {
 
   it("falls back to the default model when the pinned one has left the catalogue", async () => {
     const { AGENT_TASK_IDS, resolveAgentTask } = await import("../src/tasks");
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    logger.warn.mockClear();
     repo.getAgentTaskConfig.mockResolvedValue(
       row({ providerId: "vercel-ai-gateway", modelId: "acme/retired-model" })
     );
     const task = await resolveAgentTask(db, AGENT_TASK_IDS.sessionTitle);
     expect(task.model.id).toBe(HOUSE_MODELS.cheap);
-    expect(warn).toHaveBeenCalledOnce();
-    warn.mockRestore();
+    expect(logger.warn).toHaveBeenCalledOnce();
   });
 
   it("uses the session's model for a session-bound task, and only then resolves it", async () => {

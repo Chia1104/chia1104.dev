@@ -3,6 +3,7 @@ import { createFactory } from "hono/factory";
 import type { CreateAuthOptions } from "@chia/auth/server";
 import { createAuth } from "@chia/auth/server";
 import { connectDatabase } from "@chia/db/client";
+import { reportError } from "@chia/observability/report";
 import { tryCatch } from "@chia/utils/error-helper";
 import { errorGenerator, getClientIP } from "@chia/utils/server";
 
@@ -24,7 +25,8 @@ export const createServiceFactory = (options: ServiceFactoryOptions) =>
           ]);
 
         if (dbError || kvError) {
-          console.error(dbError, kvError);
+          if (dbError) reportError(dbError, "Database unavailable");
+          if (kvError) reportError(kvError, "KV store unavailable");
           return c.json(errorGenerator(503), 503, {
             "Retry-After": "30",
           });

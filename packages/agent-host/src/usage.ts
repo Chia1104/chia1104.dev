@@ -4,6 +4,7 @@ import type { AgentModelUsage } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import { insertAgentUsage } from "@chia/db/repos/agent/usage";
 import type { AgentCredentialSource, AgentUsageSource } from "@chia/db/schema";
+import { reportError } from "@chia/observability/report";
 
 /**
  * Write side of the usage ledger: every provider call made for a user lands here, whoever
@@ -79,11 +80,11 @@ export const recordAgentUsage = async (
       costMicros: costToMicros(usage.cost.total),
     });
   } catch (error) {
-    console.error("Could not record agent usage", {
+    // Best-effort: the call already happened; losing its row errs in the user's favor.
+    reportError(error, "Could not record agent usage", {
       userId: input.userId,
       sessionId: input.sessionId,
       source: input.source,
-      error: String(error),
     });
   }
 };

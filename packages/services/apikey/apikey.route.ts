@@ -26,7 +26,6 @@ export const createAPIKeyRoute = contractOS.apikey.create
     );
 
     if (error) {
-      console.log(error);
       if (error instanceof APIError) {
         switch (error.statusCode) {
           case 401:
@@ -37,7 +36,7 @@ export const createAPIKeyRoute = contractOS.apikey.create
             throw opts.errors.NOT_FOUND();
         }
       }
-      throw opts.errors.INTERNAL_SERVER_ERROR();
+      throw opts.errors.INTERNAL_SERVER_ERROR({ cause: error });
     }
 
     return data;

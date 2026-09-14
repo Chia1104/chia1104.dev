@@ -1,3 +1,9 @@
+const { logger } = vi.hoisted(() => ({
+  logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock("@chia/observability/logger", () => ({ logger }));
+
 import { describe, expect, it, vi } from "vitest";
 
 import {
@@ -60,8 +66,6 @@ describe("stripMdx", () => {
 
 describe("cleanMdxKeepStructure", () => {
   it("does not expose HTML tags assembled by cleanup", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-
     try {
       await expect(
         cleanMdxKeepStructure("<scr<script>ipt>alert(1)</scr</script>ipt>")
@@ -80,7 +84,6 @@ describe("cleanMdxKeepStructure", () => {
         )
       ).resolves.toBe("alpha\nbeta\\<broken<");
     } finally {
-      warn.mockRestore();
     }
   });
 
@@ -173,7 +176,8 @@ describe("declared markdown", () => {
     'Register with `isToolCallEventType<"my_tool", Input>(event)`; nb "<" and ">" are stripped.';
 
   it("reads a fetched page as markdown without trying MDX first", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const warn = logger.warn;
+    warn.mockClear();
 
     const cleaned = await cleanMdxKeepStructure(PROSE, "markdown");
     const outline = await buildHeadingOutline(`# Title\n\n${PROSE}`, {
@@ -183,16 +187,15 @@ describe("declared markdown", () => {
     expect(cleaned).toContain("my_tool");
     expect(outline).toBe("- Title");
     expect(warn).not.toHaveBeenCalled();
-    warn.mockRestore();
   });
 
   it("still warns once for a post that is not valid MDX", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const warn = logger.warn;
+    warn.mockClear();
 
     const cleaned = await cleanMdxKeepStructure(PROSE);
 
     expect(cleaned).toContain("my_tool");
     expect(warn).toHaveBeenCalledOnce();
-    warn.mockRestore();
   });
 });

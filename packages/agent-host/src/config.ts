@@ -5,6 +5,7 @@ import type {
 import type { DB } from "@chia/db/client";
 import { getAgentKindConfig } from "@chia/db/repos/agent/config";
 import type { AgentKindConfig } from "@chia/db/schema";
+import { logger } from "@chia/observability/logger";
 
 import type { AgentKindDefinition } from "./kind";
 
@@ -72,9 +73,12 @@ export const effectiveKindConfig = <TConfig extends object>(
     ...row.config,
   });
   if (parsed.success) return parsed.data;
-  console.warn(
-    `Agent kind "${definition.kind}" has a configuration its schema rejects; using defaults.`,
-    parsed.error.issues
+  logger.warn(
+    {
+      kind: definition.kind,
+      fields: parsed.error.issues.map((issue) => issue.path.join(".")),
+    },
+    "Agent kind configuration rejected by its schema; using defaults"
   );
   return definition.config.defaults;
 };
