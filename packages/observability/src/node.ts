@@ -3,7 +3,10 @@ import { PgInstrumentation } from "@opentelemetry/instrumentation-pg";
 import { RedisInstrumentation } from "@opentelemetry/instrumentation-redis";
 import { RuntimeNodeInstrumentation } from "@opentelemetry/instrumentation-runtime-node";
 import { UndiciInstrumentation } from "@opentelemetry/instrumentation-undici";
-import { resourceFromAttributes } from "@opentelemetry/resources";
+import {
+  defaultResource,
+  resourceFromAttributes,
+} from "@opentelemetry/resources";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import {
   ATTR_SERVICE_NAME,
@@ -33,11 +36,14 @@ export const startTelemetry = ({ serviceName }: StartTelemetryOptions) => {
   register();
 
   const sdk = new NodeSDK({
-    resource: resourceFromAttributes({
-      [ATTR_SERVICE_NAME]: serviceName,
-      [ATTR_SERVICE_VERSION]: env.RAILWAY_GIT_COMMIT_SHA,
-      [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: env.RAILWAY_ENVIRONMENT_NAME,
-    }),
+    // A supplied resource replaces the SDK default, which carries `telemetry.sdk.*`.
+    resource: defaultResource().merge(
+      resourceFromAttributes({
+        [ATTR_SERVICE_NAME]: serviceName,
+        [ATTR_SERVICE_VERSION]: env.RAILWAY_GIT_COMMIT_SHA,
+        [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: env.RAILWAY_ENVIRONMENT_NAME,
+      })
+    ),
     instrumentations: [
       new HttpInstrumentation(),
       new UndiciInstrumentation(),
