@@ -312,7 +312,7 @@ const TreeNodeComponent = ({
               variant={isSelected ? "secondary" : "ghost"}
               slot="trigger"
               className={cn(
-                "group h-auto w-full justify-start gap-1 rounded-md px-2 py-1.5 text-sm transition-all duration-150 data-[level=0]:ml-0 data-[level=1]:ml-1 data-[level=2]:ml-2 data-[level=3]:ml-3"
+                "group h-auto w-full justify-start gap-1 rounded-2xl px-2 py-1.5 text-sm transition-all duration-150 data-[level=0]:ml-0 data-[level=1]:ml-1 data-[level=2]:ml-2 data-[level=3]:ml-3"
               )}
               onPress={handleSelect}>
               <Disclosure.Indicator className="mr-1 size-3.5 shrink-0" />
@@ -361,7 +361,7 @@ const TreeNodeComponent = ({
       data-level={level}
       variant={isSelected ? "secondary" : "ghost"}
       className={cn(
-        "h-auto w-full justify-start gap-1.5 rounded-md px-2 py-1.5 text-sm transition-all duration-150 data-[level=0]:ml-0 data-[level=1]:ml-1 data-[level=2]:ml-2 data-[level=3]:ml-3"
+        "h-auto w-full justify-start gap-1.5 rounded-2xl px-2 py-1.5 text-sm transition-all duration-150 data-[level=0]:ml-0 data-[level=1]:ml-1 data-[level=2]:ml-2 data-[level=3]:ml-3"
       )}
       onPress={handleSelect}>
       <span className="shrink-0">{getFileIcon(node.name)}</span>

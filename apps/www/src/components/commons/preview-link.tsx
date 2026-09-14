@@ -63,7 +63,7 @@ const PreviewError = ({ message }: { message: string | null }) => (
 
 const PreviewSkeleton = () => (
   <div className="z-999 flex w-full flex-col gap-3">
-    <div className="aspect-video w-full animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
+    <div className="aspect-video w-full animate-pulse rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
     <div className="mt-3 flex items-center space-x-4">
       <span className="size-10 shrink-0 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
       <div className="flex flex-col space-y-2">
@@ -80,9 +80,9 @@ const PreviewContent = ({ data }: { data: LinkPreviewResponse }) => {
   return (
     <div className="flex w-full min-w-0 flex-col gap-3">
       {data.ogImage && (
-        <div className="not-prose relative aspect-video w-full overflow-hidden rounded-md bg-neutral-200 dark:bg-neutral-800">
+        <div className="not-prose relative aspect-video w-full overflow-hidden rounded-2xl bg-neutral-200 dark:bg-neutral-800">
           <img
-            className="not-prose absolute inset-0 size-full rounded-md object-cover p-0"
+            className="not-prose absolute inset-0 size-full rounded-2xl object-cover p-0"
             src={data.ogImage}
             alt={data.title ?? "og-image"}
           />

@@ -18,7 +18,7 @@ export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
     <div className="flex w-full flex-col gap-5">
       <LocaleTabs />
       <TitleField id={id} />
-      <Disclosure className="border-border rounded-xl border">
+      <Disclosure className="border-border rounded-3xl border">
         <Disclosure.Heading>
           <Disclosure.Trigger className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium">
             Content settings

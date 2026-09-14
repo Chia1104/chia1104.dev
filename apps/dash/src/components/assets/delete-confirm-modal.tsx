@@ -28,7 +28,7 @@ export const DeleteConfirmModal = ({
               <Modal.Heading>Delete File</Modal.Heading>
             </Modal.Header>
             <Modal.Body>
-              <div className="flex items-start gap-3 rounded-lg bg-red-500/10 p-3">
+              <div className="flex items-start gap-3 rounded-2xl bg-red-500/10 p-3">
                 <AlertTriangle className="text-danger mt-0.5 size-5 shrink-0" />
                 <p className="text-sm">
                   Are you sure you want to delete{" "}

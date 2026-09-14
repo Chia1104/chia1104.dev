@@ -171,7 +171,7 @@ const PendingLessons = () => {
           items.map((lesson) => (
             <div
               key={lesson.id}
-              className="border-border flex flex-col gap-2 rounded-lg border p-3">
+              className="border-border flex flex-col gap-2 rounded-2xl border p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-medium">{lesson.title}</p>
                 {lesson.supersedesId !== null ? (
@@ -451,7 +451,7 @@ const MemoryEditor = ({
         <>
           <div className="flex flex-col gap-1">
             <span className="text-muted text-xs">Content</span>
-            <Card variant="tertiary" className="rounded-md p-3">
+            <Card variant="tertiary" className="rounded-2xl p-3">
               <Card.Content>
                 <Markdown text={memory.content} />
               </Card.Content>

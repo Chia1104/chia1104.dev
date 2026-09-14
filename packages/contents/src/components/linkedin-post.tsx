@@ -27,7 +27,7 @@ export const LinkedInPost = ({
   return (
     <figure
       className={cn("not-prose mx-auto my-6 w-full max-w-126", className)}>
-      <div className="border-border bg-surface overflow-hidden rounded-xl border">
+      <div className="border-border bg-surface overflow-hidden rounded-3xl border">
         <iframe
           src={`https://www.linkedin.com/embed/feed/update/${urn}${collapsed ? "?collapsed=1" : ""}`}
           title={title}

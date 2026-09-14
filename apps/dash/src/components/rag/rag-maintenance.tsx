@@ -142,7 +142,7 @@ const ConfirmActionModal = ({
               )}
 
               {action === "full" && (
-                <div className="flex items-start gap-3 rounded-lg bg-amber-500/10 p-3">
+                <div className="flex items-start gap-3 rounded-2xl bg-amber-500/10 p-3">
                   <AlertTriangleIcon className="text-warning mt-0.5 size-5 shrink-0" />
                   <p className="text-sm">
                     Every chunk is rewritten and re-embedded. Run this only

@@ -100,7 +100,7 @@ export const VideoPlayer = ({ src, poster, className }: VideoPlayerProps) => {
   return (
     <div
       ref={containerRef}
-      className={cn("group relative overflow-hidden rounded-lg", className)}
+      className={cn("group relative overflow-hidden rounded-3xl", className)}
       onMouseMove={revealControls}
       onMouseEnter={revealControls}
       onClick={handlePlayPause}>

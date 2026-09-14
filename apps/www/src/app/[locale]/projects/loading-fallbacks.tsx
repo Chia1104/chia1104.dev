@@ -4,7 +4,7 @@ const loadingCards = Array.from({ length: 4 }, (_, card) => `repo-${card}`);
 
 export const ContributionsChartFallback = () => (
   <div className="not-prose my-6 w-full animate-pulse">
-    <div className="c-bg-primary h-[130px] w-full rounded-xl" />
+    <div className="c-bg-primary h-[130px] w-full rounded-3xl" />
     <div className="mt-3 flex items-center justify-between">
       <span className="c-bg-primary h-3 w-24 rounded-full" />
       <span className="c-bg-primary h-3 w-32 rounded-full" />
@@ -14,7 +14,7 @@ export const ContributionsChartFallback = () => (
 
 export const LoadingCard = () => (
   <FeatureCard className="relative flex h-full min-h-[442px] flex-col gap-0 p-0">
-    <div className="c-bg-primary not-prose aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-t-2xl" />
+    <div className="c-bg-primary not-prose aspect-video w-full shrink-0 animate-pulse overflow-hidden rounded-t-3xl" />
     <div className="flex flex-1 flex-col p-4 pt-0">
       <div className="c-bg-primary mt-5 h-5 w-1/2 animate-pulse rounded-full" />
       <div className="c-bg-primary mt-2 h-4 w-1/4 animate-pulse rounded-full" />

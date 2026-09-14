@@ -140,7 +140,7 @@ const ChunkDetailDrawer = ({
 
               <div className="flex flex-col gap-1">
                 <span className="text-muted text-xs">Content</span>
-                <Card variant="tertiary" className="rounded-md p-2 text-xs">
+                <Card variant="tertiary" className="rounded-2xl p-2 text-xs">
                   <Card.Content>{data.chunk.content}</Card.Content>
                 </Card>
               </div>

@@ -135,7 +135,7 @@ export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
                   {t("loading")}
                 </div>
               ) : keys.isError ? (
-                <div className="bg-danger-soft flex items-center justify-between gap-3 rounded-xl p-3">
+                <div className="bg-danger-soft flex items-center justify-between gap-3 rounded-2xl p-3">
                   <p className="text-danger text-sm" role="alert">
                     {t("loadFailed")}
                   </p>
@@ -170,7 +170,7 @@ export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
                     key={id}
                     value={id}
                     aria-label={KEY_LABELS[id]}
-                    className="border-border data-[selected=true]:border-accent/60 data-[selected=true]:bg-accent-soft/40 min-w-0 rounded-lg border px-2 py-2">
+                    className="border-border data-[selected=true]:border-accent/60 data-[selected=true]:bg-accent-soft/40 min-w-0 rounded-2xl border px-2 py-2">
                     <Radio.Content className="flex w-full items-center justify-center gap-1.5">
                       <Radio.Control className="size-3 shrink-0">
                         <Radio.Indicator />

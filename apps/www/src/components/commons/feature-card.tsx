@@ -28,7 +28,7 @@ export const FeatureCard = ({
     }}>
     <Card
       className={cn(
-        "dark:border-dark w-full overflow-hidden rounded-2xl border bg-linear-to-b from-neutral-50/90 to-neutral-100/90 shadow-none transition duration-300 md:hover:border-transparent dark:from-neutral-950/90 dark:to-neutral-800/90",
+        "dark:border-dark w-full overflow-hidden rounded-3xl border bg-linear-to-b from-neutral-50/90 to-neutral-100/90 shadow-none transition duration-300 md:hover:border-transparent dark:from-neutral-950/90 dark:to-neutral-800/90",
         className,
         classNames?.card
       )}

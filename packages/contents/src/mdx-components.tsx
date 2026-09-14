@@ -47,7 +47,7 @@ export const FumadocsComponents =
       <ImageZoom wrapElement="span">
         <Image
           {...props}
-          className="h-auto w-full rounded-lg object-cover"
+          className="h-auto w-full rounded-3xl object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
         />
       </ImageZoom>
@@ -56,7 +56,7 @@ export const FumadocsComponents =
       <ImageZoom wrapElement="span">
         <Image
           {...props}
-          className="h-auto w-full rounded-lg object-cover"
+          className="h-auto w-full rounded-3xl object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
         />
       </ImageZoom>
@@ -83,12 +83,12 @@ export const FumadocsComponents =
 
 export const V1MDXComponents: MDXComponents = {
   ImageWrapper: (props: any) => (
-    <div className="relative w-full overflow-hidden rounded-lg">
+    <div className="relative w-full overflow-hidden rounded-3xl">
       {props.children}
     </div>
   ),
   ImageWrapperWithMaxWidth: (props: any) => (
-    <div className="relative w-full max-w-[250px] overflow-hidden rounded-lg">
+    <div className="relative w-full max-w-[250px] overflow-hidden rounded-3xl">
       {props.children}
     </div>
   ),

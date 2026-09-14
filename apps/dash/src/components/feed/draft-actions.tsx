@@ -441,7 +441,7 @@ export const DraftActions = ({
         {children}
       </div>
       {draft.feedId !== null ? (
-        <Disclosure className="border-border rounded-xl border">
+        <Disclosure className="border-border rounded-3xl border">
           <Disclosure.Heading>
             <Disclosure.Trigger className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium">
               Post settings

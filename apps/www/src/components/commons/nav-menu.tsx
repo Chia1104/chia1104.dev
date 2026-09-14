@@ -46,8 +46,7 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
           variant="tertiary"
           onClick={() => setOpen(true)}
           aria-label="CMD"
-          isIconOnly
-          className="rounded-xl">
+          isIconOnly>
           <div className="i-mdi-hamburger size-4" />
         </Button>
         <TooltipContent>

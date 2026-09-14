@@ -65,7 +65,7 @@ describe("ListItem Component", () => {
     );
 
     const link = container.querySelector("a");
-    expect(link).toHaveClass("rounded-md");
+    expect(link).toHaveClass("rounded-2xl");
     expect(link).toHaveClass("p-3");
   });
 });

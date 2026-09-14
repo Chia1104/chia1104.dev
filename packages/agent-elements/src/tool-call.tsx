@@ -63,7 +63,7 @@ const JsonBlock = ({ label, value }: { label: string; value: string }) => (
     <span className="text-muted text-[11px] tracking-wide uppercase">
       {label}
     </span>
-    <pre className="bg-surface-secondary text-foreground max-h-64 overflow-auto rounded-lg p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">
+    <pre className="bg-surface-secondary text-foreground max-h-64 overflow-auto rounded-2xl p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">
       {value}
     </pre>
   </div>
@@ -95,7 +95,7 @@ export const ToolCall = ({ className, renderers, tool }: ToolCallProps) => {
   const live = tool.status === "running" || tool.status === "awaiting_approval";
   return (
     <Disclosure
-      className={cn("bg-surface border-border rounded-xl border", className)}>
+      className={cn("bg-surface border-border rounded-3xl border", className)}>
       <Disclosure.Heading>
         <Disclosure.Trigger className="text-muted flex h-8 w-full items-center justify-start gap-2.5 px-3 text-left text-sm">
           <span className="grid size-4 shrink-0 place-items-center">

@@ -14,7 +14,7 @@ const GlobalError = withError(
             "c-bg-primary scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full",
         }}>
         <main className="main prose dark:prose-invert container">
-          <div className="c-bg-third relative flex min-h-[320px] w-full max-w-[700px] flex-col items-center justify-center overflow-hidden rounded-lg p-3 px-5">
+          <div className="c-bg-third relative flex min-h-[320px] w-full max-w-[700px] flex-col items-center justify-center overflow-hidden rounded-3xl p-3 px-5">
             <h3 className="my-2">
               Here looks a little boring, I'll prepare it for you soon
             </h3>

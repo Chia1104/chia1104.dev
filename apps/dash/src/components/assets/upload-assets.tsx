@@ -393,7 +393,7 @@ export function UploadAssets({
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     className={cn(
-                      "border-border rounded-lg border-2 border-dashed p-6 transition-colors",
+                      "border-border rounded-3xl border-2 border-dashed p-6 transition-colors",
                       isDragging
                         ? "border-accent bg-accent/5"
                         : "hover:border-accent/50"
@@ -460,7 +460,7 @@ export function UploadAssets({
                         <div
                           key={item.id}
                           className={cn(
-                            "border-border rounded-lg border p-3",
+                            "border-border rounded-2xl border p-3",
                             item.status === "error" &&
                               "border-danger/50 bg-danger/5"
                           )}>

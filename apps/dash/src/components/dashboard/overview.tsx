@@ -65,7 +65,7 @@ const TopUsers = ({ users }: { users: UsageWeek["topUsers"] }) => (
         users.map((user) => (
           <Link
             key={user.userId}
-            className="hover:bg-surface-secondary -mx-2 flex items-center gap-3 rounded-lg px-2 py-2"
+            className="hover:bg-surface-secondary -mx-2 flex items-center gap-3 rounded-2xl px-2 py-2"
             href={`/users?open=${user.userId}`}>
             <Avatar className="size-7">
               <Avatar.Image alt={user.name} src={user.image ?? undefined} />

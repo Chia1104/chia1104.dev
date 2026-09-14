@@ -69,7 +69,7 @@ export const NoiseBackground = ({
     <div
       {...props}
       className={cn(
-        "group relative overflow-hidden rounded-2xl",
+        "group relative overflow-hidden rounded-3xl",
         status === "ready"
           ? "bg-transparent"
           : "bg-neutral-200 dark:bg-neutral-900/90",

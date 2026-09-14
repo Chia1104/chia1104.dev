@@ -40,14 +40,34 @@
   --color-fd-card: var(--surface);
   --color-fd-card-foreground: var(--surface-foreground);
   --color-fd-border: var(--border);
-  --color-fd-primary: var(--accent);
-  --color-fd-primary-foreground: var(--accent-foreground);
-  --color-fd-secondary: var(--default);
-  --color-fd-secondary-foreground: var(--default-foreground);
+  /* Fumadocs sets text in primary (active tab, prop names); the pale light accent is unreadable there. */
+  --color-fd-primary: var(--foreground);
+  --color-fd-primary-foreground: var(--background);
+  /* Secondary fills nested panels (tabs, banner), not controls. */
+  --color-fd-secondary: var(--surface-secondary);
+  --color-fd-secondary-foreground: var(--surface-secondary-foreground);
   --color-fd-accent: var(--default);
   --color-fd-accent-foreground: var(--default-foreground);
   --color-fd-ring: var(--focus);
+  --color-fd-overlay: var(--backdrop);
   --color-fd-error: var(--danger);
+  --color-fd-warning: var(--warning);
+  --color-fd-success: var(--success);
+}
+
+/*
+ * Fumadocs panels (accordion, callout, card, code block, files, tabs, type table) round with fixed
+ * `rounded-md` to `rounded-2xl` utilities; in an article they take HeroUI's surface radius, and the
+ * rows and tab panels nested inside keep their smaller `rounded-xl`.
+ */
+.prose
+  :is(.bg-fd-card, .bg-fd-secondary):is(
+    .rounded-md,
+    .rounded-lg,
+    .rounded-xl,
+    .rounded-2xl
+  ).border {
+  border-radius: min(32px, var(--radius-3xl));
 }
 
 /*

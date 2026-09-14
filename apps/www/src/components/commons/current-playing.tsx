@@ -174,7 +174,7 @@ const AlbumImage = ({
     }
     src={data?.item.album.images[0]?.url ?? ""}
     alt={data?.item.album.name ?? ""}
-    className="m-0 size-20 rounded-lg bg-gray-400 object-cover"
+    className="m-0 size-20 rounded-2xl bg-gray-400 object-cover"
   />
 );
 

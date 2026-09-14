@@ -20,7 +20,7 @@ import { generateAIContentComplete } from "@/resources/ai.resource";
 
 const MEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
-  loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
+  loading: () => <Skeleton className="min-h-[700px] w-full rounded-3xl" />,
 });
 
 export interface EditorSelection {
@@ -197,7 +197,7 @@ export const MarkdownEditor = ({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden rounded-2xl shadow-lg",
+        "relative w-full overflow-hidden rounded-3xl shadow-lg",
         className
       )}>
       <div className="flex items-center justify-end border-b border-gray-200 bg-white px-3 py-2 dark:border-gray-700 dark:bg-[#1e1e1e]">

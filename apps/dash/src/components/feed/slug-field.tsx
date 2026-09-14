@@ -49,7 +49,7 @@ export const SlugField = memo(({ isBound }: { isBound: boolean }) => {
             />
             <InputGroup.Suffix>
               <Button
-                className="size-6.5 rounded-lg"
+                className="rounded-field size-6.5"
                 size="sm"
                 variant="secondary"
                 isIconOnly

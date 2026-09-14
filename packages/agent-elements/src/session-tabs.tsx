@@ -183,7 +183,7 @@ export const SessionTabs = ({
                 <Button
                   render={(props) => <span {...props} />}
                   key={session.id}
-                  className="group/tab h-7 w-40 shrink-0 items-center justify-between rounded-lg pr-0 pl-2 text-xs font-normal"
+                  className="group/tab h-7 w-40 shrink-0 items-center justify-between pr-0 pl-2 text-xs font-normal"
                   onPress={() => onSelect(session.id)}
                   size="sm"
                   variant={isActive ? "tertiary" : "ghost"}>

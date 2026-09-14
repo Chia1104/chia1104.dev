@@ -18,7 +18,7 @@ const ImageItem: FC<{
 }> = ({ src, alt, className }) => (
   <div
     className={cn(
-      "not-prose relative w-full overflow-hidden rounded-lg shadow-md",
+      "not-prose relative w-full overflow-hidden rounded-2xl shadow-md",
       className
     )}>
     <Image
@@ -86,7 +86,7 @@ const Item: FC<{
   data: ReturnType<typeof getTop4>[0];
 }> = ({ data }) => {
   return (
-    <div className="hover:dark:bg-dark/80 relative grid w-full grid-cols-3 items-center justify-center gap-3 rounded-lg transition-all hover:cursor-pointer hover:bg-white/80 hover:shadow-md">
+    <div className="hover:dark:bg-dark/80 relative grid w-full grid-cols-3 items-center justify-center gap-3 rounded-2xl transition-all hover:cursor-pointer hover:bg-white/80 hover:shadow-md">
       <span className="col-span-1">
         <ImageItem
           src={data.track.album.images[0]?.url ?? ""}
@@ -138,7 +138,7 @@ export async function SpotifyPlaylist() {
             "oklch(59.2% 0.249 0.584)",
           ],
         }}
-        className="page-sm:grid-cols-2 page-sm:py-3 grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg px-5 py-7">
+        className="page-sm:grid-cols-2 page-sm:py-3 grid w-full grid-cols-1 gap-2 overflow-hidden px-5 py-7">
         <div className="flex w-full items-center">
           <First data={data[0]} />
         </div>

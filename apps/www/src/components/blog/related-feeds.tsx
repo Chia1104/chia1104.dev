@@ -25,7 +25,7 @@ export function RelatedFeedsSkeleton() {
           <li key={item}>
             <Card
               variant="transparent"
-              className="relative isolate aspect-40/21 overflow-hidden rounded-xl p-0">
+              className="relative isolate aspect-40/21 overflow-hidden rounded-3xl p-0">
               <Skeleton className="absolute inset-0 rounded-none" />
               <Card.Header className="relative z-10 mt-auto w-full gap-2 p-4">
                 <Skeleton className="h-5 w-3/4 rounded-md" />
@@ -74,10 +74,10 @@ export async function RelatedFeeds({ locale, slug }: RelatedFeedsProps) {
             <li key={feed.id}>
               <Link
                 href={`/${type}/${feed.slug}`}
-                className="focus-visible:ring-focus group block h-full rounded-xl outline-none focus-visible:ring-2">
+                className="focus-visible:ring-focus group block h-full rounded-3xl outline-none focus-visible:ring-2">
                 <Card
                   variant="transparent"
-                  className="border-default relative isolate aspect-40/21 h-full overflow-hidden rounded-xl border p-0">
+                  className="border-default relative isolate aspect-40/21 h-full overflow-hidden rounded-3xl border p-0">
                   <RelatedFeedsImageBackground
                     locale={locale}
                     type={type}

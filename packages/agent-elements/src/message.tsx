@@ -140,7 +140,7 @@ export const UserMessage = ({
       </div>
     ) : null}
     <Expandable
-      className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-2 py-1.5 text-sm leading-6"
+      className="bg-surface-secondary text-foreground max-w-[85%] rounded-3xl rounded-br-md px-2 py-1.5 text-sm leading-6"
       maxHeight={USER_MESSAGE_MAX_HEIGHT}
       toggleClassName="-mb-1 justify-end pt-1">
       <div className="whitespace-pre-wrap">{text}</div>
@@ -187,7 +187,7 @@ const ThinkingBlock = ({
   const labels = useAgentLabels();
   return (
     <Disclosure
-      className="bg-surface border-border rounded-xl border"
+      className="bg-surface border-border rounded-3xl border"
       defaultExpanded={streaming}>
       <Disclosure.Heading>
         <Disclosure.Trigger className="text-muted flex h-8 w-full items-center justify-start gap-2 px-3 text-xs">

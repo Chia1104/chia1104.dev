@@ -86,7 +86,7 @@ const ApplyStateChip = ({ draft }: { draft: AgentDraft }) => {
 const ContentPreview = ({ content }: { content: string | null }) => {
   if (!content)
     return (
-      <p className="border-border text-muted rounded-xl border border-dashed p-4 text-sm">
+      <p className="border-border text-muted rounded-2xl border border-dashed p-4 text-sm">
         No body yet. Ask the agent to write one, or open the draft in the
         editor.
       </p>
@@ -95,7 +95,7 @@ const ContentPreview = ({ content }: { content: string | null }) => {
   return (
     <div className="relative">
       <Expandable
-        className="bg-surface-secondary rounded-xl p-4 text-sm leading-6"
+        className="bg-surface-secondary rounded-2xl p-4 text-sm leading-6"
         maxHeight={CONTENT_MAX_HEIGHT}
         toggleClassName="-mr-2 -mb-1 justify-end pt-1">
         {/* Only the body clears the copy button; the toggle below it lines up with that button's edge. */}
@@ -189,7 +189,7 @@ const DraftBody = ({ draft }: { draft: AgentDraft }) => {
       </Card>
 
       {translations.length === 0 ? (
-        <p className="border-border text-muted rounded-xl border border-dashed p-4 text-sm">
+        <p className="border-border text-muted rounded-2xl border border-dashed p-4 text-sm">
           No locale has been written yet.
         </p>
       ) : (

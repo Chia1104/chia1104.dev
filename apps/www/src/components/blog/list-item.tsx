@@ -15,7 +15,7 @@ const ListItem = ({
     <li>
       <Link
         className={cn(
-          "hover:bg-default hover:text-default-foreground focus:bg-default focus:text-default-foreground block space-y-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none",
+          "hover:bg-default hover:text-default-foreground focus:bg-default focus:text-default-foreground block space-y-1 rounded-2xl p-3 leading-none no-underline transition-colors outline-none select-none",
           className
         )}
         {...props}>

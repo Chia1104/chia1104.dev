@@ -97,7 +97,7 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
                 return (
                   <li key={feed.id} className="row-span-3">
                     <Link
-                      className="from-default/50 to-default text-default-foreground flex size-full flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-none select-none focus:shadow-md"
+                      className="from-default/50 to-default text-default-foreground flex size-full flex-col justify-end rounded-2xl bg-linear-to-b p-6 no-underline outline-none select-none focus:shadow-md"
                       href={`${getLinkPrefix()}/${feed.slug}`}>
                       <div className="mt-4 mb-2 line-clamp-2 text-base font-semibold">
                         {feed.translations[0]?.title}

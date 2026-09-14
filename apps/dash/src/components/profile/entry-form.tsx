@@ -392,7 +392,7 @@ const ContentEditor = ({
             </Button>
           </div>
           {preview ? (
-            <Card variant="tertiary" className="rounded-md p-3">
+            <Card variant="tertiary" className="rounded-2xl p-3">
               <Card.Content>
                 <Markdown text={field.value || "*Nothing yet*"} />
               </Card.Content>

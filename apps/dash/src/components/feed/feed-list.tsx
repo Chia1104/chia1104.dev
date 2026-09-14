@@ -92,7 +92,7 @@ const FeedItem = memo(
           </Tooltip>
         </Card.Header>
         <Card.Content>
-          <div className="flex flex-col gap-1.5 rounded-lg border border-dashed p-2.5">
+          <div className="flex flex-col gap-1.5 rounded-2xl border border-dashed p-2.5">
             {SUPPORTED_LOCALES_META.map(({ key, label }) => {
               const t = translationsByLocale[key];
               const isDefault = key === feed.defaultLocale;
