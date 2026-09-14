@@ -8,6 +8,10 @@
     "./node": {
       "types": "./src/node.ts",
       "default": "./src/node.ts"
+    },
+    "./nitro": {
+      "types": "./src/nitro.ts",
+      "default": "./src/nitro.ts"
     }
   },
   "scripts": {
@@ -18,6 +22,7 @@
   },
   "dependencies": {
     "@opentelemetry/api": "catalog:otel",
+    "@opentelemetry/instrumentation": "catalog:otel",
     "@opentelemetry/instrumentation-http": "catalog:otel",
     "@opentelemetry/instrumentation-pg": "catalog:otel",
     "@opentelemetry/instrumentation-redis": "catalog:otel",
@@ -26,6 +31,7 @@
     "@opentelemetry/resources": "catalog:otel",
     "@opentelemetry/sdk-node": "catalog:otel",
     "@opentelemetry/semantic-conventions": "catalog:otel",
+    "@orpc/opentelemetry": "catalog:orpc",
     "@t3-oss/env-core": "catalog:env",
     "import-in-the-middle": "catalog:otel",
     "zod": "catalog:"
@@ -33,6 +39,7 @@
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
+    "nitro": "catalog:nitro",
     "typescript": "catalog:"
   }
 }

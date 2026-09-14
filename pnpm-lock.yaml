@@ -302,6 +302,9 @@ catalogs:
     '@hono/mcp':
       specifier: 0.3.2
       version: 0.3.2
+    '@hono/otel':
+      specifier: 1.1.2
+      version: 1.1.2
     '@hono/react-renderer':
       specifier: 1.0.1
       version: 1.0.1
@@ -373,6 +376,9 @@ catalogs:
     '@orpc/contract':
       specifier: 2.0.0-beta.32
       version: 2.0.0-beta.32
+    '@orpc/opentelemetry':
+      specifier: 2.0.0-beta.32
+      version: 2.0.0-beta.32
     '@orpc/server':
       specifier: 2.0.0-beta.32
       version: 2.0.0-beta.32
@@ -383,6 +389,9 @@ catalogs:
     '@opentelemetry/api':
       specifier: 1.9.1
       version: 1.9.1
+    '@opentelemetry/instrumentation':
+      specifier: 0.222.0
+      version: 0.222.0
     '@opentelemetry/instrumentation-http':
       specifier: 0.222.0
       version: 0.222.0
@@ -1214,6 +1223,9 @@ importers:
       '@chia/integrations':
         specifier: workspace:*
         version: link:../../packages/integrations
+      '@chia/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@chia/service-kit':
         specifier: workspace:*
         version: link:../../packages/service-kit
@@ -2275,6 +2287,9 @@ importers:
       '@opentelemetry/api':
         specifier: catalog:otel
         version: 1.9.1
+      '@opentelemetry/instrumentation':
+        specifier: catalog:otel
+        version: 0.222.0(@opentelemetry/api@1.9.1)(supports-color@10.2.2)
       '@opentelemetry/instrumentation-http':
         specifier: catalog:otel
         version: 0.222.0(@opentelemetry/api@1.9.1)(supports-color@10.2.2)
@@ -2299,6 +2314,9 @@ importers:
       '@opentelemetry/semantic-conventions':
         specifier: catalog:otel
         version: 1.43.0
+      '@orpc/opentelemetry':
+        specifier: catalog:orpc
+        version: 2.0.0-beta.32(@opentelemetry/api@1.9.1)(@opentelemetry/instrumentation@0.222.0(@opentelemetry/api@1.9.1)(supports-color@10.2.2))
       '@t3-oss/env-core':
         specifier: catalog:env
         version: 0.13.11(typescript@7.0.2)(zod@4.5.4)
@@ -2315,6 +2333,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.4.1
+      nitro:
+        specifier: catalog:nitro
+        version: 3.0.260903-beta
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -2333,9 +2354,15 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
+      '@hono/otel':
+        specifier: catalog:hono
+        version: 1.1.2(hono@4.13.5)
       '@hono/sentry':
         specifier: catalog:hono
         version: 1.2.2(hono@4.13.5)
+      '@opentelemetry/api':
+        specifier: catalog:otel
+        version: 1.9.1
       '@orpc/server':
         specifier: catalog:orpc
         version: 2.0.0-beta.32(@opentelemetry/api@1.9.1)(crossws@0.4.12)
@@ -3968,6 +3995,11 @@ packages:
     peerDependencies:
       hono: ^4
 
+  '@hono/otel@1.1.2':
+    resolution: {integrity: sha512-UaBMKPGaQTj4sjvpGqQ+57eolTwMI2znzxV/QBUF99XxhcmqtqaZX95flXpGgWb+lnlinlCy23Y1sZ8+TzzM9A==}
+    peerDependencies:
+      hono: '>=4.0.0'
+
   '@hono/react-renderer@1.0.1':
     resolution: {integrity: sha512-vjQ/70hVrbgsi2O44N7w5sO0v51lRcuXau/4caVzw0A1hje+U2zAnuhiBC3JhX56gGfhGT4kO5B0di4SROx0Lg==}
     engines: {node: '>=18'}
@@ -5239,6 +5271,12 @@ packages:
         optional: true
       swagger-ui:
         optional: true
+
+  '@orpc/opentelemetry@2.0.0-beta.32':
+    resolution: {integrity: sha512-D0hyWihYzZ8Y5OMHiGCU144L3B7aw6ry9d4O1crWlupKHHrs5KQbJBxxdoIXLldyMzR2JQnQa1pRa83QzG1mYw==}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.9.0'
+      '@opentelemetry/instrumentation': '>=0.203.0'
 
   '@orpc/server@2.0.0-beta.32':
     resolution: {integrity: sha512-CUgzQUigBQc1tj3/Kc9A7Lh96bebsSlPizaZrrXN3OYBuRowQiCym+5lauz3nDaLXAjTz98kHI9lujGoGaNJtQ==}
@@ -15309,6 +15347,12 @@ snapshots:
     dependencies:
       hono: 4.13.5
 
+  '@hono/otel@1.1.2(hono@4.13.5)':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/semantic-conventions': 1.43.0
+      hono: 4.13.5
+
   '@hono/react-renderer@1.0.1(hono@4.13.5)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
       hono: 4.13.5
@@ -16568,6 +16612,12 @@ snapshots:
       - '@opentelemetry/api'
       - crossws
       - fastify
+
+  '@orpc/opentelemetry@2.0.0-beta.32(@opentelemetry/api@1.9.1)(@opentelemetry/instrumentation@0.222.0(@opentelemetry/api@1.9.1)(supports-color@10.2.2))':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/instrumentation': 0.222.0(@opentelemetry/api@1.9.1)(supports-color@10.2.2)
+      '@orpc/shared': 2.0.0-beta.32(@opentelemetry/api@1.9.1)
 
   '@orpc/server@2.0.0-beta.32(@opentelemetry/api@1.9.1)(crossws@0.4.12)':
     dependencies:

@@ -103,6 +103,7 @@ catalogs:
     "@hono/react-renderer": 1.0.1
     "@hono/sentry": 1.2.2
     "@hono/mcp": 0.3.2
+    "@hono/otel": 1.1.2
     "@hono/zod-validator": 0.9.1
     hono: 4.13.5
   kv:
@@ -128,10 +129,12 @@ catalogs:
   orpc:
     "@orpc/client": 2.0.0-beta.32
     "@orpc/contract": 2.0.0-beta.32
+    "@orpc/opentelemetry": 2.0.0-beta.32
     "@orpc/server": 2.0.0-beta.32
     "@orpc/tanstack-query": 2.0.0-beta.32
   otel:
     "@opentelemetry/api": 1.9.1
+    "@opentelemetry/instrumentation": 0.222.0
     "@opentelemetry/instrumentation-http": 0.222.0
     "@opentelemetry/instrumentation-pg": 0.74.0
     "@opentelemetry/instrumentation-redis": 0.70.0
