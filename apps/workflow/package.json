@@ -21,6 +21,7 @@
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/integrations": "workspace:*",
+    "@chia/observability": "workspace:*",
     "@chia/service-kit": "workspace:*",
     "@chia/services": "workspace:*",
     "@chia/utils": "workspace:*",

@@ -1,6 +1,6 @@
-import { fileURLToPath } from "node:url";
-
 import { defineConfig } from "nitro";
+
+import { telemetryEntry } from "@chia/observability/nitro";
 
 export default defineConfig({
   serverDir: "src",
@@ -31,15 +31,5 @@ export default defineConfig({
     "@better-auth/passkey",
   ],
   noPublicDir: true,
-  hooks: {
-    // `server.entry.ts` starts telemetry, then imports the preset entry dynamically so the
-    // externals it loads (`pg`, `@redis/client`) resolve after the loader hook is registered.
-    "build:before"(nitro) {
-      if (nitro.options.dev) return;
-      nitro.options.alias["#service/preset-entry"] = nitro.options.entry;
-      nitro.options.entry = fileURLToPath(
-        new URL("./server.entry.ts", import.meta.url)
-      );
-    },
-  },
+  hooks: telemetryEntry(new URL("./server.entry.ts", import.meta.url)),
 });

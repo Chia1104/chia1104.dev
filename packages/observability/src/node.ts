@@ -12,6 +12,7 @@ import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
+import { ORPCInstrumentation } from "@orpc/opentelemetry";
 import { register } from "import-in-the-middle/register-hooks.mjs";
 
 import { env } from "./env";
@@ -45,11 +46,15 @@ export const startTelemetry = ({ serviceName }: StartTelemetryOptions) => {
       })
     ),
     instrumentations: [
-      new HttpInstrumentation(),
+      // Server spans come from `bootstrap()`'s Hono middleware, which names them by route.
+      // Not `ignoreIncomingRequestHook`: an ignored request suppresses every span under it.
+      new HttpInstrumentation({ disableIncomingRequestInstrumentation: true }),
       new UndiciInstrumentation(),
-      new PgInstrumentation(),
-      new RedisInstrumentation(),
+      // Without a parent these are job polling and LISTEN connections, not request work.
+      new PgInstrumentation({ requireParentSpan: true }),
+      new RedisInstrumentation({ requireParentSpan: true }),
       new RuntimeNodeInstrumentation(),
+      new ORPCInstrumentation({ propagationEnabled: false }),
     ],
   });
   sdk.start();

@@ -78,7 +78,7 @@ Multi-replica support requires, in order:
 
 - Keep `numReplicas: 1` in `infra/railway/workflow.json`. Brief overlap during deployment is tolerated; steady-state overlap is not.
 - When migrating from an embedded runner, first deploy `service` without `workflow/nitro`, then start `apps/workflow`. The event log and queued jobs remain in Postgres during the gap.
-- The Nitro plugin calls `world.start()` and closes the World on the Nitro `close` hook. Give the container enough termination grace for in-flight steps.
+- The Nitro plugin creates the Postgres World directly, registers it with `setWorld()` and calls `world.start()` at boot. Without `setWorld()` the runtime builds a second World whose queue starts inside the first request. Give the container enough termination grace for in-flight steps.
 - Worker concurrency is per process. Keep the workflow pool at least `concurrency + 2`, and include it in the database connection budget.
 
 ## 5. Local development

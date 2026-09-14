@@ -1,4 +1,6 @@
+import { httpInstrumentationMiddleware } from "@hono/otel";
 import { sentry } from "@hono/sentry";
+import { trace } from "@opentelemetry/api";
 import type { Env, Hono, Schema } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
@@ -39,7 +41,7 @@ export interface BootstrapOptions {
   maxBodySize?: number;
 }
 
-/** Shared middleware: request id, logging, Sentry, errors, body cap, CORS, maintenance. */
+/** Shared middleware: server span, request id, logging, Sentry, errors, body cap, CORS, maintenance. */
 export const bootstrap = <
   TEnv extends Env,
   TSchema extends Schema,
@@ -48,7 +50,13 @@ export const bootstrap = <
   app: TApp,
   options?: BootstrapOptions
 ) => {
+  // Server span first, so everything after it (the error handler included) runs inside it.
+  app.use(httpInstrumentationMiddleware());
   app.use(requestId());
+  app.use(async (c, next) => {
+    trace.getActiveSpan()?.setAttribute("request.id", c.get("requestId"));
+    await next();
+  });
 
   if (options?.logger !== false) {
     app.use(logger());
