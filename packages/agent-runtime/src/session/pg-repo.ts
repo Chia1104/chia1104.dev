@@ -101,10 +101,8 @@ export class PgSessionRepo {
     });
   }
 
-  async open(
-    metadata: Pick<PgSessionMetadata, "id">
-  ): Promise<PgSessionStorage> {
-    const { session } = await this.load(metadata.id);
+  async open(sessionId: string): Promise<PgSessionStorage> {
+    const { session } = await this.load(sessionId);
     return session;
   }
 
@@ -128,13 +126,7 @@ export class PgSessionRepo {
     return { row, session };
   }
 
-  /** Opens by id: what the transport actually holds, without a metadata round-trip. */
-  openById(sessionId: string): Promise<PgSessionStorage> {
-    return this.open({ id: sessionId });
-  }
-
-  async list(options?: PgSessionListOptions): Promise<PgSessionMetadata[]> {
-    if (!options) return [];
+  async list(options: PgSessionListOptions): Promise<PgSessionMetadata[]> {
     const rows = await getAgentSessions(this.db, {
       ...options,
       kind: this.options.kind,

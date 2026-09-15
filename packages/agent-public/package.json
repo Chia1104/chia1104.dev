@@ -5,10 +5,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./types": {
-      "types": "./src/types.ts",
-      "default": "./src/types.ts"
-    },
     "./models": {
       "types": "./src/models.ts",
       "default": "./src/models.ts"
@@ -28,10 +24,6 @@
     "./prompts/system": {
       "types": "./src/prompts/system.ts",
       "default": "./src/prompts/system.ts"
-    },
-    "./tools/tool-set": {
-      "types": "./src/tools/tool-set.ts",
-      "default": "./src/tools/tool-set.ts"
     },
     "./tools/registry": {
       "types": "./src/tools/registry.ts",

@@ -1,19 +1,22 @@
 import { formatSkillInvocation } from "@earendil-works/pi-agent-core";
+import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 
-import { writingSkills } from "../prompts/skills.ts";
-import type { WritingTool } from "../types.ts";
+import { bindTool } from "@chia/agent-runtime/tools";
+import type { ToolSpec } from "@chia/agent-runtime/tools";
 
-import { TOOL_NAMES, labelOf } from "./registry.ts";
-import { Type, defineTool, textResult } from "./schema.ts";
+import { writingSkills } from "../prompts/skills.ts";
+
+import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
+import { Type, textResult } from "./schema.ts";
 
 /**
  * The only path from the skills index to a skill's full text. Pi's file-reading convention
  * has no tool here; going through a tool also records which rules were loaded.
  */
-export const readSkillTool = defineTool({
+export const readSkillSpec = {
   name: TOOL_NAMES.readSkill,
-  label: labelOf(TOOL_NAMES.readSkill),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.readSkill].label,
   description:
     "Load the full instructions of a skill listed in the system prompt. Read the matching skills " +
     "before writing a body or metadata — `mdx-authoring` for any body, the locale's tone skill " +
@@ -25,7 +28,10 @@ export const readSkillTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  execute(_toolCallId, params) {
+} satisfies ToolSpec;
+
+export const readSkillTool = (): AgentTool =>
+  bindTool(readSkillSpec, (_toolCallId, params) => {
     const skill = writingSkills.find(
       (candidate) => candidate.name === params.name
     );
@@ -37,7 +43,4 @@ export const readSkillTool = defineTool({
     return Promise.resolve(
       textResult(formatSkillInvocation(skill), { name: skill.name })
     );
-  },
-});
-
-export const skillTools: WritingTool[] = [readSkillTool];
+  });

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { getPostTool } from "../src/tools/read.tool.ts";
+import { getPostSpec, getPostTool } from "../src/tools/read.tool.ts";
 import type { ContentReadPort } from "../src/types.ts";
 
 const createContent = (): ContentReadPort => ({
@@ -12,13 +12,13 @@ const createContent = (): ContentReadPort => ({
 
 describe("getPostTool", () => {
   it("requires only a slug in the model-facing schema", () => {
-    expect(getPostTool.parameters).toMatchObject({
+    expect(getPostSpec.parameters).toMatchObject({
       properties: {
         slug: { minLength: 1 },
       },
       required: ["slug"],
     });
-    expect(getPostTool.parameters.properties).not.toHaveProperty("feedId");
+    expect(getPostSpec.parameters.properties).not.toHaveProperty("feedId");
   });
 
   it("ignores an extra feedId and looks up the supplied slug", async () => {
@@ -26,9 +26,9 @@ describe("getPostTool", () => {
     const providerArguments = { slug: "correct-slug", feedId: 1 };
 
     await expect(
-      getPostTool.execute("call-1", providerArguments, undefined, undefined, {
+      getPostTool({
         content,
-      })
+      }).execute("call-1", providerArguments)
     ).rejects.toThrow('No post found for slug "correct-slug".');
     expect(content.getPost).toHaveBeenCalledWith({
       slug: "correct-slug",

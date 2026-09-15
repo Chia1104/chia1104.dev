@@ -440,22 +440,6 @@ export const getAgentSessionEntry = async (
   return row;
 };
 
-export const getAgentSessionEntriesByType = async (
-  db: DB,
-  sessionId: string,
-  type: string
-) =>
-  await db
-    .select()
-    .from(agentSessionEntries)
-    .where(
-      and(
-        eq(agentSessionEntries.sessionId, sessionId),
-        eq(agentSessionEntries.type, type)
-      )
-    )
-    .orderBy(asc(agentSessionEntries.seq));
-
 /** Every entry, all branches, in `seq` order. */
 export const getAgentSessionEntries = async (db: DB, sessionId: string) =>
   await db

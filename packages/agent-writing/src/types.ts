@@ -2,7 +2,6 @@ import type {
   ContentToolContext,
   PostFeedType,
 } from "@chia/agent-content/types";
-import type { AgentTool } from "@chia/agent-runtime/types";
 import type {
   AgentMemoryKind,
   AgentMemoryStatus,
@@ -50,8 +49,6 @@ export interface WritingToolContext extends ContentToolContext {
    */
   approvedDraftRevisions: ReadonlyMap<string, number>;
 }
-
-export type WritingTool = AgentTool<WritingToolContext>;
 
 /** Per-locale draft fields. Mirrors `feed_draft_translation`; `undefined` leaves a field alone, `null` clears it. */
 export interface DraftTranslation {

@@ -146,8 +146,7 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
   };
 
   const replayOptions = {
-    tierOf: definition.policy.tierOf,
-    labelOf: definition.policy.labelOf,
+    toolInfo: definition.policy.toolInfo,
     summarize: definition.policy.summarize,
   };
 
@@ -156,7 +155,7 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     if (!row) return null;
 
     const db = caller.context.db;
-    const session = await repoFor(db).openById(sessionId);
+    const session = await repoFor(db).open(sessionId);
 
     // A lock transaction uses one connection, so these reads stay sequential.
     const entries = await session.getEntries();

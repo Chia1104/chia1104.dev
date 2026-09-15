@@ -119,7 +119,7 @@ export const createAgentMaintenanceOperations = <
     signal: AbortSignal
   ) => {
     const db = caller.context.db;
-    const session = await sessions.repoFor(db).openById(row.id);
+    const session = await sessions.repoFor(db).open(row.id);
     const settings = sessions.settingsOf(row);
     const credentials = host.credentials.decrypt(
       host.credentials.read(caller.context.headers)
@@ -216,7 +216,6 @@ export const createAgentMaintenanceOperations = <
           await requireEntry(maintenance.session, input.entryId);
           const result = await maintenance.navigate(input.entryId, {
             summarize: input.summarize,
-            label: input.label,
           });
           if (result.cancelled) throw maintenanceTimedOut("rewind");
           return sessions.detailFor(caller, input.sessionId);
@@ -233,7 +232,7 @@ export const createAgentMaintenanceOperations = <
           const position = input.position ?? "before";
           if (input.entryId) {
             const target = await requireEntry(
-              await repo.openById(row.id),
+              await repo.open(row.id),
               input.entryId
             );
             if (

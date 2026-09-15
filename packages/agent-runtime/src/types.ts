@@ -1,13 +1,9 @@
 import type {
-  AgentTool as PiAgentTool,
-  AgentToolResult,
-  AgentToolUpdateCallback,
   PromptTemplate,
   Skill,
   ThinkingLevel,
 } from "@earendil-works/pi-agent-core";
 import type { Usage } from "@earendil-works/pi-ai";
-import type { Static, TSchema } from "typebox";
 
 import type { OperatorDecision } from "./wire/operator-decision.ts";
 import type { AgentAttachment } from "./wire/schema.ts";
@@ -19,47 +15,30 @@ export type ToolTier = string;
 /** Discriminates rows in `agent.session`, and selects the host service for a kind. */
 export type AgentKind = string;
 
+/** What the host and clients know about a tool without binding it to a turn. */
+export interface AgentToolInfo {
+  label: string;
+  tier: ToolTier;
+  /** The kind state a successful call changes; announced to clients as `state:changed`. */
+  changes?: string;
+}
+
 export interface AgentPolicy {
-  tierOf: (toolName: string) => ToolTier;
-  labelOf: (toolName: string) => string;
+  /** Resolves unknown names too, to the kind's most restrictive tier. */
+  toolInfo: (toolName: string) => AgentToolInfo;
   requiresApproval: (tier: ToolTier) => boolean;
-  changesState?: (tier: ToolTier) => boolean;
   summarize: <TResult>(
     toolName: string,
     result: TResult,
     isError: boolean
   ) => string;
-  stateScope?: string;
 }
 
 /** Presentation policy shared by live Pi events and persisted transcript replay. */
-export interface AgentEventPresentation {
-  tierOf: (toolName: string) => ToolTier;
-  labelOf: (toolName: string) => string;
-  summarize: <TResult>(
-    toolName: string,
-    result: TResult,
-    isError: boolean
-  ) => string;
-}
-
-/**
- * A Pi tool whose `execute` also receives the turn's context.
- * Bound to Pi's four-argument shape by `bindToolContext` before a turn runs.
- */
-export type AgentTool<
-  TContext extends object,
-  TParameters extends TSchema = TSchema,
-  TDetails = unknown,
-> = Omit<PiAgentTool<TParameters, TDetails>, "execute"> & {
-  execute(
-    toolCallId: string,
-    params: Static<TParameters>,
-    signal: AbortSignal | undefined,
-    onUpdate: AgentToolUpdateCallback<TDetails> | undefined,
-    context: TContext
-  ): Promise<AgentToolResult<TDetails>>;
-};
+export type AgentEventPresentation = Pick<
+  AgentPolicy,
+  "toolInfo" | "summarize"
+>;
 
 /** A tool call as the turn's hooks see it before execution. */
 export interface ToolCallRequest {
@@ -67,6 +46,16 @@ export interface ToolCallRequest {
   toolName: string;
   /** Validated arguments. */
   input: unknown;
+}
+
+/** A gated call the turn stopped on, waiting for the operator. */
+export interface ApprovalRequest {
+  toolCallId: string;
+  toolName: string;
+  tier: ToolTier;
+  args: unknown;
+  /** What an approval of this request is good for; see `PiToolCallGateOptions.approvalKeyOf`. */
+  key: string;
 }
 
 /** Refuses a call. The reason returns to the model as the tool's error result. */
@@ -100,7 +89,6 @@ export interface AgentCompactionResult {
 
 export interface AgentNavigationOptions {
   summarize?: boolean;
-  label?: string;
 }
 
 export interface AgentNavigationResult {
@@ -161,12 +149,11 @@ export interface AgentTurnBudget {
   maxDurationMs: number;
 }
 
-export interface AgentTurnExecution<TApproval> {
-  status: "done" | "awaiting_approval" | "aborted" | "error";
-  /** The one gated call the turn stopped on; set exactly when `status` is `awaiting_approval`. */
-  approval?: TApproval;
-  error?: AgentTurnError;
-}
+export type AgentTurnExecution =
+  | { status: "done" }
+  | { status: "aborted" }
+  | { status: "awaiting_approval"; approval: ApprovalRequest }
+  | { status: "error"; error: AgentTurnError };
 
 export type AgentUsageSource = "turn" | "compaction" | "branch_summary";
 

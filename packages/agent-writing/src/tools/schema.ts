@@ -1,6 +1,4 @@
-import { Type, toolDefiner } from "@chia/agent-runtime/tools";
-
-import type { WritingToolContext } from "../types.ts";
+import { Type } from "@chia/agent-runtime/tools";
 
 export {
   LocaleSchema,
@@ -9,9 +7,6 @@ export {
   textResult,
   truncate,
 } from "@chia/agent-runtime/tools";
-
-/** Pins the writing context so `execute` keeps its argument types. */
-export const defineTool = toolDefiner<WritingToolContext>();
 
 export const DraftIdSchema = Type.Integer({
   description:

@@ -1,17 +1,19 @@
+import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 
 import {
+  bindTool,
   LocaleSchema,
   Type,
   jsonBlock,
   textResult,
-  toolDefiner,
 } from "@chia/agent-runtime/tools";
+import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 
-import type { ContentTool, ContentToolContext } from "../types.ts";
+import type { ContentToolContext } from "../types.ts";
 
-import { CONTENT_TOOL_NAMES, CONTENT_TOOL_LABEL_BY_NAME } from "./registry.ts";
+import { CONTENT_TOOL_INFO_BY_NAME, CONTENT_TOOL_NAMES } from "./registry.ts";
 
 /**
  * Read-only content tools. All `executionMode: "parallel"`: they have no side effects.
@@ -19,17 +21,15 @@ import { CONTENT_TOOL_NAMES, CONTENT_TOOL_LABEL_BY_NAME } from "./registry.ts";
  * prompt.
  */
 
-const defineTool = toolDefiner<ContentToolContext>();
-
 /**
  * Token budget for one `get_post` call, shared across the post's locales. Tokens rather than
  * characters: the same character count is ~3x the tokens in Chinese as in English.
  */
 const POST_BODY_TOKEN_BUDGET = 12_000;
 
-export const searchPostsTool = defineTool({
+export const searchPostsSpec = {
   name: CONTENT_TOOL_NAMES.searchPosts,
-  label: CONTENT_TOOL_LABEL_BY_NAME[CONTENT_TOOL_NAMES.searchPosts],
+  label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.searchPosts].label,
   description:
     "Search posts. `semantic` matches on meaning (best for topics); `keyword` matches " +
     "on literal terms (best for names, APIs, error messages). Each hit's `headingPath` names the " +
@@ -63,7 +63,10 @@ export const searchPostsTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const searchPostsTool = (context: ContentToolContext): AgentTool =>
+  bindTool(searchPostsSpec, async (_toolCallId, params) => {
     const hits = await context.content.searchPosts({
       keyword: params.keyword,
       locale: params.locale,
@@ -79,12 +82,11 @@ export const searchPostsTool = defineTool({
       `${hits.length} matching post(s):\n\n${jsonBlock(hits)}`,
       { hits }
     );
-  },
-});
+  });
 
-export const getPostTool = defineTool({
+export const getPostSpec = {
   name: CONTENT_TOOL_NAMES.getPost,
-  label: CONTENT_TOOL_LABEL_BY_NAME[CONTENT_TOOL_NAMES.getPost],
+  label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.getPost].label,
   description:
     "Read one post in full, including every locale's metadata and MDX body. Pass the `slug` " +
     "returned by `search_posts` or `list_posts`. Long bodies degrade to their matched sections " +
@@ -108,7 +110,10 @@ export const getPostTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const getPostTool = (context: ContentToolContext): AgentTool =>
+  bindTool(getPostSpec, async (_toolCallId, params) => {
     const post = await context.content.getPost({
       slug: params.slug,
       locale: params.locale,
@@ -156,12 +161,11 @@ export const getPostTool = defineTool({
       )}`,
       { post: { ...post, translations }, contextTokens: context_.totalTokens }
     );
-  },
-});
+  });
 
-export const listPostsTool = defineTool({
+export const listPostsSpec = {
   name: CONTENT_TOOL_NAMES.listPosts,
-  label: CONTENT_TOOL_LABEL_BY_NAME[CONTENT_TOOL_NAMES.listPosts],
+  label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.listPosts].label,
   description:
     "List recent posts, newest first. Each carries the `url` of its page; link with it as given.",
   parameters: Type.Object({
@@ -181,7 +185,10 @@ export const listPostsTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const listPostsTool = (context: ContentToolContext): AgentTool =>
+  bindTool(listPostsSpec, async (_toolCallId, params) => {
     const posts = await context.content.listPosts({
       limit: params.limit ?? 20,
       published: params.published,
@@ -189,24 +196,35 @@ export const listPostsTool = defineTool({
     return textResult(`${posts.length} post(s):\n\n${jsonBlock(posts)}`, {
       posts,
     });
-  },
-});
+  });
 
-export const listTagsTool = defineTool({
+export const listTagsSpec = {
   name: CONTENT_TOOL_NAMES.listTags,
-  label: CONTENT_TOOL_LABEL_BY_NAME[CONTENT_TOOL_NAMES.listTags],
+  label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.listTags].label,
   description: "List every tag with its localised names.",
   parameters: Type.Object({}),
   executionMode: "parallel",
-  async execute(_toolCallId, _params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const listTagsTool = (context: ContentToolContext): AgentTool =>
+  bindTool(listTagsSpec, async () => {
     const tags = await context.content.listTags();
     return textResult(`${tags.length} tag(s):\n\n${jsonBlock(tags)}`, { tags });
-  },
-});
+  });
 
-export const contentReadTools: ContentTool[] = [
-  searchPostsTool,
-  getPostTool,
-  listPostsTool,
-  listTagsTool,
+/** In the order {@link createContentReadTools} builds them. */
+export const contentReadToolSpecs: ToolSpec[] = [
+  searchPostsSpec,
+  getPostSpec,
+  listPostsSpec,
+  listTagsSpec,
+];
+
+export const createContentReadTools = (
+  context: ContentToolContext
+): AgentTool[] => [
+  searchPostsTool(context),
+  getPostTool(context),
+  listPostsTool(context),
+  listTagsTool(context),
 ];

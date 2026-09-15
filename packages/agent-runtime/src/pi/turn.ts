@@ -4,8 +4,10 @@ import {
 } from "@earendil-works/pi-agent-core";
 import type {
   AgentMessage,
+  AgentTool,
   PromptTemplate,
 } from "@earendil-works/pi-agent-core";
+import { uuidv7 } from "@earendil-works/pi-ai";
 import type {
   Api,
   AssistantMessage,
@@ -21,13 +23,11 @@ import type { JsonValue } from "@chia/utils/json";
 import { buildBranchContext } from "../session/context.ts";
 import type { MessageEntry, NewSessionEntry } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";
-import { traceAgentTurn } from "../telemetry.ts";
-import { bindToolContext, resolveToolContext } from "../tools.ts";
-import type { ToolContextSource } from "../tools.ts";
+import { traceAgentTurn, traceToolCall } from "../telemetry.ts";
 import type {
   AgentPolicy,
   AgentSessionSettings,
-  AgentTool,
+  ApprovalRequest,
   ToolCallRefusal,
   ToolCallRequest,
 } from "../types.ts";
@@ -48,10 +48,9 @@ import { errorOfAssistantMessage, errorOfThrown } from "./errors.ts";
 import { createPiWireEventMapper } from "./events.ts";
 import { clampSessionThinkingLevel } from "./settings.ts";
 import { createPiToolCallGate } from "./tool-gate.ts";
-import type { ApprovalRequest } from "./tool-gate.ts";
 import { createPiTurnBudget } from "./turn-budget.ts";
 
-export interface RunPiTurnOptions<TContext extends object, TApproval> {
+export interface RunPiTurnOptions {
   agentSessionId: string;
   /** The durable run this turn belongs to; logged beside failures so a stall can be traced. */
   agentRunId?: string;
@@ -66,15 +65,15 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
    * compaction there.
    */
   compactionModel?: Model<Api>;
-  tools: AgentTool<TContext>[];
-  toolContext: ToolContextSource<TContext>;
+  /** Closed over this turn's ports; the order is the order Pi lists them to the model. */
+  tools: AgentTool[];
   /**
    * Stable for the life of a session. Heads every provider request, so anything that changes
    * turn to turn belongs in `volatileContext` instead.
    * A changed system prompt invalidates the cached prefix for the system prompt, the tool
    * schemas and the whole transcript behind it.
    */
-  systemPrompt: string | (() => string | Promise<string>);
+  systemPrompt: string;
   /**
    * Current state the model should see on every provider request: draft status, clock, anything
    * that would be stale by the next hop.
@@ -116,13 +115,25 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
     attachments: readonly AgentAttachment[]
   ) => Promise<RenderedAttachments>;
   onEvent: (event: AgentWireEvent) => void;
-  toApproval: (request: ApprovalRequest) => TApproval;
   /** Persists the request after a successful turn, or rejects without leaving a row. */
-  persistApproval: (approval: TApproval) => Promise<void>;
+  persistApproval: (approval: ApprovalRequest) => Promise<void>;
   flushEvents?: () => Promise<void>;
   /** Every provider call of the turn, its auto-compaction included; see {@link AgentUsageListener}. */
   onUsage?: AgentUsageListener;
 }
+
+/** What a kind contributes to a turn; the host supplies the session, model, events and approvals. */
+export type AgentTurnPlan = Pick<
+  RunPiTurnOptions,
+  | "tools"
+  | "systemPrompt"
+  | "volatileContext"
+  | "promptTemplates"
+  | "budget"
+  | "preflight"
+  | "approvalKeyOf"
+  | "renderAttachments"
+>;
 
 export interface RenderedAttachments {
   text: string;
@@ -167,7 +178,7 @@ const promptText = (
   return formatPromptTemplateInvocation(template, message.template.args ?? []);
 };
 
-const executePiTurn = async <TContext extends object, TApproval>({
+const executePiTurn = async ({
   agentSessionId,
   agentRunId,
   session,
@@ -176,8 +187,7 @@ const executePiTurn = async <TContext extends object, TApproval>({
   models,
   compactionModel,
   tools,
-  toolContext: toolContextSource,
-  systemPrompt: prompt,
+  systemPrompt,
   volatileContext,
   signal,
   promptTemplates = [],
@@ -190,18 +200,13 @@ const executePiTurn = async <TContext extends object, TApproval>({
   message,
   renderAttachments,
   onEvent,
-  toApproval,
   persistApproval,
   flushEvents,
   onUsage,
-}: RunPiTurnOptions<TContext, TApproval>): Promise<
-  AgentTurnExecution<TApproval>
-> => {
+}: RunPiTurnOptions): Promise<AgentTurnExecution> => {
   const unsubscribers: (() => void)[] = [];
 
   try {
-    const systemPrompt = prompt instanceof Function ? await prompt() : prompt;
-    const toolContext = await resolveToolContext(toolContextSource);
     const leafId = await session.getLeafId();
     const branch = await session.getBranch(leafId);
     const thinkingLevel = clampSessionThinkingLevel(model, settings);
@@ -299,7 +304,13 @@ const executePiTurn = async <TContext extends object, TApproval>({
         systemPrompt,
         model,
         thinkingLevel,
-        tools: bindToolContext(activeTools, toolContext),
+        tools: activeTools.map((tool) => ({
+          ...tool,
+          execute: (toolCallId, params, toolSignal, onUpdate) =>
+            traceToolCall(tool.name, toolCallId, () =>
+              tool.execute(toolCallId, params, toolSignal, onUpdate)
+            ),
+        })),
         messages: buildBranchContext(branch),
       },
       // Bound to this turn's collection rather than a process-wide default: the collection
@@ -338,22 +349,14 @@ const executePiTurn = async <TContext extends object, TApproval>({
           return { block: true, reason: "This turn is being stopped." };
         }
       },
-      afterToolCall: policy.changesState
-        ? async ({ toolCall, isError }) => {
-            if (
-              !isError &&
-              policy.changesState?.(policy.tierOf(toolCall.name))
-            ) {
-              revision += 1;
-              onEvent({
-                type: "state:changed",
-                scope: policy.stateScope,
-                revision,
-              });
-            }
-            return undefined;
-          }
-        : undefined,
+      afterToolCall: async ({ toolCall, isError }) => {
+        const scope = policy.toolInfo(toolCall.name).changes;
+        if (!isError && scope) {
+          revision += 1;
+          onEvent({ type: "state:changed", scope, revision });
+        }
+        return undefined;
+      },
     });
 
     /**
@@ -363,15 +366,14 @@ const executePiTurn = async <TContext extends object, TApproval>({
      * The operator's prompt is reserved up front: its `user` event goes out before Pi has
      * started the message.
      */
-    const userEntryId = session.newEntryId();
+    const userEntryId = uuidv7();
     let reservedEntryId: string | undefined = userEntryId;
     const mapEvent = createPiWireEventMapper({
       messageIdOf: () => {
-        reservedEntryId ??= session.newEntryId();
+        reservedEntryId ??= uuidv7();
         return reservedEntryId;
       },
-      tierOf: policy.tierOf,
-      labelOf: policy.labelOf,
+      toolInfo: policy.toolInfo,
       summarize: policy.summarize,
     });
     let cursor = leafId;
@@ -389,7 +391,7 @@ const executePiTurn = async <TContext extends object, TApproval>({
           // lost.
           const entry: NewSessionEntry<MessageEntry> = {
             type: "message",
-            id: reservedEntryId ?? session.newEntryId(),
+            id: reservedEntryId ?? uuidv7(),
             parentId: cursor,
             timestamp: Date.now(),
             message: event.message,
@@ -494,12 +496,11 @@ const executePiTurn = async <TContext extends object, TApproval>({
     // it.
     if (!failure && signal?.aborted) aborted = true;
 
-    let approval: TApproval | undefined;
+    let approval: ApprovalRequest | undefined;
     if (!failure && !aborted && gate.request) {
       try {
-        const pending = toApproval(gate.request);
-        await persistApproval(pending);
-        approval = pending;
+        await persistApproval(gate.request);
+        approval = gate.request;
       } catch (error) {
         failure = errorOfThrown(error);
         failureCause = error;
@@ -546,17 +547,17 @@ const executePiTurn = async <TContext extends object, TApproval>({
       onEvent({ type: "error", kind: failure.kind });
     }
 
-    const status: AgentTurnExecution<TApproval>["status"] = failure
-      ? "error"
+    const execution: AgentTurnExecution = failure
+      ? { status: "error", error: failure }
       : aborted
-        ? "aborted"
-        : approval !== undefined
-          ? "awaiting_approval"
-          : "done";
+        ? { status: "aborted" }
+        : approval
+          ? { status: "awaiting_approval", approval }
+          : { status: "done" };
 
-    onEvent({ type: "run:end", reason: status });
+    onEvent({ type: "run:end", reason: execution.status });
 
-    return { status, approval, error: failure };
+    return execution;
   } finally {
     try {
       for (const unsubscribe of unsubscribers) unsubscribe();
@@ -572,9 +573,9 @@ const executePiTurn = async <TContext extends object, TApproval>({
  * hands back events. Every finished message is appended to the session tree before the event
  * reaches the wire. Nothing about the run outlives the call.
  */
-export const runPiTurn = <TContext extends object, TApproval>(
-  options: RunPiTurnOptions<TContext, TApproval>
-): Promise<AgentTurnExecution<TApproval>> =>
+export const runPiTurn = (
+  options: RunPiTurnOptions
+): Promise<AgentTurnExecution> =>
   traceAgentTurn(
     {
       sessionId: options.agentSessionId,

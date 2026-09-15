@@ -102,7 +102,7 @@ export const consolidateSessionMemoryStep = async (request: {
     kind: WRITING_AGENT_KIND,
     defaults: WRITING_SESSION_DEFAULTS,
   });
-  const session = await repo.openById(request.sessionId);
+  const session = await repo.open(request.sessionId);
   const [entries, leafId] = await Promise.all([
     session.getEntries(),
     session.getLeafId(),

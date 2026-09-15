@@ -1,16 +1,10 @@
-import type {
-  AgentTool as PiAgentTool,
-  AgentToolResult,
-} from "@earendil-works/pi-agent-core";
+import type { AgentTool, AgentToolResult } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 import type { TSchema } from "typebox";
 import { Type } from "typebox";
 import * as z from "zod";
 
 import { locale } from "@chia/db/schema/enums";
-
-import { traceToolCall } from "./telemetry.ts";
-import type { AgentTool } from "./types.ts";
 
 /**
  * pi validates tool arguments with typebox, while domain schemas are zod.
@@ -42,46 +36,24 @@ export const zodToTypebox = (schema: z.ZodType): TSchema =>
     unrepresentable: "any",
   }) as TSchema;
 
+/** A tool's model-facing half: what Pi sends the provider, readable without a turn's ports. */
+export type ToolSpec<TParameters extends TSchema = TSchema> = Omit<
+  AgentTool<TParameters>,
+  "execute"
+>;
+
 /**
- * Builds a `defineTool` for one context type.
- * Annotating a tool as `AgentTool<TContext>` defaults `TParameters` to `TSchema`, so
- * `Static<TParameters>` becomes `unknown` inside `execute`.
- * Curried because TypeScript cannot pin `TContext` while still inferring `TParameters` from the
- * literal.
+ * Pairs a spec with an `execute` closed over one turn's ports.
+ * Erased to `AgentTool` so a kind's tools share one array.
  */
-export const toolDefiner =
-  <TContext extends object>() =>
-  <TParameters extends TSchema, TDetails>(
-    tool: AgentTool<TContext, TParameters, TDetails>
-  ): AgentTool<TContext, TParameters, TDetails> =>
-    tool;
-
-/** A context value, or a provider resolved once per turn. */
-export type ToolContextSource<TContext extends object> =
-  | TContext
-  | (() => TContext | Promise<TContext>);
-
-export const resolveToolContext = async <TContext extends object>(
-  source: ToolContextSource<TContext>
-): Promise<TContext> =>
-  source instanceof Function
-    ? await /* SAFETY: A function-typed source is the provider form; contexts themselves are plain objects. */ (
-        source as () => TContext | Promise<TContext>
-      )()
-    : source;
-
-/** Closes each tool over the turn's context into the four-argument shape Pi executes. */
-export const bindToolContext = <TContext extends object>(
-  tools: readonly AgentTool<TContext>[],
-  context: TContext
-): PiAgentTool[] =>
-  tools.map((tool) => ({
-    ...tool,
-    execute: (toolCallId, params, signal, onUpdate) =>
-      traceToolCall(tool.name, toolCallId, () =>
-        tool.execute(toolCallId, params, signal, onUpdate, context)
-      ),
-  }));
+export const bindTool = <TParameters extends TSchema>(
+  spec: ToolSpec<TParameters>,
+  execute: AgentTool<TParameters, unknown>["execute"]
+): AgentTool => ({
+  ...spec,
+  // SAFETY: Pi validates arguments against `spec.parameters` before it calls `execute`.
+  execute: execute as AgentTool["execute"],
+});
 
 /** Text-only tool result. `details` is what the UI renders, `content` is what the model reads. */
 export const textResult = <TDetails>(

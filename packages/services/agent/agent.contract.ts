@@ -343,7 +343,6 @@ export const navigateAgentSessionContract = oc
       entryId: z.string(),
       /** Summarise the branch left behind under the new leaf, so the model keeps the gist. */
       summarize: z.boolean().optional(),
-      label: z.string().max(200).optional(),
     })
   )
   .output(agentSessionDetailSchema);

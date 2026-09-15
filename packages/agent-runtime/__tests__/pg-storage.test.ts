@@ -9,6 +9,7 @@ import {
 } from "@chia/db/repos/agent";
 import type { JsonObject } from "@chia/utils/json";
 
+import { computeSessionStats } from "../src/session/entries.ts";
 import type { NewSessionEntry } from "../src/session/entries.ts";
 import { PgSessionStorage } from "../src/session/pg-storage.ts";
 
@@ -16,7 +17,6 @@ vi.mock("@chia/db/repos/agent", () => ({
   appendAgentSessionEntryAsLeaf: vi.fn(),
   getAgentSession: vi.fn(),
   getAgentSessionEntries: vi.fn(),
-  getAgentSessionEntriesByType: vi.fn(),
   getAgentSessionEntry: vi.fn(),
   updateAgentSession: vi.fn(),
 }));
@@ -88,12 +88,12 @@ describe("PgSessionStorage", () => {
   it("appends an entry, advances the leaf in one write and returns the seq it landed on", async () => {
     appendEntryMock.mockResolvedValue({ seq: 7 });
     const entry = {
-      type: "label",
+      type: "branch_summary",
       id: "entry-1",
       parentId: null,
       timestamp: Date.parse("2026-07-27T00:00:01.000Z"),
-      targetId: "entry-0",
-      label: "Start",
+      fromId: "entry-0",
+      summary: "Start",
     } satisfies NewSessionEntry;
 
     const stored = await storage().appendEntry(entry);
@@ -103,8 +103,8 @@ describe("PgSessionStorage", () => {
       id: "entry-1",
       sessionId: "session-1",
       parentId: null,
-      type: "label",
-      payload: { targetId: "entry-0", label: "Start" },
+      type: "branch_summary",
+      payload: { fromId: "entry-0", summary: "Start" },
       timestamp: new Date("2026-07-27T00:00:01.000Z"),
     });
     expect(stored).toEqual({ ...entry, seq: 7 });
@@ -120,7 +120,7 @@ describe("PgSessionStorage", () => {
     await expect(storage().getLeafId()).resolves.toBe("entry-2");
   });
 
-  it("projects rows back into entries with their seq, a numeric timestamp, and a tail and hook flag on compactions", async () => {
+  it("projects rows back into entries with their seq, a numeric timestamp, and a tail on compactions", async () => {
     getEntriesMock.mockResolvedValue(
       /* SAFETY: These rows implement the repository shape exercised by this case. */ [
         row(1, "entry-1", null, "compaction", {
@@ -141,7 +141,6 @@ describe("PgSessionStorage", () => {
       summary: "Summary",
       tokensBefore: 10,
       retainedTail: [],
-      fromHook: false,
     });
   });
 
@@ -188,7 +187,7 @@ describe("PgSessionStorage", () => {
       }),
     ]);
 
-    const stats = await storage().getSessionStats();
+    const stats = computeSessionStats(await storage().getEntries());
 
     expect(stats).toMatchObject({
       messageCount: 2,

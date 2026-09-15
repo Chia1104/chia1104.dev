@@ -1,3 +1,4 @@
+import type { AssistantMessage } from "@earendil-works/pi-ai";
 import * as z from "zod";
 
 import { errorOfAssistantMessage } from "../pi/errors.ts";
@@ -7,6 +8,63 @@ import type { AgentEventPresentation } from "../types.ts";
 import { clipDetails } from "./clip.ts";
 import { isOperatorDecisionText } from "./operator-decision.ts";
 import type { AgentWireEvent } from "./schema.ts";
+
+/** A finished assistant message as its terminal wire event, live and replayed alike. */
+export const assistantEndEvent = (
+  messageId: string,
+  message: AssistantMessage
+): AgentWireEvent => {
+  const thinking = message.content
+    .filter((part) => part.type === "thinking")
+    .map((part) => part.thinking)
+    .join("");
+  return {
+    type: "assistant:end",
+    messageId,
+    text: message.content
+      .filter((part) => part.type === "text")
+      .map((part) => part.text)
+      .join(""),
+    thinking: thinking || undefined,
+    stopReason: message.stopReason,
+    at: message.timestamp,
+    usage: message.usage
+      ? {
+          input: message.usage.input,
+          output: message.usage.output,
+          cacheRead: message.usage.cacheRead,
+          cacheWrite: message.usage.cacheWrite,
+          costTotal: message.usage.cost?.total,
+        }
+      : undefined,
+  };
+};
+
+export const toolStartEvent = (
+  call: { toolCallId: string; toolName: string; args: unknown },
+  presentation: AgentEventPresentation
+): AgentWireEvent => {
+  const { label, tier } = presentation.toolInfo(call.toolName);
+  return { type: "tool:start", ...call, label, tier };
+};
+
+/** `result` is the live tool result or the persisted tool-result message; both carry `details`. */
+export const toolEndEvent = <TResult extends { details?: unknown }>(
+  call: {
+    toolCallId: string;
+    toolName: string;
+    isError: boolean;
+    result: TResult;
+  },
+  presentation: AgentEventPresentation
+): AgentWireEvent => ({
+  type: "tool:end",
+  toolCallId: call.toolCallId,
+  toolName: call.toolName,
+  isError: call.isError,
+  summary: presentation.summarize(call.toolName, call.result, call.isError),
+  details: clipDetails(call.result.details),
+});
 
 /**
  * Rebuilds wire events from a persisted branch so a reconnecting client renders through the
@@ -77,33 +135,7 @@ export const entriesToWireEvents = (
     }
 
     if (message.role === "assistant") {
-      const messageId = entry.id;
-      const text = message.content
-        .filter((part) => part.type === "text")
-        .map((part) => part.text)
-        .join("");
-      const thinking = message.content
-        .filter((part) => part.type === "thinking")
-        .map((part) => part.thinking)
-        .join("");
-
-      events.push({
-        type: "assistant:end",
-        messageId,
-        text,
-        thinking: thinking || undefined,
-        stopReason: message.stopReason,
-        at: message.timestamp,
-        usage: message.usage
-          ? {
-              input: message.usage.input,
-              output: message.usage.output,
-              cacheRead: message.usage.cacheRead,
-              cacheWrite: message.usage.cacheWrite,
-              costTotal: message.usage.cost?.total,
-            }
-          : undefined,
-      });
+      events.push(assistantEndEvent(entry.id, message));
       // The live turn emits `error` beside a failed assistant message; replay must too, or the
       // notice vanishes on reload.
       if (message.stopReason === "error") {
@@ -122,28 +154,29 @@ export const entriesToWireEvents = (
       for (const part of message.content) {
         if (part.type !== "toolCall") continue;
         open.set(part.id, part.name);
-        events.push({
-          type: "tool:start",
-          toolCallId: part.id,
-          toolName: part.name,
-          label: options.labelOf(part.name),
-          tier: options.tierOf(part.name),
-          args: part.arguments,
-        });
+        events.push(
+          toolStartEvent(
+            { toolCallId: part.id, toolName: part.name, args: part.arguments },
+            options
+          )
+        );
       }
       continue;
     }
 
     if (message.role === "toolResult") {
       open.delete(message.toolCallId);
-      events.push({
-        type: "tool:end",
-        toolCallId: message.toolCallId,
-        toolName: message.toolName,
-        isError: message.isError,
-        summary: options.summarize(message.toolName, message, message.isError),
-        details: clipDetails(message.details),
-      });
+      events.push(
+        toolEndEvent(
+          {
+            toolCallId: message.toolCallId,
+            toolName: message.toolName,
+            isError: message.isError,
+            result: message,
+          },
+          options
+        )
+      );
     }
   }
   closeOpen();

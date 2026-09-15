@@ -18,7 +18,6 @@ vi.mock("@chia/db/repos/agent", () => ({
   getAgentSession: vi.fn(),
   getAgentSessions: vi.fn(),
   getAgentSessionEntries: vi.fn(),
-  getAgentSessionEntriesByType: vi.fn(),
   getAgentSessionEntry: vi.fn(),
   softDeleteAgentSession: vi.fn(),
   updateAgentSession: vi.fn(),

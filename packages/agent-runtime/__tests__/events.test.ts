@@ -13,8 +13,7 @@ import type { AgentWireEvent } from "../src/wire/schema.ts";
  */
 
 const presentation = {
-  tierOf: () => "read",
-  labelOf: (name: string) => name,
+  toolInfo: (name: string) => ({ label: name, tier: "read" }),
   summarize: () => "",
 };
 
@@ -191,13 +190,11 @@ describe("foldEvents", () => {
         timestamp: 1_767_225_601_000,
         fromId: "entry-1",
         summary: "A tangent about titles, abandoned.",
-        fromHook: false,
       },
     ];
 
     const events = entriesToWireEvents(entries, {
-      tierOf: () => "read",
-      labelOf: (name: string) => name,
+      toolInfo: (name: string) => ({ label: name, tier: "read" }),
       summarize: () => "",
     });
 
@@ -228,8 +225,7 @@ describe("foldEvents", () => {
     ];
 
     const events = entriesToWireEvents(entries, {
-      tierOf: () => "read",
-      labelOf: (name: string) => name,
+      toolInfo: (name: string) => ({ label: name, tier: "read" }),
       summarize: () => "",
     });
 
@@ -317,8 +313,7 @@ describe("foldEvents", () => {
     ];
 
     const [event] = entriesToWireEvents(entries, {
-      tierOf: () => "read",
-      labelOf: (name: string) => name,
+      toolInfo: (name: string) => ({ label: name, tier: "read" }),
       summarize: () => "",
     });
 

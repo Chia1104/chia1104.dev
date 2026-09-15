@@ -1,5 +1,5 @@
 import { assertAgentKind } from "@chia/agent-host/kind";
-import type { AgentKindDefinition } from "@chia/agent-host/kind";
+import type { AgentKindExecutor } from "@chia/agent-host/kind";
 
 /**
  * Lookup by the kind string on the session row. Which tier may use a kind is decided in
@@ -8,7 +8,7 @@ import type { AgentKindDefinition } from "@chia/agent-host/kind";
 export const agentFactory = {
   async load(
     kind: string
-  ): Promise<AgentKindDefinition<unknown, object> | undefined> {
+  ): Promise<AgentKindExecutor<unknown, object> | undefined> {
     switch (kind) {
       case "writing":
         return assertAgentKind(

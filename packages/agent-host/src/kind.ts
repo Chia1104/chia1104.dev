@@ -7,20 +7,14 @@ import type {
   AgentModelInfo,
   AgentModelRef,
 } from "@chia/agent-runtime/models";
-import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
-import type { SessionTree } from "@chia/agent-runtime/session/tree";
+import type { AgentTurnPlan } from "@chia/agent-runtime/pi/turn";
 import type {
   AgentPolicy,
   AgentSessionDefaults,
   AgentSessionSettings,
   AgentTurnExecution,
-  AgentTurnMessage,
-  AgentUsageListener,
 } from "@chia/agent-runtime/types";
-import type {
-  AgentAttachmentInput,
-  AgentWireEvent,
-} from "@chia/agent-runtime/wire/schema";
+import type { AgentAttachmentInput } from "@chia/agent-runtime/wire/schema";
 import type { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import type { AgentSession } from "@chia/db/schema";
@@ -32,8 +26,8 @@ import type { JsonObject } from "@chia/utils/json";
 /**
  * What one agent kind contributes to the host. Generic session/turn machinery lives in
  * `packages/services`. A kind supplies the parts that differ: defaults, policy, models, operator
- * config, the 1:1 state row, and the Pi turn. `defaults` and `config` are the code's values;
- * the operator overrides them in `agent.kind_config`.
+ * config and the 1:1 state row; {@link AgentKindExecutor} adds the turn. `defaults` and `config`
+ * are the code's values; the operator overrides them in `agent.kind_config`.
  */
 export interface AgentKindDefinition<TState, TConfig extends object> {
   readonly kind: string;
@@ -70,9 +64,19 @@ export interface AgentKindDefinition<TState, TConfig extends object> {
   readonly config: AgentKindConfigDefinition<TConfig>;
   capabilities(): AgentKindCapabilities;
   readonly state: AgentKindState<TState>;
-  runTurn?<TApproval>(
-    context: AgentTurnContext<TState, TConfig, TApproval>
-  ): Promise<AgentTurnExecution<TApproval>>;
+}
+
+/**
+ * A kind as the workflow executes it. The kind builds its tools, prompts and ports for a turn;
+ * the host resolves the model and supplies the session, events, usage and approvals.
+ */
+export interface AgentKindExecutor<
+  TState,
+  TConfig extends object,
+> extends AgentKindDefinition<TState, TConfig> {
+  prepareTurn(
+    context: AgentTurnContext<TState, TConfig>
+  ): Promise<AgentPreparedTurn>;
 }
 
 /**
@@ -178,35 +182,18 @@ export interface AgentKindState<TState> {
 
 export type AgentModels = ReturnType<typeof createAgentModels>;
 
-/**
- * What the turn step has resolved before handing the turn to the kind. The kind adds its
- * tools, ports and prompts and runs Pi.
- */
-export interface AgentTurnContext<TState, TConfig extends object, TApproval> {
+/** What the turn step has resolved before the kind prepares the turn. */
+export interface AgentTurnContext<TState, TConfig extends object> {
   db: DB;
   row: AgentSession;
-  /** The durable run executing this turn. */
-  runId: string;
   state: TState;
   config: TConfig;
   settings: AgentSessionSettings;
-  session: SessionTree;
-  models: AgentModels;
-  /** Which keys the request carried; `models` was built from the same set. */
-  access: AgentModelAccess;
-  /** The kind's effective default model, as the operator configured it. */
-  house: AgentModelRef;
-  message: AgentTurnMessage;
-  signal: AbortSignal;
-  /** Approval keys the operator granted on this session that no call has spent. */
-  approvedApprovalKeys: ReadonlySet<string>;
-  /** Spends one of them durably before the call runs. */
-  consumeApproval: (key: string) => Promise<void>;
-  onEvent: (event: AgentWireEvent) => void;
-  flushEvents: () => Promise<void>;
-  onUsage: AgentUsageListener;
-  toApproval: (request: ApprovalRequest) => TApproval;
-  persistApproval: (approval: TApproval) => Promise<void>;
+}
+
+export interface AgentPreparedTurn extends AgentTurnPlan {
+  /** Runs once the turn has resolved, whatever its status. A throw fails the step. */
+  settle?: (execution: AgentTurnExecution) => Promise<void>;
 }
 
 /**
@@ -220,10 +207,12 @@ export interface AgentKindEntry {
 }
 
 /** Refuses a definition whose discriminator drifted from the key it was registered under. */
-export const assertAgentKind = (
+export const assertAgentKind = <
+  TDefinition extends AgentKindDefinition<unknown, object>,
+>(
   kind: string,
-  definition: AgentKindDefinition<unknown, object>
-): AgentKindDefinition<unknown, object> => {
+  definition: TDefinition
+): TDefinition => {
   if (definition.kind !== kind) {
     throw new Error(
       `Agent kind "${kind}" loaded a definition for "${definition.kind}".`
