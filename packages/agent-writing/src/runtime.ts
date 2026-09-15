@@ -44,7 +44,6 @@ export interface PrepareWritingTurnOptions {
   instructions?: string;
   /** The session's pre-approved tiers, which the system prompt describes. */
   autoApprove: readonly ToolTier[];
-  defaultLocale?: Locale;
 }
 
 /**
@@ -207,7 +206,6 @@ const renderAttachments = async (
 export const prepareWritingTurn = (
   options: PrepareWritingTurnOptions
 ): AgentTurnPlan => {
-  const defaultLocale = options.defaultLocale ?? Locale.zhTW;
   const approvedDraftRevisions = new Map<string, number>();
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
@@ -238,7 +236,7 @@ export const prepareWritingTurn = (
         drafts,
         sessionMemories,
         lessons,
-        defaultLocale,
+        defaultLocale: Locale.zhTW,
         now: new Date(),
       });
     },

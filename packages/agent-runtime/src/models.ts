@@ -81,6 +81,14 @@ export interface AgentModelRef {
   modelId: string;
 }
 
+/** A row's `(providerId, modelId)` pair, or nothing; the columns are written together. */
+export const modelRefOf = (
+  row: { providerId: string | null; modelId: string | null } | undefined
+): AgentModelRef | null =>
+  row?.providerId && row.modelId
+    ? { providerId: row.providerId, modelId: row.modelId }
+    : null;
+
 /** A kind's policy: whether it admits `ref` for a caller holding `access`. */
 export type AgentModelPredicate = (
   ref: AgentModelRef,

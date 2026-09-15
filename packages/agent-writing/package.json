@@ -5,10 +5,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./types": {
-      "types": "./src/types.ts",
-      "default": "./src/types.ts"
-    },
     "./ports": {
       "types": "./src/ports.ts",
       "default": "./src/ports.ts"
@@ -29,33 +25,13 @@
       "types": "./src/runtime.ts",
       "default": "./src/runtime.ts"
     },
-    "./draft/operations": {
-      "types": "./src/draft/operations.ts",
-      "default": "./src/draft/operations.ts"
-    },
     "./draft/pg-draft-store": {
       "types": "./src/draft/pg-draft-store.ts",
       "default": "./src/draft/pg-draft-store.ts"
     },
-    "./draft/memory-draft-store": {
-      "types": "./src/draft/memory-draft-store.ts",
-      "default": "./src/draft/memory-draft-store.ts"
-    },
-    "./memory/memory-port": {
-      "types": "./src/memory/memory-port.ts",
-      "default": "./src/memory/memory-port.ts"
-    },
     "./memory/lessons": {
       "types": "./src/memory/lessons.ts",
       "default": "./src/memory/lessons.ts"
-    },
-    "./markdown/fences": {
-      "types": "./src/markdown/fences.ts",
-      "default": "./src/markdown/fences.ts"
-    },
-    "./prompts/system": {
-      "types": "./src/prompts/system.ts",
-      "default": "./src/prompts/system.ts"
     },
     "./prompts/skills": {
       "types": "./src/prompts/skills.ts",
@@ -72,34 +48,6 @@
     "./tools/registry": {
       "types": "./src/tools/registry.ts",
       "default": "./src/tools/registry.ts"
-    },
-    "./tools/summarize": {
-      "types": "./src/tools/summarize.ts",
-      "default": "./src/tools/summarize.ts"
-    },
-    "./tools/skill.tool": {
-      "types": "./src/tools/skill.tool.ts",
-      "default": "./src/tools/skill.tool.ts"
-    },
-    "./tools/retrieval.tool": {
-      "types": "./src/tools/retrieval.tool.ts",
-      "default": "./src/tools/retrieval.tool.ts"
-    },
-    "./tools/github.tool": {
-      "types": "./src/tools/github.tool.ts",
-      "default": "./src/tools/github.tool.ts"
-    },
-    "./tools/memory.tool": {
-      "types": "./src/tools/memory.tool.ts",
-      "default": "./src/tools/memory.tool.ts"
-    },
-    "./tools/draft.tool": {
-      "types": "./src/tools/draft.tool.ts",
-      "default": "./src/tools/draft.tool.ts"
-    },
-    "./tools/commit.tool": {
-      "types": "./src/tools/commit.tool.ts",
-      "default": "./src/tools/commit.tool.ts"
     }
   },
   "scripts": {

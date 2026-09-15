@@ -3,7 +3,6 @@ import * as z from "zod";
 import {
   effectiveKindConfig,
   effectiveKindDefaults,
-  kindRowModel,
 } from "@chia/agent-host/config";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import {
@@ -20,13 +19,13 @@ import {
   getAgentTaskDefinition,
   listAgentTaskDefinitions,
   listAgentTaskModels,
-  taskRowModel,
 } from "@chia/agent-host/tasks";
 import type { AgentTaskDefinition } from "@chia/agent-host/tasks";
 import { costToMicros, microsToUsd } from "@chia/agent-host/usage";
 import {
-  UnknownAgentModelError,
   HOUSE_ACCESS,
+  modelRefOf,
+  UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
 import type { AgentModelRef } from "@chia/agent-runtime/models";
 import type { ThinkingLevel } from "@chia/agent-runtime/types";
@@ -189,7 +188,7 @@ const kindView = (
     defaults: {
       code,
       override: {
-        model: kindRowModel(row),
+        model: modelRefOf(row),
         thinkingLevel:
           /* SAFETY: The admin write validated the column against the contract's enum. */ (row?.thinkingLevel as
             | ThinkingLevel
@@ -221,7 +220,7 @@ const taskView = (
   definition: AgentTaskDefinition,
   row: AgentTaskConfig | undefined
 ): AgentTaskAdmin => {
-  const override = taskRowModel(row);
+  const override = modelRefOf(row);
   return {
     id: definition.id,
     label: definition.label,

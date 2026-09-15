@@ -12,9 +12,6 @@ export type { PromptTemplate, Skill, ThinkingLevel };
 
 export type ToolTier = string;
 
-/** Discriminates rows in `agent.session`, and selects the host service for a kind. */
-export type AgentKind = string;
-
 /** What the host and clients know about a tool without binding it to a turn. */
 export interface AgentToolInfo {
   label: string;

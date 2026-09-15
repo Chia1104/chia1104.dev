@@ -8,6 +8,7 @@ import type {
   AgentModelRef,
 } from "@chia/agent-runtime/models";
 import type { AgentTurnPlan } from "@chia/agent-runtime/pi/turn";
+import type { ToolSpec } from "@chia/agent-runtime/tools";
 import type {
   AgentPolicy,
   AgentSessionDefaults,
@@ -99,6 +100,18 @@ export interface AgentKindCapabilities {
   commands: { name: string; description: string; argumentHint?: string }[];
   skills: { name: string; description: string }[];
 }
+
+/** The tools a kind lists, classified by the same policy that gates their calls. */
+export const toolCapabilities = (
+  specs: readonly ToolSpec[],
+  policy: AgentPolicy
+): AgentKindCapabilities["tools"] =>
+  specs.map((spec) => ({
+    name: spec.name,
+    label: spec.label,
+    tier: policy.toolInfo(spec.name).tier,
+    description: spec.description,
+  }));
 
 export interface AgentKindCaller extends Caller {
   userId: string;

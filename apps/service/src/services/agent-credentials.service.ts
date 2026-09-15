@@ -1,7 +1,6 @@
 import { parse } from "hono/utils/cookie";
 
 import { decryptAgentCredentials as decryptCredentials } from "@chia/agent-host/credentials";
-export { AgentCredentialError } from "@chia/agent-host/credentials";
 import { KEY_COOKIE_NAMES } from "@chia/ai/provider";
 import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-hooks";
 

@@ -141,6 +141,7 @@ export const setAgentSessionTitleIfUnset = async (
   return rows.length > 0;
 };
 
+/** A cleared session keeps its transcript; a hard delete would cascade the whole tree away. */
 export const softDeleteAgentSession = async (db: DB, sessionId: string) => {
   await db
     .update(agentSessions)

@@ -13,11 +13,7 @@ import {
 } from "@chia/agent-runtime/session/pg-repo";
 import { walkBranch, walkTranscript } from "@chia/agent-runtime/session/tree";
 import { estimateBranchContextTokens } from "@chia/agent-runtime/session/usage";
-import type {
-  AgentSessionDefaults,
-  ThinkingLevel,
-  ToolTier,
-} from "@chia/agent-runtime/types";
+import type { ThinkingLevel, ToolTier } from "@chia/agent-runtime/types";
 import { entriesToWireEvents } from "@chia/agent-runtime/wire/replay";
 import type { DB } from "@chia/db/client";
 import {
@@ -49,11 +45,7 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
   definition: AgentKindDefinition<TState, TConfig>,
   host: AgentServiceHost
 ) => {
-  /** `defaults` only matter to `create`; the code values serve every other operation. */
-  const repoFor = (
-    db: DB,
-    defaults: AgentSessionDefaults = definition.defaults
-  ) => new PgSessionRepo(db, { kind: definition.kind, defaults });
+  const repoFor = (db: DB) => new PgSessionRepo(db, definition.kind);
 
   /** Loads a non-deleted session and kind state after checking caller ownership and kind. */
   const loadOwnedRow = async (
@@ -129,7 +121,7 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     if (!row) return null;
 
     const db = caller.context.db;
-    const session = await repoFor(db).open(sessionId);
+    const session = repoFor(db).open(row);
 
     // A lock transaction uses one connection, so these reads stay sequential.
     const entries = await session.getEntries();
@@ -206,8 +198,9 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     async createSession(caller, input) {
       const db = caller.context.db;
       const { defaults } = await loadKindConfig(db, definition);
-      const session = await repoFor(db, defaults).create({
+      const session = await repoFor(db).create({
         userId: caller.userId,
+        defaults,
         title: input.title,
         settings: {
           providerId: input.model?.providerId,

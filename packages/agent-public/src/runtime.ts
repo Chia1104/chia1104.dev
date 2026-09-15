@@ -20,7 +20,6 @@ export interface PreparePublicTurnOptions {
   /** Published rows only; rendered into the system prompt once per turn. */
   profile: ProfileReadPort;
   instructions?: string;
-  defaultLocale?: Locale;
 }
 
 /** Quoted as a fenced block so the passage reads as the visitor's citation, not their words. */
@@ -108,9 +107,8 @@ const renderAttachments = async (
 export const preparePublicTurn = async (
   options: PreparePublicTurnOptions
 ): Promise<AgentTurnPlan> => {
-  const defaultLocale = options.defaultLocale ?? Locale.zhTW;
   const profile = renderProfileBrief(await options.profile.listPublished(), {
-    locale: defaultLocale,
+    locale: Locale.zhTW,
   });
 
   return {
@@ -119,7 +117,8 @@ export const preparePublicTurn = async (
       instructions: options.instructions,
       profile,
     }),
-    volatileContext: () => buildTurnContext({ defaultLocale, now: new Date() }),
+    volatileContext: () =>
+      buildTurnContext({ defaultLocale: Locale.zhTW, now: new Date() }),
     renderAttachments: (attachments) =>
       renderAttachments(options.content, attachments),
     budget: publicTurnBudget,

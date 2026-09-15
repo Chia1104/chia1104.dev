@@ -3,11 +3,10 @@ import { uuidv7 } from "@earendil-works/pi-ai";
 import type { DB } from "@chia/db/client";
 import {
   createAgentSession,
-  getAgentSession,
   getAgentSessions,
-  softDeleteAgentSession,
   updateAgentSession,
 } from "@chia/db/repos/agent";
+import type { AgentSession } from "@chia/db/schema";
 import type { JsonObject } from "@chia/utils/json";
 
 import type {
@@ -19,11 +18,19 @@ import type {
 import { PgSessionStorage } from "./pg-storage.ts";
 import type { PgSessionMetadata } from "./pg-storage.ts";
 
+/** What opening a session needs from its row; the caller has already loaded and authorized it. */
+export type PgSessionRow = Pick<
+  AgentSession,
+  "id" | "createdAt" | "userId" | "kind"
+>;
+
 export interface PgSessionCreateOptions {
   id?: string;
   userId: string;
   title?: string;
   settings?: Partial<AgentSessionSettings>;
+  /** Fills any setting `settings` leaves out. */
+  defaults: AgentSessionDefaults;
   runtimeConfig?: JsonObject;
   configVersion?: number;
   /** Lineage recorded on the row; set by `fork`. */
@@ -36,16 +43,13 @@ export interface PgSessionListOptions {
   includeDeleted?: boolean;
 }
 
-export interface PgSessionForkOptions extends Partial<PgSessionCreateOptions> {
+export interface PgSessionForkOptions extends Partial<
+  Omit<PgSessionCreateOptions, "defaults">
+> {
   /** Entry to fork from; the whole tree when omitted. */
   entryId?: string;
   /** `before` forks the branch up to the user message's parent, so the message can be re-asked. */
   position?: "before" | "at";
-}
-
-export interface PgSessionRepoOptions {
-  kind: string;
-  defaults: AgentSessionDefaults;
 }
 
 export class SessionNotFoundError extends Error {
@@ -62,18 +66,16 @@ export class SessionNotFoundError extends Error {
  * dashboard.
  */
 export class PgSessionRepo {
-  /**
-   * The repository is scoped to one kind. That makes list/open safe by construction and keeps
-   * defaults owned by the kind rather than by core.
-   */
+  /** Scoped to one kind, so list and open are safe by construction. */
   constructor(
     private readonly db: DB,
-    private readonly options: PgSessionRepoOptions
+    private readonly kind: string
   ) {}
 
   async create(options: PgSessionCreateOptions): Promise<PgSessionStorage> {
     const id = options.id ?? uuidv7();
-    const { kind, defaults } = this.options;
+    const { kind } = this;
+    const { defaults } = options;
     const settings = options.settings ?? {};
 
     await createAgentSession(this.db, {
@@ -100,35 +102,24 @@ export class PgSessionRepo {
     });
   }
 
-  async open(sessionId: string): Promise<PgSessionStorage> {
-    const { session } = await this.load(sessionId);
-    return session;
-  }
-
-  /** The row and its tree together; `fork` needs both and must not read the row twice. */
-  private async load(sessionId: string) {
-    const row = await getAgentSession(this.db, sessionId);
-    if (!row) {
-      throw new SessionNotFoundError(`Session not found: ${sessionId}`);
-    }
-    if (row.kind !== this.options.kind) {
+  open(row: PgSessionRow): PgSessionStorage {
+    if (row.kind !== this.kind) {
       throw new SessionNotFoundError(
-        `Session ${sessionId} belongs to agent kind "${row.kind}", not "${this.options.kind}"`
+        `Session ${row.id} belongs to agent kind "${row.kind}", not "${this.kind}"`
       );
     }
-    const session = new PgSessionStorage(this.db, {
+    return new PgSessionStorage(this.db, {
       id: row.id,
       createdAt: row.createdAt.toISOString(),
       userId: row.userId,
       kind: row.kind,
     });
-    return { row, session };
   }
 
   async list(options: PgSessionListOptions): Promise<PgSessionMetadata[]> {
     const rows = await getAgentSessions(this.db, {
       ...options,
-      kind: this.options.kind,
+      kind: this.kind,
     });
     return rows.map((row) => ({
       id: row.id,
@@ -138,29 +129,23 @@ export class PgSessionRepo {
     }));
   }
 
-  /**
-   * Soft delete. A transcript is worth keeping after an operator clears a session from the
-   * list; a hard delete cascades the whole tree away.
-   */
-  async delete(metadata: Pick<PgSessionMetadata, "id">): Promise<void> {
-    await softDeleteAgentSession(this.db, metadata.id);
-  }
-
+  /** `source` must be read in the transaction that holds the session lock: its leaf is copied. */
   async fork(
-    source: Pick<PgSessionMetadata, "id">,
+    source: AgentSession,
     options: PgSessionForkOptions
   ): Promise<PgSessionStorage> {
-    const { row: sourceRow, session: original } = await this.load(source.id);
-    const entries = await entriesToFork(original, options);
+    const entries = await entriesToFork(this.open(source), options);
+    const sourceSettings = settingsFromRow(source);
 
     const forked = await this.create({
       id: options.id,
-      userId: options.userId ?? sourceRow.userId,
-      title: options.title ?? sourceRow.title ?? undefined,
-      settings: options.settings ?? settingsFromRow(sourceRow),
+      userId: options.userId ?? source.userId,
+      title: options.title ?? source.title ?? undefined,
+      settings: options.settings ?? sourceSettings,
+      defaults: sourceSettings,
       forkedFrom: {
-        sessionId: sourceRow.id,
-        entryId: options.entryId ?? sourceRow.leafEntryId,
+        sessionId: source.id,
+        entryId: options.entryId ?? source.leafEntryId,
       },
     });
 
@@ -171,7 +156,7 @@ export class PgSessionRepo {
     }
     // A whole-tree fork copies every branch in insertion order; the newest entry is not the
     // active one when the source was rewound, so the fork takes the source's leaf explicitly.
-    if (!options.entryId) await forked.setLeafId(sourceRow.leafEntryId);
+    if (!options.entryId) await forked.setLeafId(source.leafEntryId);
 
     return forked;
   }

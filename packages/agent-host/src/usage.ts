@@ -1,6 +1,9 @@
 import { AGENT_PROVIDERS } from "@chia/agent-runtime/models";
 import type { AgentCredentials } from "@chia/agent-runtime/models";
-import type { AgentModelUsage } from "@chia/agent-runtime/types";
+import type {
+  AgentModelUsage,
+  AgentUsageListener,
+} from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import { insertAgentUsage } from "@chia/db/repos/agent/usage";
 import type { AgentCredentialSource, AgentUsageSource } from "@chia/db/schema";
@@ -88,3 +91,32 @@ export const recordAgentUsage = async (
     });
   }
 };
+
+/**
+ * Meters every call on a session's tree (turns, compaction, branch summaries) against the key it
+ * ran on. `db` must outlive any transaction the work runs in: a call that is rolled back was
+ * still billed.
+ */
+export const sessionUsageListener =
+  (
+    db: DB,
+    session: {
+      userId: string;
+      sessionId: string;
+      kind: string;
+      runId?: string;
+      credentials: AgentCredentials;
+    }
+  ): AgentUsageListener =>
+  (report) =>
+    recordAgentUsage(db, {
+      userId: session.userId,
+      sessionId: session.sessionId,
+      runId: session.runId,
+      kind: session.kind,
+      credentialSource: credentialSourceOf(
+        session.credentials,
+        report.providerId
+      ),
+      ...report,
+    });

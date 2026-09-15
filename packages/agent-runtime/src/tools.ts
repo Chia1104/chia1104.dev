@@ -19,20 +19,6 @@ import { locale } from "@chia/db/schema/enums";
 export const LocaleSchema = (description: string) =>
   StringEnum([...locale.enumValues], { description });
 
-/**
- * Escape hatch for large zod shapes.
- * `reused: "inline"`: typebox's checker does not resolve `$defs`/`$ref`, which zod emits for
- * any schema referenced twice.
- * `io: "input"` picks the pre-transform shape the model is asked to produce.
- */
-export const zodToTypebox = (schema: z.ZodType): TSchema =>
-  // SAFETY: Zod's JSON Schema output is consumed only by TypeBox-compatible tool validators.
-  z.toJSONSchema(schema, {
-    io: "input",
-    reused: "inline",
-    unrepresentable: "any",
-  }) as TSchema;
-
 /** A tool's model-facing half: what Pi sends the provider, readable without a turn's ports. */
 export type ToolSpec<TParameters extends TSchema = TSchema> = Omit<
   AgentTool<TParameters>,

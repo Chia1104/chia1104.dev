@@ -22,6 +22,7 @@ import type { DB } from "@chia/db/client";
 import { getFeedById } from "@chia/db/repos/feeds";
 import { AppError } from "@chia/service-kit/errors";
 
+import { toolCapabilities } from "./kind";
 import type { AgentKindDefinition, AgentKindExecutor } from "./kind";
 
 /**
@@ -69,12 +70,7 @@ export const createPublicAgentKind = (): PublicAgentKind => ({
 
   capabilities() {
     return {
-      tools: contentReadToolSpecs.map((spec) => ({
-        name: spec.name,
-        label: spec.label,
-        tier: publicPolicy.toolInfo(spec.name).tier,
-        description: spec.description,
-      })),
+      tools: toolCapabilities(contentReadToolSpecs, publicPolicy),
       commands: [],
       skills: [],
     };

@@ -39,6 +39,7 @@ import type { FeedDraftListItem, FeedDraftRecord } from "@chia/db/repos/drafts";
 import { reportError } from "@chia/observability/report";
 import { AppError } from "@chia/service-kit/errors";
 
+import { toolCapabilities } from "./kind";
 import type {
   AgentDraftPayload,
   AgentKindDefinition,
@@ -136,12 +137,7 @@ export const createWritingAgentKind = (): WritingAgentKind => ({
 
   capabilities() {
     return {
-      tools: writingToolSpecs.map((spec) => ({
-        name: spec.name,
-        label: spec.label,
-        tier: writingPolicy.toolInfo(spec.name).tier,
-        description: spec.description,
-      })),
+      tools: toolCapabilities(writingToolSpecs, writingPolicy),
       commands: writingPromptTemplates.map((template) => ({
         name: template.name,
         description: template.description ?? template.name,

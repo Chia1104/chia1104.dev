@@ -20,18 +20,6 @@
     "./runtime": {
       "types": "./src/runtime.ts",
       "default": "./src/runtime.ts"
-    },
-    "./prompts/system": {
-      "types": "./src/prompts/system.ts",
-      "default": "./src/prompts/system.ts"
-    },
-    "./tools/registry": {
-      "types": "./src/tools/registry.ts",
-      "default": "./src/tools/registry.ts"
-    },
-    "./tools/summarize": {
-      "types": "./src/tools/summarize.ts",
-      "default": "./src/tools/summarize.ts"
     }
   },
   "scripts": {

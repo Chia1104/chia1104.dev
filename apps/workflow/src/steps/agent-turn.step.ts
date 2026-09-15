@@ -10,7 +10,7 @@ import {
 import type { AgentTurnMarker } from "@chia/agent-host/execution";
 import type { AgentKindExecutor } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
-import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
+import { recordAgentUsage, sessionUsageListener } from "@chia/agent-host/usage";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
@@ -94,9 +94,8 @@ const titleSession = async (
   request: AgentTurnRequest
 ): Promise<void> => {
   try {
-    const [{ fallbackSessionTitle, generateSessionTitle }] = await Promise.all([
-      import("@chia/agent-runtime/pi/title"),
-    ]);
+    const { fallbackSessionTitle, generateSessionTitle } =
+      await import("@chia/agent-runtime/pi/title");
     const task = await resolveAgentTask(db, AGENT_TASK_IDS.sessionTitle);
     const generated = await generateSessionTitle({
       models: task.models,
@@ -266,11 +265,7 @@ async function runKindTurn(
     { session: () => ({ model, models }) }
   );
 
-  const repo = new PgSessionRepo(db, {
-    kind: definition.kind,
-    defaults: definition.defaults,
-  });
-  const session = await repo.open(request.sessionId);
+  const session = new PgSessionRepo(db, definition.kind).open(row);
   const approvedApprovalKeys = new Set(
     await listUnspentAgentApprovalKeys(db, request.sessionId)
   );
@@ -303,15 +298,13 @@ async function runKindTurn(
     consumeApproval: (key) => consumeAgentApproval(db, request.sessionId, key),
     onEvent: writer.push,
     flushEvents: writer.flush,
-    onUsage: (report) =>
-      recordAgentUsage(db, {
-        userId: row.userId,
-        sessionId: row.id,
-        runId: request.runId,
-        kind: row.kind,
-        credentialSource: credentialSourceOf(credentials, report.providerId),
-        ...report,
-      }),
+    onUsage: sessionUsageListener(db, {
+      userId: row.userId,
+      sessionId: row.id,
+      runId: request.runId,
+      kind: row.kind,
+      credentials,
+    }),
     persistApproval: (approval) =>
       recordAgentApprovalRequest(db, {
         sessionId: request.sessionId,

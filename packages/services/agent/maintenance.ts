@@ -2,7 +2,7 @@ import { loadKindConfig } from "@chia/agent-host/config";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { assertWithinAgentQuota } from "@chia/agent-host/quota";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
-import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
+import { sessionUsageListener } from "@chia/agent-host/usage";
 import { accessOf, createAgentModels } from "@chia/agent-runtime/models";
 import { canCompactBranch } from "@chia/agent-runtime/pi/compaction";
 import {
@@ -12,10 +12,7 @@ import {
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import { settingsFromRow } from "@chia/agent-runtime/session/pg-repo";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
-import type {
-  AgentNavigationOptions,
-  AgentUsageListener,
-} from "@chia/agent-runtime/types";
+import type { AgentNavigationOptions } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import { deleteAgentSession, withAgentSessionLock } from "@chia/db/repos/agent";
 import { AppError } from "@chia/service-kit/errors";
@@ -120,7 +117,7 @@ export const createAgentMaintenanceOperations = <
     signal: AbortSignal
   ) => {
     const db = caller.context.db;
-    const session = await sessions.repoFor(db).open(row.id);
+    const session = sessions.repoFor(db).open(row);
     const settings = settingsFromRow(row);
     const credentials = host.credentials.decrypt(
       host.credentials.read(caller.context.headers)
@@ -128,14 +125,12 @@ export const createAgentMaintenanceOperations = <
     const models = createAgentModels(credentials);
     const access = accessOf(credentials);
     const { defaults: house } = await loadKindConfig(db, definition);
-    const onUsage: AgentUsageListener = (report) =>
-      recordAgentUsage(ledger, {
-        userId: caller.userId,
-        sessionId: row.id,
-        kind: definition.kind,
-        credentialSource: credentialSourceOf(credentials, report.providerId),
-        ...report,
-      });
+    const onUsage = sessionUsageListener(ledger, {
+      userId: caller.userId,
+      sessionId: row.id,
+      kind: definition.kind,
+      credentials,
+    });
     const operationFor = async (taskId: string) => {
       const task = await resolveAgentTask(db, taskId, {
         session: () => ({
@@ -232,10 +227,7 @@ export const createAgentMaintenanceOperations = <
           const repo = sessions.repoFor(db);
           const position = input.position ?? "before";
           if (input.entryId) {
-            const target = await requireEntry(
-              await repo.open(row.id),
-              input.entryId
-            );
+            const target = await requireEntry(repo.open(row), input.entryId);
             if (
               position === "before" &&
               (target.type !== "message" || target.message.role !== "user")
@@ -247,10 +239,11 @@ export const createAgentMaintenanceOperations = <
             }
           }
 
-          const forked = await repo.fork(
-            { id: row.id },
-            { entryId: input.entryId, position, title: input.title }
-          );
+          const forked = await repo.fork(row, {
+            entryId: input.entryId,
+            position,
+            title: input.title,
+          });
           try {
             await definition.state.fork(db, row.id, forked.id);
             const detail = await sessions.detailFor(caller, forked.id);

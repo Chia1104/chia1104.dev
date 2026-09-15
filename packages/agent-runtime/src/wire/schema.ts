@@ -81,7 +81,6 @@ export const agentAttachmentSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export type AgentSelectionSource = z.infer<typeof agentSelectionSourceSchema>;
 export type AgentAttachmentInput = z.infer<typeof agentAttachmentInputSchema>;
 export type AgentAttachment = z.infer<typeof agentAttachmentSchema>;
 
