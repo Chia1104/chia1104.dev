@@ -1,14 +1,14 @@
 import { formatSkillInvocation } from "@earendil-works/pi-agent-core";
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
+import { Type } from "typebox";
 
-import { bindTool } from "@chia/agent-runtime/tools";
+import { bindTool, textResult } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 
 import { writingSkills } from "../prompts/skills.ts";
 
 import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
-import { Type, textResult } from "./schema.ts";
 
 /**
  * The only path from the skills index to a skill's full text. Pi's file-reading convention

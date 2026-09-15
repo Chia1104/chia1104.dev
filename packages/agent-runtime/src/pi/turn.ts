@@ -147,7 +147,7 @@ const volatileMessage = (text: string): AgentMessage => ({
 });
 
 /** The tool and its exact arguments: an approval is good for that call and nothing else. */
-const defaultApprovalKey = (request: ToolCallRequest): string =>
+export const defaultApprovalKey = (request: ToolCallRequest): string =>
   `${request.toolName}:${stableStringify(
     // SAFETY: tool arguments passed their registered TypeBox schema, so they are plain JSON.
     (request.input ?? null) as JsonValue

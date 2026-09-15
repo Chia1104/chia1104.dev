@@ -14,7 +14,6 @@ import type {
   AgentSessionDefaults,
   AgentSessionSettings,
   ThinkingLevel,
-  ToolTier,
 } from "../types.ts";
 
 import { PgSessionStorage } from "./pg-storage.ts";
@@ -201,19 +200,6 @@ const entriesToFork = async (
   return session.getBranch(target.parentId);
 };
 
-/**
- * Runtime settings are read and written on the session row rather than as tree entries: the
- * transport needs the current values before a turn exists in order to build one.
- */
-export const readSessionSettings = async (
-  db: DB,
-  sessionId: string
-): Promise<AgentSessionSettings | null> => {
-  const row = await getAgentSession(db, sessionId);
-  if (!row) return null;
-  return settingsFromRow(row);
-};
-
 export const writeSessionSettings = async (
   db: DB,
   sessionId: string,
@@ -233,7 +219,12 @@ export const writeSessionSettings = async (
   });
 };
 
-const settingsFromRow = (row: {
+/**
+ * Runtime settings live on the session row rather than as tree entries: the transport needs
+ * the current values before a turn exists in order to build one. Every reader goes through
+ * here, so an incomplete row fails the same way everywhere.
+ */
+export const settingsFromRow = (row: {
   id: string;
   providerId: string | null;
   modelId: string | null;
@@ -242,7 +233,7 @@ const settingsFromRow = (row: {
   autoApprove: string[];
 }): AgentSessionSettings => {
   if (!row.providerId || !row.modelId || !row.thinkingLevel) {
-    throw new Error(`Session ${row.id} has no LLM settings for this runtime`);
+    throw new Error(`Agent session ${row.id} has incomplete LLM settings.`);
   }
   return {
     providerId: row.providerId,
@@ -250,7 +241,6 @@ const settingsFromRow = (row: {
     thinkingLevel:
       /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
     activeToolNames: row.activeToolNames,
-    autoApprove:
-      /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
+    autoApprove: row.autoApprove,
   };
 };

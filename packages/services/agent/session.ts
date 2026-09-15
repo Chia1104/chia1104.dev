@@ -8,13 +8,13 @@ import {
 } from "@chia/agent-runtime/session/entries";
 import {
   PgSessionRepo,
+  settingsFromRow,
   writeSessionSettings,
 } from "@chia/agent-runtime/session/pg-repo";
 import { walkBranch, walkTranscript } from "@chia/agent-runtime/session/tree";
 import { estimateBranchContextTokens } from "@chia/agent-runtime/session/usage";
 import type {
   AgentSessionDefaults,
-  AgentSessionSettings,
   ThinkingLevel,
   ToolTier,
 } from "@chia/agent-runtime/types";
@@ -97,31 +97,10 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     context: { ...caller.context, db },
   });
 
-  const settingsOf = (row: {
-    id: string;
-    providerId: string | null;
-    modelId: string | null;
-    thinkingLevel: string | null;
-    activeToolNames: string[] | null;
-    autoApprove: string[];
-  }): AgentSessionSettings => {
-    if (!row.providerId || !row.modelId || !row.thinkingLevel) {
-      throw new Error(`Agent session ${row.id} has incomplete LLM settings.`);
-    }
-    return {
-      providerId: row.providerId,
-      modelId: row.modelId,
-      thinkingLevel:
-        /* SAFETY: persisted settings are validated before they are written. */ row.thinkingLevel as ThinkingLevel,
-      activeToolNames: row.activeToolNames,
-      autoApprove: row.autoApprove,
-    };
-  };
-
   const summaryOf = (
     row: NonNullable<Awaited<ReturnType<typeof loadOwnedRow>>>
   ) => {
-    const settings = settingsOf(row);
+    const settings = settingsFromRow(row);
     return {
       id: row.id,
       title: row.title,
@@ -143,11 +122,6 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     return approvals
       .filter((approval) => approval.decidedAt === null)
       .map((approval) => approval.toolName);
-  };
-
-  const replayOptions = {
-    toolInfo: definition.policy.toolInfo,
-    summarize: definition.policy.summarize,
   };
 
   const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
@@ -190,12 +164,12 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
 
     return {
       session: summaryOf(row),
-      settings: settingsOf(row),
+      settings: settingsFromRow(row),
       runtimeConfig: row.runtimeConfig,
       configVersion: row.configVersion,
       ...kindDetail,
       run,
-      events: entriesToWireEvents(transcriptEntries, replayOptions),
+      events: entriesToWireEvents(transcriptEntries, definition.policy),
       approvals: approvals.map((approval) => ({
         toolCallId: approval.toolCallId,
         toolName: approval.toolName,
@@ -314,7 +288,6 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     loadOwnedRow,
     loadOwnedSession,
     withDb,
-    settingsOf,
     detailFor,
     undecidedApprovals,
   };

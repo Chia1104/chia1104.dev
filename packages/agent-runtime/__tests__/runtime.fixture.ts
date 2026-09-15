@@ -5,13 +5,14 @@ import {
   fauxProvider,
   fauxToolCall,
 } from "@earendil-works/pi-ai/providers/faux";
+import { Type } from "typebox";
 import { vi } from "vitest";
 
 import { runPiTurn } from "../src/pi/turn.ts";
 import type { RunPiTurnOptions } from "../src/pi/turn.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
-import { bindTool, textResult, Type } from "../src/tools.ts";
+import { bindTool, textResult } from "../src/tools.ts";
 import type {
   AgentPolicy,
   AgentTurnBudget,

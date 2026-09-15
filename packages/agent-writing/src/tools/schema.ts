@@ -1,12 +1,4 @@
-import { Type } from "@chia/agent-runtime/tools";
-
-export {
-  LocaleSchema,
-  Type,
-  jsonBlock,
-  textResult,
-  truncate,
-} from "@chia/agent-runtime/tools";
+import { Type } from "typebox";
 
 export const DraftIdSchema = Type.Integer({
   description:

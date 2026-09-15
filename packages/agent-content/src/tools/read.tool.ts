@@ -1,10 +1,10 @@
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
+import { Type } from "typebox";
 
 import {
   bindTool,
   LocaleSchema,
-  Type,
   jsonBlock,
   textResult,
 } from "@chia/agent-runtime/tools";

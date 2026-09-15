@@ -1,13 +1,13 @@
 import type { AgentTool } from "@earendil-works/pi-agent-core";
+import { Type } from "typebox";
 
-import { bindTool } from "@chia/agent-runtime/tools";
+import { bindTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 
 import type { MemoryHit, WritingToolContext } from "../types.ts";
 
 import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
-import { Type, jsonBlock, textResult } from "./schema.ts";
 
 /**
  * `save_memory` writes a `fact`; `propose_lesson` writes a `lesson` that stays pending until

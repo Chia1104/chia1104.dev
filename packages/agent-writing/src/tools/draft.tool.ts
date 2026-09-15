@@ -1,7 +1,13 @@
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
+import { Type } from "typebox";
 
-import { bindTool } from "@chia/agent-runtime/tools";
+import {
+  bindTool,
+  LocaleSchema,
+  jsonBlock,
+  textResult,
+} from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { extractSections } from "@chia/ai/embeddings/markdown";
 import type { MarkdownSectionSpan } from "@chia/ai/embeddings/markdown";
@@ -20,13 +26,7 @@ import type {
 } from "../types.ts";
 
 import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
-import {
-  DraftIdSchema,
-  LocaleSchema,
-  Type,
-  jsonBlock,
-  textResult,
-} from "./schema.ts";
+import { DraftIdSchema } from "./schema.ts";
 
 /**
  * Shared-draft tools, addressed by `draftId`. Sequential: they mutate shared state, and pi's

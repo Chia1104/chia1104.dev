@@ -1,6 +1,7 @@
 import type { AgentTool } from "@earendil-works/pi-agent-core";
+import { Type } from "typebox";
 
-import { bindTool } from "@chia/agent-runtime/tools";
+import { bindTool, textResult, truncate } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 
 import type {
@@ -11,7 +12,6 @@ import type {
 } from "../types.ts";
 
 import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
-import { Type, textResult, truncate } from "./schema.ts";
 
 /**
  * Reads of the repositories the operator allowed. Every result names the commit sha the

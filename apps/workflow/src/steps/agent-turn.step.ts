@@ -12,9 +12,8 @@ import type { AgentKindExecutor } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
 import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
 import type {
+  AgentSessionSettings,
   AgentTurnExecution,
-  ThinkingLevel,
-  ToolTier,
 } from "@chia/agent-runtime/types";
 import type { OperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
 import type {
@@ -218,12 +217,15 @@ async function runKindTurn(
   signal: AbortSignal,
   writer: EventWriter
 ): Promise<AgentTurnOutcome> {
-  const [{ accessOf, createAgentModels }, { PgSessionRepo }, { runPiTurn }] =
-    await Promise.all([
-      import("@chia/agent-runtime/models"),
-      import("@chia/agent-runtime/session/pg-repo"),
-      import("@chia/agent-runtime/pi/turn"),
-    ]);
+  const [
+    { accessOf, createAgentModels },
+    { PgSessionRepo, settingsFromRow },
+    { runPiTurn },
+  ] = await Promise.all([
+    import("@chia/agent-runtime/models"),
+    import("@chia/agent-runtime/session/pg-repo"),
+    import("@chia/agent-runtime/pi/turn"),
+  ]);
 
   const state = await definition.state.load(db, request.sessionId);
   if (state === null) {
@@ -233,20 +235,15 @@ async function runKindTurn(
   }
   // Read per turn, not per session: an edit in the dashboard reaches the next turn.
   const { config, defaults } = await loadKindConfig(db, definition);
-  if (!row.providerId || !row.modelId || !row.thinkingLevel) {
+  // An incomplete row fails the same way on every attempt, so it must not read as retryable.
+  let settings: AgentSessionSettings;
+  try {
+    settings = settingsFromRow(row);
+  } catch (error) {
     throw new FatalError(
-      `Agent session ${request.sessionId} has incomplete LLM settings.`
+      error instanceof Error ? error.message : String(error)
     );
   }
-  const settings = {
-    providerId: row.providerId,
-    modelId: row.modelId,
-    thinkingLevel:
-      /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
-    activeToolNames: row.activeToolNames,
-    autoApprove:
-      /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
-  };
 
   /**
    * Per turn: closes over this operator's keys. Not a process singleton.
@@ -257,7 +254,7 @@ async function runKindTurn(
   const models = createAgentModels(credentials);
   // Before any kind reads: a model the caller may not run costs no query.
   const model = definition.models.resolve(
-    { providerId: row.providerId, modelId: row.modelId },
+    settings,
     models,
     accessOf(credentials),
     defaults

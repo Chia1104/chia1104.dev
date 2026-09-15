@@ -10,6 +10,7 @@ import {
   navigatePiSession,
 } from "@chia/agent-runtime/pi/maintenance";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
+import { settingsFromRow } from "@chia/agent-runtime/session/pg-repo";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
   AgentNavigationOptions,
@@ -120,7 +121,7 @@ export const createAgentMaintenanceOperations = <
   ) => {
     const db = caller.context.db;
     const session = await sessions.repoFor(db).open(row.id);
-    const settings = sessions.settingsOf(row);
+    const settings = settingsFromRow(row);
     const credentials = host.credentials.decrypt(
       host.credentials.read(caller.context.headers)
     );

@@ -7,6 +7,7 @@ import {
   InMemorySpanExporter,
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
+import { Type } from "typebox";
 import {
   afterAll,
   beforeAll,
@@ -18,7 +19,7 @@ import {
 } from "vitest";
 
 import { traceModelStream, withModelSpans } from "../src/telemetry.ts";
-import { bindTool, Type } from "../src/tools.ts";
+import { bindTool } from "../src/tools.ts";
 
 import { build, toolCallTurn } from "./runtime.fixture.ts";
 

@@ -1,5 +1,6 @@
 import * as z from "zod";
 
+import { defaultApprovalKey } from "@chia/agent-runtime/pi/turn";
 import type {
   AgentTurnPlan,
   RenderedAttachments,
@@ -7,8 +8,6 @@ import type {
 import type { ToolCallRequest, ToolTier } from "@chia/agent-runtime/types";
 import type { AgentAttachment } from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";
-import { stableStringify } from "@chia/utils/json";
-import type { JsonValue } from "@chia/utils/json";
 
 import { DraftNotFoundError, draftTitle } from "./draft/operations.ts";
 import { writingTurnBudget } from "./policy.ts";
@@ -78,10 +77,7 @@ export const writingApprovalKeyOf =
       case TOOL_NAMES.setPublished:
         return `${request.toolName}:${args.feedId}:${args.published}`;
       default:
-        return `${request.toolName}:${stableStringify(
-          // SAFETY: tool arguments passed their registered TypeBox schema, so they are plain JSON.
-          (request.input ?? null) as JsonValue
-        )}`;
+        return defaultApprovalKey(request);
     }
   };
 

@@ -1,7 +1,6 @@
 import type { AgentTool, AgentToolResult } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 import type { TSchema } from "typebox";
-import { Type } from "typebox";
 import * as z from "zod";
 
 import { locale } from "@chia/db/schema/enums";
@@ -11,8 +10,6 @@ import { locale } from "@chia/db/schema/enums";
  * `parameters` are hand-written typebox (model-facing descriptions).
  * Anything crossing a repository is re-parsed with zod inside `execute`.
  */
-
-export { Type };
 
 /**
  * Locale enum via pi-ai `StringEnum`, not `Type.Union([Type.Literal(...)])`.

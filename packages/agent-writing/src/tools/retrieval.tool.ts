@@ -1,7 +1,8 @@
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
+import { Type } from "typebox";
 
-import { bindTool } from "@chia/agent-runtime/tools";
+import { bindTool, textResult, truncate } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { reportError } from "@chia/observability/report";
 
@@ -14,7 +15,6 @@ import type {
 import { WEB_SEARCH_RECENCIES } from "../types.ts";
 
 import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
-import { Type, textResult, truncate } from "./schema.ts";
 
 /**
  * Shared content reads plus outbound web. Search and fetch are a cost and an SSRF surface,
