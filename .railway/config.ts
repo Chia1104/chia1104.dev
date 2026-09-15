@@ -26,6 +26,7 @@ const backendPackageWatchPatterns = [
   "/packages/ui/**",
   "/packages/utils/**",
   "/packages/workflow-control/**",
+  "/packages/observability/**",
 ];
 
 export const serviceWatchPatterns = [
