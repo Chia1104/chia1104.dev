@@ -1,3 +1,6 @@
+import { randomUUID } from "node:crypto";
+
+import { metrics, ValueType } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { PgInstrumentation } from "@opentelemetry/instrumentation-pg";
@@ -23,8 +26,10 @@ import { register } from "import-in-the-middle/register-hooks.mjs";
 import { env } from "./env";
 import { contentFreeExporter } from "./span-export";
 
-/** Incubating semconv key; copied rather than imported, as the package advises. */
+/** Incubating semconv keys; copied rather than imported, as the package advises. */
 const ATTR_DEPLOYMENT_ENVIRONMENT_NAME = "deployment.environment.name";
+const ATTR_SERVICE_INSTANCE_ID = "service.instance.id";
+const METRIC_PROCESS_MEMORY_USAGE = "process.memory.usage";
 
 export interface StartTelemetryOptions {
   serviceName: string;
@@ -69,6 +74,9 @@ const startOpenTelemetry = (serviceName: string) => {
         [ATTR_SERVICE_NAME]: serviceName,
         [ATTR_SERVICE_VERSION]: env.RAILWAY_GIT_COMMIT_SHA,
         [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: env.RAILWAY_ENVIRONMENT_NAME,
+        // Per process: during a redeploy the old and new replica export side by side, possibly
+        // under the same commit.
+        [ATTR_SERVICE_INSTANCE_ID]: randomUUID(),
       })
     ),
     instrumentations: [
@@ -85,8 +93,50 @@ const startOpenTelemetry = (serviceName: string) => {
     ],
   });
   sdk.start();
+  observeProcessMemory();
 
   process.once("SIGTERM", () => {
     void sdk.shutdown();
   });
+};
+
+/**
+ * Exports resident set size and V8's off-heap allocations, which the runtime instrumentation's
+ * heap metrics leave out.
+ */
+const observeProcessMemory = () => {
+  const meter = metrics.getMeter("@chia/observability");
+  const rss = meter.createObservableUpDownCounter(METRIC_PROCESS_MEMORY_USAGE, {
+    description: "Resident set size of the process.",
+    unit: "By",
+    valueType: ValueType.INT,
+  });
+  const external = meter.createObservableUpDownCounter(
+    "nodejs.memory.external",
+    {
+      description:
+        "Memory of C++ objects bound to JavaScript objects, including array buffers.",
+      unit: "By",
+      valueType: ValueType.INT,
+    }
+  );
+  const arrayBuffers = meter.createObservableUpDownCounter(
+    "nodejs.memory.array_buffers",
+    {
+      description:
+        "Memory of ArrayBuffers and SharedArrayBuffers, including Buffers.",
+      unit: "By",
+      valueType: ValueType.INT,
+    }
+  );
+
+  meter.addBatchObservableCallback(
+    (result) => {
+      const usage = process.memoryUsage();
+      result.observe(rss, usage.rss);
+      result.observe(external, usage.external);
+      result.observe(arrayBuffers, usage.arrayBuffers);
+    },
+    [rss, external, arrayBuffers]
+  );
 };
