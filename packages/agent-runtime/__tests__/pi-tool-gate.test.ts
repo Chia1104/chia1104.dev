@@ -9,8 +9,10 @@ import type { AgentPolicy, ToolCallRequest } from "../src/types.ts";
  */
 
 const policy = (overrides: Partial<AgentPolicy> = {}): AgentPolicy => ({
-  tierOf: (name) => (name.startsWith("write_") ? "write" : "read"),
-  labelOf: (name) => name,
+  toolInfo: (name) => ({
+    label: name,
+    tier: name.startsWith("write_") ? "write" : "read",
+  }),
   requiresApproval: (tier) => tier === "write",
   summarize: () => "done",
   ...overrides,
@@ -165,7 +167,7 @@ describe("createPiToolCallGate", () => {
     // `commit` means nothing to this policy; it must not be treated as gated by accident.
     const gate = createPiToolCallGate({
       policy: policy({
-        tierOf: () => "commit",
+        toolInfo: (name) => ({ label: name, tier: "commit" }),
         requiresApproval: (t) => t === "write",
       }),
       autoApprove: [],

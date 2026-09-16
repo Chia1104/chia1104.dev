@@ -71,7 +71,7 @@ describe("buildBranchContext", () => {
   it("ignores labels and rows of retired entry types", () => {
     const branch: SessionEntry[] = [
       user("u1", null, "Hi"),
-      {
+      /* SAFETY: A label row this runtime no longer writes. */ {
         type: "label",
         id: "l1",
         parentId: "u1",
@@ -79,7 +79,7 @@ describe("buildBranchContext", () => {
         timestamp: 3,
         targetId: "u1",
         label: "start",
-      },
+      } as never,
       /* SAFETY: A row written by an earlier Pi release that this runtime no longer models. */ {
         type: "session_info",
         id: "s1",
@@ -129,7 +129,6 @@ describe("buildBranchContext", () => {
         summary: "Condensed.",
         tokensBefore: 1_000,
         retainedTail: [aborted, fauxAssistantMessage("Done", { timestamp: 6 })],
-        fromHook: false,
       },
       user("u3", "c1", "More"),
       assistant("a3", "u3", "", aborted),
@@ -156,7 +155,6 @@ describe("buildBranchContext", () => {
         summary: "Everything so far.",
         tokensBefore: 90_000,
         retainedTail: [retained],
-        fromHook: false,
       },
       user("u2", "c1", "After"),
     ];

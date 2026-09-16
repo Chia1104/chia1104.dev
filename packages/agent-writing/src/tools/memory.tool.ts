@@ -1,10 +1,12 @@
+import { Type } from "typebox";
+
+import { defineTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
+import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 
-import type { MemoryHit } from "../types.ts";
-import type { WritingTool } from "../types.ts";
+import type { MemoryHit, WritingToolContext } from "../types.ts";
 
-import { TOOL_NAMES, labelOf } from "./registry.ts";
-import { Type, defineTool, jsonBlock, textResult } from "./schema.ts";
+import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
 
 /**
  * `save_memory` writes a `fact`; `propose_lesson` writes a `lesson` that stays pending until
@@ -25,9 +27,9 @@ const MAX_SEARCH_LIMIT = 10;
  */
 const MEMORY_BODY_TOKEN_BUDGET = 8_000;
 
-export const saveMemoryTool = defineTool({
+export const saveMemorySpec = {
   name: TOOL_NAMES.saveMemory,
-  label: labelOf(TOOL_NAMES.saveMemory),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.saveMemory].label,
   description:
     "Remember a verified fact for future sessions: a version number, an API signature, a " +
     "benchmark figure, a decision the operator made. Record the conclusion with its source, not " +
@@ -56,7 +58,11 @@ export const saveMemoryTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const saveMemoryTool = defineTool(
+  saveMemorySpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const saved = await context.memory.save(
       {
         kind: "fact",
@@ -76,12 +82,12 @@ export const saveMemoryTool = defineTool({
         sourceUrl: saved.sourceUrl,
       }
     );
-  },
-});
+  }
+);
 
-export const proposeLessonTool = defineTool({
+export const proposeLessonSpec = {
   name: TOOL_NAMES.proposeLesson,
-  label: labelOf(TOOL_NAMES.proposeLesson),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.proposeLesson].label,
   description:
     "Propose a standing lesson for the operator to review: a preference about structure, " +
     "tone, length, sourcing or what to avoid that they just stated, corrected you on, or " +
@@ -112,7 +118,11 @@ export const proposeLessonTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const proposeLessonTool = defineTool(
+  proposeLessonSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const saved = await context.memory.save(
       {
         kind: "lesson",
@@ -132,12 +142,12 @@ export const proposeLessonTool = defineTool({
         supersedes: params.supersedes ?? null,
       }
     );
-  },
-});
+  }
+);
 
-export const searchMemoryTool = defineTool({
+export const searchMemorySpec = {
   name: TOOL_NAMES.searchMemory,
-  label: labelOf(TOOL_NAMES.searchMemory),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.searchMemory].label,
   description:
     "Search what earlier sessions verified and read: saved facts and the full text of pages " +
     "fetched before. Distinct from `search_posts`, which searches the blog itself. Each hit " +
@@ -157,7 +167,11 @@ export const searchMemoryTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const searchMemoryTool = defineTool(
+  searchMemorySpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const hits = await context.memory.search(
       { query: params.query, limit: params.limit ?? DEFAULT_SEARCH_LIMIT },
       signal
@@ -174,8 +188,8 @@ export const searchMemoryTool = defineTool({
       `${hits.length} memory hit(s) for "${params.query}":\n\n${hits.map(formatHit).join("\n\n")}`,
       { query: params.query, hits }
     );
-  },
-});
+  }
+);
 
 const formatHit = (hit: MemoryHit, index: number): string => {
   const heading = `${index + 1}. [${hit.kind}] **${hit.title}** (#${hit.id})`;
@@ -184,9 +198,9 @@ const formatHit = (hit: MemoryHit, index: number): string => {
   return `${heading}${source}${path}\n   ${hit.snippet}`;
 };
 
-export const getMemoryTool = defineTool({
+export const getMemorySpec = {
   name: TOOL_NAMES.getMemory,
-  label: labelOf(TOOL_NAMES.getMemory),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.getMemory].label,
   description:
     "Read one memory by the id a `search_memory` hit carries. A long page degrades to its " +
     "matched sections and then to an outline; pass the hit's `headingPath` as `focusHeadings` " +
@@ -205,7 +219,11 @@ export const getMemoryTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const getMemoryTool = defineTool(
+  getMemorySpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const memory = await context.memory.get(params.id, signal);
     if (!memory) {
       throw new Error(
@@ -236,12 +254,5 @@ export const getMemoryTool = defineTool({
         `(${detail}, ${totalTokens} tokens)\n\n${body}\n\n${jsonBlock(meta)}`,
       { ...meta, detail, contentTokens: totalTokens }
     );
-  },
-});
-
-export const memoryTools: WritingTool[] = [
-  searchMemoryTool,
-  getMemoryTool,
-  saveMemoryTool,
-  proposeLessonTool,
-];
+  }
+);

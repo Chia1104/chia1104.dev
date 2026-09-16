@@ -5,6 +5,7 @@ import { ApiKeyScope } from "@chia/auth/apikey";
 import { CallerTier } from "@chia/auth/tier";
 import { getTweet } from "@chia/integrations/x";
 import type { TweetResult } from "@chia/integrations/x";
+import { logger } from "@chia/observability/logger";
 import { isUrl } from "@chia/utils/is";
 import request from "@chia/utils/request";
 
@@ -120,7 +121,13 @@ export const tweetRoute = contractOS.toolings.tweet
       );
       return result;
     } catch (error) {
-      if (cached) return cached.result;
+      if (cached) {
+        logger.warn(
+          { err: error, id: opts.input.id },
+          "Tweet fetch failed; serving the retained result"
+        );
+        return cached.result;
+      }
       throw opts.errors.SERVICE_UNAVAILABLE({ cause: error });
     }
   });

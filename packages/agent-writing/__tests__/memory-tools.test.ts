@@ -8,12 +8,13 @@ import {
   saveMemoryTool,
   searchMemoryTool,
 } from "../src/tools/memory.tool.ts";
-import { TOOL_NAMES, tierOf } from "../src/tools/registry.ts";
-import { summarizeToolResult } from "../src/tools/summarize.ts";
 import {
-  createWritingTools,
-  readOnlyToolNames,
-} from "../src/tools/tool-set.ts";
+  TOOL_INFO_BY_NAME,
+  TOOL_NAMES,
+  toolInfo,
+} from "../src/tools/registry.ts";
+import { summarizeToolResult } from "../src/tools/summarize.ts";
+import { writingToolSpecs } from "../src/tools/tool-set.ts";
 import type { WritingToolContext } from "../src/types.ts";
 
 import {
@@ -40,29 +41,19 @@ describe("memory tools", () => {
   it("saves a fact and finds it again by search, then reads it by id", async () => {
     const context = createContext();
 
-    const saved = await saveMemoryTool.execute(
-      "call-1",
-      {
-        title: "pgvector 0.8 adds iterative index scans",
-        content: "Set `hnsw.iterative_scan = relaxed_order` on pgvector 0.8+.",
-        sourceUrl: "https://github.com/pgvector/pgvector#iterative-index-scans",
-      },
-      undefined,
-      undefined,
-      context
-    );
+    const saved = await saveMemoryTool(context).execute("call-1", {
+      title: "pgvector 0.8 adds iterative index scans",
+      content: "Set `hnsw.iterative_scan = relaxed_order` on pgvector 0.8+.",
+      sourceUrl: "https://github.com/pgvector/pgvector#iterative-index-scans",
+    });
     expect(saved.details).toMatchObject({ id: 1, kind: "fact" });
     expect(summarizeToolResult(TOOL_NAMES.saveMemory, saved, false)).toBe(
       "Saved memory #1."
     );
 
-    const found = await searchMemoryTool.execute(
-      "call-2",
-      { query: "iterative_scan" },
-      undefined,
-      undefined,
-      context
-    );
+    const found = await searchMemoryTool(context).execute("call-2", {
+      query: "iterative_scan",
+    });
     expect(found.details).toMatchObject({
       query: "iterative_scan",
       hits: [
@@ -76,13 +67,7 @@ describe("memory tools", () => {
       'Searched memory for "iterative_scan" (1 hits).'
     );
 
-    const read = await getMemoryTool.execute(
-      "call-3",
-      { id: 1 },
-      undefined,
-      undefined,
-      context
-    );
+    const read = await getMemoryTool(context).execute("call-3", { id: 1 });
     expect(read.content[0]).toMatchObject({
       text: expect.stringContaining("relaxed_order"),
     });
@@ -96,32 +81,25 @@ describe("memory tools", () => {
   it("tells the model to research when nothing matches, and rejects an unknown id", async () => {
     const context = createContext();
 
-    const found = await searchMemoryTool.execute(
-      "call-1",
-      { query: "nothing" },
-      undefined,
-      undefined,
-      context
-    );
+    const found = await searchMemoryTool(context).execute("call-1", {
+      query: "nothing",
+    });
     expect(found.details).toEqual({ query: "nothing", hits: [] });
     expect(found.content[0]).toMatchObject({
       text: expect.stringContaining("web_search"),
     });
 
     await expect(
-      getMemoryTool.execute("call-2", { id: 42 }, undefined, undefined, context)
+      getMemoryTool(context).execute("call-2", { id: 42 })
     ).rejects.toThrow("No memory #42");
   });
 
   it("save_memory only ever writes facts; sources have another author", async () => {
     const context = createContext();
-    await saveMemoryTool.execute(
-      "call-1",
-      { title: "A decision", content: "Use tabs." },
-      undefined,
-      undefined,
-      context
-    );
+    await saveMemoryTool(context).execute("call-1", {
+      title: "A decision",
+      content: "Use tabs.",
+    });
     expect(context.memory.all.map((row) => row.kind)).toEqual(["fact"]);
     expect(context.memory.all[0]?.sourceUrl).toBeNull();
   });
@@ -129,17 +107,11 @@ describe("memory tools", () => {
   it("propose_lesson writes a pending lesson that may supersede an active one", async () => {
     const context = createContext();
 
-    const proposed = await proposeLessonTool.execute(
-      "call-1",
-      {
-        title: "Open with the problem, not the tool",
-        content: "The first paragraph names the problem the post solves.",
-        supersedes: 3,
-      },
-      undefined,
-      undefined,
-      context
-    );
+    const proposed = await proposeLessonTool(context).execute("call-1", {
+      title: "Open with the problem, not the tool",
+      content: "The first paragraph names the problem the post solves.",
+      supersedes: 3,
+    });
 
     expect(proposed.details).toEqual({
       id: 1,
@@ -163,20 +135,25 @@ describe("memory tools", () => {
   });
 
   it("is classified as read for retrieval and draft for the writes, and sits before the draft tools", () => {
-    expect(tierOf(TOOL_NAMES.searchMemory)).toBe("read");
-    expect(tierOf(TOOL_NAMES.getMemory)).toBe("read");
-    expect(tierOf(TOOL_NAMES.saveMemory)).toBe("draft");
-    expect(tierOf(TOOL_NAMES.proposeLesson)).toBe("draft");
+    expect(toolInfo(TOOL_NAMES.searchMemory).tier).toBe("read");
+    expect(toolInfo(TOOL_NAMES.getMemory).tier).toBe("read");
+    expect(toolInfo(TOOL_NAMES.saveMemory).tier).toBe("draft");
+    expect(toolInfo(TOOL_NAMES.proposeLesson).tier).toBe("draft");
 
-    const names = createWritingTools().map((tool) => tool.name);
+    const names = writingToolSpecs.map((spec) => spec.name);
     expect(names.indexOf(TOOL_NAMES.searchMemory)).toBeGreaterThan(
       names.indexOf(TOOL_NAMES.fetchUrl)
     );
     expect(names.indexOf(TOOL_NAMES.saveMemory)).toBeLessThan(
       names.indexOf(TOOL_NAMES.readDraft)
     );
-    expect(readOnlyToolNames()).toContain(TOOL_NAMES.saveMemory);
-    expect(readOnlyToolNames()).not.toContain(TOOL_NAMES.commitDraft);
+    const commitTier = Object.entries(TOOL_INFO_BY_NAME)
+      .filter(([, info]) => info.tier === "commit")
+      .map(([name]) => name);
+    expect(commitTier).toEqual([
+      TOOL_NAMES.commitDraft,
+      TOOL_NAMES.setPublished,
+    ]);
   });
 });
 
@@ -222,13 +199,10 @@ describe("InMemoryMemoryPort", () => {
       sourceUrl: "https://example.com/long",
     });
 
-    const read = await getMemoryTool.execute(
-      "call-1",
-      { id: 1, focusHeadings: ["Section 37"] },
-      undefined,
-      undefined,
-      { ...createContext(), memory: port }
-    );
+    const read = await getMemoryTool({
+      ...createContext(),
+      memory: port,
+    }).execute("call-1", { id: 1, focusHeadings: ["Section 37"] });
 
     expect(read.details).toMatchObject({ id: 1, detail: "sections" });
     expect(read.content[0]).toMatchObject({

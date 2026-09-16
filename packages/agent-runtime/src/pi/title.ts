@@ -1,6 +1,8 @@
 import { contentText } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
+import { logger } from "@chia/observability/logger";
+
 import type { AgentModelUsage } from "../types.ts";
 
 /**
@@ -122,11 +124,20 @@ export const generateSessionTitle = async ({
       modelId: reply.model,
       usage: reply.usage,
     });
-    if (reply.stopReason === "error" || reply.stopReason === "aborted") {
+    if (reply.stopReason === "error") {
+      logger.warn(
+        { model: model.id, detail: reply.errorMessage },
+        "Session title request failed"
+      );
       return null;
     }
+    if (reply.stopReason === "aborted") return null;
     return normalizeSessionTitle(contentText(reply.content));
-  } catch {
+  } catch (error) {
+    logger.warn(
+      { err: error, model: model.id },
+      "Session title request failed"
+    );
     return null;
   }
 };

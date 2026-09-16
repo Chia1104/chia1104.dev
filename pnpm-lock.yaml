@@ -324,9 +324,6 @@ catalogs:
     '@keyv/valkey':
       specifier: ^1.0.11
       version: 1.0.11
-    '@upstash/ratelimit':
-      specifier: 2.0.8
-      version: 2.0.8
     '@upstash/redis':
       specifier: 1.38.4
       version: 1.38.4
@@ -1165,6 +1162,9 @@ importers:
       hono:
         specifier: catalog:hono
         version: 4.13.5
+      keyv:
+        specifier: catalog:kv
+        version: 5.6.0
       ky:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2039,6 +2039,9 @@ importers:
       client-only:
         specifier: 'catalog:'
         version: 0.0.1
+      keyv:
+        specifier: catalog:kv
+        version: 5.6.0
       resend:
         specifier: catalog:email
         version: 6.26.0(@react-email/render@2.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
@@ -2085,6 +2088,9 @@ importers:
       '@mdx-js/react':
         specifier: catalog:fumadocs
         version: 3.1.1(@types/react@19.2.18)(react@19.2.8)
+      dayjs:
+        specifier: 'catalog:'
+        version: 1.11.23
       es-toolkit:
         specifier: 'catalog:'
         version: 1.52.0
@@ -2158,6 +2164,9 @@ importers:
       '@chia/kv':
         specifier: workspace:*
         version: link:../kv
+      '@chia/observability':
+        specifier: workspace:*
+        version: link:../observability
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
@@ -2282,9 +2291,6 @@ importers:
       '@t3-oss/env-core':
         specifier: catalog:env
         version: 0.13.11(typescript@7.0.2)(zod@4.5.4)
-      '@upstash/ratelimit':
-        specifier: catalog:kv
-        version: 2.0.8(@upstash/redis@1.38.4)
       '@upstash/redis':
         specifier: catalog:kv
         version: 1.38.4
@@ -2319,6 +2325,9 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
+      dayjs:
+        specifier: 'catalog:'
+        version: 1.11.23
     devDependencies:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
@@ -2444,6 +2453,9 @@ importers:
       hono:
         specifier: catalog:hono
         version: 4.13.5
+      keyv:
+        specifier: catalog:kv
+        version: 5.6.0
       zod:
         specifier: 'catalog:'
         version: 4.5.4
@@ -2517,6 +2529,9 @@ importers:
       github-slugger:
         specifier: catalog:unified
         version: 2.0.0
+      keyv:
+        specifier: catalog:kv
+        version: 5.6.0
       ky:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2675,6 +2690,9 @@ importers:
       clsx:
         specifier: catalog:ui
         version: 2.1.1
+      dayjs:
+        specifier: 'catalog:'
+        version: 1.11.23
       es-toolkit:
         specifier: 'catalog:'
         version: 1.52.0
@@ -7949,15 +7967,6 @@ packages:
 
   '@upsetjs/venn.js@2.0.0':
     resolution: {integrity: sha512-WbBhLrooyePuQ1VZxrJjtLvTc4NVfpOyKx0sKqioq9bX1C1m7Jgykkn8gLrtwumBioXIqam8DLxp88Adbue6Hw==}
-
-  '@upstash/core-analytics@0.0.10':
-    resolution: {integrity: sha512-7qJHGxpQgQr9/vmeS1PktEwvNAF7TI4iJDi8Pu2CFZ9YUGHZH4fOP5TfYlZ4aVxfopnELiE4BS4FBjyK7V1/xQ==}
-    engines: {node: '>=16.0.0'}
-
-  '@upstash/ratelimit@2.0.8':
-    resolution: {integrity: sha512-YSTMBJ1YIxsoPkUMX/P4DDks/xV5YYCswWMamU8ZIfK9ly6ppjRnVOyBhMDXBmzjODm4UQKcxsJPvaeFAijp5w==}
-    peerDependencies:
-      '@upstash/redis': ^1.34.3
 
   '@upstash/redis@1.38.3':
     resolution: {integrity: sha512-vtS0BonQHU6kDSWvHTISh+LOuLIEk+jeMXebv20CDJ/aHGOG085SGa8OpI+I+Ow8WgPFhqH23XG8kQ2LXXRnag==}
@@ -19118,15 +19127,6 @@ snapshots:
     optionalDependencies:
       d3-selection: 3.0.0
       d3-transition: 3.0.1(d3-selection@3.0.0)
-
-  '@upstash/core-analytics@0.0.10':
-    dependencies:
-      '@upstash/redis': 1.38.4
-
-  '@upstash/ratelimit@2.0.8(@upstash/redis@1.38.4)':
-    dependencies:
-      '@upstash/core-analytics': 0.0.10
-      '@upstash/redis': 1.38.4
 
   '@upstash/redis@1.38.3':
     dependencies:

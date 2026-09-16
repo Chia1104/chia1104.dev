@@ -2,7 +2,7 @@ import { loadKindConfig } from "@chia/agent-host/config";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { assertWithinAgentQuota } from "@chia/agent-host/quota";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
-import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
+import { sessionUsageListener } from "@chia/agent-host/usage";
 import { accessOf, createAgentModels } from "@chia/agent-runtime/models";
 import { canCompactBranch } from "@chia/agent-runtime/pi/compaction";
 import {
@@ -10,11 +10,9 @@ import {
   navigatePiSession,
 } from "@chia/agent-runtime/pi/maintenance";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
+import { settingsFromRow } from "@chia/agent-runtime/session/pg-repo";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
-import type {
-  AgentNavigationOptions,
-  AgentUsageListener,
-} from "@chia/agent-runtime/types";
+import type { AgentNavigationOptions } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import { deleteAgentSession, withAgentSessionLock } from "@chia/db/repos/agent";
 import { AppError } from "@chia/service-kit/errors";
@@ -37,9 +35,10 @@ type OwnedSession<TState, TConfig extends object> = NonNullable<
 
 const MAINTENANCE_DEADLINE_MS = 120_000;
 
-const maintenanceTimedOut = (action: string) =>
+const maintenanceTimedOut = (action: string, cause?: unknown) =>
   new AppError("TIMEOUT", {
     message: `Could not ${action} within ${MAINTENANCE_DEADLINE_MS / 1000}s. The conversation is unchanged.`,
+    cause,
   });
 
 const nothingToCompact = () =>
@@ -119,27 +118,20 @@ export const createAgentMaintenanceOperations = <
     signal: AbortSignal
   ) => {
     const db = caller.context.db;
-    const session = await sessions.repoFor(db).openById(row.id);
-    const settings = sessions.settingsOf(row);
+    const session = sessions.repoFor(db).open(row);
+    const settings = settingsFromRow(row);
     const credentials = host.credentials.decrypt(
       host.credentials.read(caller.context.headers)
     );
     const models = createAgentModels(credentials);
     const access = accessOf(credentials);
     const { defaults: house } = await loadKindConfig(db, definition);
-    const onUsage: AgentUsageListener = (report) =>
-      recordAgentUsage(ledger, {
-        userId: caller.userId,
-        sessionId: row.id,
-        kind: definition.kind,
-        credentialSource: credentialSourceOf(credentials, report.providerId),
-        ...report,
-      });
     const operationFor = async (taskId: string) => {
       const task = await resolveAgentTask(db, taskId, {
         session: () => ({
           model: definition.models.resolve(settings, models, access, house),
           models,
+          credentials,
         }),
       });
       return {
@@ -148,7 +140,12 @@ export const createAgentMaintenanceOperations = <
         model: task.model,
         models: task.models,
         signal,
-        onUsage,
+        onUsage: sessionUsageListener(ledger, {
+          userId: caller.userId,
+          sessionId: row.id,
+          kind: definition.kind,
+          credentialsFor: () => task.credentials,
+        }),
       };
     };
     return {
@@ -190,7 +187,7 @@ export const createAgentMaintenanceOperations = <
           try {
             compacted = await maintenance.compact(input.customInstructions);
           } catch (error) {
-            if (deadline.aborted) throw maintenanceTimedOut("compact");
+            if (deadline.aborted) throw maintenanceTimedOut("compact", error);
             throw error;
           }
           if (!compacted) throw nothingToCompact();
@@ -216,7 +213,6 @@ export const createAgentMaintenanceOperations = <
           await requireEntry(maintenance.session, input.entryId);
           const result = await maintenance.navigate(input.entryId, {
             summarize: input.summarize,
-            label: input.label,
           });
           if (result.cancelled) throw maintenanceTimedOut("rewind");
           return sessions.detailFor(caller, input.sessionId);
@@ -232,10 +228,7 @@ export const createAgentMaintenanceOperations = <
           const repo = sessions.repoFor(db);
           const position = input.position ?? "before";
           if (input.entryId) {
-            const target = await requireEntry(
-              await repo.openById(row.id),
-              input.entryId
-            );
+            const target = await requireEntry(repo.open(row), input.entryId);
             if (
               position === "before" &&
               (target.type !== "message" || target.message.role !== "user")
@@ -247,10 +240,11 @@ export const createAgentMaintenanceOperations = <
             }
           }
 
-          const forked = await repo.fork(
-            { id: row.id },
-            { entryId: input.entryId, position, title: input.title }
-          );
+          const forked = await repo.fork(row, {
+            entryId: input.entryId,
+            position,
+            title: input.title,
+          });
           try {
             await definition.state.fork(db, row.id, forked.id);
             const detail = await sessions.detailFor(caller, forked.id);

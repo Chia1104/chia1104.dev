@@ -8,7 +8,7 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
+import { runPiTurn } from "@chia/agent-runtime/pi/turn";
 import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
@@ -24,8 +24,9 @@ import type {
 
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
-import { DEFAULT_WRITING_MODEL } from "../src/models.ts";
-import { runWritingTurn } from "../src/runtime.ts";
+import { DEFAULT_WRITING_MODEL, resolveWritingModel } from "../src/models.ts";
+import { writingPolicy } from "../src/policy.ts";
+import { prepareWritingTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 
 import {
@@ -57,8 +58,14 @@ interface Fixture {
       approvedApprovalKeys?: ReadonlySet<string>;
       consumeApproval?: (key: string) => Promise<void>;
     }
-  ) => Promise<AgentTurnExecution<ApprovalRequest>>;
+  ) => Promise<AgentTurnExecution>;
 }
+
+const approvalOf = (execution: AgentTurnExecution) =>
+  execution.status === "awaiting_approval" ? execution.approval : undefined;
+
+const errorOf = (execution: AgentTurnExecution) =>
+  execution.status === "error" ? execution.error : undefined;
 
 const build = async (
   settings: Partial<AgentSessionSettings> = {},
@@ -128,23 +135,28 @@ const build = async (
     session,
     setResponses: faux.setResponses,
     run: (text, options) =>
-      runWritingTurn({
+      runPiTurn({
+        ...prepareWritingTurn({
+          agentSessionId: SESSION_ID,
+          content,
+          web,
+          github: createFakeGitHubPort(),
+          draft,
+          sessionDrafts: [{ draftId: DRAFT_ID, lastSeenRevision: 0 }],
+          memory,
+          autoApprove: sessionSettings.autoApprove,
+        }),
+        policy: writingPolicy,
         session,
         settings: sessionSettings,
         agentSessionId: SESSION_ID,
-        content,
-        web,
-        github: createFakeGitHubPort(),
-        draft,
-        sessionDrafts: [{ draftId: DRAFT_ID, lastSeenRevision: 0 }],
-        memory,
+        model: resolveWritingModel(sessionSettings, models),
+        models,
         message: { text, attachments: options?.attachments },
         onEvent: (event) => {
           events.push(event);
           options?.onEvent?.(event);
         },
-        models,
-        toApproval: (approval) => approval,
         persistApproval: async () => undefined,
         approvedApprovalKeys: options?.approvedApprovalKeys,
         consumeApproval: options?.consumeApproval,
@@ -153,7 +165,7 @@ const build = async (
   };
 };
 
-describe("runWritingTurn", () => {
+describe("prepareWritingTurn", () => {
   let fixture: Fixture;
 
   beforeEach(async () => {
@@ -361,7 +373,7 @@ describe("runWritingTurn", () => {
     const result = await fixture.run("Write and commit a post");
 
     expect(fixture.content.commits).toHaveLength(0);
-    expect(result.approval?.toolName).toBe(TOOL_NAMES.commitDraft);
+    expect(approvalOf(result)?.toolName).toBe(TOOL_NAMES.commitDraft);
 
     const request = fixture.events.find((e) => e.type === "approval:request");
     expect(request).toMatchObject({
@@ -449,7 +461,7 @@ describe("runWritingTurn", () => {
     ]);
     const gated = await fixture.run("Write and commit a post");
     const revision = (await fixture.draft.get(DRAFT_ID)).revision;
-    expect(gated.approval?.key).toBe(
+    expect(approvalOf(gated)?.key).toBe(
       `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${revision}`
     );
 
@@ -469,14 +481,14 @@ describe("runWritingTurn", () => {
       fauxAssistantMessage("Committed."),
     ]);
     const relayed = await fixture.run("Approved.", {
-      approvedApprovalKeys: new Set([gated.approval!.key]),
+      approvedApprovalKeys: new Set([approvalOf(gated)!.key]),
       consumeApproval,
     });
 
     expect(relayed.status).toBe("done");
     expect(fixture.content.commits).toHaveLength(1);
     expect(consumeApproval).toHaveBeenCalledExactlyOnceWith(
-      gated.approval!.key
+      approvalOf(gated)!.key
     );
   });
 
@@ -601,7 +613,7 @@ describe("runWritingTurn", () => {
     expect(fixture.content.commits).toHaveLength(0);
     expect(consumeApproval).not.toHaveBeenCalled();
     expect(result.status).toBe("awaiting_approval");
-    expect(result.approval?.key).toBe(
+    expect(approvalOf(result)?.key).toBe(
       `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approvedRevision + 1}`
     );
   });
@@ -806,7 +818,7 @@ describe("runWritingTurn", () => {
     const result = await fixture.run("Hi");
 
     expect(result.status).toBe("error");
-    expect(result.error).toEqual({
+    expect(errorOf(result)).toEqual({
       kind: "auth",
       message: "401 Unauthorized: invalid x-api-key",
     });

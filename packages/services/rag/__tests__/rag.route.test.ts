@@ -1,15 +1,18 @@
 import { call } from "@orpc/server";
-import { afterAll, afterEach, beforeAll, beforeEach, vi } from "vitest";
-
-import { stubTestEnv } from "@chia/test/env";
 import {
-  ADMIN_ID,
-  contextOf,
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
   describe,
   expect,
-  it as orpcIt,
-  sessionOf,
-} from "@chia/test/orpc";
+  vi,
+} from "vitest";
+
+import { contextOf } from "@chia/test/context";
+import { stubTestEnv } from "@chia/test/env";
+import { it as orpcIt } from "@chia/test/orpc";
+import { ADMIN_ID, sessionOf } from "@chia/test/session";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type { BaseOSContext } from "../../shared/context";

@@ -64,7 +64,7 @@ export interface AgentModelRef {
 export interface AgentKindService {
   listSessions(
     caller: AgentServiceCaller,
-    input: { limit?: number; includeDeleted?: boolean } | undefined
+    input: { limit?: number } | undefined
   ): Promise<{
     items: agentContracts.AgentSessionSummary[];
     nextCursor: string | number | null;

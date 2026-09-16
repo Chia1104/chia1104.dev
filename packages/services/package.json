@@ -37,6 +37,10 @@
       "types": "./agent/agent.contract.ts",
       "default": "./agent/agent.contract.ts"
     },
+    "./agent/abort": {
+      "types": "./agent/abort.ts",
+      "default": "./agent/abort.ts"
+    },
     "./agent/admin.contract": {
       "types": "./agent/admin.contract.ts",
       "default": "./agent/admin.contract.ts"
@@ -123,6 +127,7 @@
     "@t3-oss/env-core": "catalog:env",
     "drizzle-orm": "catalog:drizzle",
     "github-slugger": "catalog:unified",
+    "keyv": "catalog:kv",
     "ky": "catalog:",
     "node-html-parser": "catalog:unified",
     "zod": "catalog:"

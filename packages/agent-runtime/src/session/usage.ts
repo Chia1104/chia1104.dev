@@ -6,7 +6,7 @@ import {
 
 import { buildBranchContext } from "./context.ts";
 import type { SessionEntry } from "./entries.ts";
-import { contextEntries } from "./entries.ts";
+import { toPiEntries } from "./entries.ts";
 
 /**
  * Tokens the next provider request will carry on the active branch.
@@ -27,7 +27,7 @@ export const estimateBranchContextTokens = (
     return estimateContextTokens(messages).tokens;
   }
 
-  const entriesAfterCompaction = contextEntries(
+  const entriesAfterCompaction = toPiEntries(
     entries.slice(lastCompactionIndex + 1)
   );
   if (getLastAssistantUsage(entriesAfterCompaction)) {

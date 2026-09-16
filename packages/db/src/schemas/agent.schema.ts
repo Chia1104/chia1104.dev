@@ -133,7 +133,6 @@ export const agentSessionEntries = agentSchema.table(
     primaryKey({ columns: [table.sessionId, table.id] }),
     index("agent_session_entry_seq_idx").on(table.sessionId, table.seq),
     index("agent_session_entry_parent_idx").on(table.sessionId, table.parentId),
-    index("agent_session_entry_type_idx").on(table.sessionId, table.type),
   ]
 );
 

@@ -25,12 +25,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { orpc } from "@/libs/orpc/client";
+import { formatDateTime } from "@chia/utils/format";
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
+import { orpc } from "@/libs/orpc/client";
 
 const callbackMessages = new Map<
   string,
@@ -72,10 +69,6 @@ const callbackMessages = new Map<
     },
   ],
 ]);
-
-const formatDate = (value: string) => {
-  return dateFormatter.format(new Date(value));
-};
 
 export const SpotifySettings = () => {
   const router = useRouter();
@@ -226,9 +219,11 @@ export const SpotifySettings = () => {
                     <span className="flex items-center gap-1">
                       <Clock3 size={12} />
                       Token expires:{" "}
-                      {formatDate(currentAccount.accessTokenExpiresAt)}
+                      {formatDateTime(currentAccount.accessTokenExpiresAt)}
                     </span>
-                    <span>Updated: {formatDate(currentAccount.updatedAt)}</span>
+                    <span>
+                      Updated: {formatDateTime(currentAccount.updatedAt)}
+                    </span>
                   </div>
                 </div>
               </div>

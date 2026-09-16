@@ -1,32 +1,61 @@
-import type { WritingTool } from "../types.ts";
+import type { AgentTool } from "@earendil-works/pi-agent-core";
 
-import { commitTools } from "./commit.tool.ts";
-import { draftTools } from "./draft.tool.ts";
-import { githubTools } from "./github.tool.ts";
-import { memoryTools } from "./memory.tool.ts";
-import { retrievalTools } from "./retrieval.tool.ts";
-import { skillTools } from "./skill.tool.ts";
+import { contentReadTools } from "@chia/agent-content/tools/read";
+import type { ToolFactory, ToolSpec } from "@chia/agent-runtime/tools";
 
-/**
- * Full tool set. Order is the order pi lists tools to the model.
- */
-export const createWritingTools = (): WritingTool[] => [
-  ...skillTools,
-  ...retrievalTools,
-  ...githubTools,
-  ...memoryTools,
-  ...draftTools,
-  ...commitTools,
+import type { WritingToolContext } from "../types.ts";
+
+import { commitDraftTool, setPublishedTool } from "./commit.tool.ts";
+import {
+  editDraftContentTool,
+  listDraftsTool,
+  newDraftTool,
+  openDraftTool,
+  readDraftTool,
+  replaceSectionTool,
+  writeDraftTool,
+} from "./draft.tool.ts";
+import {
+  githubListTreeTool,
+  githubReadFileTool,
+  githubResolveRefTool,
+} from "./github.tool.ts";
+import {
+  getMemoryTool,
+  proposeLessonTool,
+  saveMemoryTool,
+  searchMemoryTool,
+} from "./memory.tool.ts";
+import { fetchUrlTool, webSearchTool } from "./retrieval.tool.ts";
+import { readSkillTool } from "./skill.tool.ts";
+
+/** Full tool set. Order is the order pi lists tools to the model. */
+const writingTools: readonly ToolFactory<WritingToolContext>[] = [
+  readSkillTool,
+  ...contentReadTools,
+  webSearchTool,
+  fetchUrlTool,
+  githubResolveRefTool,
+  githubListTreeTool,
+  githubReadFileTool,
+  searchMemoryTool,
+  getMemoryTool,
+  saveMemoryTool,
+  proposeLessonTool,
+  listDraftsTool,
+  newDraftTool,
+  openDraftTool,
+  readDraftTool,
+  writeDraftTool,
+  editDraftContentTool,
+  replaceSectionTool,
+  commitDraftTool,
+  setPublishedTool,
 ];
 
-/**
- * Everything except commit-tier tools, for a session that must not write the blog.
- */
-export const readOnlyToolNames = (): string[] =>
-  [
-    ...skillTools,
-    ...retrievalTools,
-    ...githubTools,
-    ...memoryTools,
-    ...draftTools,
-  ].map((tool) => tool.name);
+export const writingToolSpecs: ToolSpec[] = writingTools.map(
+  (tool) => tool.spec
+);
+
+export const createWritingTools = (context: WritingToolContext): AgentTool[] =>
+  writingTools.map((tool) => tool(context));

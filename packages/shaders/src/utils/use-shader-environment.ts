@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
+import { useHydrated } from "@chia/ui/utils/use-hydrated";
 import useTheme from "@chia/ui/utils/use-theme";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
@@ -13,19 +14,13 @@ const subscribeReducedMotion = (onChange: () => void) => {
 };
 
 // Nothing to subscribe to: hydration is the only transition.
-const subscribeNever = () => () => undefined;
-
 /**
  * Theme and motion inputs for a shader. `canRender` stays false until hydration, because the
  * server knows no theme and a shader painted with the wrong palette would flash.
  */
 const useShaderEnvironment = () => {
   const { resolvedTheme } = useTheme();
-  const isHydrated = useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false
-  );
+  const isHydrated = useHydrated();
   const reduceMotion = useSyncExternalStore(
     subscribeReducedMotion,
     () => window.matchMedia(REDUCED_MOTION_QUERY).matches,

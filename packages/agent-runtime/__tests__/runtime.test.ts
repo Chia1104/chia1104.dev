@@ -26,7 +26,7 @@ describe("runPiTurn", () => {
 
     const result = await fixture.run({ flushEvents });
 
-    expect(result).toEqual({ status: "done", error: undefined });
+    expect(result).toEqual({ status: "done" });
     expect(fixture.types()).toEqual([
       "run:start",
       "user",
@@ -61,7 +61,7 @@ describe("runPiTurn", () => {
       },
     });
 
-    expect(fixture.context.calls).toEqual(["typescript"]);
+    expect(fixture.calls).toEqual(["typescript"]);
     const branch = await fixture.branch();
     expect(branch.map((entry) => messageOf(entry)?.role)).toEqual([
       "user",
@@ -132,11 +132,13 @@ describe("runPiTurn", () => {
 
     const result = await fixture.run();
 
-    expect(fixture.context.calls).toEqual([]);
-    expect(fixture.persistApproval).toHaveBeenCalledExactlyOnceWith("call-1");
+    expect(fixture.calls).toEqual([]);
+    expect(fixture.persistApproval).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ toolCallId: "call-1", toolName: "publish" })
+    );
     expect(result).toEqual({
       status: "awaiting_approval",
-      approval: "call-1",
+      approval: expect.objectContaining({ toolCallId: "call-1" }),
       error: undefined,
     });
     // The workflow parks on one hook, so only the first request may exist as a durable row.
@@ -174,13 +176,13 @@ describe("runPiTurn", () => {
     });
 
     // The first call ran on the approval and spent it; the identical second call is gated.
-    expect(fixture.context.calls).toEqual(["publish"]);
+    expect(fixture.calls).toEqual(["publish"]);
     expect(consumeApproval).toHaveBeenCalledExactlyOnceWith(
       'publish:{"slug":"hello"}'
     );
     expect(result).toMatchObject({
       status: "awaiting_approval",
-      approval: "call-2",
+      approval: expect.objectContaining({ toolCallId: "call-2" }),
     });
   });
 
@@ -198,9 +200,9 @@ describe("runPiTurn", () => {
       },
     });
 
-    expect(fixture.context.calls).toEqual([]);
+    expect(fixture.calls).toEqual([]);
     // Not a new request either: the approval still stands for the next turn.
-    expect(result).toEqual({ status: "done", error: undefined });
+    expect(result).toEqual({ status: "done" });
     expect(
       fixture.events.some((event) => event.type === "approval:request")
     ).toBe(false);
@@ -327,8 +329,10 @@ describe("runPiTurn", () => {
 
     const result = await fixture.run();
 
-    expect(result.status).toBe("error");
-    expect(result.error?.message).toBe("provider failed");
+    expect(result).toMatchObject({
+      status: "error",
+      error: { message: "provider failed" },
+    });
     expect(fixture.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
   });
 
@@ -430,10 +434,12 @@ describe("runPiTurn", () => {
 
     const result = await fixture.run();
 
-    expect(result.status).toBe("error");
-    expect(result.error).toEqual({
-      kind: "internal",
-      message: expect.stringContaining("refused"),
+    expect(result).toEqual({
+      status: "error",
+      error: {
+        kind: "internal",
+        message: expect.stringContaining("refused"),
+      },
     });
     expect(fixture.events.slice(-2)).toEqual([
       { type: "error", kind: "internal" },
@@ -478,14 +484,13 @@ describe("runPiTurn", () => {
     const fixture = build();
     const flushEvents = vi.fn(async () => undefined);
 
-    await expect(
-      fixture.run({
-        flushEvents,
-        toolContext: () => {
-          throw new Error("ports unavailable");
-        },
-      })
-    ).rejects.toThrow("ports unavailable");
+    vi.spyOn(fixture.session, "getLeafId").mockRejectedValue(
+      new Error("tree unavailable")
+    );
+
+    await expect(fixture.run({ flushEvents })).rejects.toThrow(
+      "tree unavailable"
+    );
     expect(flushEvents).toHaveBeenCalledOnce();
   });
 

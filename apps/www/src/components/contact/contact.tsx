@@ -95,6 +95,7 @@ export const ContactForm = ({
               return t("error.send-failed");
           }
         }
+        return t("error.send-failed");
       },
     });
   });

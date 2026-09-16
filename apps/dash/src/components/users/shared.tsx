@@ -18,12 +18,6 @@ const usd = new Intl.NumberFormat("en-US", {
 
 export const formatUsd = (value: number) => usd.format(value);
 
-export const formatDateTime = (value: string | Date) =>
-  new Date(value).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-
 const ROLE_COLOR = {
   [Role.Root]: "danger",
   [Role.Admin]: "accent",

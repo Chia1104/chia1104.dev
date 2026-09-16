@@ -152,7 +152,6 @@ export const listAgentSessionsContract = oc
       .object({
         kind: z.string().optional(),
         limit: z.number().int().min(1).max(100).optional(),
-        includeDeleted: z.boolean().optional(),
       })
       .optional()
   )
@@ -343,7 +342,6 @@ export const navigateAgentSessionContract = oc
       entryId: z.string(),
       /** Summarise the branch left behind under the new leaf, so the model keeps the gist. */
       summarize: z.boolean().optional(),
-      label: z.string().max(200).optional(),
     })
   )
   .output(agentSessionDetailSchema);

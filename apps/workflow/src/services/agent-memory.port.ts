@@ -21,6 +21,7 @@ import {
 } from "@chia/services/memory/write.service";
 import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/resource-types";
 import { searchResources } from "@chia/services/rag/search.service";
+import { truncateEnd } from "@chia/utils/format";
 
 import { memoryHooks } from "./agent-memory-indexing.service";
 
@@ -32,11 +33,6 @@ import { memoryHooks } from "./agent-memory-indexing.service";
 
 /** A chunk is up to ~512 tokens; a hit only needs enough to orient. */
 const SNIPPET_MAX_CHARS = 500;
-
-const truncateSnippet = (content: string): string =>
-  content.length <= SNIPPET_MAX_CHARS
-    ? content
-    : `${content.slice(0, SNIPPET_MAX_CHARS)}…`;
 
 const summaryOf = (row: AgentMemory): MemorySummary => ({
   id: row.id,
@@ -125,7 +121,7 @@ export const createAgentMemoryPort = (
           ? [
               {
                 ...summaryOf(row),
-                snippet: truncateSnippet(item.bestChunk.content),
+                snippet: truncateEnd(item.bestChunk.content, SNIPPET_MAX_CHARS),
                 headingPath: item.bestChunk.headingPath,
               },
             ]

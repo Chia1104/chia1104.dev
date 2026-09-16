@@ -3,18 +3,18 @@ import { FatalError, getWorkflowMetadata, getWritable } from "workflow";
 import { getRun } from "workflow/api";
 
 import { loadKindConfig } from "@chia/agent-host/config";
+import { decryptAgentCredentials } from "@chia/agent-host/credentials";
 import {
   AGENT_DELTA_NAMESPACE,
   AGENT_TURN_KEY,
 } from "@chia/agent-host/execution";
 import type { AgentTurnMarker } from "@chia/agent-host/execution";
-import type { AgentKindDefinition } from "@chia/agent-host/kind";
+import type { AgentKindExecutor } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
-import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
+import { recordAgentUsage, sessionUsageListener } from "@chia/agent-host/usage";
 import type {
-  AgentTurnError,
-  ThinkingLevel,
-  ToolTier,
+  AgentSessionSettings,
+  AgentTurnExecution,
 } from "@chia/agent-runtime/types";
 import type { OperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
 import type {
@@ -35,7 +35,9 @@ import {
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
-import { logger } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
+import { signalAgentAbort } from "@chia/services/agent/abort";
+import { messageOf } from "@chia/utils/error-helper";
 import type { JsonObject } from "@chia/utils/json";
 import type {
   AgentAbortControllerRef,
@@ -43,11 +45,9 @@ import type {
 } from "@chia/workflow-control/agent-hooks";
 
 import { agentFactory } from "../agents/factory";
-import {
-  signalAgentAbort,
-  subscribeAgentAbort,
-} from "../services/agent-abort-controller";
-import { decryptAgentCredentials } from "../services/agent-credentials";
+import { env } from "../env";
+import { subscribeAgentAbort } from "../services/agent-abort-controller";
+import { workflowControl } from "../services/workflow-control";
 
 /**
  * The engine lives in this step, not the workflow: `"use workflow"` has no Node built-ins
@@ -72,18 +72,8 @@ export interface AgentTurnRequest {
   credentials?: EncryptedAgentCredentials;
 }
 
-export interface AgentApprovalRequestSnapshot {
-  toolCallId: string;
-  toolName: string;
-  approvalKey: string;
-  args?: JsonObject;
-}
-
 export interface AgentTurnOutcome {
-  status: "done" | "awaiting_approval" | "aborted" | "error";
-  /** The gated call the workflow parks on; present exactly when `status` is `awaiting_approval`. */
-  approval?: AgentApprovalRequestSnapshot;
-  error?: AgentTurnError;
+  status: AgentTurnExecution["status"];
 }
 
 type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
@@ -105,9 +95,8 @@ const titleSession = async (
   request: AgentTurnRequest
 ): Promise<void> => {
   try {
-    const [{ fallbackSessionTitle, generateSessionTitle }] = await Promise.all([
-      import("@chia/agent-runtime/pi/title"),
-    ]);
+    const { fallbackSessionTitle, generateSessionTitle } =
+      await import("@chia/agent-runtime/pi/title");
     const task = await resolveAgentTask(db, AGENT_TASK_IDS.sessionTitle);
     const generated = await generateSessionTitle({
       models: task.models,
@@ -129,8 +118,12 @@ const titleSession = async (
     });
     const title = generated ?? fallbackSessionTitle(request.text);
     if (title) await setAgentSessionTitleIfUnset(db, row.id, title);
-  } catch {
+  } catch (error) {
     // Cosmetic; the turn must not fail for it.
+    reportError(error, "Session title could not be set", {
+      sessionId: row.id,
+      runId: request.runId,
+    });
   }
 };
 
@@ -139,6 +132,22 @@ export const runAgentTurnStep = async (
 ): Promise<AgentTurnOutcome> => {
   "use step";
 
+  try {
+    return await executeAgentTurn(request);
+  } catch (error) {
+    // The runtime reports the failures it returns; a throw is reported here, the last boundary
+    // in Node: the workflow function that records it cannot log.
+    reportError(error, "Agent turn step failed", {
+      sessionId: request.sessionId,
+      runId: request.runId,
+    });
+    throw error;
+  }
+};
+
+const executeAgentTurn = async (
+  request: AgentTurnRequest
+): Promise<AgentTurnOutcome> => {
   const db = await connectDatabase(undefined, { withCache: false });
 
   const row = await getAgentSession(db, request.sessionId);
@@ -221,75 +230,89 @@ export const runAgentTurnStep = async (
  * runtime carries the provider stack.
  */
 async function runKindTurn(
-  definition: AgentKindDefinition<unknown, object>,
+  definition: AgentKindExecutor<unknown, object>,
   db: DB,
   row: AgentSessionRow,
   request: AgentTurnRequest,
   signal: AbortSignal,
   writer: EventWriter
 ): Promise<AgentTurnOutcome> {
-  const [{ accessOf, createAgentModels }, { PgSessionRepo }] =
-    await Promise.all([
-      import("@chia/agent-runtime/models"),
-      import("@chia/agent-runtime/session/pg-repo"),
-    ]);
+  const [
+    { accessOf, createAgentModels },
+    { PgSessionRepo, settingsFromRow },
+    { runPiTurn },
+  ] = await Promise.all([
+    import("@chia/agent-runtime/models"),
+    import("@chia/agent-runtime/session/pg-repo"),
+    import("@chia/agent-runtime/pi/turn"),
+  ]);
 
-  const state = await definition.state.load(db, request.sessionId);
+  // Independent reads on the pooled client, not a lock transaction, so they go out together.
+  const [state, { config, defaults }, unspentApprovalKeys] = await Promise.all([
+    definition.state.load(db, request.sessionId),
+    // Read per turn, not per session: an edit in the dashboard reaches the next turn.
+    loadKindConfig(db, definition),
+    listUnspentAgentApprovalKeys(db, request.sessionId),
+  ]);
   if (state === null) {
     throw new FatalError(
       `Kind state is missing for agent session ${request.sessionId}.`
     );
   }
-  // Read per turn, not per session: an edit in the dashboard reaches the next turn.
-  const { config, defaults } = await loadKindConfig(db, definition);
-  if (!row.providerId || !row.modelId || !row.thinkingLevel) {
-    throw new FatalError(
-      `Agent session ${request.sessionId} has incomplete LLM settings.`
-    );
+  // An incomplete row fails the same way on every attempt, so it must not read as retryable.
+  let settings: AgentSessionSettings;
+  try {
+    settings = settingsFromRow(row);
+  } catch (error) {
+    const fatal = new FatalError(messageOf(error));
+    fatal.cause = error;
+    throw fatal;
   }
-
-  const repo = new PgSessionRepo(db, {
-    kind: definition.kind,
-    defaults: definition.defaults,
-  });
-  const session = await repo.openById(request.sessionId);
-
-  const approvedApprovalKeys = new Set(
-    await listUnspentAgentApprovalKeys(db, request.sessionId)
-  );
 
   /**
    * Per turn: closes over this operator's keys. Not a process singleton.
    * Providers without a credential are unregistered, so a missing key fails as "unknown model"
    * instead of billing the house gateway.
    */
-  const credentials = decryptAgentCredentials(request.credentials);
+  const credentials = decryptAgentCredentials(
+    request.credentials,
+    env.AI_AUTH_PRIVATE_KEY
+  );
   const models = createAgentModels(credentials);
+  // Before the kind prepares the turn: a model the caller may not run costs no further query.
+  const model = definition.models.resolve(
+    settings,
+    models,
+    accessOf(credentials),
+    defaults
+  );
+  // The compaction task may be pinned to a house model; the session's own is its default.
+  const compaction = await resolveAgentTask(
+    db,
+    AGENT_TASK_IDS.sessionCompaction,
+    { session: () => ({ model, models, credentials }) }
+  );
 
-  if (!definition.runTurn) {
-    throw new FatalError(
-      `Agent kind "${definition.kind}" has no workflow executor.`
-    );
-  }
-  return await definition.runTurn({
+  const session = new PgSessionRepo(db, definition.kind).open(row);
+  const approvedApprovalKeys = new Set(unspentApprovalKeys);
+
+  const { settle, ...plan } = await definition.prepareTurn({
     db,
     row,
-    runId: request.runId,
     state,
     config,
-    settings: {
-      providerId: row.providerId,
-      modelId: row.modelId,
-      thinkingLevel:
-        /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
-      activeToolNames: row.activeToolNames,
-      autoApprove:
-        /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
-    },
+    settings,
+  });
+  const execution = await runPiTurn({
+    ...plan,
+    agentSessionId: row.id,
+    agentRunId: request.runId,
     session,
+    settings,
+    model,
     models,
-    access: accessOf(credentials),
-    house: defaults,
+    compaction: { model: compaction.model, models: compaction.models },
+    policy: definition.policy,
     message: {
       text: request.text,
       template: request.template,
@@ -301,31 +324,26 @@ async function runKindTurn(
     consumeApproval: (key) => consumeAgentApproval(db, request.sessionId, key),
     onEvent: writer.push,
     flushEvents: writer.flush,
-    onUsage: (report) =>
-      recordAgentUsage(db, {
-        userId: row.userId,
-        sessionId: row.id,
-        runId: request.runId,
-        kind: row.kind,
-        credentialSource: credentialSourceOf(credentials, report.providerId),
-        ...report,
-      }),
-    toApproval: (approval): AgentApprovalRequestSnapshot => ({
-      toolCallId: approval.toolCallId,
-      toolName: approval.toolName,
-      approvalKey: approval.key,
-      // SAFETY: tool arguments passed their registered TypeBox schema before execution.
-      args: approval.args as JsonObject | undefined,
+    onUsage: sessionUsageListener(db, {
+      userId: row.userId,
+      sessionId: row.id,
+      runId: request.runId,
+      kind: row.kind,
+      credentialsFor: (source) =>
+        source === "compaction" ? compaction.credentials : credentials,
     }),
     persistApproval: (approval) =>
       recordAgentApprovalRequest(db, {
         sessionId: request.sessionId,
         toolCallId: approval.toolCallId,
         toolName: approval.toolName,
-        approvalKey: approval.approvalKey,
-        args: approval.args,
+        approvalKey: approval.key,
+        // SAFETY: tool arguments passed their registered TypeBox schema before execution.
+        args: approval.args as JsonObject | undefined,
       }),
   });
+  await settle?.(execution);
+  return { status: execution.status };
 }
 
 /**
@@ -384,15 +402,14 @@ const createEventWriter = (holdEnd?: Promise<unknown>): EventWriter => {
     async flush() {
       flushDeltas();
       // A lost write does not fail the turn: its side effects and entries are already durable
-      // and a client that misses the event reloads the session. It is logged so a stall can be traced.
+      // and a client that misses the event reloads the session. It is reported so a stall can be traced.
       const lost = (await Promise.allSettled(inFlight)).filter(
         (result) => result.status === "rejected"
       );
       if (lost.length > 0) {
-        logger.error(
-          { err: lost[0]?.reason, count: lost.length },
-          "Agent stream writes failed"
-        );
+        reportError(lost[0]?.reason, "Agent stream writes failed", {
+          count: lost.length,
+        });
       }
       coarse.releaseLock();
       deltas.releaseLock();
@@ -423,5 +440,5 @@ export const completeAgentRunStep = async (
   const db = await connectDatabase(undefined, { withCache: false });
   // This run's row only: a run cancelled and replaced must not close its successor.
   await completeAgentRun(db, runId, status);
-  await signalAgentAbort(abortController.id, "run finished");
+  await signalAgentAbort(workflowControl, abortController.id, "run finished");
 };

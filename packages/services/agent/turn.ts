@@ -171,16 +171,26 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
       signalled && (await waitForAgentTurnEnd(host.runs, workflowRunId, 0));
     if (ended) {
       await cancelLiveAgentRun(host.runs, workflow, workflowRunId).catch(
-        () => undefined
+        (cause) =>
+          reportError(cause, "Unbound agent run could not be cancelled", {
+            sessionId,
+            runId,
+            workflowRunId,
+          })
       );
-      await completeAgentRun(db, runId, "failed").catch(() => undefined);
+      await completeAgentRun(db, runId, "failed").catch((cause) =>
+        reportError(cause, "Unbound agent run row could not be closed", {
+          sessionId,
+          runId,
+          workflowRunId,
+        })
+      );
     }
-    reportError(cause, "Agent run could not be bound to its workflow run", {
-      sessionId,
-      runId,
-      workflowRunId,
-      stopped: ended,
-    });
+    // The bind failure itself is rethrown and reported once at the procedure boundary.
+    logger.warn(
+      { err: cause, sessionId, runId, workflowRunId, stopped: ended },
+      "Agent run could not be bound to its workflow run"
+    );
   };
 
   /**
@@ -290,7 +300,13 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         host.runs,
         workflow,
         accepted.staleWorkflowRunId
-      ).catch(() => undefined);
+      ).catch((cause) =>
+        reportError(cause, "Superseded agent run could not be cancelled", {
+          sessionId,
+          runId: accepted.runId,
+          workflowRunId: accepted.staleWorkflowRunId,
+        })
+      );
     }
 
     let workflowRunId;

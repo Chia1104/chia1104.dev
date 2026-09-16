@@ -66,12 +66,13 @@ export const getAgentSessions = async (
     userId: string;
     kind?: string;
     limit?: number;
-    includeDeleted?: boolean;
   }
 ) => {
-  const conditions = [eq(agentSessions.userId, options.userId)];
+  const conditions = [
+    eq(agentSessions.userId, options.userId),
+    isNull(agentSessions.deletedAt),
+  ];
   if (options.kind) conditions.push(eq(agentSessions.kind, options.kind));
-  if (!options.includeDeleted) conditions.push(isNull(agentSessions.deletedAt));
 
   return await db
     .select()
@@ -141,6 +142,7 @@ export const setAgentSessionTitleIfUnset = async (
   return rows.length > 0;
 };
 
+/** A cleared session keeps its transcript; a hard delete would cascade the whole tree away. */
 export const softDeleteAgentSession = async (db: DB, sessionId: string) => {
   await db
     .update(agentSessions)
@@ -439,22 +441,6 @@ export const getAgentSessionEntry = async (
     .limit(1);
   return row;
 };
-
-export const getAgentSessionEntriesByType = async (
-  db: DB,
-  sessionId: string,
-  type: string
-) =>
-  await db
-    .select()
-    .from(agentSessionEntries)
-    .where(
-      and(
-        eq(agentSessionEntries.sessionId, sessionId),
-        eq(agentSessionEntries.type, type)
-      )
-    )
-    .orderBy(asc(agentSessionEntries.seq));
 
 /** Every entry, all branches, in `seq` order. */
 export const getAgentSessionEntries = async (db: DB, sessionId: string) =>

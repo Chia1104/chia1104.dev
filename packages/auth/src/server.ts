@@ -2,11 +2,11 @@ import type { BetterAuthOptions } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { anonymous, customSession } from "better-auth/plugins";
+import type Keyv from "keyv";
 
 import type { DB } from "@chia/db/client";
 import { transferAgentOwnership } from "@chia/db/repos/agent";
 import * as schemas from "@chia/db/schema";
-import type { Keyv } from "@chia/kv/types";
 import { IS_PRODUCTION, getAdminId } from "@chia/utils/config";
 
 import type { AccessOptions } from "./access";

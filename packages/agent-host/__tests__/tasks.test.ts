@@ -87,7 +87,12 @@ describe("resolveAgentTask", () => {
       "vercel-ai-gateway",
       "anthropic/claude-sonnet-5"
     )!;
-    const session = vi.fn(() => ({ model: sessionModel, models }));
+    const credentials = { gateway: "byok-gateway-key" };
+    const session = vi.fn(() => ({
+      model: sessionModel,
+      models,
+      credentials,
+    }));
 
     const followed = await resolveAgentTask(
       db,
@@ -96,6 +101,7 @@ describe("resolveAgentTask", () => {
     );
     expect(followed.model).toBe(sessionModel);
     expect(followed.models).toBe(models);
+    expect(followed.credentials).toBe(credentials);
     expect(followed.systemPrompt).toBeUndefined();
     expect(followed.params).toBeUndefined();
 
@@ -113,6 +119,7 @@ describe("resolveAgentTask", () => {
       { session }
     );
     expect(pinned.model.id).toBe("anthropic/claude-haiku-4.5");
+    expect(pinned.credentials).toEqual({});
     expect(session).not.toHaveBeenCalled();
   });
 

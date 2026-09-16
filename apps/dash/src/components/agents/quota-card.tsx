@@ -17,10 +17,12 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
+import { formatDateTime } from "@chia/utils/format";
+
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
-import { OverriddenChip, formatDate, useInvalidateAgentAdmin } from "./shared";
+import { OverriddenChip, useInvalidateAgentAdmin } from "./shared";
 
 type QuotaAdmin = RouterOutputs["agent"]["admin"]["quota"]["get"];
 
@@ -90,7 +92,7 @@ export const QuotaCard = ({ quota }: { quota: QuotaAdmin }) => {
             <OverriddenChip isOverridden={overridden} />
             {quota.updatedAt !== null ? (
               <span className="text-muted ml-auto text-xs">
-                updated {formatDate(quota.updatedAt)}
+                updated {formatDateTime(quota.updatedAt)}
               </span>
             ) : null}
           </div>

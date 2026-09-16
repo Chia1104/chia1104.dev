@@ -1,30 +1,16 @@
-import type { Api, Model, Models } from "@earendil-works/pi-ai";
 import * as z from "zod";
 
-import { createAgentModels, NO_ACCESS } from "@chia/agent-runtime/models";
-import type { AgentModelAccess } from "@chia/agent-runtime/models";
-import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
-import { runPiTurn } from "@chia/agent-runtime/pi/turn";
-import type { RenderedAttachments } from "@chia/agent-runtime/pi/turn";
-import type { SessionTree } from "@chia/agent-runtime/session/tree";
+import { defaultApprovalKey } from "@chia/agent-runtime/pi/turn";
 import type {
-  AgentSessionSettings,
-  AgentTurnExecution,
-  AgentTurnMessage,
-  AgentUsageListener,
-  ToolCallRequest,
-} from "@chia/agent-runtime/types";
-import type {
-  AgentAttachment,
-  AgentWireEvent,
-} from "@chia/agent-runtime/wire/schema";
+  AgentTurnPlan,
+  RenderedAttachments,
+} from "@chia/agent-runtime/pi/turn";
+import type { ToolCallRequest, ToolTier } from "@chia/agent-runtime/types";
+import type { AgentAttachment } from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";
-import { stableStringify } from "@chia/utils/json";
-import type { JsonValue } from "@chia/utils/json";
 
 import { DraftNotFoundError, draftTitle } from "./draft/operations.ts";
-import { resolveWritingModel } from "./models.ts";
-import { writingPolicy, writingTurnBudget } from "./policy.ts";
+import { writingTurnBudget } from "./policy.ts";
 import type {
   ContentPort,
   DraftStore,
@@ -41,11 +27,8 @@ import { TOOL_NAMES } from "./tools/registry.ts";
 import { createWritingTools } from "./tools/tool-set.ts";
 import type { SessionDraftRef, WritingToolContext } from "./types.ts";
 
-export interface RunWritingTurnOptions<TApproval> {
-  session: SessionTree;
-  settings: AgentSessionSettings;
+export interface PrepareWritingTurnOptions {
   agentSessionId: string;
-  agentRunId?: string;
   content: ContentPort;
   web: WebPort;
   github: GitHubPort;
@@ -59,20 +42,8 @@ export interface RunWritingTurnOptions<TApproval> {
   sessionDrafts?: readonly SessionDraftRef[];
   memory: MemoryPort;
   instructions?: string;
-  message: AgentTurnMessage;
-  onEvent: (event: AgentWireEvent) => void;
-  approvedApprovalKeys?: ReadonlySet<string>;
-  consumeApproval?: (key: string) => Promise<void>;
-  signal?: AbortSignal;
-  models?: Models;
-  /** Keys the caller holds; must match how `models` was built. */
-  access?: AgentModelAccess;
-  compactionModel?: Model<Api>;
-  defaultLocale?: Locale;
-  toApproval: (request: ApprovalRequest) => TApproval;
-  persistApproval: (approval: TApproval) => Promise<void>;
-  flushEvents?: () => Promise<void>;
-  onUsage?: AgentUsageListener;
+  /** The session's pre-approved tiers, which the system prompt describes. */
+  autoApprove: readonly ToolTier[];
 }
 
 /**
@@ -105,10 +76,7 @@ export const writingApprovalKeyOf =
       case TOOL_NAMES.setPublished:
         return `${request.toolName}:${args.feedId}:${args.published}`;
       default:
-        return `${request.toolName}:${stableStringify(
-          // SAFETY: tool arguments passed their registered TypeBox schema, so they are plain JSON.
-          (request.input ?? null) as JsonValue
-        )}`;
+        return defaultApprovalKey(request);
     }
   };
 
@@ -234,11 +202,10 @@ const renderAttachments = async (
   };
 };
 
-export const runWritingTurn = <TApproval>(
-  options: RunWritingTurnOptions<TApproval>
-): Promise<AgentTurnExecution<TApproval>> => {
-  const defaultLocale = options.defaultLocale ?? Locale.zhTW;
-  const models = options.models ?? createAgentModels();
+/** The writing kind's tools, prompts and gates for one turn. */
+export const prepareWritingTurn = (
+  options: PrepareWritingTurnOptions
+): AgentTurnPlan => {
   const approvedDraftRevisions = new Map<string, number>();
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
@@ -250,24 +217,12 @@ export const runWritingTurn = <TApproval>(
     approvedDraftRevisions,
   };
 
-  return runPiTurn({
-    agentSessionId: options.agentSessionId,
-    agentRunId: options.agentRunId,
-    session: options.session,
-    settings: options.settings,
-    model: resolveWritingModel(
-      options.settings,
-      models,
-      options.access ?? NO_ACCESS
-    ),
-    models,
-    compactionModel: options.compactionModel,
-    tools: createWritingTools(),
-    toolContext,
+  return {
+    tools: createWritingTools(toolContext),
     preflight: commitPreflight(toolContext),
     systemPrompt: buildSystemPrompt({
       skills: writingSkills,
-      autoApprove: options.settings.autoApprove,
+      autoApprove: options.autoApprove,
       instructions: options.instructions,
       githubRepos: options.githubRepos,
     }),
@@ -281,24 +236,14 @@ export const runWritingTurn = <TApproval>(
         drafts,
         sessionMemories,
         lessons,
-        defaultLocale,
+        defaultLocale: Locale.zhTW,
         now: new Date(),
       });
     },
     renderAttachments: (attachments) =>
       renderAttachments(options.draft, attachments),
-    signal: options.signal,
     promptTemplates: writingPromptTemplates,
-    policy: writingPolicy,
     budget: writingTurnBudget,
     approvalKeyOf: writingApprovalKeyOf(options.draft, approvedDraftRevisions),
-    approvedApprovalKeys: options.approvedApprovalKeys,
-    consumeApproval: options.consumeApproval,
-    message: options.message,
-    onEvent: options.onEvent,
-    toApproval: options.toApproval,
-    persistApproval: options.persistApproval,
-    flushEvents: options.flushEvents,
-    onUsage: options.onUsage,
-  });
+  };
 };

@@ -81,6 +81,7 @@
     "@tanstack/react-query": "catalog:tanstack",
     "class-variance-authority": "catalog:ui",
     "clsx": "catalog:ui",
+    "dayjs": "catalog:",
     "es-toolkit": "catalog:",
     "ky": "catalog:",
     "lucide-react": "catalog:ui",

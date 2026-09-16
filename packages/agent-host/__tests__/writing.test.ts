@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AgentTurnExecution } from "@chia/agent-runtime/types";
+import type { PrepareWritingTurnOptions } from "@chia/agent-writing/runtime";
 import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import type { WritingSessionConsolidation } from "@chia/db/repos/agent";
@@ -27,18 +28,14 @@ const drafts = vi.hoisted(() => ({
 }));
 
 const runtime = vi.hoisted(() => ({
-  runWritingTurn: vi.fn(),
+  prepareWritingTurn: vi.fn(),
 }));
 
 vi.mock("@chia/db/repos/agent", () => repo);
 vi.mock("@chia/db/repos/drafts", () => drafts);
 vi.mock("@chia/agent-writing/runtime", () => runtime);
-vi.mock("../src/tasks", () => ({
-  AGENT_TASK_IDS: { sessionCompaction: "session.compaction" },
-  resolveAgentTask: vi.fn(async () => ({ model: undefined })),
-}));
-
-const { createWritingAgentKind } = await import("../src/writing");
+const { createWritingAgentExecutor, createWritingAgentKind } =
+  await import("../src/writing");
 
 /* SAFETY: every repository call in this suite is mocked; nothing reaches the handle. */
 const db = {} as DB;
@@ -72,7 +69,7 @@ const openDraft = vi.fn(async ({ feedId }: { feedId?: number }) => ({
 const listDrafts = vi.fn(async () => [record(7)]);
 
 describe("createWritingAgentKind state", () => {
-  const kind = createWritingAgentKind({ openDraft, listDrafts });
+  const kind = createWritingAgentKind();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -190,49 +187,57 @@ describe("createWritingAgentKind state", () => {
   });
 });
 
-describe("createWritingAgentKind runTurn", () => {
-  const done: AgentTurnExecution<never> = {
-    status: "done",
-    error: undefined,
-  };
+describe("createWritingAgentExecutor", () => {
+  const done: AgentTurnExecution = { status: "done" };
   const startMemoryConsolidation = vi.fn(async () => "wf-1");
   const cancelWorkflowRun = vi.fn(async () => undefined);
-  const kind = createWritingAgentKind({
+  const executor = createWritingAgentExecutor({
     openDraft,
     listDrafts,
-    execution: {
-      adminId: () => "author",
-      createContentPort: ({ onCommitted }) =>
-        /* SAFETY: the mocked turn calls only `applyDraft` on the content port. */ ({
-          applyDraft: async () => {
-            onCommitted();
-            return { feedId: 5, slug: "post", created: false };
-          },
-        }) as never,
-      createMemoryPort: () =>
-        /* SAFETY: the mocked turn never calls the memory port. */ ({}) as never,
-      createWebPort: () =>
-        /* SAFETY: the mocked turn never calls the web port. */ ({}) as never,
-      createGitHubPort: () =>
-        /* SAFETY: the mocked turn never calls the GitHub port. */ ({}) as never,
-      startMemoryConsolidation,
-      cancelWorkflowRun,
-    },
+    adminId: () => "author",
+    createContentPort: ({ onCommitted }) =>
+      /* SAFETY: the simulated turn calls only `applyDraft` on the content port. */ ({
+        applyDraft: async () => {
+          onCommitted();
+          return { feedId: 5, slug: "post", created: false };
+        },
+      }) as never,
+    createMemoryPort: () =>
+      /* SAFETY: the simulated turn never calls the memory port. */ ({}) as never,
+    createWebPort: () =>
+      /* SAFETY: the simulated turn never calls the web port. */ ({}) as never,
+    createGitHubPort: () =>
+      /* SAFETY: the simulated turn never calls the GitHub port. */ ({}) as never,
+    startMemoryConsolidation,
+    cancelWorkflowRun,
   });
   const context: AgentTurnContext<
     { sessionId: string; drafts: never[] },
-    { instructions?: string },
-    never
+    { instructions?: string }
   > =
-    /* SAFETY: the mocked turn reads only the row, state, config and db from the context. */ {
+    /* SAFETY: the kind reads only the row, state, config, settings and db from the context. */ {
       db,
       row: { id: "session-1" },
       state: { sessionId: "session-1", drafts: [] },
       config: {},
-      settings: {},
-      models: {},
-      access: {},
+      settings: { autoApprove: [] },
     } as never;
+
+  /** Prepares the turn, lets `turn` stand in for Pi using the ports the kind built, then settles. */
+  const runTurn = async (
+    execution: AgentTurnExecution,
+    turn?: (options: PrepareWritingTurnOptions) => Promise<void>
+  ) => {
+    runtime.prepareWritingTurn.mockReturnValue({});
+    const prepared = await executor.prepareTurn(
+      /* SAFETY: the executor is typed for the writing state and config this context carries. */ context as never
+    );
+    const [options] =
+      /* SAFETY: `prepareTurn` just called the mocked `prepareWritingTurn` with its options. */ runtime
+        .prepareWritingTurn.mock.lastCall as [PrepareWritingTurnOptions];
+    await turn?.(options);
+    await prepared.settle?.(execution);
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -243,16 +248,13 @@ describe("createWritingAgentKind runTurn", () => {
     drafts.getFeedDraft.mockImplementation(async (_db: DB, id: number) =>
       id === 7 ? record(7) : null
     );
-    runtime.runWritingTurn.mockImplementation(async (options) => {
+
+    await runTurn(done, async (options) => {
       // The volatile context and a tool read the draft; the host must remember revision 3.
       await options.draft.get(7);
       await options.draft.open({ feedId: 5 });
-      return done;
     });
 
-    const result = await kind.runTurn?.(context);
-
-    expect(result).toBe(done);
     expect(openDraft).toHaveBeenCalledWith({
       db,
       adminId: "author",
@@ -269,15 +271,27 @@ describe("createWritingAgentKind runTurn", () => {
     );
   });
 
+  it("still schedules lesson extraction when recording the observed drafts fails", async () => {
+    repo.touchWritingSessionDrafts.mockRejectedValueOnce(
+      new Error("deadlock detected")
+    );
+
+    await expect(runTurn(done)).resolves.toBeUndefined();
+
+    expect(startMemoryConsolidation).toHaveBeenCalledWith({
+      sessionId: "session-1",
+      delayMs: 2 * 60 * 60 * 1000,
+    });
+  });
+
   it("schedules a delayed lesson extraction after a turn, replacing the one waiting", async () => {
-    runtime.runWritingTurn.mockResolvedValue(done);
     repo.getWritingSessionConsolidation.mockResolvedValue({
       consolidatedLeafId: null,
       consolidatedAt: null,
       consolidationRunId: "wf-0",
     });
 
-    await kind.runTurn?.(context);
+    await runTurn(done);
 
     expect(cancelWorkflowRun).toHaveBeenCalledWith("wf-0");
     expect(startMemoryConsolidation).toHaveBeenCalledWith({
@@ -292,11 +306,9 @@ describe("createWritingAgentKind runTurn", () => {
   });
 
   it("extracts at once when the turn committed, and never after a turn that did not finish", async () => {
-    runtime.runWritingTurn.mockImplementation(async (options) => {
+    await runTurn(done, async (options) => {
       await options.content.applyDraft({ draftId: 7, expectedRevision: 3 });
-      return done;
     });
-    await kind.runTurn?.(context);
     expect(startMemoryConsolidation).toHaveBeenCalledWith({
       sessionId: "session-1",
       delayMs: 0,
@@ -304,11 +316,7 @@ describe("createWritingAgentKind runTurn", () => {
     expect(cancelWorkflowRun).not.toHaveBeenCalled();
 
     startMemoryConsolidation.mockClear();
-    runtime.runWritingTurn.mockResolvedValue({
-      status: "aborted",
-      error: undefined,
-    });
-    await kind.runTurn?.(context);
+    await runTurn({ status: "aborted" });
     expect(startMemoryConsolidation).not.toHaveBeenCalled();
   });
 });

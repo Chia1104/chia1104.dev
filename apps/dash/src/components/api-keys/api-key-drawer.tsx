@@ -23,6 +23,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { CopyButton } from "@chia/ui/copy-button";
+import { formatDateTime } from "@chia/utils/format";
 
 import { DrawerPanel } from "@/components/commons/drawer-panel";
 import { orpc } from "@/libs/orpc/client";
@@ -36,12 +37,7 @@ import {
   stateOf,
 } from "./form";
 import type { ApiKeyFormInput, ApiKeyFormOutput, ApiKeyView } from "./form";
-import {
-  KeyStateChip,
-  ScopeChips,
-  formatDateTime,
-  useInvalidateApiKeys,
-} from "./shared";
+import { KeyStateChip, ScopeChips, useInvalidateApiKeys } from "./shared";
 
 /**
  * The raw key exists only in the create response, so the drawer keeps it on screen until the

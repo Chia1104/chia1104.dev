@@ -1,18 +1,11 @@
 import type { AgentPolicy, AgentTurnBudget } from "@chia/agent-runtime/types";
 
-import { labelOf, tierOf } from "./tools/registry.ts";
+import { toolInfo } from "./tools/registry.ts";
 import { summarizeToolResult } from "./tools/summarize.ts";
 
-/**
- * Unknown names fall back to the most restrictive tier so an unrecognized tool cannot run
- * unsupervised.
- */
 export const writingPolicy: AgentPolicy = {
-  tierOf,
-  labelOf,
+  toolInfo,
   requiresApproval: (tier) => tier === "commit",
-  changesState: (tier) => tier === "draft" || tier === "commit",
-  stateScope: "draft",
   summarize: summarizeToolResult,
 };
 

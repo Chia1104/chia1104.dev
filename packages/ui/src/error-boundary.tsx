@@ -20,10 +20,6 @@ interface Props<TError> {
       }) => ReactNode)
     | ReactNode;
   onError?: (error: TError, errorInfo: ErrorInfo) => void;
-  /**
-   * @deprecated
-   */
-  disableSentry?: boolean;
 }
 
 interface State<TError> {

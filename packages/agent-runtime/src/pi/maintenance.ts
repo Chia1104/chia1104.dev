@@ -3,15 +3,16 @@ import {
   generateBranchSummary,
   withAbortSignal,
 } from "@earendil-works/pi-agent-core";
+import { uuidv7 } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
+import { clampThinkingLevel } from "@earendil-works/pi-ai";
 
 import type {
   BranchSummaryEntry,
-  LabelEntry,
   NewSessionEntry,
   SessionEntry,
 } from "../session/entries.ts";
-import { contextEntries } from "../session/entries.ts";
+import { toPiEntries } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";
 import type { AgentSessionSettings, AgentUsageListener } from "../types.ts";
 import type {
@@ -21,7 +22,6 @@ import type {
 } from "../types.ts";
 
 import { compactSession } from "./compaction.ts";
-import { clampSessionThinkingLevel } from "./settings.ts";
 
 export interface PiSessionOperationOptions {
   session: SessionTree;
@@ -52,7 +52,7 @@ export const compactPiSession = (
     session,
     models,
     model,
-    thinkingLevel: clampSessionThinkingLevel(model, settings),
+    thinkingLevel: clampThinkingLevel(model, settings.thinkingLevel),
     customInstructions,
     signal,
     onUsage,
@@ -60,7 +60,7 @@ export const compactPiSession = (
 
 /**
  * Moves the leaf to `entryId`, optionally summarising the branch left behind into a
- * `branch_summary` entry under the new leaf and labelling the target.
+ * `branch_summary` entry under the new leaf.
  */
 export const navigatePiSession = async (
   { session, model, models, signal, onUsage }: PiSessionOperationOptions,
@@ -79,7 +79,7 @@ export const navigatePiSession = async (
     const entries = await entriesLeftBehind(session, oldLeafId, entryId);
     if (entries.length > 0) {
       const generated = await generateBranchSummary(
-        contextEntries(entries),
+        toPiEntries(entries),
         { models, model },
         signal
           ? withAbortSignal(signal, BACKGROUND_CONTEXT)
@@ -114,11 +114,10 @@ export const navigatePiSession = async (
   if (summary) {
     const entry: NewSessionEntry<BranchSummaryEntry> = {
       type: "branch_summary",
-      id: session.newEntryId(),
+      id: uuidv7(),
       parentId: newLeafId,
       timestamp: Date.now(),
       fromId: newLeafId,
-      fromHook: false,
       ...summary,
     };
     await session.appendEntry(entry);
@@ -131,21 +130,6 @@ export const navigatePiSession = async (
         entryId: entry.id,
       });
     }
-  }
-
-  if (options.label) {
-    // A label annotates the target; it must not become the leaf the next turn builds on.
-    const leafId = await session.getLeafId();
-    const entry: NewSessionEntry<LabelEntry> = {
-      type: "label",
-      id: session.newEntryId(),
-      parentId: leafId,
-      timestamp: Date.now(),
-      targetId: entryId,
-      label: options.label,
-    };
-    await session.appendEntry(entry);
-    await session.setLeafId(leafId);
   }
 
   return { cancelled: false };

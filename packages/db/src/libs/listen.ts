@@ -1,5 +1,7 @@
 import { Client } from "pg";
 
+import { asError } from "@chia/utils/error-helper";
+
 export interface ListenChannelOptions {
   /** Ends the listener; nothing reconnects after it fires. */
   signal: AbortSignal;
@@ -68,7 +70,7 @@ export const listenChannel = (
       attempt = 0;
       options.onConnect?.();
     } catch (error) {
-      drop(error instanceof Error ? error : new Error(String(error)));
+      drop(asError(error));
     }
   };
 

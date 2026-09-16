@@ -48,6 +48,7 @@
     "es-toolkit": "catalog:",
     "firecrawl": "catalog:ai",
     "hono": "catalog:hono",
+    "keyv": "catalog:kv",
     "ky": "catalog:",
     "nitro": "catalog:nitro",
     "react": "catalog:react-is",

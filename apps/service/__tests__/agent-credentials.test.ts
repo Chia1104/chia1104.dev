@@ -1,44 +1,24 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { encodeApiKey, generateKeys } from "@chia/ai/utils";
 
-/**
- * Both halves fail quietly. Unread decrypt leaves the house account; a swallowed decrypt
- * looks like "unknown model".
- */
+import { readEncryptedAgentCredentials } from "../src/services/agent-credentials.service";
 
-const { keys } = vi.hoisted(() => ({ keys: { public: "", private: "" } }));
+/** Unread ciphertext leaves the session on the house account, quietly. */
 
-vi.mock("../src/env", () => ({
-  env: {
-    get AI_AUTH_PRIVATE_KEY() {
-      return keys.private;
-    },
-  },
-}));
+let publicKey = "";
 
-let readEncryptedAgentCredentials: (typeof import("../src/services/agent-credentials.service"))["readEncryptedAgentCredentials"];
-let decryptAgentCredentials: (typeof import("../src/services/agent-credentials.service"))["decryptAgentCredentials"];
-let AgentCredentialError: (typeof import("../src/services/agent-credentials.service"))["AgentCredentialError"];
-
-beforeAll(async () => {
-  const generated = generateKeys();
-  // `encodeApiKey`/`decodeApiKey` take base64-wrapped PEM, which is how the env vars hold them.
-  keys.public = Buffer.from(generated.publicKey, "utf-8").toString("base64");
-  keys.private = Buffer.from(generated.privateKey, "utf-8").toString("base64");
-
-  const module = await import("../src/services/agent-credentials.service");
-  readEncryptedAgentCredentials = module.readEncryptedAgentCredentials;
-  decryptAgentCredentials = module.decryptAgentCredentials;
-  AgentCredentialError = module.AgentCredentialError;
+beforeAll(() => {
+  // `encodeApiKey` takes base64-wrapped PEM, which is how the env var holds it.
+  publicKey = Buffer.from(generateKeys().publicKey, "utf-8").toString("base64");
 });
 
 const headersWith = (cookie: string) => new Headers({ Cookie: cookie });
 
 describe("readEncryptedAgentCredentials", () => {
   it("lifts each provider's ciphertext out of its cookie", () => {
-    const openai = encodeApiKey("sk-openai", keys.public);
-    const anthropic = encodeApiKey("sk-anthropic", keys.public);
+    const openai = encodeApiKey("sk-openai", publicKey);
+    const anthropic = encodeApiKey("sk-anthropic", publicKey);
 
     const credentials = readEncryptedAgentCredentials(
       headersWith(`OPENAI_API_KEY=${openai}; ANTHROPIC_API_KEY=${anthropic}`)
@@ -53,7 +33,7 @@ describe("readEncryptedAgentCredentials", () => {
   });
 
   it("lifts a gateway key out of its own cookie", () => {
-    const gateway = encodeApiKey("vck-gateway", keys.public);
+    const gateway = encodeApiKey("vck-gateway", publicKey);
 
     expect(
       readEncryptedAgentCredentials(
@@ -63,7 +43,7 @@ describe("readEncryptedAgentCredentials", () => {
   });
 
   it("carries only the providers that are actually present", () => {
-    const openai = encodeApiKey("sk-openai", keys.public);
+    const openai = encodeApiKey("sk-openai", publicKey);
 
     expect(
       readEncryptedAgentCredentials(headersWith(`OPENAI_API_KEY=${openai}`))
@@ -71,40 +51,12 @@ describe("readEncryptedAgentCredentials", () => {
   });
 
   it("never returns plaintext", () => {
-    const openai = encodeApiKey("sk-secret-value", keys.public);
+    const openai = encodeApiKey("sk-secret-value", publicKey);
 
     const credentials = readEncryptedAgentCredentials(
       headersWith(`OPENAI_API_KEY=${openai}`)
     );
 
     expect(credentials?.openai).not.toContain("sk-secret-value");
-  });
-});
-
-describe("decryptAgentCredentials", () => {
-  it("round-trips a key encrypted under the configured public key", () => {
-    const encrypted = {
-      openai: encodeApiKey("sk-openai", keys.public),
-      anthropic: encodeApiKey("sk-anthropic", keys.public),
-    };
-
-    expect(decryptAgentCredentials(encrypted)).toEqual({
-      openai: "sk-openai",
-      anthropic: "sk-anthropic",
-    });
-  });
-
-  it("treats an absent payload as no bring-your-own key", () => {
-    expect(decryptAgentCredentials(undefined)).toEqual({});
-  });
-
-  /** Usually a rotated keypair; dropping it would look like the model does not exist. */
-  it("reports an undecryptable key against its provider", () => {
-    expect(() =>
-      decryptAgentCredentials({ openai: "not-actually-ciphertext" })
-    ).toThrow(AgentCredentialError);
-    expect(() =>
-      decryptAgentCredentials({ openai: "not-actually-ciphertext" })
-    ).toThrow(/openai/);
   });
 });

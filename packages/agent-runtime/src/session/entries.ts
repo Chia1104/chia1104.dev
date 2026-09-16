@@ -1,4 +1,8 @@
-import type { AgentMessage, JsonValue } from "@earendil-works/pi-agent-core";
+import type {
+  AgentMessage,
+  Entry,
+  JsonValue,
+} from "@earendil-works/pi-agent-core";
 import type { Usage } from "@earendil-works/pi-ai";
 
 import type { AgentAttachment } from "../wire/schema.ts";
@@ -6,10 +10,8 @@ import type { AgentAttachment } from "../wire/schema.ts";
 /**
  * The persisted session tree, owned here rather than imported from Pi.
  *
- * Discriminants and payload fields match Pi's own entry union, so rows in `agent.session_entry`
- * read back unchanged and Pi's compaction helpers accept these entries structurally. `label`
- * is the one entry Pi no longer models as a tree node; it stays one here because that is where
- * the rows already live and a navigation label is a tree event.
+ * Discriminants and payload fields follow Pi's entry union, so Pi's compaction helpers read
+ * these entries once `toPiEntries` adds the fields only Pi's own harness writes.
  */
 
 export interface SessionEntryBase {
@@ -44,8 +46,6 @@ export interface CompactionEntry extends SessionEntryBase {
   retainedTail: AgentMessage[];
   details?: JsonValue;
   usage?: Usage;
-  /** Whether a Pi hook wrote the entry. Always `false` here: the runtime writes every entry itself. */
-  fromHook: boolean;
 }
 
 export interface BranchSummaryEntry extends SessionEntryBase {
@@ -55,29 +55,9 @@ export interface BranchSummaryEntry extends SessionEntryBase {
   summary: string;
   details?: JsonValue;
   usage?: Usage;
-  fromHook: boolean;
 }
 
-export interface CustomEntry extends SessionEntryBase {
-  type: "custom";
-  customType: string;
-  data?: JsonValue;
-}
-
-export interface LabelEntry extends SessionEntryBase {
-  type: "label";
-  targetId: string;
-  label: string;
-}
-
-/** Entries that project into the model's context. */
-export type ContextEntry =
-  | MessageEntry
-  | CompactionEntry
-  | BranchSummaryEntry
-  | CustomEntry;
-
-export type SessionEntry = ContextEntry | LabelEntry;
+export type SessionEntry = MessageEntry | CompactionEntry | BranchSummaryEntry;
 
 /**
  * An entry as a caller builds it: everything but the `seq` storage assigns when it lands.
@@ -86,24 +66,28 @@ export type SessionEntry = ContextEntry | LabelEntry;
 export type NewSessionEntry<TEntry extends SessionEntry = SessionEntry> =
   TEntry extends SessionEntry ? Omit<TEntry, "seq"> : never;
 
-const CONTEXT_ENTRY_TYPES: ReadonlySet<string> = new Set<ContextEntry["type"]>([
+const SESSION_ENTRY_TYPES: ReadonlySet<string> = new Set<SessionEntry["type"]>([
   "message",
   "compaction",
   "branch_summary",
-  "custom",
 ]);
 
 /**
- * Labels annotate the tree, and rows of retired types (`session_info`, `leaf`, `model_change`,
- * `thinking_level_change`, `active_tools_change`) written by earlier Pi releases are skipped
- * rather than failing the whole session.
+ * Rows of types this runtime never writes (`label`, `custom`, and `session_info`, `leaf`,
+ * `model_change`, `thinking_level_change`, `active_tools_change` from earlier Pi releases) stay
+ * in the tree walk, since entries may hang off them, and are skipped by everything that reads
+ * content.
  */
-export const isContextEntry = (entry: SessionEntry): entry is ContextEntry =>
-  CONTEXT_ENTRY_TYPES.has(entry.type);
-
 export const contextEntries = (
   entries: readonly SessionEntry[]
-): ContextEntry[] => entries.filter(isContextEntry);
+): SessionEntry[] =>
+  entries.filter((entry) => SESSION_ENTRY_TYPES.has(entry.type));
+
+/** Pi's helpers take its harness's entries, which also record whether a hook wrote one; none did here. */
+export const toPiEntries = (entries: readonly SessionEntry[]): Entry[] =>
+  contextEntries(entries).map((entry) =>
+    entry.type === "message" ? entry : { ...entry, fromHook: false }
+  );
 
 /** The entries persisted up to and including `seq`, on whichever branch they sit. */
 export const entriesUpToSeq = <TEntry extends SessionEntry>(

@@ -1,19 +1,19 @@
 import { StringEnum } from "@earendil-works/pi-ai";
+import { Type } from "typebox";
 
-import { contentReadTools } from "@chia/agent-content/tools/read";
+import { defineTool, textResult, truncate } from "@chia/agent-runtime/tools";
+import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { reportError } from "@chia/observability/report";
 
 import { closeOpenFence } from "../markdown/fences.ts";
 import type {
   FetchedPage,
   WebSearchResult,
-  WritingTool,
   WritingToolContext,
 } from "../types.ts";
 import { WEB_SEARCH_RECENCIES } from "../types.ts";
 
-import { TOOL_NAMES, labelOf } from "./registry.ts";
-import { Type, defineTool, textResult, truncate } from "./schema.ts";
+import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
 
 /**
  * Shared content reads plus outbound web. Search and fetch are a cost and an SSRF surface,
@@ -53,9 +53,9 @@ const normalizeSearchDomain = (input: string): string => {
   return domain;
 };
 
-export const webSearchTool = defineTool({
+export const webSearchSpec = {
   name: TOOL_NAMES.webSearch,
-  label: labelOf(TOOL_NAMES.webSearch),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.webSearch].label,
   description:
     "Search the web and return result titles, URLs and snippets. Use it to discover a primary " +
     "source (official docs, release notes, the repository) before reading it with `fetch_url`; " +
@@ -90,7 +90,11 @@ export const webSearchTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const webSearchTool = defineTool(
+  webSearchSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const includeDomains = params.includeDomains?.map(normalizeSearchDomain);
     const results = await context.web.search(
       {
@@ -118,17 +122,17 @@ export const webSearchTool = defineTool({
         recency: params.recency,
       }
     );
-  },
-});
+  }
+);
 
 const formatResult = (result: WebSearchResult, index: number): string => {
   const heading = `${index + 1}. **${result.title ?? result.url}**\n   <${result.url}>`;
   return result.description ? `${heading}\n   ${result.description}` : heading;
 };
 
-export const fetchUrlTool = defineTool({
+export const fetchUrlSpec = {
   name: TOOL_NAMES.fetchUrl,
-  label: labelOf(TOOL_NAMES.fetchUrl),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.fetchUrl].label,
   description:
     "Fetch a public web page (or PDF) and return its main content as markdown. Use it to " +
     "check a fact or read a reference the operator linked.",
@@ -139,7 +143,11 @@ export const fetchUrlTool = defineTool({
     }),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const fetchUrlTool = defineTool(
+  fetchUrlSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     let parsed: URL;
     try {
       parsed = new URL(params.url);
@@ -159,8 +167,8 @@ export const fetchUrlTool = defineTool({
       `# ${page.title ?? parsed.hostname}\n<${page.url}>\n\n${body.text}`,
       { url: page.url, title: page.title, truncated: body.truncated }
     );
-  },
-});
+  }
+);
 
 /**
  * Records every fetched page as a `source`, keyed on URL. Never fails the fetch: a memory
@@ -213,9 +221,3 @@ const pageLocationOf = (url: string): string => {
     return "(unparseable url)";
   }
 };
-
-export const retrievalTools: WritingTool[] = [
-  ...contentReadTools,
-  webSearchTool,
-  fetchUrlTool,
-];

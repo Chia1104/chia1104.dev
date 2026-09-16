@@ -26,6 +26,7 @@ import {
 import { Tweet } from "@/components/blog/tweet";
 import WrittenBy from "@/components/blog/written-by";
 import { client } from "@/libs/orpc/client.rsc";
+import { reportServiceError } from "@/libs/orpc/report";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
 export const revalidate = 300;
@@ -62,7 +63,8 @@ export const generateMetadata = async ({
       title: feed.translations[0]?.title,
       description: feed.translations[0]?.description,
     };
-  } catch {
+  } catch (error) {
+    reportServiceError(error);
     notFound();
   }
 };
@@ -82,7 +84,11 @@ const Page = async ({
       const { error, data } = await safe(
         client.feeds["details-by-slug"]({ slug, locale: dbLocale })
       );
-      return error ? null : data;
+      if (error) {
+        reportServiceError(error);
+        return null;
+      }
+      return data;
     },
     t: async () => await getTranslations("blog"),
   });

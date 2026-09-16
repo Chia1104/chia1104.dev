@@ -11,12 +11,6 @@ import { orpc } from "@/libs/orpc/client";
 
 import type { ApiKeyState, ApiKeyView } from "./form";
 
-export const formatDateTime = (value: string | Date) =>
-  new Date(value).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-
 const STATE_CHIP = {
   active: { color: "success", label: "Active" },
   revoked: { color: "danger", label: "Revoked" },

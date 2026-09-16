@@ -6,6 +6,7 @@ import type {
   EncryptedAgentCredentials,
 } from "./agent.hooks";
 import {
+  startedRunId,
   workflowControlErrorSchema,
   workflowControlResultSchema,
 } from "./control.contract";
@@ -56,13 +57,6 @@ export interface AgentMessagePayload {
 
 const CONTROL_TIMEOUT_MS = 30_000;
 
-const startedRunId = (result: WorkflowControlResult): string => {
-  if (result.type !== "started") {
-    throw new Error("Workflow control returned no run id.");
-  }
-  return result.runId;
-};
-
 export const createWorkflowControlClient = ({
   url,
   token,
@@ -80,7 +74,8 @@ export const createWorkflowControlClient = ({
       body: JSON.stringify(command),
       signal: AbortSignal.timeout(CONTROL_TIMEOUT_MS),
     });
-    const payload: unknown = await response.json();
+    // A proxy may answer with an HTML error page; the status still classifies the failure.
+    const payload: unknown = await response.json().catch(() => undefined);
     if (!response.ok) {
       // The workflow service returns the `AppError` status it hit, so the code round-trips.
       const parsed = workflowControlErrorSchema.safeParse(payload);

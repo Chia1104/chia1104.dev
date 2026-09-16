@@ -8,6 +8,7 @@ import {
 } from "@chia/contents/components/tweet";
 
 import { client } from "@/libs/orpc/client.rsc";
+import { reportServiceError } from "@/libs/orpc/report";
 
 const TweetContent = async ({ id }: { id: string }) => {
   try {
@@ -20,7 +21,7 @@ const TweetContent = async ({ id }: { id: string }) => {
     );
   } catch (error) {
     // The post is decoration; a service outage must not take the article down with it.
-    console.error(error);
+    reportServiceError(error);
     return <TweetCard id={id} />;
   }
 };

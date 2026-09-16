@@ -1,5 +1,6 @@
+import type Keyv from "keyv";
+
 import type { CallerTier } from "@chia/auth/tier";
-import type { Keyv } from "@chia/kv/types";
 import { reportError } from "@chia/observability/report";
 
 import type { ServiceContext } from "../context";

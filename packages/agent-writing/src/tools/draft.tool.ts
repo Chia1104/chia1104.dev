@@ -1,5 +1,13 @@
 import { StringEnum } from "@earendil-works/pi-ai";
+import { Type } from "typebox";
 
+import {
+  defineTool,
+  LocaleSchema,
+  jsonBlock,
+  textResult,
+} from "@chia/agent-runtime/tools";
+import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { extractSections } from "@chia/ai/embeddings/markdown";
 import type { MarkdownSectionSpan } from "@chia/ai/embeddings/markdown";
 import { FeedType, Locale } from "@chia/db/types";
@@ -13,18 +21,11 @@ import type {
   DraftTranslation,
   DraftWrite,
   FeedDraft,
-  WritingTool,
+  WritingToolContext,
 } from "../types.ts";
 
-import { TOOL_NAMES, labelOf } from "./registry.ts";
-import {
-  DraftIdSchema,
-  LocaleSchema,
-  Type,
-  defineTool,
-  jsonBlock,
-  textResult,
-} from "./schema.ts";
+import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
+import { DraftIdSchema } from "./schema.ts";
 
 /**
  * Shared-draft tools, addressed by `draftId`. Sequential: they mutate shared state, and pi's
@@ -54,14 +55,18 @@ const feedMetaOf = (draft: FeedDraft): DraftFeedMeta => ({
   mainImage: draft.mainImage,
 });
 
-export const listDraftsTool = defineTool({
+export const listDraftsSpec = {
   name: TOOL_NAMES.listDrafts,
-  label: labelOf(TOOL_NAMES.listDrafts),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.listDrafts].label,
   description:
     "List the open drafts: new posts not yet committed, and posts edited since their last " +
     "commit. Each row carries the `draftId` the other draft tools take.",
   parameters: Type.Object({}),
-  async execute(_toolCallId, _params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const listDraftsTool = defineTool(
+  listDraftsSpec,
+  (context: WritingToolContext) => async () => {
     const drafts = await context.draft.list();
     if (drafts.length === 0) {
       return textResult(
@@ -70,8 +75,8 @@ export const listDraftsTool = defineTool({
       );
     }
     return textResult(`Open drafts:\n\n${jsonBlock(drafts)}`, { drafts });
-  },
-});
+  }
+);
 
 const openedResult = (draft: FeedDraft) => {
   const locales = Object.keys(draft.translations);
@@ -93,23 +98,27 @@ const openedResult = (draft: FeedDraft) => {
  * and one that may omit it guesses. A new post has nothing to identify it, so its tool takes
  * nothing.
  */
-export const newDraftTool = defineTool({
+export const newDraftSpec = {
   name: TOOL_NAMES.newDraft,
-  label: labelOf(TOOL_NAMES.newDraft),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.newDraft].label,
   description:
     "Start an empty draft for a new post that does not exist yet. Takes no arguments: a new " +
     "post has no id. Check `list_drafts` first so an existing empty draft is reused, and use " +
     "`open_draft` for a post that already exists.",
   parameters: Type.Object({}),
   executionMode: "sequential",
-  async execute(_toolCallId, _params, _signal, _onUpdate, context) {
-    return openedResult(await context.draft.open({}));
-  },
-});
+} satisfies ToolSpec;
 
-export const openDraftTool = defineTool({
+export const newDraftTool = defineTool(
+  newDraftSpec,
+  (context: WritingToolContext) => async () => {
+    return openedResult(await context.draft.open({}));
+  }
+);
+
+export const openDraftSpec = {
   name: TOOL_NAMES.openDraft,
-  label: labelOf(TOOL_NAMES.openDraft),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.openDraft].label,
   description:
     "Open an existing post's working draft, creating it from the post when there is none. A " +
     "post has one draft, shared with the operator. For a post that does not exist yet use " +
@@ -122,10 +131,14 @@ export const openDraftTool = defineTool({
     }),
   }),
   executionMode: "sequential",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const openDraftTool = defineTool(
+  openDraftSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     return openedResult(await context.draft.open({ feedId: params.feedId }));
-  },
-});
+  }
+);
 
 /** `"Setup > Install"`, as the outline lists it and `replace_section` takes it. */
 const HeadingSchema = Type.String({
@@ -176,9 +189,9 @@ const MATCH_NOTE = {
   punctuation: " (matched reading curly quotes, dashes or spaces as ASCII)",
 } satisfies Record<MatchMode, string>;
 
-export const readDraftTool = defineTool({
+export const readDraftSpec = {
   name: TOOL_NAMES.readDraft,
-  label: labelOf(TOOL_NAMES.readDraft),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.readDraft].label,
   description:
     "Read a draft: feed-level metadata plus, for one locale, its metadata, the outline of its " +
     "headings and its MDX body with line numbers. All of `heading`, `fromLine` and `toLine` " +
@@ -204,7 +217,11 @@ export const readDraftTool = defineTool({
     ),
   }),
   executionMode: "sequential",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const readDraftTool = defineTool(
+  readDraftSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     const draft = await context.draft.get(params.draftId);
     // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
     const locales = Object.keys(draft.translations) as Locale[];
@@ -295,8 +312,8 @@ export const readDraftTool = defineTool({
         }`,
       { ...details, lineCount: bodyLines.length }
     );
-  },
-});
+  }
+);
 
 const TranslationWriteSchema = Type.Object({
   title: Type.Optional(Type.String({ description: "Title." })),
@@ -338,9 +355,9 @@ const TranslationsWriteSchema = Type.Object(
   }
 );
 
-export const writeDraftTool = defineTool({
+export const writeDraftSpec = {
   name: TOOL_NAMES.writeDraft,
-  label: labelOf(TOOL_NAMES.writeDraft),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.writeDraft].label,
   description:
     "Write a draft: feed-level fields and any number of locales, each with metadata and/or the " +
     "whole MDX body, as one revision. Use it to create a post in one call (both locales, all " +
@@ -373,7 +390,11 @@ export const writeDraftTool = defineTool({
     translations: Type.Optional(TranslationsWriteSchema),
   }),
   executionMode: "sequential",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const writeDraftTool = defineTool(
+  writeDraftSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     const { draftId, translations, ...feedMeta } = params;
 
     const meta: DraftFeedMeta = { ...feedMeta };
@@ -467,12 +488,12 @@ export const writeDraftTool = defineTool({
         jsonBlock(readback),
       { ...readback, warnings }
     );
-  },
-});
+  }
+);
 
-export const editDraftContentTool = defineTool({
+export const editDraftContentSpec = {
   name: TOOL_NAMES.editDraftContent,
-  label: labelOf(TOOL_NAMES.editDraftContent),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.editDraftContent].label,
   description:
     "Replace exact strings in a locale's MDX body. Edits apply in order as one revision; each " +
     "`oldString` must match the draft byte for byte, including indentation. A target that " +
@@ -502,7 +523,11 @@ export const editDraftContentTool = defineTool({
     ),
   }),
   executionMode: "sequential",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const editDraftContentTool = defineTool(
+  editDraftContentSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     const { draftId, locale } = params;
     // Matched under the draft lock against whatever body is current, so an operator save in
     // between is edited rather than overwritten.
@@ -544,14 +569,14 @@ export const editDraftContentTool = defineTool({
         })),
       }
     );
-  },
-});
+  }
+);
 
 const ATX_HEADING = /^ {0,3}#{1,6}[ \t]/;
 
-export const replaceSectionTool = defineTool({
+export const replaceSectionSpec = {
   name: TOOL_NAMES.replaceSection,
-  label: labelOf(TOOL_NAMES.replaceSection),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.replaceSection].label,
   description:
     "Replace one section of a locale's MDX body: the heading line through the last line before " +
     "the next heading of the same or a shallower level, subsections included. `heading` is a " +
@@ -569,7 +594,11 @@ export const replaceSectionTool = defineTool({
     }),
   }),
   executionMode: "sequential",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const replaceSectionTool = defineTool(
+  replaceSectionSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     const { draftId, locale, heading, content } = params;
     const deleted = content.trim().length === 0;
     if (!deleted && !ATX_HEADING.test(content.trimStart())) {
@@ -629,15 +658,5 @@ export const replaceSectionTool = defineTool({
         ],
       }
     );
-  },
-});
-
-export const draftTools: WritingTool[] = [
-  listDraftsTool,
-  newDraftTool,
-  openDraftTool,
-  readDraftTool,
-  writeDraftTool,
-  editDraftContentTool,
-  replaceSectionTool,
-];
+  }
+);

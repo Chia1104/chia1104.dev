@@ -1,5 +1,6 @@
 "use client";
 
+import { captureException } from "@sentry/nextjs";
 import { useTranslations } from "next-intl";
 
 import { withError } from "@chia/ui/hoc/with-error";
@@ -30,6 +31,7 @@ const ErrorContent = () => {
 
 const ErrorPage = withError(ErrorContent, {
   onError(error) {
+    captureException(error);
     console.error(error);
   },
 });

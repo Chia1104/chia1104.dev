@@ -15,6 +15,7 @@ import { listAgentLessons } from "@chia/db/repos/agent/memory";
 import { listFeedDraftRevisionsSince } from "@chia/db/repos/drafts";
 import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
 import {
   createMemoryService,
   reinforceLessonService,
@@ -73,12 +74,10 @@ export const consolidateSessionMemoryStep = async (request: {
       parseLessonProposals,
       wholeBranch,
     },
-    { WRITING_SESSION_DEFAULTS },
   ] = await Promise.all([
     import("@chia/agent-runtime/pi/complete"),
     import("@chia/agent-runtime/session/pg-repo"),
     import("@chia/agent-writing/memory/lessons"),
-    import("@chia/agent-writing/models"),
   ]);
 
   /**
@@ -88,7 +87,10 @@ export const consolidateSessionMemoryStep = async (request: {
   let task: Awaited<ReturnType<typeof resolveAgentTask>>;
   try {
     task = await resolveAgentTask(db, AGENT_TASK_IDS.writingLessons);
-  } catch {
+  } catch (error) {
+    reportError(error, "Lesson extraction task could not be resolved", {
+      sessionId: request.sessionId,
+    });
     return { status: "unavailable", created: [], reinforced: 0 };
   }
 
@@ -98,15 +100,9 @@ export const consolidateSessionMemoryStep = async (request: {
     getWritingAgentSession(db, request.sessionId),
   ]);
 
-  const repo = new PgSessionRepo(db, {
-    kind: WRITING_AGENT_KIND,
-    defaults: WRITING_SESSION_DEFAULTS,
-  });
-  const session = await repo.openById(request.sessionId);
-  const [entries, leafId] = await Promise.all([
-    session.getEntries(),
-    session.getLeafId(),
-  ]);
+  const session = new PgSessionRepo(db, WRITING_AGENT_KIND).open(row);
+  const entries = await session.getEntries();
+  const leafId = row.leafEntryId;
   const exchange = collectOperatorExchange(
     branchSince(wholeBranch(entries, leafId), mark?.consolidatedLeafId ?? null)
   );

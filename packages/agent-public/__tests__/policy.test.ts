@@ -7,14 +7,12 @@ import { TOOL_NAMES } from "../src/tools/registry.ts";
 
 describe("publicPolicy", () => {
   it("classifies every tool as read and never asks for approval", () => {
-    for (const name of Object.values(TOOL_NAMES)) {
-      expect(publicPolicy.tierOf(name)).toBe("read");
-      expect(publicPolicy.requiresApproval(publicPolicy.tierOf(name))).toBe(
-        false
-      );
+    for (const name of [...Object.values(TOOL_NAMES), "not_a_tool"]) {
+      const info = publicPolicy.toolInfo(name);
+      expect(info.tier).toBe("read");
+      expect(info.changes).toBeUndefined();
+      expect(publicPolicy.requiresApproval(info.tier)).toBe(false);
     }
-    expect(publicPolicy.tierOf("not_a_tool")).toBe("read");
-    expect(publicPolicy.changesState).toBeUndefined();
   });
 
   it("summarises a content read and an error", () => {

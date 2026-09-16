@@ -1,6 +1,8 @@
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import { isContextOverflow } from "@earendil-works/pi-ai";
 
+import { messageOf } from "@chia/utils/error-helper";
+
 import type { AgentErrorKind, AgentTurnError } from "../types.ts";
 
 /**
@@ -38,5 +40,5 @@ export const errorOfAssistantMessage = (
 /** Classifies an error thrown by the harness, a hook, or turn persistence. */
 export const errorOfThrown = (cause: unknown): AgentTurnError => ({
   kind: "internal",
-  message: cause instanceof Error ? cause.message : String(cause),
+  message: messageOf(cause),
 });

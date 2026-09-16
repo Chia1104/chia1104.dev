@@ -94,3 +94,11 @@ export const workflowControlResultSchema = z.discriminatedUnion("type", [
 export type WorkflowControlResult = z.infer<typeof workflowControlResultSchema>;
 
 export const workflowControlErrorSchema = z.object({ error: z.string() });
+
+/** The run id a start command answered with. */
+export const startedRunId = (result: WorkflowControlResult): string => {
+  if (result.type !== "started") {
+    throw new Error("Workflow control returned no run id.");
+  }
+  return result.runId;
+};

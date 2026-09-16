@@ -1,15 +1,11 @@
 import type { AgentPolicy, AgentTurnBudget } from "@chia/agent-runtime/types";
 
-import { labelOf, tierOf } from "./tools/registry.ts";
+import { toolInfo } from "./tools/registry.ts";
 import { summarizeToolResult } from "./tools/summarize.ts";
 
-/**
- * Nothing here changes state, so nothing needs approval and there is no state scope for the
- * client to refetch.
- */
+/** Nothing here changes state, so nothing needs approval. */
 export const publicPolicy: AgentPolicy = {
-  tierOf,
-  labelOf,
+  toolInfo,
   requiresApproval: () => false,
   summarize: summarizeToolResult,
 };

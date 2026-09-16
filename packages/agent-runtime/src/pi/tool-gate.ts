@@ -1,5 +1,8 @@
+import { reportError } from "@chia/observability/report";
+
 import type {
   AgentPolicy,
+  ApprovalRequest,
   ToolCallRefusal,
   ToolCallRequest,
   ToolTier,
@@ -16,15 +19,6 @@ import type {
  *
  * Classification is injected via {@link AgentPolicy}.
  */
-
-export interface ApprovalRequest {
-  toolCallId: string;
-  toolName: string;
-  tier: ToolTier;
-  args: unknown;
-  /** What an approval of this request is good for; see {@link PiToolCallGateOptions.approvalKeyOf}. */
-  key: string;
-}
 
 export interface PiToolCallGateOptions {
   policy: AgentPolicy;
@@ -73,7 +67,7 @@ export const createPiToolCallGate = (
     },
     async handle(event) {
       const toolName = event.toolName;
-      const tier = options.policy.tierOf(toolName);
+      const { tier } = options.policy.toolInfo(toolName);
 
       if (!options.policy.requiresApproval(tier)) return undefined;
       if (options.autoApprove.includes(tier)) return undefined;
@@ -86,7 +80,10 @@ export const createPiToolCallGate = (
         try {
           await options.consumeApproval?.(key);
           return undefined;
-        } catch {
+        } catch (error) {
+          reportError(error, "Approval could not be recorded as used", {
+            tool: toolName,
+          });
           return {
             block: true,
             reason:

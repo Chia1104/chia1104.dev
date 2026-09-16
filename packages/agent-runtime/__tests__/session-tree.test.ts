@@ -26,7 +26,6 @@ const compaction = (id: string, parentId: string): SessionEntry => {
     summary: "Condensed.",
     tokensBefore: 50_000,
     retainedTail: [],
-    fromHook: false,
   };
 };
 

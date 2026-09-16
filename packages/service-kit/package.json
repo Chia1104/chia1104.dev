@@ -93,6 +93,7 @@
     "@sentry/node-core": "catalog:sentry",
     "es-toolkit": "catalog:",
     "hono": "catalog:hono",
+    "keyv": "catalog:kv",
     "zod": "catalog:"
   },
   "devDependencies": {

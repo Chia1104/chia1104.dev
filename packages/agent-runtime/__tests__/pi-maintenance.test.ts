@@ -161,18 +161,6 @@ describe("navigatePiSession", () => {
     expect(await session.getEntries()).toHaveLength(4);
   });
 
-  it("labels the target without moving the leaf onto the label", async () => {
-    const { session, options } = await build();
-
-    await navigatePiSession(options, "u2", { label: "before the tangent" });
-
-    await expect(session.getLeafId()).resolves.toBe("a1");
-    await expect(session.getLabel("u2")).resolves.toBe("before the tangent");
-    expect((await session.getBranch()).some((e) => e.type === "label")).toBe(
-      false
-    );
-  });
-
   it("summarises the branch left behind under the new leaf", async () => {
     const { faux, session, options } = await build();
     faux.setResponses([fauxAssistantMessage("They asked twice.")]);
@@ -205,7 +193,7 @@ describe("navigatePiSession", () => {
     const result = await navigatePiSession(
       { ...options, signal: controller.signal },
       "u2",
-      { summarize: true, label: "never written" }
+      { summarize: true }
     );
 
     expect(result).toEqual({ cancelled: true });
@@ -225,7 +213,6 @@ describe("navigatePiSession", () => {
       summary: "The first exchange, condensed.",
       tokensBefore: 10,
       retainedTail: [],
-      fromHook: false,
     });
     await session.appendEntry(user("u3", "c1", "Third question"));
     await session.appendEntry(assistant("a3", "u3", "Third answer"));

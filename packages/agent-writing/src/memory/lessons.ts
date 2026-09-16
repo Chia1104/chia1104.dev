@@ -5,6 +5,7 @@ import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import { isOperatorDecisionText } from "@chia/agent-runtime/wire/operator-decision";
 import type { FeedDraftAuthor, FeedDraftSnapshot } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
+import { oneLine } from "@chia/utils/format";
 
 /**
  * Lesson extraction from a session's transcript and the operator's hand edits. Pure functions
@@ -279,11 +280,6 @@ export interface LessonExtractionPrompt {
   systemPrompt: string;
   text: string;
 }
-
-const oneLine = (text: string, max: number) => {
-  const line = text.replace(/\s+/g, " ").trim();
-  return line.length > max ? `${line.slice(0, max - 1)}…` : line;
-};
 
 const renderEdits = (groups: readonly DraftOperatorEdits[]): string => {
   const blocks: string[] = [];

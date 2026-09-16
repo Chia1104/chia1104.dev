@@ -6,6 +6,7 @@ import {
   asNumber,
   asString,
 } from "@chia/utils/json";
+import { hostnameOf } from "@chia/utils/url";
 
 import { TOOL_NAMES } from "./registry.ts";
 
@@ -40,7 +41,7 @@ export const summarizeToolResult = <TResult>(
     }
     case TOOL_NAMES.fetchUrl: {
       const url = asString(details.url);
-      return url ? `Fetched ${hostOf(url)}.` : "Fetched page.";
+      return url ? `Fetched ${hostnameOf(url)}.` : "Fetched page.";
     }
     case TOOL_NAMES.githubResolveRef: {
       const repo = asString(details.repo);
@@ -147,13 +148,5 @@ export const summarizeToolResult = <TResult>(
       return details.published === true ? "Published." : "Unpublished.";
     default:
       return "Done.";
-  }
-};
-
-const hostOf = (url: string): string => {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return url;
   }
 };

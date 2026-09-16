@@ -1,4 +1,3 @@
-import type { AgentTool } from "@chia/agent-runtime/types";
 import type { FeedType, Locale } from "@chia/db/types";
 import type { ProfileEntryContent } from "@chia/db/validator/profile";
 
@@ -106,5 +105,3 @@ export interface ProfileReadPort {
 export interface ContentToolContext {
   content: ContentReadPort;
 }
-
-export type ContentTool = AgentTool<ContentToolContext>;
