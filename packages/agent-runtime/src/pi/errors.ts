@@ -40,3 +40,7 @@ export const errorOfThrown = (cause: unknown): AgentTurnError => ({
   kind: "internal",
   message: cause instanceof Error ? cause.message : String(cause),
 });
+
+/** A `fetch` or timer that observed the turn's own abort signal, not a failure. */
+export const isAbortError = (cause: unknown): boolean =>
+  cause instanceof Error && cause.name === "AbortError";

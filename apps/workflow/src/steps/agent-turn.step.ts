@@ -34,7 +34,7 @@ import {
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
-import { logger } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
 import type { JsonObject } from "@chia/utils/json";
 import type {
   AgentAbortControllerRef,
@@ -117,8 +117,12 @@ const titleSession = async (
     });
     const title = generated ?? fallbackSessionTitle(request.text);
     if (title) await setAgentSessionTitleIfUnset(db, row.id, title);
-  } catch {
+  } catch (error) {
     // Cosmetic; the turn must not fail for it.
+    reportError(error, "Session title could not be set", {
+      sessionId: row.id,
+      runId: request.runId,
+    });
   }
 };
 
@@ -127,6 +131,22 @@ export const runAgentTurnStep = async (
 ): Promise<AgentTurnOutcome> => {
   "use step";
 
+  try {
+    return await executeAgentTurn(request);
+  } catch (error) {
+    // The runtime reports the failures it returns; a throw is reported here, the last boundary
+    // in Node: the workflow function that records it cannot log.
+    reportError(error, "Agent turn step failed", {
+      sessionId: request.sessionId,
+      runId: request.runId,
+    });
+    throw error;
+  }
+};
+
+const executeAgentTurn = async (
+  request: AgentTurnRequest
+): Promise<AgentTurnOutcome> => {
   const db = await connectDatabase(undefined, { withCache: false });
 
   const row = await getAgentSession(db, request.sessionId);
@@ -243,9 +263,11 @@ async function runKindTurn(
   try {
     settings = settingsFromRow(row);
   } catch (error) {
-    throw new FatalError(
+    const fatal = new FatalError(
       error instanceof Error ? error.message : String(error)
     );
+    fatal.cause = error;
+    throw fatal;
   }
 
   /**
@@ -378,15 +400,14 @@ const createEventWriter = (holdEnd?: Promise<unknown>): EventWriter => {
     async flush() {
       flushDeltas();
       // A lost write does not fail the turn: its side effects and entries are already durable
-      // and a client that misses the event reloads the session. It is logged so a stall can be traced.
+      // and a client that misses the event reloads the session. It is reported so a stall can be traced.
       const lost = (await Promise.allSettled(inFlight)).filter(
         (result) => result.status === "rejected"
       );
       if (lost.length > 0) {
-        logger.error(
-          { err: lost[0]?.reason, count: lost.length },
-          "Agent stream writes failed"
-        );
+        reportError(lost[0]?.reason, "Agent stream writes failed", {
+          count: lost.length,
+        });
       }
       coarse.releaseLock();
       deltas.releaseLock();

@@ -1,6 +1,6 @@
 import { Suspense, ViewTransition } from "react";
 
-import { ErrorBoundary } from "@chia/ui/error-boundary";
+import { ErrorBoundary } from "@sentry/nextjs";
 
 import { AboutMe } from "@/components/about/about-me";
 import { FavoriteSongs } from "@/components/about/favorite-songs";

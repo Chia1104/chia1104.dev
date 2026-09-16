@@ -18,31 +18,27 @@ export const createSignedUrlForUploadRoute = contractOS.file[
 ]
   .use(adminGuard())
   .handler(async (opts) => {
-    try {
-      const lastDotIndex = opts.input.key.lastIndexOf(".");
-      const hasExtension =
-        lastDotIndex > 0 && lastDotIndex < opts.input.key.length - 1;
+    const lastDotIndex = opts.input.key.lastIndexOf(".");
+    const hasExtension =
+      lastDotIndex > 0 && lastDotIndex < opts.input.key.length - 1;
 
-      const filename = hasExtension
-        ? opts.input.key.slice(0, lastDotIndex)
-        : opts.input.key;
-      const extension = hasExtension ? opts.input.key.slice(lastDotIndex) : "";
+    const filename = hasExtension
+      ? opts.input.key.slice(0, lastDotIndex)
+      : opts.input.key;
+    const extension = hasExtension ? opts.input.key.slice(lastDotIndex) : "";
 
-      const sluggedFilename = slugger.slug(filename);
-      const uuid = crypto.randomUUID();
-      const name = `${opts.input.area}/${sluggedFilename}-${uuid}${extension}`;
+    const sluggedFilename = slugger.slug(filename);
+    const uuid = crypto.randomUUID();
+    const name = `${opts.input.area}/${sluggedFilename}-${uuid}${extension}`;
 
-      const { url } = await (
-        await getS3Service()
-      ).createSignedUrlForUpload(name, {
-        sha256Checksum: opts.input.sha256Checksum,
-        type: opts.input.type,
-        size: opts.input.size,
-      });
-      return { url };
-    } catch {
-      throw opts.errors.INTERNAL_SERVER_ERROR();
-    }
+    const { url } = await (
+      await getS3Service()
+    ).createSignedUrlForUpload(name, {
+      sha256Checksum: opts.input.sha256Checksum,
+      type: opts.input.type,
+      size: opts.input.size,
+    });
+    return { url };
   });
 
 export const listObjectsRoute = contractOS.file.list
@@ -63,12 +59,8 @@ export const listObjectsRoute = contractOS.file.list
 export const deleteObjectRoute = contractOS.file.delete
   .use(adminGuard())
   .handler(async (opts) => {
-    try {
-      await (await getS3Service()).deleteFile(opts.input.key);
-      return { success: true };
-    } catch {
-      throw opts.errors.INTERNAL_SERVER_ERROR();
-    }
+    await (await getS3Service()).deleteFile(opts.input.key);
+    return { success: true };
   });
 
 export const fileRouter = contractOS.file.router({

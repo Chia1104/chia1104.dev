@@ -1,7 +1,6 @@
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
-import { reportError } from "@chia/observability/report";
 import { errorGenerator } from "@chia/utils/server";
 
 import type { ServiceHonoEnv } from "../hono";
@@ -37,31 +36,24 @@ export const maintenance = (options?: MaintenanceOptions) =>
       return next();
     }
 
-    try {
-      const bypassToken =
-        c.req.raw.headers.get(MAINTENANCE_BYPASS_TOKEN) ??
-        getCookie(c, MAINTENANCE_BYPASS_TOKEN)?.toString();
+    const bypassToken =
+      c.req.raw.headers.get(MAINTENANCE_BYPASS_TOKEN) ??
+      getCookie(c, MAINTENANCE_BYPASS_TOKEN)?.toString();
 
-      if (bypassToken && bypassToken === options.bypassToken) {
-        return next();
-      }
-
-      return c.json(
-        errorGenerator(503, [
-          {
-            field: MAINTENANCE_MODE,
-            message: "System is under maintenance",
-          },
-        ]),
-        503,
-        {
-          "Retry-After": "3600",
-        }
-      );
-    } catch (error) {
-      reportError(error, "Maintenance check failed");
-      return c.json(errorGenerator(503), 503, {
-        "Retry-After": "3600",
-      });
+    if (bypassToken && bypassToken === options.bypassToken) {
+      return next();
     }
+
+    return c.json(
+      errorGenerator(503, [
+        {
+          field: MAINTENANCE_MODE,
+          message: "System is under maintenance",
+        },
+      ]),
+      503,
+      {
+        "Retry-After": "3600",
+      }
+    );
   });

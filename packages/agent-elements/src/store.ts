@@ -453,7 +453,7 @@ export const createAgentSessionStore = ({
             // Usually the turn finished between `get` and `attach` (NOT_FOUND); the fresh detail
             // says so, and a real transport failure surfaces from that read instead.
             if (mine === generation) {
-              await fetchDetail().catch((cause: unknown) => {
+              await fetchDetail().catch((cause) => {
                 if (mine === generation)
                   set({ failure: failureOf(cause, get().labels) });
               });

@@ -22,7 +22,6 @@ import type {
   ResourceIndexRunScope,
   ResourceIndexRunStatus,
 } from "@chia/db/schema";
-import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
@@ -172,9 +171,10 @@ export const reconcileIndexRun = async (
         /* SAFETY: The producer contract guarantees this value satisfies ResourceIndexRunTerminalStatus. */ status as ResourceIndexRunTerminalStatus
       )
     ) {
-      logger.error(
-        { runId: row.externalRunId, status },
-        "Unrecognised workflow run status; leaving the row active"
+      reportError(
+        new Error(`Unrecognised workflow run status: ${status}`),
+        "Unrecognised workflow run status; leaving the row active",
+        { runId: row.externalRunId, status }
       );
       return row;
     }

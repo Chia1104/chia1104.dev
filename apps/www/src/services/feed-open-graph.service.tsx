@@ -9,6 +9,7 @@ import dayjs from "@chia/utils/day";
 import { errorGenerator } from "@chia/utils/server";
 
 import { client } from "@/libs/orpc/client.rsc";
+import { reportServiceError } from "@/libs/orpc/report";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
 const imageSize = {
@@ -34,6 +35,7 @@ export async function createFeedOpenGraphImage({
     })
   );
   if (error) {
+    reportServiceError(error);
     return NextResponse.json(errorGenerator(404), { status: 404 });
   }
 

@@ -1,3 +1,5 @@
+import { reportError } from "@chia/observability/report";
+
 import type {
   AgentPolicy,
   ApprovalRequest,
@@ -78,7 +80,10 @@ export const createPiToolCallGate = (
         try {
           await options.consumeApproval?.(key);
           return undefined;
-        } catch {
+        } catch (error) {
+          reportError(error, "Approval could not be recorded as used", {
+            tool: toolName,
+          });
           return {
             block: true,
             reason:

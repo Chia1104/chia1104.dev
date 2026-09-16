@@ -1,5 +1,6 @@
 import { getRun, start } from "workflow/api";
 
+import { reportError } from "@chia/observability/report";
 import {
   agentAbortHook,
   agentAbortToken,
@@ -75,7 +76,12 @@ export const executeLocalWorkflowCommand = async (
       // `returnValue` settles only on completion; asking earlier would wait for the run.
       const output =
         status === "completed"
-          ? await run.returnValue.catch(() => undefined)
+          ? await run.returnValue.catch((cause) => {
+              reportError(cause, "Workflow run output could not be read", {
+                runId: command.runId,
+              });
+              return undefined;
+            })
           : undefined;
       return { type: "run", exists: true, status, output };
     }

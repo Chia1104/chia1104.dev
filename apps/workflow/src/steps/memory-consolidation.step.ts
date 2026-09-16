@@ -15,6 +15,7 @@ import { listAgentLessons } from "@chia/db/repos/agent/memory";
 import { listFeedDraftRevisionsSince } from "@chia/db/repos/drafts";
 import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
 import {
   createMemoryService,
   reinforceLessonService,
@@ -86,7 +87,10 @@ export const consolidateSessionMemoryStep = async (request: {
   let task: Awaited<ReturnType<typeof resolveAgentTask>>;
   try {
     task = await resolveAgentTask(db, AGENT_TASK_IDS.writingLessons);
-  } catch {
+  } catch (error) {
+    reportError(error, "Lesson extraction task could not be resolved", {
+      sessionId: request.sessionId,
+    });
     return { status: "unavailable", created: [], reinforced: 0 };
   }
 

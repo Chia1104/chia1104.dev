@@ -1,6 +1,8 @@
 import { contentText } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
+import { logger } from "@chia/observability/logger";
+
 import type { AgentModelUsage } from "../types.ts";
 
 /**
@@ -45,12 +47,18 @@ export const completeText = async ({
       modelId: reply.model,
       usage: reply.usage,
     });
-    if (reply.stopReason === "error" || reply.stopReason === "aborted") {
+    if (reply.stopReason === "error") {
+      logger.warn(
+        { model: model.id, detail: reply.errorMessage },
+        "Completion request failed"
+      );
       return null;
     }
+    if (reply.stopReason === "aborted") return null;
     const out = contentText(reply.content).trim();
     return out.length > 0 ? out : null;
-  } catch {
+  } catch (error) {
+    logger.warn({ err: error, model: model.id }, "Completion request failed");
     return null;
   }
 };

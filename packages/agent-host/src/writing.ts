@@ -296,9 +296,17 @@ export const createWritingAgentExecutor = (
             context.row.id
           );
           if (current?.consolidationRunId) {
-            await host
-              .cancelWorkflowRun(current.consolidationRunId)
-              .catch(() => undefined);
+            const runId = current.consolidationRunId;
+            await host.cancelWorkflowRun(runId).catch((cause) =>
+              reportError(
+                cause,
+                "Superseded lesson extraction could not be cancelled",
+                {
+                  sessionId: context.row.id,
+                  runId,
+                }
+              )
+            );
           }
           const runId = await host.startMemoryConsolidation({
             sessionId: context.row.id,

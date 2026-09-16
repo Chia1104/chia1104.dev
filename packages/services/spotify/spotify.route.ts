@@ -40,7 +40,7 @@ export const getSpotifyNowPlayingRoute = contractOS.spotify.playing
     } catch (error) {
       // Unconfigured (no account, no fallback refresh token) is 503, not a crash.
       if (error instanceof SpotifyCredentialUnavailableError) {
-        throw opts.errors.SERVICE_UNAVAILABLE();
+        throw opts.errors.SERVICE_UNAVAILABLE({ cause: error });
       }
       throw error;
     }
@@ -73,7 +73,7 @@ export const createSpotifyAuthorizationRoute = contractOS.spotify.authorize
       return { url };
     } catch (err) {
       if (err instanceof SpotifyCredentialUnavailableError) {
-        throw opts.errors.SERVICE_UNAVAILABLE();
+        throw opts.errors.SERVICE_UNAVAILABLE({ cause: err });
       }
       throw err;
     }

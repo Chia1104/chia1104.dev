@@ -1,6 +1,7 @@
 import { getRun } from "workflow/api";
 
 import type { AgentAbortMessage } from "@chia/agent-host/execution";
+import { reportError } from "@chia/observability/report";
 
 import { workflowControl } from "./workflow-control";
 
@@ -20,8 +21,11 @@ export const subscribeAgentAbort = (controllerRunId: string) => {
           break;
         }
       }
-    } catch {
+    } catch (error) {
       // A dropped subscription must not stop the turn; the abort simply cannot reach it.
+      reportError(error, "Agent abort subscription dropped", {
+        controllerRunId,
+      });
     } finally {
       reader.releaseLock();
     }
@@ -40,7 +44,11 @@ export const signalAgentAbort = async (
   try {
     await workflowControl.resumeAgentAbort(controllerId, reason);
     return true;
-  } catch {
+  } catch (error) {
+    reportError(error, "Agent abort could not be signalled", {
+      controllerId,
+      reason,
+    });
     return false;
   }
 };

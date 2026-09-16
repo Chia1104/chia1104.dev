@@ -35,9 +35,8 @@ export const createAgentKindService = <TState, TConfig extends object>(
         );
         return null;
       } catch (error) {
-        return error instanceof UnknownAgentModelError
-          ? error.message
-          : `Could not validate model "${ref.modelId}".`;
+        if (error instanceof UnknownAgentModelError) return error.message;
+        throw error;
       }
     },
 

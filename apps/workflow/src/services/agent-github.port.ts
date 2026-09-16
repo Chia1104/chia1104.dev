@@ -40,15 +40,17 @@ const sourceOf = (): GitHubSource => {
 const toModelError = (error: GitHubApiError, subject: string): Error => {
   switch (error.status) {
     case 404:
-      return new Error(`${subject} was not found on GitHub.`);
+      return new Error(`${subject} was not found on GitHub.`, { cause: error });
     case 401:
     case 403:
       return new Error(
-        `GitHub refused access to ${subject} (HTTP ${error.status}); the agent's token may lack scope or be rate limited.`
+        `GitHub refused access to ${subject} (HTTP ${error.status}); the agent's token may lack scope or be rate limited.`,
+        { cause: error }
       );
     default:
       return new Error(
-        `GitHub failed for ${subject} (HTTP ${error.status}). Retry once later.`
+        `GitHub failed for ${subject} (HTTP ${error.status}). Retry once later.`,
+        { cause: error }
       );
   }
 };

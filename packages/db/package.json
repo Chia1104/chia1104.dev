@@ -139,6 +139,7 @@
   "dependencies": {
     "@chia/ai": "workspace:*",
     "@chia/kv": "workspace:*",
+    "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
     "@paradedb/drizzle-paradedb": "catalog:drizzle",
     "@t3-oss/env-core": "catalog:env",

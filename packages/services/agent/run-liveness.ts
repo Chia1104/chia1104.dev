@@ -8,6 +8,7 @@ import {
   completeAgentRunIfUnbound,
   listRunningAgentRuns,
 } from "@chia/db/repos/agent";
+import { logger } from "@chia/observability/logger";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import { readAgentAbortControllerRef, signalAgentAbort } from "./abort";
@@ -37,8 +38,9 @@ export const isRunLive = async (
     if (!(await run.exists)) return false;
     const status = await run.status;
     return status === "pending" || status === "running";
-  } catch {
+  } catch (error) {
     // A run from a previous deployment may no longer resolve; treat it as gone.
+    logger.warn({ err: error, runId }, "Run state could not be read");
     return false;
   }
 };

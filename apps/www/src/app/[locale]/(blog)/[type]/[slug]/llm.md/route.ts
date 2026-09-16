@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { safe } from "@orpc/client";
 
 import { client } from "@/libs/orpc/client.rsc";
+import { reportServiceError } from "@/libs/orpc/report";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
 export const GET = async (
@@ -18,6 +19,7 @@ export const GET = async (
     })
   );
   if (error) {
+    reportServiceError(error);
     notFound();
   }
   return new Response(feed.translations[0]?.content, {

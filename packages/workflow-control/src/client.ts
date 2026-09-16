@@ -80,7 +80,8 @@ export const createWorkflowControlClient = ({
       body: JSON.stringify(command),
       signal: AbortSignal.timeout(CONTROL_TIMEOUT_MS),
     });
-    const payload: unknown = await response.json();
+    // A proxy may answer with an HTML error page; the status still classifies the failure.
+    const payload: unknown = await response.json().catch(() => undefined);
     if (!response.ok) {
       // The workflow service returns the `AppError` status it hit, so the code round-trips.
       const parsed = workflowControlErrorSchema.safeParse(payload);

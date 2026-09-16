@@ -13,6 +13,7 @@ import {
   refreshSpotifyAccessToken,
 } from "@chia/integrations/spotify";
 import { env } from "@chia/integrations/spotify/env";
+import { logger } from "@chia/observability/logger";
 
 import { SpotifyCredentialUnavailableError } from "./account.service";
 
@@ -120,7 +121,10 @@ export const getSpotifyNowPlayingService = async (db: DB) => {
 
     const refreshedAccessToken = await resolveSpotifyAccessToken(db, {
       forceRefresh: true,
-    }).catch(() => undefined);
+    }).catch((cause) => {
+      logger.warn({ err: cause }, "Spotify token refresh failed after a 401");
+      return undefined;
+    });
 
     if (!refreshedAccessToken) {
       throw new SpotifyCredentialUnavailableError();
