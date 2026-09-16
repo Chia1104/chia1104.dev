@@ -35,9 +35,9 @@ export async function tryCatch<T, E = Error>(
 export const messageOf = (cause: unknown, fallback?: string): string =>
   cause instanceof Error ? cause.message : (fallback ?? String(cause));
 
-/** A thrown value as an `Error`, wrapped when something else was thrown. */
+/** A thrown value as an `Error`; anything else is wrapped and kept as the wrapper's `cause`. */
 export const asError = (cause: unknown): Error =>
-  cause instanceof Error ? cause : new Error(String(cause));
+  cause instanceof Error ? cause : new Error(String(cause), { cause });
 
 /** A `fetch` or timer that observed its abort signal, not a failure. */
 export const isAbortError = (cause: unknown): boolean =>
