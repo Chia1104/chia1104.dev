@@ -3,12 +3,12 @@ import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
 import {
-  bindTool,
+  defineTool,
   LocaleSchema,
   jsonBlock,
   textResult,
 } from "@chia/agent-runtime/tools";
-import type { ToolSpec } from "@chia/agent-runtime/tools";
+import type { ToolFactory, ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 
 import type { ContentToolContext } from "../types.ts";
@@ -65,8 +65,9 @@ export const searchPostsSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const searchPostsTool = (context: ContentToolContext): AgentTool =>
-  bindTool(searchPostsSpec, async (_toolCallId, params) => {
+export const searchPostsTool = defineTool(
+  searchPostsSpec,
+  (context: ContentToolContext) => async (_toolCallId, params) => {
     const hits = await context.content.searchPosts({
       keyword: params.keyword,
       locale: params.locale,
@@ -82,7 +83,8 @@ export const searchPostsTool = (context: ContentToolContext): AgentTool =>
       `${hits.length} matching post(s):\n\n${jsonBlock(hits)}`,
       { hits }
     );
-  });
+  }
+);
 
 export const getPostSpec = {
   name: CONTENT_TOOL_NAMES.getPost,
@@ -112,8 +114,9 @@ export const getPostSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const getPostTool = (context: ContentToolContext): AgentTool =>
-  bindTool(getPostSpec, async (_toolCallId, params) => {
+export const getPostTool = defineTool(
+  getPostSpec,
+  (context: ContentToolContext) => async (_toolCallId, params) => {
     const post = await context.content.getPost({
       slug: params.slug,
       locale: params.locale,
@@ -161,7 +164,8 @@ export const getPostTool = (context: ContentToolContext): AgentTool =>
       )}`,
       { post: { ...post, translations }, contextTokens: context_.totalTokens }
     );
-  });
+  }
+);
 
 export const listPostsSpec = {
   name: CONTENT_TOOL_NAMES.listPosts,
@@ -187,8 +191,9 @@ export const listPostsSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const listPostsTool = (context: ContentToolContext): AgentTool =>
-  bindTool(listPostsSpec, async (_toolCallId, params) => {
+export const listPostsTool = defineTool(
+  listPostsSpec,
+  (context: ContentToolContext) => async (_toolCallId, params) => {
     const posts = await context.content.listPosts({
       limit: params.limit ?? 20,
       published: params.published,
@@ -196,7 +201,8 @@ export const listPostsTool = (context: ContentToolContext): AgentTool =>
     return textResult(`${posts.length} post(s):\n\n${jsonBlock(posts)}`, {
       posts,
     });
-  });
+  }
+);
 
 export const listTagsSpec = {
   name: CONTENT_TOOL_NAMES.listTags,
@@ -206,25 +212,26 @@ export const listTagsSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const listTagsTool = (context: ContentToolContext): AgentTool =>
-  bindTool(listTagsSpec, async () => {
+export const listTagsTool = defineTool(
+  listTagsSpec,
+  (context: ContentToolContext) => async () => {
     const tags = await context.content.listTags();
     return textResult(`${tags.length} tag(s):\n\n${jsonBlock(tags)}`, { tags });
-  });
+  }
+);
 
-/** In the order {@link createContentReadTools} builds them. */
-export const contentReadToolSpecs: ToolSpec[] = [
-  searchPostsSpec,
-  getPostSpec,
-  listPostsSpec,
-  listTagsSpec,
+/** Order is the order pi lists tools to the model. */
+export const contentReadTools: readonly ToolFactory<ContentToolContext>[] = [
+  searchPostsTool,
+  getPostTool,
+  listPostsTool,
+  listTagsTool,
 ];
+
+export const contentReadToolSpecs: ToolSpec[] = contentReadTools.map(
+  (tool) => tool.spec
+);
 
 export const createContentReadTools = (
   context: ContentToolContext
-): AgentTool[] => [
-  searchPostsTool(context),
-  getPostTool(context),
-  listPostsTool(context),
-  listTagsTool(context),
-];
+): AgentTool[] => contentReadTools.map((tool) => tool(context));

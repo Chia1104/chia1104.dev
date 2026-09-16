@@ -1,7 +1,6 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { Type } from "typebox";
 
-import { bindTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
+import { defineTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 
@@ -61,8 +60,9 @@ export const saveMemorySpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const saveMemoryTool = (context: WritingToolContext): AgentTool =>
-  bindTool(saveMemorySpec, async (_toolCallId, params, signal) => {
+export const saveMemoryTool = defineTool(
+  saveMemorySpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const saved = await context.memory.save(
       {
         kind: "fact",
@@ -82,7 +82,8 @@ export const saveMemoryTool = (context: WritingToolContext): AgentTool =>
         sourceUrl: saved.sourceUrl,
       }
     );
-  });
+  }
+);
 
 export const proposeLessonSpec = {
   name: TOOL_NAMES.proposeLesson,
@@ -119,8 +120,9 @@ export const proposeLessonSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const proposeLessonTool = (context: WritingToolContext): AgentTool =>
-  bindTool(proposeLessonSpec, async (_toolCallId, params, signal) => {
+export const proposeLessonTool = defineTool(
+  proposeLessonSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const saved = await context.memory.save(
       {
         kind: "lesson",
@@ -140,7 +142,8 @@ export const proposeLessonTool = (context: WritingToolContext): AgentTool =>
         supersedes: params.supersedes ?? null,
       }
     );
-  });
+  }
+);
 
 export const searchMemorySpec = {
   name: TOOL_NAMES.searchMemory,
@@ -166,8 +169,9 @@ export const searchMemorySpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const searchMemoryTool = (context: WritingToolContext): AgentTool =>
-  bindTool(searchMemorySpec, async (_toolCallId, params, signal) => {
+export const searchMemoryTool = defineTool(
+  searchMemorySpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const hits = await context.memory.search(
       { query: params.query, limit: params.limit ?? DEFAULT_SEARCH_LIMIT },
       signal
@@ -184,7 +188,8 @@ export const searchMemoryTool = (context: WritingToolContext): AgentTool =>
       `${hits.length} memory hit(s) for "${params.query}":\n\n${hits.map(formatHit).join("\n\n")}`,
       { query: params.query, hits }
     );
-  });
+  }
+);
 
 const formatHit = (hit: MemoryHit, index: number): string => {
   const heading = `${index + 1}. [${hit.kind}] **${hit.title}** (#${hit.id})`;
@@ -216,8 +221,9 @@ export const getMemorySpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const getMemoryTool = (context: WritingToolContext): AgentTool =>
-  bindTool(getMemorySpec, async (_toolCallId, params, signal) => {
+export const getMemoryTool = defineTool(
+  getMemorySpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const memory = await context.memory.get(params.id, signal);
     if (!memory) {
       throw new Error(
@@ -248,4 +254,5 @@ export const getMemoryTool = (context: WritingToolContext): AgentTool =>
         `(${detail}, ${totalTokens} tokens)\n\n${body}\n\n${jsonBlock(meta)}`,
       { ...meta, detail, contentTokens: totalTokens }
     );
-  });
+  }
+);

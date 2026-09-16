@@ -1,9 +1,8 @@
 import { formatSkillInvocation } from "@earendil-works/pi-agent-core";
-import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
-import { bindTool, textResult } from "@chia/agent-runtime/tools";
+import { defineTool, textResult } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 
 import { writingSkills } from "../prompts/skills.ts";
@@ -30,8 +29,9 @@ export const readSkillSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const readSkillTool = (): AgentTool =>
-  bindTool(readSkillSpec, (_toolCallId, params) => {
+export const readSkillTool = defineTool(
+  readSkillSpec,
+  () => (_toolCallId, params) => {
     const skill = writingSkills.find(
       (candidate) => candidate.name === params.name
     );
@@ -43,4 +43,5 @@ export const readSkillTool = (): AgentTool =>
     return Promise.resolve(
       textResult(formatSkillInvocation(skill), { name: skill.name })
     );
-  });
+  }
+);

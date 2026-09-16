@@ -19,7 +19,7 @@ import {
 } from "vitest";
 
 import { traceModelStream, withModelSpans } from "../src/telemetry.ts";
-import { bindTool } from "../src/tools.ts";
+import { defineTool } from "../src/tools.ts";
 
 import { build, toolCallTurn } from "./runtime.fixture.ts";
 
@@ -122,15 +122,15 @@ describe("agent turn telemetry", () => {
   });
 
   it("records a thrown tool's class but not its message", async () => {
-    const leak = bindTool(
+    const leak = defineTool(
       {
         name: "leak",
         label: "Leak",
         description: "Fails with the operator's text.",
         parameters: Type.Object({}),
       },
-      () => Promise.reject(new TypeError("draft: my private note"))
-    );
+      () => () => Promise.reject(new TypeError("draft: my private note"))
+    )({});
     const fixture = build();
     fixture.faux.setResponses([
       toolCallTurn("leak", {}, "call-1"),

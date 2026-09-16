@@ -30,7 +30,7 @@ import {
 } from "../src/tools/github.tool.ts";
 import { fetchUrlTool, webSearchTool } from "../src/tools/retrieval.tool.ts";
 import { summarizeToolResult } from "../src/tools/summarize.ts";
-import { createWritingTools, writingToolSpecs } from "../src/tools/tool-set.ts";
+import { writingToolSpecs } from "../src/tools/tool-set.ts";
 import type { WritingToolContext } from "../src/types.ts";
 
 import {
@@ -638,14 +638,6 @@ describe("draft slug handling", () => {
 
   it("does not expose the obsolete slugify tool", () => {
     expect(writingToolSpecs.map((tool) => tool.name)).not.toContain("slugify");
-  });
-});
-
-describe("writing tool set", () => {
-  it("lists the specs in the order the bound tools are built", () => {
-    expect(writingToolSpecs.map((spec) => spec.name)).toEqual(
-      createWritingTools(createContext()).map((tool) => tool.name)
-    );
   });
 });
 

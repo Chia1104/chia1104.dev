@@ -1,7 +1,6 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { Type } from "typebox";
 
-import { bindTool, textResult, truncate } from "@chia/agent-runtime/tools";
+import { defineTool, textResult, truncate } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 
 import type {
@@ -78,8 +77,9 @@ export const githubResolveRefSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const githubResolveRefTool = (context: WritingToolContext): AgentTool =>
-  bindTool(githubResolveRefSpec, async (_toolCallId, params, signal) => {
+export const githubResolveRefTool = defineTool(
+  githubResolveRefSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const ref = await context.connectors.github.resolveRef(
       { repo: normalizeRepo(params.repo), ref: params.ref?.trim() },
       signal
@@ -94,7 +94,8 @@ export const githubResolveRefTool = (context: WritingToolContext): AgentTool =>
       `Cite files as \`path@${shortSha(ref.sha)}\` and link them at <${ref.url}/blob/${ref.sha}/path>.`
     );
     return textResult(lines.join("\n"), { ...ref });
-  });
+  }
+);
 
 const formatEntry = (entry: GitHubTreeEntry): string => {
   switch (entry.type) {
@@ -135,8 +136,9 @@ export const githubListTreeSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const githubListTreeTool = (context: WritingToolContext): AgentTool =>
-  bindTool(githubListTreeSpec, async (_toolCallId, params, signal) => {
+export const githubListTreeTool = defineTool(
+  githubListTreeSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const path = normalizePath(params.path);
     const tree = await context.connectors.github.listTree(
       {
@@ -166,7 +168,8 @@ export const githubListTreeTool = (context: WritingToolContext): AgentTool =>
       count: shown.length,
       truncated,
     });
-  });
+  }
+);
 
 /** The requested lines, 1-based and inclusive, clamped to the file. */
 interface LineSlice {
@@ -241,8 +244,9 @@ export const githubReadFileSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const githubReadFileTool = (context: WritingToolContext): AgentTool =>
-  bindTool(githubReadFileSpec, async (_toolCallId, params, signal) => {
+export const githubReadFileTool = defineTool(
+  githubReadFileSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const path = normalizePath(params.path);
     if (path.length === 0) {
       throw new Error("`path` must name a file, not the repository root.");
@@ -265,4 +269,5 @@ export const githubReadFileTool = (context: WritingToolContext): AgentTool =>
       lineCount: slice.lineCount,
       truncated: body.truncated,
     });
-  });
+  }
+);

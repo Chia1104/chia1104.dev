@@ -26,17 +26,28 @@ export type ToolSpec<TParameters extends TSchema = TSchema> = Omit<
 >;
 
 /**
- * Pairs a spec with an `execute` closed over one turn's ports.
- * Erased to `AgentTool` so a kind's tools share one array.
+ * A tool declared once: called with a turn's ports it yields the `AgentTool` Pi runs, and its
+ * `spec` is readable without a turn, so the capabilities a kind advertises and the tools it
+ * binds come from the same list.
  */
-export const bindTool = <TParameters extends TSchema>(
+export interface ToolFactory<TContext> {
+  (context: TContext): AgentTool;
+  readonly spec: ToolSpec;
+}
+
+/** Pairs a spec with an `execute` closed over one turn's ports; erased to `AgentTool` so a kind's tools share one array. */
+export const defineTool = <TContext, TParameters extends TSchema>(
   spec: ToolSpec<TParameters>,
-  execute: AgentTool<TParameters, unknown>["execute"]
-): AgentTool => ({
-  ...spec,
-  // SAFETY: Pi validates arguments against `spec.parameters` before it calls `execute`.
-  execute: execute as AgentTool["execute"],
-});
+  execute: (context: TContext) => AgentTool<TParameters, unknown>["execute"]
+): ToolFactory<TContext> =>
+  Object.assign(
+    (context: TContext): AgentTool => ({
+      ...spec,
+      // SAFETY: Pi validates arguments against `spec.parameters` before it calls `execute`.
+      execute: execute(context) as AgentTool["execute"],
+    }),
+    { spec }
+  );
 
 /** Text-only tool result. `details` is what the UI renders, `content` is what the model reads. */
 export const textResult = <TDetails>(

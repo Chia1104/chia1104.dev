@@ -1,8 +1,7 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { Type } from "typebox";
 import * as z from "zod";
 
-import { bindTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
+import { defineTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import type {
   ToolCallRefusal,
@@ -131,8 +130,9 @@ export const commitDraftSpec = {
   executionMode: "sequential",
 } satisfies ToolSpec;
 
-export const commitDraftTool = (context: WritingToolContext): AgentTool =>
-  bindTool(commitDraftSpec, async (toolCallId, params) => {
+export const commitDraftTool = defineTool(
+  commitDraftSpec,
+  (context: WritingToolContext) => async (toolCallId, params) => {
     const draft = await context.draft.get(params.draftId);
     // The approved revision when the operator decided on this call; otherwise the one just read.
     const expectedRevision =
@@ -159,7 +159,8 @@ export const commitDraftTool = (context: WritingToolContext): AgentTool =>
         metadataGaps,
       }
     );
-  });
+  }
+);
 
 export const setPublishedSpec = {
   name: TOOL_NAMES.setPublished,
@@ -184,8 +185,9 @@ export const setPublishedSpec = {
   executionMode: "sequential",
 } satisfies ToolSpec;
 
-export const setPublishedTool = (context: WritingToolContext): AgentTool =>
-  bindTool(setPublishedSpec, async (_toolCallId, params) => {
+export const setPublishedTool = defineTool(
+  setPublishedSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     const result = await context.content.setPublished({
       feedId: params.feedId,
       published: params.published,
@@ -198,4 +200,5 @@ export const setPublishedTool = (context: WritingToolContext): AgentTool =>
           : ""),
       { ...result, confirmation: params.confirmation }
     );
-  });
+  }
+);

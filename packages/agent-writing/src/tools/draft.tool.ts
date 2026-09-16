@@ -1,9 +1,8 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
 import {
-  bindTool,
+  defineTool,
   LocaleSchema,
   jsonBlock,
   textResult,
@@ -65,8 +64,9 @@ export const listDraftsSpec = {
   parameters: Type.Object({}),
 } satisfies ToolSpec;
 
-export const listDraftsTool = (context: WritingToolContext): AgentTool =>
-  bindTool(listDraftsSpec, async () => {
+export const listDraftsTool = defineTool(
+  listDraftsSpec,
+  (context: WritingToolContext) => async () => {
     const drafts = await context.draft.list();
     if (drafts.length === 0) {
       return textResult(
@@ -75,7 +75,8 @@ export const listDraftsTool = (context: WritingToolContext): AgentTool =>
       );
     }
     return textResult(`Open drafts:\n\n${jsonBlock(drafts)}`, { drafts });
-  });
+  }
+);
 
 const openedResult = (draft: FeedDraft) => {
   const locales = Object.keys(draft.translations);
@@ -108,10 +109,12 @@ export const newDraftSpec = {
   executionMode: "sequential",
 } satisfies ToolSpec;
 
-export const newDraftTool = (context: WritingToolContext): AgentTool =>
-  bindTool(newDraftSpec, async () => {
+export const newDraftTool = defineTool(
+  newDraftSpec,
+  (context: WritingToolContext) => async () => {
     return openedResult(await context.draft.open({}));
-  });
+  }
+);
 
 export const openDraftSpec = {
   name: TOOL_NAMES.openDraft,
@@ -130,10 +133,12 @@ export const openDraftSpec = {
   executionMode: "sequential",
 } satisfies ToolSpec;
 
-export const openDraftTool = (context: WritingToolContext): AgentTool =>
-  bindTool(openDraftSpec, async (_toolCallId, params) => {
+export const openDraftTool = defineTool(
+  openDraftSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     return openedResult(await context.draft.open({ feedId: params.feedId }));
-  });
+  }
+);
 
 /** `"Setup > Install"`, as the outline lists it and `replace_section` takes it. */
 const HeadingSchema = Type.String({
@@ -214,8 +219,9 @@ export const readDraftSpec = {
   executionMode: "sequential",
 } satisfies ToolSpec;
 
-export const readDraftTool = (context: WritingToolContext): AgentTool =>
-  bindTool(readDraftSpec, async (_toolCallId, params) => {
+export const readDraftTool = defineTool(
+  readDraftSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     const draft = await context.draft.get(params.draftId);
     // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
     const locales = Object.keys(draft.translations) as Locale[];
@@ -306,7 +312,8 @@ export const readDraftTool = (context: WritingToolContext): AgentTool =>
         }`,
       { ...details, lineCount: bodyLines.length }
     );
-  });
+  }
+);
 
 const TranslationWriteSchema = Type.Object({
   title: Type.Optional(Type.String({ description: "Title." })),
@@ -385,8 +392,9 @@ export const writeDraftSpec = {
   executionMode: "sequential",
 } satisfies ToolSpec;
 
-export const writeDraftTool = (context: WritingToolContext): AgentTool =>
-  bindTool(writeDraftSpec, async (_toolCallId, params) => {
+export const writeDraftTool = defineTool(
+  writeDraftSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     const { draftId, translations, ...feedMeta } = params;
 
     const meta: DraftFeedMeta = { ...feedMeta };
@@ -480,7 +488,8 @@ export const writeDraftTool = (context: WritingToolContext): AgentTool =>
         jsonBlock(readback),
       { ...readback, warnings }
     );
-  });
+  }
+);
 
 export const editDraftContentSpec = {
   name: TOOL_NAMES.editDraftContent,
@@ -516,8 +525,9 @@ export const editDraftContentSpec = {
   executionMode: "sequential",
 } satisfies ToolSpec;
 
-export const editDraftContentTool = (context: WritingToolContext): AgentTool =>
-  bindTool(editDraftContentSpec, async (_toolCallId, params) => {
+export const editDraftContentTool = defineTool(
+  editDraftContentSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     const { draftId, locale } = params;
     // Matched under the draft lock against whatever body is current, so an operator save in
     // between is edited rather than overwritten.
@@ -559,7 +569,8 @@ export const editDraftContentTool = (context: WritingToolContext): AgentTool =>
         })),
       }
     );
-  });
+  }
+);
 
 const ATX_HEADING = /^ {0,3}#{1,6}[ \t]/;
 
@@ -585,8 +596,9 @@ export const replaceSectionSpec = {
   executionMode: "sequential",
 } satisfies ToolSpec;
 
-export const replaceSectionTool = (context: WritingToolContext): AgentTool =>
-  bindTool(replaceSectionSpec, async (_toolCallId, params) => {
+export const replaceSectionTool = defineTool(
+  replaceSectionSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     const { draftId, locale, heading, content } = params;
     const deleted = content.trim().length === 0;
     if (!deleted && !ATX_HEADING.test(content.trimStart())) {
@@ -646,4 +658,5 @@ export const replaceSectionTool = (context: WritingToolContext): AgentTool =>
         ],
       }
     );
-  });
+  }
+);

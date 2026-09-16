@@ -12,7 +12,7 @@ import { runPiTurn } from "../src/pi/turn.ts";
 import type { RunPiTurnOptions } from "../src/pi/turn.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
-import { bindTool, textResult } from "../src/tools.ts";
+import { defineTool, textResult } from "../src/tools.ts";
 import type {
   AgentPolicy,
   AgentTurnBudget,
@@ -28,45 +28,45 @@ import type { AgentWireEvent } from "../src/wire/schema.ts";
  */
 
 export const createTools = (calls: string[]) => [
-  bindTool(
+  defineTool(
     {
       name: "search",
       label: "Search",
       description: "Search posts.",
       parameters: Type.Object({ q: Type.String() }),
     },
-    async (_toolCallId, params) => {
+    () => async (_toolCallId, params) => {
       calls.push(params.q);
       return textResult(`results for ${params.q}`, { q: params.q });
     }
-  ),
-  bindTool(
+  )({}),
+  defineTool(
     {
       name: "publish",
       label: "Publish",
       description: "Publish a post.",
       parameters: Type.Object({ slug: Type.Optional(Type.String()) }),
     },
-    async () => {
+    () => async () => {
       calls.push("publish");
       return textResult("published", {});
     }
-  ),
+  )({}),
   /** Blocks until the run is aborted, so a deadline can fire mid-tool. */
-  bindTool(
+  defineTool(
     {
       name: "wait",
       label: "Wait",
       description: "Wait forever.",
       parameters: Type.Object({}),
     },
-    (_toolCallId, _params, signal) =>
+    () => (_toolCallId, _params, signal) =>
       new Promise<AgentToolResult<unknown>>((_resolve, reject) => {
         const fail = () => reject(new Error("aborted"));
         if (signal?.aborted) fail();
         signal?.addEventListener("abort", fail, { once: true });
       })
-  ),
+  )({}),
 ];
 
 export const policy: AgentPolicy = {

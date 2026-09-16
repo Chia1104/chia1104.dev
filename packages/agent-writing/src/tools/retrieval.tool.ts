@@ -1,8 +1,7 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
-import { bindTool, textResult, truncate } from "@chia/agent-runtime/tools";
+import { defineTool, textResult, truncate } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { reportError } from "@chia/observability/report";
 
@@ -93,8 +92,9 @@ export const webSearchSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const webSearchTool = (context: WritingToolContext): AgentTool =>
-  bindTool(webSearchSpec, async (_toolCallId, params, signal) => {
+export const webSearchTool = defineTool(
+  webSearchSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const includeDomains = params.includeDomains?.map(normalizeSearchDomain);
     const results = await context.web.search(
       {
@@ -122,7 +122,8 @@ export const webSearchTool = (context: WritingToolContext): AgentTool =>
         recency: params.recency,
       }
     );
-  });
+  }
+);
 
 const formatResult = (result: WebSearchResult, index: number): string => {
   const heading = `${index + 1}. **${result.title ?? result.url}**\n   <${result.url}>`;
@@ -144,8 +145,9 @@ export const fetchUrlSpec = {
   executionMode: "parallel",
 } satisfies ToolSpec;
 
-export const fetchUrlTool = (context: WritingToolContext): AgentTool =>
-  bindTool(fetchUrlSpec, async (_toolCallId, params, signal) => {
+export const fetchUrlTool = defineTool(
+  fetchUrlSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     let parsed: URL;
     try {
       parsed = new URL(params.url);
@@ -165,7 +167,8 @@ export const fetchUrlTool = (context: WritingToolContext): AgentTool =>
       `# ${page.title ?? parsed.hostname}\n<${page.url}>\n\n${body.text}`,
       { url: page.url, title: page.title, truncated: body.truncated }
     );
-  });
+  }
+);
 
 /**
  * Records every fetched page as a `source`, keyed on URL. Never fails the fetch: a memory
