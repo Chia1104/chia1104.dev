@@ -1,4 +1,5 @@
-import type { Dayjs } from "@chia/utils/day";
+import type { Dayjs } from "dayjs";
+
 import dayjs from "@chia/utils/day";
 
 export const TimelineType = {

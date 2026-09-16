@@ -1,7 +1,8 @@
+import type Keyv from "keyv";
+
 import type { Auth } from "@chia/auth/server";
 import type { Session } from "@chia/auth/types";
 import type { DB } from "@chia/db/client";
-import type { Keyv } from "@chia/kv/types";
 
 import type { Caller } from "./policies/caller.policy";
 
