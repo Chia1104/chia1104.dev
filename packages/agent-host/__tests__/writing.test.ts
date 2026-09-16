@@ -271,6 +271,19 @@ describe("createWritingAgentExecutor", () => {
     );
   });
 
+  it("still schedules lesson extraction when recording the observed drafts fails", async () => {
+    repo.touchWritingSessionDrafts.mockRejectedValueOnce(
+      new Error("deadlock detected")
+    );
+
+    await expect(runTurn(done)).resolves.toBeUndefined();
+
+    expect(startMemoryConsolidation).toHaveBeenCalledWith({
+      sessionId: "session-1",
+      delayMs: 2 * 60 * 60 * 1000,
+    });
+  });
+
   it("schedules a delayed lesson extraction after a turn, replacing the one waiting", async () => {
     repo.getWritingSessionConsolidation.mockResolvedValue({
       consolidatedLeafId: null,

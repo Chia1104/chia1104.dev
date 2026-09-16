@@ -272,14 +272,21 @@ export const createWritingAgentExecutor = (
       async settle(execution) {
         // Every draft the turn read or wrote is the session's now, seen up to that revision, so
         // operator edits the model has already been shown are not reported again next turn.
-        await touchWritingSessionDrafts(
-          context.db,
-          context.row.id,
-          [...draft.observedRevisions].map(([draftId, lastSeenRevision]) => ({
-            draftId,
-            lastSeenRevision,
-          }))
-        );
+        // The turn has already answered; bookkeeping that fails must not fail it.
+        try {
+          await touchWritingSessionDrafts(
+            context.db,
+            context.row.id,
+            [...draft.observedRevisions].map(([draftId, lastSeenRevision]) => ({
+              draftId,
+              lastSeenRevision,
+            }))
+          );
+        } catch (cause) {
+          reportError(cause, "Could not record the drafts a turn observed", {
+            sessionId: context.row.id,
+          });
+        }
 
         // One run waits per session; this turn's replaces the one the previous turn scheduled.
         if (execution.status !== "done") return;
