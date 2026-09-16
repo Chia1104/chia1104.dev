@@ -97,10 +97,8 @@ export const consolidateSessionMemoryStep = async (request: {
   ]);
 
   const session = new PgSessionRepo(db, WRITING_AGENT_KIND).open(row);
-  const [entries, leafId] = await Promise.all([
-    session.getEntries(),
-    session.getLeafId(),
-  ]);
+  const entries = await session.getEntries();
+  const leafId = row.leafEntryId;
   const exchange = collectOperatorExchange(
     branchSince(wholeBranch(entries, leafId), mark?.consolidatedLeafId ?? null)
   );

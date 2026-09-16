@@ -122,9 +122,10 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     const db = caller.context.db;
     const session = repoFor(db).open(row);
 
+    // The row was read in this transaction, so its leaf is the leaf the entries were read under.
+    const leafId = row.leafEntryId;
     // A lock transaction uses one connection, so these reads stay sequential.
     const entries = await session.getEntries();
-    const leafId = await session.getLeafId();
     const branch = walkBranch(entries, leafId);
     const transcript = walkTranscript(entries, leafId);
     const stats = computeSessionStats(entries);
