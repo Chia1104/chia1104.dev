@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import type { PgAsyncDatabase } from "drizzle-orm/pg-core";
 import { withReplicas } from "drizzle-orm/pg-core";
 
+import { reportError } from "@chia/observability/report";
 import { switchEnv } from "@chia/utils/config";
 
 import { env as internalEnv } from "./env.ts";
@@ -48,12 +49,18 @@ export async function getConnection(
   const cache =
     kv && DrizzleCache ? new DrizzleCache(kv, cacheOptions) : undefined;
 
-  const connection = (async () =>
-    drizzle(url, {
+  const connection = (async () => {
+    const db = drizzle(url, {
       relations,
       cache,
       codecs: storableCodecs,
-    }))();
+    });
+    // pg-pool emits an idle client's error whether or not anyone listens; unhandled, it ends the process.
+    db.$client.on("error", (error) => {
+      reportError(error, "Idle database client failed");
+    });
+    return db;
+  })();
   connections.set(connectionKey, connection);
 
   try {

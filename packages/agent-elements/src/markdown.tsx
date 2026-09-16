@@ -7,7 +7,6 @@ import {
   isValidElement,
   useContext,
   useState,
-  useSyncExternalStore,
 } from "react";
 
 import { Alert, AlertDialog, Button, Card } from "@heroui/react";
@@ -19,6 +18,7 @@ import type { Components } from "streamdown";
 import { markdownElements } from "@chia/contents/markdown-elements";
 import { CopyButton } from "@chia/ui/copy-button";
 import { cn } from "@chia/ui/utils/cn.util";
+import { useHydrated } from "@chia/ui/utils/use-hydrated";
 
 import { HighlightedCode } from "./code-block.tsx";
 import { useAgentLabels } from "./labels-context.tsx";
@@ -124,16 +124,6 @@ const LinkSafetyDialog = ({
 };
 
 // Nothing to subscribe to: the origin never changes after the first client render.
-const subscribeNever = () => () => undefined;
-
-/** The page's own origin once it is in a browser; `null` while rendering on the server. */
-const useOrigin = (): string | null =>
-  useSyncExternalStore(
-    subscribeNever,
-    () => window.location.origin,
-    () => null
-  );
-
 /** Renders a link into the host's own origin; `href` is root-relative. */
 export type SiteLink = ComponentType<{
   href: string;
@@ -168,7 +158,8 @@ const MarkdownLink: Components["a"] = ({
   ...props
 }) => {
   const [open, setOpen] = useState(false);
-  const origin = useOrigin();
+  // The page's own origin once it is in a browser; `null` while rendering on the server.
+  const origin = useHydrated() ? window.location.origin : null;
   const SiteLink = useContext(SiteLinkContext);
   const linkClass = cn("link wrap-anywhere", className);
   if (!href || href === "streamdown:incomplete-link") {

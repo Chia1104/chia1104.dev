@@ -14,6 +14,7 @@ import type {
   AgentAttachmentInput,
   AgentWireEvent,
 } from "@chia/agent-runtime/wire/schema";
+import { messageOf } from "@chia/utils/error-helper";
 import { createQueryInvalidator } from "@chia/utils/query-client";
 
 import { attachmentInputOf, attachmentKeyOf } from "./attachment.ts";
@@ -178,7 +179,7 @@ export const failureOf = (cause: unknown, labels: AgentLabels): string => {
       });
     }
   }
-  return cause instanceof Error ? cause.message : String(cause);
+  return messageOf(cause);
 };
 
 /**
@@ -453,7 +454,7 @@ export const createAgentSessionStore = ({
             // Usually the turn finished between `get` and `attach` (NOT_FOUND); the fresh detail
             // says so, and a real transport failure surfaces from that read instead.
             if (mine === generation) {
-              await fetchDetail().catch((cause: unknown) => {
+              await fetchDetail().catch((cause) => {
                 if (mine === generation)
                   set({ failure: failureOf(cause, get().labels) });
               });

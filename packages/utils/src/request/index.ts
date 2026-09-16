@@ -159,34 +159,4 @@ export const postTextStream = async <TBody>(
   };
 };
 
-export const handleKyError = async <TError extends HTTPError>(
-  error: TError
-): Promise<ErrorResponse> => {
-  switch (error.name) {
-    case "HTTPError": {
-      const { response } = error;
-      if (response?.body) {
-        try {
-          return /* SAFETY: The producer contract guarantees this value satisfies ErrorResponse. */ (await error.response
-            .clone()
-            .json()) as ErrorResponse;
-        } catch (err) {
-          console.error(err);
-          return {
-            code: "unknown error",
-          };
-        }
-      }
-      return {
-        code: "unknown error",
-      };
-    }
-    default: {
-      return {
-        code: "unknown error",
-      };
-    }
-  }
-};
-
 export default request;

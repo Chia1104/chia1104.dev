@@ -18,6 +18,7 @@ import { clampThinkingLevel } from "@earendil-works/pi-ai";
 
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
+import { isAbortError } from "@chia/utils/error-helper";
 import { stableStringify } from "@chia/utils/json";
 import type { JsonValue } from "@chia/utils/json";
 
@@ -307,9 +308,30 @@ const executePiTurn = async ({
         tools: activeTools.map((tool) => ({
           ...tool,
           execute: (toolCallId, params, toolSignal, onUpdate) =>
-            traceToolCall(tool.name, toolCallId, () =>
-              tool.execute(toolCallId, params, toolSignal, onUpdate)
-            ),
+            traceToolCall(tool.name, toolCallId, async () => {
+              try {
+                return await tool.execute(
+                  toolCallId,
+                  params,
+                  toolSignal,
+                  onUpdate
+                );
+              } catch (error) {
+                // Pi hands the throw to the model as an error result; the log is the only
+                // record of what threw, and the model's input is as likely the cause as ours.
+                logger.warn(
+                  {
+                    err: error,
+                    sessionId: agentSessionId,
+                    runId: agentRunId,
+                    tool: tool.name,
+                    toolCallId,
+                  },
+                  "Tool call failed"
+                );
+                throw error;
+              }
+            }),
         })),
         messages: buildBranchContext(branch),
       },
@@ -325,7 +347,7 @@ const executePiTurn = async ({
               return text ? [...messages, volatileMessage(text)] : messages;
             } catch (error) {
               // Fail closed: a model that cannot see the current state must not act on it.
-              failTurn(errorOfThrown(error));
+              failTurn(errorOfThrown(error), error);
               return messages;
             }
           }
@@ -345,7 +367,7 @@ const executePiTurn = async ({
             (await gate.handle(request))
           );
         } catch (error) {
-          failTurn(errorOfThrown(error));
+          failTurn(errorOfThrown(error), error);
           return { block: true, reason: "This turn is being stopped." };
         }
       },
@@ -486,8 +508,15 @@ const executePiTurn = async ({
           failure = errorOfAssistantMessage(reply, model.contextWindow);
         }
       } catch (error) {
-        failure = hostFailure ?? errorOfThrown(error);
-        failureCause ??= error;
+        if (hostFailure) {
+          failure = hostFailure;
+          failureCause ??= error;
+        } else if (signal?.aborted && isAbortError(error)) {
+          aborted = true;
+        } else {
+          failure = errorOfThrown(error);
+          failureCause = error;
+        }
       }
     }
     clearTimeout(deadline);
@@ -524,8 +553,12 @@ const executePiTurn = async ({
           compactionContextWindow(model, summariser)
         );
         if (compacted) onEvent({ type: "session:compacted", ...compacted });
-      } catch {
+      } catch (error) {
         // The next clean turn boundary retries compaction.
+        reportError(error, "Session compaction failed", {
+          sessionId: agentSessionId,
+          runId: agentRunId,
+        });
       }
     }
 

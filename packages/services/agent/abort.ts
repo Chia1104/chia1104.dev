@@ -1,3 +1,4 @@
+import { reportError } from "@chia/observability/report";
 import type { JsonObject } from "@chia/utils/json";
 import { agentAbortControllerRefSchema } from "@chia/workflow-control/agent-hooks";
 import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-hooks";
@@ -28,14 +29,18 @@ export const startAgentAbortController = async (
 };
 
 export const signalAgentAbort = async (
-  workflow: WorkflowControlClient,
+  workflow: Pick<WorkflowControlClient, "resumeAgentAbort">,
   controllerId: string,
   reason: string
 ): Promise<boolean> => {
   try {
     await workflow.resumeAgentAbort(controllerId, reason);
     return true;
-  } catch {
+  } catch (error) {
+    reportError(error, "Agent abort could not be signalled", {
+      controllerId,
+      reason,
+    });
     return false;
   }
 };

@@ -6,13 +6,15 @@ import { Button, Spinner, Table } from "@heroui/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
 
+import { formatDateTime } from "@chia/utils/format";
+
 import { orpc } from "@/libs/orpc/client";
 
 import { ApiKeyDrawer } from "./api-key-drawer";
 import type { Editor } from "./api-key-drawer";
 import { stateOf } from "./form";
 import type { ApiKeyView } from "./form";
-import { KeyStateChip, ScopeChips, formatDateTime } from "./shared";
+import { KeyStateChip, ScopeChips } from "./shared";
 
 /** Client-side oRPC behind `adminGuard()`. Every key belongs to the operator; the list is keyset-paged. */
 

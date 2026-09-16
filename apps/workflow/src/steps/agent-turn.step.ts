@@ -3,6 +3,7 @@ import { FatalError, getWorkflowMetadata, getWritable } from "workflow";
 import { getRun } from "workflow/api";
 
 import { loadKindConfig } from "@chia/agent-host/config";
+import { decryptAgentCredentials } from "@chia/agent-host/credentials";
 import {
   AGENT_DELTA_NAMESPACE,
   AGENT_TURN_KEY,
@@ -34,7 +35,9 @@ import {
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
-import { logger } from "@chia/observability/logger";
+import { reportError } from "@chia/observability/report";
+import { signalAgentAbort } from "@chia/services/agent/abort";
+import { messageOf } from "@chia/utils/error-helper";
 import type { JsonObject } from "@chia/utils/json";
 import type {
   AgentAbortControllerRef,
@@ -42,11 +45,9 @@ import type {
 } from "@chia/workflow-control/agent-hooks";
 
 import { agentFactory } from "../agents/factory";
-import {
-  signalAgentAbort,
-  subscribeAgentAbort,
-} from "../services/agent-abort-controller";
-import { decryptAgentCredentials } from "../services/agent-credentials";
+import { env } from "../env";
+import { subscribeAgentAbort } from "../services/agent-abort-controller";
+import { workflowControl } from "../services/workflow-control";
 
 /**
  * The engine lives in this step, not the workflow: `"use workflow"` has no Node built-ins
@@ -117,8 +118,12 @@ const titleSession = async (
     });
     const title = generated ?? fallbackSessionTitle(request.text);
     if (title) await setAgentSessionTitleIfUnset(db, row.id, title);
-  } catch {
+  } catch (error) {
     // Cosmetic; the turn must not fail for it.
+    reportError(error, "Session title could not be set", {
+      sessionId: row.id,
+      runId: request.runId,
+    });
   }
 };
 
@@ -127,6 +132,22 @@ export const runAgentTurnStep = async (
 ): Promise<AgentTurnOutcome> => {
   "use step";
 
+  try {
+    return await executeAgentTurn(request);
+  } catch (error) {
+    // The runtime reports the failures it returns; a throw is reported here, the last boundary
+    // in Node: the workflow function that records it cannot log.
+    reportError(error, "Agent turn step failed", {
+      sessionId: request.sessionId,
+      runId: request.runId,
+    });
+    throw error;
+  }
+};
+
+const executeAgentTurn = async (
+  request: AgentTurnRequest
+): Promise<AgentTurnOutcome> => {
   const db = await connectDatabase(undefined, { withCache: false });
 
   const row = await getAgentSession(db, request.sessionId);
@@ -243,9 +264,9 @@ async function runKindTurn(
   try {
     settings = settingsFromRow(row);
   } catch (error) {
-    throw new FatalError(
-      error instanceof Error ? error.message : String(error)
-    );
+    const fatal = new FatalError(messageOf(error));
+    fatal.cause = error;
+    throw fatal;
   }
 
   /**
@@ -253,7 +274,10 @@ async function runKindTurn(
    * Providers without a credential are unregistered, so a missing key fails as "unknown model"
    * instead of billing the house gateway.
    */
-  const credentials = decryptAgentCredentials(request.credentials);
+  const credentials = decryptAgentCredentials(
+    request.credentials,
+    env.AI_AUTH_PRIVATE_KEY
+  );
   const models = createAgentModels(credentials);
   // Before the kind prepares the turn: a model the caller may not run costs no further query.
   const model = definition.models.resolve(
@@ -378,15 +402,14 @@ const createEventWriter = (holdEnd?: Promise<unknown>): EventWriter => {
     async flush() {
       flushDeltas();
       // A lost write does not fail the turn: its side effects and entries are already durable
-      // and a client that misses the event reloads the session. It is logged so a stall can be traced.
+      // and a client that misses the event reloads the session. It is reported so a stall can be traced.
       const lost = (await Promise.allSettled(inFlight)).filter(
         (result) => result.status === "rejected"
       );
       if (lost.length > 0) {
-        logger.error(
-          { err: lost[0]?.reason, count: lost.length },
-          "Agent stream writes failed"
-        );
+        reportError(lost[0]?.reason, "Agent stream writes failed", {
+          count: lost.length,
+        });
       }
       coarse.releaseLock();
       deltas.releaseLock();
@@ -417,5 +440,5 @@ export const completeAgentRunStep = async (
   const db = await connectDatabase(undefined, { withCache: false });
   // This run's row only: a run cancelled and replaced must not close its successor.
   await completeAgentRun(db, runId, status);
-  await signalAgentAbort(abortController.id, "run finished");
+  await signalAgentAbort(workflowControl, abortController.id, "run finished");
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import { captureException } from "@sentry/nextjs";
 import { useTranslations } from "next-intl";
 
 import { ErrorBoundary } from "@chia/ui/error-boundary";
@@ -17,7 +18,7 @@ export const LocationHero = () => {
       </h2>
       <p>{t("description")}</p>
       <FeatureCard className="page-sm:h-[400px] relative flex h-[300px] w-full flex-col items-center justify-start p-2 pt-10">
-        <ErrorBoundary>
+        <ErrorBoundary onError={(error) => captureException(error)}>
           <span className="page-sm:text-6xl pointer-events-none bg-linear-to-b from-black to-gray-300/80 bg-clip-text text-center text-5xl leading-none font-semibold whitespace-pre-wrap text-transparent dark:from-white dark:to-slate-900/10">
             {tProfile("location")}
           </span>

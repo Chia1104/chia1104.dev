@@ -35,9 +35,10 @@ type OwnedSession<TState, TConfig extends object> = NonNullable<
 
 const MAINTENANCE_DEADLINE_MS = 120_000;
 
-const maintenanceTimedOut = (action: string) =>
+const maintenanceTimedOut = (action: string, cause?: unknown) =>
   new AppError("TIMEOUT", {
     message: `Could not ${action} within ${MAINTENANCE_DEADLINE_MS / 1000}s. The conversation is unchanged.`,
+    cause,
   });
 
 const nothingToCompact = () =>
@@ -186,7 +187,7 @@ export const createAgentMaintenanceOperations = <
           try {
             compacted = await maintenance.compact(input.customInstructions);
           } catch (error) {
-            if (deadline.aborted) throw maintenanceTimedOut("compact");
+            if (deadline.aborted) throw maintenanceTimedOut("compact", error);
             throw error;
           }
           if (!compacted) throw nothingToCompact();

@@ -83,9 +83,11 @@ export const embedPendingChunksStep = async (request: ResourceIndexRequest) => {
         status !== 408 &&
         status !== 429
       ) {
-        throw new FatalError(
-          `Embedding request failed permanently (${status}): ${String(error)}`
+        const fatal = new FatalError(
+          `Embedding request failed permanently (${status}).`
         );
+        fatal.cause = error;
+        throw fatal;
       }
       throw error;
     }

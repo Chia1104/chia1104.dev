@@ -1,6 +1,7 @@
 import { AGENT_DELTA_NAMESPACE } from "@chia/agent-host/execution";
 import type { AgentStreamPosition } from "@chia/agent-host/execution";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import { logger } from "@chia/observability/logger";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type { AgentRunHost } from "./agent.factory";
@@ -48,7 +49,11 @@ export const waitForAgentTurnEnd = async (
       if (done) return !expired;
       if (value?.type === "run:end") return true;
     }
-  } catch {
+  } catch (error) {
+    logger.warn(
+      { err: error, runId },
+      "Agent run stream dropped while waiting for its end"
+    );
     return false;
   } finally {
     clearTimeout(deadline);
@@ -66,6 +71,7 @@ export const cancelLiveAgentRun = async (
     await workflow.cancelRun(runId);
   } catch (error) {
     if (await isRunLive(runs, runId)) throw error;
+    logger.warn({ err: error, runId }, "Run cancel failed after the run ended");
   }
 };
 

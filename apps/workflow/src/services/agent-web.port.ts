@@ -32,7 +32,8 @@ const firecrawl = new Firecrawl({ apiKey: env.FIRECRAWL_API_KEY });
 /** The SDK message carries the provider's response body; the model needs the status only. */
 const toModelError = (operation: string, error: SdkError): Error =>
   new Error(
-    `${operation} failed${error.status ? ` (HTTP ${error.status})` : ""}.`
+    `${operation} failed${error.status ? ` (HTTP ${error.status})` : ""}.`,
+    { cause: error }
   );
 
 /** A `web` hit is `SearchResultWeb` unless scraping was requested (`Document`). This port never scrapes on search. */

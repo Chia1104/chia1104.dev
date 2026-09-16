@@ -4,6 +4,7 @@ import { Brain, ExternalLink } from "lucide-react";
 import * as z from "zod";
 
 import { TOOL_NAMES } from "@chia/agent-writing/tools/registry";
+import { hostnameOf } from "@chia/utils/url";
 
 import { DefaultToolBody } from "../tool-call.tsx";
 import type { ToolRenderer, ToolRenderers } from "../tool-call.tsx";
@@ -28,14 +29,6 @@ const searchDetails = z.compile(
   })
 );
 
-const hostOf = (url: string) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-};
-
 const Memory = ({
   id,
   kind,
@@ -56,7 +49,7 @@ const Memory = ({
           href={sourceUrl}
           rel="noreferrer noopener"
           target="_blank">
-          {hostOf(sourceUrl)}
+          {hostnameOf(sourceUrl)}
           <ExternalLink className="size-3" />
         </a>
       ) : null}

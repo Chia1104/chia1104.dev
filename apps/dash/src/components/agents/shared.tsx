@@ -75,12 +75,6 @@ export const OverriddenChip = ({ isOverridden }: { isOverridden: boolean }) =>
     </Chip>
   );
 
-export const formatDate = (value: number) =>
-  new Date(value).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-
 export const useInvalidateAgentAdmin = () => {
   const queryClient = useQueryClient();
   return useCallback(

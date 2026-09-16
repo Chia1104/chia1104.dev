@@ -18,13 +18,13 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 import { TASK_PROMPT_MAX_CHARS } from "@chia/services/agent/admin.contract";
+import { formatDateTime } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
 
 import {
   ModelSelect,
   OverriddenChip,
-  formatDate,
   isTaskOverridden,
   modelLabel,
   modelRefSchema,
@@ -125,7 +125,7 @@ export const TaskCard = ({
             <OverriddenChip isOverridden={overridden} />
             {task.updatedAt !== null ? (
               <span className="text-muted ml-auto text-xs">
-                updated {formatDate(task.updatedAt)}
+                updated {formatDateTime(task.updatedAt)}
               </span>
             ) : null}
           </div>

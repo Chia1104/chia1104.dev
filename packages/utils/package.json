@@ -68,6 +68,10 @@
     "./text": {
       "types": "./src/text/index.ts",
       "default": "./src/text/index.ts"
+    },
+    "./url": {
+      "types": "./src/url/index.ts",
+      "default": "./src/url/index.ts"
     }
   },
   "scripts": {

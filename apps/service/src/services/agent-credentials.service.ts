@@ -1,10 +1,7 @@
 import { parse } from "hono/utils/cookie";
 
-import { decryptAgentCredentials as decryptCredentials } from "@chia/agent-host/credentials";
 import { KEY_COOKIE_NAMES } from "@chia/ai/provider";
 import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-hooks";
-
-import { env } from "../env";
 
 /**
  * Ciphertext crosses the workflow boundary (it is journaled); decrypt only inside the turn.
@@ -27,11 +24,3 @@ export const readEncryptedAgentCredentials = (
   }
   return Object.keys(credentials).length > 0 ? credentials : undefined;
 };
-
-/**
- * A decrypt failure is usually a rotated `AI_AUTH_PUBLIC_KEY`; report it instead of dropping,
- * or the turn looks like an unregistered provider.
- */
-export const decryptAgentCredentials = (
-  encrypted: EncryptedAgentCredentials | undefined
-) => decryptCredentials(encrypted, env.AI_AUTH_PRIVATE_KEY);

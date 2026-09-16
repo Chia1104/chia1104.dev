@@ -4,6 +4,7 @@ import { ExternalLink, Globe } from "lucide-react";
 import * as z from "zod";
 
 import { TOOL_NAMES } from "@chia/agent-writing/tools/registry";
+import { hostnameOf } from "@chia/utils/url";
 
 import { useAgentLabels } from "../labels-context.tsx";
 import { DefaultToolBody } from "../tool-call.tsx";
@@ -33,14 +34,6 @@ const pageDetails = z.compile(
   })
 );
 
-const hostOf = (url: string) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-};
-
 const Source = ({
   description,
   title,
@@ -58,7 +51,7 @@ const Source = ({
       target="_blank">
       <Globe className="text-muted size-3.5 shrink-0 self-center" />
       <span className="truncate">{title ?? url}</span>
-      <span className="text-muted shrink-0 text-xs">{hostOf(url)}</span>
+      <span className="text-muted shrink-0 text-xs">{hostnameOf(url)}</span>
       <ExternalLink className="text-muted size-3 shrink-0 self-center" />
     </a>
     {description ? (

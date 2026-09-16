@@ -20,11 +20,12 @@ import { SearchIcon } from "lucide-react";
 import { parseAsString, parseAsStringLiteral, useQueryStates } from "nuqs";
 
 import { Role } from "@chia/db/types";
+import { formatDateTime } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 
-import { RoleChip, UserStateChip, formatDateTime } from "./shared";
+import { RoleChip, UserStateChip } from "./shared";
 import { UserDrawer } from "./user-drawer";
 
 /** Client-side oRPC behind `adminGuard()`. `?open=<id>` deep-links a user so the overview can point here. */

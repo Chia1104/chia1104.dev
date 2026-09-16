@@ -17,6 +17,7 @@ import {
 } from "@chia/db/repos/feeds";
 import type { Locale } from "@chia/db/types";
 import { feedUrl } from "@chia/utils/config";
+import { truncateEnd } from "@chia/utils/format";
 
 import { searchFeedsService } from "../feeds/search.service";
 
@@ -45,11 +46,6 @@ const stripHighlight = (snippet: string | null): string =>
 
 /** A chunk is up to ~512 tokens; a search hit only needs enough to orient. */
 const SNIPPET_MAX_CHARS = 500;
-
-const truncateSnippet = (content: string): string =>
-  content.length <= SNIPPET_MAX_CHARS
-    ? content
-    : `${content.slice(0, SNIPPET_MAX_CHARS)}…`;
 
 export const createContentReadPort = (
   options: CreateContentReadPortOptions
@@ -84,7 +80,7 @@ export const createContentReadPort = (
           // fused query), so fall back to the matched chunk's text.
           snippet:
             stripHighlight(item.bestChunk.snippet) ||
-            truncateSnippet(item.bestChunk.content) ||
+            truncateEnd(item.bestChunk.content, SNIPPET_MAX_CHARS) ||
             item.summary.description ||
             "",
           headingPath: item.bestChunk.headingPath ?? undefined,

@@ -87,7 +87,8 @@ export const apiKeyPolicy = (
           })
         );
       }
-      return deny(new AppError("FORBIDDEN", { cause: error }));
+      // Not the caller's doing: the verifier itself failed, so the edge reports it as a 5xx.
+      return deny(new AppError("INTERNAL_SERVER_ERROR", { cause: error }));
     }
 
     if (verified.error) {

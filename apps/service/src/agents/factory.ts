@@ -1,11 +1,10 @@
 import { getRun } from "workflow/api";
 
+import { decryptAgentCredentials } from "@chia/agent-host/credentials";
 import { createAgentFactory } from "@chia/services/agent/agent.factory";
 
-import {
-  decryptAgentCredentials,
-  readEncryptedAgentCredentials,
-} from "../services/agent-credentials.service";
+import { env } from "../env";
+import { readEncryptedAgentCredentials } from "../services/agent-credentials.service";
 
 import { agentKindFloors } from "./kinds";
 
@@ -23,7 +22,8 @@ export const agentFactory = createAgentFactory({
   },
   credentials: {
     read: readEncryptedAgentCredentials,
-    decrypt: decryptAgentCredentials,
+    decrypt: (encrypted) =>
+      decryptAgentCredentials(encrypted, env.AI_AUTH_PRIVATE_KEY),
   },
   runs: {
     get: getRun,

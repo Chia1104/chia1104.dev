@@ -13,6 +13,7 @@ import { agentQueryKeys } from "@chia/agent-elements/queries";
 import { SessionTabs } from "@chia/agent-elements/session-tabs";
 import type { AgentToolEvent } from "@chia/agent-elements/store";
 import agentLabels from "@chia/i18n/agent-elements/en-US.json";
+import { messageOf } from "@chia/utils/error-helper";
 
 import { client, orpc } from "@/libs/orpc/client";
 
@@ -21,9 +22,6 @@ import { draftActivityStore, trackDraftToolEvent } from "./draft-activity";
 import { WritingSession } from "./writing-session";
 
 const WRITING_AGENT_KIND = "writing";
-
-const errorMessage = (cause: unknown) =>
-  cause instanceof Error ? cause.message : "Something went wrong.";
 
 /** The writing sessions and the active one, sized by whatever mounts it (the agent dock). */
 export const AgentPanel = ({
@@ -98,7 +96,7 @@ export const AgentPanel = ({
     try {
       await createMutation.mutateAsync({ kind: WRITING_AGENT_KIND });
     } catch (error) {
-      toast.error(errorMessage(error));
+      toast.error(messageOf(error, "Something went wrong."));
     }
   }, [createMutation]);
 
@@ -139,7 +137,7 @@ export const AgentPanel = ({
           title,
         });
       } catch (error) {
-        toast.error(errorMessage(error));
+        toast.error(messageOf(error, "Something went wrong."));
         throw error;
       }
     },
@@ -174,7 +172,7 @@ export const AgentPanel = ({
           sessionId,
         });
       } catch (error) {
-        toast.error(errorMessage(error));
+        toast.error(messageOf(error, "Something went wrong."));
         throw error;
       }
     },
