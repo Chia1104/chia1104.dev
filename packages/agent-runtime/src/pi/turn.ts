@@ -14,6 +14,7 @@ import type {
   Model,
   Models,
 } from "@earendil-works/pi-ai";
+import { clampThinkingLevel } from "@earendil-works/pi-ai";
 
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
@@ -46,7 +47,6 @@ import {
 } from "./compaction.ts";
 import { errorOfAssistantMessage, errorOfThrown } from "./errors.ts";
 import { createPiWireEventMapper } from "./events.ts";
-import { clampSessionThinkingLevel } from "./settings.ts";
 import { createPiToolCallGate } from "./tool-gate.ts";
 import { createPiTurnBudget } from "./turn-budget.ts";
 
@@ -209,7 +209,7 @@ const executePiTurn = async ({
   try {
     const leafId = await session.getLeafId();
     const branch = await session.getBranch(leafId);
-    const thinkingLevel = clampSessionThinkingLevel(model, settings);
+    const thinkingLevel = clampThinkingLevel(model, settings.thinkingLevel);
     const activeTools = settings.activeToolNames
       ? tools.filter((tool) => settings.activeToolNames?.includes(tool.name))
       : tools;
@@ -515,7 +515,10 @@ const executePiTurn = async ({
             session,
             models,
             model: summariser,
-            thinkingLevel: clampSessionThinkingLevel(summariser, settings),
+            thinkingLevel: clampThinkingLevel(
+              summariser,
+              settings.thinkingLevel
+            ),
             onUsage,
           },
           compactionContextWindow(model, summariser)

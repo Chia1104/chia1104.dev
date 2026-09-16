@@ -5,6 +5,7 @@ import {
 } from "@earendil-works/pi-agent-core";
 import { uuidv7 } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
+import { clampThinkingLevel } from "@earendil-works/pi-ai";
 
 import type {
   BranchSummaryEntry,
@@ -21,7 +22,6 @@ import type {
 } from "../types.ts";
 
 import { compactSession } from "./compaction.ts";
-import { clampSessionThinkingLevel } from "./settings.ts";
 
 export interface PiSessionOperationOptions {
   session: SessionTree;
@@ -52,7 +52,7 @@ export const compactPiSession = (
     session,
     models,
     model,
-    thinkingLevel: clampSessionThinkingLevel(model, settings),
+    thinkingLevel: clampThinkingLevel(model, settings.thinkingLevel),
     customInstructions,
     signal,
     onUsage,
