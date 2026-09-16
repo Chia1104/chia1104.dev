@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useSyncExternalStore } from "react";
 
 import { Disclosure, Tooltip } from "@heroui/react";
 import { Check, TextQuote } from "lucide-react";
@@ -12,6 +11,7 @@ import type { AgentAttachment } from "@chia/agent-runtime/wire/schema";
 import { CopyButton } from "@chia/ui/copy-button";
 import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
+import { useHydrated } from "@chia/ui/utils/use-hydrated";
 
 import { attachmentKeyOf, attachmentMetaOf } from "./attachment.ts";
 import { Expandable } from "./expandable.tsx";
@@ -24,19 +24,6 @@ import { formatMessageTime, formatMessageTimeFull } from "./time.ts";
 const USER_MESSAGE_MAX_HEIGHT = 240;
 
 // Nothing to subscribe to: mounted-ness never changes after the first client render.
-const subscribeNever = () => () => undefined;
-
-/**
- * True only after hydration. Times use the browser's locale and zone, which SSR cannot know,
- * so they render client-side only. The server HTML and first client render agree.
- */
-const useMounted = () =>
-  useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false
-  );
-
 const MessageMeta = ({
   actions,
   align,
@@ -49,7 +36,8 @@ const MessageMeta = ({
   actions?: ReactNode;
 }) => {
   const labels = useAgentLabels();
-  const mounted = useMounted();
+  // Times use the browser's locale and zone, which SSR cannot know.
+  const mounted = useHydrated();
   return (
     <div
       className={cn(

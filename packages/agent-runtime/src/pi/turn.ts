@@ -18,6 +18,7 @@ import { clampThinkingLevel } from "@earendil-works/pi-ai";
 
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
+import { isAbortError } from "@chia/utils/error-helper";
 import { stableStringify } from "@chia/utils/json";
 import type { JsonValue } from "@chia/utils/json";
 
@@ -45,11 +46,7 @@ import {
   compactionContextWindow,
   compactSessionIfNeeded,
 } from "./compaction.ts";
-import {
-  errorOfAssistantMessage,
-  errorOfThrown,
-  isAbortError,
-} from "./errors.ts";
+import { errorOfAssistantMessage, errorOfThrown } from "./errors.ts";
 import { createPiWireEventMapper } from "./events.ts";
 import { createPiToolCallGate } from "./tool-gate.ts";
 import { createPiTurnBudget } from "./turn-budget.ts";

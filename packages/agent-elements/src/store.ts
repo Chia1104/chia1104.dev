@@ -14,6 +14,7 @@ import type {
   AgentAttachmentInput,
   AgentWireEvent,
 } from "@chia/agent-runtime/wire/schema";
+import { messageOf } from "@chia/utils/error-helper";
 import { createQueryInvalidator } from "@chia/utils/query-client";
 
 import { attachmentInputOf, attachmentKeyOf } from "./attachment.ts";
@@ -178,7 +179,7 @@ export const failureOf = (cause: unknown, labels: AgentLabels): string => {
       });
     }
   }
-  return cause instanceof Error ? cause.message : String(cause);
+  return messageOf(cause);
 };
 
 /**

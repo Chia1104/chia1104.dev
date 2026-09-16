@@ -5,11 +5,13 @@ import Link from "next/link";
 import { Avatar, Card, Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 
+import { formatDateTime } from "@chia/utils/format";
+
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
 import { RunStatusChip } from "../rag/rag-shared";
-import { formatDateTime, formatUsd } from "../users/shared";
+import { formatUsd } from "../users/shared";
 
 type UsageWeek = RouterOutputs["agent"]["admin"]["usage"]["week"];
 

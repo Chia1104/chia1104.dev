@@ -106,7 +106,7 @@ describe("createAgentMemoryPort", () => {
     );
     // Result order is the search order, and the snippet is bounded.
     expect(hits.map((hit) => hit.id)).toEqual([2, 1]);
-    expect(hits[0]?.snippet).toHaveLength(501);
+    expect(hits[0]?.snippet).toHaveLength(500);
     expect(hits[0]?.headingPath).toBe("Setup > Install");
     expect(hits[1]).toMatchObject({ kind: "fact", snippet: "short" });
   });

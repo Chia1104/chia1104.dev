@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 import { ThinkingSlider } from "@chia/agent-elements/thinking-slider";
+import { formatDateTime } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
 
@@ -35,7 +36,6 @@ import {
   OverriddenChip,
   audienceOf,
   audienceOptionsOf,
-  formatDate,
   isKindOverridden,
   modelLabel,
   modelRefSchema,
@@ -132,7 +132,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
             <OverriddenChip isOverridden={overridden} />
             {kind.updatedAt !== null ? (
               <span className="text-muted ml-auto text-xs">
-                updated {formatDate(kind.updatedAt)}
+                updated {formatDateTime(kind.updatedAt)}
               </span>
             ) : null}
           </div>

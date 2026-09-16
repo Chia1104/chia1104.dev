@@ -18,6 +18,7 @@ import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { toast } from "sonner";
 
 import { Locale, ProfileEntryKind } from "@chia/db/types";
+import { formatDateTime } from "@chia/utils/format";
 
 import { DrawerPanel } from "@/components/commons/drawer-panel";
 import { orpc } from "@/libs/orpc/client";
@@ -93,12 +94,6 @@ const detailOf = (entry: ProfileEntryView): string => {
 
 const localesOf = (entry: ProfileEntryView): Locale[] =>
   LOCALES.filter((locale) => entry.data.translations[locale] !== undefined);
-
-const formatDate = (value: Date | string) =>
-  new Date(value).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
 
 const useInvalidateProfile = () => {
   const queryClient = useQueryClient();
@@ -242,7 +237,7 @@ const EntryDrawer = ({
         {entry ? (
           <Drawer.Footer className="justify-between">
             <span className="text-muted text-xs">
-              updated {formatDate(entry.updatedAt)}
+              updated {formatDateTime(entry.updatedAt)}
             </span>
             <Button
               isDisabled={busy}
@@ -410,7 +405,7 @@ export const ProfileManager = () => {
                   </Table.Cell>
                   <Table.Cell>
                     <span className="text-muted text-xs">
-                      {formatDate(entry.updatedAt)}
+                      {formatDateTime(entry.updatedAt)}
                     </span>
                   </Table.Cell>
                 </Table.Row>

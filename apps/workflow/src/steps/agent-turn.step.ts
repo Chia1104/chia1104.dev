@@ -35,6 +35,7 @@ import {
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
+import { messageOf } from "@chia/utils/error-helper";
 import type { JsonObject } from "@chia/utils/json";
 import type {
   AgentAbortControllerRef,
@@ -263,9 +264,7 @@ async function runKindTurn(
   try {
     settings = settingsFromRow(row);
   } catch (error) {
-    const fatal = new FatalError(
-      error instanceof Error ? error.message : String(error)
-    );
+    const fatal = new FatalError(messageOf(error));
     fatal.cause = error;
     throw fatal;
   }

@@ -2,6 +2,7 @@ import type { Skill } from "@earendil-works/pi-agent-core";
 
 import type { ToolTier } from "@chia/agent-runtime/types";
 import type { Locale } from "@chia/db/types";
+import { oneLine } from "@chia/utils/format";
 
 import { draftTitle } from "../draft/operations.ts";
 import type { DraftChange, FeedDraft, MemorySummary } from "../types.ts";
@@ -52,11 +53,6 @@ export interface TurnContextInput {
  * attacker-controlled text that would otherwise be restated on every provider request.
  */
 const MEMORY_TITLE_MAX_CHARS = 120;
-
-const oneLine = (text: string, max: number): string => {
-  const line = text.replace(/\s+/g, " ").trim();
-  return line.length > max ? `${line.slice(0, max - 1)}…` : line;
-};
 
 const memoryLabel = (memory: MemorySummary): string => {
   if (memory.kind === "source" && memory.sourceUrl) {

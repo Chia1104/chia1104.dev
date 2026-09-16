@@ -23,6 +23,7 @@ import { History, RotateCcw, Trash, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import dayjs from "@chia/utils/day";
+import { messageOf } from "@chia/utils/error-helper";
 
 import { EmbeddingDrawer } from "@/components/rag/embedding-drawer";
 import { client, orpc } from "@/libs/orpc/client";
@@ -31,9 +32,6 @@ import { DeleteButton } from "./delete-button";
 import type { DraftView } from "./draft-values";
 import { MetaChip } from "./meta-chip";
 import { RevisionsDrawer } from "./revisions-drawer";
-
-const errorMessage = (cause: unknown) =>
-  cause instanceof Error ? cause.message : "Something went wrong.";
 
 const feedDetailsOptions = (feedId: number) =>
   orpc.feeds["details-by-id"].queryOptions({
@@ -90,7 +88,8 @@ const PostSettings = ({ feedId }: { feedId: number }) => {
           queryClient.invalidateQueries({ queryKey: orpc.feeds.list.key() }),
         ]);
       },
-      onError: (error) => toast.error(errorMessage(error)),
+      onError: (error) =>
+        toast.error(messageOf(error, "Something went wrong.")),
     })
   );
   const feed = feedQuery.data;
@@ -321,7 +320,8 @@ export const DraftActions = ({
         onDraftChanged(next);
         await invalidateDraftLists();
       },
-      onError: (error) => toast.error(errorMessage(error)),
+      onError: (error) =>
+        toast.error(messageOf(error, "Something went wrong.")),
     }),
     mutationFn: async () => {
       await prepare();
@@ -344,7 +344,8 @@ export const DraftActions = ({
         );
         onDraftChanged(next);
       },
-      onError: (error) => toast.error(errorMessage(error)),
+      onError: (error) =>
+        toast.error(messageOf(error, "Something went wrong.")),
     }),
     mutationFn: async () => {
       await prepare();
@@ -369,7 +370,7 @@ export const DraftActions = ({
         }),
       ]);
     },
-    onError: (error) => toast.error(errorMessage(error)),
+    onError: (error) => toast.error(messageOf(error, "Something went wrong.")),
   });
   const isBusy = apply.isPending || discard.isPending || restore.isPending;
   const isDisabled = isBusy || isSaveBlocked;

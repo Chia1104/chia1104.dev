@@ -9,6 +9,8 @@ import type {
 import { context, SpanKind, SpanStatusCode, trace } from "@opentelemetry/api";
 import type { Span } from "@opentelemetry/api";
 
+import { messageOf } from "@chia/utils/error-helper";
+
 import type { AgentTurnError } from "./types.ts";
 
 /**
@@ -93,7 +95,7 @@ const errorMessageOf = (
     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
   },
   stopReason: "error",
-  errorMessage: cause instanceof Error ? cause.message : String(cause),
+  errorMessage: messageOf(cause),
   timestamp: Date.now(),
 });
 

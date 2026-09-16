@@ -7,10 +7,11 @@ import { useQuery } from "@tanstack/react-query";
 
 import { usageFractionOf } from "@chia/agent-elements/usage";
 import { authClient } from "@chia/auth/client";
+import { formatDateTime } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
 
-import { formatDateTime, formatUsd } from "../users/shared";
+import { formatUsd } from "../users/shared";
 
 const MICROS_PER_USD = 1_000_000;
 

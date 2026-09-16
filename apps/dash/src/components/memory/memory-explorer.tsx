@@ -31,6 +31,8 @@ import { parseAsString, parseAsStringLiteral, useQueryStates } from "nuqs";
 import { toast } from "sonner";
 
 import { Markdown } from "@chia/agent-elements/markdown";
+import { formatDateTime } from "@chia/utils/format";
+import { hostnameOf } from "@chia/utils/url";
 
 import { DrawerPanel } from "@/components/commons/drawer-panel";
 import { orpc } from "@/libs/orpc/client";
@@ -90,20 +92,6 @@ const StatusChip = ({ status }: { status: MemoryStatus }) => (
     <Chip.Label className="text-xs">{status}</Chip.Label>
   </Chip>
 );
-
-const hostOf = (url: string) => {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-};
-
-const formatDate = (value: Date | string) =>
-  new Date(value).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
 
 const useInvalidateMemory = () => {
   const queryClient = useQueryClient();
@@ -384,7 +372,7 @@ const MemoryEditor = ({
             href={memory.sourceUrl}
             rel="noreferrer noopener"
             target="_blank">
-            {hostOf(memory.sourceUrl)}
+            {hostnameOf(memory.sourceUrl)}
             <ExternalLinkIcon className="size-3" />
           </a>
         ) : null}
@@ -394,9 +382,9 @@ const MemoryEditor = ({
         <dt className="text-muted">Session</dt>
         <dd className="truncate font-mono">{memory.sessionId ?? "—"}</dd>
         <dt className="text-muted">Created</dt>
-        <dd>{formatDate(memory.createdAt)}</dd>
+        <dd>{formatDateTime(memory.createdAt)}</dd>
         <dt className="text-muted">Updated</dt>
-        <dd>{formatDate(memory.updatedAt)}</dd>
+        <dd>{formatDateTime(memory.updatedAt)}</dd>
       </dl>
 
       {editing ? (
@@ -717,7 +705,7 @@ export const MemoryExplorer = () => {
                           href={memory.sourceUrl}
                           rel="noreferrer noopener"
                           target="_blank">
-                          {hostOf(memory.sourceUrl)}
+                          {hostnameOf(memory.sourceUrl)}
                         </a>
                       ) : (
                         "—"
@@ -725,7 +713,7 @@ export const MemoryExplorer = () => {
                     </Table.Cell>
                     <Table.Cell>
                       <span className="text-muted text-xs">
-                        {formatDate(memory.updatedAt)}
+                        {formatDateTime(memory.updatedAt)}
                       </span>
                     </Table.Cell>
                   </Table.Row>
