@@ -226,14 +226,18 @@ async function runKindTurn(
     import("@chia/agent-runtime/pi/turn"),
   ]);
 
-  const state = await definition.state.load(db, request.sessionId);
+  // Independent reads on the pooled client, not a lock transaction, so they go out together.
+  const [state, { config, defaults }, unspentApprovalKeys] = await Promise.all([
+    definition.state.load(db, request.sessionId),
+    // Read per turn, not per session: an edit in the dashboard reaches the next turn.
+    loadKindConfig(db, definition),
+    listUnspentAgentApprovalKeys(db, request.sessionId),
+  ]);
   if (state === null) {
     throw new FatalError(
       `Kind state is missing for agent session ${request.sessionId}.`
     );
   }
-  // Read per turn, not per session: an edit in the dashboard reaches the next turn.
-  const { config, defaults } = await loadKindConfig(db, definition);
   // An incomplete row fails the same way on every attempt, so it must not read as retryable.
   let settings: AgentSessionSettings;
   try {
@@ -251,7 +255,7 @@ async function runKindTurn(
    */
   const credentials = decryptAgentCredentials(request.credentials);
   const models = createAgentModels(credentials);
-  // Before any kind reads: a model the caller may not run costs no query.
+  // Before the kind prepares the turn: a model the caller may not run costs no further query.
   const model = definition.models.resolve(
     settings,
     models,
@@ -266,9 +270,7 @@ async function runKindTurn(
   );
 
   const session = new PgSessionRepo(db, definition.kind).open(row);
-  const approvedApprovalKeys = new Set(
-    await listUnspentAgentApprovalKeys(db, request.sessionId)
-  );
+  const approvedApprovalKeys = new Set(unspentApprovalKeys);
 
   const { settle, ...plan } = await definition.prepareTurn({
     db,
