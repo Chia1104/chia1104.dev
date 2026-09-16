@@ -1,3 +1,5 @@
+import type Keyv from "keyv";
+
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import type { DB } from "@chia/db/client";
 import {
@@ -6,7 +8,6 @@ import {
 } from "@chia/db/repos/feeds";
 import { getRelatedFeeds } from "@chia/db/repos/feeds/search";
 import type { Locale } from "@chia/db/types";
-import type { Keyv } from "@chia/kv/types";
 
 import { FEED_TRANSLATION_SOURCE_TYPE } from "../rag/resource-types";
 import { searchResources } from "../rag/search.service";

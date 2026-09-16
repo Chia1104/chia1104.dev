@@ -1,18 +1,13 @@
 import { call } from "@orpc/server";
-import { afterAll, beforeAll, beforeEach, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
 import type { UpdateAgentMemoryDTO } from "@chia/db/repos/agent/memory";
 import type { AgentMemory } from "@chia/db/schema";
+import { contextOf } from "@chia/test/context";
 import { stubTestEnv } from "@chia/test/env";
-import {
-  ADMIN_ID,
-  contextOf,
-  describe,
-  expect,
-  it as orpcIt,
-  sessionOf,
-} from "@chia/test/orpc";
+import { it as orpcIt } from "@chia/test/orpc";
+import { ADMIN_ID, sessionOf } from "@chia/test/session";
 import { omitUndefined } from "@chia/utils/object";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 

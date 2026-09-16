@@ -61,6 +61,7 @@
     "@t3-oss/env-core": "catalog:env",
     "better-auth": "catalog:better-auth",
     "client-only": "catalog:",
+    "keyv": "catalog:kv",
     "resend": "catalog:email",
     "server-only": "catalog:",
     "zod": "catalog:"

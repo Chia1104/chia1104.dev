@@ -11,7 +11,8 @@
     "build:timeline": "pkl eval -f json -o timeline.json timeline.pkl"
   },
   "dependencies": {
-    "@chia/utils": "workspace:*"
+    "@chia/utils": "workspace:*",
+    "dayjs": "catalog:"
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",

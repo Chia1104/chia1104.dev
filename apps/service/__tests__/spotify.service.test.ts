@@ -42,11 +42,11 @@ vi.mock("@chia/db/repos/spotify", () => ({
   withLockedSpotifyCredential: mocks.withLockedSpotifyCredential,
 }));
 
+import type Keyv from "keyv";
 import { HTTPError } from "ky";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
-import type { Keyv } from "@chia/kv/types";
 import {
   completeSpotifyAuthorizationService,
   createSpotifyAuthorizationService,

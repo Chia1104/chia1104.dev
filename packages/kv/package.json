@@ -40,10 +40,6 @@
     "./drizzle/cache": {
       "types": "./src/drizzle/cache.ts",
       "default": "./src/drizzle/cache.ts"
-    },
-    "./types": {
-      "types": "./src/types.ts",
-      "default": "./src/types.ts"
     }
   },
   "scripts": {
