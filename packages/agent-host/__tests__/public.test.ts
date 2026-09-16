@@ -16,7 +16,8 @@ const feeds = vi.hoisted(() => ({
 
 vi.mock("@chia/db/repos/feeds", () => feeds);
 
-const { createPublicAgentKind } = await import("../src/public");
+const { createPublicAgentExecutor, createPublicAgentKind } =
+  await import("../src/public");
 
 /* SAFETY: the feed lookup is mocked; nothing else in the kind touches the handle. */
 const db = {} as DB;
@@ -123,16 +124,25 @@ describe("createPublicAgentKind", () => {
       ])
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
+});
 
-  it("has no executor without an execution host", () => {
-    expect(kind.runTurn).toBeUndefined();
-    expect(
-      createPublicAgentKind({
-        execution: {
-          createContentPort: () => port,
-          createProfilePort: () => profile,
-        },
-      }).runTurn
-    ).toBeTypeOf("function");
+describe("createPublicAgentExecutor", () => {
+  it("prepares read-only tools over the host's ports", async () => {
+    const executor = createPublicAgentExecutor({
+      createContentPort: () => port,
+      createProfilePort: () => profile,
+    });
+
+    const turn = await executor.prepareTurn(
+      /* SAFETY: the kind reads only the db handle and config from the context. */ {
+        db,
+        config: {},
+      } as never
+    );
+
+    expect(turn.tools.map((tool) => tool.name)).toEqual(
+      executor.capabilities().tools.map((tool) => tool.name)
+    );
+    expect(turn.settle).toBeUndefined();
   });
 });

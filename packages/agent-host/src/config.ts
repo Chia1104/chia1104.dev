@@ -1,3 +1,4 @@
+import { modelRefOf } from "@chia/agent-runtime/models";
 import type {
   AgentSessionDefaults,
   ThinkingLevel,
@@ -33,19 +34,11 @@ export const loadKindConfig = async <TConfig extends object>(
   };
 };
 
-/** The row's model pair, or nothing; the admin write sets both columns or neither. */
-export const kindRowModel = (
-  row: Pick<AgentKindConfig, "providerId" | "modelId"> | undefined
-) =>
-  row?.providerId && row.modelId
-    ? { providerId: row.providerId, modelId: row.modelId }
-    : null;
-
 export const effectiveKindDefaults = (
   definition: Pick<AgentKindDefinition<unknown, object>, "defaults">,
   row: AgentKindConfig | undefined
 ): AgentSessionDefaults => {
-  const model = kindRowModel(row);
+  const model = modelRefOf(row);
   return {
     providerId: model?.providerId ?? definition.defaults.providerId,
     modelId: model?.modelId ?? definition.defaults.modelId,

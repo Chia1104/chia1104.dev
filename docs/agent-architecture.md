@@ -2,7 +2,7 @@
 
 > Status: as-built
 >
-> Last updated: 2026-09-06
+> Last updated: 2026-09-16
 >
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 >
@@ -45,10 +45,10 @@ The stable client boundary is `AgentWireEvent`, not an interchangeable model eng
 
 `agent.session.kind` is the persisted domain discriminator. Session requests resolve it from the database; client input may only confirm it. A caller cannot run an existing session through another kind's tools.
 
-Each host provides an `AgentKindDefinition`:
+`apps/service` hosts an `AgentKindDefinition`; `apps/workflow` hosts an `AgentKindExecutor`, the same definition plus `prepareTurn`:
 
 - `apps/service/src/agents/` binds API-time capabilities, state and credentials.
-- `apps/workflow/src/agents/` binds execution-time ports and `runTurn`.
+- `apps/workflow/src/agents/` binds execution-time ports. `prepareTurn` returns the kind's tools, prompts, budget, preflight and approval key, and an optional `settle` that runs after the turn; the step resolves the model and supplies the session, events, usage and approval persistence to `runPiTurn` itself.
 - `packages/services/agent/` owns generic session, run, approval, maintenance, usage and admin behavior.
 
 The oRPC context receives an `agentFactory` built from eager `minTier` values and dynamic definition loaders. Guards can reject callers before loading a domain package or provider SDK. Dynamic imports provide module caching; the factory keeps no definition registry or service cache.
@@ -119,7 +119,7 @@ sequenceDiagram
     SVC->>WF: start workflow
     SVC-->>UI: run id and stream cursor
     WF->>STEP: execute the turn
-    STEP->>RT: kind.runTurn
+    STEP->>RT: kind.prepareTurn, then runPiTurn
     RT->>PG: append session entries
     RT-->>UI: durable AgentWireEvents
     STEP-->>WF: done, aborted, error or awaiting approval
@@ -140,12 +140,14 @@ Starts, abort resumes and cancellations cross the authenticated `WorkflowControl
 The production path is:
 
 ```text
-runAgentTurnStep → kind.runTurn → runPiTurn → new Agent
+runAgentTurnStep → kind.prepareTurn → runPiTurn → new Agent
 ```
+
+Tools are Pi's own `AgentTool`, built per turn by the kind with `execute` closed over that turn's ports. A tool's spec (name, label, description, parameters) is importable without ports, which is what capability listings read. Label, tier and the kind state a successful call changes are the policy's `toolInfo`; `state:changed` follows that declaration, never the tier.
 
 `runPiTurn`:
 
-1. Projects the active branch into model messages and resolves the caller-scoped model.
+1. Projects the active branch into model messages.
 2. Installs the turn budget, approval gate, volatile context, state-change hook, abort signal and event mapper.
 3. Persists each completed user, assistant and tool-result message before emitting its wire event.
 4. Runs Pi and classifies provider, host, abort and budget failures.
@@ -377,7 +379,7 @@ Admin writes are validated against their code definition before persistence. API
 1. Add `@chia/agent-<kind>` with prompts, tools, policy, model policy and domain ports. Compose `@chia/agent-content` when it reads the blog.
 2. Add an extension table only when the kind has persisted state.
 3. Add service and workflow bindings with matching `minTier` values and dynamic loaders.
-4. Implement `runTurn` through the domain's `run<Kind>Turn`; register any one-shot tasks in `AGENT_TASKS`.
+4. Implement `prepareTurn` through the domain's `prepare<Kind>Turn`; register any one-shot tasks in `AGENT_TASKS`.
 5. Reuse `runPiTurn`, wire events, approvals, session storage and durable workflow plumbing.
 
 Do not add an engine adapter, capability plugin system or provider-neutral handle until a second execution engine creates a concrete requirement.

@@ -12,7 +12,7 @@ import type {
   ProfileEntrySnapshot,
 } from "@chia/agent-content/types";
 import { UnknownAgentModelError } from "@chia/agent-runtime/models";
-import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
+import { runPiTurn } from "@chia/agent-runtime/pi/turn";
 import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
@@ -27,9 +27,9 @@ import type {
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 import { createFakeProfileReadPort } from "@chia/test/fixtures/profile-read-port";
 
-import { DEFAULT_PUBLIC_MODEL } from "../src/models.ts";
-import { publicTurnBudget } from "../src/policy.ts";
-import { runPublicTurn } from "../src/runtime.ts";
+import { DEFAULT_PUBLIC_MODEL, resolvePublicModel } from "../src/models.ts";
+import { publicPolicy, publicTurnBudget } from "../src/policy.ts";
+import { preparePublicTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 
 const SESSION_ID = "session-1";
@@ -50,7 +50,7 @@ interface Fixture {
   run: (
     text: string,
     attachments?: AgentAttachmentInput[]
-  ) => Promise<AgentTurnExecution<ApprovalRequest>>;
+  ) => Promise<AgentTurnExecution>;
 }
 
 const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
@@ -113,23 +113,29 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
     events,
     session,
     setResponses: faux.setResponses,
-    run: (text, attachments) =>
-      runPublicTurn({
+    run: async (text, attachments) => {
+      // The host resolves the model before the kind reads anything.
+      const model = resolvePublicModel(sessionSettings, models);
+      return runPiTurn({
+        ...(await preparePublicTurn({
+          content,
+          profile: createFakeProfileReadPort(PROFILE),
+        })),
+        policy: publicPolicy,
         session,
         settings: sessionSettings,
         agentSessionId: SESSION_ID,
-        content,
-        profile: createFakeProfileReadPort(PROFILE),
+        model,
+        models,
         message: { text, attachments },
         onEvent: (event) => events.push(event),
-        models,
-        toApproval: (approval) => approval,
         persistApproval: async () => undefined,
-      }),
+      });
+    },
   };
 };
 
-describe("runPublicTurn", () => {
+describe("preparePublicTurn", () => {
   let fixture: Fixture;
 
   beforeEach(() => {
@@ -151,8 +157,7 @@ describe("runPublicTurn", () => {
 
     const result = await fixture.run("Is there a post about TypeScript?");
 
-    expect(result.status).toBe("done");
-    expect(result.approval).toBeUndefined();
+    expect(result).toEqual({ status: "done" });
     const ends = fixture.events.filter((event) => event.type === "tool:end");
     expect(ends).toMatchObject([
       {

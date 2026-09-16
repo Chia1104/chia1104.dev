@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
+import { AgentCredentialError } from "@chia/agent-host/credentials";
 import { encodeApiKey, generateKeys } from "@chia/ai/utils";
 
 /**
@@ -19,7 +20,6 @@ vi.mock("../src/env", () => ({
 
 let readEncryptedAgentCredentials: (typeof import("../src/services/agent-credentials.service"))["readEncryptedAgentCredentials"];
 let decryptAgentCredentials: (typeof import("../src/services/agent-credentials.service"))["decryptAgentCredentials"];
-let AgentCredentialError: (typeof import("../src/services/agent-credentials.service"))["AgentCredentialError"];
 
 beforeAll(async () => {
   const generated = generateKeys();
@@ -30,7 +30,6 @@ beforeAll(async () => {
   const module = await import("../src/services/agent-credentials.service");
   readEncryptedAgentCredentials = module.readEncryptedAgentCredentials;
   decryptAgentCredentials = module.decryptAgentCredentials;
-  AgentCredentialError = module.AgentCredentialError;
 });
 
 const headersWith = (cookie: string) => new Headers({ Cookie: cookie });

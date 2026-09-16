@@ -10,6 +10,7 @@ import type {
   CompactionPreparation,
   ThinkingLevel,
 } from "@earendil-works/pi-agent-core";
+import { uuidv7 } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import type {
@@ -17,7 +18,7 @@ import type {
   NewSessionEntry,
   SessionEntry,
 } from "../session/entries.ts";
-import { contextEntries } from "../session/entries.ts";
+import { toPiEntries } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";
 import { estimateBranchContextTokens } from "../session/usage.ts";
 import type { AgentCompactionResult, AgentUsageListener } from "../types.ts";
@@ -55,7 +56,7 @@ const hasCompactionWork = (prepared: CompactionPreparation): boolean =>
 
 export const canCompactBranch = (entries: readonly SessionEntry[]): boolean => {
   const prepared = prepareCompaction(
-    contextEntries(entries),
+    toPiEntries(entries),
     DEFAULT_COMPACTION_SETTINGS
   );
   return (
@@ -88,7 +89,7 @@ const compactBranch = async (
   }: CompactSessionOptions
 ): Promise<AgentCompactionResult | null> => {
   const prepared = prepareCompaction(
-    contextEntries(branch),
+    toPiEntries(branch),
     DEFAULT_COMPACTION_SETTINGS
   );
   if (!prepared.ok) throw prepared.error;
@@ -111,7 +112,7 @@ const compactBranch = async (
   // the compaction's ancestors must be exactly what its summary covers.
   const entry: NewSessionEntry<CompactionEntry> = {
     type: "compaction",
-    id: session.newEntryId(),
+    id: uuidv7(),
     parentId: branch.at(-1)?.id ?? null,
     timestamp: Date.now(),
     summary: result.summary,
@@ -119,7 +120,6 @@ const compactBranch = async (
     retainedTail: result.retainedTail ?? [],
     details: result.details,
     usage: result.usage,
-    fromHook: false,
   };
   await session.appendEntry(entry);
   if (result.usage) {

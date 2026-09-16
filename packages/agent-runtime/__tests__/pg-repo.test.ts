@@ -4,41 +4,44 @@ import type { DB } from "@chia/db/client";
 import {
   appendAgentSessionEntryAsLeaf,
   createAgentSession,
-  getAgentSession,
   getAgentSessionEntries,
   getAgentSessionEntry,
   updateAgentSession,
 } from "@chia/db/repos/agent";
+import type { AgentSession } from "@chia/db/schema";
 
 import { PgSessionRepo } from "../src/session/pg-repo.ts";
 
 vi.mock("@chia/db/repos/agent", () => ({
   appendAgentSessionEntryAsLeaf: vi.fn(),
   createAgentSession: vi.fn(),
-  getAgentSession: vi.fn(),
   getAgentSessions: vi.fn(),
   getAgentSessionEntries: vi.fn(),
-  getAgentSessionEntriesByType: vi.fn(),
   getAgentSessionEntry: vi.fn(),
-  softDeleteAgentSession: vi.fn(),
   updateAgentSession: vi.fn(),
 }));
 
 const db =
   /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB;
 
-const sessionRow = {
+const sessionRow: AgentSession = {
   id: "session-1",
   kind: "writing",
   userId: "user-1",
   title: "Original",
-  createdAt: new Date("2026-07-27T00:00:00.000Z"),
   providerId: "faux",
   modelId: "test-model",
   thinkingLevel: "off",
   activeToolNames: null,
   autoApprove: [],
+  runtimeConfig: {},
+  configVersion: 1,
   leafEntryId: "a2",
+  forkedFromSessionId: null,
+  forkedFromEntryId: null,
+  createdAt: new Date("2026-07-27T00:00:00.000Z"),
+  updatedAt: new Date("2026-07-27T00:00:00.000Z"),
+  deletedAt: null,
 };
 
 const row = (
@@ -67,9 +70,6 @@ describe("PgSessionRepo.fork", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(appendAgentSessionEntryAsLeaf).mockResolvedValue({ seq: 1 });
-    vi.mocked(getAgentSession).mockResolvedValue(
-      /* SAFETY: This fixture implements the session row members exercised by this case. */ sessionRow as never
-    );
     vi.mocked(getAgentSessionEntries).mockResolvedValue(
       /* SAFETY: These rows implement the repository shape exercised by this case. */ rows as never
     );
@@ -81,17 +81,14 @@ describe("PgSessionRepo.fork", () => {
     );
   });
 
-  const repo = () =>
-    new PgSessionRepo(db, {
-      kind: "writing",
-      defaults: { providerId: "faux", modelId: "test-model" },
-    });
+  const repo = () => new PgSessionRepo(db, "writing");
 
   it("copies the branch below a user message so it can be re-asked", async () => {
-    const forked = await repo().fork(
-      { id: "session-1" },
-      { id: "fork-1", entryId: "u2", position: "before" }
-    );
+    const forked = await repo().fork(sessionRow, {
+      id: "fork-1",
+      entryId: "u2",
+      position: "before",
+    });
 
     expect(forked.id).toBe("fork-1");
     expect(vi.mocked(createAgentSession)).toHaveBeenCalledWith(
@@ -119,14 +116,14 @@ describe("PgSessionRepo.fork", () => {
     }
     // A branch fork ends on its last copied entry; nothing moves the leaf afterwards.
     expect(vi.mocked(updateAgentSession)).not.toHaveBeenCalled();
-    expect(vi.mocked(getAgentSession)).toHaveBeenCalledOnce();
   });
 
   it("copies through the target when forking at it", async () => {
-    await repo().fork(
-      { id: "session-1" },
-      { id: "fork-1", entryId: "a1", position: "at" }
-    );
+    await repo().fork(sessionRow, {
+      id: "fork-1",
+      entryId: "a1",
+      position: "at",
+    });
 
     expect(
       vi
@@ -137,20 +134,13 @@ describe("PgSessionRepo.fork", () => {
 
   it("refuses to fork before an assistant message", async () => {
     await expect(
-      repo().fork({ id: "session-1" }, { entryId: "a1", position: "before" })
+      repo().fork(sessionRow, { entryId: "a1", position: "before" })
     ).rejects.toThrow("is not a user message");
   });
 
   it("copies every entry and the source's leaf when no target is given", async () => {
     // The source was rewound: its leaf is not its newest entry.
-    vi.mocked(getAgentSession).mockResolvedValue(
-      /* SAFETY: This fixture implements the session row members exercised by this case. */ {
-        ...sessionRow,
-        leafEntryId: "a1",
-      } as never
-    );
-
-    await repo().fork({ id: "session-1" }, { id: "fork-1" });
+    await repo().fork({ ...sessionRow, leafEntryId: "a1" }, { id: "fork-1" });
 
     // The lineage names the source's leaf, the point the copy is effectively taken from.
     expect(vi.mocked(createAgentSession)).toHaveBeenCalledWith(

@@ -5,11 +5,13 @@ import {
   HOUSE_ACCESS,
   houseModel,
   listModels,
+  modelRefOf,
   NO_ACCESS,
   resolveModel,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
 import type {
+  AgentCredentials,
   AgentModel,
   AgentModelInfo,
   AgentModelPredicate,
@@ -26,7 +28,7 @@ import {
 import { WRITING_AGENT_KIND } from "@chia/agent-writing/models";
 import type { DB } from "@chia/db/client";
 import { getAgentTaskConfig } from "@chia/db/repos/agent/config";
-import type { AgentTaskConfig, AgentTaskParams } from "@chia/db/schema";
+import type { AgentTaskParams } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 
 import type { AgentModels } from "./kind";
@@ -131,6 +133,8 @@ export const listAgentTaskModels = (): AgentModelInfo[] =>
 export interface ResolvedAgentTask {
   model: AgentModel;
   models: AgentModels;
+  /** The keys `models` carries, for the usage ledger; none when the task runs on the house. */
+  credentials: AgentCredentials;
   systemPrompt?: string;
   params?: AgentTaskParamsResolved;
 }
@@ -141,16 +145,12 @@ export interface ResolveAgentTaskOptions {
    * task pinned to a fixed model never resolves the session's own, which may need a BYOK key
    * the request does not carry.
    */
-  session?: () => { model: AgentModel; models: AgentModels };
+  session?: () => {
+    model: AgentModel;
+    models: AgentModels;
+    credentials: AgentCredentials;
+  };
 }
-
-/** The `(providerId, modelId)` pair on a row, or nothing; the two are written together. */
-export const taskRowModel = (
-  row: Pick<AgentTaskConfig, "providerId" | "modelId"> | undefined
-): AgentModelRef | null =>
-  row?.providerId && row.modelId
-    ? { providerId: row.providerId, modelId: row.modelId }
-    : null;
 
 /** Only the parameters the operator set; the rest come from the definition. */
 export const definedTaskParams = (
@@ -177,7 +177,7 @@ export const resolveAgentTask = async (
   if (!definition) throw new Error(`Unknown agent task: ${taskId}`);
   const row = await getAgentTaskConfig(db, taskId);
 
-  const pinned = taskRowModel(row);
+  const pinned = modelRefOf(row);
   const resolved =
     (pinned && resolveFixed(pinned)) ??
     (pinned && warnStale(taskId, pinned)) ??
@@ -196,12 +196,13 @@ export const resolveAgentTask = async (
 
 const resolveFixed = (
   ref: AgentModelRef
-): Pick<ResolvedAgentTask, "model" | "models"> | null => {
+): Pick<ResolvedAgentTask, "model" | "models" | "credentials"> | null => {
   const models = createAgentModels();
   try {
     return {
       model: resolveModel(ref, isAgentTaskModel, models, NO_ACCESS),
       models,
+      credentials: {},
     };
   } catch (error) {
     if (error instanceof UnknownAgentModelError) return null;
@@ -220,7 +221,7 @@ const warnStale = (taskId: string, ref: AgentModelRef): null => {
 const resolveDefault = (
   definition: AgentTaskDefinition,
   options: ResolveAgentTaskOptions
-): Pick<ResolvedAgentTask, "model" | "models"> => {
+): Pick<ResolvedAgentTask, "model" | "models" | "credentials"> => {
   if (definition.defaultModel === "session") {
     if (!options.session) {
       throw new Error(

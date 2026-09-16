@@ -22,7 +22,7 @@ describe("runPiTurn budget", () => {
 
     const result = await fixture.run();
 
-    expect(fixture.context.calls).toEqual(["0", "1", "2"]);
+    expect(fixture.calls).toEqual(["0", "1", "2"]);
     const toolResults = (await fixture.branch())
       .map(messageOf)
       .filter((message) => message?.role === "toolResult");
@@ -54,7 +54,7 @@ describe("runPiTurn budget", () => {
       status: "error",
       error: { kind: "budget_exhausted" },
     });
-    expect(fixture.context.calls).toEqual(["0", "1", "2"]);
+    expect(fixture.calls).toEqual(["0", "1", "2"]);
     expect(fixture.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
   });
 
@@ -96,7 +96,7 @@ describe("runPiTurn budget", () => {
 
     expect(result).toMatchObject({
       status: "awaiting_approval",
-      approval: "call-1",
+      approval: expect.objectContaining({ toolCallId: "call-1" }),
     });
   });
 

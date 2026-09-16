@@ -7,6 +7,7 @@ import {
   InMemorySpanExporter,
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
+import { Type } from "typebox";
 import {
   afterAll,
   beforeAll,
@@ -18,10 +19,9 @@ import {
 } from "vitest";
 
 import { traceModelStream, withModelSpans } from "../src/telemetry.ts";
-import { toolDefiner, Type } from "../src/tools.ts";
+import { defineTool } from "../src/tools.ts";
 
 import { build, toolCallTurn } from "./runtime.fixture.ts";
-import type { TestContext } from "./runtime.fixture.ts";
 
 const exporter = new InMemorySpanExporter();
 
@@ -116,17 +116,21 @@ describe("agent turn telemetry", () => {
 
     const [turn] = spansNamed("invoke_agent");
     expect(turn?.status.code).toBe(SpanStatusCode.ERROR);
-    expect(turn?.attributes["error.type"]).toBe(result.error?.kind);
+    expect(turn?.attributes["error.type"]).toBe(
+      result.status === "error" ? result.error.kind : undefined
+    );
   });
 
   it("records a thrown tool's class but not its message", async () => {
-    const leak = toolDefiner<TestContext>()({
-      name: "leak",
-      label: "Leak",
-      description: "Fails with the operator's text.",
-      parameters: Type.Object({}),
-      execute: () => Promise.reject(new TypeError("draft: my private note")),
-    });
+    const leak = defineTool(
+      {
+        name: "leak",
+        label: "Leak",
+        description: "Fails with the operator's text.",
+        parameters: Type.Object({}),
+      },
+      () => () => Promise.reject(new TypeError("draft: my private note"))
+    )({});
     const fixture = build();
     fixture.faux.setResponses([
       toolCallTurn("leak", {}, "call-1"),

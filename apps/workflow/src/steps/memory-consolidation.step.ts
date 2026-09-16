@@ -73,12 +73,10 @@ export const consolidateSessionMemoryStep = async (request: {
       parseLessonProposals,
       wholeBranch,
     },
-    { WRITING_SESSION_DEFAULTS },
   ] = await Promise.all([
     import("@chia/agent-runtime/pi/complete"),
     import("@chia/agent-runtime/session/pg-repo"),
     import("@chia/agent-writing/memory/lessons"),
-    import("@chia/agent-writing/models"),
   ]);
 
   /**
@@ -98,15 +96,9 @@ export const consolidateSessionMemoryStep = async (request: {
     getWritingAgentSession(db, request.sessionId),
   ]);
 
-  const repo = new PgSessionRepo(db, {
-    kind: WRITING_AGENT_KIND,
-    defaults: WRITING_SESSION_DEFAULTS,
-  });
-  const session = await repo.openById(request.sessionId);
-  const [entries, leafId] = await Promise.all([
-    session.getEntries(),
-    session.getLeafId(),
-  ]);
+  const session = new PgSessionRepo(db, WRITING_AGENT_KIND).open(row);
+  const entries = await session.getEntries();
+  const leafId = row.leafEntryId;
   const exchange = collectOperatorExchange(
     branchSince(wholeBranch(entries, leafId), mark?.consolidatedLeafId ?? null)
   );

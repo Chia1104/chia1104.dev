@@ -1,5 +1,8 @@
+import { Type } from "typebox";
 import * as z from "zod";
 
+import { defineTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
+import type { ToolSpec } from "@chia/agent-runtime/tools";
 import type {
   ToolCallRefusal,
   ToolCallRequest,
@@ -7,16 +10,10 @@ import type {
 import type { Locale } from "@chia/db/types";
 
 import { DraftNotFoundError, languageMismatch } from "../draft/operations.ts";
-import type { FeedDraft, WritingTool, WritingToolContext } from "../types.ts";
+import type { FeedDraft, WritingToolContext } from "../types.ts";
 
-import { TOOL_NAMES, labelOf } from "./registry.ts";
-import {
-  DraftIdSchema,
-  Type,
-  defineTool,
-  jsonBlock,
-  textResult,
-} from "./schema.ts";
+import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
+import { DraftIdSchema } from "./schema.ts";
 
 /**
  * The only tools that touch published data. Sequential: applying and publishing in the same
@@ -106,9 +103,9 @@ export const commitPreflight =
     return undefined;
   };
 
-export const commitDraftTool = defineTool({
+export const commitDraftSpec = {
   name: TOOL_NAMES.commitDraft,
-  label: labelOf(TOOL_NAMES.commitDraft),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.commitDraft].label,
   description:
     "Apply a draft to the database as an UNPUBLISHED post (or update the post the draft is " +
     "already bound to). Requires human approval. This does NOT publish; use `set_published` " +
@@ -131,7 +128,11 @@ export const commitDraftTool = defineTool({
     ),
   }),
   executionMode: "sequential",
-  async execute(toolCallId, params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const commitDraftTool = defineTool(
+  commitDraftSpec,
+  (context: WritingToolContext) => async (toolCallId, params) => {
     const draft = await context.draft.get(params.draftId);
     // The approved revision when the operator decided on this call; otherwise the one just read.
     const expectedRevision =
@@ -158,12 +159,12 @@ export const commitDraftTool = defineTool({
         metadataGaps,
       }
     );
-  },
-});
+  }
+);
 
-export const setPublishedTool = defineTool({
+export const setPublishedSpec = {
   name: TOOL_NAMES.setPublished,
-  label: labelOf(TOOL_NAMES.setPublished),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.setPublished].label,
   description:
     "Publish or unpublish a post. Requires human approval. Publishing makes the post publicly " +
     "visible and triggers reading-time, search-index and embedding jobs. A draft has to be " +
@@ -182,7 +183,11 @@ export const setPublishedTool = defineTool({
     }),
   }),
   executionMode: "sequential",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const setPublishedTool = defineTool(
+  setPublishedSpec,
+  (context: WritingToolContext) => async (_toolCallId, params) => {
     const result = await context.content.setPublished({
       feedId: params.feedId,
       published: params.published,
@@ -195,7 +200,5 @@ export const setPublishedTool = defineTool({
           : ""),
       { ...result, confirmation: params.confirmation }
     );
-  },
-});
-
-export const commitTools: WritingTool[] = [commitDraftTool, setPublishedTool];
+  }
+);

@@ -1,3 +1,4 @@
+import { contentReadToolSpecs } from "@chia/agent-content/tools/read";
 import type {
   ContentReadPort,
   ProfileReadPort,
@@ -15,15 +16,14 @@ import {
   resolvePublicModel,
 } from "@chia/agent-public/models";
 import { publicPolicy } from "@chia/agent-public/policy";
-import { runPublicTurn } from "@chia/agent-public/runtime";
-import { createPublicTools } from "@chia/agent-public/tools/tool-set";
+import { preparePublicTurn } from "@chia/agent-public/runtime";
 import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { getFeedById } from "@chia/db/repos/feeds";
 import { AppError } from "@chia/service-kit/errors";
 
-import type { AgentKindDefinition } from "./kind";
-import { AGENT_TASK_IDS, resolveAgentTask } from "./tasks";
+import { toolCapabilities } from "./kind";
+import type { AgentKindDefinition, AgentKindExecutor } from "./kind";
 
 /**
  * Binds `@chia/agent-public` to the host: a `public`-visibility content port and nothing else.
@@ -35,139 +35,95 @@ export type PublicAgentState = Record<string, never>;
 
 type PublicAgentKind = AgentKindDefinition<PublicAgentState, PublicConfig>;
 
-interface PublicExecutionHost {
+export interface PublicExecutionHost {
   /** Must be built with `public` visibility; the kind cannot check that, only rely on it. */
   createContentPort(options: { db: DB }): ContentReadPort;
   /** Published rows only, for the same reason. */
   createProfilePort(options: { db: DB }): ProfileReadPort;
 }
 
-export interface CreatePublicAgentKindOptions {
-  execution?: PublicExecutionHost;
-}
+export const createPublicAgentKind = (): PublicAgentKind => ({
+  kind: PUBLIC_AGENT_KIND,
+  label: "Reader",
+  description:
+    "Answers visitors' questions about the author and the published posts, on the public site.",
 
-export const createPublicAgentKind = (
-  host: CreatePublicAgentKindOptions = {}
-): PublicAgentKind => {
-  const execution = host.execution;
-  return {
-    kind: PUBLIC_AGENT_KIND,
-    label: "Reader",
-    description:
-      "Answers visitors' questions about the author and the published posts, on the public site.",
+  /**
+   * Anyone with a user row; the operator raises this per deployment through the kind's
+   * config. Lower tiers are metered by the shared weekly allowance and the running-turn
+   * cap; only `Root` is not.
+   */
+  minTier: CallerTier.Guest,
+  defaults: PUBLIC_SESSION_DEFAULTS,
+  policy: publicPolicy,
+
+  models: {
+    assert: assertPublicModel,
+    list: listPublicModels,
+    resolve: resolvePublicModel,
+  },
+
+  config: {
+    schema: publicConfigSchema,
+    defaults: PUBLIC_CONFIG_DEFAULTS,
+  },
+
+  capabilities() {
+    return {
+      tools: toolCapabilities(contentReadToolSpecs, publicPolicy),
+      commands: [],
+      skills: [],
+    };
+  },
+
+  state: {
+    create: () => Promise.resolve(),
+    load: () => Promise.resolve({}),
+    fork: () => Promise.resolve(),
+    detail: () => Promise.resolve({}),
 
     /**
-     * Anyone with a user row; the operator raises this per deployment through the kind's
-     * config. Lower tiers are metered by the shared weekly allowance and the running-turn
-     * cap; only `Root` is not.
+     * Only a published post: the one the visitor is reading, or text selected in one. Checked
+     * here so an unpublished id fails the request instead of the turn, and so an attachment
+     * cannot probe what the visitor cannot read.
      */
-    minTier: CallerTier.Guest,
-    defaults: PUBLIC_SESSION_DEFAULTS,
-    policy: publicPolicy,
-
-    models: {
-      assert: assertPublicModel,
-      list: listPublicModels,
-      resolve: resolvePublicModel,
-    },
-
-    config: {
-      schema: publicConfigSchema,
-      defaults: PUBLIC_CONFIG_DEFAULTS,
-    },
-
-    capabilities() {
-      return {
-        tools: createPublicTools().map((tool) => ({
-          name: tool.name,
-          label: tool.label,
-          tier: publicPolicy.tierOf(tool.name),
-          description: tool.description,
-        })),
-        commands: [],
-        skills: [],
-      };
-    },
-
-    state: {
-      create: () => Promise.resolve(),
-      load: () => Promise.resolve({}),
-      fork: () => Promise.resolve(),
-      detail: () => Promise.resolve({}),
-
-      /**
-       * Only a published post: the one the visitor is reading, or text selected in one. Checked
-       * here so an unpublished id fails the request instead of the turn, and so an attachment
-       * cannot probe what the visitor cannot read.
-       */
-      async attach(_caller, db, _sessionId, attachments) {
-        for (const attachment of attachments) {
-          if (attachment.type === "draft") {
-            throw new AppError("BAD_REQUEST", {
-              message: `The public agent takes no "draft" attachments.`,
-            });
-          }
-          if (
-            attachment.type === "selection" &&
-            attachment.source.type !== "feed"
-          ) {
-            throw new AppError("BAD_REQUEST", {
-              message: `The public agent takes no "${attachment.source.type}" selections.`,
-            });
-          }
-          const feedId =
-            attachment.type === "feed" ? attachment.id : attachment.source.id;
-          const feed = await getFeedById(db, { feedId, published: true });
-          if (!feed) {
-            throw new AppError("NOT_FOUND", {
-              message: `Unknown post: ${feedId}`,
-            });
-          }
+    async attach(_caller, db, _sessionId, attachments) {
+      for (const attachment of attachments) {
+        if (attachment.type === "draft") {
+          throw new AppError("BAD_REQUEST", {
+            message: `The public agent takes no "draft" attachments.`,
+          });
         }
-      },
+        if (
+          attachment.type === "selection" &&
+          attachment.source.type !== "feed"
+        ) {
+          throw new AppError("BAD_REQUEST", {
+            message: `The public agent takes no "${attachment.source.type}" selections.`,
+          });
+        }
+        const feedId =
+          attachment.type === "feed" ? attachment.id : attachment.source.id;
+        const feed = await getFeedById(db, { feedId, published: true });
+        if (!feed) {
+          throw new AppError("NOT_FOUND", {
+            message: `Unknown post: ${feedId}`,
+          });
+        }
+      }
     },
+  },
+});
 
-    ...(execution && {
-      async runTurn(context) {
-        const compaction = await resolveAgentTask(
-          context.db,
-          AGENT_TASK_IDS.sessionCompaction,
-          {
-            session: () => ({
-              model: resolvePublicModel(
-                context.settings,
-                context.models,
-                context.access,
-                context.house
-              ),
-              models: context.models,
-            }),
-          }
-        );
+export const createPublicAgentExecutor = (
+  host: PublicExecutionHost
+): AgentKindExecutor<PublicAgentState, PublicConfig> => ({
+  ...createPublicAgentKind(),
 
-        return runPublicTurn({
-          session: context.session,
-          models: context.models,
-          access: context.access,
-          house: context.house,
-          settings: context.settings,
-          compactionModel: compaction.model,
-          instructions: context.config.instructions,
-          agentSessionId: context.row.id,
-          agentRunId: context.runId,
-          content: execution.createContentPort({ db: context.db }),
-          profile: execution.createProfilePort({ db: context.db }),
-          onEvent: context.onEvent,
-          approvedApprovalKeys: context.approvedApprovalKeys,
-          consumeApproval: context.consumeApproval,
-          signal: context.signal,
-          message: context.message,
-          toApproval: context.toApproval,
-          persistApproval: context.persistApproval,
-          flushEvents: context.flushEvents,
-          onUsage: context.onUsage,
-        });
-      },
+  prepareTurn: (context) =>
+    preparePublicTurn({
+      content: host.createContentPort({ db: context.db }),
+      profile: host.createProfilePort({ db: context.db }),
+      instructions: context.config.instructions,
     }),
-  };
-};
+});

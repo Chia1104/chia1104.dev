@@ -8,16 +8,12 @@ import {
 } from "@chia/agent-runtime/session/entries";
 import {
   PgSessionRepo,
+  settingsFromRow,
   writeSessionSettings,
 } from "@chia/agent-runtime/session/pg-repo";
 import { walkBranch, walkTranscript } from "@chia/agent-runtime/session/tree";
 import { estimateBranchContextTokens } from "@chia/agent-runtime/session/usage";
-import type {
-  AgentSessionDefaults,
-  AgentSessionSettings,
-  ThinkingLevel,
-  ToolTier,
-} from "@chia/agent-runtime/types";
+import type { ThinkingLevel, ToolTier } from "@chia/agent-runtime/types";
 import { entriesToWireEvents } from "@chia/agent-runtime/wire/replay";
 import type { DB } from "@chia/db/client";
 import {
@@ -28,6 +24,7 @@ import {
   getAgentSession,
   softDeleteAgentSession,
 } from "@chia/db/repos/agent";
+import type { AgentSession } from "@chia/db/schema";
 
 import { readAgentAbortControllerRef } from "./abort";
 import type { AgentServiceHost } from "./agent.factory";
@@ -49,11 +46,7 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
   definition: AgentKindDefinition<TState, TConfig>,
   host: AgentServiceHost
 ) => {
-  /** `defaults` only matter to `create`; the code values serve every other operation. */
-  const repoFor = (
-    db: DB,
-    defaults: AgentSessionDefaults = definition.defaults
-  ) => new PgSessionRepo(db, { kind: definition.kind, defaults });
+  const repoFor = (db: DB) => new PgSessionRepo(db, definition.kind);
 
   /** Loads a non-deleted session and kind state after checking caller ownership and kind. */
   const loadOwnedRow = async (
@@ -97,31 +90,8 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     context: { ...caller.context, db },
   });
 
-  const settingsOf = (row: {
-    id: string;
-    providerId: string | null;
-    modelId: string | null;
-    thinkingLevel: string | null;
-    activeToolNames: string[] | null;
-    autoApprove: string[];
-  }): AgentSessionSettings => {
-    if (!row.providerId || !row.modelId || !row.thinkingLevel) {
-      throw new Error(`Agent session ${row.id} has incomplete LLM settings.`);
-    }
-    return {
-      providerId: row.providerId,
-      modelId: row.modelId,
-      thinkingLevel:
-        /* SAFETY: persisted settings are validated before they are written. */ row.thinkingLevel as ThinkingLevel,
-      activeToolNames: row.activeToolNames,
-      autoApprove: row.autoApprove,
-    };
-  };
-
-  const summaryOf = (
-    row: NonNullable<Awaited<ReturnType<typeof loadOwnedRow>>>
-  ) => {
-    const settings = settingsOf(row);
+  const summaryOf = (row: AgentSession) => {
+    const settings = settingsFromRow(row);
     return {
       id: row.id,
       title: row.title,
@@ -145,22 +115,17 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
       .map((approval) => approval.toolName);
   };
 
-  const replayOptions = {
-    tierOf: definition.policy.tierOf,
-    labelOf: definition.policy.labelOf,
-    summarize: definition.policy.summarize,
-  };
-
   const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     const row = await loadOwnedSession(caller, sessionId);
     if (!row) return null;
 
     const db = caller.context.db;
-    const session = await repoFor(db).openById(sessionId);
+    const session = repoFor(db).open(row);
 
+    // The row was read in this transaction, so its leaf is the leaf the entries were read under.
+    const leafId = row.leafEntryId;
     // A lock transaction uses one connection, so these reads stay sequential.
     const entries = await session.getEntries();
-    const leafId = await session.getLeafId();
     const branch = walkBranch(entries, leafId);
     const transcript = walkTranscript(entries, leafId);
     const stats = computeSessionStats(entries);
@@ -191,12 +156,12 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
 
     return {
       session: summaryOf(row),
-      settings: settingsOf(row),
+      settings: settingsFromRow(row),
       runtimeConfig: row.runtimeConfig,
       configVersion: row.configVersion,
       ...kindDetail,
       run,
-      events: entriesToWireEvents(transcriptEntries, replayOptions),
+      events: entriesToWireEvents(transcriptEntries, definition.policy),
       approvals: approvals.map((approval) => ({
         toolCallId: approval.toolCallId,
         toolName: approval.toolName,
@@ -216,25 +181,20 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
 
   const service: SessionService = {
     async listSessions(caller, input) {
-      const metadata = await repoFor(caller.context.db).list({
+      // The query already scopes rows to the caller and kind; a summary reads the row alone.
+      const rows = await repoFor(caller.context.db).list({
         userId: caller.userId,
         limit: input?.limit,
-        includeDeleted: input?.includeDeleted,
       });
-      const rows = await Promise.all(
-        metadata.map((entry) => loadOwnedRow(caller, entry.id))
-      );
-      return {
-        items: rows.flatMap((row) => (row ? [summaryOf(row)] : [])),
-        nextCursor: null,
-      };
+      return { items: rows.map(summaryOf), nextCursor: null };
     },
 
     async createSession(caller, input) {
       const db = caller.context.db;
       const { defaults } = await loadKindConfig(db, definition);
-      const session = await repoFor(db, defaults).create({
+      const session = await repoFor(db).create({
         userId: caller.userId,
+        defaults,
         title: input.title,
         settings: {
           providerId: input.model?.providerId,
@@ -315,7 +275,6 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     loadOwnedRow,
     loadOwnedSession,
     withDb,
-    settingsOf,
     detailFor,
     undecidedApprovals,
   };

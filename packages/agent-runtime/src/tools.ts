@@ -1,24 +1,15 @@
-import type {
-  AgentTool as PiAgentTool,
-  AgentToolResult,
-} from "@earendil-works/pi-agent-core";
+import type { AgentTool, AgentToolResult } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 import type { TSchema } from "typebox";
-import { Type } from "typebox";
 import * as z from "zod";
 
 import { locale } from "@chia/db/schema/enums";
-
-import { traceToolCall } from "./telemetry.ts";
-import type { AgentTool } from "./types.ts";
 
 /**
  * pi validates tool arguments with typebox, while domain schemas are zod.
  * `parameters` are hand-written typebox (model-facing descriptions).
  * Anything crossing a repository is re-parsed with zod inside `execute`.
  */
-
-export { Type };
 
 /**
  * Locale enum via pi-ai `StringEnum`, not `Type.Union([Type.Literal(...)])`.
@@ -28,60 +19,35 @@ export { Type };
 export const LocaleSchema = (description: string) =>
   StringEnum([...locale.enumValues], { description });
 
-/**
- * Escape hatch for large zod shapes.
- * `reused: "inline"`: typebox's checker does not resolve `$defs`/`$ref`, which zod emits for
- * any schema referenced twice.
- * `io: "input"` picks the pre-transform shape the model is asked to produce.
- */
-export const zodToTypebox = (schema: z.ZodType): TSchema =>
-  // SAFETY: Zod's JSON Schema output is consumed only by TypeBox-compatible tool validators.
-  z.toJSONSchema(schema, {
-    io: "input",
-    reused: "inline",
-    unrepresentable: "any",
-  }) as TSchema;
+/** A tool's model-facing half: what Pi sends the provider, readable without a turn's ports. */
+export type ToolSpec<TParameters extends TSchema = TSchema> = Omit<
+  AgentTool<TParameters>,
+  "execute"
+>;
 
 /**
- * Builds a `defineTool` for one context type.
- * Annotating a tool as `AgentTool<TContext>` defaults `TParameters` to `TSchema`, so
- * `Static<TParameters>` becomes `unknown` inside `execute`.
- * Curried because TypeScript cannot pin `TContext` while still inferring `TParameters` from the
- * literal.
+ * A tool declared once: called with a turn's ports it yields the `AgentTool` Pi runs, and its
+ * `spec` is readable without a turn, so the capabilities a kind advertises and the tools it
+ * binds come from the same list.
  */
-export const toolDefiner =
-  <TContext extends object>() =>
-  <TParameters extends TSchema, TDetails>(
-    tool: AgentTool<TContext, TParameters, TDetails>
-  ): AgentTool<TContext, TParameters, TDetails> =>
-    tool;
+export interface ToolFactory<TContext> {
+  (context: TContext): AgentTool;
+  readonly spec: ToolSpec;
+}
 
-/** A context value, or a provider resolved once per turn. */
-export type ToolContextSource<TContext extends object> =
-  | TContext
-  | (() => TContext | Promise<TContext>);
-
-export const resolveToolContext = async <TContext extends object>(
-  source: ToolContextSource<TContext>
-): Promise<TContext> =>
-  source instanceof Function
-    ? await /* SAFETY: A function-typed source is the provider form; contexts themselves are plain objects. */ (
-        source as () => TContext | Promise<TContext>
-      )()
-    : source;
-
-/** Closes each tool over the turn's context into the four-argument shape Pi executes. */
-export const bindToolContext = <TContext extends object>(
-  tools: readonly AgentTool<TContext>[],
-  context: TContext
-): PiAgentTool[] =>
-  tools.map((tool) => ({
-    ...tool,
-    execute: (toolCallId, params, signal, onUpdate) =>
-      traceToolCall(tool.name, toolCallId, () =>
-        tool.execute(toolCallId, params, signal, onUpdate, context)
-      ),
-  }));
+/** Pairs a spec with an `execute` closed over one turn's ports; erased to `AgentTool` so a kind's tools share one array. */
+export const defineTool = <TContext, TParameters extends TSchema>(
+  spec: ToolSpec<TParameters>,
+  execute: (context: TContext) => AgentTool<TParameters, unknown>["execute"]
+): ToolFactory<TContext> =>
+  Object.assign(
+    (context: TContext): AgentTool => ({
+      ...spec,
+      // SAFETY: Pi validates arguments against `spec.parameters` before it calls `execute`.
+      execute: execute(context) as AgentTool["execute"],
+    }),
+    { spec }
+  );
 
 /** Text-only tool result. `details` is what the UI renders, `content` is what the model reads. */
 export const textResult = <TDetails>(

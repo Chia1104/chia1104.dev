@@ -5,14 +5,19 @@ import {
   fauxProvider,
   fauxToolCall,
 } from "@earendil-works/pi-ai/providers/faux";
+import { Type } from "typebox";
 import { vi } from "vitest";
 
 import { runPiTurn } from "../src/pi/turn.ts";
 import type { RunPiTurnOptions } from "../src/pi/turn.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
-import { textResult, toolDefiner, Type } from "../src/tools.ts";
-import type { AgentPolicy, AgentTurnBudget } from "../src/types.ts";
+import { defineTool, textResult } from "../src/tools.ts";
+import type {
+  AgentPolicy,
+  AgentTurnBudget,
+  ApprovalRequest,
+} from "../src/types.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 /**
@@ -22,51 +27,53 @@ import type { AgentWireEvent } from "../src/wire/schema.ts";
  * approval and compaction gating, and the wire lifecycle.
  */
 
-export interface TestContext {
-  calls: string[];
-}
-
-const define = toolDefiner<TestContext>();
-
-export const searchTool = define({
-  name: "search",
-  label: "Search",
-  description: "Search posts.",
-  parameters: Type.Object({ q: Type.String() }),
-  execute: async (_toolCallId, params, _signal, _onUpdate, context) => {
-    context.calls.push(params.q);
-    return textResult(`results for ${params.q}`, { q: params.q });
-  },
-});
-
-export const publishTool = define({
-  name: "publish",
-  label: "Publish",
-  description: "Publish a post.",
-  parameters: Type.Object({ slug: Type.Optional(Type.String()) }),
-  execute: async (_toolCallId, _params, _signal, _onUpdate, context) => {
-    context.calls.push("publish");
-    return textResult("published", {});
-  },
-});
-
-/** Blocks until the run is aborted, so a deadline can fire mid-tool. */
-export const waitTool = define({
-  name: "wait",
-  label: "Wait",
-  description: "Wait forever.",
-  parameters: Type.Object({}),
-  execute: (_toolCallId, _params, signal) =>
-    new Promise<AgentToolResult<unknown>>((_resolve, reject) => {
-      const fail = () => reject(new Error("aborted"));
-      if (signal?.aborted) fail();
-      signal?.addEventListener("abort", fail, { once: true });
-    }),
-});
+export const createTools = (calls: string[]) => [
+  defineTool(
+    {
+      name: "search",
+      label: "Search",
+      description: "Search posts.",
+      parameters: Type.Object({ q: Type.String() }),
+    },
+    () => async (_toolCallId, params) => {
+      calls.push(params.q);
+      return textResult(`results for ${params.q}`, { q: params.q });
+    }
+  )({}),
+  defineTool(
+    {
+      name: "publish",
+      label: "Publish",
+      description: "Publish a post.",
+      parameters: Type.Object({ slug: Type.Optional(Type.String()) }),
+    },
+    () => async () => {
+      calls.push("publish");
+      return textResult("published", {});
+    }
+  )({}),
+  /** Blocks until the run is aborted, so a deadline can fire mid-tool. */
+  defineTool(
+    {
+      name: "wait",
+      label: "Wait",
+      description: "Wait forever.",
+      parameters: Type.Object({}),
+    },
+    () => (_toolCallId, _params, signal) =>
+      new Promise<AgentToolResult<unknown>>((_resolve, reject) => {
+        const fail = () => reject(new Error("aborted"));
+        if (signal?.aborted) fail();
+        signal?.addEventListener("abort", fail, { once: true });
+      })
+  )({}),
+];
 
 export const policy: AgentPolicy = {
-  tierOf: (toolName) => (toolName === "publish" ? "commit" : "read"),
-  labelOf: (toolName) => toolName,
+  toolInfo: (toolName) => ({
+    label: toolName,
+    tier: toolName === "publish" ? "commit" : "read",
+  }),
   requiresApproval: (tier) => tier === "commit",
   summarize: () => "",
 };
@@ -130,12 +137,12 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
   models.setProvider(faux.provider);
   const session = new InMemorySessionTree("session-1");
   const events: AgentWireEvent[] = [];
-  const context: TestContext = { calls: [] };
+  const calls: string[] = [];
   const persistApproval = vi.fn(
-    async (_approval: string): Promise<void> => undefined
+    async (_approval: ApprovalRequest): Promise<void> => undefined
   );
 
-  const options: RunPiTurnOptions<TestContext, string> = {
+  const options: RunPiTurnOptions = {
     agentSessionId: "session-1",
     session,
     settings: {
@@ -147,14 +154,12 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
     },
     model: faux.getModel(),
     models,
-    tools: [searchTool, publishTool, waitTool],
-    toolContext: context,
+    tools: createTools(calls),
     systemPrompt: "You are a test.",
     policy,
     budget,
     message: { text: "Hello" },
     onEvent: (event) => events.push(event),
-    toApproval: (approval) => approval.toolCallId,
     persistApproval,
   };
 
@@ -162,7 +167,7 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
     faux,
     session,
     events,
-    context,
+    calls,
     persistApproval,
     options,
     types: () =>
@@ -170,7 +175,7 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
         .map((event) => event.type)
         .filter((type) => type !== "assistant:delta"),
     branch: () => session.getBranch(),
-    run: (overrides: Partial<RunPiTurnOptions<TestContext, string>> = {}) =>
+    run: (overrides: Partial<RunPiTurnOptions> = {}) =>
       runPiTurn({ ...options, ...overrides }),
   };
 };

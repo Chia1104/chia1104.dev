@@ -6,11 +6,17 @@ import { describe, expect, it, vi } from "vitest";
 
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
-import { commitDraftTool, commitPreflight } from "../src/tools/commit.tool.ts";
+import {
+  commitDraftSpec,
+  commitDraftTool,
+  commitPreflight,
+} from "../src/tools/commit.tool.ts";
 import {
   editDraftContentTool,
   listDraftsTool,
+  newDraftSpec,
   newDraftTool,
+  openDraftSpec,
   openDraftTool,
   readDraftTool,
   replaceSectionTool,
@@ -24,7 +30,7 @@ import {
 } from "../src/tools/github.tool.ts";
 import { fetchUrlTool, webSearchTool } from "../src/tools/retrieval.tool.ts";
 import { summarizeToolResult } from "../src/tools/summarize.ts";
-import { createWritingTools } from "../src/tools/tool-set.ts";
+import { writingToolSpecs } from "../src/tools/tool-set.ts";
 import type { WritingToolContext } from "../src/types.ts";
 
 import {
@@ -67,19 +73,15 @@ describe("webSearchTool", () => {
     const context = createContext();
     const controller = new AbortController();
 
-    await webSearchTool.execute(
+    await webSearchTool(context).execute(
       "call-1",
       { query: "embeddings guide" },
-      controller.signal,
-      undefined,
-      context
+      controller.signal
     );
-    await fetchUrlTool.execute(
+    await fetchUrlTool(context).execute(
       "call-2",
       { url: "https://example.com/" },
-      controller.signal,
-      undefined,
-      context
+      controller.signal
     );
 
     expect(context.web.signals).toEqual([controller.signal, controller.signal]);
@@ -88,16 +90,10 @@ describe("webSearchTool", () => {
   it("normalizes and forwards bare include domains", async () => {
     const context = createContext();
 
-    const result = await webSearchTool.execute(
-      "call-1",
-      {
-        query: "embeddings guide",
-        includeDomains: ["Developers.OpenAI.com."],
-      },
-      undefined,
-      undefined,
-      context
-    );
+    const result = await webSearchTool(context).execute("call-1", {
+      query: "embeddings guide",
+      includeDomains: ["Developers.OpenAI.com."],
+    });
 
     expect(context.web.searches).toEqual([
       {
@@ -120,16 +116,10 @@ describe("webSearchTool", () => {
     const context = createContext();
 
     await expect(
-      webSearchTool.execute(
-        "call-1",
-        {
-          query: "pgvector readme",
-          includeDomains: ["https://github.com/pgvector/pgvector"],
-        },
-        undefined,
-        undefined,
-        context
-      )
+      webSearchTool(context).execute("call-1", {
+        query: "pgvector readme",
+        includeDomains: ["https://github.com/pgvector/pgvector"],
+      })
     ).rejects.toThrow("is not a bare hostname");
     expect(context.web.searches).toHaveLength(0);
   });
@@ -148,13 +138,9 @@ describe("fetchUrlTool source trail", () => {
       },
     });
 
-    await fetchUrlTool.execute(
-      "call-1",
-      { url: "https://example.com/docs" },
-      undefined,
-      undefined,
-      context
-    );
+    await fetchUrlTool(context).execute("call-1", {
+      url: "https://example.com/docs",
+    });
 
     const [source] = context.memory.all;
     expect(source).toMatchObject({
@@ -182,20 +168,10 @@ describe("fetchUrlTool source trail", () => {
       },
     });
 
-    await fetchUrlTool.execute(
-      "c1",
-      { url: "https://example.com/a" },
-      undefined,
-      undefined,
-      context
-    );
-    await fetchUrlTool.execute(
-      "c2",
-      { url: "https://example.com/empty" },
-      undefined,
-      undefined,
-      context
-    );
+    await fetchUrlTool(context).execute("c1", { url: "https://example.com/a" });
+    await fetchUrlTool(context).execute("c2", {
+      url: "https://example.com/empty",
+    });
 
     expect(context.memory.all.map((row) => row.title)).toEqual(["example.com"]);
   });
@@ -217,20 +193,12 @@ describe("fetchUrlTool source trail", () => {
       },
     });
 
-    await fetchUrlTool.execute(
-      "c1",
-      { url: "https://example.com/open" },
-      undefined,
-      undefined,
-      context
-    );
-    await fetchUrlTool.execute(
-      "c2",
-      { url: "https://example.com/closed" },
-      undefined,
-      undefined,
-      context
-    );
+    await fetchUrlTool(context).execute("c1", {
+      url: "https://example.com/open",
+    });
+    await fetchUrlTool(context).execute("c2", {
+      url: "https://example.com/closed",
+    });
 
     const [first, second] = context.memory.all;
     expect(first?.content.endsWith("\n```")).toBe(true);
@@ -249,13 +217,9 @@ describe("fetchUrlTool source trail", () => {
     context.memory.save = () => Promise.reject(new Error("memory is down"));
     reportError.mockClear();
 
-    const result = await fetchUrlTool.execute(
-      "call-1",
-      { url: "https://example.com/" },
-      undefined,
-      undefined,
-      context
-    );
+    const result = await fetchUrlTool(context).execute("call-1", {
+      url: "https://example.com/",
+    });
 
     expect(result.details).toMatchObject({ url: "https://example.com/" });
     expect(reportError).toHaveBeenCalledOnce();
@@ -266,13 +230,10 @@ describe("draft slug handling", () => {
   it("normalizes an English candidate when metadata is patched", async () => {
     const context = createContext();
 
-    const result = await writeDraftTool.execute(
-      "call-1",
-      { draftId: DRAFT_ID, slug: "Embedding RAG Architecture" },
-      undefined,
-      undefined,
-      context
-    );
+    const result = await writeDraftTool(context).execute("call-1", {
+      draftId: DRAFT_ID,
+      slug: "Embedding RAG Architecture",
+    });
 
     expect(result.details).toMatchObject({
       feedMeta: { slug: "embedding-rag-architecture" },
@@ -283,13 +244,10 @@ describe("draft slug handling", () => {
     const context = createContext();
 
     await expect(
-      writeDraftTool.execute(
-        "call-1",
-        { draftId: DRAFT_ID, slug: "Embedding 與 RAG 架構" },
-        undefined,
-        undefined,
-        context
-      )
+      writeDraftTool(context).execute("call-1", {
+        draftId: DRAFT_ID,
+        slug: "Embedding 與 RAG 架構",
+      })
     ).rejects.toThrow("must be an English/ASCII phrase");
     await expect(context.draft.get(DRAFT_ID)).resolves.toMatchObject({
       slug: null,
@@ -300,21 +258,15 @@ describe("draft slug handling", () => {
     const context = createContext();
     const before = (await context.draft.get(DRAFT_ID)).revision;
 
-    const result = await writeDraftTool.execute(
-      "call-1",
-      {
-        draftId: DRAFT_ID,
-        slug: "Two Locales",
-        defaultLocale: "zh-TW",
-        translations: {
-          "zh-TW": { title: "標題", content: "## 內文", description: "描述" },
-          en: { title: "Title", content: "## Body" },
-        },
+    const result = await writeDraftTool(context).execute("call-1", {
+      draftId: DRAFT_ID,
+      slug: "Two Locales",
+      defaultLocale: "zh-TW",
+      translations: {
+        "zh-TW": { title: "標題", content: "## 內文", description: "描述" },
+        en: { title: "Title", content: "## Body" },
       },
-      undefined,
-      undefined,
-      context
-    );
+    });
 
     const draft = await context.draft.get(DRAFT_ID);
     expect(draft.revision).toBe(before + 1);
@@ -348,21 +300,15 @@ describe("draft slug handling", () => {
     });
     const current = (await context.draft.get(DRAFT_ID)).revision;
 
-    await commitDraftTool.execute(
-      "call-auto",
-      { draftId: DRAFT_ID, confirmation: "Commit." },
-      undefined,
-      undefined,
-      context
-    );
+    await commitDraftTool(context).execute("call-auto", {
+      draftId: DRAFT_ID,
+      confirmation: "Commit.",
+    });
     context.approvedDraftRevisions.set("call-approved", current - 1);
-    await commitDraftTool.execute(
-      "call-approved",
-      { draftId: DRAFT_ID, confirmation: "Commit." },
-      undefined,
-      undefined,
-      context
-    );
+    await commitDraftTool(context).execute("call-approved", {
+      draftId: DRAFT_ID,
+      confirmation: "Commit.",
+    });
 
     expect(context.content.commits).toEqual([
       { draftId: DRAFT_ID, expectedRevision: current },
@@ -385,7 +331,7 @@ describe("draft slug handling", () => {
       allowEmptyMetadata?: boolean;
     }) => ({
       toolCallId: "call-1",
-      toolName: commitDraftTool.name,
+      toolName: commitDraftSpec.name,
       input,
     });
 
@@ -426,7 +372,7 @@ describe("draft slug handling", () => {
     await expect(
       commitPreflight(context)({
         toolCallId: "call-1",
-        toolName: commitDraftTool.name,
+        toolName: commitDraftSpec.name,
         input: {
           draftId: DRAFT_ID,
           confirmation: "Create.",
@@ -444,13 +390,10 @@ describe("draft slug handling", () => {
     const before = (await context.draft.get(DRAFT_ID)).revision;
 
     await expect(
-      writeDraftTool.execute(
-        "call-1",
-        { draftId: DRAFT_ID, translations: { en: {} } },
-        undefined,
-        undefined,
-        context
-      )
+      writeDraftTool(context).execute("call-1", {
+        draftId: DRAFT_ID,
+        translations: { en: {} },
+      })
     ).rejects.toThrow("Nothing to write");
     const after = await context.draft.get(DRAFT_ID);
     expect(after.revision).toBe(before);
@@ -466,13 +409,10 @@ describe("draft slug handling", () => {
     });
 
     await expect(
-      commitDraftTool.execute(
-        "call-1",
-        { draftId: DRAFT_ID, confirmation: "Create the staged post." },
-        undefined,
-        undefined,
-        context
-      )
+      commitDraftTool(context).execute("call-1", {
+        draftId: DRAFT_ID,
+        confirmation: "Create the staged post.",
+      })
     ).rejects.toThrow("needs an English/ASCII slug");
     expect(context.content.commits).toHaveLength(0);
   });
@@ -487,17 +427,11 @@ describe("draft slug handling", () => {
         "## Title\n\nFirst paragraph.\n\nSecond paragraph.\n\nOperator note.",
     });
 
-    const result = await editDraftContentTool.execute(
-      "call-1",
-      {
-        draftId: DRAFT_ID,
-        locale: "en",
-        edits: [{ oldString: "First paragraph.", newString: "Rewritten." }],
-      },
-      undefined,
-      undefined,
-      context
-    );
+    const result = await editDraftContentTool(context).execute("call-1", {
+      draftId: DRAFT_ID,
+      locale: "en",
+      edits: [{ oldString: "First paragraph.", newString: "Rewritten." }],
+    });
 
     expect(result.details).toMatchObject({
       replacements: 1,
@@ -518,20 +452,14 @@ describe("draft slug handling", () => {
     });
     const before = (await context.draft.get(DRAFT_ID)).revision;
 
-    const result = await editDraftContentTool.execute(
-      "call-1",
-      {
-        draftId: DRAFT_ID,
-        locale: "en",
-        edits: [
-          { oldString: "gamma", newString: "GAMMA" },
-          { oldString: "alpha", newString: "a" },
-        ],
-      },
-      undefined,
-      undefined,
-      context
-    );
+    const result = await editDraftContentTool(context).execute("call-1", {
+      draftId: DRAFT_ID,
+      locale: "en",
+      edits: [
+        { oldString: "gamma", newString: "GAMMA" },
+        { oldString: "alpha", newString: "a" },
+      ],
+    });
     const after = await context.draft.get(DRAFT_ID);
     expect(after.translations.en?.content).toBe("a\nbeta\nGAMMA");
     expect(after.revision).toBe(before + 1);
@@ -541,20 +469,14 @@ describe("draft slug handling", () => {
     });
 
     await expect(
-      editDraftContentTool.execute(
-        "call-2",
-        {
-          draftId: DRAFT_ID,
-          locale: "en",
-          edits: [
-            { oldString: "beta", newString: "b" },
-            { oldString: "missing", newString: "x" },
-          ],
-        },
-        undefined,
-        undefined,
-        context
-      )
+      editDraftContentTool(context).execute("call-2", {
+        draftId: DRAFT_ID,
+        locale: "en",
+        edits: [
+          { oldString: "beta", newString: "b" },
+          { oldString: "missing", newString: "x" },
+        ],
+      })
     ).rejects.toThrow(/Edit 2 of 2 was not applied/);
     expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
       "a\nbeta\nGAMMA"
@@ -567,19 +489,13 @@ describe("draft slug handling", () => {
       content: "## Title\n\nShe said \u201Chello\u201D \u2014 twice.  \n\nEnd.",
     });
 
-    const result = await editDraftContentTool.execute(
-      "call-1",
-      {
-        draftId: DRAFT_ID,
-        locale: "en",
-        edits: [
-          { oldString: 'She said "hello" - twice.', newString: "Rewritten." },
-        ],
-      },
-      undefined,
-      undefined,
-      context
-    );
+    const result = await editDraftContentTool(context).execute("call-1", {
+      draftId: DRAFT_ID,
+      locale: "en",
+      edits: [
+        { oldString: 'She said "hello" - twice.', newString: "Rewritten." },
+      ],
+    });
 
     expect(result.details).toMatchObject({
       edits: [{ match: "punctuation", line: 3 }],
@@ -599,17 +515,11 @@ describe("draft slug handling", () => {
     });
 
     await expect(
-      editDraftContentTool.execute(
-        "call-1",
-        {
-          draftId: DRAFT_ID,
-          locale: "en",
-          edits: [{ oldString: "same line", newString: "changed" }],
-        },
-        undefined,
-        undefined,
-        context
-      )
+      editDraftContentTool(context).execute("call-1", {
+        draftId: DRAFT_ID,
+        locale: "en",
+        edits: [{ oldString: "same line", newString: "changed" }],
+      })
     ).rejects.toThrow(/matches 2 places/);
     expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
       "same line\nsame line"
@@ -624,16 +534,10 @@ describe("draft slug handling", () => {
     });
 
     await expect(
-      writeDraftTool.execute(
-        "call-1",
-        {
-          draftId: DRAFT_ID,
-          translations: { en: { content: "## Model version" } },
-        },
-        undefined,
-        undefined,
-        context
-      )
+      writeDraftTool(context).execute("call-1", {
+        draftId: DRAFT_ID,
+        translations: { en: { content: "## Model version" } },
+      })
     ).rejects.toThrow("someone else changed it");
     expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
       "## Operator version"
@@ -645,13 +549,10 @@ describe("draft slug handling", () => {
     context.draft.discard(DRAFT_ID);
 
     await expect(
-      writeDraftTool.execute(
-        "call-1",
-        { draftId: DRAFT_ID, translations: { en: { content: "## Body" } } },
-        undefined,
-        undefined,
-        context
-      )
+      writeDraftTool(context).execute("call-1", {
+        draftId: DRAFT_ID,
+        translations: { en: { content: "## Body" } },
+      })
     ).rejects.toThrow("does not exist or was discarded");
   });
 
@@ -659,50 +560,30 @@ describe("draft slug handling", () => {
     const context = createContext();
     await context.draft.patchTranslation(DRAFT_ID, "en", { title: "First" });
 
-    const listed = await listDraftsTool.execute(
-      "call-1",
-      {},
-      undefined,
-      undefined,
-      context
-    );
+    const listed = await listDraftsTool(context).execute("call-1", {});
     expect(listed.details).toMatchObject({
       drafts: [{ id: DRAFT_ID, title: "First", locales: ["en"] }],
     });
 
-    const opened = await openDraftTool.execute(
-      "call-2",
-      { feedId: 42 },
-      undefined,
-      undefined,
-      context
-    );
-    const again = await openDraftTool.execute(
-      "call-3",
-      { feedId: 42 },
-      undefined,
-      undefined,
-      context
-    );
+    const opened = await openDraftTool(context).execute("call-2", {
+      feedId: 42,
+    });
+    const again = await openDraftTool(context).execute("call-3", {
+      feedId: 42,
+    });
     expect(opened.details).toMatchObject({ feedId: 42 });
     expect(again.details).toEqual(opened.details);
     expect(await context.draft.list()).toHaveLength(2);
 
     // A new post has no id, so its tool takes none.
-    const fresh = await newDraftTool.execute(
-      "call-4",
-      {},
-      undefined,
-      undefined,
-      context
-    );
+    const fresh = await newDraftTool(context).execute("call-4", {});
     expect(fresh.details).toMatchObject({ feedId: null });
     expect(fresh.details).not.toMatchObject({ draftId: DRAFT_ID });
     expect(await context.draft.list()).toHaveLength(3);
-    expect(summarizeToolResult(newDraftTool.name, fresh, false)).toMatch(
+    expect(summarizeToolResult(newDraftSpec.name, fresh, false)).toMatch(
       /^Opened draft #\d+ for a new post\.$/
     );
-    expect(summarizeToolResult(openDraftTool.name, opened, false)).toMatch(
+    expect(summarizeToolResult(openDraftSpec.name, opened, false)).toMatch(
       /^Opened draft #\d+ for feed 42\.$/
     );
   });
@@ -715,16 +596,10 @@ describe("draft slug handling", () => {
       );
 
     await expect(
-      writeDraftTool.execute(
-        "call-1",
-        {
-          draftId: DRAFT_ID,
-          translations: { en: { title: "Title", content: chinese } },
-        },
-        undefined,
-        undefined,
-        context
-      )
+      writeDraftTool(context).execute("call-1", {
+        draftId: DRAFT_ID,
+        translations: { en: { title: "Title", content: chinese } },
+      })
     ).rejects.toThrow("en locale takes English prose");
     expect((await context.draft.get(DRAFT_ID)).translations.en).toBeUndefined();
 
@@ -740,17 +615,11 @@ describe("draft slug handling", () => {
         },
       },
     });
-    const edited = await editDraftContentTool.execute(
-      "call-2",
-      {
-        draftId: DRAFT_ID,
-        locale: "en",
-        edits: [{ oldString: "Short.", newString: chinese }],
-      },
-      undefined,
-      undefined,
-      context
-    );
+    const edited = await editDraftContentTool(context).execute("call-2", {
+      draftId: DRAFT_ID,
+      locale: "en",
+      edits: [{ oldString: "Short.", newString: chinese }],
+    });
     expect(edited.details).toMatchObject({
       replacements: 1,
       warning: expect.stringContaining("English prose"),
@@ -758,7 +627,7 @@ describe("draft slug handling", () => {
     await expect(
       commitPreflight(context)({
         toolCallId: "call-3",
-        toolName: commitDraftTool.name,
+        toolName: commitDraftSpec.name,
         input: { draftId: DRAFT_ID, confirmation: "Commit." },
       })
     ).resolves.toMatchObject({
@@ -768,9 +637,7 @@ describe("draft slug handling", () => {
   });
 
   it("does not expose the obsolete slugify tool", () => {
-    expect(createWritingTools().map((tool) => tool.name)).not.toContain(
-      "slugify"
-    );
+    expect(writingToolSpecs.map((tool) => tool.name)).not.toContain("slugify");
   });
 });
 
@@ -800,12 +667,10 @@ describe("github tools", () => {
     const context = createContext();
     const controller = new AbortController();
 
-    const result = await githubResolveRefTool.execute(
+    const result = await githubResolveRefTool(context).execute(
       "call-1",
       { repo: "https://github.com/Owner/Repo", ref: " v1.2.0 " },
-      controller.signal,
-      undefined,
-      context
+      controller.signal
     );
 
     expect(context.connectors.github.calls).toEqual([
@@ -829,13 +694,10 @@ describe("github tools", () => {
       },
     });
 
-    const result = await githubListTreeTool.execute(
-      "call-1",
-      { repo: "owner/repo", path: "/src/" },
-      undefined,
-      undefined,
-      context
-    );
+    const result = await githubListTreeTool(context).execute("call-1", {
+      repo: "owner/repo",
+      path: "/src/",
+    });
 
     expect(context.connectors.github.calls[0]).toEqual({
       method: "listTree",
@@ -862,13 +724,12 @@ describe("github tools", () => {
       files: { "owner/repo/src/index.ts": "one\ntwo\nthree\nfour" },
     });
 
-    const result = await githubReadFileTool.execute(
-      "call-1",
-      { repo: "owner/repo", path: "./src/index.ts", startLine: 2, endLine: 3 },
-      undefined,
-      undefined,
-      context
-    );
+    const result = await githubReadFileTool(context).execute("call-1", {
+      repo: "owner/repo",
+      path: "./src/index.ts",
+      startLine: 2,
+      endLine: 3,
+    });
 
     expect(result.content[0]).toMatchObject({
       text:
@@ -891,27 +752,22 @@ describe("github tools", () => {
     });
 
     await expect(
-      githubReadFileTool.execute(
-        "call-1",
-        { repo: "owner/repo", path: "a.txt", startLine: 3 },
-        undefined,
-        undefined,
-        context
-      )
+      githubReadFileTool(context).execute("call-1", {
+        repo: "owner/repo",
+        path: "a.txt",
+        startLine: 3,
+      })
     ).rejects.toThrow("outside the file");
     await expect(
-      githubReadFileTool.execute(
-        "call-2",
-        { repo: "owner/repo", path: "/" },
-        undefined,
-        undefined,
-        context
-      )
+      githubReadFileTool(context).execute("call-2", {
+        repo: "owner/repo",
+        path: "/",
+      })
     ).rejects.toThrow("must name a file");
   });
 
   it("lists every github tool as read tier with a stable transcript line", () => {
-    const names = createWritingTools().map((tool) => tool.name);
+    const names = writingToolSpecs.map((tool) => tool.name);
     expect(names).toEqual(
       expect.arrayContaining([
         "github_resolve_ref",
@@ -960,13 +816,10 @@ describe("readDraftTool", () => {
       content: SECTIONED,
     });
 
-    const whole = await readDraftTool.execute(
-      "call-1",
-      { draftId: DRAFT_ID, locale: "en" },
-      undefined,
-      undefined,
-      context
-    );
+    const whole = await readDraftTool(context).execute("call-1", {
+      draftId: DRAFT_ID,
+      locale: "en",
+    });
     expect(whole.content[0]).toMatchObject({
       text: expect.stringContaining(
         "line 3 (h2): Setup\nline 7 (h3): Setup > Install\nline 11 (h2): Caveats"
@@ -981,13 +834,11 @@ describe("readDraftTool", () => {
       ],
     });
 
-    const section = await readDraftTool.execute(
-      "call-2",
-      { draftId: DRAFT_ID, locale: "en", heading: "Setup > Install" },
-      undefined,
-      undefined,
-      context
-    );
+    const section = await readDraftTool(context).execute("call-2", {
+      draftId: DRAFT_ID,
+      locale: "en",
+      heading: "Setup > Install",
+    });
     expect(section.content[0]).toMatchObject({
       text: expect.stringContaining("7\t### Install\n8\t\n9\tRun the command."),
     });
@@ -996,13 +847,12 @@ describe("readDraftTool", () => {
       lineCount: 3,
     });
 
-    const range = await readDraftTool.execute(
-      "call-3",
-      { draftId: DRAFT_ID, locale: "en", fromLine: 11, toLine: 40 },
-      undefined,
-      undefined,
-      context
-    );
+    const range = await readDraftTool(context).execute("call-3", {
+      draftId: DRAFT_ID,
+      locale: "en",
+      fromLine: 11,
+      toLine: 40,
+    });
     expect(range.content[0]).toMatchObject({
       text: expect.stringContaining("11\t## Caveats\n12\t\n13\tNone yet."),
     });
@@ -1015,19 +865,13 @@ describe("readDraftTool", () => {
       content: SECTIONED,
     });
 
-    const both = await readDraftTool.execute(
-      "call-1",
-      {
-        draftId: DRAFT_ID,
-        locale: "en",
-        heading: "Setup",
-        fromLine: 1,
-        toLine: 5,
-      },
-      undefined,
-      undefined,
-      context
-    );
+    const both = await readDraftTool(context).execute("call-1", {
+      draftId: DRAFT_ID,
+      locale: "en",
+      heading: "Setup",
+      fromLine: 1,
+      toLine: 5,
+    });
     expect(both.content[0]).toMatchObject({
       text: expect.stringContaining('Section "Setup", lines 3-5 of 13'),
     });
@@ -1037,22 +881,19 @@ describe("readDraftTool", () => {
     });
 
     await expect(
-      readDraftTool.execute(
-        "call-2",
-        { draftId: DRAFT_ID, locale: "en", heading: "Caveats", toLine: 5 },
-        undefined,
-        undefined,
-        context
-      )
+      readDraftTool(context).execute("call-2", {
+        draftId: DRAFT_ID,
+        locale: "en",
+        heading: "Caveats",
+        toLine: 5,
+      })
     ).rejects.toThrow(/outside section "Caveats"/);
     await expect(
-      readDraftTool.execute(
-        "call-3",
-        { draftId: DRAFT_ID, locale: "en", fromLine: 20 },
-        undefined,
-        undefined,
-        context
-      )
+      readDraftTool(context).execute("call-3", {
+        draftId: DRAFT_ID,
+        locale: "en",
+        fromLine: 20,
+      })
     ).rejects.toThrow(/outside the body \(13 lines\)/);
   });
 
@@ -1062,13 +903,11 @@ describe("readDraftTool", () => {
       content: SECTIONED,
     });
     await expect(
-      readDraftTool.execute(
-        "call-1",
-        { draftId: DRAFT_ID, locale: "en", heading: "Install" },
-        undefined,
-        undefined,
-        context
-      )
+      readDraftTool(context).execute("call-1", {
+        draftId: DRAFT_ID,
+        locale: "en",
+        heading: "Install",
+      })
     ).rejects.toThrow(/No section at heading "Install".*Setup > Install/s);
   });
 });
@@ -1081,18 +920,12 @@ describe("replaceSectionTool", () => {
     });
     const before = (await context.draft.get(DRAFT_ID)).revision;
 
-    const result = await replaceSectionTool.execute(
-      "call-1",
-      {
-        draftId: DRAFT_ID,
-        locale: "en",
-        heading: "Setup",
-        content: "## Getting started\n\nOne step.",
-      },
-      undefined,
-      undefined,
-      context
-    );
+    const result = await replaceSectionTool(context).execute("call-1", {
+      draftId: DRAFT_ID,
+      locale: "en",
+      heading: "Setup",
+      content: "## Getting started\n\nOne step.",
+    });
 
     const after = await context.draft.get(DRAFT_ID);
     expect(after.translations.en?.content).toBe(
@@ -1115,13 +948,12 @@ describe("replaceSectionTool", () => {
       content: SECTIONED,
     });
 
-    const result = await replaceSectionTool.execute(
-      "call-1",
-      { draftId: DRAFT_ID, locale: "en", heading: "Caveats", content: "" },
-      undefined,
-      undefined,
-      context
-    );
+    const result = await replaceSectionTool(context).execute("call-1", {
+      draftId: DRAFT_ID,
+      locale: "en",
+      heading: "Caveats",
+      content: "",
+    });
 
     expect(result.content[0]).toMatchObject({
       text: expect.stringContaining(
@@ -1140,18 +972,12 @@ describe("replaceSectionTool", () => {
     });
 
     await expect(
-      replaceSectionTool.execute(
-        "call-1",
-        {
-          draftId: DRAFT_ID,
-          locale: "en",
-          heading: "Caveats",
-          content: "Prose only.",
-        },
-        undefined,
-        undefined,
-        context
-      )
+      replaceSectionTool(context).execute("call-1", {
+        draftId: DRAFT_ID,
+        locale: "en",
+        heading: "Caveats",
+        content: "Prose only.",
+      })
     ).rejects.toThrow(/must start with the section's heading line/);
 
     const original = context.draft.get.bind(context.draft);
@@ -1163,18 +989,12 @@ describe("replaceSectionTool", () => {
       return draft;
     });
     await expect(
-      replaceSectionTool.execute(
-        "call-2",
-        {
-          draftId: DRAFT_ID,
-          locale: "en",
-          heading: "Caveats",
-          content: "## Caveats\n\nNew.",
-        },
-        undefined,
-        undefined,
-        context
-      )
+      replaceSectionTool(context).execute("call-2", {
+        draftId: DRAFT_ID,
+        locale: "en",
+        heading: "Caveats",
+        content: "## Caveats\n\nNew.",
+      })
     ).rejects.toThrow(/was not applied/);
     expect(
       (await context.draft.get(DRAFT_ID)).translations.en?.content

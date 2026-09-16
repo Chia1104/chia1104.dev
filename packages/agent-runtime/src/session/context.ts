@@ -4,7 +4,7 @@ import {
 } from "@earendil-works/pi-agent-core";
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
 
-import type { ContextEntry, SessionEntry } from "./entries.ts";
+import type { SessionEntry } from "./entries.ts";
 import { contextEntries } from "./entries.ts";
 
 /**
@@ -22,7 +22,7 @@ export const buildBranchContext = (
   fromNewestCompaction(contextEntries(entries)).flatMap(messagesOf);
 
 /** Everything before the newest compaction is what its summary replaces. */
-const fromNewestCompaction = (entries: ContextEntry[]): ContextEntry[] => {
+const fromNewestCompaction = (entries: SessionEntry[]): SessionEntry[] => {
   const index = entries.findLastIndex((entry) => entry.type === "compaction");
   return index === -1 ? entries : entries.slice(index);
 };
@@ -34,7 +34,7 @@ const isContextMessage = (message: AgentMessage): boolean =>
     message.stopReason !== "aborted" &&
     message.stopReason !== "deferred");
 
-const messagesOf = (entry: ContextEntry): AgentMessage[] => {
+const messagesOf = (entry: SessionEntry): AgentMessage[] => {
   switch (entry.type) {
     case "message":
       return isContextMessage(entry.message) ? [entry.message] : [];
@@ -57,7 +57,5 @@ const messagesOf = (entry: ContextEntry): AgentMessage[] => {
             ),
           ]
         : [];
-    case "custom":
-      return [];
   }
 };

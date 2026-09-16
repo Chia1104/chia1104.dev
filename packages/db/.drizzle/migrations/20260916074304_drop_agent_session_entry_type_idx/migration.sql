@@ -1,0 +1,1 @@
+DROP INDEX "agent"."agent_session_entry_type_idx";

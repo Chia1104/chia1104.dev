@@ -3,28 +3,33 @@ import { uuidv7 } from "@earendil-works/pi-ai";
 import type { DB } from "@chia/db/client";
 import {
   createAgentSession,
-  getAgentSession,
   getAgentSessions,
-  softDeleteAgentSession,
   updateAgentSession,
 } from "@chia/db/repos/agent";
+import type { AgentSession } from "@chia/db/schema";
 import type { JsonObject } from "@chia/utils/json";
 
 import type {
   AgentSessionDefaults,
   AgentSessionSettings,
   ThinkingLevel,
-  ToolTier,
 } from "../types.ts";
 
 import { PgSessionStorage } from "./pg-storage.ts";
-import type { PgSessionMetadata } from "./pg-storage.ts";
+
+/** What opening a session needs from its row; the caller has already loaded and authorized it. */
+export type PgSessionRow = Pick<
+  AgentSession,
+  "id" | "createdAt" | "userId" | "kind"
+>;
 
 export interface PgSessionCreateOptions {
   id?: string;
   userId: string;
   title?: string;
   settings?: Partial<AgentSessionSettings>;
+  /** Fills any setting `settings` leaves out. */
+  defaults: AgentSessionDefaults;
   runtimeConfig?: JsonObject;
   configVersion?: number;
   /** Lineage recorded on the row; set by `fork`. */
@@ -34,19 +39,15 @@ export interface PgSessionCreateOptions {
 export interface PgSessionListOptions {
   userId: string;
   limit?: number;
-  includeDeleted?: boolean;
 }
 
-export interface PgSessionForkOptions extends Partial<PgSessionCreateOptions> {
+export interface PgSessionForkOptions extends Partial<
+  Omit<PgSessionCreateOptions, "defaults">
+> {
   /** Entry to fork from; the whole tree when omitted. */
   entryId?: string;
   /** `before` forks the branch up to the user message's parent, so the message can be re-asked. */
   position?: "before" | "at";
-}
-
-export interface PgSessionRepoOptions {
-  kind: string;
-  defaults: AgentSessionDefaults;
 }
 
 export class SessionNotFoundError extends Error {
@@ -63,18 +64,16 @@ export class SessionNotFoundError extends Error {
  * dashboard.
  */
 export class PgSessionRepo {
-  /**
-   * The repository is scoped to one kind. That makes list/open safe by construction and keeps
-   * defaults owned by the kind rather than by core.
-   */
+  /** Scoped to one kind, so list and open are safe by construction. */
   constructor(
     private readonly db: DB,
-    private readonly options: PgSessionRepoOptions
+    private readonly kind: string
   ) {}
 
   async create(options: PgSessionCreateOptions): Promise<PgSessionStorage> {
     const id = options.id ?? uuidv7();
-    const { kind, defaults } = this.options;
+    const { kind } = this;
+    const { defaults } = options;
     const settings = options.settings ?? {};
 
     await createAgentSession(this.db, {
@@ -101,75 +100,42 @@ export class PgSessionRepo {
     });
   }
 
-  async open(
-    metadata: Pick<PgSessionMetadata, "id">
-  ): Promise<PgSessionStorage> {
-    const { session } = await this.load(metadata.id);
-    return session;
-  }
-
-  /** The row and its tree together; `fork` needs both and must not read the row twice. */
-  private async load(sessionId: string) {
-    const row = await getAgentSession(this.db, sessionId);
-    if (!row) {
-      throw new SessionNotFoundError(`Session not found: ${sessionId}`);
-    }
-    if (row.kind !== this.options.kind) {
+  open(row: PgSessionRow): PgSessionStorage {
+    if (row.kind !== this.kind) {
       throw new SessionNotFoundError(
-        `Session ${sessionId} belongs to agent kind "${row.kind}", not "${this.options.kind}"`
+        `Session ${row.id} belongs to agent kind "${row.kind}", not "${this.kind}"`
       );
     }
-    const session = new PgSessionStorage(this.db, {
+    return new PgSessionStorage(this.db, {
       id: row.id,
       createdAt: row.createdAt.toISOString(),
       userId: row.userId,
       kind: row.kind,
     });
-    return { row, session };
   }
 
-  /** Opens by id: what the transport actually holds, without a metadata round-trip. */
-  openById(sessionId: string): Promise<PgSessionStorage> {
-    return this.open({ id: sessionId });
+  /** The caller's live sessions of this kind, newest activity first; each row can be opened. */
+  list(options: PgSessionListOptions): Promise<AgentSession[]> {
+    return getAgentSessions(this.db, { ...options, kind: this.kind });
   }
 
-  async list(options?: PgSessionListOptions): Promise<PgSessionMetadata[]> {
-    if (!options) return [];
-    const rows = await getAgentSessions(this.db, {
-      ...options,
-      kind: this.options.kind,
-    });
-    return rows.map((row) => ({
-      id: row.id,
-      createdAt: row.createdAt.toISOString(),
-      userId: row.userId,
-      kind: row.kind,
-    }));
-  }
-
-  /**
-   * Soft delete. A transcript is worth keeping after an operator clears a session from the
-   * list; a hard delete cascades the whole tree away.
-   */
-  async delete(metadata: Pick<PgSessionMetadata, "id">): Promise<void> {
-    await softDeleteAgentSession(this.db, metadata.id);
-  }
-
+  /** `source` must be read in the transaction that holds the session lock: its leaf is copied. */
   async fork(
-    source: Pick<PgSessionMetadata, "id">,
+    source: AgentSession,
     options: PgSessionForkOptions
   ): Promise<PgSessionStorage> {
-    const { row: sourceRow, session: original } = await this.load(source.id);
-    const entries = await entriesToFork(original, options);
+    const entries = await entriesToFork(this.open(source), options);
+    const sourceSettings = settingsFromRow(source);
 
     const forked = await this.create({
       id: options.id,
-      userId: options.userId ?? sourceRow.userId,
-      title: options.title ?? sourceRow.title ?? undefined,
-      settings: options.settings ?? settingsFromRow(sourceRow),
+      userId: options.userId ?? source.userId,
+      title: options.title ?? source.title ?? undefined,
+      settings: options.settings ?? sourceSettings,
+      defaults: sourceSettings,
       forkedFrom: {
-        sessionId: sourceRow.id,
-        entryId: options.entryId ?? sourceRow.leafEntryId,
+        sessionId: source.id,
+        entryId: options.entryId ?? source.leafEntryId,
       },
     });
 
@@ -180,7 +146,7 @@ export class PgSessionRepo {
     }
     // A whole-tree fork copies every branch in insertion order; the newest entry is not the
     // active one when the source was rewound, so the fork takes the source's leaf explicitly.
-    if (!options.entryId) await forked.setLeafId(sourceRow.leafEntryId);
+    if (!options.entryId) await forked.setLeafId(source.leafEntryId);
 
     return forked;
   }
@@ -209,19 +175,6 @@ const entriesToFork = async (
   return session.getBranch(target.parentId);
 };
 
-/**
- * Runtime settings are read and written on the session row rather than as tree entries: the
- * transport needs the current values before a turn exists in order to build one.
- */
-export const readSessionSettings = async (
-  db: DB,
-  sessionId: string
-): Promise<AgentSessionSettings | null> => {
-  const row = await getAgentSession(db, sessionId);
-  if (!row) return null;
-  return settingsFromRow(row);
-};
-
 export const writeSessionSettings = async (
   db: DB,
   sessionId: string,
@@ -241,7 +194,12 @@ export const writeSessionSettings = async (
   });
 };
 
-const settingsFromRow = (row: {
+/**
+ * Runtime settings live on the session row rather than as tree entries: the transport needs
+ * the current values before a turn exists in order to build one. Every reader goes through
+ * here, so an incomplete row fails the same way everywhere.
+ */
+export const settingsFromRow = (row: {
   id: string;
   providerId: string | null;
   modelId: string | null;
@@ -250,7 +208,7 @@ const settingsFromRow = (row: {
   autoApprove: string[];
 }): AgentSessionSettings => {
   if (!row.providerId || !row.modelId || !row.thinkingLevel) {
-    throw new Error(`Session ${row.id} has no LLM settings for this runtime`);
+    throw new Error(`Agent session ${row.id} has incomplete LLM settings.`);
   }
   return {
     providerId: row.providerId,
@@ -258,7 +216,6 @@ const settingsFromRow = (row: {
     thinkingLevel:
       /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
     activeToolNames: row.activeToolNames,
-    autoApprove:
-      /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
+    autoApprove: row.autoApprove,
   };
 };

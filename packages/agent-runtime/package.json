@@ -29,25 +29,9 @@
       "types": "./src/wire/fold.ts",
       "default": "./src/wire/fold.ts"
     },
-    "./wire/clip": {
-      "types": "./src/wire/clip.ts",
-      "default": "./src/wire/clip.ts"
-    },
     "./wire/replay": {
       "types": "./src/wire/replay.ts",
       "default": "./src/wire/replay.ts"
-    },
-    "./pi/events": {
-      "types": "./src/pi/events.ts",
-      "default": "./src/pi/events.ts"
-    },
-    "./pi/turn-budget": {
-      "types": "./src/pi/turn-budget.ts",
-      "default": "./src/pi/turn-budget.ts"
-    },
-    "./pi/tool-gate": {
-      "types": "./src/pi/tool-gate.ts",
-      "default": "./src/pi/tool-gate.ts"
     },
     "./pi/compaction": {
       "types": "./src/pi/compaction.ts",
@@ -77,17 +61,9 @@
       "types": "./src/session/tree.ts",
       "default": "./src/session/tree.ts"
     },
-    "./session/context": {
-      "types": "./src/session/context.ts",
-      "default": "./src/session/context.ts"
-    },
     "./session/pg-repo": {
       "types": "./src/session/pg-repo.ts",
       "default": "./src/session/pg-repo.ts"
-    },
-    "./session/pg-storage": {
-      "types": "./src/session/pg-storage.ts",
-      "default": "./src/session/pg-storage.ts"
     },
     "./session/usage": {
       "types": "./src/session/usage.ts",

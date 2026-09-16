@@ -2,7 +2,7 @@
 
 > 狀態：as-built
 >
-> 最後更新：2026-09-06
+> 最後更新：2026-09-16
 >
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 >
@@ -48,7 +48,7 @@ flowchart TB
 每個 host 提供 `AgentKindDefinition`：
 
 - `apps/service/src/agents/` 綁定 API 階段的 capabilities、state 與 credentials。
-- `apps/workflow/src/agents/` 綁定執行階段的 ports 與 `runTurn`。
+- `apps/workflow/src/agents/` 綁定執行階段的 ports，提供 `AgentKindExecutor`，也就是 definition 加上 `prepareTurn`。`prepareTurn` 回傳 kind 的 tools、prompts、budget、preflight、approval key，以及 turn 結束後執行的 `settle`（可省略）；model 由 step 解析，session、events、usage 與 approval 持久化也由 step 直接交給 `runPiTurn`。
 - `packages/services/agent/` 擁有共用的 session、run、approval、maintenance、usage 與 admin 行為。
 
 oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建立的 `agentFactory`。Guard 能在載入 domain package 或 provider SDK 前拒絕呼叫；dynamic import 已提供 module cache，factory 不另外保存 definition registry 或 service cache。
@@ -119,7 +119,7 @@ sequenceDiagram
     SVC->>WF: start workflow
     SVC-->>UI: run id 與 stream cursor
     WF->>STEP: execute the turn
-    STEP->>RT: kind.runTurn
+    STEP->>RT: kind.prepareTurn，再 runPiTurn
     RT->>PG: append session entries
     RT-->>UI: durable AgentWireEvents
     STEP-->>WF: done、aborted、error 或 awaiting approval
@@ -142,12 +142,14 @@ Start、abort resume 與 cancel 透過 authenticated `WorkflowControl` contract 
 Production execution path：
 
 ```text
-runAgentTurnStep → kind.runTurn → runPiTurn → new Agent
+runAgentTurnStep → kind.prepareTurn → runPiTurn → new Agent
 ```
+
+Tools 直接是 Pi 的 `AgentTool`，由 kind 每個 turn 建立，`execute` 以 closure 取得該 turn 的 ports。Tool spec（name、label、description、parameters）不需要 ports 就能匯入，capabilities 清單讀的是它。Label、tier，以及成功呼叫會改變哪個 kind state，由 policy 的 `toolInfo` 宣告；`state:changed` 依這個宣告發出，不從 tier 推測。
 
 `runPiTurn`：
 
-1. 將 active branch 投影為 model messages，並解析 caller-scoped model。
+1. 將 active branch 投影為 model messages。
 2. 安裝 turn budget、approval gate、volatile context、state-change hook、abort signal 與 event mapper。
 3. 每個完整的 user、assistant、tool-result message 都先持久化，再發出 wire event。
 4. 執行 Pi，並分類 provider、host、abort 與 budget failure。
@@ -377,7 +379,7 @@ Admin write 在持久化前先依 code definition 驗證。API view 回傳 `defa
 1. 新增 `@chia/agent-<kind>`，包含 prompts、tools、policy、model allowlist 與 domain ports。需要讀部落格時組合 `@chia/agent-content`。
 2. 只有 kind 需要持久化 state 時才新增 extension table。
 3. 加入 service 與 workflow bindings，使用一致的 `minTier` 與 dynamic loaders。
-4. 讓 `runTurn` 呼叫 domain 的 `run<Kind>Turn`；one-shot tasks 註冊到 `AGENT_TASKS`。
+4. 讓 `prepareTurn` 呼叫 domain 的 `prepare<Kind>Turn`；one-shot tasks 註冊到 `AGENT_TASKS`。
 5. 共用 `runPiTurn`、wire events、approval、session storage 與 durable workflow plumbing。
 
 在第二種 execution engine 形成具體需求前，不新增 engine adapter、capability plugin system 或 provider-neutral handle。

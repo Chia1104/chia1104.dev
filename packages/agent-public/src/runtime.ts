@@ -1,63 +1,25 @@
-import type { Api, Model, Models } from "@earendil-works/pi-ai";
-
+import { createContentReadTools } from "@chia/agent-content/tools/read";
 import type {
   ContentReadPort,
   ProfileReadPort,
 } from "@chia/agent-content/types";
-import { createAgentModels, NO_ACCESS } from "@chia/agent-runtime/models";
 import type {
-  AgentModelAccess,
-  AgentModelRef,
-} from "@chia/agent-runtime/models";
-import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
-import { runPiTurn } from "@chia/agent-runtime/pi/turn";
-import type { RenderedAttachments } from "@chia/agent-runtime/pi/turn";
-import type { SessionTree } from "@chia/agent-runtime/session/tree";
-import type {
-  AgentSessionSettings,
-  AgentTurnExecution,
-  AgentTurnMessage,
-  AgentUsageListener,
-} from "@chia/agent-runtime/types";
-import type {
-  AgentAttachment,
-  AgentWireEvent,
-} from "@chia/agent-runtime/wire/schema";
+  AgentTurnPlan,
+  RenderedAttachments,
+} from "@chia/agent-runtime/pi/turn";
+import type { AgentAttachment } from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";
 
-import { resolvePublicModel } from "./models.ts";
-import { publicPolicy, publicTurnBudget } from "./policy.ts";
+import { publicTurnBudget } from "./policy.ts";
 import { renderProfileBrief } from "./prompts/profile.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
-import { createPublicTools } from "./tools/tool-set.ts";
-import type { PublicToolContext } from "./types.ts";
 
-export interface RunPublicTurnOptions<TApproval> {
-  session: SessionTree;
-  settings: AgentSessionSettings;
-  agentSessionId: string;
-  agentRunId?: string;
+export interface PreparePublicTurnOptions {
   /** Built by the host with `public` visibility; the tools cannot widen it. */
   content: ContentReadPort;
   /** Published rows only; rendered into the system prompt once per turn. */
   profile: ProfileReadPort;
   instructions?: string;
-  message: AgentTurnMessage;
-  onEvent: (event: AgentWireEvent) => void;
-  approvedApprovalKeys?: ReadonlySet<string>;
-  consumeApproval?: (key: string) => Promise<void>;
-  signal?: AbortSignal;
-  models?: Models;
-  /** Keys the caller holds; must match how `models` was built. */
-  access?: AgentModelAccess;
-  /** The operator-pinned house model; the only one a keyless visitor may run. */
-  house?: AgentModelRef;
-  compactionModel?: Model<Api>;
-  defaultLocale?: Locale;
-  toApproval: (request: ApprovalRequest) => TApproval;
-  persistApproval: (approval: TApproval) => Promise<void>;
-  flushEvents?: () => Promise<void>;
-  onUsage?: AgentUsageListener;
 }
 
 /** Quoted as a fenced block so the passage reads as the visitor's citation, not their words. */
@@ -141,50 +103,24 @@ const renderAttachments = async (
   };
 };
 
-export const runPublicTurn = async <TApproval>(
-  options: RunPublicTurnOptions<TApproval>
-): Promise<AgentTurnExecution<TApproval>> => {
-  const defaultLocale = options.defaultLocale ?? Locale.zhTW;
-  const models = options.models ?? createAgentModels();
-  const toolContext: PublicToolContext = { content: options.content };
-  // the allowlist check precedes any read, so a refused model costs no query
-  const model = resolvePublicModel(
-    options.settings,
-    models,
-    options.access ?? NO_ACCESS,
-    options.house
-  );
+/** The public kind's tools and prompts for one turn. */
+export const preparePublicTurn = async (
+  options: PreparePublicTurnOptions
+): Promise<AgentTurnPlan> => {
   const profile = renderProfileBrief(await options.profile.listPublished(), {
-    locale: defaultLocale,
+    locale: Locale.zhTW,
   });
 
-  return runPiTurn({
-    agentSessionId: options.agentSessionId,
-    agentRunId: options.agentRunId,
-    session: options.session,
-    settings: options.settings,
-    model,
-    models,
-    compactionModel: options.compactionModel,
-    tools: createPublicTools(),
-    toolContext,
+  return {
+    tools: createContentReadTools({ content: options.content }),
     systemPrompt: buildSystemPrompt({
       instructions: options.instructions,
       profile,
     }),
-    volatileContext: () => buildTurnContext({ defaultLocale, now: new Date() }),
+    volatileContext: () =>
+      buildTurnContext({ defaultLocale: Locale.zhTW, now: new Date() }),
     renderAttachments: (attachments) =>
       renderAttachments(options.content, attachments),
-    signal: options.signal,
-    policy: publicPolicy,
     budget: publicTurnBudget,
-    approvedApprovalKeys: options.approvedApprovalKeys,
-    consumeApproval: options.consumeApproval,
-    message: options.message,
-    onEvent: options.onEvent,
-    toApproval: options.toApproval,
-    persistApproval: options.persistApproval,
-    flushEvents: options.flushEvents,
-    onUsage: options.onUsage,
-  });
+  };
 };

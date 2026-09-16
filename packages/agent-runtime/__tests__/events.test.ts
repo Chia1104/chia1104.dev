@@ -1,6 +1,7 @@
 import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
+import { createPiWireEventMapper } from "../src/pi/events.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { DETAILS_MAX_STRING_CHARS } from "../src/wire/clip.ts";
 import { foldEvents } from "../src/wire/fold.ts";
@@ -13,8 +14,7 @@ import type { AgentWireEvent } from "../src/wire/schema.ts";
  */
 
 const presentation = {
-  tierOf: () => "read",
-  labelOf: (name: string) => name,
+  toolInfo: (name: string) => ({ label: name, tier: "read" }),
   summarize: () => "",
 };
 
@@ -191,13 +191,11 @@ describe("foldEvents", () => {
         timestamp: 1_767_225_601_000,
         fromId: "entry-1",
         summary: "A tangent about titles, abandoned.",
-        fromHook: false,
       },
     ];
 
     const events = entriesToWireEvents(entries, {
-      tierOf: () => "read",
-      labelOf: (name: string) => name,
+      toolInfo: (name: string) => ({ label: name, tier: "read" }),
       summarize: () => "",
     });
 
@@ -228,8 +226,7 @@ describe("foldEvents", () => {
     ];
 
     const events = entriesToWireEvents(entries, {
-      tierOf: () => "read",
-      labelOf: (name: string) => name,
+      toolInfo: (name: string) => ({ label: name, tier: "read" }),
       summarize: () => "",
     });
 
@@ -295,6 +292,32 @@ describe("foldEvents", () => {
     expect(events.map((event) => event.type)).toEqual(["assistant:end"]);
   });
 
+  it("ends a live tool call whose result carries nothing", () => {
+    const map = createPiWireEventMapper({
+      ...presentation,
+      messageIdOf: () => "entry-1",
+    });
+
+    const events = map({
+      type: "tool_execution_end",
+      toolCallId: "call-1",
+      toolName: "get_post",
+      result: undefined,
+      isError: false,
+    });
+
+    expect(events).toEqual([
+      {
+        type: "tool:end",
+        toolCallId: "call-1",
+        toolName: "get_post",
+        isError: false,
+        summary: "",
+        details: undefined,
+      },
+    ]);
+  });
+
   it("clips oversized tool details on replay while keeping their shape", () => {
     const body = "x".repeat(DETAILS_MAX_STRING_CHARS + 100);
     const entries: SessionEntry[] = [
@@ -317,8 +340,7 @@ describe("foldEvents", () => {
     ];
 
     const [event] = entriesToWireEvents(entries, {
-      tierOf: () => "read",
-      labelOf: (name: string) => name,
+      toolInfo: (name: string) => ({ label: name, tier: "read" }),
       summarize: () => "",
     });
 

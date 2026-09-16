@@ -1,12 +1,16 @@
+import { Type } from "typebox";
+
+import { defineTool, textResult, truncate } from "@chia/agent-runtime/tools";
+import type { ToolSpec } from "@chia/agent-runtime/tools";
+
 import type {
   GitHubFile,
   GitHubRef,
   GitHubTreeEntry,
-  WritingTool,
+  WritingToolContext,
 } from "../types.ts";
 
-import { TOOL_NAMES, labelOf } from "./registry.ts";
-import { Type, defineTool, textResult, truncate } from "./schema.ts";
+import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
 
 /**
  * Reads of the repositories the operator allowed. Every result names the commit sha the
@@ -59,9 +63,9 @@ const describeRef = (ref: GitHubRef): string =>
   (ref.ref === ref.defaultBranch ? " (default branch)" : "") +
   (ref.private ? ", private" : "");
 
-export const githubResolveRefTool = defineTool({
+export const githubResolveRefSpec = {
   name: TOOL_NAMES.githubResolveRef,
-  label: labelOf(TOOL_NAMES.githubResolveRef),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.githubResolveRef].label,
   description:
     "Look up an allowed repository and pin a branch, tag or sha to its commit. Returns the " +
     "default branch, description and the commit sha to cite. Call it once per repository " +
@@ -71,7 +75,11 @@ export const githubResolveRefTool = defineTool({
     ref: RefSchema,
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const githubResolveRefTool = defineTool(
+  githubResolveRefSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const ref = await context.connectors.github.resolveRef(
       { repo: normalizeRepo(params.repo), ref: params.ref?.trim() },
       signal
@@ -86,8 +94,8 @@ export const githubResolveRefTool = defineTool({
       `Cite files as \`path@${shortSha(ref.sha)}\` and link them at <${ref.url}/blob/${ref.sha}/path>.`
     );
     return textResult(lines.join("\n"), { ...ref });
-  },
-});
+  }
+);
 
 const formatEntry = (entry: GitHubTreeEntry): string => {
   switch (entry.type) {
@@ -102,9 +110,9 @@ const formatEntry = (entry: GitHubTreeEntry): string => {
   }
 };
 
-export const githubListTreeTool = defineTool({
+export const githubListTreeSpec = {
   name: TOOL_NAMES.githubListTree,
-  label: labelOf(TOOL_NAMES.githubListTree),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.githubListTree].label,
   description:
     "List a directory of an allowed repository at a ref: one level by default, the whole " +
     "subtree with `recursive`. Use it to find the file that implements what the post " +
@@ -126,7 +134,11 @@ export const githubListTreeTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const githubListTreeTool = defineTool(
+  githubListTreeSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const path = normalizePath(params.path);
     const tree = await context.connectors.github.listTree(
       {
@@ -156,8 +168,8 @@ export const githubListTreeTool = defineTool({
       count: shown.length,
       truncated,
     });
-  },
-});
+  }
+);
 
 /** The requested lines, 1-based and inclusive, clamped to the file. */
 interface LineSlice {
@@ -201,9 +213,9 @@ const formatFile = (
   return `# ${file.ref.repo}/${file.path} @ ${shortSha(file.ref.sha)} (${range})\n<${file.url}>\n\n${body}`;
 };
 
-export const githubReadFileTool = defineTool({
+export const githubReadFileSpec = {
   name: TOOL_NAMES.githubReadFile,
-  label: labelOf(TOOL_NAMES.githubReadFile),
+  label: TOOL_INFO_BY_NAME[TOOL_NAMES.githubReadFile].label,
   description:
     "Read a text file from an allowed repository at a ref, optionally a line range. Returns " +
     "the content with its permalink at the resolved commit. Quote code from here, never from " +
@@ -230,7 +242,11 @@ export const githubReadFileTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, signal, _onUpdate, context) {
+} satisfies ToolSpec;
+
+export const githubReadFileTool = defineTool(
+  githubReadFileSpec,
+  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const path = normalizePath(params.path);
     if (path.length === 0) {
       throw new Error("`path` must name a file, not the repository root.");
@@ -253,11 +269,5 @@ export const githubReadFileTool = defineTool({
       lineCount: slice.lineCount,
       truncated: body.truncated,
     });
-  },
-});
-
-export const githubTools: WritingTool[] = [
-  githubResolveRefTool,
-  githubListTreeTool,
-  githubReadFileTool,
-];
+  }
+);

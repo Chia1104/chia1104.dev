@@ -8,13 +8,12 @@ import {
   AGENT_TURN_KEY,
 } from "@chia/agent-host/execution";
 import type { AgentTurnMarker } from "@chia/agent-host/execution";
-import type { AgentKindDefinition } from "@chia/agent-host/kind";
+import type { AgentKindExecutor } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
-import { credentialSourceOf, recordAgentUsage } from "@chia/agent-host/usage";
+import { recordAgentUsage, sessionUsageListener } from "@chia/agent-host/usage";
 import type {
-  AgentTurnError,
-  ThinkingLevel,
-  ToolTier,
+  AgentSessionSettings,
+  AgentTurnExecution,
 } from "@chia/agent-runtime/types";
 import type { OperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
 import type {
@@ -72,18 +71,8 @@ export interface AgentTurnRequest {
   credentials?: EncryptedAgentCredentials;
 }
 
-export interface AgentApprovalRequestSnapshot {
-  toolCallId: string;
-  toolName: string;
-  approvalKey: string;
-  args?: JsonObject;
-}
-
 export interface AgentTurnOutcome {
-  status: "done" | "awaiting_approval" | "aborted" | "error";
-  /** The gated call the workflow parks on; present exactly when `status` is `awaiting_approval`. */
-  approval?: AgentApprovalRequestSnapshot;
-  error?: AgentTurnError;
+  status: AgentTurnExecution["status"];
 }
 
 type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
@@ -105,9 +94,8 @@ const titleSession = async (
   request: AgentTurnRequest
 ): Promise<void> => {
   try {
-    const [{ fallbackSessionTitle, generateSessionTitle }] = await Promise.all([
-      import("@chia/agent-runtime/pi/title"),
-    ]);
+    const { fallbackSessionTitle, generateSessionTitle } =
+      await import("@chia/agent-runtime/pi/title");
     const task = await resolveAgentTask(db, AGENT_TASK_IDS.sessionTitle);
     const generated = await generateSessionTitle({
       models: task.models,
@@ -221,42 +209,44 @@ export const runAgentTurnStep = async (
  * runtime carries the provider stack.
  */
 async function runKindTurn(
-  definition: AgentKindDefinition<unknown, object>,
+  definition: AgentKindExecutor<unknown, object>,
   db: DB,
   row: AgentSessionRow,
   request: AgentTurnRequest,
   signal: AbortSignal,
   writer: EventWriter
 ): Promise<AgentTurnOutcome> {
-  const [{ accessOf, createAgentModels }, { PgSessionRepo }] =
-    await Promise.all([
-      import("@chia/agent-runtime/models"),
-      import("@chia/agent-runtime/session/pg-repo"),
-    ]);
+  const [
+    { accessOf, createAgentModels },
+    { PgSessionRepo, settingsFromRow },
+    { runPiTurn },
+  ] = await Promise.all([
+    import("@chia/agent-runtime/models"),
+    import("@chia/agent-runtime/session/pg-repo"),
+    import("@chia/agent-runtime/pi/turn"),
+  ]);
 
-  const state = await definition.state.load(db, request.sessionId);
+  // Independent reads on the pooled client, not a lock transaction, so they go out together.
+  const [state, { config, defaults }, unspentApprovalKeys] = await Promise.all([
+    definition.state.load(db, request.sessionId),
+    // Read per turn, not per session: an edit in the dashboard reaches the next turn.
+    loadKindConfig(db, definition),
+    listUnspentAgentApprovalKeys(db, request.sessionId),
+  ]);
   if (state === null) {
     throw new FatalError(
       `Kind state is missing for agent session ${request.sessionId}.`
     );
   }
-  // Read per turn, not per session: an edit in the dashboard reaches the next turn.
-  const { config, defaults } = await loadKindConfig(db, definition);
-  if (!row.providerId || !row.modelId || !row.thinkingLevel) {
+  // An incomplete row fails the same way on every attempt, so it must not read as retryable.
+  let settings: AgentSessionSettings;
+  try {
+    settings = settingsFromRow(row);
+  } catch (error) {
     throw new FatalError(
-      `Agent session ${request.sessionId} has incomplete LLM settings.`
+      error instanceof Error ? error.message : String(error)
     );
   }
-
-  const repo = new PgSessionRepo(db, {
-    kind: definition.kind,
-    defaults: definition.defaults,
-  });
-  const session = await repo.openById(request.sessionId);
-
-  const approvedApprovalKeys = new Set(
-    await listUnspentAgentApprovalKeys(db, request.sessionId)
-  );
 
   /**
    * Per turn: closes over this operator's keys. Not a process singleton.
@@ -265,31 +255,40 @@ async function runKindTurn(
    */
   const credentials = decryptAgentCredentials(request.credentials);
   const models = createAgentModels(credentials);
+  // Before the kind prepares the turn: a model the caller may not run costs no further query.
+  const model = definition.models.resolve(
+    settings,
+    models,
+    accessOf(credentials),
+    defaults
+  );
+  // The compaction task may be pinned to a house model; the session's own is its default.
+  const compaction = await resolveAgentTask(
+    db,
+    AGENT_TASK_IDS.sessionCompaction,
+    { session: () => ({ model, models, credentials }) }
+  );
 
-  if (!definition.runTurn) {
-    throw new FatalError(
-      `Agent kind "${definition.kind}" has no workflow executor.`
-    );
-  }
-  return await definition.runTurn({
+  const session = new PgSessionRepo(db, definition.kind).open(row);
+  const approvedApprovalKeys = new Set(unspentApprovalKeys);
+
+  const { settle, ...plan } = await definition.prepareTurn({
     db,
     row,
-    runId: request.runId,
     state,
     config,
-    settings: {
-      providerId: row.providerId,
-      modelId: row.modelId,
-      thinkingLevel:
-        /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
-      activeToolNames: row.activeToolNames,
-      autoApprove:
-        /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
-    },
+    settings,
+  });
+  const execution = await runPiTurn({
+    ...plan,
+    agentSessionId: row.id,
+    agentRunId: request.runId,
     session,
+    settings,
+    model,
     models,
-    access: accessOf(credentials),
-    house: defaults,
+    compaction: { model: compaction.model, models: compaction.models },
+    policy: definition.policy,
     message: {
       text: request.text,
       template: request.template,
@@ -301,31 +300,26 @@ async function runKindTurn(
     consumeApproval: (key) => consumeAgentApproval(db, request.sessionId, key),
     onEvent: writer.push,
     flushEvents: writer.flush,
-    onUsage: (report) =>
-      recordAgentUsage(db, {
-        userId: row.userId,
-        sessionId: row.id,
-        runId: request.runId,
-        kind: row.kind,
-        credentialSource: credentialSourceOf(credentials, report.providerId),
-        ...report,
-      }),
-    toApproval: (approval): AgentApprovalRequestSnapshot => ({
-      toolCallId: approval.toolCallId,
-      toolName: approval.toolName,
-      approvalKey: approval.key,
-      // SAFETY: tool arguments passed their registered TypeBox schema before execution.
-      args: approval.args as JsonObject | undefined,
+    onUsage: sessionUsageListener(db, {
+      userId: row.userId,
+      sessionId: row.id,
+      runId: request.runId,
+      kind: row.kind,
+      credentialsFor: (source) =>
+        source === "compaction" ? compaction.credentials : credentials,
     }),
     persistApproval: (approval) =>
       recordAgentApprovalRequest(db, {
         sessionId: request.sessionId,
         toolCallId: approval.toolCallId,
         toolName: approval.toolName,
-        approvalKey: approval.approvalKey,
-        args: approval.args,
+        approvalKey: approval.key,
+        // SAFETY: tool arguments passed their registered TypeBox schema before execution.
+        args: approval.args as JsonObject | undefined,
       }),
   });
+  await settle?.(execution);
+  return { status: execution.status };
 }
 
 /**
