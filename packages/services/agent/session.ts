@@ -24,6 +24,7 @@ import {
   getAgentSession,
   softDeleteAgentSession,
 } from "@chia/db/repos/agent";
+import type { AgentSession } from "@chia/db/schema";
 
 import { readAgentAbortControllerRef } from "./abort";
 import type { AgentServiceHost } from "./agent.factory";
@@ -89,9 +90,7 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     context: { ...caller.context, db },
   });
 
-  const summaryOf = (
-    row: NonNullable<Awaited<ReturnType<typeof loadOwnedRow>>>
-  ) => {
+  const summaryOf = (row: AgentSession) => {
     const settings = settingsFromRow(row);
     return {
       id: row.id,
@@ -181,17 +180,12 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
 
   const service: SessionService = {
     async listSessions(caller, input) {
-      const metadata = await repoFor(caller.context.db).list({
+      // The query already scopes rows to the caller and kind; a summary reads the row alone.
+      const rows = await repoFor(caller.context.db).list({
         userId: caller.userId,
         limit: input?.limit,
       });
-      const rows = await Promise.all(
-        metadata.map((entry) => loadOwnedRow(caller, entry.id))
-      );
-      return {
-        items: rows.flatMap((row) => (row ? [summaryOf(row)] : [])),
-        nextCursor: null,
-      };
+      return { items: rows.map(summaryOf), nextCursor: null };
     },
 
     async createSession(caller, input) {

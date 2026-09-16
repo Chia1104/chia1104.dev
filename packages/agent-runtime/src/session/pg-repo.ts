@@ -16,7 +16,6 @@ import type {
 } from "../types.ts";
 
 import { PgSessionStorage } from "./pg-storage.ts";
-import type { PgSessionMetadata } from "./pg-storage.ts";
 
 /** What opening a session needs from its row; the caller has already loaded and authorized it. */
 export type PgSessionRow = Pick<
@@ -115,17 +114,9 @@ export class PgSessionRepo {
     });
   }
 
-  async list(options: PgSessionListOptions): Promise<PgSessionMetadata[]> {
-    const rows = await getAgentSessions(this.db, {
-      ...options,
-      kind: this.kind,
-    });
-    return rows.map((row) => ({
-      id: row.id,
-      createdAt: row.createdAt.toISOString(),
-      userId: row.userId,
-      kind: row.kind,
-    }));
+  /** The caller's live sessions of this kind, newest activity first; each row can be opened. */
+  list(options: PgSessionListOptions): Promise<AgentSession[]> {
+    return getAgentSessions(this.db, { ...options, kind: this.kind });
   }
 
   /** `source` must be read in the transaction that holds the session lock: its leaf is copied. */
