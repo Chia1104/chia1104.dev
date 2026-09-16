@@ -184,7 +184,6 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
       const metadata = await repoFor(caller.context.db).list({
         userId: caller.userId,
         limit: input?.limit,
-        includeDeleted: input?.includeDeleted,
       });
       const rows = await Promise.all(
         metadata.map((entry) => loadOwnedRow(caller, entry.id))

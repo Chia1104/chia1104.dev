@@ -40,7 +40,6 @@ export interface PgSessionCreateOptions {
 export interface PgSessionListOptions {
   userId: string;
   limit?: number;
-  includeDeleted?: boolean;
 }
 
 export interface PgSessionForkOptions extends Partial<

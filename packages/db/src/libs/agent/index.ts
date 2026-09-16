@@ -66,12 +66,13 @@ export const getAgentSessions = async (
     userId: string;
     kind?: string;
     limit?: number;
-    includeDeleted?: boolean;
   }
 ) => {
-  const conditions = [eq(agentSessions.userId, options.userId)];
+  const conditions = [
+    eq(agentSessions.userId, options.userId),
+    isNull(agentSessions.deletedAt),
+  ];
   if (options.kind) conditions.push(eq(agentSessions.kind, options.kind));
-  if (!options.includeDeleted) conditions.push(isNull(agentSessions.deletedAt));
 
   return await db
     .select()
