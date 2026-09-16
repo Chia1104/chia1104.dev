@@ -48,8 +48,11 @@ export const toolStartEvent = (
   return { type: "tool:start", ...call, label, tier };
 };
 
-/** `result` is the live tool result or the persisted tool-result message; both carry `details`. */
-export const toolEndEvent = <TResult extends { details?: unknown }>(
+/**
+ * `result` is the live tool result or the persisted tool-result message; both carry `details`.
+ * Pi types the live result as `any`, so a tool that resolved nothing must not throw here.
+ */
+export const toolEndEvent = <TResult extends { details?: unknown } | undefined>(
   call: {
     toolCallId: string;
     toolName: string;
@@ -63,7 +66,7 @@ export const toolEndEvent = <TResult extends { details?: unknown }>(
   toolName: call.toolName,
   isError: call.isError,
   summary: presentation.summarize(call.toolName, call.result, call.isError),
-  details: clipDetails(call.result.details),
+  details: clipDetails(call.result?.details),
 });
 
 /**
