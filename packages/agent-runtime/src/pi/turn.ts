@@ -60,11 +60,11 @@ export interface RunPiTurnOptions {
   /** Must be the same credential-bearing collection that resolved `model`. */
   models: Models;
   /**
-   * The model the end-of-turn compaction summarises with; `model` when omitted.
-   * A house gateway model is always resolvable on `models`, which is what lets the host pin
-   * compaction there.
+   * The model the end-of-turn compaction summarises with and the collection that resolved it;
+   * the turn's own when omitted. A compaction pinned to a house model runs on the house
+   * collection, so the caller's keys never pay for it.
    */
-  compactionModel?: Model<Api>;
+  compaction?: { model: Model<Api>; models: Models };
   /** Closed over this turn's ports; the order is the order Pi lists them to the model. */
   tools: AgentTool[];
   /**
@@ -185,7 +185,7 @@ const executePiTurn = async ({
   settings,
   model,
   models,
-  compactionModel,
+  compaction,
   tools,
   systemPrompt,
   volatileContext,
@@ -509,11 +509,11 @@ const executePiTurn = async ({
 
     if (!failure && !aborted && approval === undefined) {
       try {
-        const summariser = compactionModel ?? model;
+        const summariser = compaction?.model ?? model;
         const compacted = await compactSessionIfNeeded(
           {
             session,
-            models,
+            models: compaction?.models ?? models,
             model: summariser,
             thinkingLevel: clampThinkingLevel(
               summariser,

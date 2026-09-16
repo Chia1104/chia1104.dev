@@ -105,7 +105,8 @@ export const sessionUsageListener =
       sessionId: string;
       kind: string;
       runId?: string;
-      credentials: AgentCredentials;
+      /** The keys the call for `source` ran on; a task pinned to a house model carries none. */
+      credentialsFor: (source: AgentUsageSource) => AgentCredentials;
     }
   ): AgentUsageListener =>
   (report) =>
@@ -115,7 +116,7 @@ export const sessionUsageListener =
       runId: session.runId,
       kind: session.kind,
       credentialSource: credentialSourceOf(
-        session.credentials,
+        session.credentialsFor(report.source),
         report.providerId
       ),
       ...report,

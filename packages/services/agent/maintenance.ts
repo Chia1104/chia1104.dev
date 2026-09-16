@@ -125,17 +125,12 @@ export const createAgentMaintenanceOperations = <
     const models = createAgentModels(credentials);
     const access = accessOf(credentials);
     const { defaults: house } = await loadKindConfig(db, definition);
-    const onUsage = sessionUsageListener(ledger, {
-      userId: caller.userId,
-      sessionId: row.id,
-      kind: definition.kind,
-      credentials,
-    });
     const operationFor = async (taskId: string) => {
       const task = await resolveAgentTask(db, taskId, {
         session: () => ({
           model: definition.models.resolve(settings, models, access, house),
           models,
+          credentials,
         }),
       });
       return {
@@ -144,7 +139,12 @@ export const createAgentMaintenanceOperations = <
         model: task.model,
         models: task.models,
         signal,
-        onUsage,
+        onUsage: sessionUsageListener(ledger, {
+          userId: caller.userId,
+          sessionId: row.id,
+          kind: definition.kind,
+          credentialsFor: () => task.credentials,
+        }),
       };
     };
     return {

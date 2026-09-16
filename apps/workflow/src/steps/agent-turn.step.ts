@@ -262,7 +262,7 @@ async function runKindTurn(
   const compaction = await resolveAgentTask(
     db,
     AGENT_TASK_IDS.sessionCompaction,
-    { session: () => ({ model, models }) }
+    { session: () => ({ model, models, credentials }) }
   );
 
   const session = new PgSessionRepo(db, definition.kind).open(row);
@@ -285,7 +285,7 @@ async function runKindTurn(
     settings,
     model,
     models,
-    compactionModel: compaction.model,
+    compaction: { model: compaction.model, models: compaction.models },
     policy: definition.policy,
     message: {
       text: request.text,
@@ -303,7 +303,8 @@ async function runKindTurn(
       sessionId: row.id,
       runId: request.runId,
       kind: row.kind,
-      credentials,
+      credentialsFor: (source) =>
+        source === "compaction" ? compaction.credentials : credentials,
     }),
     persistApproval: (approval) =>
       recordAgentApprovalRequest(db, {
