@@ -29,7 +29,7 @@ export const startAgentAbortController = async (
 };
 
 export const signalAgentAbort = async (
-  workflow: WorkflowControlClient,
+  workflow: Pick<WorkflowControlClient, "resumeAgentAbort">,
   controllerId: string,
   reason: string
 ): Promise<boolean> => {

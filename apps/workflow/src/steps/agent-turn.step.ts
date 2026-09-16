@@ -3,6 +3,7 @@ import { FatalError, getWorkflowMetadata, getWritable } from "workflow";
 import { getRun } from "workflow/api";
 
 import { loadKindConfig } from "@chia/agent-host/config";
+import { decryptAgentCredentials } from "@chia/agent-host/credentials";
 import {
   AGENT_DELTA_NAMESPACE,
   AGENT_TURN_KEY,
@@ -35,6 +36,7 @@ import {
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
+import { signalAgentAbort } from "@chia/services/agent/abort";
 import { messageOf } from "@chia/utils/error-helper";
 import type { JsonObject } from "@chia/utils/json";
 import type {
@@ -43,11 +45,9 @@ import type {
 } from "@chia/workflow-control/agent-hooks";
 
 import { agentFactory } from "../agents/factory";
-import {
-  signalAgentAbort,
-  subscribeAgentAbort,
-} from "../services/agent-abort-controller";
-import { decryptAgentCredentials } from "../services/agent-credentials";
+import { env } from "../env";
+import { subscribeAgentAbort } from "../services/agent-abort-controller";
+import { workflowControl } from "../services/workflow-control";
 
 /**
  * The engine lives in this step, not the workflow: `"use workflow"` has no Node built-ins
@@ -274,7 +274,10 @@ async function runKindTurn(
    * Providers without a credential are unregistered, so a missing key fails as "unknown model"
    * instead of billing the house gateway.
    */
-  const credentials = decryptAgentCredentials(request.credentials);
+  const credentials = decryptAgentCredentials(
+    request.credentials,
+    env.AI_AUTH_PRIVATE_KEY
+  );
   const models = createAgentModels(credentials);
   // Before the kind prepares the turn: a model the caller may not run costs no further query.
   const model = definition.models.resolve(
@@ -437,5 +440,5 @@ export const completeAgentRunStep = async (
   const db = await connectDatabase(undefined, { withCache: false });
   // This run's row only: a run cancelled and replaced must not close its successor.
   await completeAgentRun(db, runId, status);
-  await signalAgentAbort(abortController.id, "run finished");
+  await signalAgentAbort(workflowControl, abortController.id, "run finished");
 };

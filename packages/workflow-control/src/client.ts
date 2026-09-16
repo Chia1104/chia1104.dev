@@ -6,6 +6,7 @@ import type {
   EncryptedAgentCredentials,
 } from "./agent.hooks";
 import {
+  startedRunId,
   workflowControlErrorSchema,
   workflowControlResultSchema,
 } from "./control.contract";
@@ -55,13 +56,6 @@ export interface AgentMessagePayload {
 }
 
 const CONTROL_TIMEOUT_MS = 30_000;
-
-const startedRunId = (result: WorkflowControlResult): string => {
-  if (result.type !== "started") {
-    throw new Error("Workflow control returned no run id.");
-  }
-  return result.runId;
-};
 
 export const createWorkflowControlClient = ({
   url,

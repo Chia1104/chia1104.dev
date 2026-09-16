@@ -37,6 +37,10 @@
       "types": "./agent/agent.contract.ts",
       "default": "./agent/agent.contract.ts"
     },
+    "./agent/abort": {
+      "types": "./agent/abort.ts",
+      "default": "./agent/abort.ts"
+    },
     "./agent/admin.contract": {
       "types": "./agent/admin.contract.ts",
       "default": "./agent/admin.contract.ts"

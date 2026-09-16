@@ -5,8 +5,11 @@ import {
   agentAbortHook,
   agentAbortToken,
 } from "@chia/workflow-control/agent-hooks";
-import type { WorkflowControlCommand } from "@chia/workflow-control/contract";
-import type { WorkflowControlResult } from "@chia/workflow-control/contract";
+import { startedRunId } from "@chia/workflow-control/contract";
+import type {
+  WorkflowControlCommand,
+  WorkflowControlResult,
+} from "@chia/workflow-control/contract";
 
 export const executeLocalWorkflowCommand = async (
   command: WorkflowControlCommand
@@ -88,21 +91,18 @@ export const executeLocalWorkflowCommand = async (
   }
 };
 
-const startedRunId = async (command: WorkflowControlCommand) => {
-  const result = await executeLocalWorkflowCommand(command);
-  if (result.type !== "started") throw new Error("Workflow did not start.");
-  return result.runId;
-};
+const startRun = async (command: WorkflowControlCommand) =>
+  startedRunId(await executeLocalWorkflowCommand(command));
 
 export const workflowControl = {
   startFeedIndex: (feedID: number) =>
-    startedRunId({ type: "feed-index:start", request: { feedID } }),
+    startRun({ type: "feed-index:start", request: { feedID } }),
   startResourceIndex: (request: { sourceType: string; sourceId: number }) =>
-    startedRunId({ type: "resource-index:start", request }),
+    startRun({ type: "resource-index:start", request }),
   startMemoryConsolidation: (request: {
     sessionId: string;
     delayMs?: number;
-  }) => startedRunId({ type: "memory-consolidation:start", request }),
+  }) => startRun({ type: "memory-consolidation:start", request }),
   async cancelRun(runId: string) {
     await executeLocalWorkflowCommand({ type: "run:cancel", runId });
   },

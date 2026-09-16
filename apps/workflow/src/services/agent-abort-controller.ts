@@ -3,8 +3,6 @@ import { getRun } from "workflow/api";
 import type { AgentAbortMessage } from "@chia/agent-host/execution";
 import { reportError } from "@chia/observability/report";
 
-import { workflowControl } from "./workflow-control";
-
 export const subscribeAgentAbort = (controllerRunId: string) => {
   const controller = new AbortController();
   const reader = getRun(controllerRunId)
@@ -35,20 +33,4 @@ export const subscribeAgentAbort = (controllerRunId: string) => {
     signal: controller.signal,
     dispose: () => void reader.cancel().catch(() => undefined),
   };
-};
-
-export const signalAgentAbort = async (
-  controllerId: string,
-  reason: string
-): Promise<boolean> => {
-  try {
-    await workflowControl.resumeAgentAbort(controllerId, reason);
-    return true;
-  } catch (error) {
-    reportError(error, "Agent abort could not be signalled", {
-      controllerId,
-      reason,
-    });
-    return false;
-  }
 };
