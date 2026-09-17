@@ -309,7 +309,7 @@ Writing kind 組合 host-owned ports：
 
 只有 commit-tier tool 會寫入正式 feed，且需要 approval。Draft 與 memory write 可逆。破壞性刪除與圖片上傳不提供給 agent。
 
-Web search 只回 snippets；`fetch_url` 抓取單一頁面，並透過 `MemoryPort` 記錄來源。Host port 接收 turn abort signal。Domain package 不直接執行 outbound fetch。
+Web search 只回 snippets；`fetch_url` 抓取單一頁面，並透過 `MemoryPort` 記錄來源。模型只看到頁面開頭的固定長度；被截斷的結果會附上 source memory 的 id 與未完整顯示的 heading path，其餘內容透過 `get_memory` 讀取，不需要重抓。Host port 接收 turn abort signal。Domain package 不直接執行 outbound fetch。
 
 ### Connectors
 

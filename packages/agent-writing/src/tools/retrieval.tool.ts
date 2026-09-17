@@ -3,6 +3,7 @@ import { Type } from "typebox";
 
 import { defineTool, textResult, truncate } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
+import { splitByHeadings } from "@chia/ai/embeddings/markdown";
 import { reportError } from "@chia/observability/report";
 
 import { closeOpenFence } from "../markdown/fences.ts";
@@ -27,6 +28,8 @@ const MAX_PAGE_CHARS = 16_000;
  * page cannot become a megabyte row.
  */
 const SOURCE_MAX_CHARS = 64_000;
+/** Heading paths listed after a cut; a page with more is reached through `search_memory`. */
+const MAX_UNREAD_HEADINGS = 40;
 const MAX_SEARCH_RESULTS = 10;
 const DEFAULT_SEARCH_RESULTS = 5;
 const MAX_SEARCH_DOMAINS = 5;
@@ -135,7 +138,9 @@ export const fetchUrlSpec = {
   label: TOOL_INFO_BY_NAME[TOOL_NAMES.fetchUrl].label,
   description:
     "Fetch a public web page (or PDF) and return its main content as markdown. Use it to " +
-    "check a fact or read a reference the operator linked.",
+    "check a fact or read a reference the operator linked. A long page is cut; the result then " +
+    "names the memory that holds the page and the sections past the cut. Read those with " +
+    "`get_memory`, not by fetching the URL again.",
   parameters: Type.Object({
     url: Type.String({
       description: "Absolute http(s) URL.",
@@ -161,14 +166,51 @@ export const fetchUrlTool = defineTool(
     const page = await context.web.fetchPage(parsed.toString(), signal);
     const body = truncate(page.text, MAX_PAGE_CHARS);
 
-    await recordSource(context, page, signal);
+    const source = await recordSource(context, page, signal);
+    const unread =
+      body.truncated && source
+        ? await unreadHeadings(source.text, MAX_PAGE_CHARS)
+        : [];
 
     return textResult(
-      `# ${page.title ?? parsed.hostname}\n<${page.url}>\n\n${body.text}`,
-      { url: page.url, title: page.title, truncated: body.truncated }
+      `# ${page.title ?? parsed.hostname}\n<${page.url}>\n\n${body.text}${
+        body.truncated && source ? continuationNote(source.id, unread) : ""
+      }`,
+      {
+        url: page.url,
+        title: page.title,
+        truncated: body.truncated,
+        memoryId: source?.id,
+        unreadHeadings: unread,
+      }
     );
   }
 );
+
+/**
+ * Heading paths of the sections at and past `shownChars`, as `get_memory`'s `focusHeadings`
+ * matches them. The section the cut fell in is included: its tail was not shown.
+ */
+const unreadHeadings = async (
+  text: string,
+  shownChars: number
+): Promise<string[]> => {
+  const [all, shown] = await Promise.all([
+    splitByHeadings(text, "markdown"),
+    splitByHeadings(text.slice(0, shownChars), "markdown"),
+  ]);
+  const paths = all
+    .slice(Math.max(shown.length - 1, 0))
+    .map((section) => section.headingPath)
+    .filter((path): path is string => path !== null);
+  return [...new Set(paths)].slice(0, MAX_UNREAD_HEADINGS);
+};
+
+const continuationNote = (memoryId: number, unread: string[]): string =>
+  unread.length > 0
+    ? `\n\nThe page is saved as memory #${memoryId}. Sections not fully shown above, to pass to ` +
+      `\`get_memory\` as \`focusHeadings\`:\n${unread.map((path) => `- ${path}`).join("\n")}`
+    : `\n\nThe page is saved as memory #${memoryId}; \`search_memory\` finds passages past the cut.`;
 
 /**
  * Records every fetched page as a `source`, keyed on URL. Never fails the fetch: a memory
@@ -179,16 +221,16 @@ const recordSource = async (
   context: WritingToolContext,
   page: FetchedPage,
   signal: AbortSignal | undefined
-): Promise<void> => {
+): Promise<{ id: number; text: string } | null> => {
   const trimmed = page.text.trim();
   // a cut inside a code fence would turn the rest of the page into code, or code into prose
   const text =
     trimmed.length > SOURCE_MAX_CHARS
       ? closeOpenFence(trimmed.slice(0, SOURCE_MAX_CHARS))
       : trimmed;
-  if (text.length === 0) return;
+  if (text.length === 0) return null;
   try {
-    await context.memory.save(
+    const saved = await context.memory.save(
       {
         kind: "source",
         title: page.title?.trim() || hostnameOf(page.url),
@@ -197,11 +239,13 @@ const recordSource = async (
       },
       signal
     );
+    return { id: saved.id, text };
   } catch (error) {
     // origin and path only: a query string may carry a signed token or a personal id
     reportError(error, "Could not record a fetched page as a source memory", {
       page: pageLocationOf(page.url),
     });
+    return null;
   }
 };
 

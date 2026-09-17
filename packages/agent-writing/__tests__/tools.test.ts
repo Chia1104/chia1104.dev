@@ -207,6 +207,51 @@ describe("fetchUrlTool source trail", () => {
     expect(second?.content.endsWith("yyy")).toBe(true);
   });
 
+  it("names the memory and the sections past the cut when a page is truncated", async () => {
+    const context = createContext();
+    const section = (title: string) => `## ${title}\n\n${"word ".repeat(1500)}`;
+    context.web = createFakeWebPort({
+      pages: {
+        "https://example.com/long": {
+          url: "https://example.com/long",
+          text: ["Intro", "Setup", "Caveats", "Reference"]
+            .map(section)
+            .join("\n\n"),
+        },
+        "https://example.com/short": {
+          url: "https://example.com/short",
+          text: section("Intro"),
+        },
+      },
+    });
+
+    const long = await fetchUrlTool(context).execute("c1", {
+      url: "https://example.com/long",
+    });
+    const short = await fetchUrlTool(context).execute("c2", {
+      url: "https://example.com/short",
+    });
+
+    // the cut falls inside "Caveats": its tail and everything after it are unread
+    expect(long.details).toMatchObject({
+      truncated: true,
+      memoryId: context.memory.all[0]?.id,
+      unreadHeadings: ["Caveats", "Reference"],
+    });
+    expect(long.content[0]).toMatchObject({
+      text: expect.stringContaining(
+        `saved as memory #${context.memory.all[0]?.id}`
+      ),
+    });
+    expect(short.details).toMatchObject({
+      truncated: false,
+      unreadHeadings: [],
+    });
+    expect(short.content[0]).toMatchObject({
+      text: expect.not.stringContaining("saved as memory"),
+    });
+  });
+
   it("never lets the trail fail the fetch", async () => {
     const context = createContext();
     context.web = createFakeWebPort({
