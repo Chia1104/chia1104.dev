@@ -1,6 +1,7 @@
 import type {
   ContentToolContext,
   PostFeedType,
+  SearchMatch,
 } from "@chia/agent-content/types";
 import type {
   AgentMemoryKind,
@@ -236,9 +237,8 @@ export interface MemorySearchInput {
 }
 
 export interface MemoryHit extends MemorySummary {
-  snippet: string;
-  /** Heading trail of the matched chunk, e.g. `"Setup > Install"`; null for a card hit. */
-  headingPath: string | null;
+  /** The places in the memory that matched, best first; never empty. */
+  matches: SearchMatch[];
 }
 
 export interface MemoryDetail extends MemorySummary {

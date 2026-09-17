@@ -193,13 +193,13 @@ Callers cannot choose the embedding model. Server-side provider configuration co
 ```text
 chunk hits
   → group by source_type + source_id
-  → sum the top three chunks with decay weights 1, 1/4, 1/16
-  → retain the highest-scoring chunk for citation and preview
+  → sum the top three chunks with decay weights 1, 1/10, 1/100
+  → keep up to five chunks, best first, each covering a section the ones before it do not
   → sort and trim to limit
   → adapter.hydrate restores title, description, href and locale in batches
 ```
 
-The best chunk dominates the score while other hits add limited breadth. This prevents a long document with many ordinary matches from outranking a short document with one highly relevant match.
+The best chunk dominates the score while other hits add limited breadth. Scoring and keeping are separate: a second fragment of one section raises the score but gives nowhere new to read. A chunk reports every section it covers, because small sections are packed into one chunk and `heading_path` holds only the first. The kept chunks reach an agent as `matches`, so one search shows every matched section of a resource and the agent does not search again to find the next one. This prevents a long document with many ordinary matches from outranking a short document with one highly relevant match.
 
 `hydrate` must use the same deletion and visibility rules as `buildChunks`. If they disagree, a matched resource can disappear during hydration.
 

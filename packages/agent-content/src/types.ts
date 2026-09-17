@@ -13,10 +13,15 @@ export interface PostSearchHit {
   /** The page on the public site; the only link an agent should give for the hit. */
   url: string;
   title: string;
-  /** Best-matching fragment: a BM25 snippet, or the summary when there is none. */
+  /** The places in the post that matched, best first; never empty. */
+  matches: SearchMatch[];
+}
+
+/** One matched place in a resource. */
+export interface SearchMatch {
+  /** Heading trails of the sections the matched chunk covers, as stored, e.g. `"Setup > Install"`; empty on a card. */
+  headingPaths: string[];
   snippet: string;
-  /** Heading trail of the matched chunk, as stored, e.g. `"Setup > Install"`. */
-  headingPath?: string;
 }
 
 export interface PostListItem {

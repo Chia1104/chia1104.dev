@@ -81,8 +81,7 @@ export class InMemoryMemoryPort implements MemoryPort {
       .slice(0, input.limit)
       .map((row) => ({
         ...summaryOf(row),
-        snippet: row.content,
-        headingPath: null,
+        matches: [{ headingPaths: [], snippet: row.content }],
       }));
     return Promise.resolve(hits);
   }

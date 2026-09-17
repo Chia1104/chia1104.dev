@@ -73,7 +73,7 @@ const build = (settings: Partial<AgentSessionSettings> = {}): Fixture => {
             locale: "en",
             url: "http://localhost:3000/en-US/posts/existing-post",
             title: "An existing post",
-            snippet: "…",
+            matches: [{ headingPaths: [], snippet: "…" }],
           },
         ],
         posts: [

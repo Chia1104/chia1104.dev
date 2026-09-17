@@ -41,7 +41,7 @@ const normaliseHits = (
     feedId: hit.feedId,
     title: hit.summary.title,
     excerpt:
-      stripHighlight(hit.bestChunk.snippet) || hit.summary.description || "",
+      stripHighlight(hit.chunks[0]?.snippet) || hit.summary.description || "",
   })) ?? [];
 
 const SearchForm = ({ isOpen, onOpenChange }: SearchFormProps) => {

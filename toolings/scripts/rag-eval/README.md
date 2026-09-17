@@ -14,7 +14,7 @@ improvement from a regression.
 ## Usage
 
 Needs a database holding the real corpus with current embeddings and, for
-`semantic` / `hybrid`, `OPENAI_API_KEY` in `.env.global`.
+`semantic` / `hybrid`, `EMBEDDING_API_KEY` in `.env.global`.
 
 ```bash
 pnpm --filter rag-eval eval                    # all modes, all queries
@@ -49,11 +49,20 @@ pnpm --filter rag-eval eval "db-url=<local…/chia-eval>" out=reports/after.json
 
 - The per-query table shows the rank of the first expected slug per mode
   (`-` = not in the top 10).
+- `cite` is whether the hit's best chunk sits under the query's
+  `expectedHeading`; `cite@3` is whether any chunk the hit returned does, which
+  is what an agent reading the hit's `matches` can reach.
 - `R@K` is averaged over the query set; with single-expected queries it is the
   fraction of queries whose answer appears in the top K.
-- `R@5 by kind` is the actionable slice: `paraphrase` measures the semantic
-  path, `term` the lexical path, and `heading` the known weak case where the
-  answer sits under a heading whose words the section body does not repeat.
+- `cover` is the share of a `multi` query's `expectedHeadings` that the hit's
+  chunks reach (shown per query as `1 2/3`: rank, then sections reached). It is
+  the number to watch when changing how many chunks a hit keeps.
+- `R@1 by kind` and `R@5 by kind` are the actionable slices: `paraphrase`
+  measures the semantic path, `term` the lexical path, `heading` the case where
+  the answer sits under a heading whose words the section body does not repeat,
+  `confusable` whether the right post beats its topical neighbours (read R@1;
+  R@5 saturates), and `cross` a query in one language against the other
+  locale, which bm25 is expected to miss.
 
 ## Maintaining the golden set
 

@@ -17,9 +17,9 @@ import {
 } from "@chia/db/repos/feeds";
 import type { Locale } from "@chia/db/types";
 import { feedUrl } from "@chia/utils/config";
-import { truncateEnd } from "@chia/utils/format";
 
 import { searchFeedsService } from "../feeds/search.service";
+import { toSearchMatches } from "../rag/search.service";
 
 /**
  * Reuses `searchFeedsService` and `@chia/db/repos/feeds` so an agent reads exactly what
@@ -36,16 +36,6 @@ export interface CreateContentReadPortOptions {
   authorId: string;
   visibility: ContentVisibility;
 }
-
-/**
- * BM25 snippets come back with `<b>` markers for UI highlighting; the agent
- * reads them as prose, so strip the markup rather than leaking it into a prompt.
- */
-const stripHighlight = (snippet: string | null): string =>
-  snippet?.replaceAll(/<\/?b>/g, "") ?? "";
-
-/** A chunk is up to ~512 tokens; a search hit only needs enough to orient. */
-const SNIPPET_MAX_CHARS = 500;
 
 export const createContentReadPort = (
   options: CreateContentReadPortOptions
@@ -76,14 +66,7 @@ export const createContentReadPort = (
           locale,
           url: feedUrl({ type: item.type, slug: item.slug, locale }),
           title: item.summary.title,
-          // hybrid hits carry no highlighted snippet (ParadeDB cannot combine one with the
-          // fused query), so fall back to the matched chunk's text.
-          snippet:
-            stripHighlight(item.bestChunk.snippet) ||
-            truncateEnd(item.bestChunk.content, SNIPPET_MAX_CHARS) ||
-            item.summary.description ||
-            "",
-          headingPath: item.bestChunk.headingPath ?? undefined,
+          matches: toSearchMatches(item.chunks),
         };
       });
     },

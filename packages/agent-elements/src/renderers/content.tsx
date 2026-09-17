@@ -16,12 +16,16 @@ import type { ToolRenderer, ToolRenderers } from "../tool-call.tsx";
  * schema is loose and optional-heavy; anything that fails to parse falls back to the JSON view.
  */
 
+const matchSchema = z.object({
+  headingPaths: z.array(z.string()).optional(),
+  snippet: z.string().optional(),
+});
+
 const hitSchema = z.object({
   slug: z.string(),
   locale: z.string(),
   title: z.string(),
-  snippet: z.string().optional(),
-  headingPath: z.string().optional(),
+  matches: z.array(matchSchema).optional(),
 });
 
 const searchDetails = z.compile(z.object({ hits: z.array(hitSchema) }));
@@ -98,11 +102,16 @@ const SearchPosts: ToolRenderer = ({ tool }) => {
       {parsed.data.hits.map((hit, index) => (
         <Row
           key={`${hit.slug}:${hit.locale}:${index}`}
-          meta={[hit.locale, hit.headingPath].filter(Boolean).join(" · ")}
+          meta={[
+            hit.locale,
+            ...(hit.matches ?? []).flatMap((m) => m.headingPaths ?? []),
+          ]
+            .filter(Boolean)
+            .join(" · ")}
           title={hit.title}>
-          {hit.snippet ? (
+          {hit.matches?.[0]?.snippet ? (
             <p className="text-muted line-clamp-2 pl-5.5 text-xs leading-relaxed">
-              {hit.snippet}
+              {hit.matches[0].snippet}
             </p>
           ) : null}
         </Row>
