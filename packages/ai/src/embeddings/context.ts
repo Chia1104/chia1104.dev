@@ -22,7 +22,7 @@ import { estimateEmbeddingTokens } from "./utils.ts";
 /** Shared across all documents in one request. */
 export const DEFAULT_CONTEXT_TOKEN_BUDGET = 24_000;
 
-/** Cap so one document cannot starve the rest. */
+/** Cap so one document cannot starve the ones after it; the last document has none and takes what remains. */
 const MAX_SHARE_PER_DOCUMENT = 0.6;
 
 export type ContextDetail = "full" | "sections" | "outline";
@@ -185,17 +185,19 @@ export const buildDocumentContext = async (
   const droppedSlugs: string[] = [];
   let totalTokens = 0;
 
-  for (const input of inputs) {
+  for (const [index, input] of inputs.entries()) {
     const remaining = budget - totalTokens;
     if (remaining <= 0) {
       droppedSlugs.push(input.slug);
       continue;
     }
-    // No single document may starve the ones after it
-    const allowance = Math.min(
-      remaining,
-      Math.max(1, Math.floor(budget * MAX_SHARE_PER_DOCUMENT))
-    );
+    const allowance =
+      index === inputs.length - 1
+        ? remaining
+        : Math.min(
+            remaining,
+            Math.max(1, Math.floor(budget * MAX_SHARE_PER_DOCUMENT))
+          );
 
     const sections = await buildSectionsView(input, allowance, encoding);
     const outlineView = await buildOutlineView(input);

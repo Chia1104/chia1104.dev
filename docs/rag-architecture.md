@@ -217,7 +217,7 @@ The best chunk dominates the score while other hits add limited breadth. This pr
 full text → sections prioritizing matched headings → summary + outline
 ```
 
-One document may use at most 60% of the total budget. If even the outline does not fit, the outline is truncated instead of dropping the document entirely.
+Every document but the last may use at most 60% of the total budget, so it cannot starve the ones after it; the last one, or a lone document, takes whatever remains. If even the outline does not fit, the outline is truncated instead of dropping the document entirely.
 
 Anchors must be computed from the complete original document before filtering to retained headings. Generating slugs from a subset would break the `-1` suffix assigned to repeated headings.
 
