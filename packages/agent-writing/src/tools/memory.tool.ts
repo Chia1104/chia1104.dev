@@ -4,7 +4,11 @@ import { defineTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 
-import type { MemoryHit, WritingToolContext } from "../types.ts";
+import type {
+  MemoryFreshness,
+  MemoryHit,
+  WritingToolContext,
+} from "../types.ts";
 
 import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
 
@@ -194,13 +198,24 @@ export const searchMemoryTool = defineTool(
 const formatHit = (hit: MemoryHit, index: number): string => {
   const heading = `${index + 1}. [${hit.kind}] **${hit.title}** (#${hit.id})`;
   const source = hit.sourceUrl ? `\n   <${hit.sourceUrl}>` : "";
+  const freshness = freshnessNote(hit);
   const matches = hit.matches
     .map(
       (match) =>
         `\n   ${match.headingPaths.length > 0 ? `at: ${match.headingPaths.join(" | ")}\n   ` : ""}${match.snippet}`
     )
     .join("");
-  return `${heading}${source}${matches}`;
+  return `${heading}${source}${freshness ? `\n   ${freshness}` : ""}${matches}`;
+};
+
+/** What a reader must know before trusting the memory to describe its page as it is now. */
+const freshnessNote = (memory: MemoryFreshness): string | null => {
+  if (memory.sourceChangedAt) {
+    return `Its source page changed on ${memory.sourceChangedAt.slice(0, 10)}, after this fact was written: read the page again before relying on it.`;
+  }
+  return memory.fetchedAt
+    ? `Fetched ${memory.fetchedAt.slice(0, 10)}; \`fetch_url\` again if the answer depends on the page being current.`
+    : null;
 };
 
 export const getMemorySpec = {
@@ -254,8 +269,10 @@ export const getMemoryTool = defineTool(
     const body = document?.text ?? content;
     const detail = document?.detail ?? "full";
 
+    const freshness = freshnessNote(memory);
     return textResult(
       `# [${memory.kind}] ${memory.title}\n${memory.sourceUrl ? `<${memory.sourceUrl}>\n` : ""}` +
+        `${freshness ? `${freshness}\n` : ""}` +
         `(${detail}, ${totalTokens} tokens)\n\n${body}\n\n${jsonBlock(meta)}`,
       { ...meta, detail, contentTokens: totalTokens }
     );

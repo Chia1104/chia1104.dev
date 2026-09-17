@@ -1,5 +1,6 @@
 import type {
   MemoryDetail,
+  MemoryFreshness,
   MemoryHit,
   MemoryPort,
   MemorySummary,
@@ -9,6 +10,7 @@ import type { DB } from "@chia/db/client";
 import {
   getAgentMemories,
   getAgentMemory,
+  getChangedFactSources,
   listActiveAgentLessons,
   listAgentMemoriesBySession,
 } from "@chia/db/repos/agent/memory";
@@ -38,6 +40,14 @@ const summaryOf = (row: AgentMemory): MemorySummary => ({
   kind: row.kind,
   title: row.title,
   sourceUrl: row.sourceUrl,
+});
+
+const freshnessOf = (
+  row: AgentMemory,
+  changedSources: Map<number, Date>
+): MemoryFreshness => ({
+  fetchedAt: row.fetchedAt?.toISOString() ?? null,
+  sourceChangedAt: changedSources.get(row.id)?.toISOString() ?? null,
 });
 
 export interface CreateAgentMemoryPortOptions {
@@ -113,6 +123,10 @@ export const createAgentMemoryPort = (
         items.map((item) => item.sourceId)
       );
       const rowsById = new Map(rows.map((row) => [row.id, row]));
+      const changedSources = await getChangedFactSources(
+        db,
+        rows.map((row) => row.id)
+      );
 
       return items.flatMap((item) => {
         const row = rowsById.get(item.sourceId);
@@ -120,6 +134,7 @@ export const createAgentMemoryPort = (
           ? [
               {
                 ...summaryOf(row),
+                ...freshnessOf(row, changedSources),
                 matches: toSearchMatches(item.chunks),
               },
             ]
@@ -132,6 +147,7 @@ export const createAgentMemoryPort = (
       if (!row || row.deletedAt !== null) return null;
       return {
         ...summaryOf(row),
+        ...freshnessOf(row, await getChangedFactSources(db, [row.id])),
         status: row.status,
         content: row.content,
         createdAt: row.createdAt.toISOString(),

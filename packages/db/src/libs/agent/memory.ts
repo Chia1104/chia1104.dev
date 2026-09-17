@@ -3,12 +3,14 @@ import {
   asc,
   desc,
   eq,
+  gt,
   ilike,
   inArray,
   isNull,
   or,
   sql,
 } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 import type { DB } from "../../client.ts";
 import { agentMemories } from "../../schemas/schema.ts";
@@ -236,6 +238,10 @@ export const upsertSourceMemory = async (
   db: DB,
   input: UpsertSourceMemoryDTO
 ): Promise<{ id: number; changed: boolean; updatedAt: Date }> => {
+  // The database clock, as on every other row: a fact is stale when its source moved after it.
+  // `statement_timestamp()` is one instant per statement, so an untouched `updated_at` cannot equal it.
+  const now = sql`statement_timestamp()`;
+  const differs = sql`${agentMemories.title} is distinct from excluded.title or ${agentMemories.content} is distinct from excluded.content`;
   const [written] = await db
     .insert(agentMemories)
     .values({
@@ -244,36 +250,59 @@ export const upsertSourceMemory = async (
       content: input.content,
       sourceUrl: input.sourceUrl,
       sessionId: input.sessionId ?? null,
+      fetchedAt: now,
+      updatedAt: now,
     })
     .onConflictDoUpdate({
       target: agentMemories.sourceUrl,
       targetWhere: sql`${agentMemories.kind} = '${sql.raw(AGENT_MEMORY_KIND.Source)}' and ${agentMemories.deletedAt} is null`,
+      // Every fetch is recorded; an identical page keeps its row otherwise, `updated_at` included.
       set: {
-        title: input.title,
-        content: input.content,
-        updatedAt: new Date(),
+        title: sql`excluded.title`,
+        content: sql`case when ${differs} then excluded.content else ${agentMemories.content} end`,
+        updatedAt: sql`case when ${differs} then ${now} else ${agentMemories.updatedAt} end`,
+        fetchedAt: now,
       },
-      setWhere: sql`${agentMemories.title} is distinct from excluded.title or ${agentMemories.content} is distinct from excluded.content`,
     })
-    .returning({ id: agentMemories.id, updatedAt: agentMemories.updatedAt });
-  if (written) {
-    return { id: written.id, updatedAt: written.updatedAt, changed: true };
-  }
+    .returning({
+      id: agentMemories.id,
+      updatedAt: agentMemories.updatedAt,
+      changed: sql<boolean>`${agentMemories.updatedAt} = ${agentMemories.fetchedAt}`,
+    });
+  if (!written) throw new Error("Source memory was not upserted.");
 
-  // the conflict target skipped the update: the stored page is identical
-  const [existing] = await db
-    .select({ id: agentMemories.id, updatedAt: agentMemories.updatedAt })
+  return written;
+};
+
+/**
+ * Facts whose source page changed after they were last written, keyed by fact id with the
+ * instant of that change. A fact and its source share `source_url`.
+ */
+export const getChangedFactSources = async (
+  db: DB,
+  ids: readonly number[]
+): Promise<Map<number, Date>> => {
+  if (ids.length === 0) return new Map();
+  const source = alias(agentMemories, "source");
+  const rows = await db
+    .select({ id: agentMemories.id, changedAt: source.updatedAt })
     .from(agentMemories)
-    .where(
+    .innerJoin(
+      source,
       and(
-        eq(agentMemories.sourceUrl, input.sourceUrl),
-        eq(agentMemories.kind, AGENT_MEMORY_KIND.Source),
-        live()
+        eq(source.kind, AGENT_MEMORY_KIND.Source),
+        eq(source.sourceUrl, agentMemories.sourceUrl),
+        isNull(source.deletedAt),
+        gt(source.updatedAt, agentMemories.updatedAt)
       )
     )
-    .limit(1);
-  if (!existing) throw new Error("Source memory was not upserted.");
-  return { id: existing.id, updatedAt: existing.updatedAt, changed: false };
+    .where(
+      and(
+        inArray(agentMemories.id, [...ids]),
+        eq(agentMemories.kind, AGENT_MEMORY_KIND.Fact)
+      )
+    );
+  return new Map(rows.map((row) => [row.id, row.changedAt]));
 };
 
 export interface AgentMemorySummary {

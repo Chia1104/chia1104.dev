@@ -33,6 +33,10 @@ export const createFakeContentReadPort = <
           : post.feedId === input.feedId
       ) ?? null
     ),
-  listPosts: () => Promise.resolve(options.list ?? []),
+  listPosts: () =>
+    Promise.resolve({
+      posts: options.list ?? [],
+      total: options.list?.length ?? 0,
+    }),
   listTags: () => Promise.resolve(options.tags ?? []),
 });
