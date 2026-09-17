@@ -9,9 +9,13 @@
     "lint:fix": "oxlint --fix",
     "clean": "git clean -xdf .turbo node_modules .cache",
     "eval": "tsx --env-file=../../../.env.global index.ts",
-    "reindex": "tsx --env-file=../../../.env.global reindex.ts"
+    "reindex": "tsx --env-file=../../../.env.global reindex.ts",
+    "eval:agent": "tsx --env-file=../../../.env.global agent.ts"
   },
   "devDependencies": {
+    "@chia/agent-content": "workspace:*",
+    "@chia/agent-public": "workspace:*",
+    "@chia/agent-runtime": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/services": "workspace:*",

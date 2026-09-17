@@ -25,7 +25,7 @@ import { CONTENT_TOOL_INFO_BY_NAME, CONTENT_TOOL_NAMES } from "./registry.ts";
  * Token budget for one `get_post` call, shared across the post's locales. Tokens rather than
  * characters: the same character count is ~3x the tokens in Chinese as in English.
  */
-const POST_BODY_TOKEN_BUDGET = 12_000;
+export const POST_BODY_TOKEN_BUDGET = 12_000;
 
 export const searchPostsSpec = {
   name: CONTENT_TOOL_NAMES.searchPosts,
