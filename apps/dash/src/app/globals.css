@@ -43,8 +43,8 @@
   /* The draft editor's change bar: Monaco places these in its line-decorations lane. */
   .monaco-editor .draft-change-added,
   .monaco-editor .draft-change-modified {
-    width: 3px !important;
-    margin-left: 3px;
+    width: 4px !important;
+    margin-left: 12px;
   }
   .monaco-editor .draft-change-added {
     background: var(--success);
@@ -56,11 +56,11 @@
   .monaco-editor .draft-change-deleted {
     width: 0 !important;
     height: 0 !important;
-    margin-left: 3px;
-    margin-top: -4px;
-    border-top: 4px solid transparent;
-    border-bottom: 4px solid transparent;
-    border-left: 5px solid var(--danger);
+    margin-left: 12px;
+    margin-top: -5px;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 7px solid var(--danger);
   }
 
   .animated-feature-cards::before {
