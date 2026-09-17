@@ -18,6 +18,7 @@ const { api, repo, hooks } = vi.hoisted(() => ({
   repo: {
     getAgentMemory: vi.fn(),
     getAgentMemories: vi.fn(),
+    getChangedFactSources: vi.fn(async () => new Map<number, Date>()),
     listAgentMemoriesBySession: vi.fn(async () => []),
     listActiveAgentLessons: vi.fn(async () => []),
   },
@@ -57,6 +58,7 @@ const row = (id: number, overrides: { deletedAt?: Date | null } = {}) => ({
   sessionId: SESSION_ID,
   createdAt: new Date("2026-08-01T00:00:00Z"),
   updatedAt: new Date("2026-08-02T00:00:00Z"),
+  fetchedAt: null,
   deletedAt: null,
   ...overrides,
 });
@@ -209,5 +211,18 @@ describe("createAgentMemoryPort", () => {
       content: "body",
       createdAt: "2026-08-01T00:00:00.000Z",
     });
+  });
+
+  it("tells a reader when a fact's source page changed after the fact was written", async () => {
+    repo.getAgentMemory.mockResolvedValueOnce(row(5));
+    repo.getChangedFactSources.mockResolvedValueOnce(
+      new Map([[5, new Date("2026-09-10T00:00:00Z")]])
+    );
+
+    await expect(port.get(5)).resolves.toMatchObject({
+      fetchedAt: null,
+      sourceChangedAt: "2026-09-10T00:00:00.000Z",
+    });
+    expect(repo.getChangedFactSources).toHaveBeenCalledWith(db, [5]);
   });
 });

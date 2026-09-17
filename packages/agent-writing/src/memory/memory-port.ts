@@ -45,7 +45,9 @@ export class InMemoryMemoryPort implements MemoryPort {
         ...existing,
         title: input.title,
         content: input.content,
-        updatedAt: now,
+        // like the Postgres port: every fetch is recorded, the row only moves when the page did
+        updatedAt: changed ? now : existing.updatedAt,
+        fetchedAt: now,
       };
       this.rows.set(existing.id, next);
       return Promise.resolve({ ...summaryOf(next), changed });
@@ -61,6 +63,8 @@ export class InMemoryMemoryPort implements MemoryPort {
       sourceUrl,
       sessionId: this.sessionId,
       supersedesId: input.supersedesId ?? null,
+      fetchedAt: input.kind === "source" ? now : null,
+      sourceChangedAt: null,
       createdAt: now,
       updatedAt: now,
     };
@@ -81,6 +85,8 @@ export class InMemoryMemoryPort implements MemoryPort {
       .slice(0, input.limit)
       .map((row) => ({
         ...summaryOf(row),
+        fetchedAt: row.fetchedAt,
+        sourceChangedAt: row.sourceChangedAt,
         matches: [{ headingPaths: [], snippet: row.content }],
       }));
     return Promise.resolve(hits);

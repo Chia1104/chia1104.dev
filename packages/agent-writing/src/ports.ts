@@ -37,6 +37,7 @@ export type {
   GitHubTree,
   GitHubTreeEntry,
   MemoryDetail,
+  MemoryFreshness,
   MemoryHit,
   MemoryKind,
   MemorySearchInput,

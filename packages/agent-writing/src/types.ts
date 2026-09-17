@@ -236,12 +236,20 @@ export interface MemorySearchInput {
   limit: number;
 }
 
-export interface MemoryHit extends MemorySummary {
+/** How far a memory can be trusted to describe its page as it is now. */
+export interface MemoryFreshness {
+  /** When a `source` page was last fetched; null on other kinds. */
+  fetchedAt: string | null;
+  /** When the page behind a `fact` changed after the fact was written; null while it still stands. */
+  sourceChangedAt: string | null;
+}
+
+export interface MemoryHit extends MemorySummary, MemoryFreshness {
   /** The places in the memory that matched, best first; never empty. */
   matches: SearchMatch[];
 }
 
-export interface MemoryDetail extends MemorySummary {
+export interface MemoryDetail extends MemorySummary, MemoryFreshness {
   status: MemoryStatus;
   content: string;
   createdAt: string;

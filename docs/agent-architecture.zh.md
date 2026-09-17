@@ -343,6 +343,8 @@ Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts`
 
 所有 memory write 都經過 `packages/services/memory/write.service.ts`，並在需要時排程 RAG indexing。只有 live、active memory 會進索引。詳見 [RAG 架構](./rag-architecture.zh.md#6-agent-memory-resource)。
 
+Source 以 `fetched_at` 記錄每一次抓取，`updated_at` 只在頁面內容改變時才會移動。Fact 與它的 source 共用 `source_url`；source 的 `updated_at` 晚於 fact 自己的 `updated_at` 時，fact 即為過期。過期狀態在讀取時推導，不另外儲存。兩者都會出現在每個 hit 與每次讀取中，模型因此知道頁面有多舊、哪個 fact 需要重新確認。系統不會定期重抓；只有某個 turn 再次抓取該 URL 時才會發現變更。
+
 Fact 與 source 只透過可見的 `search_memory`、`get_memory` tool call 進入模型。Volatile context 會列出本 session 已保存 memory 的受限識別資訊。Active lesson title 則固定加入，因為它們是 standing preferences。
 
 Lesson 有兩個作者、一道閘門。Operator 糾正模型、附理由拒絕 commit 或說出常駐偏好時，模型在 turn 內以 `propose_lesson` 提案；其餘由 `memoryConsolidationWorkflow` 事後提案。兩者都以 `pending` 落地，未經人員審核的 model output 不會成為常駐 prompt instruction。提案可以取代一條 active lesson；核准時在同一個 transaction 裡封存被取代的那條，同一個偏好不會有兩個版本同時進 prompt；若那條已被另一個核准的修訂取代，核准會被拒絕。之後的 session 若重複回饋到一條 pending lesson，run 會加強它而不是新增一條，待審清單依這個計數排序。
