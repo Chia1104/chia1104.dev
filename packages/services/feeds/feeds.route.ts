@@ -2,6 +2,7 @@ import { ApiKeyScope } from "@chia/auth/apikey";
 import { CallerTier } from "@chia/auth/tier";
 import { listWritingSessionIdsForDraft } from "@chia/db/repos/agent";
 import {
+  getFeedDraftRevision,
   listFeedDraftRevisions,
   pinFeedDraftRevision,
   listOpenFeedDrafts,
@@ -439,6 +440,17 @@ export const listFeedDraftRevisionsRoute = contractOS.feeds["draft:revisions"]
     })
   );
 
+export const getFeedDraftRevisionRoute = contractOS.feeds["draft:revision"]
+  .use(rootWriteGuard)
+  .handler(async (opts) => {
+    const revision = await getFeedDraftRevision(opts.context.db, {
+      ...opts.input,
+      userId: opts.context.caller.adminId,
+    });
+    if (!revision) throw opts.errors.NOT_FOUND();
+    return { ...toRevisionOutput(revision), snapshot: revision.snapshot };
+  });
+
 export const pinFeedDraftRevisionRoute = contractOS.feeds["draft:pin"]
   .use(rootWriteGuard)
   .handler(async (opts) => {
@@ -499,6 +511,7 @@ export const feedsRouter = contractOS.feeds.router({
   "draft:apply": applyFeedDraftRoute,
   "draft:discard": discardFeedDraftRoute,
   "draft:revisions": listFeedDraftRevisionsRoute,
+  "draft:revision": getFeedDraftRevisionRoute,
   "draft:pin": pinFeedDraftRevisionRoute,
   "draft:restore": restoreFeedDraftRevisionRoute,
   "draft:watch": watchFeedDraftRoute,

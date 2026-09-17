@@ -555,6 +555,22 @@ export const listFeedDraftRevisionsContract = oc
   )
   .output(z.object({ items: z.array(feedDraftRevisionSchema) }));
 
+/** One kept state with the content it holds, for showing what differs from it. */
+export const getFeedDraftRevisionContract = oc
+  .errors(DRAFT_ERRORS)
+  .input(z.object({ draftId: z.number().int(), revisionId: z.number().int() }))
+  .output(
+    feedDraftRevisionSchema.extend({
+      snapshot: feedDraftSchema.pick({
+        slug: true,
+        type: true,
+        defaultLocale: true,
+        mainImage: true,
+        translations: true,
+      }),
+    })
+  );
+
 /** Keeps a restore point out of pruning, optionally under a name. Commits are kept anyway and answer `NOT_FOUND`. */
 export const pinFeedDraftRevisionContract = oc
   .errors(DRAFT_ERRORS)
@@ -619,6 +635,7 @@ export const feedsContract = {
   "draft:apply": applyFeedDraftContract,
   "draft:discard": discardFeedDraftContract,
   "draft:revisions": listFeedDraftRevisionsContract,
+  "draft:revision": getFeedDraftRevisionContract,
   "draft:pin": pinFeedDraftRevisionContract,
   "draft:restore": restoreFeedDraftRevisionContract,
   "draft:watch": watchFeedDraftContract,

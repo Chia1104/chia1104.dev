@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { applyEdits } from "../src/text";
-import { toEdits } from "../src/text/diff";
+import { lineChangesOf, toEdits } from "../src/text/diff";
 
 const land = (content: string, before: string, after: string) =>
   applyEdits(content, toEdits(before, after), { exactOnly: true });
@@ -106,5 +106,45 @@ describe("toEdits", () => {
         exactOnly: true,
       })
     ).toMatchObject({ ok: false, reason: "not_found" });
+  });
+});
+
+describe("lineChangesOf", () => {
+  const before = "one\ntwo\nthree\nfour\n";
+
+  it("is empty for equal texts", () => {
+    expect(lineChangesOf(before, before)).toEqual([]);
+  });
+
+  it("marks added lines where they now are", () => {
+    expect(
+      lineChangesOf(before, "one\ntwo\nnew a\nnew b\nthree\nfour\n")
+    ).toEqual([{ kind: "added", startLine: 3, endLine: 4 }]);
+  });
+
+  it("marks a replaced run as modified over the lines that replaced it", () => {
+    expect(lineChangesOf(before, "one\nTWO\nTWO again\nthree\nfour\n")).toEqual(
+      [{ kind: "modified", startLine: 2, endLine: 3 }]
+    );
+  });
+
+  it("marks a deletion on the line that follows it, or below the last line", () => {
+    expect(lineChangesOf(before, "one\nfour\n")).toEqual([
+      { kind: "deleted", startLine: 2, endLine: 2 },
+    ]);
+    expect(lineChangesOf("one\ntwo\nthree", "one")).toEqual([
+      { kind: "modified", startLine: 1, endLine: 1 },
+    ]);
+    expect(lineChangesOf("one\ntwo\nthree\n", "one\n")).toEqual([
+      { kind: "deleted", startLine: 2, endLine: 2 },
+    ]);
+  });
+
+  it("reports several changes in document order", () => {
+    expect(lineChangesOf(before, "zero\none\ntwo!\nthree\n")).toEqual([
+      { kind: "added", startLine: 1, endLine: 1 },
+      { kind: "modified", startLine: 3, endLine: 3 },
+      { kind: "deleted", startLine: 5, endLine: 5 },
+    ]);
   });
 });

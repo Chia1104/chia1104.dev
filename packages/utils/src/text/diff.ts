@@ -72,3 +72,50 @@ export const toEdits = (before: string, after: string): ContentEdit[] => {
   }
   return edits;
 };
+
+export interface LineChange {
+  /** `added` and `modified` cover lines of `after`; `deleted` marks the line that lines of `before` are gone above. */
+  kind: "added" | "modified" | "deleted";
+  /** 1-based, in `after`. */
+  startLine: number;
+  endLine: number;
+}
+
+/** How `after` differs from `before`, by line, for marking a gutter the way an editor's change bar does. */
+export const lineChangesOf = (before: string, after: string): LineChange[] => {
+  if (before === after) return [];
+  const changes: LineChange[] = [];
+  const lastLine = after.split("\n").length;
+  let line = 1;
+  const parts = diffLines(before, after);
+  for (let index = 0; index < parts.length; index += 1) {
+    const part = parts[index]!;
+    const count = part.count ?? 0;
+    if (!part.added && !part.removed) {
+      line += count;
+      continue;
+    }
+    const next = parts[index + 1];
+    if (part.removed && next?.added) {
+      const added = next.count ?? 0;
+      changes.push({
+        kind: "modified",
+        startLine: line,
+        endLine: line + added - 1,
+      });
+      line += added;
+      index += 1;
+    } else if (part.added) {
+      changes.push({
+        kind: "added",
+        startLine: line,
+        endLine: line + count - 1,
+      });
+      line += count;
+    } else {
+      const at = Math.min(line, lastLine);
+      changes.push({ kind: "deleted", startLine: at, endLine: at });
+    }
+  }
+  return changes;
+};

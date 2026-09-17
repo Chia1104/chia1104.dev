@@ -2,17 +2,21 @@
 
 import { memo } from "react";
 
+import { useQuery } from "@tanstack/react-query";
 import { Controller, useFormContext } from "react-hook-form";
 
 import useTheme from "@chia/ui/utils/use-theme";
 
 import { useDraftSelectionActions } from "@/components/agent/draft-selection-actions";
+import { orpc } from "@/libs/orpc/client";
 
 import type { DraftFormValues } from "./draft-form-schema";
 import { MarkdownEditor } from "./markdown-editor";
 
 export interface DraftEditorTarget {
   draftId: number;
+  /** The commit the post holds, which the editor's change bar compares against; `null` before the first apply. */
+  appliedRevisionId: number | null;
   /** Saves pending edits before the agent reads the draft; `false` when blocked on a conflict. */
   flush: () => Promise<boolean>;
 }
@@ -29,6 +33,20 @@ export const SwitchEditor = memo(
       flush: target.flush,
       locale: activeLocale,
     });
+    // A commit never changes, so one read serves until the next apply moves the pointer.
+    const applied = useQuery(
+      orpc.feeds["draft:revision"].queryOptions({
+        input: {
+          draftId: target.draftId,
+          revisionId: target.appliedRevisionId ?? 0,
+        },
+        enabled: target.appliedRevisionId !== null,
+        staleTime: Infinity,
+      })
+    );
+    const baseline = applied.data
+      ? (applied.data.snapshot.translations[activeLocale]?.content ?? "")
+      : null;
 
     return (
       <div className="relative w-full">
@@ -44,6 +62,7 @@ export const SwitchEditor = memo(
               locale={activeLocale}
               theme={isDarkMode ? "vs-dark" : "light"}
               selectionActions={selectionActions}
+              baseline={baseline}
             />
           )}
         />

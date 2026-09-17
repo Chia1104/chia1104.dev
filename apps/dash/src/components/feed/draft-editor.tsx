@@ -164,7 +164,11 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
           }>
           <EditFields
             feedId={draft.feedId ?? undefined}
-            target={{ draftId: draft.id, flush: autosave.flush }}
+            target={{
+              draftId: draft.id,
+              appliedRevisionId: draft.appliedRevisionId,
+              flush: autosave.flush,
+            }}
           />
         </DraftActions>
       </Form>

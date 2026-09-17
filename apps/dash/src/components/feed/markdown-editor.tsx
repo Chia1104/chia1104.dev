@@ -1,7 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { Button, Skeleton, Spinner } from "@heroui/react";
 import type { OnMount } from "@monaco-editor/react";
@@ -15,6 +21,7 @@ import type {
 } from "monaco-editor";
 
 import { cn } from "@chia/ui/utils/cn.util";
+import { lineChangesOf } from "@chia/utils/text/diff";
 
 import { generateAIContentComplete } from "@/resources/ai.resource";
 
@@ -45,7 +52,19 @@ export interface MarkdownEditorProps {
   height?: string;
   className?: string;
   selectionActions?: readonly EditorSelectionAction[];
+  /**
+   * The text the change bar compares against: what the post holds. `null` or omitted draws
+   * no bar, as for a draft that was never applied, where every line would be new.
+   */
+  baseline?: string | null;
 }
+
+/** Styled in `globals.css`; Monaco only takes class names. */
+const CHANGE_BAR_CLASS = {
+  added: "draft-change-added",
+  modified: "draft-change-modified",
+  deleted: "draft-change-deleted",
+} as const;
 
 /** The selected text with its line range, or `null` when nothing is selected. */
 const readSelection = (
@@ -74,8 +93,38 @@ export const MarkdownEditor = ({
   height = "700px",
   className,
   selectionActions,
+  baseline,
 }: MarkdownEditorProps) => {
   const [aiEnabled, setAiEnabled] = useState(true);
+  // State, not a ref: the change bar is drawn by an effect that has to run once Monaco mounts.
+  const [instance, setInstance] =
+    useState<MonacoEditorNS.IStandaloneCodeEditor | null>(null);
+  const changeBar = useRef<MonacoEditorNS.IEditorDecorationsCollection | null>(
+    null
+  );
+  // Typing stays ahead of the diff; the bar catches up on the next idle render.
+  const compared = useDeferredValue(value);
+
+  useEffect(() => {
+    if (!instance) return;
+    changeBar.current ??= instance.createDecorationsCollection();
+    changeBar.current.set(
+      baseline === null || baseline === undefined
+        ? []
+        : lineChangesOf(baseline, compared).map((change) => ({
+            range: {
+              startLineNumber: change.startLine,
+              startColumn: 1,
+              endLineNumber: change.endLine,
+              endColumn: 1,
+            },
+            options: {
+              isWholeLine: true,
+              linesDecorationsClassName: CHANGE_BAR_CLASS[change.kind],
+            },
+          }))
+    );
+  }, [instance, baseline, compared]);
 
   const debouncedComplete = useAsyncDebouncedCallback(
     async (params: {
@@ -96,6 +145,7 @@ export const MarkdownEditor = ({
 
   const handleMount: OnMount = useCallback(
     (editor, monaco) => {
+      setInstance(editor);
       // Closure flag (not a ref) updated by the content-change listener below.
       let lastChangeWasDeletion = false;
 
