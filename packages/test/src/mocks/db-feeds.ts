@@ -52,6 +52,7 @@ export const getInfiniteFeedsByUserId: Mock = vi
 export const getInfiniteFeeds: Mock = vi
   .fn()
   .mockResolvedValue(mockFeedsResponse);
+export const countFeeds: Mock = vi.fn().mockResolvedValue(mockFeeds.length);
 export const getFeedBySlug: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 export const getFeedById: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 export const getFeedForIndexing: Mock = vi.fn().mockResolvedValue({
@@ -78,6 +79,7 @@ export const searchResources: Mock = vi
 export const feedRepoMocks = {
   getInfiniteFeedsByUserId,
   getInfiniteFeeds,
+  countFeeds,
   getFeedBySlug,
   getFeedById,
   getFeedForIndexing,
@@ -94,6 +96,7 @@ export const feedRepoMocks = {
 export const resetAllDbMocks = () => {
   getInfiniteFeedsByUserId.mockClear();
   getInfiniteFeeds.mockClear();
+  countFeeds.mockClear();
   getFeedBySlug.mockClear();
   getFeedById.mockClear();
   getFeedForIndexing.mockClear();

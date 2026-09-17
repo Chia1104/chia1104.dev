@@ -172,8 +172,36 @@ export const listPostsSpec = {
   name: CONTENT_TOOL_NAMES.listPosts,
   label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.listPosts].label,
   description:
-    "List recent posts, newest first. Each carries the `url` of its page; link with it as given.",
+    "List posts and notes by publication date, newest first, with `total`: how many match in " +
+    "all, beyond the `limit` returned. Filter by type, tag or date range to enumerate or count " +
+    '("how many posts in 2025", "everything tagged react"); search ranks by relevance and ' +
+    "cannot do either. Each post carries the `url` of its page; link with it as given.",
   parameters: Type.Object({
+    type: Type.Optional(
+      StringEnum(["post", "note"], {
+        description: "Only posts or only notes. Omit for both.",
+      })
+    ),
+    tag: Type.Optional(
+      Type.String({
+        description: "Tag slug from `list_tags`.",
+        minLength: 1,
+      })
+    ),
+    createdFrom: Type.Optional(
+      Type.String({
+        description:
+          "Only posts created at or after this ISO date, e.g. `2025-01-01`.",
+        format: "date",
+      })
+    ),
+    createdBefore: Type.Optional(
+      Type.String({
+        description:
+          "Only posts created before this ISO date, e.g. `2026-01-01`.",
+        format: "date",
+      })
+    ),
     limit: Type.Optional(
       Type.Integer({
         description: "Maximum results (1-50).",
@@ -195,13 +223,21 @@ export const listPostsSpec = {
 export const listPostsTool = defineTool(
   listPostsSpec,
   (context: ContentToolContext) => async (_toolCallId, params) => {
-    const posts = await context.content.listPosts({
+    const { posts, total } = await context.content.listPosts({
       limit: params.limit ?? 20,
       published: params.published,
+      type:
+        params.type === "post" || params.type === "note"
+          ? params.type
+          : undefined,
+      tagSlug: params.tag,
+      createdFrom: params.createdFrom,
+      createdBefore: params.createdBefore,
     });
-    return textResult(`${posts.length} post(s):\n\n${jsonBlock(posts)}`, {
-      posts,
-    });
+    return textResult(
+      `${posts.length} of ${total} matching post(s):\n\n${jsonBlock(posts)}`,
+      { posts, total }
+    );
   }
 );
 

@@ -1,5 +1,10 @@
 import { toolResultDetails } from "@chia/agent-runtime/tools";
-import { asJsonArray, asJsonObject, asString } from "@chia/utils/json";
+import {
+  asJsonArray,
+  asJsonObject,
+  asNumber,
+  asString,
+} from "@chia/utils/json";
 
 import { CONTENT_TOOL_NAMES } from "./registry.ts";
 
@@ -25,7 +30,11 @@ export const summarizeContentToolResult = <TResult>(
     }
     case CONTENT_TOOL_NAMES.listPosts: {
       const posts = asJsonArray(details?.posts);
-      return posts ? `${posts.length} post(s).` : "Listed posts.";
+      const total = asNumber(details?.total);
+      if (!posts) return "Listed posts.";
+      return total === undefined
+        ? `${posts.length} post(s).`
+        : `${posts.length} of ${total} post(s).`;
     }
     case CONTENT_TOOL_NAMES.listTags: {
       const tags = asJsonArray(details?.tags);

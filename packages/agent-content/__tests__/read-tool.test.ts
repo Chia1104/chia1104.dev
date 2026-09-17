@@ -6,7 +6,7 @@ import type { ContentReadPort } from "../src/types.ts";
 const createContent = (): ContentReadPort => ({
   searchPosts: vi.fn(() => Promise.resolve([])),
   getPost: vi.fn(() => Promise.resolve(null)),
-  listPosts: vi.fn(() => Promise.resolve([])),
+  listPosts: vi.fn(() => Promise.resolve({ posts: [], total: 0 })),
   listTags: vi.fn(() => Promise.resolve([])),
 });
 

@@ -33,7 +33,15 @@ export interface PostListItem {
   published: boolean;
   defaultLocale: Locale;
   title: string;
+  createdAt: string;
   updatedAt: string;
+}
+
+export interface PostList {
+  /** Newest first, at most `limit`. */
+  posts: PostListItem[];
+  /** How many posts match in all, so a truncated list still answers "how many". */
+  total: number;
 }
 
 export interface PostSnapshot {
@@ -83,6 +91,13 @@ export interface ListPostsInput {
   limit: number;
   /** `true` for published only, `false` for drafts only. Omit for everything the port can see. */
   published?: boolean;
+  /** Omit for posts and notes alike. */
+  type?: PostFeedType;
+  tagSlug?: string;
+  /** ISO instant, inclusive. */
+  createdFrom?: string;
+  /** ISO instant, exclusive. */
+  createdBefore?: string;
 }
 
 /**
@@ -92,7 +107,7 @@ export interface ListPostsInput {
 export interface ContentReadPort {
   searchPosts(input: SearchPostsInput): Promise<PostSearchHit[]>;
   getPost(input: GetPostInput): Promise<PostSnapshot | null>;
-  listPosts(input: ListPostsInput): Promise<PostListItem[]>;
+  listPosts(input: ListPostsInput): Promise<PostList>;
   listTags(): Promise<TagItem[]>;
 }
 
