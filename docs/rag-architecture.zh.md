@@ -217,7 +217,7 @@ chunk hits
 全文 → 命中 heading 優先的 sections → summary + outline
 ```
 
-單一文件最多使用總預算的 60%。連 outline 都放不下時才截斷 outline，不會直接移除整份文件。
+除最後一份外，每份文件最多使用總預算的 60%，避免排擠後面的文件；最後一份（或唯一的一份）可以用完剩餘預算。連 outline 都放不下時才截斷 outline，不會直接移除整份文件。
 
 Anchor 必須先從完整原文計算，再依實際保留的 heading 篩選。直接對子集產生 slug 會破壞重複標題的 `-1` 編號。
 

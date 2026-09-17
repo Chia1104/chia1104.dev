@@ -309,7 +309,7 @@ The writing kind composes host-owned ports:
 
 Only commit-tier tools write live feed data and require approval. Draft and memory writes are reversible. Destructive deletion and image upload are not agent tools.
 
-Web search returns snippets; `fetch_url` performs one page scrape and records the page through `MemoryPort`. Host ports receive the turn abort signal. There is no direct outbound fetch in the domain package.
+Web search returns snippets; `fetch_url` performs one page scrape and records the page through `MemoryPort`. The model sees a bounded head of the page; a cut result names the source memory and the heading paths it did not fully show, so the rest is read with `get_memory` instead of a second fetch. Host ports receive the turn abort signal. There is no direct outbound fetch in the domain package.
 
 ### Connectors
 

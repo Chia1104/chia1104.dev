@@ -21,9 +21,8 @@ const MAX_LESSON_CHARS = 2_000;
 const DEFAULT_SEARCH_LIMIT = 5;
 const MAX_SEARCH_LIMIT = 10;
 /**
- * Token budget for one `get_memory`. A `source` is a whole page; `buildDocumentContext`
- * lets one document take 60% of this, so a long English page returns in full and a Chinese
- * one degrades to matched sections, then an outline.
+ * Token budget for one `get_memory`. A `source` is a whole page: past this it degrades to
+ * matched sections, then an outline.
  */
 const MEMORY_BODY_TOKEN_BUDGET = 8_000;
 

@@ -152,6 +152,30 @@ describe("buildDocumentContext", () => {
     expect(result.droppedSlugs).toEqual([]);
   });
 
+  it("gives a lone document the whole budget", async () => {
+    const content = long(12, 60);
+    const budget = Math.ceil(tokens(content) * 1.2);
+    const result = await buildDocumentContext(
+      [{ slug: "a", locale: "zh-TW", title: "a", content }],
+      { budget }
+    );
+    expect(result.documents[0]?.detail).toBe("full");
+  });
+
+  it("caps every document but the last", async () => {
+    const content = long(12, 60);
+    const budget = Math.ceil(tokens(content) * 1.2);
+    const result = await buildDocumentContext(
+      [
+        { slug: "first", locale: "zh-TW", title: "first", content },
+        { slug: "last", locale: "en", title: "last", content: SHORT },
+      ],
+      { budget }
+    );
+    expect(result.documents[0]?.detail).toBe("sections");
+    expect(result.documents[1]?.detail).toBe("full");
+  });
+
   it("reports documents dropped once the budget is exhausted", async () => {
     const result = await buildDocumentContext(
       [
