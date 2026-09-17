@@ -1,7 +1,7 @@
 ALTER TABLE "chia_feed_draft_revision" ADD COLUMN "content_hash" text;--> statement-breakpoint
 ALTER TABLE "chia_feed_draft" ADD COLUMN "content_hash" text;--> statement-breakpoint
 -- Mirrors `hashFeedDraftSnapshot`: `-` for null, else `+<utf-8 byte length>:<value>`.
-CREATE FUNCTION pg_temp.chia_hash_field(value text) RETURNS text
+CREATE OR REPLACE FUNCTION pg_temp.chia_hash_field(value text) RETURNS text
 LANGUAGE sql IMMUTABLE AS $$
   SELECT CASE WHEN value IS NULL THEN '-' ELSE '+' || octet_length(value) || ':' || value END
 $$;--> statement-breakpoint

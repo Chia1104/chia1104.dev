@@ -36,7 +36,7 @@ WHERE d."applied_revision" IS NOT NULL
     WHERE r."draft_id" = d."id" AND r."kind" = 'commit'
   );--> statement-breakpoint
 -- Mirrors `hashFeedDraftSnapshot`: `-` for null, else `+<utf-8 byte length>:<value>`.
-CREATE FUNCTION pg_temp.chia_hash_field(value text) RETURNS text
+CREATE OR REPLACE FUNCTION pg_temp.chia_hash_field(value text) RETURNS text
 LANGUAGE sql IMMUTABLE AS $$
   SELECT CASE WHEN value IS NULL THEN '-' ELSE '+' || octet_length(value) || ':' || value END
 $$;--> statement-breakpoint
