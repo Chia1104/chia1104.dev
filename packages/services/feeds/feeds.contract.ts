@@ -378,9 +378,15 @@ export const feedDraftChangeSchema = z.object({
 
 export const feedDraftRevisionSchema = z.object({
   id: z.number().int(),
+  /** `commit` is a version applied to the post; `safety` a restore point kept by the write path. */
+  kind: z.enum(["commit", "safety"]),
   revision: z.number().int(),
+  /** Who last wrote the state this row holds. */
   author: z.enum(["operator", "agent"]),
   sessionId: z.string().nullable(),
+  message: z.string().nullable(),
+  pinned: z.boolean(),
+  /** Fields that differ from the row before. */
   changes: z.array(feedDraftChangeSchema),
   contentHash: z.string(),
   createdAt: z.string(),

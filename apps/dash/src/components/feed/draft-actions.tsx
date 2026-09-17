@@ -463,6 +463,7 @@ export const DraftActions = ({
       ) : null}
       <RevisionsDrawer
         draftId={draft.id}
+        currentHash={draft.contentHash}
         isOpen={revisionsOpen}
         onOpenChange={setRevisionsOpen}
         isRestoring={restore.isPending}

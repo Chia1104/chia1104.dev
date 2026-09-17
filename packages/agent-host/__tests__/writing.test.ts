@@ -23,7 +23,7 @@ const repo = vi.hoisted(() => ({
 const drafts = vi.hoisted(() => ({
   getFeedDraft: vi.fn(),
   getFeedDrafts: vi.fn(),
-  listOperatorFeedDraftChanges: vi.fn(async () => []),
+  listFeedDraftChangesSince: vi.fn(async () => []),
   patchFeedDraft: vi.fn(),
 }));
 
@@ -58,6 +58,8 @@ const record = (id: number, userId = "author"): FeedDraftRecord => ({
   revision: 3,
   contentHash: "hash",
   appliedRevision: null,
+  lastAuthor: "operator",
+  lastSessionId: null,
   createdAt: new Date("2026-09-05T00:00:00Z"),
   updatedAt: new Date("2026-09-05T00:00:00Z"),
   translations: {},

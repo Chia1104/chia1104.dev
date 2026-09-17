@@ -134,7 +134,7 @@ export interface DraftStore {
     locale: Locale,
     edits: readonly DraftContentEdit[]
   ): Promise<DraftEditResult>;
-  /** What the operator changed after `afterRevision`, merged per locale. */
+  /** Fields that differ from the draft as it was at `afterRevision`. */
   operatorChangesSince(
     draftId: number,
     afterRevision: number

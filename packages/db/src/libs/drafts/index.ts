@@ -23,13 +23,14 @@ import type {
   FeedDraftAuthor,
   FeedDraftChange,
   FeedDraftRevision,
+  FeedDraftRevisionKind,
   FeedDraftSnapshot,
   FeedDraftTranslationSnapshot,
   FeedType,
   Locale,
 } from "../../schemas/schema.ts";
 import {
-  FEED_DRAFT_AUTHOR,
+  FEED_DRAFT_REVISION_KIND,
   feedDraftRevisions,
   feedDrafts,
   feedDraftTranslations,
@@ -40,7 +41,7 @@ import { FEED_DRAFT_CHANNEL } from "./notice.ts";
 import type { FeedDraftNotice } from "./notice.ts";
 
 /**
- * `feed_draft` with its translations, revision trail and compare-and-set writes. Every write
+ * `feed_draft` with its translations, snapshot trail and compare-and-set writes. Every write
  * runs in one transaction that locks the draft row, so two writers cannot interleave.
  */
 
@@ -55,6 +56,8 @@ export interface FeedDraftRecord extends FeedDraftSnapshot {
   revision: number;
   contentHash: string;
   appliedRevision: number | null;
+  lastAuthor: FeedDraftAuthor;
+  lastSessionId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -80,10 +83,10 @@ export type FeedDraftWriteResult =
   | { status: "conflict"; draft: FeedDraftRecord }
   | { status: "not_found" };
 
-/** Operator saves closer together than this update the newest revision instead of adding one. */
-const OPERATOR_COALESCE_MS = 10 * 60 * 1000;
-/** Restore points kept per draft; older rows are pruned on write. */
-const MAX_REVISIONS_PER_DRAFT = 100;
+/** While one writer keeps writing, a safety point is kept this often. */
+const SAFETY_POINT_INTERVAL_MS = 10 * 60 * 1000;
+/** Unpinned safety points kept per draft; older ones are pruned when one is added. */
+const MAX_SAFETY_POINTS_PER_DRAFT = 100;
 
 const TRANSLATION_FIELDS = [
   "title",
@@ -136,6 +139,8 @@ const toRecord = (
     revision: draft.revision,
     contentHash: draft.contentHash,
     appliedRevision: draft.appliedRevision,
+    lastAuthor: draft.lastAuthor,
+    lastSessionId: draft.lastSessionId,
     createdAt: draft.createdAt,
     updatedAt: draft.updatedAt,
     translations,
@@ -298,84 +303,140 @@ export const listOpenFeedDrafts = async (
   }));
 };
 
-/**
- * Appends a revision, folding it into the newest one when the same operator saved moments
- * ago, and prunes the trail to {@link MAX_REVISIONS_PER_DRAFT}.
- */
-const recordRevision = async (
-  tx: Tx,
-  draft: FeedDraftRecord,
-  writer: FeedDraftWriter,
-  changes: FeedDraftChange[]
-) => {
+/** Fields that differ between two snapshots; `before` absent reads as every field of `after`. */
+export const diffFeedDraftSnapshots = (
+  before: FeedDraftSnapshot | null,
+  after: FeedDraftSnapshot
+): FeedDraftChange[] => {
+  const changes: FeedDraftChange[] = [];
+  const metaFields = META_FIELDS.filter(
+    (field) => !before || before[field] !== after[field]
+  );
+  if (metaFields.length > 0) changes.push({ fields: metaFields });
+
+  // SAFETY: snapshot translations are keyed by Locale.
+  const locales = [
+    ...new Set([
+      ...Object.keys(before?.translations ?? {}),
+      ...Object.keys(after.translations),
+    ]),
+  ] as Locale[];
+  for (const locale of locales) {
+    const previous = before?.translations[locale];
+    const next = after.translations[locale];
+    const fields = TRANSLATION_FIELDS.filter(
+      (field) => (previous?.[field] ?? null) !== (next?.[field] ?? null)
+    );
+    if (fields.length > 0 || !previous !== !next) {
+      changes.push({
+        locale,
+        fields: fields.length > 0 ? fields : [...TRANSLATION_FIELDS],
+      });
+    }
+  }
+  return changes;
+};
+
+const latestRevision = async (tx: Tx, draftId: number) => {
   const [latest] = await tx
     .select()
     .from(feedDraftRevisions)
-    .where(eq(feedDraftRevisions.draftId, draft.id))
-    .orderBy(desc(feedDraftRevisions.revision))
+    .where(eq(feedDraftRevisions.draftId, draftId))
+    .orderBy(desc(feedDraftRevisions.id))
     .limit(1);
+  return latest ?? null;
+};
 
-  const coalesce =
-    latest !== undefined &&
-    writer.author === FEED_DRAFT_AUTHOR.Operator &&
-    latest.author === FEED_DRAFT_AUTHOR.Operator &&
-    Date.now() - latest.updatedAt.getTime() < OPERATOR_COALESCE_MS;
-
-  const snapshot = snapshotOf(draft);
-
-  if (coalesce) {
-    await tx
-      .update(feedDraftRevisions)
-      .set({
-        revision: draft.revision,
-        changes: mergeChanges(latest.changes, changes),
-        snapshot,
-        contentHash: draft.contentHash,
-        updatedAt: new Date(),
-      })
-      .where(eq(feedDraftRevisions.id, latest.id));
-    return;
+/** Snapshots `draft` as it stands, attributed to whoever last wrote it. */
+const recordRevision = async (
+  tx: Tx,
+  draft: FeedDraftRecord,
+  input: {
+    kind: FeedDraftRevisionKind;
+    message?: string | null;
+    latest: FeedDraftRevision | null;
   }
+) => {
+  const snapshot = snapshotOf(draft);
+  const [row] = await tx
+    .insert(feedDraftRevisions)
+    .values({
+      draftId: draft.id,
+      kind: input.kind,
+      revision: draft.revision,
+      author: draft.lastAuthor,
+      sessionId: draft.lastSessionId,
+      message: input.message ?? null,
+      changes: diffFeedDraftSnapshots(input.latest?.snapshot ?? null, snapshot),
+      snapshot,
+      contentHash: draft.contentHash,
+    })
+    .returning();
+  if (!row) throw new Error(`Recording draft ${draft.id} returned no row.`);
+  return row;
+};
 
-  await tx.insert(feedDraftRevisions).values({
-    draftId: draft.id,
-    revision: draft.revision,
-    author: writer.author,
-    sessionId: writer.sessionId ?? null,
-    changes,
-    snapshot,
-    contentHash: draft.contentHash,
-  });
-
-  await tx.delete(feedDraftRevisions).where(
-    and(
-      eq(feedDraftRevisions.draftId, draft.id),
-      sql`${feedDraftRevisions.id} not in (
-        select id from ${feedDraftRevisions}
-        where ${feedDraftRevisions.draftId} = ${draft.id}
-        order by ${feedDraftRevisions.revision} desc
-        limit ${MAX_REVISIONS_PER_DRAFT}
-      )`
-    )
+/**
+ * Whether the state a write is about to replace must be kept first: nothing holds it yet, and
+ * either the writer changes hands or the last row is older than
+ * {@link SAFETY_POINT_INTERVAL_MS}. `force` is for writes that replace the whole draft.
+ */
+export const needsSafetyPoint = (input: {
+  current: Pick<FeedDraftRecord, "revision" | "lastAuthor" | "lastSessionId">;
+  latest: Pick<FeedDraftRevision, "revision" | "createdAt"> | null;
+  writer: FeedDraftWriter;
+  now: number;
+  force?: boolean;
+}): boolean => {
+  if (input.latest?.revision === input.current.revision) return false;
+  if (input.force || !input.latest) return true;
+  const handoff =
+    input.current.lastAuthor !== input.writer.author ||
+    input.current.lastSessionId !== (input.writer.sessionId ?? null);
+  return (
+    handoff ||
+    input.now - input.latest.createdAt.getTime() >= SAFETY_POINT_INTERVAL_MS
   );
 };
 
-export const mergeChanges = (
-  base: FeedDraftChange[],
-  next: FeedDraftChange[]
-): FeedDraftChange[] => {
-  const byLocale = new Map<Locale | null, Set<string>>();
-  for (const change of [...base, ...next]) {
-    const key = change.locale ?? null;
-    const fields = byLocale.get(key) ?? new Set<string>();
-    for (const field of change.fields) fields.add(field);
-    byLocale.set(key, fields);
-  }
-  return [...byLocale.entries()].map(([locale, fields]) => {
-    const change: FeedDraftChange = { fields: [...fields] };
-    if (locale !== null) change.locale = locale;
-    return change;
+/** Keeps `current` when {@link needsSafetyPoint} says so. The newest state is never kept here: it is the draft. */
+const keepSafetyPoint = async (
+  tx: Tx,
+  current: FeedDraftRecord,
+  writer: FeedDraftWriter,
+  options: { force?: boolean } = {}
+) => {
+  const latest = await latestRevision(tx, current.id);
+  if (
+    !needsSafetyPoint({
+      current,
+      latest,
+      writer,
+      now: Date.now(),
+      force: options.force,
+    })
+  )
+    return;
+
+  await recordRevision(tx, current, {
+    kind: FEED_DRAFT_REVISION_KIND.Safety,
+    latest,
   });
+  await tx.delete(feedDraftRevisions).where(
+    and(
+      eq(feedDraftRevisions.draftId, current.id),
+      eq(feedDraftRevisions.kind, FEED_DRAFT_REVISION_KIND.Safety),
+      eq(feedDraftRevisions.pinned, false),
+      sql`${feedDraftRevisions.id} not in (
+        select id from ${feedDraftRevisions}
+        where ${feedDraftRevisions.draftId} = ${current.id}
+          and ${feedDraftRevisions.kind} = ${FEED_DRAFT_REVISION_KIND.Safety}
+          and ${feedDraftRevisions.pinned} = false
+        order by ${feedDraftRevisions.id} desc
+        limit ${MAX_SAFETY_POINTS_PER_DRAFT}
+      )`
+    )
+  );
 };
 
 /** The names in `allowed` whose value in `patch` is not `undefined`. */
@@ -417,6 +478,8 @@ export const createFeedDraft = (
         revision: 1,
         contentHash: hashFeedDraftSnapshot(snapshot),
         appliedRevision: input.applied ? 1 : null,
+        lastAuthor: input.author,
+        lastSessionId: input.sessionId ?? null,
       })
       .returning();
     if (!draft) throw new Error("Creating the draft returned no row.");
@@ -434,14 +497,10 @@ export const createFeedDraft = (
     }
 
     const record = (await readDraft(tx, draft.id))!;
-    await recordRevision(tx, record, input, [
-      { fields: [...META_FIELDS] },
-      ...translations.map(([locale]) => ({
-        locale:
-          /* SAFETY: snapshot translations are keyed by Locale. */ locale as Locale,
-        fields: [...TRANSLATION_FIELDS],
-      })),
-    ]);
+    await recordRevision(tx, record, {
+      kind: FEED_DRAFT_REVISION_KIND.Safety,
+      latest: null,
+    });
     return record;
   });
 
@@ -566,6 +625,8 @@ const writePatch = async (
 
   if (changes.length === 0) return current;
 
+  await keepSafetyPoint(tx, current, input);
+
   const translations = { ...current.translations };
   for (const entry of translationEntries) {
     const [written] = await tx
@@ -593,6 +654,8 @@ const writePatch = async (
         ...(input.meta ?? {}),
         translations,
       }),
+      lastAuthor: input.author,
+      lastSessionId: input.sessionId ?? null,
       updatedAt: new Date(),
     })
     .where(eq(feedDrafts.id, current.id))
@@ -600,7 +663,6 @@ const writePatch = async (
   if (!row) throw new Error(`Updating draft ${current.id} returned no row.`);
 
   const draft = toRecord(row, translations);
-  await recordRevision(tx, draft, input, changes);
   await notifyFeedDraft(tx, {
     type: "revision",
     draftId: draft.id,
@@ -626,6 +688,8 @@ export const replaceFeedDraft = (
     if (locked.status !== "locked") return locked;
     const current = locked.draft;
 
+    await keepSafetyPoint(tx, current, input, { force: true });
+
     const revision = current.revision + 1;
     const [row] = await tx
       .update(feedDrafts)
@@ -636,6 +700,8 @@ export const replaceFeedDraft = (
         mainImage: input.snapshot.mainImage,
         revision,
         contentHash: hashFeedDraftSnapshot(input.snapshot),
+        lastAuthor: input.author,
+        lastSessionId: input.sessionId ?? null,
         updatedAt: new Date(),
       })
       .where(eq(feedDrafts.id, input.draftId))
@@ -662,18 +728,10 @@ export const replaceFeedDraft = (
         : [];
 
     const draft = toRecord(row, translationsOf(written));
-    const locales = new Set([
-      ...Object.keys(current.translations),
-      ...Object.keys(draft.translations),
-    ]);
-    const changes: FeedDraftChange[] = [
-      { fields: [...META_FIELDS] },
-      ...[...locales].map((locale) => ({
-        locale: /* SAFETY: keys are Locale values. */ locale as Locale,
-        fields: [...TRANSLATION_FIELDS],
-      })),
-    ];
-    await recordRevision(tx, draft, input, changes);
+    const changes = diffFeedDraftSnapshots(
+      snapshotOf(current),
+      snapshotOf(draft)
+    );
     await notifyFeedDraft(tx, {
       type: "revision",
       draftId: draft.id,
@@ -716,7 +774,10 @@ export const listFeedDraftRevisions = async (
       draftId: feedDraftRevisions.draftId,
       revision: feedDraftRevisions.revision,
       author: feedDraftRevisions.author,
+      kind: feedDraftRevisions.kind,
       sessionId: feedDraftRevisions.sessionId,
+      message: feedDraftRevisions.message,
+      pinned: feedDraftRevisions.pinned,
       changes: feedDraftRevisions.changes,
       contentHash: feedDraftRevisions.contentHash,
       createdAt: feedDraftRevisions.createdAt,
@@ -730,47 +791,71 @@ export const listFeedDraftRevisions = async (
         eq(feedDrafts.userId, input.userId)
       )
     )
-    .orderBy(desc(feedDraftRevisions.revision))
+    .orderBy(desc(feedDraftRevisions.id))
     .limit(input.limit);
 
+/** A state on the trail: a kept row, or the draft itself as the newest entry. */
+export interface FeedDraftTrailEntry {
+  revision: number;
+  author: FeedDraftAuthor;
+  sessionId: string | null;
+  snapshot: FeedDraftSnapshot;
+}
+
 /**
- * Revisions saved after `after`, oldest first, preceded by the newest one not saved since so
- * the first change has a baseline to diff against. `after` null reads the whole trail.
- * A revision counts by its last save, not its first: operator saves coalesce into one row
- * for ten minutes, so a row that straddles `after` is read again in full rather than lost.
+ * States kept after `after`, oldest first, then the draft as it stands when nothing holds it
+ * yet, all preceded by the newest state kept before so the first change has a baseline. Each
+ * entry differs from the one before it by its own `author`'s writes only. `after` null reads
+ * the whole trail. Writes newer than the baseline but older than `after` are read again
+ * rather than lost.
  */
-export const listFeedDraftRevisionsSince = async (
+export const listFeedDraftTrailSince = async (
   db: DB,
   input: { draftId: number; userId: string; after: Date | null }
-): Promise<FeedDraftRevision[]> => {
-  const owned = and(
-    eq(feedDraftRevisions.draftId, input.draftId),
-    eq(feedDrafts.userId, input.userId)
-  );
-  const select = () =>
-    db
-      .select({ revision: feedDraftRevisions })
-      .from(feedDraftRevisions)
-      .innerJoin(feedDrafts, eq(feedDrafts.id, feedDraftRevisions.draftId));
+): Promise<FeedDraftTrailEntry[]> => {
+  const draft = await readDraft(db, input.draftId, { userId: input.userId });
+  if (!draft) return [];
 
-  const since = await select()
+  const since = await db
+    .select()
+    .from(feedDraftRevisions)
     .where(
       and(
-        owned,
-        input.after ? gt(feedDraftRevisions.updatedAt, input.after) : undefined
+        eq(feedDraftRevisions.draftId, input.draftId),
+        input.after ? gt(feedDraftRevisions.createdAt, input.after) : undefined
       )
     )
-    .orderBy(feedDraftRevisions.revision);
-  if (!input.after) return since.map((row) => row.revision);
+    .orderBy(feedDraftRevisions.id);
+  const [baseline] = input.after
+    ? await db
+        .select()
+        .from(feedDraftRevisions)
+        .where(
+          and(
+            eq(feedDraftRevisions.draftId, input.draftId),
+            lte(feedDraftRevisions.createdAt, input.after)
+          )
+        )
+        .orderBy(desc(feedDraftRevisions.id))
+        .limit(1)
+    : [];
 
-  const [baseline] = await select()
-    .where(and(owned, lte(feedDraftRevisions.updatedAt, input.after)))
-    .orderBy(desc(feedDraftRevisions.revision))
-    .limit(1);
-  return [
-    ...(baseline ? [baseline.revision] : []),
-    ...since.map((row) => row.revision),
-  ];
+  const kept = [...(baseline ? [baseline] : []), ...since];
+  const entries: FeedDraftTrailEntry[] = kept.map((row) => ({
+    revision: row.revision,
+    author: row.author,
+    sessionId: row.sessionId,
+    snapshot: row.snapshot,
+  }));
+  if ((kept.at(-1)?.revision ?? 0) < draft.revision) {
+    entries.push({
+      revision: draft.revision,
+      author: draft.lastAuthor,
+      sessionId: draft.lastSessionId,
+      snapshot: snapshotOf(draft),
+    });
+  }
+  return entries;
 };
 
 /** A revision of one of `userId`'s drafts; a revision under anyone else's draft reads as null. */
@@ -792,28 +877,30 @@ export const getFeedDraftRevision = async (
   return row?.revision ?? null;
 };
 
-/** Operator revisions above `afterRevision` on one of `userId`'s drafts, oldest first, for the agent's turn context. */
-export const listOperatorFeedDraftChanges = async (
+/**
+ * Fields of one of `userId`'s drafts that differ from the newest state kept at or before
+ * `afterRevision`, for the agent's turn context. A writer changing hands keeps the state it
+ * takes over, so a draft the agent wrote last is compared from exactly where it left it.
+ */
+export const listFeedDraftChangesSince = async (
   db: DB,
   input: { draftId: number; afterRevision: number; userId: string }
 ): Promise<FeedDraftChange[]> => {
-  const rows = await db
-    .select({ changes: feedDraftRevisions.changes })
+  const draft = await readDraft(db, input.draftId, { userId: input.userId });
+  if (!draft || draft.revision <= input.afterRevision) return [];
+  const [baseline] = await db
+    .select({ snapshot: feedDraftRevisions.snapshot })
     .from(feedDraftRevisions)
-    .innerJoin(feedDrafts, eq(feedDrafts.id, feedDraftRevisions.draftId))
     .where(
       and(
         eq(feedDraftRevisions.draftId, input.draftId),
-        eq(feedDrafts.userId, input.userId),
-        eq(feedDraftRevisions.author, FEED_DRAFT_AUTHOR.Operator),
-        gt(feedDraftRevisions.revision, input.afterRevision)
+        lte(feedDraftRevisions.revision, input.afterRevision)
       )
     )
-    .orderBy(feedDraftRevisions.revision);
-  return rows.reduce<FeedDraftChange[]>(
-    (merged, row) => mergeChanges(merged, row.changes),
-    []
-  );
+    .orderBy(desc(feedDraftRevisions.id))
+    .limit(1);
+  if (!baseline) return [];
+  return diffFeedDraftSnapshots(baseline.snapshot, snapshotOf(draft));
 };
 
 export const snapshotOfRevision = (revision: FeedDraftRevision) =>

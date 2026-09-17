@@ -284,9 +284,12 @@ const toDraftOutput = <
 
 const toRevisionOutput = (revision: FeedDraftRevisionSummary) => ({
   id: revision.id,
+  kind: revision.kind,
   revision: revision.revision,
   author: revision.author,
   sessionId: revision.sessionId,
+  message: revision.message,
+  pinned: revision.pinned,
   changes: revision.changes,
   contentHash: revision.contentHash,
   createdAt: revision.createdAt.toISOString(),

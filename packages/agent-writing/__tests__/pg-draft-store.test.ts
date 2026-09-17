@@ -25,6 +25,8 @@ const record = (id: number, feedId: number | null = null): FeedDraftRecord => ({
   revision: 1,
   contentHash: "hash",
   appliedRevision: null,
+  lastAuthor: "operator",
+  lastSessionId: null,
   createdAt: now,
   updatedAt: now,
   translations: {},
@@ -44,7 +46,7 @@ vi.mock("@chia/db/repos/drafts", () => ({
     const draft = drafts.get(draftId);
     return draft ? { ...draft } : null;
   }),
-  listOperatorFeedDraftChanges: vi.fn(async () => []),
+  listFeedDraftChangesSince: vi.fn(async () => []),
   patchFeedDraft: vi.fn(async (_db: DB, input: PatchFeedDraftInput) => {
     const draft = drafts.get(input.draftId);
     if (!draft) return { status: "not_found" };

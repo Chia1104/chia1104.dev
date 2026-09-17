@@ -28,6 +28,7 @@ const changeSummary = (revision: Revision) =>
 
 export const RevisionsDrawer = ({
   draftId,
+  currentHash,
   isOpen,
   onOpenChange,
   onRestore,
@@ -35,6 +36,8 @@ export const RevisionsDrawer = ({
   isDisabled,
 }: {
   draftId: number;
+  /** A row holding this content has nothing to restore. */
+  currentHash: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onRestore: (revisionId: number) => void;
@@ -94,7 +97,7 @@ export const RevisionsDrawer = ({
                       <Card.Header className="min-w-0 gap-1">
                         <div className="flex items-center gap-2">
                           <Card.Title className="font-mono text-xs">
-                            r{revision.revision}
+                            {revision.contentHash.slice(0, 7)}
                           </Card.Title>
                           <Chip
                             color={
@@ -105,7 +108,7 @@ export const RevisionsDrawer = ({
                             <Chip.Label>{revision.author}</Chip.Label>
                           </Chip>
                           <span className="text-muted text-xs">
-                            {dayjs(revision.updatedAt).format("MMM D, HH:mm")}
+                            {dayjs(revision.createdAt).format("MMM D, HH:mm")}
                           </span>
                         </div>
                         <Card.Description className="truncate text-xs">
@@ -114,7 +117,9 @@ export const RevisionsDrawer = ({
                       </Card.Header>
                       <Card.Footer className="shrink-0">
                         <Button
-                          isDisabled={virtualRow.index === 0 || isDisabled}
+                          isDisabled={
+                            revision.contentHash === currentHash || isDisabled
+                          }
                           isPending={isRestoring}
                           onPress={() => onRestore(revision.id)}
                           size="sm"

@@ -2,7 +2,7 @@ import type { DB } from "@chia/db/client";
 import {
   editFeedDraftContent,
   getFeedDraft,
-  listOperatorFeedDraftChanges,
+  listFeedDraftChangesSince,
   patchFeedDraft,
 } from "@chia/db/repos/drafts";
 import type {
@@ -162,7 +162,7 @@ export class PgDraftStore implements DraftStore {
     draftId: number,
     afterRevision: number
   ): Promise<DraftChange[]> {
-    return listOperatorFeedDraftChanges(this.db, {
+    return listFeedDraftChangesSince(this.db, {
       draftId,
       afterRevision,
       userId: this.options.userId,

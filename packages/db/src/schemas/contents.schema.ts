@@ -149,6 +149,9 @@ export const feedDrafts = pgTable(
     contentHash: text("content_hash").notNull(),
     /** The revision last applied to `feed`; `null` when never applied. */
     appliedRevision: integer("applied_revision"),
+    /** Who wrote the current state; a different next writer keeps a safety point first. */
+    lastAuthor: text("last_author").$type<FeedDraftAuthor>().notNull(),
+    lastSessionId: text("last_session_id"),
     ...timestamps,
   },
   (table) => [
@@ -208,9 +211,20 @@ export interface FeedDraftSnapshot {
   translations: Partial<Record<Locale, FeedDraftTranslationSnapshot>>;
 }
 
+export const FEED_DRAFT_REVISION_KIND = {
+  /** A version the operator applied to the post. Listed as the draft's history, never pruned. */
+  Commit: "commit",
+  /** A restore point the write path keeps by itself; pruned unless pinned. */
+  Safety: "safety",
+} as const;
+
+export type FeedDraftRevisionKind =
+  (typeof FEED_DRAFT_REVISION_KIND)[keyof typeof FEED_DRAFT_REVISION_KIND];
+
 /**
- * Restore points and the change trail the agent reads to learn what the operator edited.
- * Consecutive operator saves coalesce into one row; the table is capped per draft.
+ * Immutable snapshots of a draft. Between two consecutive rows only one writer wrote, the
+ * later row's `author`, which is what lets the agent and the lesson loop read operator edits
+ * off the trail.
  */
 export const feedDraftRevisions = pgTable(
   "feed_draft_revision",
@@ -219,20 +233,25 @@ export const feedDraftRevisions = pgTable(
     draftId: integer("draft_id")
       .notNull()
       .references(() => feedDrafts.id, { onDelete: "cascade" }),
-    /** `feed_draft.revision` after this write. */
+    kind: text("kind").$type<FeedDraftRevisionKind>().notNull(),
+    /** `feed_draft.revision` of the state in `snapshot`. */
     revision: integer("revision").notNull(),
+    /** Who last wrote that state. */
     author: text("author").$type<FeedDraftAuthor>().notNull(),
-    /** The writing session that made an `agent` revision. */
+    /** The writing session behind an `agent` state. */
     sessionId: text("session_id"),
+    message: text("message"),
+    /** Keeps a safety point out of pruning. */
+    pinned: boolean("pinned").notNull().default(false),
+    /** Fields that differ from the row before this one. */
     changes: jsonb("changes").$type<FeedDraftChange[]>().notNull().default([]),
-    /** The whole draft after this write, so restore is a replace. */
     snapshot: jsonb("snapshot").$type<FeedDraftSnapshot>().notNull(),
     /** `hashFeedDraftSnapshot` of `snapshot`. */
     contentHash: text("content_hash").notNull(),
     ...timestamps,
   },
   (table) => [
-    uniqueIndex("feed_draft_revision_draft_revision_idx").on(
+    index("feed_draft_revision_draft_revision_idx").on(
       table.draftId,
       table.revision
     ),
