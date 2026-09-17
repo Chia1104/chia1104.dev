@@ -47,14 +47,17 @@ describe("aggregateChunkHits", () => {
     expect(first?.sourceId).toBe(2);
   });
 
-  it("keeps the best-scoring chunk as the citation chunk", () => {
+  it("keeps the scoring chunks, best first", () => {
     const hits = [
       hit(1, 0.9, { headingPath: "A > B" }),
       hit(1, 0.5, { headingPath: "C" }),
     ];
 
     const [first] = aggregateChunkHits(hits, 10);
-    expect(first?.bestChunk.headingPath).toBe("A > B");
+    expect(first?.chunks.map((chunk) => chunk.headingPath)).toEqual([
+      "A > B",
+      "C",
+    ]);
     expect(first?.matchedChunks).toBe(2);
   });
 

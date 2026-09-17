@@ -194,12 +194,12 @@ Hybrid 使用 `FULL OUTER JOIN` 保留只出現在單側的結果，分數為 `�
 chunk hits
   → 依 source_type + source_id 分組
   → 以前三個 chunk 的衰減權重 1、1/4、1/16 加總
-  → 保留最高分 chunk 作為 citation / preview
+  → 保留這些 top chunk（最佳在前），作為值得讀的位置
   → 排序並截到 limit
   → adapter.hydrate 批次還原 title、description、href、locale
 ```
 
-最佳 chunk 主導分數，其餘命中提供有限加分，避免長文件靠大量普通結果壓過短文件的高相關結果。
+最佳 chunk 主導分數，其餘命中提供有限加分，避免長文件靠大量普通結果壓過短文件的高相關結果。保留下來的 chunk 以 `matches` 交給 agent：最佳的一個，加上每個指向尚未列出章節的 chunk，因此一次搜尋就能看到同一份 resource 的所有命中章節，agent 不必為了找下一段而重新搜尋。
 
 `hydrate` 必須使用與 `buildChunks` 相同的刪除與可見性判定。兩者不一致會讓命中的 resource 在 hydrate 時消失。
 

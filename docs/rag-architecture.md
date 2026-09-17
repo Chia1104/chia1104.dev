@@ -194,12 +194,12 @@ Callers cannot choose the embedding model. Server-side provider configuration co
 chunk hits
   → group by source_type + source_id
   → sum the top three chunks with decay weights 1, 1/4, 1/16
-  → retain the highest-scoring chunk for citation and preview
+  → retain those top chunks, best first, as the places worth reading
   → sort and trim to limit
   → adapter.hydrate restores title, description, href and locale in batches
 ```
 
-The best chunk dominates the score while other hits add limited breadth. This prevents a long document with many ordinary matches from outranking a short document with one highly relevant match.
+The best chunk dominates the score while other hits add limited breadth. The retained chunks reach an agent as `matches`: the best one, then each further chunk that names a section not listed yet, so one search shows every matched section of a resource and the agent does not search again to find the next one. This prevents a long document with many ordinary matches from outranking a short document with one highly relevant match.
 
 `hydrate` must use the same deletion and visibility rules as `buildChunks`. If they disagree, a matched resource can disappear during hydration.
 

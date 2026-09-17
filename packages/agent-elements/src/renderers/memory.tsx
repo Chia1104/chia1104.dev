@@ -25,7 +25,13 @@ const memorySummary = z.compile(
 const searchDetails = z.compile(
   z.object({
     query: z.string().optional(),
-    hits: z.array(memorySummary.extend({ snippet: z.string().optional() })),
+    hits: z.array(
+      memorySummary.extend({
+        matches: z
+          .array(z.object({ snippet: z.string().optional() }))
+          .optional(),
+      })
+    ),
   })
 );
 
@@ -71,7 +77,7 @@ const SearchMemory: ToolRenderer = ({ tool }) => {
   return (
     <ul className="flex flex-col gap-2.5">
       {parsed.data.hits.map((hit) => (
-        <Memory key={hit.id} {...hit} />
+        <Memory key={hit.id} {...hit} snippet={hit.matches?.[0]?.snippet} />
       ))}
     </ul>
   );

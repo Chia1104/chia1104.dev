@@ -44,8 +44,8 @@ export interface ResourceHit {
   /** decayed sum of the resource's top chunk scores */
   score: number;
   matchedChunks: number;
-  /** best-scoring chunk, for citation and preview */
-  bestChunk: ChunkHit;
+  /** the chunks that scored, best first; each is a place in the resource worth reading */
+  chunks: ChunkHit[];
 }
 
 interface SearchScope {
@@ -280,7 +280,7 @@ export const aggregateChunkHits = (
         sourceId: best.sourceId,
         score,
         matchedChunks: bucket.length,
-        bestChunk: best,
+        chunks: top,
       };
     })
     .sort((a, b) => b.score - a.score)

@@ -74,6 +74,8 @@ interface QueryResult {
    * queries with `expectedHeading`; a ranked miss counts as a citation miss.
    */
   citationHit: boolean | null;
+  /** Whether any chunk the hit returned is a section under the expected heading. */
+  sectionHit: boolean | null;
   durationMs: number;
   error?: string;
 }
@@ -86,6 +88,8 @@ interface ModeReport {
   mrr: number;
   /** share of `expectedHeading` queries whose best chunk is the right section */
   citationAccuracy: number | null;
+  /** share of `expectedHeading` queries where any returned chunk is the right section */
+  sectionAccuracy: number | null;
   avgDurationMs: number;
   errors: number;
 }
@@ -126,11 +130,17 @@ const runQuery = async (
       golden.expected.includes(slug)
     );
     const hitItem = firstHit === -1 ? null : items[firstHit]!;
-    const bestChunk = hitItem
-      ? {
-          kind: hitItem.bestChunk.kind,
-          headingPath: hitItem.bestChunk.headingPath,
-        }
+    const underExpectedHeading = (chunk: {
+      kind: string;
+      headingPath: string | null;
+    }) =>
+      chunk.kind === "section" &&
+      (chunk.headingPath ?? "")
+        .toLowerCase()
+        .includes((golden.expectedHeading ?? "").toLowerCase());
+    const [best] = hitItem?.chunks ?? [];
+    const bestChunk = best
+      ? { kind: best.kind, headingPath: best.headingPath }
       : null;
 
     return {
@@ -142,10 +152,10 @@ const runQuery = async (
       ),
       bestChunk,
       citationHit: golden.expectedHeading
-        ? bestChunk?.kind === "section" &&
-          (bestChunk.headingPath ?? "")
-            .toLowerCase()
-            .includes(golden.expectedHeading.toLowerCase())
+        ? bestChunk !== null && underExpectedHeading(bestChunk)
+        : null,
+      sectionHit: golden.expectedHeading
+        ? (hitItem?.chunks ?? []).some(underExpectedHeading)
         : null,
       durationMs: performance.now() - startedAt,
     };
@@ -157,6 +167,7 @@ const runQuery = async (
       recall: Object.fromEntries(RECALL_KS.map((k) => [k, 0])),
       bestChunk: null,
       citationHit: golden.expectedHeading ? false : null,
+      sectionHit: golden.expectedHeading ? false : null,
       durationMs: performance.now() - startedAt,
       error: String(error),
     };
@@ -198,6 +209,12 @@ const buildModeReport = (
       return cited.length === 0
         ? null
         : mean(cited.map((result) => (result.citationHit ? 1 : 0)));
+    })(),
+    sectionAccuracy: (() => {
+      const cited = results.filter((result) => result.sectionHit !== null);
+      return cited.length === 0
+        ? null
+        : mean(cited.map((result) => (result.sectionHit ? 1 : 0)));
     })(),
     avgDurationMs: mean(results.map((result) => result.durationMs)),
     errors: results.filter((result) => result.error).length,
@@ -261,7 +278,7 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   }
 
   console.log(
-    `\n${pad("mode", 10)}R@1     R@3     R@5     R@10    MRR@10  cite    avg ms`
+    `\n${pad("mode", 10)}R@1     R@3     R@5     R@10    MRR@10  cite    cite@3  avg ms`
   );
   for (const report of reports) {
     console.log(
@@ -270,6 +287,10 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
         pad(num(report.mrr), 8) +
         pad(
           report.citationAccuracy === null ? "-" : num(report.citationAccuracy),
+          8
+        ) +
+        pad(
+          report.sectionAccuracy === null ? "-" : num(report.sectionAccuracy),
           8
         ) +
         Math.round(report.avgDurationMs).toString()

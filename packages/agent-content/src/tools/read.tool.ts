@@ -32,8 +32,9 @@ export const searchPostsSpec = {
   label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.searchPosts].label,
   description:
     "Search posts. `semantic` matches on meaning (best for topics); `keyword` matches " +
-    "on literal terms (best for names, APIs, error messages). Each hit's `headingPath` names the " +
-    "section that matched — pass it to `get_post`'s `focusHeadings` to read that section first. " +
+    "on literal terms (best for names, APIs, error messages). Each hit's `matches` are the places " +
+    "in that post that matched, best first — pass their `headingPath`s to `get_post`'s " +
+    "`focusHeadings` to read those sections first, rather than searching again for the same post. " +
     "Each hit's `url` is the post's page; link with it as given.",
   parameters: Type.Object({
     keyword: Type.String({
@@ -106,7 +107,7 @@ export const getPostSpec = {
       Type.Array(Type.String(), {
         description:
           "Heading paths to keep first when the post is too long to return in full. Pass each " +
-          "search hit's `headingPath` string unchanged, e.g. " +
+          "search match's `headingPath` string unchanged, e.g. " +
           '`["Setup > Install", "Caveats"]`.',
       })
     ),

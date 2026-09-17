@@ -150,7 +150,8 @@ export const searchMemorySpec = {
   description:
     "Search what earlier sessions verified and read: saved facts and the full text of pages " +
     "fetched before. Distinct from `search_posts`, which searches the blog itself. Each hit " +
-    "carries a memory id and the heading that matched; pass both to `get_memory`.",
+    "carries a memory id and every place in it that matched; pass the id and those " +
+    "`headingPath`s to `get_memory`.",
   parameters: Type.Object({
     query: Type.String({
       description: "Topic, name, API or claim to look for.",
@@ -193,8 +194,13 @@ export const searchMemoryTool = defineTool(
 const formatHit = (hit: MemoryHit, index: number): string => {
   const heading = `${index + 1}. [${hit.kind}] **${hit.title}** (#${hit.id})`;
   const source = hit.sourceUrl ? `\n   <${hit.sourceUrl}>` : "";
-  const path = hit.headingPath ? `\n   at: ${hit.headingPath}` : "";
-  return `${heading}${source}${path}\n   ${hit.snippet}`;
+  const matches = hit.matches
+    .map(
+      (match) =>
+        `\n   ${match.headingPath ? `at: ${match.headingPath}\n   ` : ""}${match.snippet}`
+    )
+    .join("");
+  return `${heading}${source}${matches}`;
 };
 
 export const getMemorySpec = {

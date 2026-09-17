@@ -20,8 +20,10 @@ import {
   recordSourceMemoryService,
 } from "@chia/services/memory/write.service";
 import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/resource-types";
-import { searchResources } from "@chia/services/rag/search.service";
-import { truncateEnd } from "@chia/utils/format";
+import {
+  searchResources,
+  toSearchMatches,
+} from "@chia/services/rag/search.service";
 
 import { memoryHooks } from "./agent-memory-indexing.service";
 
@@ -30,9 +32,6 @@ import { memoryHooks } from "./agent-memory-indexing.service";
  * `searchResources` with the memory type and unpublished rows, both required, since memory
  * chunks are indexed `published: false`. Built with a `DB` and session id (provenance), not a request.
  */
-
-/** A chunk is up to ~512 tokens; a hit only needs enough to orient. */
-const SNIPPET_MAX_CHARS = 500;
 
 const summaryOf = (row: AgentMemory): MemorySummary => ({
   id: row.id,
@@ -121,8 +120,7 @@ export const createAgentMemoryPort = (
           ? [
               {
                 ...summaryOf(row),
-                snippet: truncateEnd(item.bestChunk.content, SNIPPET_MAX_CHARS),
-                headingPath: item.bestChunk.headingPath,
+                matches: toSearchMatches(item.chunks),
               },
             ]
           : [];

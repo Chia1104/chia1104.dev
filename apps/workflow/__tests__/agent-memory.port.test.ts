@@ -24,7 +24,10 @@ const { api, repo, hooks } = vi.hoisted(() => ({
   hooks: { memoryHooks: { onMemoryChanged: vi.fn() } },
 }));
 
-vi.mock("@chia/services/rag/search.service", () => ({
+vi.mock("@chia/services/rag/search.service", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("@chia/services/rag/search.service")
+  >()),
   searchResources: api.searchResources,
 }));
 vi.mock("@chia/services/memory/write.service", () => ({
@@ -74,10 +77,11 @@ describe("createAgentMemoryPort", () => {
           sourceId: 2,
           score: 1,
           matchedChunks: 1,
-          bestChunk: {
-            content: "x".repeat(600),
-            headingPath: "Setup > Install",
-          },
+          chunks: [
+            { content: "x".repeat(600), headingPath: "Setup > Install" },
+            { content: "y".repeat(600), headingPath: "Setup > Install" },
+            { content: "z".repeat(600), headingPath: "Caveats" },
+          ],
           summary: {},
         },
         {
@@ -85,7 +89,7 @@ describe("createAgentMemoryPort", () => {
           sourceId: 1,
           score: 0.5,
           matchedChunks: 1,
-          bestChunk: { content: "short", headingPath: null },
+          chunks: [{ content: "short", headingPath: null }],
           summary: {},
         },
       ],
@@ -104,11 +108,19 @@ describe("createAgentMemoryPort", () => {
         limit: 5,
       })
     );
-    // Result order is the search order, and the snippet is bounded.
+    // Result order is the search order; a second fragment of one section adds nowhere new to read.
     expect(hits.map((hit) => hit.id)).toEqual([2, 1]);
-    expect(hits[0]?.snippet).toHaveLength(500);
-    expect(hits[0]?.headingPath).toBe("Setup > Install");
-    expect(hits[1]).toMatchObject({ kind: "fact", snippet: "short" });
+    expect(hits[0]?.matches.map((match) => match.headingPath)).toEqual([
+      "Setup > Install",
+      "Caveats",
+    ]);
+    expect(hits[0]?.matches.map((match) => match.snippet.length)).toEqual([
+      500, 200,
+    ]);
+    expect(hits[1]).toMatchObject({
+      kind: "fact",
+      matches: [{ snippet: "short" }],
+    });
   });
 
   it("writes facts through the write service with the session as provenance", async () => {
