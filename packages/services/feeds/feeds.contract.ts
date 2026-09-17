@@ -525,6 +525,20 @@ export const listFeedDraftRevisionsContract = oc
   )
   .output(z.object({ items: z.array(feedDraftRevisionSchema) }));
 
+/** Keeps a restore point out of pruning, optionally under a name. Commits are kept anyway and answer `NOT_FOUND`. */
+export const pinFeedDraftRevisionContract = oc
+  .errors(DRAFT_ERRORS)
+  .input(
+    z.object({
+      draftId: z.number().int(),
+      revisionId: z.number().int(),
+      pinned: z.boolean(),
+      /** Omit to leave the name as it is; `null` clears it. */
+      label: z.string().trim().min(1).max(200).nullable().optional(),
+    })
+  )
+  .output(feedDraftRevisionSchema);
+
 export const restoreFeedDraftRevisionContract = oc
   .errors({ ...DRAFT_ERRORS, ...DRAFT_CONFLICT })
   .input(
@@ -575,6 +589,7 @@ export const feedsContract = {
   "draft:apply": applyFeedDraftContract,
   "draft:discard": discardFeedDraftContract,
   "draft:revisions": listFeedDraftRevisionsContract,
+  "draft:pin": pinFeedDraftRevisionContract,
   "draft:restore": restoreFeedDraftRevisionContract,
   "draft:watch": watchFeedDraftContract,
 };

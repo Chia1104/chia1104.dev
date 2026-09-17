@@ -868,6 +868,48 @@ export const listFeedDraftRevisions = async (
     .orderBy(desc(feedDraftRevisions.revision), desc(feedDraftRevisions.id))
     .limit(input.limit);
 
+/**
+ * Keeps a safety point of one of `userId`'s drafts out of pruning, or lets it go again; `label`
+ * names it. A commit is never pruned, so it answers null like a row that is not there.
+ */
+export const pinFeedDraftRevision = async (
+  db: DB,
+  input: {
+    draftId: number;
+    revisionId: number;
+    userId: string;
+    pinned: boolean;
+    label?: string | null;
+  }
+): Promise<FeedDraftRevisionSummary | null> => {
+  const [row] = await db
+    .update(feedDraftRevisions)
+    // Drizzle leaves an `undefined` column alone, so an omitted label keeps the name.
+    .set({ pinned: input.pinned, message: input.label })
+    .where(
+      and(
+        eq(feedDraftRevisions.id, input.revisionId),
+        eq(feedDraftRevisions.kind, FEED_DRAFT_REVISION_KIND.Safety),
+        inArray(
+          feedDraftRevisions.draftId,
+          db
+            .select({ id: feedDrafts.id })
+            .from(feedDrafts)
+            .where(
+              and(
+                eq(feedDrafts.id, input.draftId),
+                eq(feedDrafts.userId, input.userId)
+              )
+            )
+        )
+      )
+    )
+    .returning();
+  if (!row) return null;
+  const { snapshot: _snapshot, ...summary } = row;
+  return summary;
+};
+
 /** A state on the trail: a kept row, or the draft itself as the newest entry. */
 export interface FeedDraftTrailEntry {
   revision: number;

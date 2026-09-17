@@ -3,6 +3,7 @@ import { CallerTier } from "@chia/auth/tier";
 import { listWritingSessionIdsForDraft } from "@chia/db/repos/agent";
 import {
   listFeedDraftRevisions,
+  pinFeedDraftRevision,
   listOpenFeedDrafts,
 } from "@chia/db/repos/drafts";
 import type {
@@ -434,6 +435,17 @@ export const listFeedDraftRevisionsRoute = contractOS.feeds["draft:revisions"]
     })
   );
 
+export const pinFeedDraftRevisionRoute = contractOS.feeds["draft:pin"]
+  .use(rootWriteGuard)
+  .handler(async (opts) => {
+    const revision = await pinFeedDraftRevision(opts.context.db, {
+      ...opts.input,
+      userId: opts.context.caller.adminId,
+    });
+    if (!revision) throw opts.errors.NOT_FOUND();
+    return toRevisionOutput(revision);
+  });
+
 export const restoreFeedDraftRevisionRoute = contractOS.feeds["draft:restore"]
   .use(rootWriteGuard)
   .handler((opts) =>
@@ -483,6 +495,7 @@ export const feedsRouter = contractOS.feeds.router({
   "draft:apply": applyFeedDraftRoute,
   "draft:discard": discardFeedDraftRoute,
   "draft:revisions": listFeedDraftRevisionsRoute,
+  "draft:pin": pinFeedDraftRevisionRoute,
   "draft:restore": restoreFeedDraftRevisionRoute,
   "draft:watch": watchFeedDraftRoute,
 });
