@@ -5,6 +5,7 @@ import {
   useCallback,
   useDeferredValue,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
 } from "react";
@@ -165,18 +166,22 @@ export const MarkdownEditor = ({
     );
   }, [instance, baseline, compared]);
 
-  // What this editor last reported. A `value` equal to it is typing coming back round, not a
-  // change from outside, even when the model has already moved on by a keystroke.
-  const lastEmitted = useRef<string | null>(null);
-  const wanted = useRef(value);
-  wanted.current = value;
+  // What this editor last reported, and for which text. A `value` equal to it is typing coming
+  // back round, not a change from outside, even when the model has already moved on by a
+  // keystroke. Another path's text may read the same and still be a change to its own model.
+  const lastEmitted = useRef<{ path: string; value: string } | null>(null);
   const handleChange = useCallback(
     (next: string | undefined) => {
-      lastEmitted.current = next ?? "";
+      lastEmitted.current = { path, value: next ?? "" };
       onChange(next);
     },
-    [onChange]
+    [onChange, path]
   );
+  // Reads the value of the render it runs in, which may be later than the one that set it up.
+  const applyValue = useEffectEvent(() => {
+    const model = instance?.getModel();
+    if (model) applyExternalValue(model, value);
+  });
 
   useEffect(() => {
     const model = instance?.getModel();
@@ -184,28 +189,27 @@ export const MarkdownEditor = ({
       !instance ||
       !model ||
       model.getValue() === value ||
-      value === lastEmitted.current
+      (lastEmitted.current?.path === path &&
+        lastEmitted.current.value === value)
     )
       return;
-    const apply = () => {
-      const current = instance.getModel();
-      if (current) applyExternalValue(current, wanted.current);
-    };
     // Editing under an input method would break the composition; wait for it to finish.
     if (!instance.inComposition) {
-      apply();
+      applyValue();
       return;
     }
     const composed = instance.onDidCompositionEnd(() => {
       composed.dispose();
-      apply();
+      applyValue();
     });
     return () => composed.dispose();
   }, [instance, path, value]);
 
   // Models outlive a path switch on purpose; they go when the editor does.
   const shown = useRef(new Set<string>());
-  shown.current.add(path);
+  useEffect(() => {
+    shown.current.add(path);
+  }, [path]);
   const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
   useEffect(
     () => () => {
