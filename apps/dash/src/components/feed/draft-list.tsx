@@ -51,8 +51,13 @@ const DraftItem = ({ draft }: { draft: Draft }) => {
         queryClient.invalidateQueries({
           queryKey: orpc.feeds["draft:list"].key(),
         }),
-      onError: (error) =>
-        toast.error(error instanceof Error ? error.message : "Discard failed"),
+      onError: (error) => {
+        // A rejected hash means the card is stale; a retry needs what the draft holds now.
+        void queryClient.invalidateQueries({
+          queryKey: orpc.feeds["draft:list"].key(),
+        });
+        toast.error(error instanceof Error ? error.message : "Discard failed");
+      },
     })
   );
 

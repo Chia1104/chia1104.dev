@@ -835,10 +835,35 @@ export const commitFeedDraft = (
     return commit;
   });
 
-export const deleteFeedDraft = (db: DB, draftId: number) =>
+export type DeleteFeedDraftResult =
+  | { status: "deleted" }
+  /** The draft no longer holds `expectedHash`; `draft` is what it holds now. */
+  | { status: "conflict"; draft: FeedDraftRecord }
+  /** The draft got a post since the caller looked; discarding it means restoring, not deleting. */
+  | { status: "bound"; draft: FeedDraftRecord }
+  | { status: "not_found" };
+
+/**
+ * Deletes a draft that has no post, under its row lock so the content checked is the content
+ * deleted: a write that lands between the caller's read and the delete is a conflict.
+ */
+export const deleteUnboundFeedDraft = (
+  db: DB,
+  input: { draftId: number; userId: string; expectedHash: string }
+): Promise<DeleteFeedDraftResult> =>
   db.transaction(async (tx) => {
-    await tx.delete(feedDrafts).where(eq(feedDrafts.id, draftId));
-    await notifyFeedDraft(tx, { type: "discarded", draftId });
+    const current = await readDraft(tx, input.draftId, {
+      lock: true,
+      userId: input.userId,
+    });
+    if (!current) return { status: "not_found" };
+    if (current.contentHash !== input.expectedHash) {
+      return { status: "conflict", draft: current };
+    }
+    if (current.feedId !== null) return { status: "bound", draft: current };
+    await tx.delete(feedDrafts).where(eq(feedDrafts.id, current.id));
+    await notifyFeedDraft(tx, { type: "discarded", draftId: current.id });
+    return { status: "deleted" };
   });
 
 export type FeedDraftRevisionSummary = Omit<FeedDraftRevision, "snapshot">;

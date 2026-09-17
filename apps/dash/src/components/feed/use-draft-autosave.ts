@@ -208,6 +208,10 @@ export const useDraftAutosave = ({
 
   // Only this tab's own transition back to clean drops the snapshot; another tab may be mid-edit.
   const persist = useEffectEvent(() => {
+    // An unresolved conflict already took the remote draft as its baseline. Writing the snapshot
+    // now would record that as what the edits replaced, and the next reload would find nothing
+    // to ask about and save over the remote change. The dialog is modal, so nothing new is typed.
+    if (issue?.kind === "conflict") return;
     const { keep, drop } = draftSnapshotStore.getState();
     if (patch) {
       keep(initial.id, { patch, seen: seenOf(patch, toValues(saved)) });
@@ -224,6 +228,8 @@ export const useDraftAutosave = ({
   const restore = useEffectEvent(() => {
     const snapshot = readDraftSnapshot(initial.id);
     if (!snapshot) return;
+    // This tab owns the snapshot from here, so it is the one to drop it once the edits are saved.
+    kept.current = true;
     const current = toValues(initial);
     const { values, conflicts } = rebaseValues({
       base: applyPatch(current, snapshot.seen),

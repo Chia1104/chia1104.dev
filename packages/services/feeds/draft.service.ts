@@ -2,7 +2,7 @@ import type { DB } from "@chia/db/client";
 import {
   commitFeedDraft,
   createFeedDraft,
-  deleteFeedDraft,
+  deleteUnboundFeedDraft,
   editFeedDraftContent,
   getFeedDraft,
   getFeedDraftByFeedId,
@@ -514,17 +514,25 @@ export const discardFeedDraftService = async (
   db: DB,
   input: { draftId: number; adminId: string; expectedHash: string }
 ): Promise<void> => {
-  const draft = await requireDraft(db, input.draftId, input.adminId);
-  if (draft.contentHash !== input.expectedHash) {
+  const deleted = await deleteUnboundFeedDraft(db, {
+    draftId: input.draftId,
+    userId: input.adminId,
+    expectedHash: input.expectedHash,
+  });
+  if (deleted.status === "deleted") return;
+  if (deleted.status === "not_found") {
+    throw new AppError("NOT_FOUND", {
+      message: `Draft ${input.draftId} not found`,
+    });
+  }
+  const { draft } = deleted;
+  if (deleted.status === "conflict") {
     throw new AppError("CONFLICT", {
       message: `Draft ${draft.id} was changed by someone else; reload it and try again.`,
       data: conflictData(draft),
     });
   }
-  if (draft.feedId === null) {
-    await deleteFeedDraft(db, draft.id);
-    return;
-  }
+  // Bound to a post: the restore below checks the hash again under its own lock.
   if (draft.appliedRevisionId === null) {
     throw new AppError("INTERNAL_SERVER_ERROR", {
       message: `Draft ${draft.id} is bound to feed ${draft.feedId} without a commit.`,

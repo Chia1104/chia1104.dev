@@ -218,9 +218,10 @@ describe("draft autosave", () => {
     await act(() => Promise.resolve());
     expect(result.current.issue).toEqual({ kind: "conflict", draft: newer });
     expect(result.current.form.getValues("slug")).toBe("mine");
+    // What the edit replaced stays as it was kept: the conflict is not resolved yet.
     expect(readDraftSnapshot(initial.id)).toEqual({
       patch: { slug: "mine" },
-      seen: { slug: "theirs" },
+      seen: { slug: null },
     });
     await act(() => vi.advanceTimersByTimeAsync(20_000));
     expect(api.patch).not.toHaveBeenCalled();
@@ -234,6 +235,30 @@ describe("draft autosave", () => {
     expect(result.current.issue).toBeNull();
     expect(result.current.isDirty).toBe(false);
     expect(readDraftSnapshot(initial.id)).toBeNull();
+  });
+
+  it("asks again after a reload that left the conflict unresolved, instead of saving over the remote edit", async () => {
+    draftSnapshotStore
+      .getState()
+      .keep(initial.id, { patch: { slug: "mine" }, seen: { slug: null } });
+    const newer = { ...initial, slug: "theirs", revision: 2 };
+
+    const first = setup(newer);
+    await act(() => Promise.resolve());
+    expect(first.result.current.issue).toEqual({
+      kind: "conflict",
+      draft: newer,
+    });
+    first.unmount();
+
+    const second = setup(newer);
+    await act(() => Promise.resolve());
+    expect(second.result.current.issue).toEqual({
+      kind: "conflict",
+      draft: newer,
+    });
+    await act(() => vi.advanceTimersByTimeAsync(20_000));
+    expect(api.patch).not.toHaveBeenCalled();
   });
 
   it("ignores locale navigation and reverting an edit before the debounce", async () => {
