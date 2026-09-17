@@ -3,22 +3,13 @@ import * as z from "zod";
 
 import { locale } from "@chia/db/schema/enums";
 import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
-import {
-  feedSchema,
-  feedTranslationSchema,
-  insertFeedSchema,
-} from "@chia/db/validator/feeds";
+import { feedSchema, feedTranslationSchema } from "@chia/db/validator/feeds";
 import { keysetCursorSchema } from "@chia/db/validator/shared";
 
 import { withMetaSchema } from "../shared/schema";
 
 import type { SearchFeedsServiceResult } from "./search.service";
-import {
-  publicFeedSearchItemSchema,
-  searchFeedsSchema,
-  upsertContentRequestSchema,
-  upsertFeedTranslationRequestSchema,
-} from "./validator";
+import { publicFeedSearchItemSchema, searchFeedsSchema } from "./validator";
 
 /** One feed surface; scope widens with `context.caller.tier`. See `access.ts`. */
 
@@ -27,54 +18,15 @@ const dateFields = {
   updatedAt: z.number().optional(),
 };
 
-export const createFeedSchema = insertFeedSchema
-  .omit({ userId: true, createdAt: true, updatedAt: true })
-  .extend({
-    slug: z.string().min(1),
-    /** Partial: a post may exist in one locale. The write service requires the default one. */
-    translations: z.partialRecord(
-      z.enum(locale.enumValues),
-      z.object({
-        title: z.string().min(1),
-        excerpt: z.string().optional().nullable(),
-        description: z.string().optional().nullable(),
-        summary: z.string().optional().nullable(),
-        readTime: z.number().optional().nullable(),
-        /** MDX body. */
-        content: z.string().optional().nullable(),
-      })
-    ),
-    ...dateFields,
-  });
-
-export type CreateFeedInput = z.infer<typeof createFeedSchema>;
-
-export const updateFeedSchema = insertFeedSchema
-  .omit({
-    userId: true,
-    createdAt: true,
-    updatedAt: true,
-    slug: true,
-  })
-  .partial()
-  .extend({
-    feedId: z.number(),
-    translations: z
-      .partialRecord(
-        z.enum(locale.enumValues),
-        z.object({
-          title: z.string().min(1).optional(),
-          excerpt: z.string().optional().nullable(),
-          description: z.string().optional().nullable(),
-          summary: z.string().optional().nullable(),
-          readTime: z.number().optional().nullable(),
-          /** MDX body; omit to leave the stored body alone. */
-          content: z.string().optional().nullable(),
-        })
-      )
-      .optional(),
-    ...dateFields,
-  });
+/**
+ * What may change on a post without going through its draft: whether it is visible, and its
+ * dates. Everything a reader sees of its content changes only when a draft is applied.
+ */
+export const updateFeedSchema = z.object({
+  feedId: z.number(),
+  published: z.boolean().optional(),
+  ...dateFields,
+});
 
 export const deleteFeedSchema = z.object({
   feedId: z.number(),
@@ -281,10 +233,6 @@ const WRITE_ERRORS = {
   INTERNAL_SERVER_ERROR: {},
 } as const;
 
-export const createFeedContract = oc
-  .errors(WRITE_ERRORS)
-  .input(createFeedSchema);
-
 export const updateFeedContract = oc
   .errors(WRITE_ERRORS)
   .input(updateFeedSchema);
@@ -296,16 +244,6 @@ export const deleteFeedContract = oc
 export const restoreFeedContract = oc
   .errors(WRITE_ERRORS)
   .input(restoreFeedSchema);
-
-export const upsertFeedTranslationContract = oc
-  .errors(WRITE_ERRORS)
-  .input(upsertFeedTranslationRequestSchema)
-  .output(z.void());
-
-export const upsertContentContract = oc
-  .errors(WRITE_ERRORS)
-  .input(upsertContentRequestSchema)
-  .output(z.void());
 
 /**
  * The working draft of a post, shared by the dashboard editor and the writing agent. Applying it
@@ -625,12 +563,9 @@ export const feedsContract = {
   related: getRelatedFeedsContract,
   search: searchFeedsContract,
   "search:advanced": searchFeedsAdvancedContract,
-  create: createFeedContract,
   update: updateFeedContract,
   delete: deleteFeedContract,
   restore: restoreFeedContract,
-  "translation:upsert": upsertFeedTranslationContract,
-  "content:upsert": upsertContentContract,
   "draft:open": openFeedDraftContract,
   "draft:get": getFeedDraftContract,
   "draft:list": listFeedDraftsContract,

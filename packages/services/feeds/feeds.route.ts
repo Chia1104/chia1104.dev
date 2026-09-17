@@ -16,13 +16,10 @@ import {
   getFeedById,
   getFeedBySlug,
   getFeedForIndexing,
-  getFeedIdByTranslationId,
   getInfiniteFeedsByUserId,
   deleteFeed,
   restoreFeed,
   softDeleteFeed,
-  upsertContent,
-  upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
@@ -54,7 +51,7 @@ import {
   searchFeedsService,
   searchPublicFeedsService,
 } from "./search.service";
-import { createFeedService, updateFeedService } from "./write.service";
+import { updateFeedService } from "./write.service";
 
 // `publicReadGuard` has no floor: a browser never holds an API key, but one that is sent must
 // still carry `feeds:read`. `keyedReadGuard` is www's server client with `x-ch-api-key`.
@@ -179,26 +176,14 @@ export const searchFeedsAdvancedRoute = contractOS.feeds["search:advanced"]
     });
   });
 
-// `update`, `translation:upsert` and `content:upsert` sit at API-key because the
-// content pipeline drives them; the rest require the operator's session.
+// `update` sits at API-key so a script can publish or date a post; it cannot touch content,
+// which changes only when a draft is applied. The rest require the operator's session.
 
 const contentWriteGuard = callerGuard({
   minTier: CallerTier.ApiKey,
   scopes: [ApiKeyScope.FeedsWrite],
 });
 const rootWriteGuard = callerGuard({ minTier: CallerTier.Root });
-
-export const createFeedRoute = contractOS.feeds.create
-  .use(rootWriteGuard)
-  .handler((opts) =>
-    withORPCErrors(() =>
-      createFeedService(
-        opts.context.db,
-        { ...opts.input, adminId: opts.context.caller.adminId },
-        opts.context.hooks ?? {}
-      )
-    )
-  );
 
 export const updateFeedRoute = contractOS.feeds.update
   .use(contentWriteGuard)
@@ -239,38 +224,6 @@ export const restoreFeedRoute = contractOS.feeds.restore
       throw opts.errors.NOT_FOUND();
     }
     await opts.context.hooks?.onFeedChanged?.(data.id);
-  });
-
-export const upsertFeedTranslationRoute = contractOS.feeds["translation:upsert"]
-  .use(contentWriteGuard)
-  .handler(async (opts) => {
-    const translation = await upsertFeedTranslation(
-      opts.context.db,
-      opts.input
-    );
-
-    if (translation) {
-      await opts.context.hooks?.onFeedChanged?.(translation.feedId);
-    }
-  });
-
-export const upsertContentRoute = contractOS.feeds["content:upsert"]
-  .use(contentWriteGuard)
-  .handler(async (opts) => {
-    // `UPDATE` keyed on translation id: an unknown id matches no row. Ignoring that answered 2xx to a write that never landed.
-    const content = await upsertContent(opts.context.db, opts.input);
-
-    if (!content) {
-      throw opts.errors.NOT_FOUND();
-    }
-
-    const feedID = await getFeedIdByTranslationId(opts.context.db, {
-      translationId: opts.input.feedTranslationId,
-    });
-
-    if (feedID) {
-      await opts.context.hooks?.onFeedChanged?.(feedID);
-    }
   });
 
 // The working draft is the operator's; the agent reaches it through its own port, never here.
@@ -503,12 +456,9 @@ export const feedsRouter = contractOS.feeds.router({
   related: getRelatedFeedsRoute,
   search: searchFeedsRoute,
   "search:advanced": searchFeedsAdvancedRoute,
-  create: createFeedRoute,
   update: updateFeedRoute,
   delete: deleteFeedRoute,
   restore: restoreFeedRoute,
-  "translation:upsert": upsertFeedTranslationRoute,
-  "content:upsert": upsertContentRoute,
   "draft:open": openFeedDraftRoute,
   "draft:get": getFeedDraftRoute,
   "draft:list": listFeedDraftsRoute,

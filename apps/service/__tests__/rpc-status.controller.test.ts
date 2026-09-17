@@ -30,12 +30,9 @@ describe("RPCHandler errorStatusMap", () => {
 
   it("maps NOT_FOUND to 404", async () => {
     guardMocks.setCallerTier(CallerTier.ApiKey);
-    dbMocks.upsertContent.mockResolvedValue(undefined);
+    dbMocks.updateFeed.mockResolvedValue(undefined);
 
-    const res = await rpc("feeds/content:upsert", {
-      feedTranslationId: 999,
-      content: "# hello",
-    });
+    const res = await rpc("feeds/update", { feedId: 999, published: true });
 
     expect(res.status).toBe(404);
   });

@@ -4,21 +4,9 @@ import type { DB } from "@chia/db/client";
 import { FeedType, Locale } from "@chia/db/types";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 
-import { createFeedSchema } from "../feeds.contract.ts";
 import { createFeedService } from "../write.service.ts";
 
 describe("feed slug invariant", () => {
-  it("requires an explicit slug at the API contract", () => {
-    expect(
-      createFeedSchema.safeParse({
-        type: FeedType.Post,
-        translations: {
-          [Locale.zhTW]: { title: "RAG 架構" },
-        },
-      }).success
-    ).toBe(false);
-  });
-
   it("normalizes an English phrase without inventing a translation", () => {
     expect(normalizeAsciiSlug("Embedding & RAG Architecture")).toBe(
       "embedding-rag-architecture"
