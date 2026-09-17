@@ -25,12 +25,17 @@ describe("draft snapshot store", () => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        state: { entries: [{ draftId: 7, revision: 1, patch: { slug: "x" } }] },
-        version: 1,
+        state: {
+          entries: [{ draftId: 7, patch: { slug: "x" }, seen: { slug: null } }],
+        },
+        version: 2,
       })
     );
     const { readDraftSnapshot } =
       await import("../src/components/feed/draft-snapshot");
-    expect(readDraftSnapshot(7)).toEqual({ revision: 1, patch: { slug: "x" } });
+    expect(readDraftSnapshot(7)).toEqual({
+      patch: { slug: "x" },
+      seen: { slug: null },
+    });
   });
 });

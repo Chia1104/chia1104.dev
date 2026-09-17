@@ -18,8 +18,15 @@ import { orpc } from "@/libs/orpc/client";
 
 import type { DraftFormValues } from "./draft-form-schema";
 import { draftSnapshotStore, readDraftSnapshot } from "./draft-snapshot";
-import { applyPatch, diffValues, toValues } from "./draft-values";
-import type { DraftView } from "./draft-values";
+import {
+  applyPatch,
+  diffValues,
+  rebaseValues,
+  seenOf,
+  toValues,
+  toWrite,
+} from "./draft-values";
+import type { DraftValues, DraftView } from "./draft-values";
 
 const AUTOSAVE_WAIT_MS = 3000;
 /** Continuous typing still reaches the server this often. */
@@ -71,6 +78,40 @@ export const useDraftAutosave = ({
     [onSaved]
   );
 
+  // A copy: the form hands out its live values, and what a request sent must not move under it.
+  const localValues = useCallback((): DraftValues => {
+    const { activeLocale: _activeLocale, ...values } = form.getValues();
+    return structuredClone(values);
+  }, [form]);
+
+  /**
+   * Carries the local edits, made against `base`, onto `next` and takes `next` as the new
+   * baseline. Answers false, and pauses saving, when a field both sides changed is left.
+   */
+  const carry = useCallback(
+    (next: DraftView, base: DraftValues, acknowledged: boolean): boolean => {
+      const local = localValues();
+      const { values, conflicts } = rebaseValues({
+        base,
+        local,
+        next: toValues(next),
+        acknowledged,
+      });
+      if (diffValues(values, local)) {
+        form.reset({
+          ...values,
+          activeLocale: form.getValues("activeLocale"),
+        });
+      }
+      acknowledge(next);
+      if (conflicts.length === 0) return true;
+      blocked.current = true;
+      setIssue({ kind: "conflict", draft: next });
+      return false;
+    },
+    [acknowledge, form, localValues]
+  );
+
   const adopt = useCallback(
     (next: DraftView) => {
       form.reset({
@@ -89,39 +130,35 @@ export const useDraftAutosave = ({
     if (blocked.current) return Promise.resolve(false);
     const save = async () => {
       try {
-        let delta = diffValues(form.getValues(), toValues(baseline.current));
-        while (delta) {
-          const next = await mutateAsync({
-            draftId: initial.id,
-            expectedRevision: baseline.current.revision,
-            ...delta,
-          });
-          acknowledge(next);
+        for (;;) {
+          const sent = localValues();
+          const write = toWrite(sent, toValues(baseline.current));
           // Edits made during a request must finish saving before Apply can proceed.
-          delta = diffValues(form.getValues(), toValues(next));
+          if (!write) break;
+          let next: DraftView;
+          try {
+            next = await mutateAsync({ draftId: initial.id, ...write });
+          } catch (error) {
+            if (!(error instanceof ORPCError && error.code === "CONFLICT")) {
+              throw error;
+            }
+            // A field moved under the write: carry the edits onto what the draft holds now
+            // and send again. A draft that did not move would reject the same write forever.
+            const latest = await loadLatest();
+            if (latest.revision <= baseline.current.revision) throw error;
+            if (!carry(latest, toValues(baseline.current), false)) return false;
+            continue;
+          }
+          if (!carry(next, sent, true)) return false;
         }
         setIssue(null);
         return true;
       } catch (error) {
         blocked.current = true;
-        if (error instanceof ORPCError && error.code === "CONFLICT") {
-          try {
-            setIssue({ kind: "conflict", draft: await loadLatest() });
-          } catch (loadError) {
-            setIssue({
-              kind: "error",
-              message:
-                loadError instanceof Error
-                  ? loadError.message
-                  : "Could not load the latest draft. Retry saving to resolve the conflict.",
-            });
-          }
-        } else {
-          setIssue({
-            kind: "error",
-            message: error instanceof Error ? error.message : "Save failed",
-          });
-        }
+        setIssue({
+          kind: "error",
+          message: error instanceof Error ? error.message : "Save failed",
+        });
         return false;
       } finally {
         pending.current = null;
@@ -130,7 +167,7 @@ export const useDraftAutosave = ({
     // Defer execution until the shared promise is assigned, including the no-change path.
     pending.current = Promise.resolve().then(save);
     return pending.current;
-  }, [acknowledge, form, initial.id, loadLatest, mutateAsync]);
+  }, [carry, initial.id, loadLatest, localValues, mutateAsync]);
 
   // Every edit restarts the wait; a form back at its saved state drops the pending save.
   const scheduled = useDebouncer(() => void flush(), {
@@ -173,7 +210,7 @@ export const useDraftAutosave = ({
   const persist = useEffectEvent(() => {
     const { keep, drop } = draftSnapshotStore.getState();
     if (patch) {
-      keep(initial.id, { revision: saved.revision, patch });
+      keep(initial.id, { patch, seen: seenOf(patch, toValues(saved)) });
       kept.current = true;
     } else if (kept.current) {
       drop(initial.id);
@@ -182,31 +219,28 @@ export const useDraftAutosave = ({
   });
   useEffect(() => persist(), [changes]);
 
-  // Edits made against the current revision resume; edits against an older one are a conflict.
+  // Edits kept in this browser come back carried onto what the draft holds now; only a field
+  // that moved on both sides is left for the operator.
   const restore = useEffectEvent(() => {
     const snapshot = readDraftSnapshot(initial.id);
     if (!snapshot) return;
-    const activeLocale = form.getValues("activeLocale");
-    if (snapshot.revision === initial.revision) {
-      form.reset({
-        ...applyPatch(toValues(initial), snapshot.patch),
-        activeLocale,
-      });
+    const current = toValues(initial);
+    const { values, conflicts } = rebaseValues({
+      base: applyPatch(current, snapshot.seen),
+      local: applyPatch(current, snapshot.patch),
+      next: current,
+    });
+    form.reset({ ...values, activeLocale: form.getValues("activeLocale") });
+    if (conflicts.length === 0) {
       void flush();
       return;
     }
-    draftSnapshotStore.getState().drop(initial.id);
-    if (snapshot.revision < initial.revision) {
-      form.reset({
-        ...applyPatch(toValues(initial), snapshot.patch),
-        activeLocale,
-      });
-      blocked.current = true;
-      setIssue({ kind: "conflict", draft: initial });
-    }
+    blocked.current = true;
+    setIssue({ kind: "conflict", draft: initial });
   });
   useEffect(() => restore(), []);
 
+  /** A newer draft from the watch or a refetch: local edits are carried onto it rather than holding it back. */
   const receive = useCallback(
     (next: DraftView) => {
       if (
@@ -215,10 +249,9 @@ export const useDraftAutosave = ({
         pending.current
       )
         return;
-      if (diffValues(form.getValues(), toValues(baseline.current))) return;
-      adopt(next);
+      carry(next, toValues(baseline.current), false);
     },
-    [adopt, form]
+    [carry]
   );
 
   /** Saves pending edits, then answers the draft as the server acknowledged it; `null` while saving is blocked. */
@@ -233,18 +266,13 @@ export const useDraftAutosave = ({
     return flush();
   };
 
+  /** Writes the local values over the draft the conflict was found against. */
   const keepMine = async () => {
     if (issue?.kind !== "conflict") return;
-    const mine = diffValues(form.getValues(), toValues(baseline.current));
-    const next = issue.draft;
-    adopt(next);
-    if (mine) {
-      form.reset({
-        ...applyPatch(toValues(next), mine),
-        activeLocale: form.getValues("activeLocale"),
-      });
-      await flush();
-    }
+    blocked.current = false;
+    setIssue(null);
+    acknowledge(issue.draft);
+    await flush();
   };
 
   return {
