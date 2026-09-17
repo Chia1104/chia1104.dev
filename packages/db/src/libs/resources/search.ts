@@ -16,10 +16,10 @@ const RRF_K = 60;
 const RESOURCE_SCORE_TOP_N = 3;
 
 /**
- * Weight per rank inside a resource's top-N (1, ¼, ¹⁄₁₆).
- * A plain sum lets three mediocre RRF scores of a long article beat one top chunk of a short one; 0.25 measured better than 0.5 on the hybrid path (`toolings/scripts/rag-eval`).
+ * Weight per rank inside a resource's top-N (1, ¹⁄₁₀, ¹⁄₁₀₀).
+ * RRF scores are nearly flat (`1 / (60 + rank)`), so a heavier breadth term lets three mediocre chunks of a long article beat the one top chunk of a short one. 0.1 measured better than 0.25 on the hybrid path and level on the others (`toolings/scripts/rag-eval`).
  */
-const RESOURCE_SCORE_DECAY = 0.25;
+const RESOURCE_SCORE_DECAY = 0.1;
 
 /**
  * Chunks a resource hit keeps for its reader, each adding a section the ones before it do not cover.

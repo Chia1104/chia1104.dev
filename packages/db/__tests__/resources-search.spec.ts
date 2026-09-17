@@ -42,7 +42,7 @@ describe("aggregateChunkHits", () => {
     const hits = [...focused, ...many];
 
     const [first] = aggregateChunkHits(hits, 10);
-    // 0.2 × (1 + ¼ + ¹⁄₁₆) < 0.9 × (1 + ¼). Chunks beyond the top N
+    // 0.2 × (1 + ¹⁄₁₀ + ¹⁄₁₀₀) < 0.9 × (1 + ¹⁄₁₀). Chunks beyond the top N
     // contribute nothing, and decayed later ranks cannot pile up past a
     // dominant best chunk
     expect(first?.sourceId).toBe(2);

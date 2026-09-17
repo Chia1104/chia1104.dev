@@ -193,7 +193,7 @@ Callers cannot choose the embedding model. Server-side provider configuration co
 ```text
 chunk hits
   → group by source_type + source_id
-  → sum the top three chunks with decay weights 1, 1/4, 1/16
+  → sum the top three chunks with decay weights 1, 1/10, 1/100
   → keep up to five chunks, best first, each covering a section the ones before it do not
   → sort and trim to limit
   → adapter.hydrate restores title, description, href and locale in batches

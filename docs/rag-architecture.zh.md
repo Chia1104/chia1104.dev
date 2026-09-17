@@ -193,7 +193,7 @@ Hybrid 使用 `FULL OUTER JOIN` 保留只出現在單側的結果，分數為 `�
 ```text
 chunk hits
   → 依 source_type + source_id 分組
-  → 以前三個 chunk 的衰減權重 1、1/4、1/16 加總
+  → 以前三個 chunk 的衰減權重 1、1/10、1/100 加總
   → 保留最多五個 chunk（最佳在前），每個都涵蓋前面尚未涵蓋的章節
   → 排序並截到 limit
   → adapter.hydrate 批次還原 title、description、href、locale
