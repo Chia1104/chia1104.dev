@@ -23,11 +23,12 @@ import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
 
 const MAX_PAGE_CHARS = 16_000;
 /**
- * How much of a page a `source` memory keeps. The index chunks the whole thing, so a later
+ * How much of a page a `source` memory keeps; `MEMORY_CONTENT_MAX_CHARS` in the memory service
+ * is the same bound and rejects anything longer. The index chunks the whole thing, so a later
  * `search_memory` can land on a section this turn never looked at. Bounded so a pathological
  * page cannot become a megabyte row.
  */
-const SOURCE_MAX_CHARS = 64_000;
+const SOURCE_MAX_CHARS = 256_000;
 /** Heading paths listed after a cut; a page with more is reached through `search_memory`. */
 const MAX_UNREAD_HEADINGS = 40;
 const MAX_SEARCH_RESULTS = 10;
@@ -223,10 +224,9 @@ const recordSource = async (
   signal: AbortSignal | undefined
 ): Promise<{ id: number; text: string } | null> => {
   const trimmed = page.text.trim();
-  // a cut inside a code fence would turn the rest of the page into code, or code into prose
   const text =
     trimmed.length > SOURCE_MAX_CHARS
-      ? closeOpenFence(trimmed.slice(0, SOURCE_MAX_CHARS))
+      ? cutWithinFences(trimmed, SOURCE_MAX_CHARS)
       : trimmed;
   if (text.length === 0) return null;
   try {
@@ -247,6 +247,18 @@ const recordSource = async (
     });
     return null;
   }
+};
+
+/**
+ * A cut inside a code fence would turn the rest of the page into code, so the fence is closed;
+ * the cut moves back by what closing added, keeping the result within `maxChars`.
+ */
+const cutWithinFences = (text: string, maxChars: number): string => {
+  const closed = closeOpenFence(text.slice(0, maxChars));
+  const overflow = closed.length - maxChars;
+  return overflow > 0
+    ? closeOpenFence(text.slice(0, maxChars - overflow))
+    : closed;
 };
 
 const hostnameOf = (url: string): string => {

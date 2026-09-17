@@ -176,10 +176,10 @@ describe("fetchUrlTool source trail", () => {
     expect(context.memory.all.map((row) => row.title)).toEqual(["example.com"]);
   });
 
-  it("closes a code fence the 64k cut left open, and leaves a closed one alone", async () => {
+  it("closes a code fence the cut left open without exceeding the bound, and leaves a closed one alone", async () => {
     const context = createContext();
-    const open = `intro\n\n\`\`\`ts\n${"x".repeat(70_000)}`;
-    const closed = `\`\`\`ts\ncode\n\`\`\`\n\n${"y".repeat(70_000)}`;
+    const open = `intro\n\n\`\`\`ts\n${"x".repeat(260_000)}`;
+    const closed = `\`\`\`ts\ncode\n\`\`\`\n\n${"y".repeat(260_000)}`;
     context.web = createFakeWebPort({
       pages: {
         "https://example.com/open": {
@@ -202,8 +202,9 @@ describe("fetchUrlTool source trail", () => {
 
     const [first, second] = context.memory.all;
     expect(first?.content.endsWith("\n```")).toBe(true);
-    expect(first?.content).toHaveLength(64_000 + 4);
-    expect(second?.content).toHaveLength(64_000);
+    // the memory service rejects anything past the bound, fence included
+    expect(first?.content).toHaveLength(256_000);
+    expect(second?.content).toHaveLength(256_000);
     expect(second?.content.endsWith("yyy")).toBe(true);
   });
 

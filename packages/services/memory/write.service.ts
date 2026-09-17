@@ -28,7 +28,7 @@ import type { MemoryHooks } from "../shared/context";
  * A `source` holds the whole fetched page, bounded (`SOURCE_MAX_CHARS` in the fetch tool);
  * a fact written by the tool is capped at 4k. The dashboard edits within the same bound.
  */
-export const MEMORY_CONTENT_MAX_CHARS = 64_000;
+export const MEMORY_CONTENT_MAX_CHARS = 256_000;
 export const MEMORY_TITLE_MAX_CHARS = 200;
 
 const assertTitle = (title: string): string => {
