@@ -57,6 +57,12 @@ pnpm --filter rag-eval eval "db-url=<local…/chia-eval>" out=reports/after.json
 - `cover` is the share of a `multi` query's `expectedHeadings` that the hit's
   chunks reach (shown per query as `1 2/3`: rank, then sections reached). It is
   the number to watch when changing how many chunks a hit keeps.
+- `read` is the share of the expected headings still present after the post
+  is fitted into `get_post`'s token budget with the hit's headings as focus.
+  Found is not read: it drops when a post outgrows the budget.
+- `memory` queries search the agent's stored pages the way `search_memory`
+  does and expect source URLs, so they need a database holding those pages;
+  the runner fails fast when one is missing.
 - `R@1 by kind` and `R@5 by kind` are the actionable slices: `paraphrase`
   measures the semantic path, `term` the lexical path, `heading` the case where
   the answer sits under a heading whose words the section body does not repeat,

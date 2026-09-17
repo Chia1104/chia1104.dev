@@ -2872,6 +2872,9 @@ importers:
 
   toolings/scripts/rag-eval:
     devDependencies:
+      '@chia/agent-content':
+        specifier: workspace:*
+        version: link:../../../packages/agent-content
       '@chia/ai':
         specifier: workspace:*
         version: link:../../../packages/ai

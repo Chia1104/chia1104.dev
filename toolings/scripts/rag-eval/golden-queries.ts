@@ -17,6 +17,9 @@ import type { Locale } from "@chia/db/types";
  *   `cover`, the share of `expectedHeadings` the hit's chunks reach.
  * - `cross`      — the query is not in the locale it searches, so only the
  *   semantic path can carry it; bm25 is expected to miss.
+ * - `memory`     — searches the agent's stored pages instead of posts, the way
+ *   `search_memory` does; `expected` holds source URLs. Long external pages
+ *   on neighbouring subjects, mostly English under Chinese queries.
  *
  * A query the corpus cannot answer is not here: ranks are relative, so
  * retrieval always returns something and only an agent-level eval can tell
@@ -28,7 +31,8 @@ export type GoldenQueryKind =
   | "heading"
   | "confusable"
   | "multi"
-  | "cross";
+  | "cross"
+  | "memory";
 
 export interface GoldenQuery {
   /** stable id, used to reference a query in reports and diffs */
@@ -36,7 +40,7 @@ export interface GoldenQuery {
   query: string;
   /** omit to exercise the no-locale (cross-locale dedupe) path */
   locale?: Locale;
-  /** feed slugs that count as relevant; usually exactly one */
+  /** feed slugs that count as relevant, or source URLs for a `memory` query; usually exactly one */
   expected: string[];
   /**
    * Case-insensitive substring the hit's best-chunk `headingPath` must
@@ -637,5 +641,105 @@ export const GOLDEN_QUERIES: GoldenQuery[] = [
     locale: "en",
     expected: ["ai-agent-development-workflow"],
     kind: "cross",
+  },
+
+  // ── memory · the agent's stored pages ────────────────────────────────
+  {
+    id: "mem-pi-sessions",
+    query: "Pi 的 session 檔案是什麼格式，compaction 之後舊的歷史還在嗎",
+    expected: [
+      "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/sessions.md",
+    ],
+    kind: "memory",
+  },
+  {
+    id: "mem-pi-extensions",
+    query: "替 Pi coding agent 寫自己的 extension",
+    expected: [
+      "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/extensions.md",
+    ],
+    kind: "memory",
+  },
+  {
+    id: "mem-zeabur-incident",
+    query: "Zeabur 專案未授權存取事件的官方公告",
+    expected: ["https://status.zeabur.com/incident/1037896"],
+    kind: "memory",
+  },
+  {
+    id: "mem-owasp-secrets",
+    query: "OWASP 對 secrets 管理的建議清單",
+    expected: [
+      "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+    ],
+    kind: "memory",
+  },
+  {
+    id: "mem-azure-secrets",
+    query: "Microsoft 對保護 secrets 的最佳實務",
+    expected: [
+      "https://learn.microsoft.com/en-us/azure/security/fundamentals/secrets-best-practices",
+    ],
+    kind: "memory",
+  },
+  {
+    id: "mem-cf-secret-binding",
+    query: "Worker 要怎麼綁定 Secrets Store 裡的 secret",
+    expected: [
+      "https://developers.cloudflare.com/secrets-store/integrations/workers/",
+    ],
+    kind: "memory",
+  },
+  {
+    id: "mem-redis-delivery",
+    query: "Redis pub/sub 的訊息會不會遺失，傳遞保證是什麼",
+    expected: ["https://redis.io/docs/latest/develop/pubsub/"],
+    kind: "memory",
+  },
+  {
+    id: "mem-workflow-webhook",
+    query: "workflow 暫停下來等外部系統回呼再繼續",
+    expected: ["https://workflow-sdk.dev/docs/foundations/hooks"],
+    kind: "memory",
+  },
+  {
+    id: "mem-workflow-create-webhook",
+    query: "createWebhook",
+    expected: ["https://workflow-sdk.dev/docs/foundations/hooks"],
+    kind: "memory",
+  },
+  {
+    id: "mem-world-redis",
+    query: "workflow 的 redis world 套件怎麼設定",
+    expected: [
+      "https://github.com/mizzle-dev/workflow-worlds/tree/main/packages/redis",
+    ],
+    kind: "memory",
+  },
+  {
+    id: "mem-ioredis-cluster",
+    query: "用 ioredis 連 Redis Cluster",
+    expected: ["https://github.com/redis/ioredis"],
+    kind: "memory",
+  },
+  {
+    id: "mem-stripe-idempotency",
+    query: "重送同一個 POST 請求時怎麼避免重複扣款",
+    expected: ["https://docs.stripe.com/api/idempotent_requests"],
+    kind: "memory",
+  },
+  {
+    id: "mem-rfc-idempotent-methods",
+    query: "HTTP 規範裡哪些 method 被定義為 idempotent",
+    expected: ["https://www.rfc-editor.org/rfc/rfc9110"],
+    kind: "memory",
+  },
+  {
+    id: "mem-tokenizer-lazy-load",
+    query: "為什麼 tokenizer 要延遲載入",
+    expected: [
+      "https://github.com/Chia1104/chia1104.dev/blob/develop/packages/ai/src/embeddings/tokenizer.ts",
+    ],
+    kind: "memory",
   },
 ];

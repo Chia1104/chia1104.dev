@@ -12,6 +12,7 @@
     "reindex": "tsx --env-file=../../../.env.global reindex.ts"
   },
   "devDependencies": {
+    "@chia/agent-content": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/services": "workspace:*",
