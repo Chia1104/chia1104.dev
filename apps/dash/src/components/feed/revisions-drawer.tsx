@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { Button, Card, Chip, Drawer, Spinner, Tabs } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -58,6 +58,9 @@ const RevisionList = ({
   isRestoring: boolean;
   isDisabled: boolean;
 }) => {
+  // The virtualizer is one stable object whose answers change as the list scrolls; compiled
+  // memoization would keep the rows it returned first.
+  "use no memo";
   const queryClient = useQueryClient();
   const revisions = useQuery(
     orpc.feeds["draft:revisions"].queryOptions({ input: { draftId, kind } })
@@ -75,12 +78,24 @@ const RevisionList = ({
   );
 
   const items = revisions.data?.items ?? [];
+  const list = useRef<HTMLUListElement>(null);
+  // The tabs sit above the list inside the same scroll element.
+  const [scrollMargin, setScrollMargin] = useState(0);
+  useLayoutEffect(() => {
+    if (!list.current || !scrollElement) return;
+    setScrollMargin(
+      list.current.getBoundingClientRect().top -
+        scrollElement.getBoundingClientRect().top +
+        scrollElement.scrollTop
+    );
+  }, [scrollElement, items.length]);
   const virtualizer = useVirtualizer({
     count: items.length,
     estimateSize: () => ESTIMATED_ROW_SIZE,
     getItemKey: (index) => items[index]?.id ?? index,
     getScrollElement: () => scrollElement,
     overscan: 6,
+    scrollMargin,
   });
 
   if (revisions.isLoading)
@@ -94,6 +109,7 @@ const RevisionList = ({
 
   return (
     <ul
+      ref={list}
       className="relative w-full"
       style={{ height: virtualizer.getTotalSize() }}>
       {virtualizer.getVirtualItems().map((virtualRow) => {
@@ -105,7 +121,9 @@ const RevisionList = ({
             ref={virtualizer.measureElement}
             className="absolute top-0 left-0 w-full pb-2"
             data-index={virtualRow.index}
-            style={{ transform: `translateY(${virtualRow.start}px)` }}>
+            style={{
+              transform: `translateY(${virtualRow.start - scrollMargin}px)`,
+            }}>
             <Card
               className="flex-row items-center justify-between gap-3 p-3"
               variant="secondary">

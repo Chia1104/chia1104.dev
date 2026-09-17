@@ -13,6 +13,7 @@ import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
 import { Logo } from "../commons/logo";
+import { VirtualGrid } from "../commons/virtual-grid";
 
 import FeedSkeleton from "./skeleton";
 
@@ -22,6 +23,9 @@ const SUPPORTED_LOCALES_META = [
   { key: "zh-TW", label: "中文" },
   { key: "en", label: "EN" },
 ] as const;
+
+/** A card's usual height; rows are measured once mounted. */
+const DRAFT_ROW_SIZE = 200;
 
 const Empty = () => (
   <Card className="prose dark:prose-invert page-sm:px-4 flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12">
@@ -186,12 +190,12 @@ export const DraftList = () => {
   if (items.length === 0) return <Empty />;
 
   return (
-    <div className="w-full">
-      <div className="page-md:grid-cols-2 grid grid-cols-1 gap-5">
-        {items.map((draft) => (
-          <DraftItem key={draft.id} draft={draft} />
-        ))}
-      </div>
-    </div>
+    <VirtualGrid
+      className="page-md:grid-cols-2 grid-cols-1 gap-5"
+      estimateRowSize={DRAFT_ROW_SIZE}
+      getKey={(draft) => draft.id}
+      items={items}>
+      {(draft) => <DraftItem key={draft.id} draft={draft} />}
+    </VirtualGrid>
   );
 };
