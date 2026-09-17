@@ -204,7 +204,7 @@ export const GOLDEN_QUERIES: GoldenQuery[] = [
     query: "hydrateRoot 怎麼用",
     locale: "zh-TW",
     expected: ["nextjs-hydration-errors-explained-solutions"],
-    expectedHeading: "hydrateRoot",
+    expectedHeading: "如何 Hydration",
     kind: "heading",
   },
   {

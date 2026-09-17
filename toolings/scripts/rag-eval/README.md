@@ -14,7 +14,7 @@ improvement from a regression.
 ## Usage
 
 Needs a database holding the real corpus with current embeddings and, for
-`semantic` / `hybrid`, `OPENAI_API_KEY` in `.env.global`.
+`semantic` / `hybrid`, `EMBEDDING_API_KEY` in `.env.global`.
 
 ```bash
 pnpm --filter rag-eval eval                    # all modes, all queries
@@ -49,6 +49,9 @@ pnpm --filter rag-eval eval "db-url=<local…/chia-eval>" out=reports/after.json
 
 - The per-query table shows the rank of the first expected slug per mode
   (`-` = not in the top 10).
+- `cite` is whether the hit's best chunk sits under the query's
+  `expectedHeading`; `cite@3` is whether any chunk the hit returned does, which
+  is what an agent reading the hit's `matches` can reach.
 - `R@K` is averaged over the query set; with single-expected queries it is the
   fraction of queries whose answer appears in the top K.
 - `R@5 by kind` is the actionable slice: `paraphrase` measures the semantic
