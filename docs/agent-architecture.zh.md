@@ -203,7 +203,7 @@ sequenceDiagram
     G-->>M: allow，並花掉這筆 approval
 ```
 
-以下情況可放行：tier 不需核准、session auto-approves 該 tier，或該呼叫的 approval key 有一筆尚未花掉的 approval。Key 是 kind 定義的呼叫身分，不是 call id，因為重發的呼叫會帶新的 id。Writing kind 把 `commit_draft` 綁到 operator 看到的 draft revision，把 `set_published` 綁到 feed 與目標狀態，所以換一份 draft，或 draft 在決定後被改過，都會重新被 gate。Approval 在呼叫執行前先持久化為已花掉，且只能用於一次呼叫。批准時綁定的 revision 會跟著該呼叫走：`commit_draft` 提交的就是那個 revision，apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對，決定與寫入之間被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的 revision，同樣在該鎖之下。
+以下情況可放行：tier 不需核准、session auto-approves 該 tier，或該呼叫的 approval key 有一筆尚未花掉的 approval。Key 是 kind 定義的呼叫身分，不是 call id，因為重發的呼叫會帶新的 id。Writing kind 把 `commit_draft` 綁到 operator 看到的 draft 內容 hash，把 `set_published` 綁到 feed 與目標狀態，所以換一份 draft，或 draft 在決定後被改過，都會重新被 gate。Approval 在呼叫執行前先持久化為已花掉，且只能用於一次呼叫。批准時綁定的 hash 會跟著該呼叫走：`commit_draft` 提交的就是那份內容，apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對 hash，決定與寫入之間被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的內容，同樣在該鎖之下。
 
 Decision 只寫一次，寫在 pending row 上，與 relay run 的 row 在同一個交易，並把該 run 記在 decision 上。對已決定的 row 再呼叫 `approve`，只有在 relay run 關閉時 marker 仍未被 claim（從未執行）才會重送紀錄中的 decision；executor claim 過的 relay 不論結果如何，以及結果不明的 relay，都不會啟動任何東西。Reject 也會建立 relay turn，讓模型回應 operator comment。
 
@@ -319,7 +319,7 @@ Web search 只回 snippets；`fetch_url` 抓取單一頁面，並透過 `MemoryP
 
 `feed_draft` 是一篇文章的 working copy，由 dashboard 編輯器、MCP tools 與 writing agent 共用。一個 feed 最多一份 draft；沒有 feed 的 draft 就是尚未建立的新文章。`feed` 只在 draft 被 apply 時改變，因此 draft 寫入不會觸發 feed indexing。
 
-每次寫入都是對 `feed_draft.revision` 的 compare-and-set，在同一個鎖住該列的 transaction 內完成。編輯器帶著它載入時的 revision，遇到 `CONFLICT` 時把自己改過的欄位合併到較新的 draft 上，或直接採用較新的版本。Agent 的 `edit_draft_content` 與 `replace_section` 都是在鎖內對當前 body 做字串替換：先精確比對，再依序忽略行首尾空白與彎引號、破折號的字型差異（`@chia/utils/text` 的 `MatchMode`），但不放寬字詞內容；section 以 `@chia/ai/embeddings/markdown` 從解析後的 body 得到的 heading path 定址；`write_draft_content` 釘在該 turn 最後觀察到的 revision，寧可失敗也不覆蓋 operator 的修改。`feed_draft_revision` 保存 restore points 與每個 revision 改了哪些欄位；連續的 operator 儲存會合併，且每份 draft 有上限。
+每次寫入都是對 `feed_draft.revision` 的 compare-and-set，在同一個鎖住該列的 transaction 內完成。編輯器帶著它載入時的 revision，遇到 `CONFLICT` 時把自己改過的欄位合併到較新的 draft 上，或直接採用較新的版本。Agent 的 `edit_draft_content` 與 `replace_section` 都是在鎖內對當前 body 做字串替換：先精確比對，再依序忽略行首尾空白與彎引號、破折號的字型差異（`@chia/utils/text` 的 `MatchMode`），但不放寬字詞內容；section 以 `@chia/ai/embeddings/markdown` 從解析後的 body 得到的 heading path 定址；`write_draft_content` 釘在該 turn 最後觀察到的 revision，寧可失敗也不覆蓋 operator 的修改。`feed_draft.content_hash` 是 draft 內容的身分，`revision` 只負責排序。`feed_draft_revision` 的每一列都是不可變的快照，分兩種。Apply 就是 commit：該列在寫入 feed 的同一個交易內建立，`feed_draft.applied_revision_id` 指向它，draft 的 hash 與該 commit 不同就代表有未套用的變更。Apply、restore 與 discard 都以 `expectedHash` 為前提。Safety point 由寫入路徑自行保留：寫入者換手、最新一列已超過十分鐘，或整份 draft 即將被取代時，先保留即將被取代的狀態，因此相鄰兩列之間只有後一列的 author 寫過。未釘選的 safety point 每份 draft 有上限；commit 與已釘選的列永不修剪。
 
 Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts` 與 `open_draft` 負責找到或建立，operator 則以 prompt 附件（`{ type: "draft", id }`）交付。Kind 的 `attach` 在 session lock 內、turn 入列前驗證附件；runtime 把附件渲染成持久化 user message 的第一個 text block，並在 `user` wire event 上標上 label，live 與 replay 的 transcript 因此一致。Client 端由 `@chia/agent-elements/context` 讓 host 頁面登記目前開啟的記錄；session store 會把這些記錄附在每一則 prompt、建議提問與 slash command 上，operator 不論從哪個入口起 turn，model 都看得到開啟中的 draft。同一個 host 也透過 `onToolEvent` 收到 session 的 `tool:start` 與 `tool:end`，編輯器據此顯示 agent 正在對開啟中的 draft 做什麼，並在 draft-tier 呼叫結束時立刻重新讀取；`feeds.draft:watch` 走 Postgres NOTIFY 仍是該列的權威來源，因為 MCP client 與未掛載的 session 也會寫入它。
 
@@ -329,7 +329,7 @@ Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts`
 
 公開站由 `@chia/agent-elements/selection` 量測 DOM 選取並浮出觸發按鈕與選單；粗指標（觸控）裝置上觸發按鈕改放在視窗底部，避開原生選取工具列。選單只提供固定問題，因為訪客的每週額度很小，段落加上已知的問題就是 model 需要的全部。編輯器則把項目掛在 Monaco 自己的右鍵選單上（precondition `editorHasSelection`），文字上方不再疊任何東西：預設動作直接送出一輪，另一項把選取附加到 composer 讓操作者自行提問。動作要嘛把選取提供為一次性的 context item（`once`，下一則 prompt 帶出後即撤回），要嘛在 context store 登記一筆 `AgentContextRequest`。掛在同一個 `AgentContextProvider` 下的 session 一旦能接受 prompt 就會送出待處理的請求，頁面因此能在 drawer 尚未開啟或 session 仍在 hydrate 時發起 turn。
 
-`agent.writing_session_draft` 記錄 session 處理過的每份 draft，以及 turn 結束時觀察到的最高 revision。下一個 turn 的 volatile context 列出 session 最近的 drafts，並逐份把高於該 revision 的 operator revisions 列成「operator edits since your last turn」，讓 model 先重讀再編輯。丟棄 draft 會刪除它與 session 的對應列；仍指名它的 tool call 會收到 not-found 錯誤。
+`agent.writing_session_draft` 記錄 session 處理過的每份 draft，以及 turn 結束時觀察到的最高 revision。下一個 turn 的 volatile context 列出 session 最近的 drafts，並逐份把「與該 revision 當時或之前最新保留狀態不同的欄位」列成「operator edits since your last turn」，讓 model 先重讀再編輯。寫入者換手時會保留被接手的狀態，所以 agent 最後寫過的 draft 會從它離開的那一刻開始比較。丟棄 draft 會刪除它與 session 的對應列；仍指名它的 tool call 會收到 not-found 錯誤。
 
 ### Memory lifecycle
 
@@ -347,7 +347,7 @@ Fact 與 source 只透過可見的 `search_memory`、`get_memory` tool call 進�
 
 Lesson 有兩個作者、一道閘門。Operator 糾正模型、附理由拒絕 commit 或說出常駐偏好時，模型在 turn 內以 `propose_lesson` 提案；其餘由 `memoryConsolidationWorkflow` 事後提案。兩者都以 `pending` 落地，未經人員審核的 model output 不會成為常駐 prompt instruction。提案可以取代一條 active lesson；核准時在同一個 transaction 裡封存被取代的那條，同一個偏好不會有兩個版本同時進 prompt；若那條已被另一個核准的修訂取代，核准會被拒絕。之後的 session 若重複回饋到一條 pending lesson，run 會加強它而不是新增一條，待審清單依這個計數排序。
 
-Workflow 是增量的。`agent.writing_session` 記錄上一次 run 讀到的 leaf entry 與時間；一次 run 讀該 leaf 之後的 operator messages 與 assistant prose，加上那個時間之後 operator 在 `feed_draft_revision` 儲存過的手動編輯（以 line diff 呈現），排除 tool results；寫入任何 proposal 之前先以 compare-and-set 比對讀到的水位線再推進，所以同一 session 上重疊的兩次 run 只會寫入一組。Host 在每個 writing turn 之後排程一次 run：turn 有 commit 就立即，否則等待閒置延遲，並取消上一個 turn 留下的等待中 run，所以每個 session 只有一個 run 在等。`feeds.draft:apply` 會為每個處理過該 draft 的 session 啟動一次 run，因此從編輯器或 MCP commit 也會閉環。Dashboard 也可以手動啟動。
+Workflow 是增量的。`agent.writing_session` 記錄上一次 run 讀到的 leaf entry 與時間；一次 run 讀該 leaf 之後的 operator messages 與 assistant prose，加上那個時間之後 operator 在共用 drafts 上的修改（以相鄰保留狀態及 draft 現況之間的 line diff 呈現），排除 tool results；寫入任何 proposal 之前先以 compare-and-set 比對讀到的水位線再推進，所以同一 session 上重疊的兩次 run 只會寫入一組。Host 在每個 writing turn 之後排程一次 run：turn 有 commit 就立即，否則等待閒置延遲，並取消上一個 turn 留下的等待中 run，所以每個 session 只有一個 run 在等。`feeds.draft:apply` 會為每個處理過該 draft 的 session 啟動一次 run，因此從編輯器或 MCP commit 也會閉環。Dashboard 也可以手動啟動。
 
 ### 內容可見性
 
