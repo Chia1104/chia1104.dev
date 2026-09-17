@@ -1,12 +1,15 @@
 import { hashFeedDraftSnapshot } from "@chia/db/repos/drafts/hash";
+import type { FeedDraftFields } from "@chia/db/repos/drafts/patch";
+import type { FeedDraftSnapshot } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 import { mergeDefined, omitUndefined } from "@chia/utils/object";
-import { excerptAround } from "@chia/utils/text";
+import { applyEdits, excerptAround } from "@chia/utils/text";
 import type { AppliedEdit, ExactReplaceFailure } from "@chia/utils/text";
 
 import { withoutFencedCode } from "../markdown/fences.ts";
 import type {
   DraftAppliedEdit,
+  DraftContentEdit,
   DraftFeedMeta,
   DraftTranslation,
   DraftWrite,
@@ -14,11 +17,11 @@ import type {
   FeedDraftSummary,
 } from "../types.ts";
 
-/** The hash the shared draft row would carry for this content. */
-export const hashDraft = (draft: Omit<FeedDraft, "contentHash">): string => {
-  const translations: Parameters<
-    typeof hashFeedDraftSnapshot
-  >[0]["translations"] = {};
+/** The draft as the shared row stores it: every field present, `null` where empty. */
+export const snapshotOfDraft = (
+  draft: Omit<FeedDraft, "contentHash">
+): FeedDraftSnapshot => {
+  const translations: FeedDraftSnapshot["translations"] = {};
   for (const [locale, translation] of Object.entries(draft.translations)) {
     // SAFETY: draft translations are keyed by Locale.
     translations[locale as Locale] = {
@@ -29,13 +32,31 @@ export const hashDraft = (draft: Omit<FeedDraft, "contentHash">): string => {
       content: translation.content ?? null,
     };
   }
-  return hashFeedDraftSnapshot({
+  return {
     slug: draft.slug,
     type: draft.type,
     defaultLocale: draft.defaultLocale,
     mainImage: draft.mainImage,
     translations,
-  });
+  };
+};
+
+/** The hash the shared draft row would carry for this content. */
+export const hashDraft = (draft: Omit<FeedDraft, "contentHash">): string =>
+  hashFeedDraftSnapshot(snapshotOfDraft(draft));
+
+/** A write in the repository's terms, without the fields it leaves alone. */
+export const toDraftFields = (input: DraftWrite): FeedDraftFields => {
+  const translations: NonNullable<FeedDraftFields["translations"]> = {};
+  for (const [locale, patch] of Object.entries(input.translations ?? {})) {
+    if (!patch) continue;
+    // SAFETY: DraftWrite.translations is keyed by Locale.
+    translations[locale as Locale] = omitUndefined(patch);
+  }
+  return {
+    meta: input.meta ? omitUndefined(input.meta) : undefined,
+    translations,
+  };
 };
 
 export const emptyDraft = (overrides: Partial<FeedDraft> = {}): FeedDraft => {
@@ -116,14 +137,95 @@ export class DraftNotFoundError extends Error {
 }
 
 export class DraftConflictError extends Error {
-  constructor(
-    readonly expectedRevision: number,
-    readonly currentRevision: number
-  ) {
+  constructor(readonly fields: readonly string[]) {
     super(
-      `The draft is at revision ${currentRevision}, not ${expectedRevision}: someone else changed it. Read it again before writing.`
+      `Someone else changed ${fields.join(", ")} since you last read the draft, so nothing was written. Read it again before writing ${fields.length === 1 ? "that field" : "those fields"}.`
     );
     this.name = "DraftConflictError";
+  }
+}
+
+/**
+ * What the model has seen of each draft, which is what its writes are checked against. A read
+ * replaces the view and a write adds only what it wrote, so a change the model never saw
+ * rejects the write that would bury it instead of being overwritten.
+ */
+export class ObservedDrafts {
+  private readonly views = new Map<number, FeedDraft>();
+  /**
+   * Highest revision the model read in full, per draft; the host records them as seen when the
+   * turn ends. A write does not count: its result may carry a change the model was not shown.
+   */
+  readonly revisions = new Map<number, number>();
+
+  private note(draft: FeedDraft) {
+    if (draft.revision > (this.revisions.get(draft.id) ?? 0)) {
+      this.revisions.set(draft.id, draft.revision);
+    }
+  }
+
+  has(draftId: number): boolean {
+    return this.views.has(draftId);
+  }
+
+  read(draft: FeedDraft): FeedDraft {
+    this.note(draft);
+    this.views.set(draft.id, draft);
+    return draft;
+  }
+
+  wrote(draft: FeedDraft, input: DraftWrite): FeedDraft {
+    const view = this.views.get(draft.id);
+    if (view) this.views.set(draft.id, applyWrite(view, input));
+    return draft;
+  }
+
+  /** The model knows its own edits: they go onto the body it saw, when they fit it. */
+  edited(
+    draft: FeedDraft,
+    locale: Locale,
+    edits: readonly DraftContentEdit[]
+  ): FeedDraft {
+    const view = this.views.get(draft.id);
+    const body = view?.translations[locale]?.content;
+    if (!view || !body) return draft;
+    const placed = applyEdits(body, edits);
+    if (placed.ok) {
+      this.views.set(
+        draft.id,
+        patchTranslation(view, locale, { content: placed.content })
+      );
+    }
+    return draft;
+  }
+
+  /** What the view holds in the fields `input` writes; `null` for a draft never read. */
+  baseOf(draftId: number, input: DraftWrite): DraftWrite | null {
+    const view = this.views.get(draftId);
+    if (!view) return null;
+    const meta: Record<string, string | null> = {};
+    for (const [field, value] of Object.entries(input.meta ?? {})) {
+      if (value === undefined) continue;
+      // SAFETY: `field` is a key of DraftFeedMeta, all of which FeedDraft carries.
+      meta[field] = view[field as keyof DraftFeedMeta];
+    }
+    const translations: NonNullable<DraftWrite["translations"]> = {};
+    for (const [locale, patch] of Object.entries(input.translations ?? {})) {
+      // SAFETY: DraftWrite.translations is keyed by Locale.
+      const held = view.translations[locale as Locale];
+      const seen: Record<string, string | null> = {};
+      for (const [field, value] of Object.entries(patch ?? {})) {
+        if (value === undefined) continue;
+        // SAFETY: `field` is a key of DraftTranslation.
+        seen[field] = held?.[field as keyof DraftTranslation] ?? null;
+      }
+      if (Object.keys(seen).length > 0) {
+        // SAFETY: as above.
+        translations[locale as Locale] = seen;
+      }
+    }
+    // SAFETY: every key of `meta` came from `input.meta`.
+    return { meta: meta as DraftFeedMeta, translations };
   }
 }
 

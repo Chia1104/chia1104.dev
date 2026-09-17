@@ -542,7 +542,7 @@ describe("draft slug handling", () => {
         draftId: DRAFT_ID,
         translations: { en: { content: "## Model version" } },
       })
-    ).rejects.toThrow("someone else changed it");
+    ).rejects.toThrow("Someone else changed en.content");
     expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
       "## Operator version"
     );

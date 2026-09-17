@@ -118,14 +118,11 @@ export interface DraftStore {
   get(draftId: number): Promise<FeedDraft>;
   /**
    * Writes feed-level fields and per-locale fields together as one revision. `undefined`
-   * leaves a field alone, `null` clears it. With `expectedRevision`, a draft that moved since
-   * that revision rejects the write instead of overwriting it.
+   * leaves a field alone, `null` clears it. Each field is checked against what this store last
+   * showed of it: one someone else changed since rejects the whole write instead of being
+   * overwritten, while a change to any other field does not get in the way.
    */
-  write(
-    draftId: number,
-    input: DraftWrite,
-    expectedRevision?: number
-  ): Promise<FeedDraft>;
+  write(draftId: number, input: DraftWrite): Promise<FeedDraft>;
   /**
    * Exact-string replacements applied in order against the body as it is when the write
    * happens, so an operator save in between cannot be overwritten: every target still matches

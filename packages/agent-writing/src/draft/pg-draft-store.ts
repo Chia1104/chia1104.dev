@@ -5,15 +5,9 @@ import {
   listFeedDraftChangesSince,
   patchFeedDraft,
 } from "@chia/db/repos/drafts";
-import type {
-  FeedDraftListItem,
-  FeedDraftRecord,
-  FeedDraftWriteResult,
-  PatchFeedDraftInput,
-} from "@chia/db/repos/drafts";
+import type { FeedDraftListItem, FeedDraftRecord } from "@chia/db/repos/drafts";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
-import { omitUndefined } from "@chia/utils/object";
 
 import type { DraftStore } from "../ports.ts";
 import type {
@@ -29,9 +23,11 @@ import {
   DraftConflictError,
   DraftNotFoundError,
   EditNotAppliedError,
+  ObservedDrafts,
   describeEdits,
   draftSummary,
   noBodyMessage,
+  toDraftFields,
 } from "./operations.ts";
 
 export interface PgDraftStoreOptions {
@@ -47,38 +43,15 @@ export interface PgDraftStoreOptions {
 
 /** {@link DraftStore} over the shared `feed_draft` rows, writing as the agent. */
 export class PgDraftStore implements DraftStore {
-  readonly observedRevisions = new Map<number, number>();
+  private readonly observed = new ObservedDrafts();
 
   constructor(
     private readonly db: DB,
     private readonly options: PgDraftStoreOptions
   ) {}
 
-  private observe(record: FeedDraftRecord): FeedDraft {
-    const seen = this.observedRevisions.get(record.id) ?? 0;
-    if (record.revision > seen) {
-      this.observedRevisions.set(record.id, record.revision);
-    }
-    return toFeedDraft(record);
-  }
-
-  private settle(
-    draftId: number,
-    result: FeedDraftWriteResult,
-    expectedRevision?: number
-  ) {
-    switch (result.status) {
-      case "ok":
-        return this.observe(result.draft);
-      case "conflict":
-        this.observe(result.draft);
-        throw new DraftConflictError(
-          expectedRevision ?? result.draft.revision,
-          result.draft.revision
-        );
-      case "not_found":
-        throw new DraftNotFoundError(draftId);
-    }
+  get observedRevisions(): ReadonlyMap<number, number> {
+    return this.observed.revisions;
   }
 
   async list(): Promise<FeedDraftSummary[]> {
@@ -87,39 +60,38 @@ export class PgDraftStore implements DraftStore {
   }
 
   async open(input: { feedId?: number }): Promise<FeedDraft> {
-    return this.observe(await this.options.open(input));
+    return this.observed.read(toFeedDraft(await this.options.open(input)));
   }
 
   async get(draftId: number): Promise<FeedDraft> {
     const record = await getFeedDraft(this.db, draftId, this.options.userId);
     if (!record) throw new DraftNotFoundError(draftId);
-    return this.observe(record);
+    return this.observed.read(toFeedDraft(record));
   }
 
-  async write(
-    draftId: number,
-    input: DraftWrite,
-    expectedRevision?: number
-  ): Promise<FeedDraft> {
-    const translations: PatchFeedDraftInput["translations"] = {};
-    for (const [locale, patch] of Object.entries(input.translations ?? {})) {
-      if (!patch) continue;
-      // SAFETY: DraftWrite.translations is keyed by Locale.
-      translations[locale as Locale] = omitUndefined(patch);
-    }
-    return this.settle(
+  async write(draftId: number, input: DraftWrite): Promise<FeedDraft> {
+    // A draft never read is read now, so the write is still checked against something.
+    if (!this.observed.has(draftId)) await this.get(draftId);
+    const result = await patchFeedDraft(this.db, {
       draftId,
-      await patchFeedDraft(this.db, {
-        draftId,
-        userId: this.options.userId,
-        expectedRevision,
-        author: FEED_DRAFT_AUTHOR.Agent,
-        sessionId: this.options.sessionId,
-        meta: input.meta ? omitUndefined(input.meta) : undefined,
-        translations,
-      }),
-      expectedRevision
-    );
+      userId: this.options.userId,
+      author: FEED_DRAFT_AUTHOR.Agent,
+      sessionId: this.options.sessionId,
+      ...toDraftFields(input),
+      base: toDraftFields(this.observed.baseOf(draftId, input) ?? {}),
+    });
+    switch (result.status) {
+      case "ok":
+        return this.observed.wrote(toFeedDraft(result.draft), input);
+      case "conflict":
+        throw new DraftConflictError(
+          (result.rejected ?? []).map(({ locale, field }) =>
+            locale ? `${locale}.${field}` : field
+          )
+        );
+      case "not_found":
+        throw new DraftNotFoundError(draftId);
+    }
   }
 
   async editContent(
@@ -137,7 +109,11 @@ export class PgDraftStore implements DraftStore {
     });
     switch (result.status) {
       case "ok": {
-        const draft = this.observe(result.draft);
+        const draft = this.observed.edited(
+          toFeedDraft(result.draft),
+          locale,
+          edits
+        );
         return {
           draft,
           edits: describeEdits(
@@ -153,8 +129,10 @@ export class PgDraftStore implements DraftStore {
           `Edit ${result.index + 1} of ${edits.length} was not applied, so nothing was written. ${result.message}`,
           result.reason
         );
-      default:
-        return { draft: this.settle(draftId, result), edits: [] };
+      case "conflict":
+        throw new DraftConflictError([`${locale}.content`]);
+      case "not_found":
+        throw new DraftNotFoundError(draftId);
     }
   }
 
@@ -166,6 +144,7 @@ export class PgDraftStore implements DraftStore {
       draftId,
       afterRevision,
       userId: this.options.userId,
+      exceptSessionId: this.options.sessionId,
     });
   }
 }

@@ -410,7 +410,6 @@ export const writeDraftTool = defineTool(
 
     const warnings: string[] = [];
     const writes: NonNullable<DraftWrite["translations"]> = {};
-    let writesBody = false;
     for (const [locale, patch] of Object.entries(translations ?? {})) {
       // `{ en: {} }` is schema-valid and writes nothing; keep it out so the result is honest.
       if (
@@ -424,7 +423,6 @@ export const writeDraftTool = defineTool(
       if (patch.content !== undefined) {
         const mismatch = languageMismatch(key, patch.content);
         if (mismatch) throw new Error(mismatch);
-        writesBody = true;
       }
       writes[key] = patch;
       if (
@@ -447,17 +445,10 @@ export const writeDraftTool = defineTool(
       );
     }
 
-    // A whole-body write is pinned to the last revision this turn observed so it cannot bury
-    // an operator edit the model has not seen. Metadata alone merges field by field and needs
-    // no pin; a draft never read still writes.
-    const expected = writesBody
-      ? context.draft.observedRevisions.get(draftId)
-      : undefined;
-    const draft = await context.draft.write(
-      draftId,
-      { meta, translations: writes },
-      expected
-    );
+    const draft = await context.draft.write(draftId, {
+      meta,
+      translations: writes,
+    });
 
     const readback: WriteReadback = {
       draftId,
