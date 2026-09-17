@@ -11,8 +11,24 @@ import type { Locale } from "@chia/db/types";
  * - `heading`    — the answer lives under a heading whose words do not repeat
  *   in the section body. Currently the weakest case: heading text is not part
  *   of chunk content.
+ * - `confusable` — several posts share the topic and only one answers; read
+ *   R@1, since the neighbours fill the top 5 either way.
+ * - `multi`      — the answer spans several sections of one post; read
+ *   `cover`, the share of `expectedHeadings` the hit's chunks reach.
+ * - `cross`      — the query is not in the locale it searches, so only the
+ *   semantic path can carry it; bm25 is expected to miss.
+ *
+ * A query the corpus cannot answer is not here: ranks are relative, so
+ * retrieval always returns something and only an agent-level eval can tell
+ * whether the model declines.
  */
-export type GoldenQueryKind = "paraphrase" | "term" | "heading";
+export type GoldenQueryKind =
+  | "paraphrase"
+  | "term"
+  | "heading"
+  | "confusable"
+  | "multi"
+  | "cross";
 
 export interface GoldenQuery {
   /** stable id, used to reference a query in reports and diffs */
@@ -30,6 +46,12 @@ export interface GoldenQuery {
    * absent from the section body).
    */
   expectedHeading?: string;
+  /**
+   * Case-insensitive substrings, each of which some chunk of the hit should
+   * sit under. Measures whether one search reaches every section the answer
+   * needs, which is what saves an agent a second search for the same post.
+   */
+  expectedHeadings?: string[];
   kind: GoldenQueryKind;
 }
 
@@ -310,5 +332,310 @@ export const GOLDEN_QUERIES: GoldenQuery[] = [
     query: "pnpm workspace",
     expected: ["tips-for-managing-node-and-bun-projects-with-pnpm"],
     kind: "term",
+  },
+
+  // ── zh-TW · confusable ────────────────────────────────────────────────
+  {
+    id: "zh-conf-rsc-serializable-props",
+    query: "Server Component 可以傳哪些型別的 props 給 Client Component",
+    locale: "zh-TW",
+    expected: ["update-rsc-state-from-client"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-rsc-streaming",
+    query: "RSC 的結果是怎麼序列化後串流到瀏覽器的",
+    locale: "zh-TW",
+    expected: ["what-is-rsc-and-its-relationship-with-ssr"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-rsc-shared-function",
+    query: "同一個 function 想在 client 跟 server component 各給一份實作",
+    locale: "zh-TW",
+    expected: ["react-server-module-conventions"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-rsc-search-params",
+    query: "用網址的 query string 讓 server component 重新渲染",
+    locale: "zh-TW",
+    expected: ["update-rsc-state-from-client"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-render-twice",
+    query: "為什麼同一個元件在伺服器跟瀏覽器都會跑一次",
+    locale: "zh-TW",
+    expected: ["nextjs-hydration-errors-explained-solutions"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-better-auth",
+    query: "為什麼不繼續用 NextAuth 而換成 Better Auth",
+    locale: "zh-TW",
+    expected: ["tech-stack-restructure-2024"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-drizzle-prisma",
+    query: "Drizzle 跟 Prisma 的比較",
+    locale: "zh-TW",
+    expected: ["tech-stack-restructure-2024"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-migration-up-down",
+    query: "migration 的 up 跟 down 分別要寫什麼",
+    locale: "zh-TW",
+    expected: ["2026-full-stack-web-development-tech-stack-overview"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-durable-queue",
+    query: "不想自己維護 message queue 跟 retry 邏輯的背景工作",
+    locale: "zh-TW",
+    expected: ["2026-full-stack-web-development-tech-stack-overview"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-world-module-not-found",
+    query: "Nitro 用 Docker 部署後找不到 workflow world 的模組",
+    locale: "zh-TW",
+    expected: ["workflow-develop-kit-world-module-not-found-issue"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-build-vs-runtime-env",
+    query: "build time 跟 runtime 的環境變數差在哪",
+    locale: "zh-TW",
+    expected: ["env-secrets-management"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-zeabur-incident",
+    query: "Zeabur 的環境變數外洩事件",
+    locale: "zh-TW",
+    expected: ["env-secrets-management"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-secret-rotation",
+    query: "金鑰外洩之後要怎麼輪替跟撤銷",
+    locale: "zh-TW",
+    expected: ["env-secrets-management"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-cloudflare-worker-secret",
+    query: "在 Cloudflare Worker 裡讀取 secret",
+    locale: "zh-TW",
+    expected: ["env-secrets-management"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-cloudflare-waf-seo",
+    query: "用 Cloudflare 擋惡意流量但不要擋到搜尋引擎的爬蟲",
+    locale: "zh-TW",
+    expected: ["website-attack-cloudflare-protection"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-agent-handoff",
+    query: "把任務交給 AI agent 之前要先準備什麼",
+    locale: "zh-TW",
+    expected: ["ai-agent-development-workflow"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-agent-network-policy",
+    query: "限制 agent 只能連到特定網站",
+    locale: "zh-TW",
+    expected: ["docker-sandboxes-agent-isolation"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-cron-replicas",
+    query: "服務開多個 replica 之後排程工作被重複執行",
+    locale: "zh-TW",
+    expected: ["ai-agent-development-workflow"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-useeffect-setstate",
+    query: "在 useEffect 裡面呼叫 setState 的問題",
+    locale: "zh-TW",
+    expected: ["ai-agent-development-workflow"],
+    kind: "confusable",
+  },
+  {
+    id: "zh-conf-editor-autocomplete",
+    query: "編輯器的自動補全跟跳轉定義是誰算出來的",
+    locale: "zh-TW",
+    expected: ["typescript-tsserver-lsp-development-mindset"],
+    kind: "confusable",
+  },
+
+  // ── zh-TW · multi ─────────────────────────────────────────────────────
+  {
+    id: "zh-multi-vector-distance-index",
+    query: "餘弦相似度跟歐幾里德距離差在哪，建索引時又該怎麼選",
+    locale: "zh-TW",
+    expected: ["vector-search-embedding-postgres-implementation"],
+    expectedHeadings: [
+      "Cosine Similarity",
+      "Euclidean Distance",
+      "索引選擇建議",
+    ],
+    kind: "multi",
+  },
+  {
+    id: "zh-multi-csrf-csp",
+    query: "CSRF 跟 CSP 分別在防什麼攻擊",
+    locale: "zh-TW",
+    expected: ["localstorage-sessionstorage-cookie-difference"],
+    expectedHeadings: ["CSRF", "CSP"],
+    kind: "multi",
+  },
+  {
+    id: "zh-multi-jwt-session-compare",
+    query: "JWT 跟 session 各自怎麼運作，最後該怎麼選",
+    locale: "zh-TW",
+    expected: ["jwt-vs-session-cookie-authentication-differences"],
+    expectedHeadings: ["JWT", "Session Cookie", "兩者比較"],
+    kind: "multi",
+  },
+  {
+    id: "zh-multi-env-build-runtime-injection",
+    query:
+      "build-time 跟 runtime 變數的差別，以及 production 要怎麼注入 secret",
+    locale: "zh-TW",
+    expected: ["env-secrets-management"],
+    expectedHeadings: [
+      "Build-time environment variable",
+      "Runtime environment variable",
+      "Secret injection",
+    ],
+    kind: "multi",
+  },
+  {
+    id: "zh-multi-sse-websocket-eventsource",
+    query: "SSE 跟 WebSocket 的協議差異，還有前端怎麼用 EventSource 接",
+    locale: "zh-TW",
+    expected: ["simple-ai-chat-bot-sse-vs-websocket"],
+    expectedHeadings: ["協議特性差異", "EventSource"],
+    kind: "multi",
+  },
+  {
+    id: "zh-multi-sandbox-files-network",
+    query: "sandbox 裡的檔案怎麼進出，網路又是怎麼限制的",
+    locale: "zh-TW",
+    expected: ["docker-sandboxes-agent-isolation"],
+    expectedHeadings: ["檔案怎麼進出", "網路 Policy"],
+    kind: "multi",
+  },
+  {
+    id: "zh-multi-drizzle-hono",
+    query: "為什麼從 Prisma 換到 Drizzle，又為什麼從 Nest.js 換到 Hono",
+    locale: "zh-TW",
+    expected: ["tech-stack-restructure-2024"],
+    expectedHeadings: ["Drizzle", "Hono"],
+    kind: "multi",
+  },
+  {
+    id: "zh-multi-tsserver-lsp",
+    query: "tsserver 怎麼跟編輯器溝通，LSP 又在傳什麼",
+    locale: "zh-TW",
+    expected: ["typescript-tsserver-lsp-development-mindset"],
+    expectedHeadings: ["tsserver 如何跟編輯器溝通", "LSP 在傳什麼"],
+    kind: "multi",
+  },
+  {
+    id: "zh-multi-rsc-pros-cons",
+    query: "RSC 帶來哪些優勢，又有哪些挑戰",
+    locale: "zh-TW",
+    expected: ["what-is-rsc-and-its-relationship-with-ssr"],
+    expectedHeadings: ["優勢", "挑戰"],
+    kind: "multi",
+  },
+  {
+    id: "zh-multi-agent-mistakes",
+    query: "agent 誤解 API 型別，還有 CRON 在多 replica 下出錯的例子",
+    locale: "zh-TW",
+    expected: ["ai-agent-development-workflow"],
+    expectedHeadings: ["onUploadProgress", "CRON job"],
+    kind: "multi",
+  },
+
+  // ── cross · query language differs from the locale searched ───────────
+  {
+    id: "cross-en-zh-hydration",
+    query: "how to fix a hydration mismatch in Next.js",
+    locale: "zh-TW",
+    expected: ["nextjs-hydration-errors-explained-solutions"],
+    kind: "cross",
+  },
+  {
+    id: "cross-en-zh-jwt-session",
+    query: "difference between JWT and session cookie authentication",
+    locale: "zh-TW",
+    expected: ["jwt-vs-session-cookie-authentication-differences"],
+    kind: "cross",
+  },
+  {
+    id: "cross-en-zh-gitignore",
+    query: "why is my gitignore rule not taking effect",
+    locale: "zh-TW",
+    expected: ["git-file-update-tracking-issue"],
+    kind: "cross",
+  },
+  {
+    id: "cross-en-zh-agent-sandbox",
+    query: "isolated environment for running coding agents safely",
+    locale: "zh-TW",
+    expected: ["docker-sandboxes-agent-isolation"],
+    kind: "cross",
+  },
+  {
+    id: "cross-en-zh-secrets",
+    query: "why env files are not secrets management",
+    locale: "zh-TW",
+    expected: ["env-secrets-management"],
+    kind: "cross",
+  },
+  {
+    id: "cross-zh-en-semantic-search",
+    query: "如何用 Postgres 實作語意搜尋",
+    locale: "en",
+    expected: ["vector-search-embedding-postgres-implementation"],
+    kind: "cross",
+  },
+  {
+    id: "cross-zh-en-site-attack",
+    query: "網站被攻擊時怎麼用 Cloudflare 防護",
+    locale: "en",
+    expected: ["website-attack-cloudflare-protection"],
+    kind: "cross",
+  },
+  {
+    id: "cross-zh-en-package-versions",
+    query: "monorepo 裡統一管理套件版本",
+    locale: "en",
+    expected: ["tips-for-managing-node-and-bun-projects-with-pnpm"],
+    kind: "cross",
+  },
+  {
+    id: "cross-zh-en-rsc-ssr",
+    query: "伺服器元件跟伺服器端渲染是什麼關係",
+    locale: "en",
+    expected: ["what-is-rsc-and-its-relationship-with-ssr"],
+    kind: "cross",
+  },
+  {
+    id: "cross-zh-en-agent-workflow",
+    query: "使用 AI agent 開發的方式有什麼轉變",
+    locale: "en",
+    expected: ["ai-agent-development-workflow"],
+    kind: "cross",
   },
 ];

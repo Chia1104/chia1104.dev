@@ -76,6 +76,8 @@ interface QueryResult {
   citationHit: boolean | null;
   /** Whether any chunk the hit returned is a section under the expected heading. */
   sectionHit: boolean | null;
+  /** Share of `expectedHeadings` some returned chunk sits under; null without them. */
+  coverage: number | null;
   durationMs: number;
   error?: string;
 }
@@ -85,11 +87,15 @@ interface ModeReport {
   results: QueryResult[];
   recall: Record<number, number>;
   recallByKind: Record<GoldenQueryKind, number>;
+  /** R@1 per kind: R@5 cannot tell a `confusable` query's neighbours from its answer */
+  topRankByKind: Record<GoldenQueryKind, number>;
   mrr: number;
   /** share of `expectedHeading` queries whose best chunk is the right section */
   citationAccuracy: number | null;
   /** share of `expectedHeading` queries where any returned chunk is the right section */
   sectionAccuracy: number | null;
+  /** mean `coverage` over the queries that set `expectedHeadings` */
+  coverage: number | null;
   avgDurationMs: number;
   errors: number;
 }
@@ -130,15 +136,14 @@ const runQuery = async (
       golden.expected.includes(slug)
     );
     const hitItem = firstHit === -1 ? null : items[firstHit]!;
-    const underExpectedHeading = (chunk: {
-      kind: string;
-      headingPath: string | null;
-    }) =>
-      chunk.kind === "section" &&
-      (chunk.headingPath ?? "")
-        .toLowerCase()
-        .includes((golden.expectedHeading ?? "").toLowerCase());
-    const [best] = hitItem?.chunks ?? [];
+    const isUnder =
+      (heading: string) =>
+      (chunk: { kind: string; headingPath: string | null }) =>
+        chunk.kind === "section" &&
+        (chunk.headingPath ?? "").toLowerCase().includes(heading.toLowerCase());
+    const underExpectedHeading = isUnder(golden.expectedHeading ?? "");
+    const chunks = hitItem?.chunks ?? [];
+    const [best] = chunks;
     const bestChunk = best
       ? { kind: best.kind, headingPath: best.headingPath }
       : null;
@@ -155,7 +160,12 @@ const runQuery = async (
         ? bestChunk !== null && underExpectedHeading(bestChunk)
         : null,
       sectionHit: golden.expectedHeading
-        ? (hitItem?.chunks ?? []).some(underExpectedHeading)
+        ? chunks.some(underExpectedHeading)
+        : null,
+      coverage: golden.expectedHeadings
+        ? golden.expectedHeadings.filter((heading) =>
+            chunks.some(isUnder(heading))
+          ).length / golden.expectedHeadings.length
         : null,
       durationMs: performance.now() - startedAt,
     };
@@ -168,6 +178,7 @@ const runQuery = async (
       bestChunk: null,
       citationHit: golden.expectedHeading ? false : null,
       sectionHit: golden.expectedHeading ? false : null,
+      coverage: golden.expectedHeadings ? 0 : null,
       durationMs: performance.now() - startedAt,
       error: String(error),
     };
@@ -179,6 +190,17 @@ const buildModeReport = (
   results: QueryResult[]
 ): ModeReport => {
   const kinds = [...new Set(results.map((result) => result.kind))];
+  const recallByKindAt = (k: number) =>
+    /* SAFETY: The producer contract guarantees this value satisfies Record<GoldenQueryKind, number>. */ Object.fromEntries(
+      kinds.map((kind) => [
+        kind,
+        mean(
+          results
+            .filter((result) => result.kind === kind)
+            .map((result) => result.recall[k]!)
+        ),
+      ])
+    ) as Record<GoldenQueryKind, number>;
   return {
     mode,
     results,
@@ -188,17 +210,8 @@ const buildModeReport = (
         mean(results.map((result) => result.recall[k]!)),
       ])
     ),
-    recallByKind:
-      /* SAFETY: The producer contract guarantees this value satisfies Record<GoldenQueryKind, number>. */ Object.fromEntries(
-        kinds.map((kind) => [
-          kind,
-          mean(
-            results
-              .filter((result) => result.kind === kind)
-              .map((result) => result.recall[5]!)
-          ),
-        ])
-      ) as Record<GoldenQueryKind, number>,
+    recallByKind: recallByKindAt(5),
+    topRankByKind: recallByKindAt(1),
     mrr: mean(
       results.map((result) =>
         result.firstHitRank === null ? 0 : 1 / result.firstHitRank
@@ -215,6 +228,12 @@ const buildModeReport = (
       return cited.length === 0
         ? null
         : mean(cited.map((result) => (result.sectionHit ? 1 : 0)));
+    })(),
+    coverage: (() => {
+      const covered = results.flatMap((result) =>
+        result.coverage === null ? [] : [result.coverage]
+      );
+      return covered.length === 0 ? null : mean(covered);
     })(),
     avgDurationMs: mean(results.map((result) => result.durationMs)),
     errors: results.filter((result) => result.error).length,
@@ -244,12 +263,15 @@ const assertFixtureSlugs = async (
   }
 };
 
-/** `1✓` — rank, plus the citation verdict when the query checks one. */
-const formatRank = (result: QueryResult): string => {
+/** `1✓` — rank, plus the citation verdict or `2/3` section coverage when the query checks one. */
+const formatRank = (result: QueryResult, expectedHeadings = 0): string => {
   if (result.error) {
     return "err";
   }
   const rank = result.firstHitRank?.toString() ?? "-";
+  if (result.coverage !== null) {
+    return `${rank} ${Math.round(result.coverage * expectedHeadings)}/${expectedHeadings}`;
+  }
   return result.citationHit === null
     ? rank
     : `${rank}${result.citationHit ? "✓" : "✗"}`;
@@ -270,7 +292,7 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   for (const query of queries) {
     const cells = reports.map((report) => {
       const result = report.results.find((entry) => entry.id === query.id)!;
-      return pad(formatRank(result), colWidth);
+      return pad(formatRank(result, query.expectedHeadings?.length), colWidth);
     });
     console.log(
       `${pad(query.id, idWidth)}${pad(query.kind, kindWidth)}${cells.join("")}`
@@ -278,7 +300,7 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   }
 
   console.log(
-    `\n${pad("mode", 10)}R@1     R@3     R@5     R@10    MRR@10  cite    cite@3  avg ms`
+    `\n${pad("mode", 10)}R@1     R@3     R@5     R@10    MRR@10  cite    cite@3  cover   avg ms`
   );
   for (const report of reports) {
     console.log(
@@ -293,22 +315,28 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
           report.sectionAccuracy === null ? "-" : num(report.sectionAccuracy),
           8
         ) +
+        pad(report.coverage === null ? "-" : num(report.coverage), 8) +
         Math.round(report.avgDurationMs).toString()
     );
   }
 
   const kinds = [...new Set(queries.map((query) => query.kind))];
-  console.log(`\nR@5 by kind`);
-  console.log(
-    `${pad("mode", 10)}` + kinds.map((kind) => pad(kind, kindWidth)).join("")
-  );
-  for (const report of reports) {
+  for (const [title, pick] of [
+    ["R@1 by kind", (report: ModeReport) => report.topRankByKind],
+    ["R@5 by kind", (report: ModeReport) => report.recallByKind],
+  ] as const) {
+    console.log(`\n${title}`);
     console.log(
-      pad(report.mode, 10) +
-        kinds
-          .map((kind) => pad(num(report.recallByKind[kind] ?? 0), kindWidth))
-          .join("")
+      `${pad("mode", 10)}` + kinds.map((kind) => pad(kind, kindWidth)).join("")
     );
+    for (const report of reports) {
+      console.log(
+        pad(report.mode, 10) +
+          kinds
+            .map((kind) => pad(num(pick(report)[kind] ?? 0), kindWidth))
+            .join("")
+      );
+    }
   }
 
   for (const report of reports) {
