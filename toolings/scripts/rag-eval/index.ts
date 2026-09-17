@@ -137,10 +137,11 @@ const runQuery = async (
     );
     const hitItem = firstHit === -1 ? null : items[firstHit]!;
     const isUnder =
-      (heading: string) =>
-      (chunk: { kind: string; headingPath: string | null }) =>
+      (heading: string) => (chunk: { kind: string; headingPaths: string[] }) =>
         chunk.kind === "section" &&
-        (chunk.headingPath ?? "").toLowerCase().includes(heading.toLowerCase());
+        chunk.headingPaths.some((path) =>
+          path.toLowerCase().includes(heading.toLowerCase())
+        );
     const underExpectedHeading = isUnder(golden.expectedHeading ?? "");
     const chunks = hitItem?.chunks ?? [];
     const [best] = chunks;
@@ -157,7 +158,7 @@ const runQuery = async (
       ),
       bestChunk,
       citationHit: golden.expectedHeading
-        ? bestChunk !== null && underExpectedHeading(bestChunk)
+        ? best !== undefined && underExpectedHeading(best)
         : null,
       sectionHit: golden.expectedHeading
         ? chunks.some(underExpectedHeading)

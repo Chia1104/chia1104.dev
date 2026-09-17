@@ -89,7 +89,7 @@ const build = async (
         locale: "en",
         url: "http://localhost:3000/en-US/posts/existing-post",
         title: "An existing post",
-        matches: [{ snippet: "…" }],
+        matches: [{ headingPaths: [], snippet: "…" }],
       },
     ],
     posts: [

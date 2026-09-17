@@ -33,7 +33,7 @@ export const searchPostsSpec = {
   description:
     "Search posts. `semantic` matches on meaning (best for topics); `keyword` matches " +
     "on literal terms (best for names, APIs, error messages). Each hit's `matches` are the places " +
-    "in that post that matched, best first — pass their `headingPath`s to `get_post`'s " +
+    "in that post that matched, best first — pass their `headingPaths` to `get_post`'s " +
     "`focusHeadings` to read those sections first, rather than searching again for the same post. " +
     "Each hit's `url` is the post's page; link with it as given.",
   parameters: Type.Object({
@@ -107,7 +107,7 @@ export const getPostSpec = {
       Type.Array(Type.String(), {
         description:
           "Heading paths to keep first when the post is too long to return in full. Pass each " +
-          "search match's `headingPath` string unchanged, e.g. " +
+          "search match's `headingPaths` strings unchanged, e.g. " +
           '`["Setup > Install", "Caveats"]`.',
       })
     ),

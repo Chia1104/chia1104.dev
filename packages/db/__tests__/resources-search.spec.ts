@@ -14,6 +14,7 @@ const hit = (
   kind: "section",
   chunkIndex: 0,
   headingPath: null,
+  headingPaths: [],
   content: "",
   snippet: null,
   score,
@@ -47,18 +48,21 @@ describe("aggregateChunkHits", () => {
     expect(first?.sourceId).toBe(2);
   });
 
-  it("keeps the scoring chunks, best first", () => {
+  it("keeps the chunks that each reach a new section, best first", () => {
     const hits = [
-      hit(1, 0.9, { headingPath: "A > B" }),
-      hit(1, 0.5, { headingPath: "C" }),
+      hit(1, 0.9, { headingPath: "A > B", headingPaths: ["A > B", "A > C"] }),
+      // a second fragment of a covered section, and a later card, add nowhere to read
+      hit(1, 0.8, { headingPath: "A > C", headingPaths: ["A > C"] }),
+      hit(1, 0.7, { kind: "card" }),
+      hit(1, 0.5, { headingPath: "D", headingPaths: ["D"] }),
     ];
 
     const [first] = aggregateChunkHits(hits, 10);
     expect(first?.chunks.map((chunk) => chunk.headingPath)).toEqual([
       "A > B",
-      "C",
+      "D",
     ]);
-    expect(first?.matchedChunks).toBe(2);
+    expect(first?.matchedChunks).toBe(4);
   });
 
   it("slices to the limit after sorting", () => {

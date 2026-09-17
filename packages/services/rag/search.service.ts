@@ -26,8 +26,8 @@ export interface ResourceSearchResult {
 
 /** One place in a resource that matched, as an agent reads it. */
 export interface SearchMatch {
-  /** Heading trail of the matched chunk, as stored, e.g. `"Setup > Install"`; absent on a card. */
-  headingPath?: string;
+  /** Heading trails of the sections the matched chunk covers, as stored, e.g. `"Setup > Install"`; empty on a card. */
+  headingPaths: string[];
   snippet: string;
 }
 
@@ -36,35 +36,19 @@ const MATCH_SNIPPET_MAX_CHARS = 500;
 const FURTHER_MATCH_SNIPPET_MAX_CHARS = 200;
 
 /**
- * The best chunk always, then each further chunk that names a section not listed yet: a card
- * or a second fragment of one section gives the reader nowhere new to go. BM25 snippets carry
- * `<b>` markers for UI highlighting, stripped because an agent reads them as prose.
+ * A hit's chunks as an agent reads them. BM25 snippets carry `<b>` markers for UI
+ * highlighting, stripped because an agent reads them as prose.
  */
-export const toSearchMatches = (chunks: ChunkHit[]): SearchMatch[] => {
-  const seen = new Set<string>();
-  return chunks.flatMap((chunk, index) => {
-    const headingPath = chunk.headingPath ?? undefined;
-    if (index > 0 && (!headingPath || seen.has(headingPath))) {
-      return [];
-    }
-    if (headingPath) {
-      seen.add(headingPath);
-    }
-    return [
-      {
-        headingPath,
-        snippet:
-          chunk.snippet?.replaceAll(/<\/?b>/g, "") ||
-          truncateEnd(
-            chunk.content,
-            index === 0
-              ? MATCH_SNIPPET_MAX_CHARS
-              : FURTHER_MATCH_SNIPPET_MAX_CHARS
-          ),
-      },
-    ];
-  });
-};
+export const toSearchMatches = (chunks: ChunkHit[]): SearchMatch[] =>
+  chunks.map((chunk, index) => ({
+    headingPaths: chunk.headingPaths,
+    snippet:
+      chunk.snippet?.replaceAll(/<\/?b>/g, "") ||
+      truncateEnd(
+        chunk.content,
+        index === 0 ? MATCH_SNIPPET_MAX_CHARS : FURTHER_MATCH_SNIPPET_MAX_CHARS
+      ),
+  }));
 
 const embedQuery = async (query: string): Promise<number[]> => {
   if (!query.trim()) {

@@ -19,8 +19,8 @@ export interface PostSearchHit {
 
 /** One matched place in a resource. */
 export interface SearchMatch {
-  /** Heading trail of the matched chunk, as stored, e.g. `"Setup > Install"`; absent on a card. */
-  headingPath?: string;
+  /** Heading trails of the sections the matched chunk covers, as stored, e.g. `"Setup > Install"`; empty on a card. */
+  headingPaths: string[];
   snippet: string;
 }
 

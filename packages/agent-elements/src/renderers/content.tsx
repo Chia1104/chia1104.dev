@@ -17,7 +17,7 @@ import type { ToolRenderer, ToolRenderers } from "../tool-call.tsx";
  */
 
 const matchSchema = z.object({
-  headingPath: z.string().optional(),
+  headingPaths: z.array(z.string()).optional(),
   snippet: z.string().optional(),
 });
 
@@ -102,7 +102,10 @@ const SearchPosts: ToolRenderer = ({ tool }) => {
       {parsed.data.hits.map((hit, index) => (
         <Row
           key={`${hit.slug}:${hit.locale}:${index}`}
-          meta={[hit.locale, ...(hit.matches ?? []).map((m) => m.headingPath)]
+          meta={[
+            hit.locale,
+            ...(hit.matches ?? []).flatMap((m) => m.headingPaths ?? []),
+          ]
             .filter(Boolean)
             .join(" · ")}
           title={hit.title}>

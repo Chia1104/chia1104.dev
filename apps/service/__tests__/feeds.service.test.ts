@@ -17,6 +17,7 @@ const hit = (sourceId: number) => ({
       kind: "section" as const,
       chunkIndex: 0,
       headingPath: null,
+      headingPaths: [],
       snippet: "<b>public</b> body",
       score: 1,
       lexicalRank: 1,

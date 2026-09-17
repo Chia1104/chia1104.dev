@@ -21,6 +21,12 @@ const RESOURCE_SCORE_TOP_N = 3;
  */
 const RESOURCE_SCORE_DECAY = 0.25;
 
+/**
+ * Chunks a resource hit keeps for its reader, each adding a section the ones before it do not cover.
+ * Wider than the scoring top-N: a second fragment of one section raises the score but gives nowhere new to read.
+ */
+const RESOURCE_KEPT_CHUNKS = 5;
+
 export interface ChunkHit {
   chunkId: number;
   sourceType: string;
@@ -28,6 +34,8 @@ export interface ChunkHit {
   kind: ResourceChunkKind;
   chunkIndex: number;
   headingPath: string | null;
+  /** Every section the chunk covers: small sections are packed into one chunk, and `headingPath` is only the first. Empty on a card. */
+  headingPaths: string[];
   /** Stored text. Hybrid and semantic hits have no snippet: ParadeDB rejects `pdb.snippet()` beside a window function. */
   content: string;
   /** `<b>`-highlighted fragment, when the lexical path produced one */
@@ -44,7 +52,7 @@ export interface ResourceHit {
   /** decayed sum of the resource's top chunk scores */
   score: number;
   matchedChunks: number;
-  /** the chunks that scored, best first; each is a place in the resource worth reading */
+  /** best first, each covering a section the ones before it do not; the places in the resource worth reading */
   chunks: ChunkHit[];
 }
 
@@ -84,6 +92,10 @@ const chunkColumns = {
   kind: chunks.kind,
   chunkIndex: chunks.chunkIndex,
   headingPath: chunks.headingPath,
+  headingPaths: sql<string[]>`coalesce(
+    ${chunks.metadata}->'headingPaths',
+    case when ${chunks.headingPath} is null then '[]'::jsonb else jsonb_build_array(${chunks.headingPath}) end
+  )`,
   content: chunks.content,
 };
 
@@ -275,12 +287,23 @@ export const aggregateChunkHits = (
         0
       );
       const best = bucket[0]!;
+      const covered = new Set<string>();
+      const kept = bucket.filter((hit, index) => {
+        const adds = hit.headingPaths.some((path) => !covered.has(path));
+        if (index > 0 && !adds) {
+          return false;
+        }
+        for (const path of hit.headingPaths) {
+          covered.add(path);
+        }
+        return true;
+      });
       return {
         sourceType: best.sourceType,
         sourceId: best.sourceId,
         score,
         matchedChunks: bucket.length,
-        chunks: top,
+        chunks: kept.slice(0, RESOURCE_KEPT_CHUNKS),
       };
     })
     .sort((a, b) => b.score - a.score)
