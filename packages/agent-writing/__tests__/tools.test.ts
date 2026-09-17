@@ -47,7 +47,7 @@ import type {
 const SESSION_ID = "session-1";
 
 type TestContext = WritingToolContext & {
-  approvedDraftRevisions: Map<string, number>;
+  approvedDraftHashes: Map<string, string>;
   content: FakeContentPort;
   web: FakeWebPort;
   connectors: { github: FakeGitHubPort };
@@ -65,7 +65,7 @@ const createContext = (): TestContext => ({
   connectors: { github: createFakeGitHubPort() },
   draft: new InMemoryDraftStore([{ id: DRAFT_ID }]),
   memory: new InMemoryMemoryPort(SESSION_ID),
-  approvedDraftRevisions: new Map<string, number>(),
+  approvedDraftHashes: new Map<string, string>(),
 });
 
 describe("webSearchTool", () => {
@@ -288,7 +288,7 @@ describe("draft slug handling", () => {
     });
   });
 
-  it("applies the revision it read when no approval pinned one, and the pinned one otherwise", async () => {
+  it("applies the content it read when no approval pinned one, and the pinned one otherwise", async () => {
     const context = createContext();
     await context.draft.patchFeedMeta(DRAFT_ID, {
       defaultLocale: "en",
@@ -298,21 +298,25 @@ describe("draft slug handling", () => {
       title: "A post",
       content: "## Body",
     });
-    const current = (await context.draft.get(DRAFT_ID)).revision;
+    const current = (await context.draft.get(DRAFT_ID)).contentHash;
 
     await commitDraftTool(context).execute("call-auto", {
       draftId: DRAFT_ID,
       confirmation: "Commit.",
     });
-    context.approvedDraftRevisions.set("call-approved", current - 1);
+    context.approvedDraftHashes.set("call-approved", "approved-earlier");
     await commitDraftTool(context).execute("call-approved", {
       draftId: DRAFT_ID,
       confirmation: "Commit.",
     });
 
     expect(context.content.commits).toEqual([
-      { draftId: DRAFT_ID, expectedRevision: current },
-      { draftId: DRAFT_ID, expectedRevision: current - 1 },
+      { draftId: DRAFT_ID, expectedHash: current, message: "Commit." },
+      {
+        draftId: DRAFT_ID,
+        expectedHash: "approved-earlier",
+        message: "Commit.",
+      },
     ]);
   });
 
@@ -538,7 +542,7 @@ describe("draft slug handling", () => {
         draftId: DRAFT_ID,
         translations: { en: { content: "## Model version" } },
       })
-    ).rejects.toThrow("someone else changed it");
+    ).rejects.toThrow("Someone else changed en.content");
     expect((await context.draft.get(DRAFT_ID)).translations.en?.content).toBe(
       "## Operator version"
     );

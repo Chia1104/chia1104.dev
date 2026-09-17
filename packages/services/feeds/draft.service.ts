@@ -1,25 +1,28 @@
 import type { DB } from "@chia/db/client";
 import {
+  commitFeedDraft,
   createFeedDraft,
-  deleteFeedDraft,
+  deleteUnboundFeedDraft,
   editFeedDraftContent,
   getFeedDraft,
   getFeedDraftByFeedId,
   getFeedDraftForUpdate,
   getFeedDraftRevision,
-  markFeedDraftApplied,
   patchFeedDraft,
   replaceFeedDraft,
   snapshotOfRevision,
 } from "@chia/db/repos/drafts";
 import type {
   FeedDraftContentEdit,
-  FeedDraftMetaPatch,
   FeedDraftRecord,
   FeedDraftSnapshot,
-  FeedDraftTranslationPatch,
   FeedDraftWriter,
 } from "@chia/db/repos/drafts";
+import type {
+  FeedDraftFields,
+  FeedDraftMetaPatch,
+  FeedDraftTranslationPatch,
+} from "@chia/db/repos/drafts/patch";
 import { getFeedForIndexing } from "@chia/db/repos/feeds";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
@@ -128,22 +131,65 @@ export const getFeedDraftService = (
   input: { draftId: number; adminId: string }
 ) => requireDraft(db, input.draftId, input.adminId);
 
-export interface PatchFeedDraftServiceInput extends FeedDraftWriter {
+export interface PatchFeedDraftServiceInput
+  extends FeedDraftWriter, FeedDraftFields {
   draftId: number;
   adminId: string;
   expectedRevision?: number;
-  meta?: FeedDraftMetaPatch;
-  translations?: Partial<Record<Locale, FeedDraftTranslationPatch>>;
+  base?: FeedDraftFields;
+  edits?: Partial<Record<Locale, readonly FeedDraftContentEdit[]>>;
 }
 
+/** Fields written without a base, which only `expectedRevision` may guard. */
+const unguardedFields = (input: PatchFeedDraftServiceInput): string[] => {
+  const unguarded: string[] = [];
+  for (const [field, value] of Object.entries(input.meta ?? {})) {
+    if (value === undefined) continue;
+    // SAFETY: `field` came from `input.meta`, whose keys `base.meta` shares.
+    if (input.base?.meta?.[field as keyof FeedDraftMetaPatch] === undefined) {
+      unguarded.push(field);
+    }
+  }
+  for (const [locale, patch] of Object.entries(input.translations ?? {})) {
+    for (const [field, value] of Object.entries(patch ?? {})) {
+      if (value === undefined) continue;
+      // SAFETY: `locale` and `field` came from `input.translations`, whose keys `base` shares.
+      const base =
+        input.base?.translations?.[locale as Locale]?.[
+          field as keyof FeedDraftTranslationPatch
+        ];
+      if (base === undefined) unguarded.push(`${locale}.${field}`);
+    }
+  }
+  return unguarded;
+};
+
 /**
- * Throws `CONFLICT` with the current draft in `data` when `expectedRevision` is stale, so the
- * caller can rebase without another round trip.
+ * Every field must be guarded, by its `base` or by `expectedRevision`. Throws `CONFLICT` naming
+ * what the draft holds now, and the fields that moved, when the draft is not what the caller
+ * wrote against; nothing of the patch is written then.
  */
 export const patchFeedDraftService = async (
   db: DB,
   input: PatchFeedDraftServiceInput
 ): Promise<FeedDraftRecord> => {
+  if (input.expectedRevision === undefined) {
+    const unguarded = unguardedFields(input);
+    if (unguarded.length > 0) {
+      throw new AppError("BAD_REQUEST", {
+        message: `Pass what you last saw of ${unguarded.join(", ")} in \`base\`, or the draft's \`expectedRevision\`, so the write cannot bury a change you have not seen.`,
+      });
+    }
+  }
+  for (const locale of Object.keys(input.edits ?? {})) {
+    // SAFETY: `edits` is keyed by Locale.
+    if (input.translations?.[locale as Locale]?.content !== undefined) {
+      throw new AppError("BAD_REQUEST", {
+        message: `Write the "${locale}" body or edit it, not both in one call.`,
+      });
+    }
+  }
+
   const meta = { ...input.meta };
   if (meta.slug !== undefined && meta.slug !== null) {
     const slug = normalizeAsciiSlug(meta.slug);
@@ -164,6 +210,8 @@ export const patchFeedDraftService = async (
     sessionId: input.sessionId,
     meta,
     translations: input.translations,
+    base: input.base,
+    edits: input.edits,
   });
   return unwrapWrite(result, input.draftId);
 };
@@ -243,6 +291,11 @@ export const editFeedDraftContentService = async (
   }
 };
 
+const conflictData = (draft: FeedDraftRecord) => ({
+  revision: draft.revision,
+  contentHash: draft.contentHash,
+});
+
 const unwrapWrite = (
   result: Awaited<ReturnType<typeof patchFeedDraft>>,
   draftId: number
@@ -253,7 +306,16 @@ const unwrapWrite = (
     case "conflict":
       throw new AppError("CONFLICT", {
         message: `Draft ${draftId} was changed by someone else; reload it and try again.`,
-        data: { revision: result.draft.revision },
+        data: result.rejected
+          ? {
+              ...conflictData(result.draft),
+              rejected: result.rejected.map(({ locale, field, reason }) => ({
+                locale: locale ?? null,
+                field,
+                reason,
+              })),
+            }
+          : conflictData(result.draft),
       });
     case "not_found":
       throw new AppError("NOT_FOUND", {
@@ -266,19 +328,28 @@ export interface ApplyFeedDraftResult {
   feedId: number;
   slug: string;
   created: boolean;
+  /** The commit `feed` now holds. */
+  revisionId: number;
+  contentHash: string;
 }
 
 /**
  * Writes the draft onto `feed` and `feed_translation`, creating an unpublished feed the first
- * time. Publishing is a separate feed write. The draft stays open as the working copy.
+ * time, and commits that content as a version of the draft. Publishing is a separate feed
+ * write. The draft stays open as the working copy.
  *
- * With `expectedRevision`, the draft row is locked and its revision checked in the same
- * transaction that writes the feed, so what lands is the revision the caller approved and
+ * The draft row is locked and its content checked against `expectedHash` in the same
+ * transaction that writes the feed, so what lands is the content the caller decided on and
  * nothing written since. Feed hooks run after that transaction commits.
  */
 export const applyFeedDraftService = async (
   db: DB,
-  input: { draftId: number; adminId: string; expectedRevision?: number },
+  input: {
+    draftId: number;
+    adminId: string;
+    expectedHash: string;
+    message?: string | null;
+  },
   hooks: FeedHooks
 ): Promise<ApplyFeedDraftResult> => {
   const changed: number[] = [];
@@ -294,16 +365,13 @@ export const applyFeedDraftService = async (
         message: `Draft ${input.draftId} not found`,
       });
     }
-    if (
-      input.expectedRevision !== undefined &&
-      locked.revision !== input.expectedRevision
-    ) {
+    if (locked.contentHash !== input.expectedHash) {
       throw new AppError("CONFLICT", {
-        message: `Draft ${input.draftId} is at revision ${locked.revision}, not ${input.expectedRevision}: it changed after it was approved. Read it again and ask for approval of the current revision.`,
-        data: { revision: locked.revision },
+        message: `Draft ${input.draftId} holds ${locked.contentHash.slice(0, 7)}, not ${input.expectedHash.slice(0, 7)}: it changed after it was decided on. Read it again and decide on what it holds now.`,
+        data: conflictData(locked),
       });
     }
-    return applyLockedDraft(tx, locked, input.adminId, deferred);
+    return applyLockedDraft(tx, locked, input, deferred);
   });
   // The feed is committed; a hook that cannot start indexing does not unmake that, so the
   // caller hears the truth and the index catches up on the next apply or publish.
@@ -327,7 +395,7 @@ export const applyFeedDraftService = async (
 const applyLockedDraft = async (
   db: DB,
   draft: FeedDraftRecord,
-  adminId: string,
+  { adminId, message }: { adminId: string; message?: string | null },
   hooks: FeedHooks
 ): Promise<ApplyFeedDraftResult> => {
   // SAFETY: translations are keyed by Locale.
@@ -398,12 +466,18 @@ const applyLockedDraft = async (
         message: "Creating the feed returned no row.",
       });
     }
-    await markFeedDraftApplied(db, {
-      draftId: draft.id,
+    const commit = await commitFeedDraft(db, {
+      draft,
       feedId: created.id,
-      revision: draft.revision,
+      message,
     });
-    return { feedId: created.id, slug: created.slug, created: true };
+    return {
+      feedId: created.id,
+      slug: created.slug,
+      created: true,
+      revisionId: commit.id,
+      contentHash: commit.contentHash,
+    };
   }
 
   const updated = await updateFeedService(
@@ -417,44 +491,70 @@ const applyLockedDraft = async (
     },
     hooks
   );
-  await markFeedDraftApplied(db, {
-    draftId: draft.id,
+  const commit = await commitFeedDraft(db, {
+    draft,
     feedId: updated.id,
-    revision: draft.revision,
+    message,
   });
-  return { feedId: updated.id, slug: updated.slug, created: false };
+  return {
+    feedId: updated.id,
+    slug: updated.slug,
+    created: false,
+    revisionId: commit.id,
+    contentHash: commit.contentHash,
+  };
 };
 
 /**
- * A feed-bound draft goes back to what the feed holds; an unbound one is deleted, and any
- * writing session on it opens a fresh draft on its next turn.
+ * A feed-bound draft goes back to the commit its feed holds; an unbound one is deleted, and any
+ * writing session on it opens a fresh draft on its next turn. `expectedHash` is the content the
+ * caller is throwing away, so work that landed since is not dropped unseen.
  */
 export const discardFeedDraftService = async (
   db: DB,
-  input: { draftId: number; adminId: string }
+  input: { draftId: number; adminId: string; expectedHash: string }
 ): Promise<void> => {
-  const draft = await requireDraft(db, input.draftId, input.adminId);
-  if (draft.feedId === null) {
-    await deleteFeedDraft(db, draft.id);
-    return;
-  }
-  const result = await replaceFeedDraft(db, {
-    draftId: draft.id,
+  const deleted = await deleteUnboundFeedDraft(db, {
+    draftId: input.draftId,
     userId: input.adminId,
-    snapshot: await feedSnapshot(db, draft.feedId, input.adminId),
-    author: FEED_DRAFT_AUTHOR.Operator,
+    expectedHash: input.expectedHash,
   });
-  const reset = unwrapWrite(result, draft.id);
-  await markFeedDraftApplied(db, {
+  if (deleted.status === "deleted") return;
+  if (deleted.status === "not_found") {
+    throw new AppError("NOT_FOUND", {
+      message: `Draft ${input.draftId} not found`,
+    });
+  }
+  const { draft } = deleted;
+  if (deleted.status === "conflict") {
+    throw new AppError("CONFLICT", {
+      message: `Draft ${draft.id} was changed by someone else; reload it and try again.`,
+      data: conflictData(draft),
+    });
+  }
+  // Bound to a post: the restore below checks the hash again under its own lock.
+  if (draft.appliedRevisionId === null) {
+    throw new AppError("INTERNAL_SERVER_ERROR", {
+      message: `Draft ${draft.id} is bound to feed ${draft.feedId} without a commit.`,
+    });
+  }
+  await restoreFeedDraftRevisionService(db, {
     draftId: draft.id,
-    feedId: draft.feedId,
-    revision: reset.revision,
+    revisionId: draft.appliedRevisionId,
+    adminId: input.adminId,
+    expectedHash: input.expectedHash,
   });
 };
 
+/** Replaces the working copy with a kept state; the state it replaces is kept first. */
 export const restoreFeedDraftRevisionService = async (
   db: DB,
-  input: { draftId: number; revisionId: number; adminId: string }
+  input: {
+    draftId: number;
+    revisionId: number;
+    adminId: string;
+    expectedHash: string;
+  }
 ): Promise<FeedDraftRecord> => {
   // Scoped to the admin's drafts, so a revision under anyone else's draft is not found
   // whether or not it exists.
@@ -471,6 +571,7 @@ export const restoreFeedDraftRevisionService = async (
   const result = await replaceFeedDraft(db, {
     draftId: input.draftId,
     userId: input.adminId,
+    expectedHash: input.expectedHash,
     snapshot: snapshotOfRevision(revision),
     author: FEED_DRAFT_AUTHOR.Operator,
   });

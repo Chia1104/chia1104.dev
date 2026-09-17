@@ -48,15 +48,15 @@ export interface PrepareWritingTurnOptions {
 
 /**
  * What the operator approves when they approve a commit-tier call. `commit_draft` is pinned to
- * the draft revision they looked at, so a draft edited after the decision, by them or by the
+ * the draft content they looked at, so a draft edited after the decision, by them or by the
  * model on its way back, is gated again instead of committed unseen. A discarded draft still
  * keys, and the call itself reports it missing.
  *
- * The revision the key was read from is also the revision that call may commit, so it is
- * recorded in `approvedDraftRevisions` under the call's id for `commit_draft` to apply.
+ * The content the key was read from is also the content that call may commit, so its hash is
+ * recorded in `approvedDraftHashes` under the call's id for `commit_draft` to apply.
  */
 export const writingApprovalKeyOf =
-  (store: DraftStore, approvedDraftRevisions: Map<string, number>) =>
+  (store: DraftStore, approvedDraftHashes: Map<string, string>) =>
   async (request: ToolCallRequest): Promise<string> => {
     const args = commitArgsSchema.safeParse(request.input).data ?? {};
     switch (request.toolName) {
@@ -64,8 +64,8 @@ export const writingApprovalKeyOf =
         const draftId = args.draftId;
         try {
           const draft = await store.get(draftId ?? Number.NaN);
-          approvedDraftRevisions.set(request.toolCallId, draft.revision);
-          return `${request.toolName}:${draftId}@${draft.revision}`;
+          approvedDraftHashes.set(request.toolCallId, draft.contentHash);
+          return `${request.toolName}:${draftId}@${draft.contentHash}`;
         } catch (error) {
           if (error instanceof DraftNotFoundError) {
             return `${request.toolName}:${draftId}@missing`;
@@ -206,7 +206,7 @@ const renderAttachments = async (
 export const prepareWritingTurn = (
   options: PrepareWritingTurnOptions
 ): AgentTurnPlan => {
-  const approvedDraftRevisions = new Map<string, number>();
+  const approvedDraftHashes = new Map<string, string>();
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
     content: options.content,
@@ -214,7 +214,7 @@ export const prepareWritingTurn = (
     connectors: { github: options.github },
     draft: options.draft,
     memory: options.memory,
-    approvedDraftRevisions,
+    approvedDraftHashes,
   };
 
   return {
@@ -244,6 +244,6 @@ export const prepareWritingTurn = (
       renderAttachments(options.draft, attachments),
     promptTemplates: writingPromptTemplates,
     budget: writingTurnBudget,
-    approvalKeyOf: writingApprovalKeyOf(options.draft, approvedDraftRevisions),
+    approvalKeyOf: writingApprovalKeyOf(options.draft, approvedDraftHashes),
   };
 };

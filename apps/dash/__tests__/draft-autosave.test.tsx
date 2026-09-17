@@ -27,7 +27,9 @@ const initial: DraftView = {
   id: 7,
   feedId: null,
   revision: 1,
-  appliedRevision: null,
+  contentHash: "hash",
+  appliedRevisionId: null,
+  appliedHash: null,
   slug: null,
   type: "post",
   defaultLocale: "en",
@@ -82,20 +84,20 @@ describe("draft autosave", () => {
   afterEach(() => vi.useRealTimers());
 
   /** Echoes the patched translations at the next revision. */
-  const echoPatch = () =>
+  const echoPatch = () => {
+    let revision = initial.revision;
     api.patch.mockImplementation(
       async ({
         translations,
-        expectedRevision,
       }: {
         translations: Parameters<typeof applyPatch>[1]["translations"];
-        expectedRevision: number;
       }) => ({
         ...initial,
         ...applyPatch(toValues(initial), { translations }),
-        revision: expectedRevision + 1,
+        revision: ++revision,
       })
     );
+  };
 
   it("saves three seconds after the last edit", async () => {
     echoPatch();
@@ -149,14 +151,14 @@ describe("draft autosave", () => {
     expect(api.patch).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps unsaved edits in the browser and resumes them on the same revision", async () => {
+  it("keeps unsaved edits in the browser, with what they replaced, and resumes them", async () => {
     const first = setup();
     act(() =>
       first.result.current.form.setValue("translations.en.title", "Offline")
     );
     expect(readDraftSnapshot(initial.id)).toEqual({
-      revision: 1,
       patch: { translations: { en: { title: "Offline" } } },
+      seen: { translations: { en: { title: "Title" } } },
     });
     expect(localStorage.getItem("chia.dash.draft-snapshots")).toContain(
       "Offline"
@@ -171,28 +173,55 @@ describe("draft autosave", () => {
     );
     expect(api.patch).toHaveBeenCalledTimes(1);
     expect(api.patch).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        expectedRevision: 1,
+      {
+        draftId: initial.id,
         translations: { en: { title: "Offline" } },
-      }),
+        base: { translations: { en: { title: "Title" } } },
+      },
       expect.anything()
     );
     expect(second.result.current.isDirty).toBe(false);
     expect(readDraftSnapshot(initial.id)).toBeNull();
   });
 
-  it("offers edits made against an older revision as a conflict", async () => {
+  it("carries kept edits onto a draft that moved in other fields", async () => {
     draftSnapshotStore
       .getState()
-      .keep(initial.id, { revision: 1, patch: { slug: "mine" } });
-    const newer = { ...initial, revision: 2 };
+      .keep(initial.id, { patch: { slug: "mine" }, seen: { slug: null } });
+    const newer: DraftView = {
+      ...initial,
+      ...applyPatch(toValues(initial), {
+        translations: { en: { title: "Remote" } },
+      }),
+      revision: 2,
+    };
+    api.patch.mockResolvedValueOnce({ ...newer, slug: "mine", revision: 3 });
+    const { result } = setup(newer);
+    await act(() => Promise.resolve());
+    expect(result.current.issue).toBeNull();
+    expect(result.current.form.getValues("translations.en.title")).toBe(
+      "Remote"
+    );
+    expect(api.patch).toHaveBeenLastCalledWith(
+      { draftId: initial.id, slug: "mine", base: { slug: null } },
+      expect.anything()
+    );
+    expect(result.current.isDirty).toBe(false);
+  });
+
+  it("offers kept edits as a conflict only when the same field moved", async () => {
+    draftSnapshotStore
+      .getState()
+      .keep(initial.id, { patch: { slug: "mine" }, seen: { slug: null } });
+    const newer = { ...initial, slug: "theirs", revision: 2 };
     const { result } = setup(newer);
     await act(() => Promise.resolve());
     expect(result.current.issue).toEqual({ kind: "conflict", draft: newer });
     expect(result.current.form.getValues("slug")).toBe("mine");
+    // What the edit replaced stays as it was kept: the conflict is not resolved yet.
     expect(readDraftSnapshot(initial.id)).toEqual({
-      revision: 2,
       patch: { slug: "mine" },
+      seen: { slug: null },
     });
     await act(() => vi.advanceTimersByTimeAsync(20_000));
     expect(api.patch).not.toHaveBeenCalled();
@@ -200,12 +229,36 @@ describe("draft autosave", () => {
     api.patch.mockResolvedValueOnce({ ...newer, slug: "mine", revision: 3 });
     await act(async () => result.current.keepMine());
     expect(api.patch).toHaveBeenLastCalledWith(
-      expect.objectContaining({ expectedRevision: 2, slug: "mine" }),
+      { draftId: initial.id, slug: "mine", base: { slug: "theirs" } },
       expect.anything()
     );
     expect(result.current.issue).toBeNull();
     expect(result.current.isDirty).toBe(false);
     expect(readDraftSnapshot(initial.id)).toBeNull();
+  });
+
+  it("asks again after a reload that left the conflict unresolved, instead of saving over the remote edit", async () => {
+    draftSnapshotStore
+      .getState()
+      .keep(initial.id, { patch: { slug: "mine" }, seen: { slug: null } });
+    const newer = { ...initial, slug: "theirs", revision: 2 };
+
+    const first = setup(newer);
+    await act(() => Promise.resolve());
+    expect(first.result.current.issue).toEqual({
+      kind: "conflict",
+      draft: newer,
+    });
+    first.unmount();
+
+    const second = setup(newer);
+    await act(() => Promise.resolve());
+    expect(second.result.current.issue).toEqual({
+      kind: "conflict",
+      draft: newer,
+    });
+    await act(() => vi.advanceTimersByTimeAsync(20_000));
+    expect(api.patch).not.toHaveBeenCalled();
   });
 
   it("ignores locale navigation and reverting an edit before the debounce", async () => {
@@ -242,11 +295,13 @@ describe("draft autosave", () => {
         revision: 2,
       })
     );
+    await act(() => Promise.resolve());
     expect(api.patch).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        expectedRevision: 2,
+      {
+        draftId: initial.id,
         translations: { en: { title: "Second" } },
-      }),
+        base: { translations: { en: { title: "First" } } },
+      },
       expect.anything()
     );
     await act(async () => {
@@ -263,7 +318,7 @@ describe("draft autosave", () => {
     expect(result.current.saved.revision).toBe(3);
   });
 
-  it("loads idle remote changes but preserves a dirty form", () => {
+  it("takes remote changes beside local edits and stops only where both changed a field", () => {
     const { result } = setup();
     const remote = {
       ...initial,
@@ -276,14 +331,70 @@ describe("draft autosave", () => {
     expect(result.current.form.getValues("translations.en.title")).toBe(
       "Remote"
     );
+
     act(() => result.current.form.setValue("translations.en.title", "Mine"));
-    act(() => result.current.receive({ ...remote, revision: 3 }));
+    act(() =>
+      result.current.receive({
+        ...remote,
+        ...applyPatch(toValues(remote), {
+          translations: { en: { content: "Remote body" } },
+        }),
+        revision: 3,
+      })
+    );
     expect(result.current.form.getValues("translations.en.title")).toBe("Mine");
-    expect(result.current.saved.revision).toBe(2);
+    expect(result.current.form.getValues("translations.en.content")).toBe(
+      "Remote body"
+    );
+    expect(result.current.saved.revision).toBe(3);
+    expect(result.current.issue).toBeNull();
+
+    const theirs = {
+      ...remote,
+      ...applyPatch(toValues(remote), {
+        translations: { en: { title: "Theirs", content: "Remote body" } },
+      }),
+      revision: 4,
+    };
+    act(() => result.current.receive(theirs));
+    expect(result.current.form.getValues("translations.en.title")).toBe("Mine");
+    expect(result.current.issue).toEqual({ kind: "conflict", draft: theirs });
   });
 
-  it("stops on conflicts and keeps only edited fields over the remote revision", async () => {
-    api.patch.mockRejectedValueOnce(new ORPCError("CONFLICT"));
+  it("merges a body the agent changed elsewhere while it was being typed in", () => {
+    const body = "# Post\n\nFirst paragraph.\n\nSecond paragraph.\n";
+    const draft = {
+      ...initial,
+      ...applyPatch(toValues(initial), {
+        translations: { en: { content: body } },
+      }),
+    };
+    const { result } = setup(draft);
+    act(() =>
+      result.current.form.setValue(
+        "translations.en.content",
+        body.replace("First paragraph.", "First paragraph, typed.")
+      )
+    );
+    act(() =>
+      result.current.receive({
+        ...draft,
+        ...applyPatch(toValues(draft), {
+          translations: {
+            en: { content: body.replace("Second", "Second, by the agent") },
+          },
+        }),
+        revision: 2,
+      })
+    );
+    expect(result.current.issue).toBeNull();
+    expect(result.current.form.getValues("translations.en.content")).toBe(
+      "# Post\n\nFirst paragraph, typed.\n\nSecond, by the agent paragraph.\n"
+    );
+    expect(result.current.isDirty).toBe(true);
+  });
+
+  it("rebases a rejected write onto the latest draft and sends it again", async () => {
     const { result, loadLatest } = setup();
     const remote = {
       ...initial,
@@ -293,15 +404,49 @@ describe("draft autosave", () => {
       revision: 2,
     };
     loadLatest.mockResolvedValue(remote);
+    api.patch
+      .mockRejectedValueOnce(new ORPCError("CONFLICT"))
+      .mockResolvedValueOnce({
+        ...remote,
+        ...applyPatch(toValues(remote), {
+          translations: { en: { title: "Mine" } },
+        }),
+        revision: 3,
+      });
+    act(() => result.current.form.setValue("translations.en.title", "Mine"));
+    await act(async () => {
+      expect(await result.current.flush()).toBe(true);
+    });
+    expect(api.patch).toHaveBeenCalledTimes(2);
+    expect(result.current.form.getValues("translations.en.content")).toBe(
+      "Remote body"
+    );
+    expect(result.current.form.getValues("translations.en.title")).toBe("Mine");
+    expect(result.current.isDirty).toBe(false);
+  });
+
+  it("stops when the rejected field moved on both sides, until the operator picks", async () => {
+    api.patch.mockRejectedValueOnce(new ORPCError("CONFLICT"));
+    const { result, loadLatest } = setup();
+    const remote = {
+      ...initial,
+      ...applyPatch(toValues(initial), {
+        translations: { en: { title: "Theirs" } },
+      }),
+      revision: 2,
+    };
+    loadLatest.mockResolvedValue(remote);
     act(() => result.current.form.setValue("translations.en.title", "Mine"));
     await act(async () => {
       expect(await result.current.flush()).toBe(false);
     });
-    await act(() => vi.advanceTimersByTimeAsync(2000));
+    expect(result.current.issue).toEqual({ kind: "conflict", draft: remote });
+    await act(() => vi.advanceTimersByTimeAsync(20_000));
     await act(async () => {
       expect(await result.current.retry()).toBe(false);
     });
     expect(api.patch).toHaveBeenCalledTimes(1);
+
     api.patch.mockResolvedValueOnce({
       ...remote,
       ...applyPatch(toValues(remote), {
@@ -310,10 +455,14 @@ describe("draft autosave", () => {
       revision: 3,
     });
     await act(async () => result.current.keepMine());
-    expect(result.current.form.getValues("translations.en.content")).toBe(
-      "Remote body"
+    expect(api.patch).toHaveBeenLastCalledWith(
+      {
+        draftId: initial.id,
+        translations: { en: { title: "Mine" } },
+        base: { translations: { en: { title: "Theirs" } } },
+      },
+      expect.anything()
     );
-    expect(result.current.form.getValues("translations.en.title")).toBe("Mine");
     expect(result.current.isDirty).toBe(false);
   });
 

@@ -69,6 +69,10 @@
       "types": "./src/text/index.ts",
       "default": "./src/text/index.ts"
     },
+    "./text/diff": {
+      "types": "./src/text/diff.ts",
+      "default": "./src/text/diff.ts"
+    },
     "./url": {
       "types": "./src/url/index.ts",
       "default": "./src/url/index.ts"
@@ -86,6 +90,7 @@
     "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
     "dayjs": "catalog:",
+    "diff": "catalog:",
     "es-toolkit": "catalog:",
     "ky": "catalog:",
     "superjson": "catalog:",

@@ -10,13 +10,14 @@ import type { FeedHooks } from "../../shared/context";
 import type { UpdateFeedServiceInput } from "../write.service";
 
 /**
- * Applying a draft commits exactly the revision the caller approved: the row is locked and
- * checked in the transaction that writes the feed, and feed hooks fire only after it commits.
+ * Applying a draft commits exactly the content the caller decided on: the row is locked and
+ * its hash checked in the transaction that writes the feed, and feed hooks fire only after it
+ * commits.
  */
 
 const repo = vi.hoisted(() => ({
   getFeedDraftForUpdate: vi.fn(),
-  markFeedDraftApplied: vi.fn(async () => undefined),
+  commitFeedDraft: vi.fn(async () => ({ id: 31, contentHash: "h3" })),
 }));
 const write = vi.hoisted(() => ({
   createFeedService: vi.fn(),
@@ -52,7 +53,9 @@ const draft = (revision: number) => ({
   userId: "admin",
   feedId: 5,
   revision,
-  appliedRevision: null,
+  contentHash: `h${revision}`,
+  appliedRevisionId: null,
+  appliedHash: null,
   slug: "a-post",
   type: "post",
   defaultLocale: "en",
@@ -75,22 +78,25 @@ beforeEach(() => {
 });
 
 describe("applyFeedDraftService", () => {
-  it("refuses a draft whose locked revision is not the approved one, before touching the feed", async () => {
+  it("refuses a draft whose locked content is not what was decided on, before touching the feed", async () => {
     repo.getFeedDraftForUpdate.mockResolvedValue(draft(4));
 
     await expect(
       applyFeedDraftService(
         db,
-        { draftId: 7, adminId: "admin", expectedRevision: 3 },
+        { draftId: 7, adminId: "admin", expectedHash: "h3" },
         {}
       )
-    ).rejects.toMatchObject({ code: "CONFLICT", data: { revision: 4 } });
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+      data: { revision: 4, contentHash: "h4" },
+    });
 
     expect(write.updateFeedService).not.toHaveBeenCalled();
-    expect(repo.markFeedDraftApplied).not.toHaveBeenCalled();
+    expect(repo.commitFeedDraft).not.toHaveBeenCalled();
   });
 
-  it("applies the approved revision under the lock and fires feed hooks after the commit", async () => {
+  it("applies the decided content under the lock, commits it and fires feed hooks after the transaction", async () => {
     repo.getFeedDraftForUpdate.mockResolvedValue(draft(3));
     const onFeedChanged = vi.fn(async () => {
       expect(inTransaction).toBe(false);
@@ -105,15 +111,26 @@ describe("applyFeedDraftService", () => {
 
     const result = await applyFeedDraftService(
       db,
-      { draftId: 7, adminId: "admin", expectedRevision: 3 },
+      {
+        draftId: 7,
+        adminId: "admin",
+        expectedHash: "h3",
+        message: "Tighten the intro",
+      },
       { onFeedChanged }
     );
 
-    expect(result).toEqual({ feedId: 5, slug: "a-post", created: false });
-    expect(repo.markFeedDraftApplied).toHaveBeenCalledWith(db, {
-      draftId: 7,
+    expect(result).toEqual({
       feedId: 5,
-      revision: 3,
+      slug: "a-post",
+      created: false,
+      revisionId: 31,
+      contentHash: "h3",
+    });
+    expect(repo.commitFeedDraft).toHaveBeenCalledWith(db, {
+      draft: expect.objectContaining({ id: 7, contentHash: "h3" }),
+      feedId: 5,
+      message: "Tighten the intro",
     });
     expect(onFeedChanged).toHaveBeenCalledExactlyOnceWith(5);
   });
@@ -134,23 +151,12 @@ describe("applyFeedDraftService", () => {
     await expect(
       applyFeedDraftService(
         db,
-        { draftId: 7, adminId: "admin", expectedRevision: 3 },
+        { draftId: 7, adminId: "admin", expectedHash: "h3" },
         { onFeedChanged }
       )
-    ).resolves.toEqual({ feedId: 5, slug: "a-post", created: false });
+    ).resolves.toMatchObject({ feedId: 5, slug: "a-post", created: false });
 
     expect(onFeedChanged).toHaveBeenCalledOnce();
     expect(reportError).toHaveBeenCalledOnce();
-  });
-
-  it("applies whatever revision is current when none was approved", async () => {
-    repo.getFeedDraftForUpdate.mockResolvedValue(draft(9));
-
-    await applyFeedDraftService(db, { draftId: 7, adminId: "admin" }, {});
-
-    expect(repo.markFeedDraftApplied).toHaveBeenCalledWith(
-      db,
-      expect.objectContaining({ revision: 9 })
-    );
   });
 });

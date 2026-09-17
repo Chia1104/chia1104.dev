@@ -12,7 +12,7 @@ import {
   getWritingSessionConsolidation,
 } from "@chia/db/repos/agent";
 import { listAgentLessons } from "@chia/db/repos/agent/memory";
-import { listFeedDraftRevisionsSince } from "@chia/db/repos/drafts";
+import { listFeedDraftTrailSince } from "@chia/db/repos/drafts";
 import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
@@ -109,14 +109,14 @@ export const consolidateSessionMemoryStep = async (request: {
 
   const edits = [];
   for (const draft of state?.drafts ?? []) {
-    const revisions = await listFeedDraftRevisionsSince(db, {
+    const trail = await listFeedDraftTrailSince(db, {
       draftId: draft.draftId,
       userId: row.userId,
       after: mark?.consolidatedAt ?? null,
     });
     edits.push({
       draftId: draft.draftId,
-      edits: collectOperatorEdits(revisions),
+      edits: collectOperatorEdits(trail),
     });
   }
 

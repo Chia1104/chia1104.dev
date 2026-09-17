@@ -111,9 +111,13 @@ interface TargetMatch {
   match: MatchMode;
 }
 
-const findTarget = (content: string, target: string): TargetMatch => {
+const findTarget = (
+  content: string,
+  target: string,
+  exactOnly: boolean
+): TargetMatch => {
   const exact = occurrencesOf(content, target);
-  if (exact.length > 0) return { spans: exact, match: "exact" };
+  if (exact.length > 0 || exactOnly) return { spans: exact, match: "exact" };
   for (const mode of RELAXED_ROUNDS) {
     const spans = Array.from(
       content.matchAll(relaxedPattern(target, mode)),
@@ -130,14 +134,16 @@ const findTarget = (content: string, target: string): TargetMatch => {
 /**
  * `oldString` → `newString`, inserted verbatim. The target is matched byte for byte first and
  * then under each looser `MatchMode` in turn. A target that matches more than once is refused
- * unless `replaceAll`, never replaced at its first occurrence. Messages are written for the
+ * unless `replaceAll`, never replaced at its first occurrence. `exactOnly` stops after the
+ * first round, for a target a program derived rather than typed. Messages are written for the
  * caller that typed the target, human or model.
  */
 export const replaceExact = (
   content: string,
   oldString: string,
   newString: string,
-  replaceAll = false
+  replaceAll = false,
+  exactOnly = false
 ): ExactReplaceResult => {
   if (oldString.length === 0) {
     return {
@@ -148,14 +154,15 @@ export const replaceExact = (
     };
   }
 
-  const { spans, match } = findTarget(content, oldString);
+  const { spans, match } = findTarget(content, oldString, exactOnly);
 
   if (spans.length === 0) {
     return {
       ok: false,
       reason: "not_found",
-      message:
-        "`oldString` was not found, even ignoring whitespace and quote or dash style. Read the current body again and copy the target from it.",
+      message: exactOnly
+        ? "`oldString` was not found. Read the current body again and copy the target from it."
+        : "`oldString` was not found, even ignoring whitespace and quote or dash style. Read the current body again and copy the target from it.",
     };
   }
 
@@ -255,11 +262,12 @@ export type ApplyEditsResult =
 /**
  * Exact replacements in order, each against the content the previous one produced. Offsets
  * come out relative to the final content: a later edit landing above an earlier one shifts
- * the earlier offsets.
+ * the earlier offsets. `exactOnly` matches every target byte for byte and no looser.
  */
 export const applyEdits = (
   content: string,
-  edits: readonly ContentEdit[]
+  edits: readonly ContentEdit[],
+  { exactOnly = false }: { exactOnly?: boolean } = {}
 ): ApplyEditsResult => {
   let current = content;
   const applied: AppliedEdit[] = [];
@@ -268,7 +276,8 @@ export const applyEdits = (
       current,
       edit.oldString,
       edit.newString,
-      edit.replaceAll ?? false
+      edit.replaceAll ?? false,
+      exactOnly
     );
     if (!result.ok) {
       return {

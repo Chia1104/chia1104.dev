@@ -23,7 +23,7 @@ const repo = vi.hoisted(() => ({
 const drafts = vi.hoisted(() => ({
   getFeedDraft: vi.fn(),
   getFeedDrafts: vi.fn(),
-  listOperatorFeedDraftChanges: vi.fn(async () => []),
+  listFeedDraftChangesSince: vi.fn(async () => []),
   patchFeedDraft: vi.fn(),
 }));
 
@@ -56,7 +56,11 @@ const record = (id: number, userId = "author"): FeedDraftRecord => ({
   defaultLocale: "zh-TW",
   mainImage: null,
   revision: 3,
-  appliedRevision: null,
+  contentHash: "hash",
+  appliedRevisionId: null,
+  appliedHash: null,
+  lastAuthor: "operator",
+  lastSessionId: null,
   createdAt: new Date("2026-09-05T00:00:00Z"),
   updatedAt: new Date("2026-09-05T00:00:00Z"),
   translations: {},
@@ -307,7 +311,11 @@ describe("createWritingAgentExecutor", () => {
 
   it("extracts at once when the turn committed, and never after a turn that did not finish", async () => {
     await runTurn(done, async (options) => {
-      await options.content.applyDraft({ draftId: 7, expectedRevision: 3 });
+      await options.content.applyDraft({
+        draftId: 7,
+        expectedHash: "hash",
+        message: "Commit.",
+      });
     });
     expect(startMemoryConsolidation).toHaveBeenCalledWith({
       sessionId: "session-1",

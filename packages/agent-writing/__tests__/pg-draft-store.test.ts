@@ -5,12 +5,13 @@ import type {
   FeedDraftRecord,
   PatchFeedDraftInput,
 } from "@chia/db/repos/drafts";
+import { settleFeedDraftPatch } from "@chia/db/repos/drafts/patch";
 import type { Locale } from "@chia/db/types";
 
 /**
  * Fakes the drafts repo with the same write semantics as the real one: `undefined` leaves a
- * field alone, `null` clears it, every write bumps `revision`, and a stale
- * `expectedRevision` is refused with the current row.
+ * field alone, `null` clears it, every write bumps `revision`, and a field that moved off its
+ * `base` refuses the whole write with the current row.
  */
 const now = new Date("2026-09-04T00:00:00Z");
 let drafts: Map<number, FeedDraftRecord>;
@@ -23,7 +24,11 @@ const record = (id: number, feedId: number | null = null): FeedDraftRecord => ({
   defaultLocale: "zh-TW",
   mainImage: null,
   revision: 1,
-  appliedRevision: null,
+  contentHash: "hash",
+  appliedRevisionId: null,
+  appliedHash: null,
+  lastAuthor: "operator",
+  lastSessionId: null,
   createdAt: now,
   updatedAt: now,
   translations: {},
@@ -43,15 +48,17 @@ vi.mock("@chia/db/repos/drafts", () => ({
     const draft = drafts.get(draftId);
     return draft ? { ...draft } : null;
   }),
-  listOperatorFeedDraftChanges: vi.fn(async () => []),
+  listFeedDraftChangesSince: vi.fn(async () => []),
   patchFeedDraft: vi.fn(async (_db: DB, input: PatchFeedDraftInput) => {
     const draft = drafts.get(input.draftId);
     if (!draft) return { status: "not_found" };
-    if (
-      input.expectedRevision !== undefined &&
-      input.expectedRevision !== draft.revision
-    ) {
-      return { status: "conflict", draft: { ...draft } };
+    const settled = settleFeedDraftPatch(draft, input);
+    if (!settled.ok) {
+      return {
+        status: "conflict",
+        draft: { ...draft },
+        rejected: settled.rejected,
+      };
     }
     const translations = { ...draft.translations };
     for (const [locale, patch] of Object.entries(input.translations ?? {})) {
@@ -180,25 +187,70 @@ describe("PgDraftStore", () => {
     });
   });
 
-  it("refuses a body write pinned to a revision the draft has moved past", async () => {
-    const store = build();
-    const read = await store.get(DRAFT_ID);
+  const operatorWrites = (
+    locale: Locale,
+    patch: { title?: string; content?: string }
+  ) => {
     const current = drafts.get(DRAFT_ID);
     if (!current) throw new Error("fixture draft missing");
-    drafts.set(DRAFT_ID, { ...current, revision: read.revision + 1 });
+    drafts.set(DRAFT_ID, {
+      ...current,
+      revision: current.revision + 1,
+      translations: {
+        ...current.translations,
+        [locale]: {
+          title: null,
+          excerpt: null,
+          description: null,
+          summary: null,
+          content: null,
+          ...current.translations[locale],
+          ...patch,
+        },
+      },
+    });
+  };
+
+  it("refuses a write over a field the operator changed after the model read it", async () => {
+    const store = build();
+    await store.write(DRAFT_ID, {
+      translations: { en: { content: "## Old" } },
+    });
+    operatorWrites("en", { content: "## Operator version" });
 
     await expect(
-      store.write(
-        DRAFT_ID,
-        { translations: { en: { content: "## Stale" } } },
-        read.revision
-      )
-    ).rejects.toBeInstanceOf(DraftConflictError);
-    // The conflict response still tells the store where the draft is now.
-    expect(store.observedRevisions.get(DRAFT_ID)).toBe(read.revision + 1);
+      store.write(DRAFT_ID, { translations: { en: { content: "## Stale" } } })
+    ).rejects.toThrow("Someone else changed en.content");
+    expect(drafts.get(DRAFT_ID)?.translations.en?.content).toBe(
+      "## Operator version"
+    );
+
+    // Reading it again is what makes the next write legitimate.
+    await store.get(DRAFT_ID);
+    await store.write(DRAFT_ID, {
+      translations: { en: { content: "## New" } },
+    });
+    expect(drafts.get(DRAFT_ID)?.translations.en?.content).toBe("## New");
   });
 
-  it("tracks the revision it saw per draft and names a draft that is gone", async () => {
+  it("writes one locale while the operator keeps writing another", async () => {
+    const store = build();
+    await store.get(DRAFT_ID);
+    operatorWrites("zh-TW", { title: "標題", content: "內文" });
+
+    const next = await store.write(DRAFT_ID, {
+      translations: { en: { title: "Title", content: "## Translated" } },
+    });
+    expect(next.translations["zh-TW"]?.content).toBe("內文");
+    expect(next.translations.en?.content).toBe("## Translated");
+
+    // The model has not seen the operator's text, so it still cannot write over it.
+    await expect(
+      store.write(DRAFT_ID, { translations: { "zh-TW": { content: "覆蓋" } } })
+    ).rejects.toBeInstanceOf(DraftConflictError);
+  });
+
+  it("tracks the revision it read per draft and names a draft that is gone", async () => {
     const store = build();
     const opened = await store.open({ feedId: 42 });
     await store.write(opened.id, {
@@ -206,8 +258,9 @@ describe("PgDraftStore", () => {
     });
     await store.get(DRAFT_ID);
 
+    // Only a full read counts as seen: the result of a write may carry someone else's change.
     expect([...store.observedRevisions]).toEqual([
-      [opened.id, 2],
+      [opened.id, 1],
       [DRAFT_ID, 1],
     ]);
     await expect(store.open({ feedId: 42 })).resolves.toMatchObject({

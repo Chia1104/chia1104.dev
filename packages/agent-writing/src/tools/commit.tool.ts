@@ -134,9 +134,9 @@ export const commitDraftTool = defineTool(
   commitDraftSpec,
   (context: WritingToolContext) => async (toolCallId, params) => {
     const draft = await context.draft.get(params.draftId);
-    // The approved revision when the operator decided on this call; otherwise the one just read.
-    const expectedRevision =
-      context.approvedDraftRevisions.get(toolCallId) ?? draft.revision;
+    // The approved content when the operator decided on this call; otherwise what was just read.
+    const expectedHash =
+      context.approvedDraftHashes.get(toolCallId) ?? draft.contentHash;
 
     // The preflight ran before approval; the draft may have moved since, and the apply service
     // rejects these too. Checking again keeps the error readable rather than an apply failure.
@@ -146,7 +146,8 @@ export const commitDraftTool = defineTool(
 
     const result = await context.content.applyDraft({
       draftId: draft.id,
-      expectedRevision,
+      expectedHash,
+      message: params.confirmation,
     });
 
     return textResult(

@@ -28,6 +28,13 @@ const WRITING_KIND = "writing";
 const localeSchema = z.enum(Locale);
 const postTypeSchema = z.enum([FeedType.Post, FeedType.Note]);
 
+const expectedHash = z
+  .string()
+  .min(1)
+  .describe(
+    "The draft's `contentHash` as last read: the content this call decides on."
+  );
+
 const translationPatchSchema = z.object({
   title: z.string().min(1).optional(),
   excerpt: z.string().nullable().optional(),
@@ -137,13 +144,13 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
     {
       title: "Discard a draft",
       description:
-        "Drop a draft's unapplied work. A post's draft goes back to what the post holds; a new post's draft is deleted with its revisions.",
-      inputSchema: { draftId: z.number().int() },
+        "Drop a draft's unapplied work. A post's draft goes back to the version the post holds; a new post's draft is deleted with its revisions. Fails with CONFLICT when the draft no longer holds expectedHash; read it again first.",
+      inputSchema: { draftId: z.number().int(), expectedHash },
       annotations: { destructiveHint: true },
     },
-    guarded(async ({ draftId }) => {
-      await api.feeds["draft:discard"]({ draftId });
-      return { draftId, discarded: true };
+    guarded(async (input) => {
+      await api.feeds["draft:discard"](input);
+      return { draftId: input.draftId, discarded: true };
     })
   );
 
@@ -152,16 +159,15 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
     {
       title: "List a draft's revisions",
       description:
-        "Restore points of a draft, newest first: who wrote each (operator or agent) and which fields changed. Pass a revision's id to restore_draft_revision.",
+        "Kept states of a draft, newest first. `commit` rows are the versions applied to the post; `safety` rows are restore points kept before another writer, a restore or a discard replaced that state. Each names who last wrote it and which fields differ from the row before. Pass a row's id to restore_draft_revision.",
       inputSchema: {
         draftId: z.number().int(),
+        kind: z.enum(["commit", "safety"]).optional(),
         limit: z.number().int().min(1).max(100).optional(),
       },
       annotations: { readOnlyHint: true },
     },
-    guarded(({ draftId, limit }) =>
-      api.feeds["draft:revisions"]({ draftId, limit })
-    )
+    guarded((input) => api.feeds["draft:revisions"](input))
   );
 
   server.registerTool(
@@ -169,15 +175,14 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
     {
       title: "Restore a draft revision",
       description:
-        "Put the draft back to the state a revision recorded, as a new revision on top. Nothing is lost: the state being replaced stays in the trail.",
+        "Put the working draft back to a kept state. Nothing is lost: the state being replaced is kept first. The post is untouched until the draft is applied. Fails with CONFLICT when the draft no longer holds expectedHash.",
       inputSchema: {
         draftId: z.number().int(),
         revisionId: z.number().int(),
+        expectedHash,
       },
     },
-    guarded(({ draftId, revisionId }) =>
-      api.feeds["draft:restore"]({ draftId, revisionId })
-    )
+    guarded((input) => api.feeds["draft:restore"](input))
   );
 
   server.registerTool(
@@ -223,9 +228,8 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
         expectedRevision: z
           .number()
           .int()
-          .optional()
           .describe(
-            "The revision you last read; omit to write over whatever is current"
+            "The draft's `revision` as last read, so the write cannot bury a change you have not seen"
           ),
         slug: z.string().min(1).optional(),
         type: postTypeSchema.optional(),
@@ -285,10 +289,20 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
     {
       title: "Apply a draft to its post",
       description:
-        "Write the draft to the database, creating an UNPUBLISHED post the first time. This does not publish; use set_published.",
-      inputSchema: { draftId: z.number().int() },
+        "Write the draft to the database, creating an UNPUBLISHED post the first time, and commit that content as a version of the draft. This does not publish; use set_published. Fails with CONFLICT when the draft no longer holds expectedHash; read it again and decide on what it holds now.",
+      inputSchema: {
+        draftId: z.number().int(),
+        expectedHash,
+        message: z
+          .string()
+          .max(200)
+          .optional()
+          .describe(
+            "One line describing this version. Omit to name the fields that changed."
+          ),
+      },
     },
-    guarded(({ draftId }) => api.feeds["draft:apply"]({ draftId }))
+    guarded((input) => api.feeds["draft:apply"](input))
   );
 
   server.registerTool(

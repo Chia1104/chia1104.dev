@@ -55,12 +55,14 @@ export type {
  */
 export interface ContentPort extends ContentReadPort {
   /**
-   * Writes the shared draft onto the feed, creating an unpublished one the first time. Applies
-   * exactly `expectedRevision`: a draft that moved since is refused, never committed unseen.
+   * Writes the shared draft onto the feed, creating an unpublished one the first time, and
+   * commits that content as a version of the draft under `message`. Applies exactly
+   * `expectedHash`: a draft holding anything else is refused, never committed unseen.
    */
   applyDraft(input: {
     draftId: number;
-    expectedRevision: number;
+    expectedHash: string;
+    message: string;
   }): Promise<CommitDraftResult>;
   setPublished(input: {
     feedId: number;
@@ -116,14 +118,11 @@ export interface DraftStore {
   get(draftId: number): Promise<FeedDraft>;
   /**
    * Writes feed-level fields and per-locale fields together as one revision. `undefined`
-   * leaves a field alone, `null` clears it. With `expectedRevision`, a draft that moved since
-   * that revision rejects the write instead of overwriting it.
+   * leaves a field alone, `null` clears it. Each field is checked against what this store last
+   * showed of it: one someone else changed since rejects the whole write instead of being
+   * overwritten, while a change to any other field does not get in the way.
    */
-  write(
-    draftId: number,
-    input: DraftWrite,
-    expectedRevision?: number
-  ): Promise<FeedDraft>;
+  write(draftId: number, input: DraftWrite): Promise<FeedDraft>;
   /**
    * Exact-string replacements applied in order against the body as it is when the write
    * happens, so an operator save in between cannot be overwritten: every target still matches
@@ -134,7 +133,7 @@ export interface DraftStore {
     locale: Locale,
     edits: readonly DraftContentEdit[]
   ): Promise<DraftEditResult>;
-  /** What the operator changed after `afterRevision`, merged per locale. */
+  /** Fields that differ from the draft as it was at `afterRevision`. */
   operatorChangesSince(
     draftId: number,
     afterRevision: number

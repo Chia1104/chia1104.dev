@@ -1,17 +1,15 @@
 import { createJSONStorage, persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
-import type { RouterInputs } from "@/libs/orpc/types";
+import type { DraftPatch } from "./draft-values";
 
-export type DraftPatch = Omit<
-  RouterInputs["feeds"]["draft:patch"],
-  "draftId" | "expectedRevision"
->;
-
-/** Edits the server has not acknowledged, as a patch over the revision they were made against. */
+/**
+ * Edits the server has not acknowledged: the fields that moved, and what each held when it was
+ * edited, which is what lets them be carried onto whatever the draft holds when they come back.
+ */
 export interface DraftSnapshot {
-  revision: number;
   patch: DraftPatch;
+  seen: DraftPatch;
 }
 
 interface DraftSnapshotEntry extends DraftSnapshot {
@@ -52,7 +50,7 @@ export const draftSnapshotStore = createStore<DraftSnapshotState>()(
     }),
     {
       name: "chia.dash.draft-snapshots",
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ entries: state.entries }),
       // Snapshots are short-lived; ones written under another schema are discarded, not converted.
@@ -65,5 +63,5 @@ export const readDraftSnapshot = (draftId: number): DraftSnapshot | null => {
   const entry = draftSnapshotStore
     .getState()
     .entries.find((candidate) => candidate.draftId === draftId);
-  return entry ? { revision: entry.revision, patch: entry.patch } : null;
+  return entry ? { patch: entry.patch, seen: entry.seen } : null;
 };

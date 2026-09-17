@@ -43,11 +43,11 @@ export interface WritingToolContext extends ContentToolContext {
   draft: DraftStore;
   memory: MemoryPort;
   /**
-   * The draft revision each approved commit call was granted for, by tool call id. The call
-   * commits that revision and no other; a call without an entry ran on session auto-approve
-   * and commits the revision it read itself.
+   * The draft content each approved commit call was granted for, by tool call id. The call
+   * commits that content and no other; a call without an entry ran on session auto-approve
+   * and commits the content it read itself.
    */
-  approvedDraftRevisions: ReadonlyMap<string, number>;
+  approvedDraftHashes: ReadonlyMap<string, string>;
 }
 
 /** Per-locale draft fields. Mirrors `feed_draft_translation`; `undefined` leaves a field alone, `null` clears it. */
@@ -74,6 +74,8 @@ export interface FeedDraft {
   feedId: number | null;
   /** Compare-and-set counter; every write bumps it. */
   revision: number;
+  /** Names the content: what an approval is granted for and what a commit applies. */
+  contentHash: string;
   slug: string | null;
   type: PostFeedType;
   defaultLocale: Locale;

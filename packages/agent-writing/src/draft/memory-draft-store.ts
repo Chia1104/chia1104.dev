@@ -1,3 +1,4 @@
+import { settleFeedDraftPatch } from "@chia/db/repos/drafts/patch";
 import type { Locale } from "@chia/db/types";
 import { applyEdits } from "@chia/utils/text";
 
@@ -17,12 +18,16 @@ import {
   DraftConflictError,
   DraftNotFoundError,
   EditNotAppliedError,
+  ObservedDrafts,
   applyWrite,
   describeEdits,
   draftSummary,
   emptyDraft,
+  hashDraft,
   noBodyMessage,
   patchTranslation,
+  snapshotOfDraft,
+  toDraftFields,
 } from "./operations.ts";
 
 /** In-memory {@link DraftStore} for tests and the faux provider. */
@@ -36,7 +41,11 @@ export class InMemoryDraftStore implements DraftStore {
     change: DraftChange;
   }[] = [];
   private nextId = 1;
-  readonly observedRevisions = new Map<number, number>();
+  private readonly observed = new ObservedDrafts();
+
+  get observedRevisions(): ReadonlyMap<number, number> {
+    return this.observed.revisions;
+  }
 
   constructor(initial: readonly Partial<FeedDraft>[] = []) {
     for (const draft of initial) this.seed(draft);
@@ -58,18 +67,15 @@ export class InMemoryDraftStore implements DraftStore {
     return draft;
   }
 
-  private observe(draft: FeedDraft): FeedDraft {
-    const seen = this.observedRevisions.get(draft.id) ?? 0;
-    if (draft.revision > seen)
-      this.observedRevisions.set(draft.id, draft.revision);
-    return draft;
-  }
-
   private write_(next: FeedDraft): FeedDraft {
-    const stored = { ...next, revision: this.read(next.id).revision + 1 };
+    const stored = {
+      ...next,
+      revision: this.read(next.id).revision + 1,
+      contentHash: hashDraft(next),
+    };
     this.drafts.set(stored.id, stored);
     this.updatedAt.set(stored.id, new Date());
-    return this.observe(stored);
+    return stored;
   }
 
   list(): Promise<FeedDraftSummary[]> {
@@ -86,31 +92,31 @@ export class InMemoryDraftStore implements DraftStore {
         (draft) => draft.feedId === input.feedId
       );
       return Promise.resolve(
-        this.observe(existing ?? this.seed({ feedId: input.feedId }))
+        this.observed.read(existing ?? this.seed({ feedId: input.feedId }))
       );
     }
-    return Promise.resolve(this.observe(this.seed()));
+    return Promise.resolve(this.observed.read(this.seed()));
   }
 
   get(draftId: number): Promise<FeedDraft> {
-    return Promise.resolve(this.observe(this.read(draftId)));
+    return Promise.resolve(this.observed.read(this.read(draftId)));
   }
 
-  write(
-    draftId: number,
-    input: DraftWrite,
-    expectedRevision?: number
-  ): Promise<FeedDraft> {
+  async write(draftId: number, input: DraftWrite): Promise<FeedDraft> {
+    if (!this.observed.has(draftId)) await this.get(draftId);
     const current = this.read(draftId);
-    if (
-      expectedRevision !== undefined &&
-      expectedRevision !== current.revision
-    ) {
-      return Promise.reject(
-        new DraftConflictError(expectedRevision, current.revision)
+    const settled = settleFeedDraftPatch(snapshotOfDraft(current), {
+      ...toDraftFields(input),
+      base: toDraftFields(this.observed.baseOf(draftId, input) ?? {}),
+    });
+    if (!settled.ok) {
+      throw new DraftConflictError(
+        settled.rejected.map(({ locale, field }) =>
+          locale ? `${locale}.${field}` : field
+        )
       );
     }
-    return Promise.resolve(this.write_(applyWrite(current, input)));
+    return this.observed.wrote(this.write_(applyWrite(current, input)), input);
   }
 
   /** Test shorthand for `write` on one locale. */
@@ -132,7 +138,8 @@ export class InMemoryDraftStore implements DraftStore {
     locale: Locale,
     edits: readonly DraftContentEdit[]
   ): Promise<DraftEditResult> {
-    const body = this.read(draftId).translations[locale]?.content;
+    const current = this.read(draftId);
+    const body = current.translations[locale]?.content;
     if (body === undefined || body === null) {
       throw new EditNotAppliedError(noBodyMessage(locale), "no_body");
     }
@@ -143,9 +150,14 @@ export class InMemoryDraftStore implements DraftStore {
         applied.reason
       );
     }
-    const draft = await this.write(draftId, {
-      translations: { [locale]: { content: applied.content } },
-    });
+    // Matched against the body as it is, so it needs no check against what the model saw.
+    const draft = this.observed.edited(
+      this.write_(
+        patchTranslation(current, locale, { content: applied.content })
+      ),
+      locale,
+      edits
+    );
     return { draft, edits: describeEdits(applied.content, applied.edits) };
   }
 
@@ -176,8 +188,6 @@ export class InMemoryDraftStore implements DraftStore {
       revision: next.revision,
       change: { locale, fields: Object.keys(patch) },
     });
-    // The store did not "see" this write on the agent's behalf.
-    this.observedRevisions.set(draftId, next.revision - 1);
     return next;
   }
 
