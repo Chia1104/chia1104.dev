@@ -386,7 +386,12 @@ export const applyFeedDraftRoute = contractOS.feeds["draft:apply"]
       );
       const result = await applyFeedDraftService(
         opts.context.db,
-        { draftId: opts.input.draftId, adminId: opts.context.caller.adminId },
+        {
+          draftId: opts.input.draftId,
+          adminId: opts.context.caller.adminId,
+          expectedHash: opts.input.expectedHash,
+          message: opts.input.message,
+        },
         opts.context.hooks ?? {}
       );
       for (const sessionId of sessionIds) {
@@ -410,6 +415,7 @@ export const discardFeedDraftRoute = contractOS.feeds["draft:discard"]
       discardFeedDraftService(opts.context.db, {
         draftId: opts.input.draftId,
         adminId: opts.context.caller.adminId,
+        expectedHash: opts.input.expectedHash,
       })
     )
   );
@@ -420,6 +426,7 @@ export const listFeedDraftRevisionsRoute = contractOS.feeds["draft:revisions"]
     withORPCErrors(async () => {
       const items = await listFeedDraftRevisions(opts.context.db, {
         draftId: opts.input.draftId,
+        kind: opts.input.kind,
         limit: opts.input.limit,
         userId: opts.context.caller.adminId,
       });
@@ -436,6 +443,7 @@ export const restoreFeedDraftRevisionRoute = contractOS.feeds["draft:restore"]
           draftId: opts.input.draftId,
           revisionId: opts.input.revisionId,
           adminId: opts.context.caller.adminId,
+          expectedHash: opts.input.expectedHash,
         })
       )
     )

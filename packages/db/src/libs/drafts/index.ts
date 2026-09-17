@@ -1,15 +1,4 @@
-import {
-  and,
-  desc,
-  eq,
-  gt,
-  inArray,
-  isNull,
-  lt,
-  lte,
-  or,
-  sql,
-} from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, lte, or, sql } from "drizzle-orm";
 
 import { applyEdits } from "@chia/utils/text";
 import type {
@@ -55,7 +44,9 @@ export interface FeedDraftRecord extends FeedDraftSnapshot {
   userId: string;
   revision: number;
   contentHash: string;
-  appliedRevision: number | null;
+  appliedRevisionId: number | null;
+  /** `contentHash` of the applied commit; unapplied work is a `contentHash` that differs. */
+  appliedHash: string | null;
   lastAuthor: FeedDraftAuthor;
   lastSessionId: string | null;
   createdAt: Date;
@@ -126,7 +117,8 @@ const translationsOf = (
 
 const toRecord = (
   draft: typeof feedDrafts.$inferSelect,
-  translations: FeedDraftRecord["translations"]
+  translations: FeedDraftRecord["translations"],
+  appliedHash: string | null
 ): FeedDraftRecord => {
   return {
     id: draft.id,
@@ -138,7 +130,8 @@ const toRecord = (
     mainImage: draft.mainImage,
     revision: draft.revision,
     contentHash: draft.contentHash,
-    appliedRevision: draft.appliedRevision,
+    appliedRevisionId: draft.appliedRevisionId,
+    appliedHash,
     lastAuthor: draft.lastAuthor,
     lastSessionId: draft.lastSessionId,
     createdAt: draft.createdAt,
@@ -155,26 +148,31 @@ const snapshotOf = (draft: FeedDraftRecord): FeedDraftSnapshot => ({
   translations: draft.translations,
 });
 
+/** Correlated to the `feed_draft` row being selected. */
+const appliedHashOf = sql<
+  string | null
+>`(select ${feedDraftRevisions.contentHash} from ${feedDraftRevisions} where ${feedDraftRevisions.id} = ${feedDrafts.appliedRevisionId})`;
+
 const readDraft = async (
   db: DB | Tx,
   draftId: number,
   options: { lock?: boolean; userId?: string } = {}
 ): Promise<FeedDraftRecord | null> => {
   const query = db
-    .select()
+    .select({ draft: feedDrafts, appliedHash: appliedHashOf })
     .from(feedDrafts)
     .where(
       options.userId === undefined
         ? eq(feedDrafts.id, draftId)
         : and(eq(feedDrafts.id, draftId), eq(feedDrafts.userId, options.userId))
     );
-  const [draft] = options.lock ? await query.for("update") : await query;
-  if (!draft) return null;
+  const [row] = options.lock ? await query.for("update") : await query;
+  if (!row) return null;
   const rows = await db
     .select()
     .from(feedDraftTranslations)
     .where(eq(feedDraftTranslations.draftId, draftId));
-  return toRecord(draft, translationsOf(rows));
+  return toRecord(row.draft, translationsOf(rows), row.appliedHash);
 };
 
 /** One of `userId`'s drafts; anyone else's reads as null. */
@@ -192,16 +190,21 @@ export const getFeedDraftStatus = async (db: DB, draftId: number) => {
       userId: feedDrafts.userId,
       feedId: feedDrafts.feedId,
       revision: feedDrafts.revision,
-      appliedRevision: feedDrafts.appliedRevision,
+      appliedRevisionId: feedDrafts.appliedRevisionId,
     })
     .from(feedDrafts)
     .where(eq(feedDrafts.id, draftId));
   return draft ?? null;
 };
 
+interface SelectedDraft {
+  draft: typeof feedDrafts.$inferSelect;
+  appliedHash: string | null;
+}
+
 const readDraftTranslations = async (
   db: DB,
-  drafts: (typeof feedDrafts.$inferSelect)[]
+  drafts: SelectedDraft[]
 ): Promise<FeedDraftRecord[]> => {
   if (drafts.length === 0) return [];
   const rows = await db
@@ -210,7 +213,7 @@ const readDraftTranslations = async (
     .where(
       inArray(
         feedDraftTranslations.draftId,
-        drafts.map((draft) => draft.id)
+        drafts.map(({ draft }) => draft.id)
       )
     );
   const translations = new Map<number, typeof rows>();
@@ -219,8 +222,12 @@ const readDraftTranslations = async (
     group.push(row);
     translations.set(row.draftId, group);
   }
-  return drafts.map((draft) =>
-    toRecord(draft, translationsOf(translations.get(draft.id) ?? []))
+  return drafts.map(({ draft, appliedHash }) =>
+    toRecord(
+      draft,
+      translationsOf(translations.get(draft.id) ?? []),
+      appliedHash
+    )
   );
 };
 
@@ -228,15 +235,15 @@ const readDraftTranslations = async (
 export const getFeedDrafts = async (db: DB, draftIds: readonly number[]) => {
   if (draftIds.length === 0) return [];
   const drafts = await db
-    .select()
+    .select({ draft: feedDrafts, appliedHash: appliedHashOf })
     .from(feedDrafts)
     .where(inArray(feedDrafts.id, [...draftIds]));
-  const byId = new Map(drafts.map((draft) => [draft.id, draft]));
+  const byId = new Map(drafts.map((row) => [row.draft.id, row]));
   return readDraftTranslations(
     db,
     draftIds.flatMap((id) => {
-      const draft = byId.get(id);
-      return draft ? [draft] : [];
+      const row = byId.get(id);
+      return row ? [row] : [];
     })
   );
 };
@@ -258,21 +265,22 @@ export interface FeedDraftListItem extends Omit<
 }
 
 /**
- * Drafts the operator still has work in: never applied, or edited since the last apply.
+ * Drafts the operator still has work in: never applied, or holding content the applied commit
+ * does not.
  */
 export const listOpenFeedDrafts = async (
   db: DB,
   userId: string
 ): Promise<FeedDraftListItem[]> => {
   const drafts = await db
-    .select()
+    .select({ draft: feedDrafts, appliedHash: appliedHashOf })
     .from(feedDrafts)
     .where(
       and(
         eq(feedDrafts.userId, userId),
         or(
-          isNull(feedDrafts.appliedRevision),
-          lt(feedDrafts.appliedRevision, feedDrafts.revision)
+          isNull(feedDrafts.appliedRevisionId),
+          sql`${feedDrafts.contentHash} <> ${appliedHashOf}`
         )
       )
     )
@@ -288,7 +296,7 @@ export const listOpenFeedDrafts = async (
     .where(
       inArray(
         feedDraftTranslations.draftId,
-        drafts.map((draft) => draft.id)
+        drafts.map(({ draft }) => draft.id)
       )
     );
   const byDraft = new Map<number, FeedDraftListItem["translations"]>();
@@ -297,8 +305,8 @@ export const listOpenFeedDrafts = async (
     translations[row.locale] = { title: row.title };
     byDraft.set(row.draftId, translations);
   }
-  return drafts.map((draft) => ({
-    ...toRecord(draft, {}),
+  return drafts.map(({ draft, appliedHash }) => ({
+    ...toRecord(draft, {}, appliedHash),
     translations: byDraft.get(draft.id) ?? {},
   }));
 };
@@ -342,7 +350,7 @@ const latestRevision = async (tx: Tx, draftId: number) => {
     .select()
     .from(feedDraftRevisions)
     .where(eq(feedDraftRevisions.draftId, draftId))
-    .orderBy(desc(feedDraftRevisions.id))
+    .orderBy(desc(feedDraftRevisions.revision), desc(feedDraftRevisions.id))
     .limit(1);
   return latest ?? null;
 };
@@ -450,7 +458,7 @@ export interface CreateFeedDraftInput extends FeedDraftWriter {
   userId: string;
   feedId?: number | null;
   snapshot?: Partial<FeedDraftSnapshot>;
-  /** Set when the draft is opened from an existing feed, so it does not look unapplied. */
+  /** Set when the draft is opened from an existing feed: its first state is the commit the feed holds. */
   applied?: boolean;
 }
 
@@ -477,7 +485,6 @@ export const createFeedDraft = (
         mainImage: snapshot.mainImage,
         revision: 1,
         contentHash: hashFeedDraftSnapshot(snapshot),
-        appliedRevision: input.applied ? 1 : null,
         lastAuthor: input.author,
         lastSessionId: input.sessionId ?? null,
       })
@@ -497,11 +504,27 @@ export const createFeedDraft = (
     }
 
     const record = (await readDraft(tx, draft.id))!;
-    await recordRevision(tx, record, {
-      kind: FEED_DRAFT_REVISION_KIND.Safety,
+    if (!input.applied) {
+      await recordRevision(tx, record, {
+        kind: FEED_DRAFT_REVISION_KIND.Safety,
+        latest: null,
+      });
+      return record;
+    }
+    const commit = await recordRevision(tx, record, {
+      kind: FEED_DRAFT_REVISION_KIND.Commit,
+      message: "Opened from the post",
       latest: null,
     });
-    return record;
+    await tx
+      .update(feedDrafts)
+      .set({ appliedRevisionId: commit.id })
+      .where(eq(feedDrafts.id, draft.id));
+    return {
+      ...record,
+      appliedRevisionId: commit.id,
+      appliedHash: commit.contentHash,
+    };
   });
 
 /** Who is writing. A draft another user owns answers `not_found`, checked on the locked row. */
@@ -510,6 +533,8 @@ export interface FeedDraftOwnedWrite extends FeedDraftWriter {
   userId: string;
   /** Omit to write over whatever is current. */
   expectedRevision?: number;
+  /** The content the caller decided on; a draft holding anything else is a conflict. */
+  expectedHash?: string;
 }
 
 /** The draft under `FOR UPDATE` when it exists and belongs to `userId`; the write result otherwise. */
@@ -526,8 +551,10 @@ const lockOwnedDraft = async (
   });
   if (!current) return { status: "not_found" };
   if (
-    input.expectedRevision !== undefined &&
-    input.expectedRevision !== current.revision
+    (input.expectedRevision !== undefined &&
+      input.expectedRevision !== current.revision) ||
+    (input.expectedHash !== undefined &&
+      input.expectedHash !== current.contentHash)
   ) {
     return { status: "conflict", draft: current };
   }
@@ -662,7 +689,7 @@ const writePatch = async (
     .returning();
   if (!row) throw new Error(`Updating draft ${current.id} returned no row.`);
 
-  const draft = toRecord(row, translations);
+  const draft = toRecord(row, translations, current.appliedHash);
   await notifyFeedDraft(tx, {
     type: "revision",
     draftId: draft.id,
@@ -727,7 +754,7 @@ export const replaceFeedDraft = (
             .returning()
         : [];
 
-    const draft = toRecord(row, translationsOf(written));
+    const draft = toRecord(row, translationsOf(written), current.appliedHash);
     const changes = diffFeedDraftSnapshots(
       snapshotOf(current),
       snapshotOf(draft)
@@ -743,16 +770,57 @@ export const replaceFeedDraft = (
     return { status: "ok", draft };
   });
 
-export const markFeedDraftApplied = (
+const describeChanges = (changes: FeedDraftChange[]): string =>
+  changes
+    .map((change) =>
+      change.locale
+        ? `${change.locale}: ${change.fields.join(", ")}`
+        : change.fields.join(", ")
+    )
+    .join(" · ");
+
+/**
+ * Commits the locked draft as the version `feed` now holds: an immutable row and the draft's
+ * applied pointer in one step. Without a `message`, one is made from what changed since the
+ * commit before. The caller wrote the feed in this same transaction.
+ */
+export const commitFeedDraft = (
   db: DB,
-  input: { draftId: number; feedId: number; revision: number }
-) =>
+  input: { draft: FeedDraftRecord; feedId: number; message?: string | null }
+): Promise<FeedDraftRevision> =>
   db.transaction(async (tx) => {
+    const { draft } = input;
+    const [previous] =
+      draft.appliedRevisionId === null
+        ? []
+        : await tx
+            .select({ snapshot: feedDraftRevisions.snapshot })
+            .from(feedDraftRevisions)
+            .where(eq(feedDraftRevisions.id, draft.appliedRevisionId));
+    const message =
+      input.message?.trim() ||
+      (previous
+        ? describeChanges(
+            diffFeedDraftSnapshots(previous.snapshot, snapshotOf(draft))
+          ) || "No changes"
+        : "First version");
+
+    const commit = await recordRevision(tx, draft, {
+      kind: FEED_DRAFT_REVISION_KIND.Commit,
+      message,
+      latest: await latestRevision(tx, draft.id),
+    });
     await tx
       .update(feedDrafts)
-      .set({ feedId: input.feedId, appliedRevision: input.revision })
-      .where(eq(feedDrafts.id, input.draftId));
-    await notifyFeedDraft(tx, { type: "applied", ...input });
+      .set({ feedId: input.feedId, appliedRevisionId: commit.id })
+      .where(eq(feedDrafts.id, draft.id));
+    await notifyFeedDraft(tx, {
+      type: "applied",
+      draftId: draft.id,
+      revision: draft.revision,
+      feedId: input.feedId,
+    });
+    return commit;
   });
 
 export const deleteFeedDraft = (db: DB, draftId: number) =>
@@ -766,7 +834,12 @@ export type FeedDraftRevisionSummary = Omit<FeedDraftRevision, "snapshot">;
 /** Newest first, only under one of `userId`'s drafts; anyone else's draft lists nothing. */
 export const listFeedDraftRevisions = async (
   db: DB,
-  input: { draftId: number; limit: number; userId: string }
+  input: {
+    draftId: number;
+    limit: number;
+    userId: string;
+    kind?: FeedDraftRevisionKind;
+  }
 ): Promise<FeedDraftRevisionSummary[]> =>
   await db
     .select({
@@ -788,10 +861,11 @@ export const listFeedDraftRevisions = async (
     .where(
       and(
         eq(feedDraftRevisions.draftId, input.draftId),
-        eq(feedDrafts.userId, input.userId)
+        eq(feedDrafts.userId, input.userId),
+        input.kind ? eq(feedDraftRevisions.kind, input.kind) : undefined
       )
     )
-    .orderBy(desc(feedDraftRevisions.id))
+    .orderBy(desc(feedDraftRevisions.revision), desc(feedDraftRevisions.id))
     .limit(input.limit);
 
 /** A state on the trail: a kept row, or the draft itself as the newest entry. */
@@ -825,7 +899,7 @@ export const listFeedDraftTrailSince = async (
         input.after ? gt(feedDraftRevisions.createdAt, input.after) : undefined
       )
     )
-    .orderBy(feedDraftRevisions.id);
+    .orderBy(feedDraftRevisions.revision, feedDraftRevisions.id);
   const [baseline] = input.after
     ? await db
         .select()
@@ -836,7 +910,7 @@ export const listFeedDraftTrailSince = async (
             lte(feedDraftRevisions.createdAt, input.after)
           )
         )
-        .orderBy(desc(feedDraftRevisions.id))
+        .orderBy(desc(feedDraftRevisions.revision), desc(feedDraftRevisions.id))
         .limit(1)
     : [];
 
@@ -897,7 +971,7 @@ export const listFeedDraftChangesSince = async (
         lte(feedDraftRevisions.revision, input.afterRevision)
       )
     )
-    .orderBy(desc(feedDraftRevisions.id))
+    .orderBy(desc(feedDraftRevisions.revision), desc(feedDraftRevisions.id))
     .limit(1);
   if (!baseline) return [];
   return diffFeedDraftSnapshots(baseline.snapshot, snapshotOf(draft));

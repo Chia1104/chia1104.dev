@@ -1,3 +1,4 @@
+import { hashFeedDraftSnapshot } from "@chia/db/repos/drafts/hash";
 import type { Locale } from "@chia/db/types";
 import { mergeDefined, omitUndefined } from "@chia/utils/object";
 import { excerptAround } from "@chia/utils/text";
@@ -13,17 +14,44 @@ import type {
   FeedDraftSummary,
 } from "../types.ts";
 
-export const emptyDraft = (overrides: Partial<FeedDraft> = {}): FeedDraft => ({
-  id: 0,
-  feedId: null,
-  revision: 1,
-  slug: null,
-  type: "post",
-  defaultLocale: "zh-TW",
-  mainImage: null,
-  translations: {},
-  ...overrides,
-});
+/** The hash the shared draft row would carry for this content. */
+export const hashDraft = (draft: Omit<FeedDraft, "contentHash">): string => {
+  const translations: Parameters<
+    typeof hashFeedDraftSnapshot
+  >[0]["translations"] = {};
+  for (const [locale, translation] of Object.entries(draft.translations)) {
+    // SAFETY: draft translations are keyed by Locale.
+    translations[locale as Locale] = {
+      title: translation.title ?? null,
+      excerpt: translation.excerpt ?? null,
+      description: translation.description ?? null,
+      summary: translation.summary ?? null,
+      content: translation.content ?? null,
+    };
+  }
+  return hashFeedDraftSnapshot({
+    slug: draft.slug,
+    type: draft.type,
+    defaultLocale: draft.defaultLocale,
+    mainImage: draft.mainImage,
+    translations,
+  });
+};
+
+export const emptyDraft = (overrides: Partial<FeedDraft> = {}): FeedDraft => {
+  const draft = {
+    id: 0,
+    feedId: null,
+    revision: 1,
+    slug: null,
+    type: "post" as const,
+    defaultLocale: "zh-TW" as const,
+    mainImage: null,
+    translations: {},
+    ...overrides,
+  };
+  return { ...draft, contentHash: overrides.contentHash ?? hashDraft(draft) };
+};
 
 export const patchFeedMeta = (
   draft: FeedDraft,

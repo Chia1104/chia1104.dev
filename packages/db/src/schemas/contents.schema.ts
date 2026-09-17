@@ -1,5 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
+  bigint,
   bigserial,
   index,
   integer,
@@ -124,8 +126,8 @@ export const feedTranslations = pgTable(
 
 /**
  * The working copy of one post, shared by the dashboard editor and the writing agent. `feed`
- * only changes when a draft is applied, so draft writes never start feed indexing. `revision`
- * is the compare-and-set counter every write must present.
+ * only changes when a draft is applied, which is also what commits a version of the draft, so
+ * draft writes never start feed indexing.
  */
 export const feedDrafts = pgTable(
   "feed_draft",
@@ -147,8 +149,10 @@ export const feedDrafts = pgTable(
     revision: integer("revision").notNull().default(1),
     /** `hashFeedDraftSnapshot` of the current content, rewritten by every write. */
     contentHash: text("content_hash").notNull(),
-    /** The revision last applied to `feed`; `null` when never applied. */
-    appliedRevision: integer("applied_revision"),
+    /** The commit `feed` holds; `null` when never applied. Unapplied work is a differing `contentHash`. */
+    appliedRevisionId: bigint("applied_revision_id", {
+      mode: "number",
+    }).references((): AnyPgColumn => feedDraftRevisions.id),
     /** Who wrote the current state; a different next writer keeps a safety point first. */
     lastAuthor: text("last_author").$type<FeedDraftAuthor>().notNull(),
     lastSessionId: text("last_session_id"),

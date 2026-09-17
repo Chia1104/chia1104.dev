@@ -57,7 +57,8 @@ const record = (id: number, userId = "author"): FeedDraftRecord => ({
   mainImage: null,
   revision: 3,
   contentHash: "hash",
-  appliedRevision: null,
+  appliedRevisionId: null,
+  appliedHash: null,
   lastAuthor: "operator",
   lastSessionId: null,
   createdAt: new Date("2026-09-05T00:00:00Z"),
@@ -310,7 +311,11 @@ describe("createWritingAgentExecutor", () => {
 
   it("extracts at once when the turn committed, and never after a turn that did not finish", async () => {
     await runTurn(done, async (options) => {
-      await options.content.applyDraft({ draftId: 7, expectedRevision: 3 });
+      await options.content.applyDraft({
+        draftId: 7,
+        expectedHash: "hash",
+        message: "Commit.",
+      });
     });
     expect(startMemoryConsolidation).toHaveBeenCalledWith({
       sessionId: "session-1",

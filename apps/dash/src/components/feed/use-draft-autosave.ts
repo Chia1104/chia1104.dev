@@ -221,6 +221,12 @@ export const useDraftAutosave = ({
     [adopt, form]
   );
 
+  /** Saves pending edits, then answers the draft as the server acknowledged it; `null` while saving is blocked. */
+  const settle = useCallback(
+    async () => ((await flush()) ? baseline.current : null),
+    [flush]
+  );
+
   const retry = () => {
     if (issue?.kind === "conflict") return Promise.resolve(false);
     blocked.current = false;
@@ -248,6 +254,7 @@ export const useDraftAutosave = ({
     isSaving: isPending,
     isSynced: !isDirty && !isPending && !paused,
     flush,
+    settle,
     retry,
     adopt,
     receive,

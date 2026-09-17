@@ -39,7 +39,8 @@ export const createAgentContentPort = (
         db,
         {
           draftId: input.draftId,
-          expectedRevision: input.expectedRevision,
+          expectedHash: input.expectedHash,
+          message: input.message,
           adminId,
         },
         feedHooks

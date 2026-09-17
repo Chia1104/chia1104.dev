@@ -55,12 +55,14 @@ export type {
  */
 export interface ContentPort extends ContentReadPort {
   /**
-   * Writes the shared draft onto the feed, creating an unpublished one the first time. Applies
-   * exactly `expectedRevision`: a draft that moved since is refused, never committed unseen.
+   * Writes the shared draft onto the feed, creating an unpublished one the first time, and
+   * commits that content as a version of the draft under `message`. Applies exactly
+   * `expectedHash`: a draft holding anything else is refused, never committed unseen.
    */
   applyDraft(input: {
     draftId: number;
-    expectedRevision: number;
+    expectedHash: string;
+    message: string;
   }): Promise<CommitDraftResult>;
   setPublished(input: {
     feedId: number;

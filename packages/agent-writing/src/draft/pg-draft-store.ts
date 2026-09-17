@@ -174,6 +174,7 @@ export const toFeedDraft = (record: FeedDraftRecord): FeedDraft => ({
   id: record.id,
   feedId: record.feedId,
   revision: record.revision,
+  contentHash: record.contentHash,
   slug: record.slug,
   type: record.type,
   defaultLocale: record.defaultLocale,

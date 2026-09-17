@@ -134,7 +134,7 @@ const DraftForm = ({ initial }: { initial: DraftView }) => {
           draft={draft}
           hasLocalChanges={autosave.isDirty}
           isSaveBlocked={autosave.issue !== null}
-          beforeAction={autosave.flush}
+          beforeAction={autosave.settle}
           onDraftChanged={autosave.adopt}
           status={
             <div className="flex flex-wrap items-center gap-2" role="status">

@@ -278,7 +278,8 @@ export const DraftActions = ({
   onDraftChanged: (draft: DraftView) => void;
   status: ReactNode;
   children: ReactNode;
-  beforeAction: () => Promise<boolean>;
+  /** Saves the form first; answers the saved draft, or `null` when it could not be saved. */
+  beforeAction: () => Promise<DraftView | null>;
   hasLocalChanges: boolean;
   isSaveBlocked: boolean;
 }) => {
@@ -286,8 +287,7 @@ export const DraftActions = ({
   const queryClient = useQueryClient();
   const [revisionsOpen, setRevisionsOpen] = useState(false);
   const bound = draft.feedId !== null;
-  const unapplied =
-    draft.appliedRevision === null || draft.appliedRevision < draft.revision;
+  const unapplied = draft.appliedHash !== draft.contentHash;
 
   const invalidateDraftLists = () =>
     Promise.all([
@@ -297,67 +297,61 @@ export const DraftActions = ({
       queryClient.invalidateQueries({ queryKey: orpc.feeds.list.key() }),
     ]);
 
+  /** The content these actions decide on is what the form just saved, not what this render holds. */
   const prepare = async () => {
-    if (!(await beforeAction()))
+    const saved = await beforeAction();
+    if (!saved)
       throw new Error(
         "Save the draft and resolve any conflicts before continuing."
       );
+    return { draftId: saved.id, expectedHash: saved.contentHash };
   };
 
+  const loadDraft = () =>
+    queryClient.query(
+      orpc.feeds["draft:get"].queryOptions({
+        input: { draftId: draft.id },
+        staleTime: 0,
+      })
+    );
+
   const apply = useMutation({
-    ...orpc.feeds["draft:apply"].mutationOptions({
-      onSuccess: async (result) => {
-        toast.success(
-          result.created
-            ? `Created post ${result.slug}`
-            : `Updated post ${result.slug}`
-        );
-        const next = await queryClient.query(
-          orpc.feeds["draft:get"].queryOptions({
+    mutationFn: async () => client.feeds["draft:apply"](await prepare()),
+    onSuccess: async (result) => {
+      toast.success(
+        result.created
+          ? `Created post ${result.slug}`
+          : `Updated post ${result.slug}`
+      );
+      onDraftChanged(await loadDraft());
+      await Promise.all([
+        invalidateDraftLists(),
+        queryClient.invalidateQueries({
+          queryKey: orpc.feeds["draft:revisions"].key({
             input: { draftId: draft.id },
-          })
-        );
-        onDraftChanged(next);
-        await invalidateDraftLists();
-      },
-      onError: (error) =>
-        toast.error(messageOf(error, "Something went wrong.")),
-    }),
-    mutationFn: async () => {
-      await prepare();
-      return client.feeds["draft:apply"]({ draftId: draft.id });
+          }),
+        }),
+      ]);
     },
+    onError: (error) => toast.error(messageOf(error, "Something went wrong.")),
   });
 
   const discard = useMutation({
-    ...orpc.feeds["draft:discard"].mutationOptions({
-      onSuccess: async () => {
-        await invalidateDraftLists();
-        if (!bound) {
-          router.push("/feed/drafts");
-          return;
-        }
-        const next = await queryClient.query(
-          orpc.feeds["draft:get"].queryOptions({
-            input: { draftId: draft.id },
-          })
-        );
-        onDraftChanged(next);
-      },
-      onError: (error) =>
-        toast.error(messageOf(error, "Something went wrong.")),
-    }),
-    mutationFn: async () => {
-      await prepare();
-      return client.feeds["draft:discard"]({ draftId: draft.id });
+    mutationFn: async () => client.feeds["draft:discard"](await prepare()),
+    onSuccess: async () => {
+      await invalidateDraftLists();
+      if (!bound) {
+        router.push("/feed/drafts");
+        return;
+      }
+      onDraftChanged(await loadDraft());
     },
+    onError: (error) => toast.error(messageOf(error, "Something went wrong.")),
   });
 
   const restore = useMutation({
-    mutationFn: async (revisionId: number) => {
-      await prepare();
-      return client.feeds["draft:restore"]({ draftId: draft.id, revisionId });
-    },
+    mutationFn: async (revisionId: number) =>
+      client.feeds["draft:restore"]({ ...(await prepare()), revisionId }),
     onSuccess: async (next) => {
       onDraftChanged(next);
       setRevisionsOpen(false);
@@ -419,7 +413,7 @@ export const DraftActions = ({
               isPending={discard.isPending}
               isDisabled={isDisabled}
               onConfirm={async () => {
-                await discard.mutateAsync({ draftId: draft.id });
+                await discard.mutateAsync();
               }}
             />
             <IconTooltip label={bound ? "Apply to post" : "Create post"}>
@@ -428,7 +422,7 @@ export const DraftActions = ({
                 isDisabled={isDisabled || (!unapplied && !hasLocalChanges)}
                 isIconOnly
                 isPending={apply.isPending}
-                onPress={() => apply.mutate({ draftId: draft.id })}
+                onPress={() => apply.mutate()}
                 size="sm"
                 variant="primary"
                 className="size-7">

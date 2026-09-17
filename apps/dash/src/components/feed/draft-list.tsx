@@ -152,7 +152,10 @@ const DraftItem = ({ draft }: { draft: Draft }) => {
                       <Button
                         variant="danger"
                         onPress={() => {
-                          discard.mutate({ draftId: draft.id });
+                          discard.mutate({
+                            draftId: draft.id,
+                            expectedHash: draft.contentHash,
+                          });
                           action.state.close();
                         }}>
                         {bound ? "Discard" : "Delete"}

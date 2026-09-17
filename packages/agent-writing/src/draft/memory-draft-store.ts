@@ -21,6 +21,7 @@ import {
   describeEdits,
   draftSummary,
   emptyDraft,
+  hashDraft,
   noBodyMessage,
   patchTranslation,
 } from "./operations.ts";
@@ -66,7 +67,11 @@ export class InMemoryDraftStore implements DraftStore {
   }
 
   private write_(next: FeedDraft): FeedDraft {
-    const stored = { ...next, revision: this.read(next.id).revision + 1 };
+    const stored = {
+      ...next,
+      revision: this.read(next.id).revision + 1,
+      contentHash: hashDraft(next),
+    };
     this.drafts.set(stored.id, stored);
     this.updatedAt.set(stored.id, new Date());
     return this.observe(stored);

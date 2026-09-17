@@ -34,7 +34,7 @@ const createContext = (): WritingToolContext & {
   connectors: { github: createFakeGitHubPort() },
   draft: new InMemoryDraftStore(),
   memory: new InMemoryMemoryPort(SESSION_ID),
-  approvedDraftRevisions: new Map(),
+  approvedDraftHashes: new Map(),
 });
 
 describe("memory tools", () => {

@@ -308,8 +308,8 @@ export const upsertContentContract = oc
   .output(z.void());
 
 /**
- * The working draft of a post, shared by the dashboard editor and the writing agent. `revision`
- * is the compare-and-set counter a write must present.
+ * The working draft of a post, shared by the dashboard editor and the writing agent. Applying it
+ * is what commits a version; `contentHash` names the content, `revision` only orders writes.
  */
 
 export const feedDraftTranslationSchema = z.object({
@@ -327,7 +327,10 @@ export const feedDraftSchema = z.object({
   /** Orders writes. `contentHash` is what identifies a version. */
   revision: z.number().int(),
   contentHash: z.string(),
-  appliedRevision: z.number().int().nullable(),
+  /** The commit the post holds; `null` until the draft has been applied once. */
+  appliedRevisionId: z.number().int().nullable(),
+  /** That commit's `contentHash`. The draft has unapplied work while its own differs. */
+  appliedHash: z.string().nullable(),
   slug: z.string().nullable(),
   type: z.enum([FeedType.Post, FeedType.Note]),
   defaultLocale: z.enum(locale.enumValues),
@@ -376,10 +379,12 @@ export const feedDraftChangeSchema = z.object({
   fields: z.array(z.string()),
 });
 
+/** `commit` is a version applied to the post; `safety` a restore point kept by the write path. */
+const feedDraftRevisionKindSchema = z.enum(["commit", "safety"]);
+
 export const feedDraftRevisionSchema = z.object({
   id: z.number().int(),
-  /** `commit` is a version applied to the post; `safety` a restore point kept by the write path. */
-  kind: z.enum(["commit", "safety"]),
+  kind: feedDraftRevisionKindSchema,
   revision: z.number().int(),
   /** Who last wrote the state this row holds. */
   author: z.enum(["operator", "agent"]),
@@ -401,6 +406,16 @@ const DRAFT_ERRORS = {
   INTERNAL_SERVER_ERROR: {},
 } as const;
 
+/** What the draft holds now, so the caller can read it again and decide on that. */
+const DRAFT_CONFLICT = {
+  CONFLICT: {
+    data: z.object({ revision: z.number().int(), contentHash: z.string() }),
+  },
+} as const;
+
+/** The `contentHash` the caller decided on; a draft holding anything else answers `CONFLICT`. */
+const expectedHashSchema = z.string().min(1);
+
 /** Get-or-create: a feed's working draft, or an empty draft for a new post when `feedId` is omitted. */
 export const openFeedDraftContract = oc
   .errors(DRAFT_ERRORS)
@@ -418,11 +433,7 @@ export const listFeedDraftsContract = oc
   .output(z.object({ items: z.array(feedDraftSummarySchema) }));
 
 export const patchFeedDraftContract = oc
-  .errors({
-    ...DRAFT_ERRORS,
-    /** `data.revision` is the current revision; reload and rebase. */
-    CONFLICT: { data: z.object({ revision: z.number().int() }) },
-  })
+  .errors({ ...DRAFT_ERRORS, ...DRAFT_CONFLICT })
   .input(patchFeedDraftSchema)
   .output(feedDraftSchema);
 
@@ -448,10 +459,7 @@ export type EditFeedDraftInput = z.infer<typeof editFeedDraftSchema>;
 
 /** Exact-string replacements in one locale's body, applied under the draft lock. */
 export const editFeedDraftContract = oc
-  .errors({
-    ...DRAFT_ERRORS,
-    CONFLICT: { data: z.object({ revision: z.number().int() }) },
-  })
+  .errors({ ...DRAFT_ERRORS, ...DRAFT_CONFLICT })
   .input(editFeedDraftSchema)
   .output(
     z.object({
@@ -477,20 +485,32 @@ export const editFeedDraftContract = oc
     })
   );
 
+/** Writes the draft to its post and commits that content as a version of the draft. */
 export const applyFeedDraftContract = oc
-  .errors(DRAFT_ERRORS)
-  .input(z.object({ draftId: z.number().int() }))
+  .errors({ ...DRAFT_ERRORS, ...DRAFT_CONFLICT })
+  .input(
+    z.object({
+      draftId: z.number().int(),
+      expectedHash: expectedHashSchema,
+      /** Omit to describe the commit by the fields that changed. */
+      message: z.string().trim().max(200).optional(),
+    })
+  )
   .output(
     z.object({
       feedId: z.number().int(),
       slug: z.string(),
       created: z.boolean(),
+      revisionId: z.number().int(),
+      contentHash: z.string(),
     })
   );
 
 export const discardFeedDraftContract = oc
-  .errors(DRAFT_ERRORS)
-  .input(z.object({ draftId: z.number().int() }))
+  .errors({ ...DRAFT_ERRORS, ...DRAFT_CONFLICT })
+  .input(
+    z.object({ draftId: z.number().int(), expectedHash: expectedHashSchema })
+  )
   .output(z.void());
 
 export const listFeedDraftRevisionsContract = oc
@@ -498,14 +518,22 @@ export const listFeedDraftRevisionsContract = oc
   .input(
     z.object({
       draftId: z.number().int(),
+      /** Omit for the whole trail. */
+      kind: feedDraftRevisionKindSchema.optional(),
       limit: z.number().int().min(1).max(100).optional().default(30),
     })
   )
   .output(z.object({ items: z.array(feedDraftRevisionSchema) }));
 
 export const restoreFeedDraftRevisionContract = oc
-  .errors(DRAFT_ERRORS)
-  .input(z.object({ draftId: z.number().int(), revisionId: z.number().int() }))
+  .errors({ ...DRAFT_ERRORS, ...DRAFT_CONFLICT })
+  .input(
+    z.object({
+      draftId: z.number().int(),
+      revisionId: z.number().int(),
+      expectedHash: expectedHashSchema,
+    })
+  )
   .output(feedDraftSchema);
 
 /** Resync invalidates the draft query; ping only keeps the connection alive. */
