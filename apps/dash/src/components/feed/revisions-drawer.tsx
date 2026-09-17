@@ -14,6 +14,9 @@ import { DrawerPanel } from "@/components/commons/drawer-panel";
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
+import type { DraftView } from "./draft-values";
+import { RevisionDiff } from "./revision-diff";
+
 type Revision = RouterOutputs["feeds"]["draft:revisions"]["items"][number];
 
 /** One card plus the 8px gap rendered as its bottom padding. */
@@ -40,6 +43,7 @@ const RevisionList = ({
   empty,
   currentHash,
   scrollElement,
+  onView,
   onRestore,
   isRestoring,
   isDisabled,
@@ -49,6 +53,7 @@ const RevisionList = ({
   empty: string;
   currentHash: string;
   scrollElement: HTMLDivElement | null;
+  onView: (revisionId: number) => void;
   onRestore: (revisionId: number) => void;
   isRestoring: boolean;
   isDisabled: boolean;
@@ -152,6 +157,12 @@ const RevisionList = ({
                   </Button>
                 ) : null}
                 <Button
+                  onPress={() => onView(revision.id)}
+                  size="sm"
+                  variant="tertiary">
+                  Diff
+                </Button>
+                <Button
                   isDisabled={
                     revision.contentHash === currentHash || isDisabled
                   }
@@ -171,17 +182,15 @@ const RevisionList = ({
 };
 
 export const RevisionsDrawer = ({
-  draftId,
-  currentHash,
+  draft,
   isOpen,
   onOpenChange,
   onRestore,
   isRestoring,
   isDisabled,
 }: {
-  draftId: number;
-  /** A row holding this content has nothing to restore. */
-  currentHash: string;
+  /** A row holding its content has nothing to restore, and a diff can be read against it. */
+  draft: DraftView;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onRestore: (revisionId: number) => void;
@@ -193,16 +202,34 @@ export const RevisionsDrawer = ({
   const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(
     null
   );
+  const [viewedId, setViewedId] = useState<number | null>(null);
 
   return (
-    <Drawer.Backdrop isOpen={isOpen} onOpenChange={onOpenChange}>
+    <Drawer.Backdrop
+      isOpen={isOpen}
+      onOpenChange={(open) => {
+        if (!open) setViewedId(null);
+        onOpenChange(open);
+      }}>
       <DrawerPanel>
         <Drawer.CloseTrigger />
         <Drawer.Header>
           <Drawer.Heading>Versions</Drawer.Heading>
         </Drawer.Header>
         <Drawer.Body ref={setScrollElement}>
-          <Tabs defaultSelectedKey="commit">
+          {viewedId === null ? null : (
+            <RevisionDiff
+              draft={draft}
+              revisionId={viewedId}
+              onBack={() => setViewedId(null)}
+              onRestore={onRestore}
+              isRestoring={isRestoring}
+              isDisabled={isDisabled}
+            />
+          )}
+          <Tabs
+            className={viewedId === null ? undefined : "hidden"}
+            defaultSelectedKey="commit">
             <Tabs.ListContainer>
               <Tabs.List aria-label="Versions">
                 {KINDS.map(({ kind, label }) => (
@@ -216,11 +243,12 @@ export const RevisionsDrawer = ({
             {KINDS.map(({ kind, empty }) => (
               <Tabs.Panel key={kind} className="pt-4" id={kind}>
                 <RevisionList
-                  draftId={draftId}
+                  draftId={draft.id}
                   kind={kind}
                   empty={empty}
-                  currentHash={currentHash}
+                  currentHash={draft.contentHash}
                   scrollElement={scrollElement}
+                  onView={setViewedId}
                   onRestore={onRestore}
                   isRestoring={isRestoring}
                   isDisabled={isDisabled}

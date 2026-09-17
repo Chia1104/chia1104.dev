@@ -1,4 +1,15 @@
-import { and, desc, eq, gt, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  gt,
+  inArray,
+  isNull,
+  lt,
+  lte,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import { applyEdits } from "@chia/utils/text";
 import type {
@@ -868,6 +879,38 @@ export const listFeedDraftRevisions = async (
     )
     .orderBy(desc(feedDraftRevisions.revision), desc(feedDraftRevisions.id))
     .limit(input.limit);
+
+/**
+ * The state a row is read against: the commit before a commit, which is what its message
+ * describes, and the row before a safety point, which is what its `changes` name. `null` for
+ * the first of its kind.
+ */
+export const getFeedDraftRevisionBase = async (
+  db: DB,
+  revision: Pick<FeedDraftRevision, "id" | "draftId" | "revision" | "kind">
+): Promise<FeedDraftRevision | null> => {
+  const [base] = await db
+    .select()
+    .from(feedDraftRevisions)
+    .where(
+      and(
+        eq(feedDraftRevisions.draftId, revision.draftId),
+        or(
+          lt(feedDraftRevisions.revision, revision.revision),
+          and(
+            eq(feedDraftRevisions.revision, revision.revision),
+            lt(feedDraftRevisions.id, revision.id)
+          )
+        ),
+        revision.kind === FEED_DRAFT_REVISION_KIND.Commit
+          ? eq(feedDraftRevisions.kind, FEED_DRAFT_REVISION_KIND.Commit)
+          : undefined
+      )
+    )
+    .orderBy(desc(feedDraftRevisions.revision), desc(feedDraftRevisions.id))
+    .limit(1);
+  return base ?? null;
+};
 
 /**
  * Keeps a safety point of one of `userId`'s drafts out of pruning, or lets it go again; `label`

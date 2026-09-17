@@ -3,6 +3,7 @@ import { CallerTier } from "@chia/auth/tier";
 import { listWritingSessionIdsForDraft } from "@chia/db/repos/agent";
 import {
   getFeedDraftRevision,
+  getFeedDraftRevisionBase,
   listFeedDraftRevisions,
   pinFeedDraftRevision,
   listOpenFeedDrafts,
@@ -448,7 +449,12 @@ export const getFeedDraftRevisionRoute = contractOS.feeds["draft:revision"]
       userId: opts.context.caller.adminId,
     });
     if (!revision) throw opts.errors.NOT_FOUND();
-    return { ...toRevisionOutput(revision), snapshot: revision.snapshot };
+    const base = await getFeedDraftRevisionBase(opts.context.db, revision);
+    return {
+      ...toRevisionOutput(revision),
+      snapshot: revision.snapshot,
+      base: base?.snapshot ?? null,
+    };
   });
 
 export const pinFeedDraftRevisionRoute = contractOS.feeds["draft:pin"]

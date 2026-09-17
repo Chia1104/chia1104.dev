@@ -555,19 +555,23 @@ export const listFeedDraftRevisionsContract = oc
   )
   .output(z.object({ items: z.array(feedDraftRevisionSchema) }));
 
-/** One kept state with the content it holds, for showing what differs from it. */
+const feedDraftSnapshotSchema = feedDraftSchema.pick({
+  slug: true,
+  type: true,
+  defaultLocale: true,
+  mainImage: true,
+  translations: true,
+});
+
+/** One kept state with the content it holds, and the state its row is read against. */
 export const getFeedDraftRevisionContract = oc
   .errors(DRAFT_ERRORS)
   .input(z.object({ draftId: z.number().int(), revisionId: z.number().int() }))
   .output(
     feedDraftRevisionSchema.extend({
-      snapshot: feedDraftSchema.pick({
-        slug: true,
-        type: true,
-        defaultLocale: true,
-        mainImage: true,
-        translations: true,
-      }),
+      snapshot: feedDraftSnapshotSchema,
+      /** The commit before a commit, the row before a restore point; `null` for the first. */
+      base: feedDraftSnapshotSchema.nullable(),
     })
   );
 
