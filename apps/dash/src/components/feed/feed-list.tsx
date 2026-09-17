@@ -9,6 +9,7 @@ import { Pencil } from "lucide-react";
 
 import { FeedType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
+import { cn } from "@chia/ui/utils/cn.util";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 import dayjs from "@chia/utils/day";
 
@@ -16,6 +17,7 @@ import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 
 import { Logo } from "../commons/logo";
+import { VirtualGrid } from "../commons/virtual-grid";
 
 import { MetaChip } from "./meta-chip";
 import FeedSkeleton from "./skeleton";
@@ -38,6 +40,10 @@ const Empty = memo(() => {
 });
 
 Empty.displayName = "Empty";
+
+const GRID_COLUMNS = "page-md:grid-cols-2 grid-cols-1 gap-5";
+/** A card's usual height; rows are measured once mounted. */
+const FEED_ROW_SIZE = 220;
 
 const SUPPORTED_LOCALES_META = [
   { key: "zh-TW", label: "中文" },
@@ -206,23 +212,29 @@ const FeedList = ({ initFeed, nextCursor, query = {} }: Props) => {
   });
 
   return (
-    <div className="w-full">
+    <div className="flex w-full flex-col gap-5">
       {isSuccess && flatData.length === 0 ? <Empty /> : null}
-      <div className="page-md:grid-cols-2 grid grid-cols-1 gap-5">
-        {isSuccess && flatData.length > 0
-          ? flatData.map((feed, index) => {
-              const isLastItem = flatData.length === index + 1;
-              return (
-                <FeedItem
-                  key={feed.id}
-                  ref={isLastItem ? ref : undefined}
-                  feed={feed}
-                />
-              );
-            })
-          : null}
-        {isFetchingNextPage || isLoading ? <FeedSkeleton /> : null}
-      </div>
+      {isSuccess && flatData.length > 0 ? (
+        <VirtualGrid
+          className={GRID_COLUMNS}
+          estimateRowSize={FEED_ROW_SIZE}
+          getKey={(feed) => feed.id}
+          items={flatData}>
+          {(feed, index) => (
+            // The last card is what loads the next page, once scrolling mounts it.
+            <FeedItem
+              key={feed.id}
+              ref={flatData.length === index + 1 ? ref : undefined}
+              feed={feed}
+            />
+          )}
+        </VirtualGrid>
+      ) : null}
+      {isFetchingNextPage || isLoading ? (
+        <div className={cn("grid", GRID_COLUMNS)}>
+          <FeedSkeleton />
+        </div>
+      ) : null}
     </div>
   );
 };

@@ -131,7 +131,9 @@ export interface AgentDraftPayload {
   id: number;
   feedId: number | null;
   revision: number;
-  appliedRevision: number | null;
+  contentHash: string;
+  appliedRevisionId: number | null;
+  appliedHash: string | null;
   slug: string | null;
   type: "post" | "note";
   defaultLocale: Locale;

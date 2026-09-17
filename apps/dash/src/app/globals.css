@@ -40,6 +40,29 @@
 }
 
 @layer components {
+  /* The draft editor's change bar: Monaco places these in its line-decorations lane. */
+  .monaco-editor .draft-change-added,
+  .monaco-editor .draft-change-modified {
+    width: 4px !important;
+    margin-left: 12px;
+  }
+  .monaco-editor .draft-change-added {
+    background: var(--success);
+  }
+  .monaco-editor .draft-change-modified {
+    background: var(--warning);
+  }
+  /* Lines removed above this one: a wedge on its top edge, as nothing is left to colour. */
+  .monaco-editor .draft-change-deleted {
+    width: 0 !important;
+    height: 0 !important;
+    margin-left: 12px;
+    margin-top: -5px;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 7px solid var(--danger);
+  }
+
   .animated-feature-cards::before {
     background: radial-gradient(
       1000px circle at var(--x) var(--y),

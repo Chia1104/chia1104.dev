@@ -72,7 +72,7 @@ const ApplyStateChip = ({ draft }: { draft: AgentDraft }) => {
         <Chip.Label>Not applied yet</Chip.Label>
       </Chip>
     );
-  return draft.appliedRevision === draft.revision ? (
+  return draft.appliedHash === draft.contentHash ? (
     <Chip color="success" size="sm" variant="soft">
       <Chip.Label>In sync with feed #{draft.feedId}</Chip.Label>
     </Chip>
@@ -172,15 +172,11 @@ const DraftBody = ({ draft }: { draft: AgentDraft }) => {
                 )
               }
             />
-            <Field label="Revision" value={`r${draft.revision}`} />
+            <Field label="Version" value={draft.contentHash.slice(0, 7)} />
             {draft.feedId === null ? null : (
               <Field
                 label="Applied"
-                value={
-                  draft.appliedRevision === null
-                    ? "—"
-                    : `r${draft.appliedRevision}`
-                }
+                value={draft.appliedHash?.slice(0, 7) ?? "—"}
               />
             )}
             <Field label="Updated" value={dayjs(draft.updatedAt).fromNow()} />

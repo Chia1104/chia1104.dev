@@ -7,42 +7,15 @@ import * as dbMocks from "@chia/test/mocks/db-feeds";
 import * as guardMocks from "./helpers/guards";
 import { client, errorCode } from "./helpers/rpc";
 
-/** Upserts use the API key; deletes need the operator session. */
+/** Visibility and dates take an API key; deletes need the operator session. */
 describe("feeds writes require the right tier", () => {
   beforeEach(() => {
     guardMocks.resetAllGuardMocks();
     dbMocks.resetAllDbMocks();
   });
 
-  describe("content pipeline (API key tier)", () => {
+  describe("API key tier", () => {
     beforeEach(() => guardMocks.setCallerTier(CallerTier.ApiKey));
-
-    it("upserts a translation and reindexes its feed", async () => {
-      dbMocks.upsertFeedTranslation.mockResolvedValue({ id: 9, feedId: 1 });
-
-      await client.feeds["translation:upsert"]({
-        feedId: 1,
-        locale: "zh-TW",
-        title: "Title",
-      });
-
-      expect(dbMocks.upsertFeedTranslation).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({ feedId: 1, locale: "zh-TW" })
-      );
-    });
-
-    it("upserts a translation body", async () => {
-      await client.feeds["content:upsert"]({
-        feedTranslationId: 9,
-        content: "# hello",
-      });
-
-      expect(dbMocks.upsertContent).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({ feedTranslationId: 9 })
-      );
-    });
 
     it("may update a feed", async () => {
       await client.feeds.update({ feedId: 1, published: true });
@@ -53,17 +26,19 @@ describe("feeds writes require the right tier", () => {
       );
     });
 
-    it("reports a content:upsert against an unknown translation as NOT_FOUND", async () => {
-      dbMocks.upsertContent.mockResolvedValue(undefined);
+    it("cannot write a post's content, which only applying a draft changes", async () => {
+      await client.feeds.update({
+        feedId: 1,
+        published: true,
+        // SAFETY: what a caller on the old contract would still send; the schema drops it.
+        ...({ translations: { en: { content: "# bypass" } } } as object),
+      });
 
-      const { error } = await safe(
-        client.feeds["content:upsert"]({
-          feedTranslationId: 999,
-          content: "# hello",
-        })
+      expect(dbMocks.updateFeed).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.not.objectContaining({ translations: expect.anything() })
       );
-
-      expect(errorCode(error)).toBe("NOT_FOUND");
+      expect(dbMocks.upsertContent).not.toHaveBeenCalled();
     });
 
     it("may not delete a feed", async () => {
@@ -78,23 +53,6 @@ describe("feeds writes require the right tier", () => {
 
     // Input validation runs before the guard, so each case sends schema-valid input.
     it.each([
-      [
-        "translation:upsert",
-        () =>
-          client.feeds["translation:upsert"]({
-            feedId: 1,
-            locale: "zh-TW",
-            title: "Title",
-          }),
-      ],
-      [
-        "content:upsert",
-        () =>
-          client.feeds["content:upsert"]({
-            feedTranslationId: 9,
-            content: "# hello",
-          }),
-      ],
       ["update", () => client.feeds.update({ feedId: 1 })],
       ["delete", () => client.feeds.delete({ feedId: 1 })],
     ])("rejects %s outright", async (_procedure, call) => {

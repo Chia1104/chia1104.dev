@@ -61,7 +61,6 @@ export const getFeedForIndexing: Mock = vi.fn().mockResolvedValue({
 export const getPublicFeedSummariesByIds: Mock = vi
   .fn()
   .mockResolvedValue(mockFeeds);
-export const getFeedIdByTranslationId: Mock = vi.fn().mockResolvedValue(1);
 export const getFeedRefsByTranslationIds: Mock = vi.fn().mockResolvedValue([]);
 export const upsertFeedTranslation: Mock = vi.fn().mockResolvedValue(undefined);
 export const upsertContent: Mock = vi
@@ -83,7 +82,6 @@ export const feedRepoMocks = {
   getFeedById,
   getFeedForIndexing,
   getPublicFeedSummariesByIds,
-  getFeedIdByTranslationId,
   getFeedRefsByTranslationIds,
   upsertFeedTranslation,
   upsertContent,
@@ -100,7 +98,6 @@ export const resetAllDbMocks = () => {
   getFeedById.mockClear();
   getFeedForIndexing.mockClear();
   getPublicFeedSummariesByIds.mockClear();
-  getFeedIdByTranslationId.mockClear();
   getFeedRefsByTranslationIds.mockClear();
   upsertFeedTranslation.mockClear();
   upsertContent.mockClear();

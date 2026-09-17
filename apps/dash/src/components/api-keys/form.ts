@@ -26,7 +26,7 @@ export const SCOPES = Object.values(ApiKeyScope);
 export const SCOPE_HINT = {
   [ApiKeyScope.FeedsRead]: "List and read posts, drafts included.",
   [ApiKeyScope.FeedsWrite]:
-    "Update a post's metadata, translations and content.",
+    "Publish or unpublish a post and set its dates. Content changes only by applying a draft.",
   [ApiKeyScope.SpotifyRead]: "Read the public playlist.",
   [ApiKeyScope.ToolingsRead]: "Read embed data such as X posts.",
   [ApiKeyScope.OperatorRoot]:

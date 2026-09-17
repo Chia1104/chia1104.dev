@@ -48,7 +48,9 @@ const draft: DraftView = {
   id: 7,
   feedId: null,
   revision: 1,
-  appliedRevision: null,
+  contentHash: "hash",
+  appliedRevisionId: null,
+  appliedHash: null,
   slug: null,
   type: "post",
   defaultLocale: "en",
@@ -58,7 +60,7 @@ const draft: DraftView = {
   updatedAt: "2026-09-05T00:00:00Z",
 };
 
-const setup = (beforeAction: () => Promise<boolean>) =>
+const setup = (beforeAction: () => Promise<DraftView | null>) =>
   render(
     <QueryClientProvider
       client={
@@ -79,8 +81,8 @@ const setup = (beforeAction: () => Promise<boolean>) =>
 describe("draft actions", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("waits for all saves before creating a post and locks the editor during the action", async () => {
-    const saving = Promise.withResolvers<boolean>();
+  it("waits for all saves, then creates the post from the content that was saved", async () => {
+    const saving = Promise.withResolvers<DraftView | null>();
     api.apply.mockReturnValue(Promise.withResolvers<void>().promise);
     const beforeAction = vi.fn(() => saving.promise);
     setup(beforeAction);
@@ -90,12 +92,17 @@ describe("draft actions", () => {
     expect(
       screen.getByTestId("editor").parentElement?.hasAttribute("inert")
     ).toBe(true);
-    saving.resolve(true);
-    await waitFor(() => expect(api.apply).toHaveBeenCalledWith({ draftId: 7 }));
+    saving.resolve({ ...draft, revision: 2, contentHash: "saved" });
+    await waitFor(() =>
+      expect(api.apply).toHaveBeenCalledWith({
+        draftId: 7,
+        expectedHash: "saved",
+      })
+    );
   });
 
   it("does not apply after a failed save or conflict", async () => {
-    const beforeAction = vi.fn(async () => false);
+    const beforeAction = vi.fn(async () => null);
     setup(beforeAction);
     fireEvent.click(screen.getByRole("button", { name: "Create post" }));
     await waitFor(() => expect(beforeAction).toHaveBeenCalledOnce());

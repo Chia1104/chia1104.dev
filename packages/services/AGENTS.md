@@ -19,5 +19,5 @@ Contract-first oRPC API and the domain services behind it. Third-party clients l
 - The oRPC core receives config, workflow control, hooks and agent factories through `BaseOSContext`; `apps/service/src/factories/orpc.factory.ts` is the composition root.
 - Handlers use `@chia/db/repos/*`, not raw Drizzle. Domain and policy failures use `AppError`.
 - Shared writes live in `*.service.ts` modules and receive lifecycle hooks explicitly. Host apps supply bindings rather than duplicate services.
-- Post body edits go through `feeds/draft.service.ts`; only applying a draft or a feed-level update changes a feed and starts indexing.
+- A post's content changes only when its draft is applied, through `feeds/draft.service.ts`, which is also what commits a version of the draft. `feeds.update` reaches visibility and dates and nothing a draft owns; there is no route that writes a translation or a body directly. Both start indexing.
 - Resource adapters in `rag/` isolate source-specific chunking and hydration. `rag/resource-types.ts` names the types and imports nothing, so `"use workflow"` functions depend on it rather than `rag/registry`. Read `docs/rag-architecture.md` before changing resource indexing or retrieval.

@@ -439,18 +439,6 @@ export const getPublicFeedSummariesByIds = withDTO(
   }
 );
 
-export const getFeedIdByTranslationId = withDTO(
-  async (db, params: { translationId: number }) => {
-    const [translation] = await db
-      .select({ feedId: feedTranslations.feedId })
-      .from(feedTranslations)
-      .where(eq(feedTranslations.id, params.translationId))
-      .limit(1);
-
-    return translation?.feedId ?? null;
-  }
-);
-
 /** Every translation id, including unpublished and soft-deleted; visibility is mirrored onto chunks for BM25. */
 export const listFeedTranslationIds = withDTO(
   async (db, _params: Record<string, never>) => {

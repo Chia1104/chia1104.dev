@@ -2,7 +2,10 @@ import { ApiKeyScope } from "@chia/auth/apikey";
 import { CallerTier } from "@chia/auth/tier";
 import { listWritingSessionIdsForDraft } from "@chia/db/repos/agent";
 import {
+  getFeedDraftRevision,
+  getFeedDraftRevisionBase,
   listFeedDraftRevisions,
+  pinFeedDraftRevision,
   listOpenFeedDrafts,
 } from "@chia/db/repos/drafts";
 import type {
@@ -13,13 +16,10 @@ import {
   getFeedById,
   getFeedBySlug,
   getFeedForIndexing,
-  getFeedIdByTranslationId,
   getInfiniteFeedsByUserId,
   deleteFeed,
   restoreFeed,
   softDeleteFeed,
-  upsertContent,
-  upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
@@ -51,7 +51,7 @@ import {
   searchFeedsService,
   searchPublicFeedsService,
 } from "./search.service";
-import { createFeedService, updateFeedService } from "./write.service";
+import { updateFeedService } from "./write.service";
 
 // `publicReadGuard` has no floor: a browser never holds an API key, but one that is sent must
 // still carry `feeds:read`. `keyedReadGuard` is www's server client with `x-ch-api-key`.
@@ -176,26 +176,14 @@ export const searchFeedsAdvancedRoute = contractOS.feeds["search:advanced"]
     });
   });
 
-// `update`, `translation:upsert` and `content:upsert` sit at API-key because the
-// content pipeline drives them; the rest require the operator's session.
+// `update` sits at API-key so a script can publish or date a post; it cannot touch content,
+// which changes only when a draft is applied. The rest require the operator's session.
 
 const contentWriteGuard = callerGuard({
   minTier: CallerTier.ApiKey,
   scopes: [ApiKeyScope.FeedsWrite],
 });
 const rootWriteGuard = callerGuard({ minTier: CallerTier.Root });
-
-export const createFeedRoute = contractOS.feeds.create
-  .use(rootWriteGuard)
-  .handler((opts) =>
-    withORPCErrors(() =>
-      createFeedService(
-        opts.context.db,
-        { ...opts.input, adminId: opts.context.caller.adminId },
-        opts.context.hooks ?? {}
-      )
-    )
-  );
 
 export const updateFeedRoute = contractOS.feeds.update
   .use(contentWriteGuard)
@@ -238,38 +226,6 @@ export const restoreFeedRoute = contractOS.feeds.restore
     await opts.context.hooks?.onFeedChanged?.(data.id);
   });
 
-export const upsertFeedTranslationRoute = contractOS.feeds["translation:upsert"]
-  .use(contentWriteGuard)
-  .handler(async (opts) => {
-    const translation = await upsertFeedTranslation(
-      opts.context.db,
-      opts.input
-    );
-
-    if (translation) {
-      await opts.context.hooks?.onFeedChanged?.(translation.feedId);
-    }
-  });
-
-export const upsertContentRoute = contractOS.feeds["content:upsert"]
-  .use(contentWriteGuard)
-  .handler(async (opts) => {
-    // `UPDATE` keyed on translation id: an unknown id matches no row. Ignoring that answered 2xx to a write that never landed.
-    const content = await upsertContent(opts.context.db, opts.input);
-
-    if (!content) {
-      throw opts.errors.NOT_FOUND();
-    }
-
-    const feedID = await getFeedIdByTranslationId(opts.context.db, {
-      translationId: opts.input.feedTranslationId,
-    });
-
-    if (feedID) {
-      await opts.context.hooks?.onFeedChanged?.(feedID);
-    }
-  });
-
 // The working draft is the operator's; the agent reaches it through its own port, never here.
 
 const toDraftOutput = <
@@ -284,10 +240,14 @@ const toDraftOutput = <
 
 const toRevisionOutput = (revision: FeedDraftRevisionSummary) => ({
   id: revision.id,
+  kind: revision.kind,
   revision: revision.revision,
   author: revision.author,
   sessionId: revision.sessionId,
+  message: revision.message,
+  pinned: revision.pinned,
   changes: revision.changes,
+  contentHash: revision.contentHash,
   createdAt: revision.createdAt.toISOString(),
   updatedAt: revision.updatedAt.toISOString(),
 });
@@ -331,7 +291,9 @@ export const patchFeedDraftRoute = contractOS.feeds["draft:patch"]
   .use(rootWriteGuard)
   .handler((opts) =>
     withORPCErrors(async () => {
-      const { draftId, expectedRevision, translations, ...meta } = opts.input;
+      const { draftId, expectedRevision, base, edits, translations, ...meta } =
+        opts.input;
+      const { translations: baseTranslations, ...baseMeta } = base ?? {};
       return toDraftOutput(
         await patchFeedDraftService(opts.context.db, {
           draftId,
@@ -339,6 +301,8 @@ export const patchFeedDraftRoute = contractOS.feeds["draft:patch"]
           expectedRevision,
           meta,
           translations,
+          base: base && { meta: baseMeta, translations: baseTranslations },
+          edits,
           author: FEED_DRAFT_AUTHOR.Operator,
         })
       );
@@ -382,7 +346,12 @@ export const applyFeedDraftRoute = contractOS.feeds["draft:apply"]
       );
       const result = await applyFeedDraftService(
         opts.context.db,
-        { draftId: opts.input.draftId, adminId: opts.context.caller.adminId },
+        {
+          draftId: opts.input.draftId,
+          adminId: opts.context.caller.adminId,
+          expectedHash: opts.input.expectedHash,
+          message: opts.input.message,
+        },
         opts.context.hooks ?? {}
       );
       for (const sessionId of sessionIds) {
@@ -406,6 +375,7 @@ export const discardFeedDraftRoute = contractOS.feeds["draft:discard"]
       discardFeedDraftService(opts.context.db, {
         draftId: opts.input.draftId,
         adminId: opts.context.caller.adminId,
+        expectedHash: opts.input.expectedHash,
       })
     )
   );
@@ -416,12 +386,40 @@ export const listFeedDraftRevisionsRoute = contractOS.feeds["draft:revisions"]
     withORPCErrors(async () => {
       const items = await listFeedDraftRevisions(opts.context.db, {
         draftId: opts.input.draftId,
+        kind: opts.input.kind,
         limit: opts.input.limit,
         userId: opts.context.caller.adminId,
       });
       return { items: items.map(toRevisionOutput) };
     })
   );
+
+export const getFeedDraftRevisionRoute = contractOS.feeds["draft:revision"]
+  .use(rootWriteGuard)
+  .handler(async (opts) => {
+    const revision = await getFeedDraftRevision(opts.context.db, {
+      ...opts.input,
+      userId: opts.context.caller.adminId,
+    });
+    if (!revision) throw opts.errors.NOT_FOUND();
+    const base = await getFeedDraftRevisionBase(opts.context.db, revision);
+    return {
+      ...toRevisionOutput(revision),
+      snapshot: revision.snapshot,
+      base: base?.snapshot ?? null,
+    };
+  });
+
+export const pinFeedDraftRevisionRoute = contractOS.feeds["draft:pin"]
+  .use(rootWriteGuard)
+  .handler(async (opts) => {
+    const revision = await pinFeedDraftRevision(opts.context.db, {
+      ...opts.input,
+      userId: opts.context.caller.adminId,
+    });
+    if (!revision) throw opts.errors.NOT_FOUND();
+    return toRevisionOutput(revision);
+  });
 
 export const restoreFeedDraftRevisionRoute = contractOS.feeds["draft:restore"]
   .use(rootWriteGuard)
@@ -432,6 +430,7 @@ export const restoreFeedDraftRevisionRoute = contractOS.feeds["draft:restore"]
           draftId: opts.input.draftId,
           revisionId: opts.input.revisionId,
           adminId: opts.context.caller.adminId,
+          expectedHash: opts.input.expectedHash,
         })
       )
     )
@@ -457,12 +456,9 @@ export const feedsRouter = contractOS.feeds.router({
   related: getRelatedFeedsRoute,
   search: searchFeedsRoute,
   "search:advanced": searchFeedsAdvancedRoute,
-  create: createFeedRoute,
   update: updateFeedRoute,
   delete: deleteFeedRoute,
   restore: restoreFeedRoute,
-  "translation:upsert": upsertFeedTranslationRoute,
-  "content:upsert": upsertContentRoute,
   "draft:open": openFeedDraftRoute,
   "draft:get": getFeedDraftRoute,
   "draft:list": listFeedDraftsRoute,
@@ -471,6 +467,8 @@ export const feedsRouter = contractOS.feeds.router({
   "draft:apply": applyFeedDraftRoute,
   "draft:discard": discardFeedDraftRoute,
   "draft:revisions": listFeedDraftRevisionsRoute,
+  "draft:revision": getFeedDraftRevisionRoute,
+  "draft:pin": pinFeedDraftRevisionRoute,
   "draft:restore": restoreFeedDraftRevisionRoute,
   "draft:watch": watchFeedDraftRoute,
 });

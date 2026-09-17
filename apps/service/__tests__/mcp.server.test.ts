@@ -79,10 +79,13 @@ describe("mcp server", () => {
 
     const result = await client.callTool({
       name: "discard_draft",
-      arguments: { draftId: 11 },
+      arguments: { draftId: 11, expectedHash: "abc1234" },
     });
 
-    expect(discard).toHaveBeenCalledWith({ draftId: 11 });
+    expect(discard).toHaveBeenCalledWith({
+      draftId: 11,
+      expectedHash: "abc1234",
+    });
     expect(JSON.parse(textOf(result))).toEqual({
       draftId: 11,
       discarded: true,
@@ -97,10 +100,14 @@ describe("mcp server", () => {
 
     const result = await client.callTool({
       name: "restore_draft_revision",
-      arguments: { draftId: 11, revisionId: 40 },
+      arguments: { draftId: 11, revisionId: 40, expectedHash: "abc1234" },
     });
 
-    expect(restore).toHaveBeenCalledWith({ draftId: 11, revisionId: 40 });
+    expect(restore).toHaveBeenCalledWith({
+      draftId: 11,
+      revisionId: 40,
+      expectedHash: "abc1234",
+    });
     expect(JSON.parse(textOf(result))).toEqual({ id: 11, revision: 6 });
   });
 

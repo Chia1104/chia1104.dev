@@ -460,9 +460,9 @@ describe("prepareWritingTurn", () => {
       fauxAssistantMessage("Waiting for your approval."),
     ]);
     const gated = await fixture.run("Write and commit a post");
-    const revision = (await fixture.draft.get(DRAFT_ID)).revision;
+    const { contentHash } = await fixture.draft.get(DRAFT_ID);
     expect(approvalOf(gated)?.key).toBe(
-      `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${revision}`
+      `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${contentHash}`
     );
 
     // The relay turn re-issues the call under a new id; the key is what the approval matches.
@@ -512,10 +512,10 @@ describe("prepareWritingTurn", () => {
       fauxAssistantMessage("Staged."),
     ]);
     await fixture.run("Stage a post");
-    const approvedRevision = (await fixture.draft.get(DRAFT_ID)).revision;
+    const approved = await fixture.draft.get(DRAFT_ID);
 
     // Reads in order: the volatile context, the preflight, the gate's key, then the tool. The
-    // editor saves right after the gate read the revision it matched.
+    // editor saves right after the gate read the content it matched.
     const store = fixture.draft;
     const originalGet = store.get.bind(store);
     let reads = 0;
@@ -542,20 +542,26 @@ describe("prepareWritingTurn", () => {
     ]);
     await fixture.run("Approved.", {
       approvedApprovalKeys: new Set([
-        `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approvedRevision}`,
+        `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approved.contentHash}`,
       ]),
       consumeApproval: async () => undefined,
     });
 
-    // The apply is pinned to the approved revision, not the one the tool read afterwards;
+    // The apply is pinned to the approved content, not what the tool read afterwards;
     // the apply service refuses it when the row no longer matches.
-    expect((await originalGet(DRAFT_ID)).revision).toBe(approvedRevision + 1);
+    expect((await originalGet(DRAFT_ID)).contentHash).not.toBe(
+      approved.contentHash
+    );
     expect(fixture.content.commits).toEqual([
-      { draftId: DRAFT_ID, expectedRevision: approvedRevision },
+      {
+        draftId: DRAFT_ID,
+        expectedHash: approved.contentHash,
+        message: "Committing as approved.",
+      },
     ]);
   });
 
-  it("gates a commit again when the draft moved past the approved revision", async () => {
+  it("gates a commit again when the draft no longer holds the approved content", async () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
@@ -575,7 +581,7 @@ describe("prepareWritingTurn", () => {
       fauxAssistantMessage("Staged."),
     ]);
     await fixture.run("Stage a post");
-    const approvedRevision = (await fixture.draft.get(DRAFT_ID)).revision;
+    const approved = await fixture.draft.get(DRAFT_ID);
 
     // The model "improves" the draft on its way back to the approved commit.
     const consumeApproval = vi.fn(async () => undefined);
@@ -605,7 +611,7 @@ describe("prepareWritingTurn", () => {
     ]);
     const result = await fixture.run("Approved.", {
       approvedApprovalKeys: new Set([
-        `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approvedRevision}`,
+        `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approved.contentHash}`,
       ]),
       consumeApproval,
     });
@@ -614,7 +620,7 @@ describe("prepareWritingTurn", () => {
     expect(consumeApproval).not.toHaveBeenCalled();
     expect(result.status).toBe("awaiting_approval");
     expect(approvalOf(result)?.key).toBe(
-      `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approvedRevision + 1}`
+      `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${(await fixture.draft.get(DRAFT_ID)).contentHash}`
     );
   });
 
