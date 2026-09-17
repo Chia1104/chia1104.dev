@@ -119,3 +119,56 @@ export const lineChangesOf = (before: string, after: string): LineChange[] => {
   }
   return changes;
 };
+
+export interface TextChange {
+  /** Offsets in `before`; `start === end` inserts. */
+  start: number;
+  end: number;
+  text: string;
+}
+
+/**
+ * The smallest replacements that turn `before` into `after`, as offsets in `before`: one per
+ * changed run of lines, narrowed to the characters that differ inside it. For applying someone
+ * else's change to a text being edited, where everything left alone keeps the cursor, the
+ * selection and the undo history attached to it.
+ */
+export const textChangesOf = (before: string, after: string): TextChange[] => {
+  if (before === after) return [];
+  const changes: TextChange[] = [];
+  let offset = 0;
+  const parts = diffLines(before, after);
+  for (let index = 0; index < parts.length; index += 1) {
+    const part = parts[index]!;
+    if (!part.added && !part.removed) {
+      offset += part.value.length;
+      continue;
+    }
+    const removed = part.removed ? part.value : "";
+    const next = parts[index + 1];
+    const added = part.added
+      ? part.value
+      : part.removed && next?.added
+        ? next.value
+        : "";
+    if (part.removed && next?.added) index += 1;
+
+    let head = 0;
+    const limit = Math.min(removed.length, added.length);
+    while (head < limit && removed[head] === added[head]) head += 1;
+    let tail = 0;
+    while (
+      tail < limit - head &&
+      removed[removed.length - 1 - tail] === added[added.length - 1 - tail]
+    ) {
+      tail += 1;
+    }
+    changes.push({
+      start: offset + head,
+      end: offset + removed.length - tail,
+      text: added.slice(head, added.length - tail),
+    });
+    offset += removed.length;
+  }
+  return changes;
+};

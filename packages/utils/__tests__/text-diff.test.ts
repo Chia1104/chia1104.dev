@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { applyEdits } from "../src/text";
-import { lineChangesOf, toEdits } from "../src/text/diff";
+import { lineChangesOf, textChangesOf, toEdits } from "../src/text/diff";
 
 const land = (content: string, before: string, after: string) =>
   applyEdits(content, toEdits(before, after), { exactOnly: true });
@@ -145,6 +145,50 @@ describe("lineChangesOf", () => {
       { kind: "added", startLine: 1, endLine: 1 },
       { kind: "modified", startLine: 3, endLine: 3 },
       { kind: "deleted", startLine: 5, endLine: 5 },
+    ]);
+  });
+});
+
+describe("textChangesOf", () => {
+  const apply = (before: string, after: string) => {
+    let result = before;
+    // Offsets are in `before`, so later changes go first.
+    for (const change of textChangesOf(before, after).toReversed()) {
+      result =
+        result.slice(0, change.start) + change.text + result.slice(change.end);
+    }
+    return result;
+  };
+
+  it("turns one text into the other, whatever repeats in it", () => {
+    const random = sequence(7);
+    for (let round = 0; round < 3000; round += 1) {
+      const before = randomText(random);
+      const after = randomText(random);
+      expect(
+        apply(before, after),
+        `${JSON.stringify(before)} → ${JSON.stringify(after)}`
+      ).toBe(after);
+    }
+    expect(apply("", "new body\n")).toBe("new body\n");
+    expect(apply("old body\n", "")).toBe("");
+  });
+
+  it("touches only the characters that differ inside a changed line", () => {
+    expect(
+      textChangesOf(
+        "第一段，前半句。後半句不變。\n\n第二段\n",
+        "第一段，改過的前半句。後半句不變。\n\n第二段\n"
+      )
+    ).toEqual([{ start: 4, end: 4, text: "改過的" }]);
+  });
+
+  it("reports far apart changes separately and leaves the text between them alone", () => {
+    const before = "one\ntwo\nthree\nfour\nfive\n";
+    const changes = textChangesOf(before, "ONE\ntwo\nthree\nfour\nfive!\n");
+    expect(changes).toEqual([
+      { start: 0, end: 3, text: "ONE" },
+      { start: 23, end: 23, text: "!" },
     ]);
   });
 });

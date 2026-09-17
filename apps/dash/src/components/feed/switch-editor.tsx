@@ -3,7 +3,7 @@
 import { memo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { Controller, useFormContext } from "react-hook-form";
+import { useFormContext, useWatch } from "react-hook-form";
 
 import useTheme from "@chia/ui/utils/use-theme";
 
@@ -28,6 +28,8 @@ export const SwitchEditor = memo(
 
     const activeLocale = form.watch("activeLocale");
     const title = form.watch(`translations.${activeLocale}.title`) ?? "";
+    const name = `translations.${activeLocale}.content` as const;
+    const content = useWatch({ control: form.control, name }) ?? "";
     const selectionActions = useDraftSelectionActions({
       draftId: target.draftId,
       flush: target.flush,
@@ -50,21 +52,19 @@ export const SwitchEditor = memo(
 
     return (
       <div className="relative w-full">
-        <Controller
-          key={activeLocale}
-          control={form.control}
-          name={`translations.${activeLocale}.content`}
-          render={({ field }) => (
-            <MarkdownEditor
-              value={field.value ?? ""}
-              onChange={field.onChange}
-              title={title}
-              locale={activeLocale}
-              theme={isDarkMode ? "vs-dark" : "light"}
-              selectionActions={selectionActions}
-              baseline={baseline}
-            />
-          )}
+        {/* One editor for every locale: the path picks the model, so a switch keeps each
+            locale's undo history, cursor and scroll position. */}
+        <MarkdownEditor
+          path={`draft-${target.draftId}/${activeLocale}.mdx`}
+          value={content}
+          onChange={(next) =>
+            form.setValue(name, next ?? "", { shouldDirty: true })
+          }
+          title={title}
+          locale={activeLocale}
+          theme={isDarkMode ? "vs-dark" : "light"}
+          selectionActions={selectionActions}
+          baseline={baseline}
         />
       </div>
     );

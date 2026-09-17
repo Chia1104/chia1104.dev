@@ -21,7 +21,7 @@ import type {
 } from "monaco-editor";
 
 import { cn } from "@chia/ui/utils/cn.util";
-import { lineChangesOf } from "@chia/utils/text/diff";
+import { lineChangesOf, textChangesOf } from "@chia/utils/text/diff";
 
 import { generateAIContentComplete } from "@/resources/ai.resource";
 
@@ -44,6 +44,15 @@ export interface EditorSelectionAction {
 }
 
 export interface MarkdownEditorProps {
+  /**
+   * Names the text being edited. Each path keeps its own Monaco model, so switching between
+   * paths keeps every text's undo history, cursor and scroll position.
+   */
+  path: string;
+  /**
+   * What the text should hold. A value that did not come from typing here, such as another
+   * writer's change, is applied as the smallest edits rather than replacing the text.
+   */
   value: string;
   onChange: (value: string | undefined) => void;
   title: string;
@@ -58,6 +67,35 @@ export interface MarkdownEditorProps {
    */
   baseline?: string | null;
 }
+
+/**
+ * Brings the model to `next` by editing only what differs, as one undo step of its own, so the
+ * cursor, the selection and the rest of the undo history stay where they are. `applyEdits` is
+ * not an option: it skips the undo stack, which then replays against text it no longer matches.
+ */
+const applyExternalValue = (model: MonacoEditorNS.ITextModel, next: string) => {
+  const changes = textChangesOf(model.getValue(), next);
+  if (changes.length === 0) return;
+  model.pushStackElement();
+  model.pushEditOperations(
+    null,
+    changes.map((change) => {
+      const start = model.getPositionAt(change.start);
+      const end = model.getPositionAt(change.end);
+      return {
+        range: {
+          startLineNumber: start.lineNumber,
+          startColumn: start.column,
+          endLineNumber: end.lineNumber,
+          endColumn: end.column,
+        },
+        text: change.text,
+      };
+    }),
+    () => null
+  );
+  model.pushStackElement();
+};
 
 /** Styled in `globals.css`; Monaco only takes class names. */
 const CHANGE_BAR_CLASS = {
@@ -85,6 +123,7 @@ const readSelection = (
 };
 
 export const MarkdownEditor = ({
+  path,
   value,
   onChange,
   title,
@@ -126,6 +165,64 @@ export const MarkdownEditor = ({
     );
   }, [instance, baseline, compared]);
 
+  // What this editor last reported. A `value` equal to it is typing coming back round, not a
+  // change from outside, even when the model has already moved on by a keystroke.
+  const lastEmitted = useRef<string | null>(null);
+  const wanted = useRef(value);
+  wanted.current = value;
+  const handleChange = useCallback(
+    (next: string | undefined) => {
+      lastEmitted.current = next ?? "";
+      onChange(next);
+    },
+    [onChange]
+  );
+
+  useEffect(() => {
+    const model = instance?.getModel();
+    if (
+      !instance ||
+      !model ||
+      model.getValue() === value ||
+      value === lastEmitted.current
+    )
+      return;
+    const apply = () => {
+      const current = instance.getModel();
+      if (current) applyExternalValue(current, wanted.current);
+    };
+    // Editing under an input method would break the composition; wait for it to finish.
+    if (!instance.inComposition) {
+      apply();
+      return;
+    }
+    const composed = instance.onDidCompositionEnd(() => {
+      composed.dispose();
+      apply();
+    });
+    return () => composed.dispose();
+  }, [instance, path, value]);
+
+  // Models outlive a path switch on purpose; they go when the editor does.
+  const shown = useRef(new Set<string>());
+  shown.current.add(path);
+  const monacoRef = useRef<Parameters<OnMount>[1] | null>(null);
+  useEffect(
+    () => () => {
+      const paths = shown.current;
+      for (const model of monacoRef.current?.editor.getModels() ?? []) {
+        if (paths.has(model.uri.path.replace(/^\//, ""))) model.dispose();
+      }
+    },
+    []
+  );
+
+  // The completion provider is registered once; it reads what the latest render passed.
+  const titleRef = useRef(title);
+  titleRef.current = title;
+  const localeRef = useRef(locale);
+  localeRef.current = locale;
+
   const debouncedComplete = useAsyncDebouncedCallback(
     async (params: {
       title: string;
@@ -135,7 +232,7 @@ export const MarkdownEditor = ({
     { wait: 600 }
   );
 
-  const editorRef = useRef<MonacoEditorNS.IStandaloneCodeEditor | null>(null);
+  const completionProvider = useRef<{ dispose: () => void } | null>(null);
   // Actions are registered once on mount; the menu runs whatever the latest render passed.
   const actionsRef = useRef(selectionActions);
   actionsRef.current = selectionActions;
@@ -146,6 +243,7 @@ export const MarkdownEditor = ({
   const handleMount: OnMount = useCallback(
     (editor, monaco) => {
       setInstance(editor);
+      monacoRef.current = monaco;
       // Closure flag (not a ref) updated by the content-change listener below.
       let lastChangeWasDeletion = false;
 
@@ -173,9 +271,8 @@ export const MarkdownEditor = ({
         });
       }
 
-      editorRef.current = monaco.languages.registerInlineCompletionsProvider(
-        "markdown",
-        {
+      completionProvider.current =
+        monaco.languages.registerInlineCompletionsProvider("markdown", {
           provideInlineCompletions: async (
             model: MonacoEditorNS.ITextModel,
             position: Position,
@@ -203,13 +300,13 @@ export const MarkdownEditor = ({
               return { items: [] };
             }
 
-            if (!title) return { items: [] };
+            if (!titleRef.current) return { items: [] };
 
             try {
               const completion = await debouncedComplete({
-                title,
+                title: titleRef.current,
                 textBeforeCursor,
-                locale,
+                locale: localeRef.current,
               });
 
               if (token.isCancellationRequested || !completion) {
@@ -232,15 +329,14 @@ export const MarkdownEditor = ({
           ) => {
             void _completions;
           },
-        }
-      );
+        });
     },
-    [title, locale, debouncedComplete]
+    [debouncedComplete]
   );
 
   useEffect(() => {
     return () => {
-      editorRef.current?.dispose();
+      completionProvider.current?.dispose();
     };
   }, []);
 
@@ -270,8 +366,10 @@ export const MarkdownEditor = ({
         theme={theme}
         loading={<Spinner />}
         onMount={handleMount}
-        onChange={onChange}
-        value={value}
+        onChange={handleChange}
+        path={path}
+        defaultValue={value}
+        keepCurrentModel
         options={{
           minimap: { enabled: false },
           wordWrap: "on",
