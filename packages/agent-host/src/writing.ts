@@ -99,6 +99,7 @@ const toDraftPayload = (draft: FeedDraftRecord): AgentDraftPayload => ({
   id: draft.id,
   feedId: draft.feedId,
   revision: draft.revision,
+  contentHash: draft.contentHash,
   appliedRevision: draft.appliedRevision,
   slug: draft.slug,
   type: draft.type,

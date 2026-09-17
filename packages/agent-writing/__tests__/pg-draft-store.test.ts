@@ -23,6 +23,7 @@ const record = (id: number, feedId: number | null = null): FeedDraftRecord => ({
   defaultLocale: "zh-TW",
   mainImage: null,
   revision: 1,
+  contentHash: "hash",
   appliedRevision: null,
   createdAt: now,
   updatedAt: now,

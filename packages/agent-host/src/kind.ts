@@ -131,6 +131,7 @@ export interface AgentDraftPayload {
   id: number;
   feedId: number | null;
   revision: number;
+  contentHash: string;
   appliedRevision: number | null;
   slug: string | null;
   type: "post" | "note";

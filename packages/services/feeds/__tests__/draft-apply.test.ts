@@ -52,6 +52,7 @@ const draft = (revision: number) => ({
   userId: "admin",
   feedId: 5,
   revision,
+  contentHash: "hash",
   appliedRevision: null,
   slug: "a-post",
   type: "post",

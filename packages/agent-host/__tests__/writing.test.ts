@@ -56,6 +56,7 @@ const record = (id: number, userId = "author"): FeedDraftRecord => ({
   defaultLocale: "zh-TW",
   mainImage: null,
   revision: 3,
+  contentHash: "hash",
   appliedRevision: null,
   createdAt: new Date("2026-09-05T00:00:00Z"),
   updatedAt: new Date("2026-09-05T00:00:00Z"),

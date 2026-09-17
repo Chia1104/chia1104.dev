@@ -143,7 +143,10 @@ export const feedDrafts = pgTable(
     type: feedType("type").notNull().default("post"),
     defaultLocale: locale("default_locale").notNull().default("zh-TW"),
     mainImage: text("main_image"),
+    /** Orders writes; bumped under the row lock. `contentHash` is what identifies a version. */
     revision: integer("revision").notNull().default(1),
+    /** `hashFeedDraftSnapshot` of the current content, rewritten by every write. */
+    contentHash: text("content_hash").notNull(),
     /** The revision last applied to `feed`; `null` when never applied. */
     appliedRevision: integer("applied_revision"),
     ...timestamps,
@@ -224,6 +227,8 @@ export const feedDraftRevisions = pgTable(
     changes: jsonb("changes").$type<FeedDraftChange[]>().notNull().default([]),
     /** The whole draft after this write, so restore is a replace. */
     snapshot: jsonb("snapshot").$type<FeedDraftSnapshot>().notNull(),
+    /** `hashFeedDraftSnapshot` of `snapshot`. */
+    contentHash: text("content_hash").notNull(),
     ...timestamps,
   },
   (table) => [

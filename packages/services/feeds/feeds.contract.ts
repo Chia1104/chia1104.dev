@@ -324,7 +324,9 @@ export const feedDraftSchema = z.object({
   id: z.number().int(),
   /** `null` until the draft has been applied once. */
   feedId: z.number().int().nullable(),
+  /** Orders writes. `contentHash` is what identifies a version. */
   revision: z.number().int(),
+  contentHash: z.string(),
   appliedRevision: z.number().int().nullable(),
   slug: z.string().nullable(),
   type: z.enum([FeedType.Post, FeedType.Note]),
@@ -380,6 +382,7 @@ export const feedDraftRevisionSchema = z.object({
   author: z.enum(["operator", "agent"]),
   sessionId: z.string().nullable(),
   changes: z.array(feedDraftChangeSchema),
+  contentHash: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

@@ -27,6 +27,7 @@ const initial: DraftView = {
   id: 7,
   feedId: null,
   revision: 1,
+  contentHash: "hash",
   appliedRevision: null,
   slug: null,
   type: "post",

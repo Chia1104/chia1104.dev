@@ -17,6 +17,7 @@ const status = {
   userId: "admin",
   feedId: null,
   revision: 1,
+  contentHash: "hash",
   appliedRevision: null,
 };
 const changed = { type: "discarded", draftId: 7 } as const;

@@ -288,6 +288,7 @@ const toRevisionOutput = (revision: FeedDraftRevisionSummary) => ({
   author: revision.author,
   sessionId: revision.sessionId,
   changes: revision.changes,
+  contentHash: revision.contentHash,
   createdAt: revision.createdAt.toISOString(),
   updatedAt: revision.updatedAt.toISOString(),
 });

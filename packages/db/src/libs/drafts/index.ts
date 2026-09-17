@@ -35,6 +35,7 @@ import {
   feedDraftTranslations,
 } from "../../schemas/schema.ts";
 
+import { hashFeedDraftSnapshot } from "./hash.ts";
 import { FEED_DRAFT_CHANNEL } from "./notice.ts";
 import type { FeedDraftNotice } from "./notice.ts";
 
@@ -52,6 +53,7 @@ export interface FeedDraftRecord extends FeedDraftSnapshot {
   feedId: number | null;
   userId: string;
   revision: number;
+  contentHash: string;
   appliedRevision: number | null;
   createdAt: Date;
   updatedAt: Date;
@@ -132,6 +134,7 @@ const toRecord = (
     defaultLocale: draft.defaultLocale,
     mainImage: draft.mainImage,
     revision: draft.revision,
+    contentHash: draft.contentHash,
     appliedRevision: draft.appliedRevision,
     createdAt: draft.createdAt,
     updatedAt: draft.updatedAt,
@@ -327,6 +330,7 @@ const recordRevision = async (
         revision: draft.revision,
         changes: mergeChanges(latest.changes, changes),
         snapshot,
+        contentHash: draft.contentHash,
         updatedAt: new Date(),
       })
       .where(eq(feedDraftRevisions.id, latest.id));
@@ -340,6 +344,7 @@ const recordRevision = async (
     sessionId: writer.sessionId ?? null,
     changes,
     snapshot,
+    contentHash: draft.contentHash,
   });
 
   await tx.delete(feedDraftRevisions).where(
@@ -393,22 +398,30 @@ export const createFeedDraft = (
   input: CreateFeedDraftInput
 ): Promise<FeedDraftRecord> =>
   db.transaction(async (tx) => {
+    const snapshot: FeedDraftSnapshot = {
+      slug: input.snapshot?.slug ?? null,
+      type: input.snapshot?.type ?? "post",
+      defaultLocale: input.snapshot?.defaultLocale ?? "zh-TW",
+      mainImage: input.snapshot?.mainImage ?? null,
+      translations: input.snapshot?.translations ?? {},
+    };
     const [draft] = await tx
       .insert(feedDrafts)
       .values({
         userId: input.userId,
         feedId: input.feedId ?? null,
-        slug: input.snapshot?.slug ?? null,
-        type: input.snapshot?.type ?? "post",
-        defaultLocale: input.snapshot?.defaultLocale ?? "zh-TW",
-        mainImage: input.snapshot?.mainImage ?? null,
+        slug: snapshot.slug,
+        type: snapshot.type,
+        defaultLocale: snapshot.defaultLocale,
+        mainImage: snapshot.mainImage,
         revision: 1,
+        contentHash: hashFeedDraftSnapshot(snapshot),
         appliedRevision: input.applied ? 1 : null,
       })
       .returning();
     if (!draft) throw new Error("Creating the draft returned no row.");
 
-    const translations = Object.entries(input.snapshot?.translations ?? {});
+    const translations = Object.entries(snapshot.translations);
     if (translations.length > 0) {
       await tx.insert(feedDraftTranslations).values(
         translations.map(([locale, translation]) => ({
@@ -553,18 +566,6 @@ const writePatch = async (
 
   if (changes.length === 0) return current;
 
-  const revision = current.revision + 1;
-  const [row] = await tx
-    .update(feedDrafts)
-    .set({
-      ...(input.meta ?? {}),
-      revision,
-      updatedAt: new Date(),
-    })
-    .where(eq(feedDrafts.id, current.id))
-    .returning();
-  if (!row) throw new Error(`Updating draft ${current.id} returned no row.`);
-
   const translations = { ...current.translations };
   for (const entry of translationEntries) {
     const [written] = await tx
@@ -581,6 +582,22 @@ const writePatch = async (
       .returning();
     if (written) translations[entry.locale] = translationOf(written);
   }
+
+  const [row] = await tx
+    .update(feedDrafts)
+    .set({
+      ...(input.meta ?? {}),
+      revision: current.revision + 1,
+      contentHash: hashFeedDraftSnapshot({
+        ...snapshotOf(current),
+        ...(input.meta ?? {}),
+        translations,
+      }),
+      updatedAt: new Date(),
+    })
+    .where(eq(feedDrafts.id, current.id))
+    .returning();
+  if (!row) throw new Error(`Updating draft ${current.id} returned no row.`);
 
   const draft = toRecord(row, translations);
   await recordRevision(tx, draft, input, changes);
@@ -618,6 +635,7 @@ export const replaceFeedDraft = (
         defaultLocale: input.snapshot.defaultLocale,
         mainImage: input.snapshot.mainImage,
         revision,
+        contentHash: hashFeedDraftSnapshot(input.snapshot),
         updatedAt: new Date(),
       })
       .where(eq(feedDrafts.id, input.draftId))
@@ -700,6 +718,7 @@ export const listFeedDraftRevisions = async (
       author: feedDraftRevisions.author,
       sessionId: feedDraftRevisions.sessionId,
       changes: feedDraftRevisions.changes,
+      contentHash: feedDraftRevisions.contentHash,
       createdAt: feedDraftRevisions.createdAt,
       updatedAt: feedDraftRevisions.updatedAt,
     })
