@@ -2875,6 +2875,12 @@ importers:
       '@chia/agent-content':
         specifier: workspace:*
         version: link:../../../packages/agent-content
+      '@chia/agent-public':
+        specifier: workspace:*
+        version: link:../../../packages/agent-public
+      '@chia/agent-runtime':
+        specifier: workspace:*
+        version: link:../../../packages/agent-runtime
       '@chia/ai':
         specifier: workspace:*
         version: link:../../../packages/ai
