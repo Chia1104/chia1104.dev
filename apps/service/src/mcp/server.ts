@@ -228,9 +228,8 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
         expectedRevision: z
           .number()
           .int()
-          .optional()
           .describe(
-            "The revision you last read; omit to write over whatever is current"
+            "The draft's `revision` as last read, so the write cannot bury a change you have not seen"
           ),
         slug: z.string().min(1).optional(),
         type: postTypeSchema.optional(),

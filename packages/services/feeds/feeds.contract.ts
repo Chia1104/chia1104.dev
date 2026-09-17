@@ -359,16 +359,41 @@ export type FeedDraftSummaryOutput = z.infer<typeof feedDraftSummarySchema>;
 
 const feedDraftTranslationPatchSchema = feedDraftTranslationSchema.partial();
 
-export const patchFeedDraftSchema = z.object({
-  draftId: z.number().int(),
-  /** Omit to write over the current revision; the editor always sends the one it loaded. */
-  expectedRevision: z.number().int().optional(),
+const feedDraftFieldsSchema = z.object({
   slug: z.string().nullable().optional(),
   type: z.enum([FeedType.Post, FeedType.Note]).optional(),
   defaultLocale: z.enum(locale.enumValues).optional(),
   mainImage: z.string().nullable().optional(),
   translations: z
     .partialRecord(z.enum(locale.enumValues), feedDraftTranslationPatchSchema)
+    .optional(),
+});
+
+export const feedDraftContentEditSchema = z.object({
+  /** Matched byte for byte against the current body. */
+  oldString: z.string().min(1),
+  /** Empty deletes the match. */
+  newString: z.string(),
+  /** Replace every match instead of refusing an ambiguous target. */
+  replaceAll: z.boolean().optional(),
+});
+
+/**
+ * Every field written is guarded: by its entry in `base`, or by `expectedRevision` for the
+ * whole call. Guarded by `base`, a write lands beside another writer's change to a different
+ * field and answers `CONFLICT` with `rejected` when one of its own fields moved.
+ */
+export const patchFeedDraftSchema = feedDraftFieldsSchema.extend({
+  draftId: z.number().int(),
+  expectedRevision: z.number().int().optional(),
+  /** What the caller last saw of the fields it writes. */
+  base: feedDraftFieldsSchema.optional(),
+  /** Replacements in a locale's body, matched byte for byte; not together with that locale's `content`. */
+  edits: z
+    .partialRecord(
+      z.enum(locale.enumValues),
+      z.array(feedDraftContentEditSchema).min(1).max(200)
+    )
     .optional(),
 });
 
@@ -409,7 +434,21 @@ const DRAFT_ERRORS = {
 /** What the draft holds now, so the caller can read it again and decide on that. */
 const DRAFT_CONFLICT = {
   CONFLICT: {
-    data: z.object({ revision: z.number().int(), contentHash: z.string() }),
+    data: z.object({
+      revision: z.number().int(),
+      contentHash: z.string(),
+      /** The fields of a `base`-guarded patch that moved; absent for a whole-draft mismatch. */
+      rejected: z
+        .array(
+          z.object({
+            /** `null` for a feed-level field. */
+            locale: z.enum(locale.enumValues).nullable(),
+            field: z.string(),
+            reason: z.string(),
+          })
+        )
+        .optional(),
+    }),
   },
 } as const;
 
@@ -436,15 +475,6 @@ export const patchFeedDraftContract = oc
   .errors({ ...DRAFT_ERRORS, ...DRAFT_CONFLICT })
   .input(patchFeedDraftSchema)
   .output(feedDraftSchema);
-
-export const feedDraftContentEditSchema = z.object({
-  /** Matched byte for byte against the current body. */
-  oldString: z.string().min(1),
-  /** Empty deletes the match. */
-  newString: z.string(),
-  /** Replace every match instead of refusing an ambiguous target. */
-  replaceAll: z.boolean().optional(),
-});
 
 export const editFeedDraftSchema = z.object({
   draftId: z.number().int(),

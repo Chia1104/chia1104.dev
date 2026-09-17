@@ -336,7 +336,9 @@ export const patchFeedDraftRoute = contractOS.feeds["draft:patch"]
   .use(rootWriteGuard)
   .handler((opts) =>
     withORPCErrors(async () => {
-      const { draftId, expectedRevision, translations, ...meta } = opts.input;
+      const { draftId, expectedRevision, base, edits, translations, ...meta } =
+        opts.input;
+      const { translations: baseTranslations, ...baseMeta } = base ?? {};
       return toDraftOutput(
         await patchFeedDraftService(opts.context.db, {
           draftId,
@@ -344,6 +346,8 @@ export const patchFeedDraftRoute = contractOS.feeds["draft:patch"]
           expectedRevision,
           meta,
           translations,
+          base: base && { meta: baseMeta, translations: baseTranslations },
+          edits,
           author: FEED_DRAFT_AUTHOR.Operator,
         })
       );

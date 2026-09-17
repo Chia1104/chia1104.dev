@@ -14,12 +14,15 @@ import {
 } from "@chia/db/repos/drafts";
 import type {
   FeedDraftContentEdit,
-  FeedDraftMetaPatch,
   FeedDraftRecord,
   FeedDraftSnapshot,
-  FeedDraftTranslationPatch,
   FeedDraftWriter,
 } from "@chia/db/repos/drafts";
+import type {
+  FeedDraftFields,
+  FeedDraftMetaPatch,
+  FeedDraftTranslationPatch,
+} from "@chia/db/repos/drafts/patch";
 import { getFeedForIndexing } from "@chia/db/repos/feeds";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
@@ -128,22 +131,65 @@ export const getFeedDraftService = (
   input: { draftId: number; adminId: string }
 ) => requireDraft(db, input.draftId, input.adminId);
 
-export interface PatchFeedDraftServiceInput extends FeedDraftWriter {
+export interface PatchFeedDraftServiceInput
+  extends FeedDraftWriter, FeedDraftFields {
   draftId: number;
   adminId: string;
   expectedRevision?: number;
-  meta?: FeedDraftMetaPatch;
-  translations?: Partial<Record<Locale, FeedDraftTranslationPatch>>;
+  base?: FeedDraftFields;
+  edits?: Partial<Record<Locale, readonly FeedDraftContentEdit[]>>;
 }
 
+/** Fields written without a base, which only `expectedRevision` may guard. */
+const unguardedFields = (input: PatchFeedDraftServiceInput): string[] => {
+  const unguarded: string[] = [];
+  for (const [field, value] of Object.entries(input.meta ?? {})) {
+    if (value === undefined) continue;
+    // SAFETY: `field` came from `input.meta`, whose keys `base.meta` shares.
+    if (input.base?.meta?.[field as keyof FeedDraftMetaPatch] === undefined) {
+      unguarded.push(field);
+    }
+  }
+  for (const [locale, patch] of Object.entries(input.translations ?? {})) {
+    for (const [field, value] of Object.entries(patch ?? {})) {
+      if (value === undefined) continue;
+      // SAFETY: `locale` and `field` came from `input.translations`, whose keys `base` shares.
+      const base =
+        input.base?.translations?.[locale as Locale]?.[
+          field as keyof FeedDraftTranslationPatch
+        ];
+      if (base === undefined) unguarded.push(`${locale}.${field}`);
+    }
+  }
+  return unguarded;
+};
+
 /**
- * Throws `CONFLICT` with the current draft in `data` when `expectedRevision` is stale, so the
- * caller can rebase without another round trip.
+ * Every field must be guarded, by its `base` or by `expectedRevision`. Throws `CONFLICT` naming
+ * what the draft holds now, and the fields that moved, when the draft is not what the caller
+ * wrote against; nothing of the patch is written then.
  */
 export const patchFeedDraftService = async (
   db: DB,
   input: PatchFeedDraftServiceInput
 ): Promise<FeedDraftRecord> => {
+  if (input.expectedRevision === undefined) {
+    const unguarded = unguardedFields(input);
+    if (unguarded.length > 0) {
+      throw new AppError("BAD_REQUEST", {
+        message: `Pass what you last saw of ${unguarded.join(", ")} in \`base\`, or the draft's \`expectedRevision\`, so the write cannot bury a change you have not seen.`,
+      });
+    }
+  }
+  for (const locale of Object.keys(input.edits ?? {})) {
+    // SAFETY: `edits` is keyed by Locale.
+    if (input.translations?.[locale as Locale]?.content !== undefined) {
+      throw new AppError("BAD_REQUEST", {
+        message: `Write the "${locale}" body or edit it, not both in one call.`,
+      });
+    }
+  }
+
   const meta = { ...input.meta };
   if (meta.slug !== undefined && meta.slug !== null) {
     const slug = normalizeAsciiSlug(meta.slug);
@@ -164,6 +210,8 @@ export const patchFeedDraftService = async (
     sessionId: input.sessionId,
     meta,
     translations: input.translations,
+    base: input.base,
+    edits: input.edits,
   });
   return unwrapWrite(result, input.draftId);
 };
@@ -258,7 +306,16 @@ const unwrapWrite = (
     case "conflict":
       throw new AppError("CONFLICT", {
         message: `Draft ${draftId} was changed by someone else; reload it and try again.`,
-        data: conflictData(result.draft),
+        data: result.rejected
+          ? {
+              ...conflictData(result.draft),
+              rejected: result.rejected.map(({ locale, field, reason }) => ({
+                locale: locale ?? null,
+                field,
+                reason,
+              })),
+            }
+          : conflictData(result.draft),
       });
     case "not_found":
       throw new AppError("NOT_FOUND", {

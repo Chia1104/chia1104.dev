@@ -15,10 +15,10 @@ import type {
   FeedDraftRevisionKind,
   FeedDraftSnapshot,
   FeedDraftTranslationSnapshot,
-  FeedType,
   Locale,
 } from "../../schemas/schema.ts";
 import {
+  FEED_DRAFT_AUTHOR,
   FEED_DRAFT_REVISION_KIND,
   feedDraftRevisions,
   feedDrafts,
@@ -28,13 +28,21 @@ import {
 import { hashFeedDraftSnapshot } from "./hash.ts";
 import { FEED_DRAFT_CHANNEL } from "./notice.ts";
 import type { FeedDraftNotice } from "./notice.ts";
+import {
+  META_FIELDS,
+  TRANSLATION_FIELDS,
+  definedKeys,
+  settleFeedDraftPatch,
+} from "./patch.ts";
+import type {
+  FeedDraftRejectedChange,
+  GuardedFeedDraftFields,
+} from "./patch.ts";
 
 /**
  * `feed_draft` with its translations, snapshot trail and compare-and-set writes. Every write
  * runs in one transaction that locks the draft row, so two writers cannot interleave.
  */
-
-export type StorableFeedType = Exclude<FeedType, "all">;
 
 export type { FeedDraftSnapshot, FeedDraftTranslationSnapshot };
 
@@ -53,16 +61,6 @@ export interface FeedDraftRecord extends FeedDraftSnapshot {
   updatedAt: Date;
 }
 
-/** `undefined` leaves a field alone; `null` clears it. */
-export type FeedDraftTranslationPatch = Partial<FeedDraftTranslationSnapshot>;
-
-export interface FeedDraftMetaPatch {
-  slug?: string | null;
-  type?: StorableFeedType;
-  defaultLocale?: Locale;
-  mainImage?: string | null;
-}
-
 export interface FeedDraftWriter {
   author: FeedDraftAuthor;
   sessionId?: string | null;
@@ -70,24 +68,21 @@ export interface FeedDraftWriter {
 
 export type FeedDraftWriteResult =
   | { status: "ok"; draft: FeedDraftRecord }
-  /** `expectedRevision` is behind; `draft` is the current state so the caller can rebase. */
-  | { status: "conflict"; draft: FeedDraftRecord }
+  /**
+   * The draft is not what the caller wrote against: its revision or hash, or the fields in
+   * `rejected`. Nothing was written; `draft` is the current state so the caller can rebase.
+   */
+  | {
+      status: "conflict";
+      draft: FeedDraftRecord;
+      rejected?: FeedDraftRejectedChange[];
+    }
   | { status: "not_found" };
 
 /** While one writer keeps writing, a safety point is kept this often. */
 const SAFETY_POINT_INTERVAL_MS = 10 * 60 * 1000;
 /** Unpinned safety points kept per draft; older ones are pruned when one is added. */
 const MAX_SAFETY_POINTS_PER_DRAFT = 100;
-
-const TRANSLATION_FIELDS = [
-  "title",
-  "excerpt",
-  "description",
-  "summary",
-  "content",
-] as const;
-
-const META_FIELDS = ["slug", "type", "defaultLocale", "mainImage"] as const;
 
 type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
 
@@ -447,13 +442,6 @@ const keepSafetyPoint = async (
   );
 };
 
-/** The names in `allowed` whose value in `patch` is not `undefined`. */
-const definedKeys = <TPatch extends object>(
-  patch: TPatch,
-  allowed: readonly (keyof TPatch & string)[]
-): (keyof TPatch & string)[] =>
-  allowed.filter((key) => patch[key] !== undefined);
-
 export interface CreateFeedDraftInput extends FeedDraftWriter {
   userId: string;
   feedId?: number | null;
@@ -561,10 +549,8 @@ const lockOwnedDraft = async (
   return { status: "locked", draft: current };
 };
 
-export interface PatchFeedDraftInput extends FeedDraftOwnedWrite {
-  meta?: FeedDraftMetaPatch;
-  translations?: Partial<Record<Locale, FeedDraftTranslationPatch>>;
-}
+export interface PatchFeedDraftInput
+  extends FeedDraftOwnedWrite, GuardedFeedDraftFields {}
 
 export const patchFeedDraft = (
   db: DB,
@@ -573,7 +559,22 @@ export const patchFeedDraft = (
   db.transaction(async (tx) => {
     const locked = await lockOwnedDraft(tx, input);
     if (locked.status !== "locked") return locked;
-    return { status: "ok", draft: await writePatch(tx, locked.draft, input) };
+    const settled = settleFeedDraftPatch(snapshotOf(locked.draft), input);
+    if (!settled.ok) {
+      return {
+        status: "conflict",
+        draft: locked.draft,
+        rejected: settled.rejected,
+      };
+    }
+    return {
+      status: "ok",
+      draft: await writePatch(tx, locked.draft, {
+        author: input.author,
+        sessionId: input.sessionId,
+        ...settled.fields,
+      }),
+    };
   });
 
 export type FeedDraftContentEdit = ContentEdit;
@@ -993,19 +994,43 @@ export const getFeedDraftRevision = async (
   return row?.revision ?? null;
 };
 
+const mergeChanges = (
+  base: FeedDraftChange[],
+  next: FeedDraftChange[]
+): FeedDraftChange[] => {
+  const byLocale = new Map<Locale | null, Set<string>>();
+  for (const change of [...base, ...next]) {
+    const key = change.locale ?? null;
+    const fields = byLocale.get(key) ?? new Set<string>();
+    for (const field of change.fields) fields.add(field);
+    byLocale.set(key, fields);
+  }
+  return [...byLocale.entries()].map(([locale, fields]) => {
+    const change: FeedDraftChange = { fields: [...fields] };
+    if (locale !== null) change.locale = locale;
+    return change;
+  });
+};
+
 /**
- * Fields of one of `userId`'s drafts that differ from the newest state kept at or before
- * `afterRevision`, for the agent's turn context. A writer changing hands keeps the state it
- * takes over, so a draft the agent wrote last is compared from exactly where it left it.
+ * Fields of one of `userId`'s drafts that writers other than `exceptSessionId` changed since
+ * the newest state kept at or before `afterRevision`, for the agent's turn context. A writer
+ * changing hands keeps the state it takes over, so each step along the trail has one author
+ * and the session's own writes drop out exactly.
  */
 export const listFeedDraftChangesSince = async (
   db: DB,
-  input: { draftId: number; afterRevision: number; userId: string }
+  input: {
+    draftId: number;
+    afterRevision: number;
+    userId: string;
+    exceptSessionId?: string;
+  }
 ): Promise<FeedDraftChange[]> => {
   const draft = await readDraft(db, input.draftId, { userId: input.userId });
   if (!draft || draft.revision <= input.afterRevision) return [];
   const [baseline] = await db
-    .select({ snapshot: feedDraftRevisions.snapshot })
+    .select()
     .from(feedDraftRevisions)
     .where(
       and(
@@ -1015,8 +1040,45 @@ export const listFeedDraftChangesSince = async (
     )
     .orderBy(desc(feedDraftRevisions.revision), desc(feedDraftRevisions.id))
     .limit(1);
-  if (!baseline) return [];
-  return diffFeedDraftSnapshots(baseline.snapshot, snapshotOf(draft));
+  const since = await db
+    .select()
+    .from(feedDraftRevisions)
+    .where(
+      and(
+        eq(feedDraftRevisions.draftId, input.draftId),
+        gt(feedDraftRevisions.revision, input.afterRevision)
+      )
+    )
+    .orderBy(feedDraftRevisions.revision, feedDraftRevisions.id);
+
+  const trail: FeedDraftTrailEntry[] = [
+    ...(baseline ? [baseline] : []),
+    ...since,
+  ];
+  if ((trail.at(-1)?.revision ?? 0) < draft.revision) {
+    trail.push({
+      revision: draft.revision,
+      author: draft.lastAuthor,
+      sessionId: draft.lastSessionId,
+      snapshot: snapshotOf(draft),
+    });
+  }
+
+  let changes: FeedDraftChange[] = [];
+  for (let index = 1; index < trail.length; index += 1) {
+    const entry = trail[index]!;
+    if (
+      entry.author === FEED_DRAFT_AUTHOR.Agent &&
+      entry.sessionId === input.exceptSessionId
+    ) {
+      continue;
+    }
+    changes = mergeChanges(
+      changes,
+      diffFeedDraftSnapshots(trail[index - 1]!.snapshot, entry.snapshot)
+    );
+  }
+  return changes;
 };
 
 export const snapshotOfRevision = (revision: FeedDraftRevision) =>

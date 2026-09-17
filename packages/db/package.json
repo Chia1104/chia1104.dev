@@ -33,6 +33,10 @@
       "types": "./src/libs/drafts/hash.ts",
       "default": "./src/libs/drafts/hash.ts"
     },
+    "./repos/drafts/patch": {
+      "types": "./src/libs/drafts/patch.ts",
+      "default": "./src/libs/drafts/patch.ts"
+    },
     "./repos/drafts/notice": {
       "types": "./src/libs/drafts/notice.ts",
       "default": "./src/libs/drafts/notice.ts"
