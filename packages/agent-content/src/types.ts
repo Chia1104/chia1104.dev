@@ -132,6 +132,42 @@ export interface ProfileReadPort {
   listPublished(): Promise<ProfileEntrySnapshot[]>;
 }
 
+export interface FetchedPage {
+  url: string;
+  title?: string;
+  /** Truncated for the model. */
+  text: string;
+}
+
+/** Search-engine recency window; the host maps it to the provider's filter syntax. */
+export type WebSearchRecency = (typeof WEB_SEARCH_RECENCIES)[number];
+
+export const WEB_SEARCH_RECENCIES = ["day", "week", "month", "year"] as const;
+
+export interface WebSearchInput {
+  query: string;
+  limit: number;
+  recency?: WebSearchRecency;
+  /** Bare hostnames, without protocol or path. */
+  includeDomains?: string[];
+}
+
+/** Discovery only; a fetch reads the page. */
+export interface WebSearchResult {
+  url: string;
+  title?: string;
+  description?: string;
+}
+
+/** Outbound web, shared by the kinds a host grants it to. Every call is a vendor request. */
+export interface WebPort {
+  search(
+    input: WebSearchInput,
+    signal?: AbortSignal
+  ): Promise<WebSearchResult[]>;
+  fetchPage(url: string, signal?: AbortSignal): Promise<FetchedPage>;
+}
+
 export interface ContentToolContext {
   content: ContentReadPort;
 }

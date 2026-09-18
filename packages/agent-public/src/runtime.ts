@@ -2,6 +2,7 @@ import { createContentReadTools } from "@chia/agent-content/tools/read";
 import type {
   ContentReadPort,
   ProfileReadPort,
+  WebPort,
 } from "@chia/agent-content/types";
 import type {
   AgentTurnPlan,
@@ -15,6 +16,7 @@ import { publicTurnBudget } from "./policy.ts";
 import { renderProfileBrief } from "./prompts/profile.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import { createMessageScreen } from "./screen.ts";
+import { createPublicWebTools } from "./tools/web.tool.ts";
 
 export interface PreparePublicTurnOptions {
   /** Built by the host with `public` visibility; the tools cannot widen it. */
@@ -24,6 +26,8 @@ export interface PreparePublicTurnOptions {
   instructions?: string;
   /** Grades the visitor's message before the model reads it; null when no guard is configured. */
   guard: GuardProvider | null;
+  /** Granted by the host per turn. Ignored without a guard: web text must be checked. */
+  web?: WebPort;
 }
 
 /** Quoted as a fenced block so the passage reads as the visitor's citation, not their words. */
@@ -115,11 +119,20 @@ export const preparePublicTurn = async (
     locale: Locale.zhTW,
   });
 
+  const webTools =
+    options.web && options.guard
+      ? createPublicWebTools({ web: options.web, guard: options.guard })
+      : [];
+
   return {
-    tools: createContentReadTools({ content: options.content }),
+    tools: [
+      ...createContentReadTools({ content: options.content }),
+      ...webTools,
+    ],
     systemPrompt: buildSystemPrompt({
       instructions: options.instructions,
       profile,
+      web: webTools.length > 0,
     }),
     volatileContext: () =>
       buildTurnContext({ defaultLocale: Locale.zhTW, now: new Date() }),

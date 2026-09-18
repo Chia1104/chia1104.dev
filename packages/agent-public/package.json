@@ -17,6 +17,10 @@
       "types": "./src/policy.ts",
       "default": "./src/policy.ts"
     },
+    "./tools/web": {
+      "types": "./src/tools/web.tool.ts",
+      "default": "./src/tools/web.tool.ts"
+    },
     "./runtime": {
       "types": "./src/runtime.ts",
       "default": "./src/runtime.ts"
@@ -35,8 +39,11 @@
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/observability": "workspace:*",
+    "@chia/utils": "workspace:*",
+    "@earendil-works/pi-agent-core": "catalog:agent",
     "@earendil-works/pi-ai": "catalog:agent",
     "es-toolkit": "catalog:",
+    "typebox": "catalog:agent",
     "zod": "catalog:"
   },
   "devDependencies": {

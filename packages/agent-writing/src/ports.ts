@@ -9,7 +9,6 @@ import type {
   DraftWrite,
   FeedDraft,
   FeedDraftSummary,
-  FetchedPage,
   GitHubFile,
   GitHubRef,
   GitHubTree,
@@ -19,8 +18,6 @@ import type {
   MemorySummary,
   SavedMemory,
   SaveMemoryInput,
-  WebSearchInput,
-  WebSearchResult,
 } from "./types.ts";
 
 export type {
@@ -30,7 +27,6 @@ export type {
   DraftTranslation,
   FeedDraft,
   FeedDraftSummary,
-  FetchedPage,
   GitHubEntryType,
   GitHubFile,
   GitHubRef,
@@ -46,9 +42,6 @@ export type {
   MemorySummary,
   SavedMemory,
   SaveMemoryInput,
-  WebSearchInput,
-  WebSearchRecency,
-  WebSearchResult,
 } from "./types.ts";
 
 /**
@@ -70,18 +63,6 @@ export interface ContentPort extends ContentReadPort {
     feedId: number;
     published: boolean;
   }): Promise<{ feedId: number; published: boolean }>;
-}
-
-/**
- * Outbound web: search and page fetch. Both cost money and are an SSRF surface, so only the
- * author's session gets this port.
- */
-export interface WebPort {
-  search(
-    input: WebSearchInput,
-    signal?: AbortSignal
-  ): Promise<WebSearchResult[]>;
-  fetchPage(url: string, signal?: AbortSignal): Promise<FetchedPage>;
 }
 
 /**

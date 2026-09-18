@@ -1,6 +1,8 @@
 import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
+import { WEB_SEARCH_RECENCIES } from "@chia/agent-content/types";
+import type { FetchedPage, WebSearchResult } from "@chia/agent-content/types";
 import {
   defineTool,
   optional,
@@ -12,12 +14,7 @@ import { splitByHeadings } from "@chia/ai/embeddings/markdown";
 import { reportError } from "@chia/observability/report";
 
 import { closeOpenFence } from "../markdown/fences.ts";
-import type {
-  FetchedPage,
-  WebSearchResult,
-  WritingToolContext,
-} from "../types.ts";
-import { WEB_SEARCH_RECENCIES } from "../types.ts";
+import type { WritingToolContext } from "../types.ts";
 
 import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
 
