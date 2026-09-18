@@ -200,6 +200,18 @@ const MarkdownLink: Components["a"] = ({
 };
 
 /**
+ * An image loads the moment it renders, so a URL that a fetched page talked the model into
+ * emitting would carry its query string to that host unasked. Shown as a link, which asks first.
+ */
+const MarkdownImage: Components["img"] = ({ alt, src }) => {
+  // Parsed rather than narrowed: some React typings admit a Blob here, which does not parse.
+  const url = src ? URL.parse(String(src)) : null;
+  return url ? (
+    <MarkdownLink href={url.href}>{alt || url.href}</MarkdownLink>
+  ) : null;
+};
+
+/**
  * Streamdown defaults use shadcn tokens (`bg-muted`, `text-muted-foreground`); HeroUI's `muted`
  * is a text colour, so those defaults render as grey slabs. Tables and emphasis come from the
  * blog elements; the rest is restated in HeroUI tokens. Unlisted elements keep Streamdown's
@@ -229,6 +241,7 @@ export const markdownComponents: Components = {
     <hr className={cn("border-border my-6", className)} {...props} />
   ),
   a: MarkdownLink,
+  img: MarkdownImage,
 };
 
 export interface MarkdownProps {

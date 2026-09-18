@@ -114,6 +114,7 @@ export type AgentErrorKind =
   | "rate_limited"
   | "context_overflow"
   | "budget_exhausted"
+  | "refused"
   | "provider"
   | "internal";
 

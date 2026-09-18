@@ -17,6 +17,14 @@ export const RerankProviderId = {
 export type RerankProviderId =
   (typeof RerankProviderId)[keyof typeof RerankProviderId];
 
+export const GuardProviderId = {
+  None: "none",
+  Jev: "jev",
+} as const;
+
+export type GuardProviderId =
+  (typeof GuardProviderId)[keyof typeof GuardProviderId];
+
 export const env = createEnv({
   server: {
     EMBEDDING_PROVIDER: z
@@ -33,6 +41,13 @@ export const env = createEnv({
       .default(RerankProviderId.None),
     /** The rerank vendor's key. Separate from the chat gateway key so the two rotate independently. */
     RERANK_API_KEY: z.string().min(1).optional(),
+    /** Off by default: a guard adds a vendor round trip ahead of a turn's first token. */
+    GUARD_PROVIDER: z
+      .enum(GuardProviderId)
+      .optional()
+      .default(GuardProviderId.None),
+    /** The guard vendor's key. Separate from the chat gateway key so the two rotate independently. */
+    GUARD_API_KEY: z.string().min(1).optional(),
   },
   runtimeEnv: {
     EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER,
@@ -40,6 +55,8 @@ export const env = createEnv({
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
     RERANK_PROVIDER: process.env.RERANK_PROVIDER,
     RERANK_API_KEY: process.env.RERANK_API_KEY,
+    GUARD_PROVIDER: process.env.GUARD_PROVIDER,
+    GUARD_API_KEY: process.env.GUARD_API_KEY,
   },
   emptyStringAsUndefined: true,
   skipValidation:

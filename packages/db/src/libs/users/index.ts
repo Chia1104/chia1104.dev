@@ -106,6 +106,16 @@ export const listUsers = withDTO(
   }
 );
 
+/** Whether `id` is a signed-in person rather than a guest minted by `anonymous()`; false for an unknown id. */
+export const isSignedInUser = withDTO(async (db, { id }: { id: string }) => {
+  const [row] = await db
+    .select({ isAnonymous: schema.user.isAnonymous })
+    .from(schema.user)
+    .where(eq(schema.user.id, id))
+    .limit(1);
+  return row !== undefined && row.isAnonymous !== true;
+});
+
 /**
  * The account as the dashboard shows it: profile, linked providers and credential counts.
  * Sessions live in better-auth's secondary storage, not the `session` table, so none are read here.

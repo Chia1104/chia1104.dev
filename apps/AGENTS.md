@@ -44,3 +44,4 @@
 - Workflow functions orchestrate only; Node built-ins, database access, providers and other side effects belong in steps.
 - Keep workflow filenames and exported function names stable because existing runs resume by their SDK-derived IDs.
 - Shared contracts and agent behavior belong in packages, not another app.
+- A third-party package a step reaches through a `@chia/*` source package must also be a direct dependency here. `nitro dev` keeps a package external only when it resolves from this app; otherwise it is inlined and a CommonJS package's internal `require` fails at runtime.

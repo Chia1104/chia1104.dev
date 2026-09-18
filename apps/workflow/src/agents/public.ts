@@ -1,7 +1,11 @@
 import { createPublicAgentExecutor } from "@chia/agent-host/public";
+import { resolveGuardProvider } from "@chia/ai/guard/provider";
+import { isSignedInUser } from "@chia/db/repos/users";
 import { createContentReadPort } from "@chia/services/agent/content-read.port";
 import { createProfileReadPort } from "@chia/services/agent/profile-read.port";
 import { getAdminId } from "@chia/utils/config";
+
+import { createAgentWebPort } from "../services/agent-web.port";
 
 /** Both ports see the configured author's published rows. `getAdminId()` is whose profile and posts these are, not who is asking. */
 export const publicAgentKind = createPublicAgentExecutor({
@@ -13,4 +17,7 @@ export const publicAgentKind = createPublicAgentExecutor({
     }),
   createProfilePort: ({ db }) =>
     createProfileReadPort({ db, authorId: getAdminId() }),
+  guard: resolveGuardProvider(),
+  createWebPort: createAgentWebPort,
+  isSignedIn: ({ db, userId }) => isSignedInUser(db, { id: userId }),
 });
