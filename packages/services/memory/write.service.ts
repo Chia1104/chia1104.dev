@@ -4,6 +4,7 @@ import {
   createAgentMemory,
   getAgentMemory,
   reinforceAgentMemory,
+  replacePendingAgentLesson,
   softDeleteAgentMemory,
   updateAgentMemory,
   upsertSourceMemory,
@@ -83,24 +84,32 @@ export interface CreateMemoryServiceInput {
   sourceUrl?: string | null;
   sessionId?: string | null;
   status?: AgentMemoryStatus;
-  /** A lesson only: the active lesson this one replaces when approved. */
+  /**
+   * A lesson only: the active lesson this one replaces when approved, or the pending
+   * proposal it replaces at once.
+   */
   supersedesId?: number | null;
 }
 
-/** Only a live active lesson can be superseded; the id comes from the model. */
-const assertSupersedable = async (db: DB, id: number): Promise<number> => {
+/** The live lesson `supersedesId` names; the id comes from the model, so the refusal says what to do instead. */
+const resolveSupersedes = async (db: DB, id: number): Promise<AgentMemory> => {
   const target = await getAgentMemory(db, id);
-  if (
-    !target ||
-    target.deletedAt !== null ||
-    target.kind !== AGENT_MEMORY_KIND.Lesson ||
-    target.status !== AGENT_MEMORY_STATUS.Active
-  ) {
+  if (!target || target.deletedAt !== null) {
     throw new AppError("BAD_REQUEST", {
-      message: `Memory ${id} is not an active lesson, so nothing can supersede it.`,
+      message: `No memory ${id} to revise; propose without \`supersedes\`.`,
     });
   }
-  return id;
+  if (target.kind !== AGENT_MEMORY_KIND.Lesson) {
+    throw new AppError("BAD_REQUEST", {
+      message: `Memory ${id} is a ${target.kind}, not a lesson; propose without \`supersedes\`.`,
+    });
+  }
+  if (target.status === AGENT_MEMORY_STATUS.Archived) {
+    throw new AppError("BAD_REQUEST", {
+      message: `Lesson ${id} is archived and no longer applies; propose without \`supersedes\`.`,
+    });
+  }
+  return target;
 };
 
 export const createMemoryService = async (
@@ -118,19 +127,40 @@ export const createMemoryService = async (
       message: "Only a pending lesson supersedes another.",
     });
   }
-  const row = await createAgentMemory(db, {
-    kind: input.kind,
-    status: input.status,
-    title: assertTitle(input.title),
-    content: assertContent(input.content),
-    sourceUrl: input.sourceUrl ? normalizeSourceUrl(input.sourceUrl) : null,
-    sessionId: input.sessionId ?? null,
-    supersedesId:
-      input.supersedesId == null
-        ? null
-        : await assertSupersedable(db, input.supersedesId),
-  });
+  const title = assertTitle(input.title);
+  const content = assertContent(input.content);
+  const target =
+    input.supersedesId == null
+      ? null
+      : await resolveSupersedes(db, input.supersedesId);
 
+  let row: AgentMemory;
+  if (target?.status === AGENT_MEMORY_STATUS.Pending) {
+    const replaced = await replacePendingAgentLesson(db, {
+      replacesId: target.id,
+      title,
+      content,
+      sessionId: input.sessionId ?? null,
+    });
+    if (!replaced) {
+      throw new AppError("CONFLICT", {
+        message: `Lesson ${target.id} was reviewed meanwhile; propose again against the current list.`,
+      });
+    }
+    row = replaced.row;
+  } else {
+    row = await createAgentMemory(db, {
+      kind: input.kind,
+      status: input.status,
+      title,
+      content,
+      sourceUrl: input.sourceUrl ? normalizeSourceUrl(input.sourceUrl) : null,
+      sessionId: input.sessionId ?? null,
+      supersedesId: target?.id ?? null,
+    });
+  }
+
+  // a replaced pending lesson had no chunks, so only the new row is indexed
   await hooks.onMemoryChanged?.(row.id);
 
   return row;

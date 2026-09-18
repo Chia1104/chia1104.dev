@@ -9,6 +9,7 @@ const { repo } = vi.hoisted(() => ({
     createAgentMemory: vi.fn(),
     getAgentMemory: vi.fn(),
     reinforceAgentMemory: vi.fn(),
+    replacePendingAgentLesson: vi.fn(),
     updateAgentMemory: vi.fn(),
     softDeleteAgentMemory: vi.fn(),
     upsertSourceMemory: vi.fn(),
@@ -181,7 +182,7 @@ describe("lesson review services", () => {
     }));
   });
 
-  it("lets only a pending lesson supersede, and only an active lesson", async () => {
+  it("lets only a pending lesson supersede, and only a live lesson", async () => {
     const proposal = {
       kind: "lesson",
       status: "pending",
@@ -198,9 +199,20 @@ describe("lesson review services", () => {
       expect.objectContaining({ supersedesId: 3 })
     );
 
+    // the id comes from the model, so each refusal says what to do instead
     repo.getAgentMemory.mockResolvedValueOnce(row(3));
     await expect(createMemoryService(db, proposal, {})).rejects.toThrow(
-      "not an active lesson"
+      "is a fact, not a lesson; propose without `supersedes`"
+    );
+    repo.getAgentMemory.mockResolvedValueOnce(
+      lesson({ id: 3, status: "archived" })
+    );
+    await expect(createMemoryService(db, proposal, {})).rejects.toThrow(
+      "archived and no longer applies; propose without `supersedes`"
+    );
+    repo.getAgentMemory.mockResolvedValueOnce(undefined);
+    await expect(createMemoryService(db, proposal, {})).rejects.toThrow(
+      "No memory 3 to revise; propose without `supersedes`"
     );
     // an active lesson that supersedes would skip the approval that archives its target
     await expect(
@@ -210,6 +222,59 @@ describe("lesson review services", () => {
       createMemoryService(db, { ...proposal, kind: "fact" }, {})
     ).rejects.toThrow("Only a pending lesson supersedes");
     expect(repo.createAgentMemory).toHaveBeenCalledTimes(1);
+    expect(repo.replacePendingAgentLesson).not.toHaveBeenCalled();
+  });
+
+  it("replaces a pending lesson at once when the proposal revises it", async () => {
+    repo.getAgentMemory.mockResolvedValueOnce(
+      lesson({ id: 3, status: "pending", supersedesId: 1 })
+    );
+    repo.replacePendingAgentLesson.mockResolvedValueOnce({
+      row: lesson({ id: 8, supersedesId: 1 }),
+      replaced: lesson({ id: 3, status: "archived", supersedesId: 1 }),
+    });
+
+    const saved = await createMemoryService(
+      db,
+      {
+        kind: "lesson",
+        status: "pending",
+        title: " t ",
+        content: "c",
+        sessionId: "s",
+        supersedesId: 3,
+      },
+      { onMemoryChanged }
+    );
+
+    expect(saved.id).toBe(8);
+    expect(repo.replacePendingAgentLesson).toHaveBeenCalledWith(db, {
+      replacesId: 3,
+      title: "t",
+      content: "c",
+      sessionId: "s",
+    });
+    expect(repo.createAgentMemory).not.toHaveBeenCalled();
+    // the replaced row never had chunks; only the new one is indexed
+    expect(onMemoryChanged).toHaveBeenCalledTimes(1);
+    expect(onMemoryChanged).toHaveBeenCalledWith(8);
+
+    // reviewed between the read and the replace: nothing is written
+    repo.getAgentMemory.mockResolvedValueOnce(lesson({ id: 3 }));
+    repo.replacePendingAgentLesson.mockResolvedValueOnce(undefined);
+    await expect(
+      createMemoryService(
+        db,
+        {
+          kind: "lesson",
+          status: "pending",
+          title: "t",
+          content: "c",
+          supersedesId: 3,
+        },
+        {}
+      )
+    ).rejects.toThrow("reviewed meanwhile");
   });
 
   it("approves a lesson in one repository step and re-indexes it and the one it archived", async () => {

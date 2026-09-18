@@ -11,6 +11,7 @@ import type {
 interface StoredMemory extends MemoryDetail {
   sessionId: string | null;
   supersedesId: number | null;
+  reinforcements: number;
 }
 
 /**
@@ -53,7 +54,21 @@ export class InMemoryMemoryPort implements MemoryPort {
       return Promise.resolve({ ...summaryOf(next), changed });
     }
 
-    // a lesson is a proposal until the operator approves it, like the Postgres port
+    // a lesson is a proposal until the operator approves it, like the Postgres port; revising
+    // a pending proposal archives it and the revision inherits what it superseded
+    const revised =
+      input.kind === "lesson" && input.supersedesId !== undefined
+        ? this.rows.get(input.supersedesId)
+        : undefined;
+    const replacesPending =
+      revised?.kind === "lesson" && revised.status === "pending";
+    if (replacesPending) {
+      this.rows.set(revised.id, {
+        ...revised,
+        status: "archived",
+        updatedAt: now,
+      });
+    }
     const row: StoredMemory = {
       id: this.nextId++,
       kind: input.kind,
@@ -62,7 +77,10 @@ export class InMemoryMemoryPort implements MemoryPort {
       content: input.content,
       sourceUrl,
       sessionId: this.sessionId,
-      supersedesId: input.supersedesId ?? null,
+      supersedesId: replacesPending
+        ? revised.supersedesId
+        : (input.supersedesId ?? null),
+      reinforcements: replacesPending ? revised.reinforcements : 0,
       fetchedAt: input.kind === "source" ? now : null,
       sourceChangedAt: null,
       createdAt: now,
@@ -98,6 +116,7 @@ export class InMemoryMemoryPort implements MemoryPort {
     const {
       sessionId: _sessionId,
       supersedesId: _supersedesId,
+      reinforcements: _reinforcements,
       ...detail
     } = row;
     return Promise.resolve(detail);
@@ -123,6 +142,7 @@ export class InMemoryMemoryPort implements MemoryPort {
 const summaryOf = (row: StoredMemory): MemorySummary => ({
   id: row.id,
   kind: row.kind,
+  status: row.status,
   title: row.title,
   sourceUrl: row.sourceUrl,
 });

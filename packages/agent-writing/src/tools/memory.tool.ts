@@ -94,11 +94,13 @@ export const proposeLessonSpec = {
   label: TOOL_INFO_BY_NAME[TOOL_NAMES.proposeLesson].label,
   description:
     "Propose a standing lesson for the operator to review: a preference about structure, " +
-    "tone, length, sourcing or what to avoid that they just stated, corrected you on, or " +
-    "declined a commit over, and that should apply to every future post. It takes effect " +
-    "only once they approve it in the dashboard. Pass `supersedes` when their feedback " +
-    "contradicts a learned preference listed in your context; the new text replaces that " +
-    "preference entirely. Not for facts (`save_memory`) or for requests about this post alone.",
+    "tone, length, sourcing or what to avoid that they stated, corrected you on, declined a " +
+    "commit over, or that you noticed as a pattern across their edits, and that should apply " +
+    "to every future post. It takes effect only once they approve it in the dashboard. Pass " +
+    "`supersedes` only with an id from your context: a learned preference the feedback " +
+    "contradicts, or a lesson this session already proposed that you are revising; the new " +
+    "text replaces it entirely. Otherwise omit it. Not for facts (`save_memory`) or for " +
+    "requests about this post alone.",
   parameters: Type.Object({
     title: Type.String({
       description:
@@ -116,7 +118,8 @@ export const proposeLessonSpec = {
     supersedes: Type.Optional(
       Type.Integer({
         description:
-          "Id of the learned preference this one replaces, from the list in your context.",
+          "Id of the learned preference this one replaces, or of the pending lesson this " +
+          "session proposed and now revises, both from your context. Omit when neither applies.",
         minimum: 1,
       })
     ),

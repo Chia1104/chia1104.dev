@@ -215,13 +215,15 @@ export interface SaveMemoryInput {
   title: string;
   content: string;
   sourceUrl?: string;
-  /** For a `lesson`: the active lesson this proposal replaces once approved. */
+  /** For a `lesson`: the active lesson this proposal replaces once approved, or the pending proposal it replaces at once. */
   supersedesId?: number;
 }
 
 export interface MemorySummary {
   id: number;
   kind: MemoryKind;
+  /** A `pending` lesson is a proposal awaiting review, not yet a preference. */
+  status: MemoryStatus;
   title: string;
   sourceUrl: string | null;
 }

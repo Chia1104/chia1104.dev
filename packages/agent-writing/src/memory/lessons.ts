@@ -26,7 +26,7 @@ const EDITS_MAX_CHARS = 12_000;
 const EDIT_DIFF_MAX_CHARS = 3_000;
 /** Unchanged lines kept on each side of a change. */
 const DIFF_CONTEXT_LINES = 1;
-const ACTIVE_LESSON_CONTENT_MAX_CHARS = 600;
+const LESSON_CONTENT_SHOWN_MAX_CHARS = 600;
 
 export interface OperatorExchangeTurn {
   role: "operator" | "assistant";
@@ -251,8 +251,8 @@ export const LESSON_EXTRACTION_SYSTEM_PROMPT = [
   "  particular post are not lessons. One edited word is not a lesson; a pattern across",
   "  several edits is.",
   "- When the feedback repeats a pending lesson, reinforce it instead of adding one. When it",
-  "  contradicts or refines an active lesson, revise that lesson: the new text replaces the",
-  "  old one entirely, so state the whole preference.",
+  "  contradicts or refines an active or pending lesson, revise that lesson: the new text",
+  "  replaces the old one entirely, so state the whole preference.",
   `- At most ${LESSON_EXTRACTION_MAX} added or revised lessons; an empty array is the right answer when there is nothing new.`,
   "- Write in the operator's language.",
   "Reply with a JSON array only, no prose. Each element is one of:",
@@ -271,7 +271,7 @@ export interface LessonExtractionInput {
   exchange: readonly OperatorExchangeTurn[];
   edits?: readonly DraftOperatorEdits[];
   activeLessons: readonly { id: number; title: string; content: string }[];
-  pendingLessons: readonly { id: number; title: string }[];
+  pendingLessons: readonly { id: number; title: string; content: string }[];
   /** Replaces {@link LESSON_EXTRACTION_SYSTEM_PROMPT} when the operator set an override. */
   systemPrompt?: string;
 }
@@ -315,21 +315,19 @@ export const buildLessonExtractionPrompt = (
   const edits = (input.edits ?? []).filter((group) => group.edits.length > 0);
   if (!hasOperatorInput(input.exchange) && edits.length === 0) return null;
 
-  const active =
-    input.activeLessons.length === 0
+  const renderLessons = (
+    lessons: readonly { id: number; title: string; content: string }[]
+  ) =>
+    lessons.length === 0
       ? "(none)"
-      : input.activeLessons
+      : lessons
           .map(
             (lesson) =>
-              `<lesson id="${lesson.id}">\n${lesson.title}\n${oneLine(lesson.content, ACTIVE_LESSON_CONTENT_MAX_CHARS)}\n</lesson>`
+              `<lesson id="${lesson.id}">\n${lesson.title}\n${oneLine(lesson.content, LESSON_CONTENT_SHOWN_MAX_CHARS)}\n</lesson>`
           )
           .join("\n");
-  const pending =
-    input.pendingLessons.length === 0
-      ? "(none)"
-      : input.pendingLessons
-          .map((lesson) => `- #${lesson.id} ${lesson.title}`)
-          .join("\n");
+  const active = renderLessons(input.activeLessons);
+  const pending = renderLessons(input.pendingLessons);
 
   const rendered = input.exchange
     .map((turn) => `<${turn.role}>\n${turn.text}\n</${turn.role}>`)
