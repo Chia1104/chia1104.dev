@@ -48,14 +48,14 @@ catalogs:
     "@earendil-works/pi-ai": 0.85.1
     typebox: 1.3.25
   ai:
-    "@ai-sdk/anthropic": 4.0.49
-    "@ai-sdk/gateway": 4.0.74
-    "@ai-sdk/google": 4.0.58
-    "@ai-sdk/openai": 4.0.58
-    "@ai-sdk/react": 4.0.95
+    "@ai-sdk/anthropic": 4.0.56
+    "@ai-sdk/gateway": 4.0.85
+    "@ai-sdk/google": 4.0.74
+    "@ai-sdk/openai": 4.0.69
+    "@ai-sdk/react": 4.0.108
     "@anthropic-ai/sdk": 0.123.0
     "@google/genai": 2.19.0
-    ai: 7.0.92
+    ai: 7.0.105
     firecrawl: 4.38.0
     js-tiktoken: ^1.0.21
     ollama: 0.6.3
