@@ -138,6 +138,33 @@ describe("memory tools", () => {
     );
   });
 
+  it("propose_lesson revising this session's pending proposal replaces it and keeps its chain", async () => {
+    const context = createContext();
+    await proposeLessonTool(context).execute("call-1", {
+      title: "Open with the problem",
+      content: "The first paragraph names the problem.",
+      supersedes: 3,
+    });
+    // the first proposal is #1; the port numbers rows from 1
+    const revised = await proposeLessonTool(context).execute("call-2", {
+      title: "Open with the problem, not the tool",
+      content: "The first paragraph names the problem the post solves.",
+      supersedes: 1,
+    });
+
+    expect(revised.details).toMatchObject({ id: 2, kind: "lesson" });
+    expect(context.memory.all).toMatchObject([
+      { id: 1, status: "archived", supersedesId: 3 },
+      { id: 2, status: "pending", supersedesId: 3 },
+    ]);
+    await expect(
+      context.memory.listBySession(SESSION_ID)
+    ).resolves.toMatchObject([
+      { id: 1, status: "archived" },
+      { id: 2, status: "pending" },
+    ]);
+  });
+
   it("is classified as read for retrieval and draft for the writes, and sits before the draft tools", () => {
     expect(toolInfo(TOOL_NAMES.searchMemory).tier).toBe("read");
     expect(toolInfo(TOOL_NAMES.getMemory).tier).toBe("read");

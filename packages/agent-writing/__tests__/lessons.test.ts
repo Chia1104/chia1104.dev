@@ -297,13 +297,17 @@ describe("buildLessonExtractionPrompt", () => {
           content: "Signatures go in fences.",
         },
       ],
-      pendingLessons: [{ id: 9, title: "Fewer adjectives" }],
+      pendingLessons: [
+        { id: 9, title: "Fewer adjectives", content: "One per noun at most." },
+      ],
     });
 
     expect(prompt?.text).toContain(
       '<lesson id="3">\nUse code fences\nSignatures go in fences.\n</lesson>'
     );
-    expect(prompt?.text).toContain("- #9 Fewer adjectives");
+    expect(prompt?.text).toContain(
+      '<lesson id="9">\nFewer adjectives\nOne per noun at most.\n</lesson>'
+    );
     expect(prompt?.text).toContain(
       "<operator>\nShorter intros please.\n</operator>"
     );

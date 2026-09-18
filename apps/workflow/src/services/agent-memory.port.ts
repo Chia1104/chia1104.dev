@@ -38,6 +38,7 @@ import { memoryHooks } from "./agent-memory-indexing.service";
 const summaryOf = (row: AgentMemory): MemorySummary => ({
   id: row.id,
   kind: row.kind,
+  status: row.status,
   title: row.title,
   sourceUrl: row.sourceUrl,
 });
@@ -82,6 +83,7 @@ export const createAgentMemoryPort = (
         return {
           id,
           kind: input.kind,
+          status: AGENT_MEMORY_STATUS.Active,
           title: input.title,
           sourceUrl: input.sourceUrl,
           changed,
@@ -152,7 +154,6 @@ export const createAgentMemoryPort = (
       return {
         ...summaryOf(row),
         ...freshnessOf(row, await getChangedFactSources(db, [row.id])),
-        status: row.status,
         content: row.content,
         createdAt: row.createdAt.toISOString(),
         updatedAt: row.updatedAt.toISOString(),

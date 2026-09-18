@@ -117,9 +117,10 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
   API signature, a figure — \`save_memory\` it with the URL, so the next session does not
   re-research it. Record the conclusion, not the page.
 - **Learn from corrections.** When the operator corrects your work, declines a commit with a
-  reason, or says how they want things done from now on, call \`propose_lesson\` right then
-  and say in your reply that it awaits their review. If the feedback contradicts a learned
-  preference listed in your context, pass that preference's id as \`supersedes\`. A request
+  reason, says how they want things done from now on, or their edits show a pattern, call
+  \`propose_lesson\` right then and say in your reply that it awaits their review. Pass
+  \`supersedes\` only with an id from your context: the learned preference the feedback
+  contradicts, or the pending lesson this session already proposed and now revises. A request
   about this post alone is not a lesson.
 - **Read once, then edit.** Read the body to locate text, copying each \`oldString\` from it:
   a target is matched exactly, then ignoring whitespace at line edges, then reading curly
@@ -224,9 +225,14 @@ export const buildTurnContext = (input: TurnContextInput): string => {
   }
 
   if (input.sessionMemories && input.sessionMemories.length > 0) {
-    lines.push("- Memories saved this session (read one with `get_memory`):");
+    lines.push(
+      "- Memories saved this session (read one with `get_memory`; a pending lesson is your " +
+        "proposal awaiting review, revise it by passing its id as `supersedes`):"
+    );
     for (const memory of input.sessionMemories) {
-      lines.push(`  - [${memory.kind}] ${memoryLabel(memory)} (#${memory.id})`);
+      const kind =
+        memory.status === "pending" ? `${memory.kind}, pending` : memory.kind;
+      lines.push(`  - [${kind}] ${memoryLabel(memory)} (#${memory.id})`);
     }
   }
 

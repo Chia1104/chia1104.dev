@@ -85,6 +85,64 @@ export const reinforceAgentMemory = async (
   return row;
 };
 
+export interface ReplacePendingAgentLessonDTO {
+  /** The live pending lesson the new text replaces. */
+  replacesId: number;
+  title: string;
+  content: string;
+  sessionId?: string | null;
+}
+
+/**
+ * A revised proposal replaces the pending one it revises at once: nothing was approved, so
+ * there is no approval to wait for. The old row is archived and the new one inherits the
+ * active lesson it superseded and the sessions behind it, in one transaction, so one proposal
+ * per preference waits for review. Undefined when `replacesId` is no longer a live pending lesson.
+ */
+export const replacePendingAgentLesson = async (
+  db: DB,
+  input: ReplacePendingAgentLessonDTO
+): Promise<{ row: AgentMemory; replaced: AgentMemory } | undefined> =>
+  await db.transaction(async (tx) => {
+    const [target] = await tx
+      .select()
+      .from(agentMemories)
+      .where(
+        and(
+          eq(agentMemories.id, input.replacesId),
+          eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+          eq(agentMemories.status, AGENT_MEMORY_STATUS.Pending),
+          live()
+        )
+      )
+      .for("update");
+    if (!target) return undefined;
+
+    const now = new Date();
+    const [replaced] = await tx
+      .update(agentMemories)
+      .set({ status: AGENT_MEMORY_STATUS.Archived, updatedAt: now })
+      .where(eq(agentMemories.id, target.id))
+      .returning();
+    const [row] = await tx
+      .insert(agentMemories)
+      .values({
+        kind: AGENT_MEMORY_KIND.Lesson,
+        status: AGENT_MEMORY_STATUS.Pending,
+        title: input.title,
+        content: input.content,
+        sourceUrl: null,
+        sessionId: input.sessionId ?? null,
+        supersedesId: target.supersedesId,
+        reinforcements: target.reinforcements,
+      })
+      .returning();
+    if (!replaced || !row) {
+      throw new Error(`Lesson ${input.replacesId} vanished mid-revision.`);
+    }
+    return { row, replaced };
+  });
+
 export type ApproveAgentLessonResult =
   | {
       status: "approved";

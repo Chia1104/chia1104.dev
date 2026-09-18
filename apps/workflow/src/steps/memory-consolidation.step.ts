@@ -24,7 +24,7 @@ import {
 import { memoryHooks } from "../services/agent-memory-indexing.service";
 
 const LESSON_TIMEOUT_MS = 60_000;
-/** Lessons the model is shown per status; the prompt clips each active one's content. */
+/** Lessons the model is shown per status; the prompt clips each one's content. */
 const LESSONS_SHOWN_MAX = 50;
 
 export interface MemoryConsolidationResult {
@@ -193,7 +193,13 @@ export const consolidateSessionMemoryStep = async (request: {
       if (await reinforceLessonService(db, { id: proposal.id })) reinforced++;
       continue;
     }
-    if (proposal.action === "revise" && !activeIds.has(proposal.id)) continue;
+    if (
+      proposal.action === "revise" &&
+      !activeIds.has(proposal.id) &&
+      !pendingById.has(proposal.id)
+    ) {
+      continue;
+    }
     const saved = await createMemoryService(
       db,
       {
