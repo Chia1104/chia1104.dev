@@ -7,12 +7,14 @@ import { POST_BODY_TOKEN_BUDGET } from "@chia/agent-content/tools/read";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
+import { resolveRerankProvider } from "@chia/ai/rerank/provider";
 import { connectDatabase, getConnection } from "@chia/db/client";
 import * as schema from "@chia/db/schema";
 import { searchFeedsService } from "@chia/services/feeds/search.service";
 import type { SearchFeedsProvider } from "@chia/services/feeds/search.service";
 import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/resource-types";
 import { searchResources } from "@chia/services/rag/search.service";
+import type { ResourceSearchHit } from "@chia/services/rag/search.service";
 
 import { GOLDEN_QUERIES } from "./golden-queries.ts";
 import type { GoldenQuery, GoldenQueryKind } from "./golden-queries.ts";
@@ -27,16 +29,22 @@ import type { GoldenQuery, GoldenQueryKind } from "./golden-queries.ts";
  *   pnpm --filter rag-eval eval
  *   pnpm --filter rag-eval eval mode=bm25 kind=heading
  *   pnpm --filter rag-eval eval out=baseline.json
+ *   pnpm --filter rag-eval eval rerank=true   # adds hybrid+rerank; needs RERANK_PROVIDER + RERANK_API_KEY
  */
 
 const MODES: SearchFeedsProvider[] = ["bm25", "semantic", "hybrid"];
+/** hybrid through the configured reranker, the path the agent ports take; opt-in because it calls a paid model */
+const RERANK_MODE = "hybrid+rerank";
+type EvalMode = SearchFeedsProvider | typeof RERANK_MODE;
 /** Ranks past this count as a miss. */
 const MAX_K = 10;
 const RECALL_KS = [1, 3, 5, 10] as const;
 
 interface CLIOptions {
-  /** `all` (default) or one of `bm25 | semantic | hybrid` */
+  /** `all` (default) or one of `bm25 | semantic | hybrid | hybrid+rerank` */
   mode?: string;
+  /** `true` appends `hybrid+rerank` to the modes */
+  rerank?: string;
   /** run only queries with this kind */
   kind?: string;
   /** run only the query with this id */
@@ -87,12 +95,14 @@ interface QueryResult {
    * token budget with the hit's headings as focus: found is not read. Null without expectations.
    */
   readCoverage: number | null;
+  /** the reranker's P(true) that some hit answers the query; null outside `hybrid+rerank` */
+  answerable: number | null;
   durationMs: number;
   error?: string;
 }
 
 interface ModeReport {
-  mode: SearchFeedsProvider;
+  mode: EvalMode;
   results: QueryResult[];
   recall: Record<number, number>;
   recallByKind: Record<GoldenQueryKind, number>;
@@ -107,6 +117,8 @@ interface ModeReport {
   coverage: number | null;
   /** mean `readCoverage` */
   readCoverage: number | null;
+  /** mean `answerable` */
+  answerable: number | null;
   avgDurationMs: number;
   errors: number;
 }
@@ -162,9 +174,12 @@ const readCoverageOf = async (
 
 const runQuery = async (
   db: Awaited<ReturnType<typeof connectDatabase>>,
-  mode: SearchFeedsProvider,
+  mode: EvalMode,
   golden: GoldenQuery
 ): Promise<QueryResult> => {
+  const searchMode: SearchFeedsProvider =
+    mode === RERANK_MODE ? "hybrid" : mode;
+  const rerank = mode === RERANK_MODE;
   const base = {
     id: golden.id,
     kind: golden.kind,
@@ -175,31 +190,40 @@ const runQuery = async (
 
   const startedAt = performance.now();
   try {
-    const items =
-      golden.kind === "memory"
-        ? (
-            await searchResources({
-              db,
-              query: golden.query,
-              mode,
-              sourceTypes: [AGENT_MEMORY_SOURCE_TYPE],
-              includeUnpublished: true,
-              limit: MAX_K,
-            })
-          ).items.map((item) => ({
-            ...item,
-            // the memory adapter hydrates a source's URL into `description`
-            slug: item.summary.description ?? "",
-          }))
-        : (
-            await searchFeedsService({
-              db,
-              keyword: golden.query,
-              model: mode,
-              locale: golden.locale,
-              limit: MAX_K,
-            })
-          ).items;
+    let result: {
+      items: (ResourceSearchHit & { slug: string })[];
+      answerable?: number;
+    };
+    if (golden.kind === "memory") {
+      const memory = await searchResources({
+        db,
+        query: golden.query,
+        mode: searchMode,
+        sourceTypes: [AGENT_MEMORY_SOURCE_TYPE],
+        includeUnpublished: true,
+        limit: MAX_K,
+        rerank,
+      });
+      result = {
+        answerable: memory.answerable,
+        items: memory.items.map((item) => ({
+          ...item,
+          // the memory adapter hydrates a source's URL into `description`
+          slug: item.summary.description ?? "",
+        })),
+      };
+    } else {
+      result = await searchFeedsService({
+        db,
+        keyword: golden.query,
+        model: searchMode,
+        locale: golden.locale,
+        limit: MAX_K,
+        rerank,
+      });
+    }
+    const { items } = result;
+    const answerable = result.answerable ?? null;
     const returned = items.map((item) => item.slug);
     const firstHit = returned.findIndex((slug) =>
       golden.expected.includes(slug)
@@ -252,6 +276,7 @@ const runQuery = async (
                 expectedHeadings
               )
             : 0,
+      answerable,
       durationMs,
     };
   } catch (error) {
@@ -266,6 +291,7 @@ const runQuery = async (
       coverage: golden.expectedHeadings ? 0 : null,
       readCoverage:
         golden.expectedHeadings || golden.expectedHeading ? 0 : null,
+      answerable: null,
       durationMs: performance.now() - startedAt,
       error: String(error),
     };
@@ -273,7 +299,7 @@ const runQuery = async (
 };
 
 const buildModeReport = (
-  mode: SearchFeedsProvider,
+  mode: EvalMode,
   results: QueryResult[]
 ): ModeReport => {
   const kinds = [...new Set(results.map((result) => result.kind))];
@@ -327,6 +353,12 @@ const buildModeReport = (
         result.readCoverage === null ? [] : [result.readCoverage]
       );
       return read.length === 0 ? null : mean(read);
+    })(),
+    answerable: (() => {
+      const judged = results.flatMap((result) =>
+        result.answerable === null ? [] : [result.answerable]
+      );
+      return judged.length === 0 ? null : mean(judged);
     })(),
     avgDurationMs: mean(results.map((result) => result.durationMs)),
     errors: results.filter((result) => result.error).length,
@@ -382,18 +414,27 @@ const assertFixtureSlugs = async (
   }
 };
 
-/** `1✓` — rank, plus the citation verdict or `2/3` section coverage when the query checks one. */
+/**
+ * `1✓` — rank, plus the citation verdict or `2/3` section coverage when the
+ * query checks one, and the reranker's answer probability as `.93` under `hybrid+rerank`.
+ */
 const formatRank = (result: QueryResult, expectedHeadings = 0): string => {
   if (result.error) {
     return "err";
   }
   const rank = result.firstHitRank?.toString() ?? "-";
+  const answerable =
+    result.answerable === null
+      ? ""
+      : ` ${result.answerable.toFixed(2).replace(/^0/, "")}`;
   if (result.coverage !== null) {
-    return `${rank} ${Math.round(result.coverage * expectedHeadings)}/${expectedHeadings}`;
+    return `${rank} ${Math.round(result.coverage * expectedHeadings)}/${expectedHeadings}${answerable}`;
   }
-  return result.citationHit === null
-    ? rank
-    : `${rank}${result.citationHit ? "✓" : "✗"}`;
+  return (
+    (result.citationHit === null
+      ? rank
+      : `${rank}${result.citationHit ? "✓" : "✗"}`) + answerable
+  );
 };
 
 const pad = (value: string, width: number): string => value.padEnd(width);
@@ -402,7 +443,7 @@ const num = (value: number): string => value.toFixed(2);
 const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   const idWidth = Math.max(...queries.map((query) => query.id.length)) + 2;
   const kindWidth = 12;
-  const colWidth = 10;
+  const colWidth = 12;
 
   console.log(
     `\n${pad("query", idWidth)}${pad("kind", kindWidth)}` +
@@ -419,11 +460,11 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   }
 
   console.log(
-    `\n${pad("mode", 10)}R@1     R@3     R@5     R@10    MRR@10  cite    cite@3  cover   read    avg ms`
+    `\n${pad("mode", 14)}R@1     R@3     R@5     R@10    MRR@10  cite    cite@3  cover   read    ans     avg ms`
   );
   for (const report of reports) {
     console.log(
-      pad(report.mode, 10) +
+      pad(report.mode, 14) +
         RECALL_KS.map((k) => pad(num(report.recall[k]!), 8)).join("") +
         pad(num(report.mrr), 8) +
         pad(
@@ -436,6 +477,7 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
         ) +
         pad(report.coverage === null ? "-" : num(report.coverage), 8) +
         pad(report.readCoverage === null ? "-" : num(report.readCoverage), 8) +
+        pad(report.answerable === null ? "-" : num(report.answerable), 8) +
         Math.round(report.avgDurationMs).toString()
     );
   }
@@ -447,11 +489,11 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   ] as const) {
     console.log(`\n${title}`);
     console.log(
-      `${pad("mode", 10)}` + kinds.map((kind) => pad(kind, kindWidth)).join("")
+      `${pad("mode", 14)}` + kinds.map((kind) => pad(kind, kindWidth)).join("")
     );
     for (const report of reports) {
       console.log(
-        pad(report.mode, 10) +
+        pad(report.mode, 14) +
           kinds
             .map((kind) => pad(num(pick(report)[kind] ?? 0), kindWidth))
             .join("")
@@ -472,13 +514,22 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
 const main = async (): Promise<void> => {
   const options = getCLIOptions();
 
-  const modes =
+  const allModes: EvalMode[] = [...MODES, RERANK_MODE];
+  const modes: EvalMode[] =
     options.mode && options.mode !== "all"
-      ? MODES.filter((mode) => mode === options.mode)
-      : MODES;
+      ? allModes.filter((mode) => mode === options.mode)
+      : [...MODES];
+  if (options.rerank === "true" && !modes.includes(RERANK_MODE)) {
+    modes.push(RERANK_MODE);
+  }
   if (modes.length === 0) {
     throw new Error(
-      `Unknown mode "${options.mode}". Use ${MODES.join(" | ")} | all.`
+      `Unknown mode "${options.mode}". Use ${MODES.join(" | ")} | ${RERANK_MODE} | all.`
+    );
+  }
+  if (modes.includes(RERANK_MODE) && resolveRerankProvider() === null) {
+    throw new Error(
+      `${RERANK_MODE} needs RERANK_PROVIDER (and its RERANK_API_KEY) in the environment.`
     );
   }
 

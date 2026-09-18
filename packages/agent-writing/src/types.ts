@@ -249,6 +249,16 @@ export interface MemoryHit extends MemorySummary, MemoryFreshness {
   matches: SearchMatch[];
 }
 
+export interface MemorySearchResult {
+  /** best first, at most `limit` */
+  hits: MemoryHit[];
+  /**
+   * The reranker's P(true) that some hit answers the query; null when none ran.
+   * Below `RERANK_ANSWERABLE_FLOOR` earlier sessions probably never covered it.
+   */
+  answerable: number | null;
+}
+
 export interface MemoryDetail extends MemorySummary, MemoryFreshness {
   status: MemoryStatus;
   content: string;

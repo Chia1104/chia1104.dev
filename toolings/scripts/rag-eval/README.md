@@ -23,6 +23,7 @@ pnpm --filter rag-eval eval kind=heading       # one query group
 pnpm --filter rag-eval eval id=zh-csrf         # one query
 pnpm --filter rag-eval eval out=baseline.json  # persist the full report
 pnpm --filter rag-eval eval db-url=…           # explicit connection string
+pnpm --filter rag-eval eval rerank=true        # also hybrid+rerank (see below)
 ```
 
 Without `db-url` it connects like the apps do (`LOCAL_DATABASE_URL`). The
@@ -63,6 +64,15 @@ pnpm --filter rag-eval eval "db-url=<local…/chia-eval>" out=reports/after.json
 - `memory` queries search the agent's stored pages the way `search_memory`
   does and expect source URLs, so they need a database holding those pages;
   the runner fails fast when one is missing.
+- `hybrid+rerank` is hybrid through the configured `RERANK_PROVIDER`, the
+  path `search_posts` and `search_memory` take: the top 20 fused hits are
+  reordered by the reranker, which sees exactly the excerpts the agent sees.
+  The mode is opt-in (`rerank=true` or `mode=hybrid+rerank`), needs
+  `RERANK_PROVIDER=jev` and `RERANK_API_KEY` in the environment, and bills a few
+  thousand input tokens per query. The per-query cell adds the reranker's
+  probability that some hit answers the query (`6 .93`), and `ans` is its
+  mean; every golden query is answerable, so a low value is the reranker
+  disagreeing with the golden set.
 - `R@1 by kind` and `R@5 by kind` are the actionable slices: `paraphrase`
   measures the semantic path, `term` the lexical path, `heading` the case where
   the answer sits under a heading whose words the section body does not repeat,

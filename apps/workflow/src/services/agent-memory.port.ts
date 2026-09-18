@@ -1,8 +1,8 @@
 import type {
   MemoryDetail,
   MemoryFreshness,
-  MemoryHit,
   MemoryPort,
+  MemorySearchResult,
   MemorySummary,
   SavedMemory,
 } from "@chia/agent-writing/ports";
@@ -106,16 +106,17 @@ export const createAgentMemoryPort = (
       return { ...summaryOf(row), changed: true };
     },
 
-    async search(input): Promise<MemoryHit[]> {
-      const { items } = await searchResources({
+    async search(input): Promise<MemorySearchResult> {
+      const { items, answerable } = await searchResources({
         db,
         query: input.query,
         mode: "hybrid",
         sourceTypes: [AGENT_MEMORY_SOURCE_TYPE],
         includeUnpublished: true,
         limit: input.limit,
+        rerank: true,
       });
-      if (items.length === 0) return [];
+      if (items.length === 0) return { hits: [], answerable: null };
 
       // The adapter's summary carries title and URL only; kind lives on the row.
       const rows = await getAgentMemories(
@@ -128,18 +129,21 @@ export const createAgentMemoryPort = (
         rows.map((row) => row.id)
       );
 
-      return items.flatMap((item) => {
-        const row = rowsById.get(item.sourceId);
-        return row
-          ? [
-              {
-                ...summaryOf(row),
-                ...freshnessOf(row, changedSources),
-                matches: toSearchMatches(item.chunks),
-              },
-            ]
-          : [];
-      });
+      return {
+        hits: items.flatMap((item) => {
+          const row = rowsById.get(item.sourceId);
+          return row
+            ? [
+                {
+                  ...summaryOf(row),
+                  ...freshnessOf(row, changedSources),
+                  matches: toSearchMatches(item.chunks),
+                },
+              ]
+            : [];
+        }),
+        answerable: answerable ?? null,
+      };
     },
 
     async get(id): Promise<MemoryDetail | null> {

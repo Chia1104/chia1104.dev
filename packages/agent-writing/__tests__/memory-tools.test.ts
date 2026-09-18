@@ -84,7 +84,11 @@ describe("memory tools", () => {
     const found = await searchMemoryTool(context).execute("call-1", {
       query: "nothing",
     });
-    expect(found.details).toEqual({ query: "nothing", hits: [] });
+    expect(found.details).toEqual({
+      query: "nothing",
+      hits: [],
+      answerable: null,
+    });
     expect(found.content[0]).toMatchObject({
       text: expect.stringContaining("web_search"),
     });

@@ -10,6 +10,7 @@ import {
 } from "@chia/agent-runtime/tools";
 import type { ToolFactory, ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
+import { RERANK_ANSWERABLE_FLOOR } from "@chia/ai/rerank/provider";
 
 import type { ContentToolContext } from "../types.ts";
 
@@ -27,6 +28,12 @@ import { CONTENT_TOOL_INFO_BY_NAME, CONTENT_TOOL_NAMES } from "./registry.ts";
  */
 export const POST_BODY_TOKEN_BUDGET = 12_000;
 
+/** Prefixes the hit list when the reranker doubts any hit answers; the hits still follow. */
+export const answerableNote = (answerable: number | null): string =>
+  answerable !== null && answerable < RERANK_ANSWERABLE_FLOOR
+    ? `The posts probably do not cover this (answerable ${answerable.toFixed(2)}); say so rather than stretching a hit.\n\n`
+    : "";
+
 export const searchPostsSpec = {
   name: CONTENT_TOOL_NAMES.searchPosts,
   label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.searchPosts].label,
@@ -35,7 +42,9 @@ export const searchPostsSpec = {
     "on literal terms (best for names, APIs, error messages). Each hit's `matches` are the places " +
     "in that post that matched, best first — pass their `headingPaths` to `get_post`'s " +
     "`focusHeadings` to read those sections first, rather than searching again for the same post. " +
-    "Each hit's `url` is the post's page; link with it as given.",
+    "Each hit's `url` is the post's page; link with it as given. `answerable` is how likely some " +
+    "hit answers the query; when it is low the posts do not cover this, so say so rather than " +
+    "stretching a hit.",
   parameters: Type.Object({
     keyword: Type.String({
       description: "The topic or phrase to look for.",
@@ -69,7 +78,7 @@ export const searchPostsSpec = {
 export const searchPostsTool = defineTool(
   searchPostsSpec,
   (context: ContentToolContext) => async (_toolCallId, params) => {
-    const hits = await context.content.searchPosts({
+    const { hits, answerable } = await context.content.searchPosts({
       keyword: params.keyword,
       locale: params.locale,
       mode: params.mode === "keyword" ? "keyword" : "semantic",
@@ -77,12 +86,15 @@ export const searchPostsTool = defineTool(
     });
 
     if (hits.length === 0) {
-      return textResult(`No post matches "${params.keyword}".`, { hits: [] });
+      return textResult(`No post matches "${params.keyword}".`, {
+        hits: [],
+        answerable,
+      });
     }
 
     return textResult(
-      `${hits.length} matching post(s):\n\n${jsonBlock(hits)}`,
-      { hits }
+      `${answerableNote(answerable)}${hits.length} matching post(s):\n\n${jsonBlock(hits)}`,
+      { hits, answerable }
     );
   }
 );

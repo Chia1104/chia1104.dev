@@ -1,7 +1,7 @@
 import type { MemoryPort } from "../ports.ts";
 import type {
   MemoryDetail,
-  MemoryHit,
+  MemorySearchResult,
   MemorySearchInput,
   MemorySummary,
   SavedMemory,
@@ -72,9 +72,9 @@ export class InMemoryMemoryPort implements MemoryPort {
     return Promise.resolve({ ...summaryOf(row), changed: true });
   }
 
-  search(input: MemorySearchInput): Promise<MemoryHit[]> {
+  search(input: MemorySearchInput): Promise<MemorySearchResult> {
     const query = input.query.trim().toLowerCase();
-    if (!query) return Promise.resolve([]);
+    if (!query) return Promise.resolve({ hits: [], answerable: null });
     const hits = this.all
       .filter((row) => row.status !== "archived")
       .filter(
@@ -89,7 +89,7 @@ export class InMemoryMemoryPort implements MemoryPort {
         sourceChangedAt: row.sourceChangedAt,
         matches: [{ headingPaths: [], snippet: row.content }],
       }));
-    return Promise.resolve(hits);
+    return Promise.resolve({ hits, answerable: null });
   }
 
   get(id: number): Promise<MemoryDetail | null> {

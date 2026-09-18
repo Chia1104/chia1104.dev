@@ -5,7 +5,7 @@ import type {
   PostFeedType,
   PostList,
   PostListItem,
-  PostSearchHit,
+  PostSearchResult,
   PostSnapshot,
   SearchPostsInput,
   TagItem,
@@ -48,7 +48,7 @@ export const createContentReadPort = (
   const publishedScope = visibility === "public" ? true : undefined;
 
   return {
-    async searchPosts(input: SearchPostsInput): Promise<PostSearchHit[]> {
+    async searchPosts(input: SearchPostsInput): Promise<PostSearchResult> {
       const result = await searchFeedsService({
         db,
         keyword: input.keyword,
@@ -58,20 +58,24 @@ export const createContentReadPort = (
         locale: input.locale,
         includeUnpublished: publishedScope === undefined,
         limit: input.limit,
+        rerank: true,
       });
 
-      return result.items.slice(0, input.limit).map((item) => {
-        const locale =
-          /* SAFETY: The producer contract guarantees this value satisfies Locale. */ (item
-            .summary.locale ?? "zh-TW") as Locale;
-        return {
-          slug: item.slug,
-          locale,
-          url: feedUrl({ type: item.type, slug: item.slug, locale }),
-          title: item.summary.title,
-          matches: toSearchMatches(item.chunks),
-        };
-      });
+      return {
+        hits: result.items.slice(0, input.limit).map((item) => {
+          const locale =
+            /* SAFETY: The producer contract guarantees this value satisfies Locale. */ (item
+              .summary.locale ?? "zh-TW") as Locale;
+          return {
+            slug: item.slug,
+            locale,
+            url: feedUrl({ type: item.type, slug: item.slug, locale }),
+            title: item.summary.title,
+            matches: toSearchMatches(item.chunks),
+          };
+        }),
+        answerable: result.answerable ?? null,
+      };
     },
 
     async getPost(input: GetPostInput): Promise<PostSnapshot | null> {

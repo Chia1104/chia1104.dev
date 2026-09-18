@@ -21,6 +21,8 @@
         "EMBEDDING_PROVIDER",
         "EMBEDDING_API_KEY",
         "OLLAMA_BASE_URL",
+        "RERANK_PROVIDER",
+        "RERANK_API_KEY",
         "FIRECRAWL_API_KEY",
         "GH_AGENT_TOKEN",
         "SENTRY_DSN"
@@ -41,6 +43,8 @@
         "EMBEDDING_PROVIDER",
         "EMBEDDING_API_KEY",
         "OLLAMA_BASE_URL",
+        "RERANK_PROVIDER",
+        "RERANK_API_KEY",
         "FIRECRAWL_API_KEY",
         "GH_AGENT_TOKEN",
         "SENTRY_DSN"

@@ -36,6 +36,8 @@
         "EMBEDDING_PROVIDER",
         "EMBEDDING_API_KEY",
         "OLLAMA_BASE_URL",
+        "RERANK_PROVIDER",
+        "RERANK_API_KEY",
         "AI_GATEWAY_API_KEY",
         "FIRECRAWL_API_KEY"
       ],
@@ -62,6 +64,8 @@
         "EMBEDDING_PROVIDER",
         "EMBEDDING_API_KEY",
         "OLLAMA_BASE_URL",
+        "RERANK_PROVIDER",
+        "RERANK_API_KEY",
         "AI_GATEWAY_API_KEY",
         "FIRECRAWL_API_KEY"
       ]

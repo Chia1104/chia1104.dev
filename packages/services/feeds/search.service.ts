@@ -43,6 +43,8 @@ interface SearchFeedsServiceParams {
   /** Only a caller that already passed an author check may set this. */
   includeUnpublished?: boolean;
   limit?: number;
+  /** Reorder by the configured `RERANK_PROVIDER`; a no-op while it is `none`. */
+  rerank?: boolean;
 }
 
 export async function searchFeedsService({
@@ -52,10 +54,11 @@ export async function searchFeedsService({
   locale,
   includeUnpublished = false,
   limit = 5,
+  rerank = false,
 }: SearchFeedsServiceParams): Promise<SearchFeedsServiceResult> {
   // resource hits are per translation; without a locale two translations of one
   // feed both match, so over-fetch and collapse onto feeds below
-  const { mode, items } = await searchResources({
+  const { mode, items, answerable } = await searchResources({
     db,
     query: keyword ?? "",
     mode: model,
@@ -63,6 +66,7 @@ export async function searchFeedsService({
     sourceTypes: [FEED_TRANSLATION_SOURCE_TYPE],
     includeUnpublished,
     limit: locale ? limit : limit * 2,
+    rerank,
   });
 
   const refs = await resolveFeedRefs(
@@ -74,6 +78,7 @@ export async function searchFeedsService({
 
   return {
     mode,
+    answerable,
     items: items
       .flatMap((item) => {
         const ref = refs.get(item.sourceId);
