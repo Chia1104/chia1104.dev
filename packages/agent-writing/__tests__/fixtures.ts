@@ -3,18 +3,19 @@ import type {
   PostListItem,
   PostSearchHit,
   PostSnapshot,
+  FetchedPage,
   TagItem,
+  WebPort,
+  WebSearchInput,
+  WebSearchResult,
 } from "@chia/agent-content/types";
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 
-import type { ContentPort, GitHubPort, WebPort } from "../src/ports.ts";
+import type { ContentPort, GitHubPort } from "../src/ports.ts";
 import type {
   CommitDraftResult,
-  FetchedPage,
   GitHubRef,
   GitHubTreeEntry,
-  WebSearchInput,
-  WebSearchResult,
 } from "../src/types.ts";
 
 export interface FakeContentPortOptions {

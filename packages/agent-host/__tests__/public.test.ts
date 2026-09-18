@@ -48,7 +48,7 @@ const profile: ProfileReadPort = {
 describe("createPublicAgentKind", () => {
   const kind = createPublicAgentKind();
 
-  it("admits guests and offers only read tools, no commands and no skills", () => {
+  it("admits guests and lists only read tools, no commands and no skills", () => {
     expect(kind.kind).toBe(PUBLIC_AGENT_KIND);
     expect(kind.minTier).toBe(CallerTier.Guest);
 
@@ -58,6 +58,8 @@ describe("createPublicAgentKind", () => {
       "get_post",
       "list_posts",
       "list_tags",
+      "web_search",
+      "fetch_url",
     ]);
     expect(capabilities.tools.every((tool) => tool.tier === "read")).toBe(true);
     expect(capabilities.commands).toEqual([]);
@@ -131,6 +133,11 @@ describe("createPublicAgentExecutor", () => {
     const executor = createPublicAgentExecutor({
       createContentPort: () => port,
       createProfilePort: () => profile,
+      guard: null,
+      createWebPort: () => {
+        throw new Error("web access is off in this test");
+      },
+      isSignedIn: () => Promise.resolve(false),
     });
 
     const turn = await executor.prepareTurn(
@@ -140,9 +147,55 @@ describe("createPublicAgentExecutor", () => {
       } as never
     );
 
-    expect(turn.tools.map((tool) => tool.name)).toEqual(
-      executor.capabilities().tools.map((tool) => tool.name)
-    );
+    expect(turn.tools.map((tool) => tool.name)).toEqual([
+      "search_posts",
+      "get_post",
+      "list_posts",
+      "list_tags",
+    ]);
     expect(turn.settle).toBeUndefined();
+  });
+
+  it("grants web access only to a signed-in owner, with the config on and a guard set", async () => {
+    const guard = {
+      id: "test-guard",
+      checkMessage: () => Promise.resolve({ injection: 0, inappropriate: 0 }),
+      checkDocument: () => Promise.resolve({ injection: 0 }),
+    };
+    const toolNames = async (options: {
+      guarded: boolean;
+      signedIn: boolean;
+      webAccess: boolean;
+    }) => {
+      const executor = createPublicAgentExecutor({
+        createContentPort: () => port,
+        createProfilePort: () => profile,
+        guard: options.guarded ? guard : null,
+        createWebPort: () => ({
+          search: () => Promise.resolve([]),
+          fetchPage: (url) => Promise.resolve({ url, text: "" }),
+        }),
+        isSignedIn: () => Promise.resolve(options.signedIn),
+      });
+      const turn = await executor.prepareTurn(
+        /* SAFETY: the kind reads only the db handle, the owner id and config from the context. */ {
+          db,
+          row: { userId: "user-1" },
+          config: { webAccess: options.webAccess },
+        } as never
+      );
+      return turn.tools.map((tool) => tool.name);
+    };
+
+    await expect(
+      toolNames({ guarded: true, signedIn: true, webAccess: true })
+    ).resolves.toContain("web_search");
+    for (const denied of [
+      { guarded: false, signedIn: true, webAccess: true },
+      { guarded: true, signedIn: false, webAccess: true },
+      { guarded: true, signedIn: true, webAccess: false },
+    ]) {
+      await expect(toolNames(denied)).resolves.not.toContain("web_search");
+    }
   });
 });

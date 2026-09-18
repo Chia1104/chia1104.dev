@@ -2,6 +2,7 @@ import { contentReadToolSpecs } from "@chia/agent-content/tools/read";
 import type {
   ContentReadPort,
   ProfileReadPort,
+  WebPort,
 } from "@chia/agent-content/types";
 import {
   PUBLIC_CONFIG_DEFAULTS,
@@ -17,6 +18,8 @@ import {
 } from "@chia/agent-public/models";
 import { publicPolicy } from "@chia/agent-public/policy";
 import { preparePublicTurn } from "@chia/agent-public/runtime";
+import { publicWebToolSpecs } from "@chia/agent-public/tools/web";
+import type { GuardProvider } from "@chia/ai/guard/provider";
 import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { getFeedById } from "@chia/db/repos/feeds";
@@ -40,6 +43,11 @@ export interface PublicExecutionHost {
   createContentPort(options: { db: DB }): ContentReadPort;
   /** Published rows only, for the same reason. */
   createProfilePort(options: { db: DB }): ProfileReadPort;
+  /** Null runs the kind unguarded, and without web access whatever the config says. */
+  guard: GuardProvider | null;
+  createWebPort(): WebPort;
+  /** Whether the session's owner is a signed-in person rather than a guest. */
+  isSignedIn(options: { db: DB; userId: string }): Promise<boolean>;
 }
 
 export const createPublicAgentKind = (): PublicAgentKind => ({
@@ -70,7 +78,10 @@ export const createPublicAgentKind = (): PublicAgentKind => ({
 
   capabilities() {
     return {
-      tools: toolCapabilities(contentReadToolSpecs, publicPolicy),
+      tools: toolCapabilities(
+        [...contentReadToolSpecs, ...publicWebToolSpecs],
+        publicPolicy
+      ),
       commands: [],
       skills: [],
     };
@@ -120,10 +131,18 @@ export const createPublicAgentExecutor = (
 ): AgentKindExecutor<PublicAgentState, PublicConfig> => ({
   ...createPublicAgentKind(),
 
-  prepareTurn: (context) =>
-    preparePublicTurn({
+  async prepareTurn(context) {
+    const web =
+      context.config.webAccess === true &&
+      host.guard !== null &&
+      (await host.isSignedIn({ db: context.db, userId: context.row.userId }));
+
+    return preparePublicTurn({
       content: host.createContentPort({ db: context.db }),
       profile: host.createProfilePort({ db: context.db }),
       instructions: context.config.instructions,
-    }),
+      guard: host.guard,
+      web: web ? host.createWebPort() : undefined,
+    });
+  },
 });

@@ -1223,6 +1223,12 @@ importers:
 
   apps/workflow:
     dependencies:
+      '@ai-sdk/gateway':
+        specifier: catalog:ai
+        version: 4.0.85(zod@4.5.4)
+      '@chia/agent-content':
+        specifier: workspace:*
+        version: link:../../packages/agent-content
       '@chia/agent-host':
         specifier: workspace:*
         version: link:../../packages/agent-host
@@ -1259,6 +1265,9 @@ importers:
       '@hono/zod-validator':
         specifier: catalog:hono
         version: 0.9.1(hono@4.13.5)(zod@4.5.4)
+      '@keyv/redis':
+        specifier: catalog:kv
+        version: 5.1.6(@opentelemetry/api@1.9.1)(keyv@5.6.0)
       '@opentelemetry/api':
         specifier: catalog:otel
         version: 1.9.1
@@ -1774,15 +1783,30 @@ importers:
       '@chia/agent-runtime':
         specifier: workspace:*
         version: link:../agent-runtime
+      '@chia/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@chia/db':
         specifier: workspace:*
         version: link:../db
+      '@chia/observability':
+        specifier: workspace:*
+        version: link:../observability
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@earendil-works/pi-agent-core':
+        specifier: catalog:agent
+        version: 0.85.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.5.4))(supports-color@10.2.2)(ws@8.21.3)(zod@4.5.4)
       '@earendil-works/pi-ai':
         specifier: catalog:agent
         version: 0.85.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.5.4))(supports-color@10.2.2)(ws@8.21.3)(zod@4.5.4)
       es-toolkit:
         specifier: 'catalog:'
         version: 1.52.0
+      typebox:
+        specifier: catalog:agent
+        version: 1.3.25
       zod:
         specifier: 'catalog:'
         version: 4.5.4

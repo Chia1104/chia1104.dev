@@ -13,6 +13,7 @@ export const agentErrorKindSchema = z.enum([
   "rate_limited",
   "context_overflow",
   "budget_exhausted",
+  "refused",
   "provider",
   "internal",
 ]);

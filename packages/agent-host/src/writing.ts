@@ -1,3 +1,4 @@
+import type { WebPort } from "@chia/agent-content/types";
 import {
   WRITING_CONFIG_DEFAULTS,
   parseGitHubRepos,
@@ -17,7 +18,6 @@ import type {
   ContentPort,
   GitHubPort,
   MemoryPort,
-  WebPort,
 } from "@chia/agent-writing/ports";
 import { writingSkills } from "@chia/agent-writing/prompts/skills";
 import { writingPromptTemplates } from "@chia/agent-writing/prompts/templates";

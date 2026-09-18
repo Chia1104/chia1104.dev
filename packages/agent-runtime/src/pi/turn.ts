@@ -115,6 +115,14 @@ export interface RunPiTurnOptions {
   renderAttachments?: (
     attachments: readonly AgentAttachment[]
   ) => Promise<RenderedAttachments>;
+  /**
+   * Grades a typed message before the model runs. A refusal ends the turn as `refused` and the
+   * message is never persisted, so it cannot steer a later turn from the transcript.
+   */
+  screen?: (
+    message: AgentTurnMessage,
+    signal?: AbortSignal
+  ) => Promise<MessageRefusal | undefined>;
   onEvent: (event: AgentWireEvent) => void;
   /** Persists the request after a successful turn, or rejects without leaving a row. */
   persistApproval: (approval: ApprovalRequest) => Promise<void>;
@@ -134,7 +142,13 @@ export type AgentTurnPlan = Pick<
   | "preflight"
   | "approvalKeyOf"
   | "renderAttachments"
+  | "screen"
 >;
+
+/** Why a kind's `screen` turned a message away; logged, never sent. */
+export interface MessageRefusal {
+  reason: string;
+}
 
 export interface RenderedAttachments {
   text: string;
@@ -200,6 +214,7 @@ const executePiTurn = async ({
   consumeApproval,
   message,
   renderAttachments,
+  screen,
   onEvent,
   persistApproval,
   flushEvents,
@@ -296,6 +311,16 @@ const executePiTurn = async ({
           },
           error
         );
+      }
+    }
+
+    // A relayed decision is the host's text, not something the caller typed.
+    if (screen && !hostFailure && !message.decision) {
+      try {
+        const refusal = await screen(message, signal);
+        if (refusal) failTurn({ kind: "refused", message: refusal.reason });
+      } catch (error) {
+        failTurn(errorOfThrown(error), error);
       }
     }
 
@@ -489,7 +514,8 @@ const executePiTurn = async ({
     if (!aborted) {
       try {
         const text = promptText(message, promptTemplates);
-        // A host failure raised before the run (unrenderable attachments) skips the model.
+        // A host failure raised before the run (unrenderable attachments, a refused message)
+        // skips the model.
         if (!hostFailure) {
           await (rendered
             ? agent.prompt(attachedPrompt(rendered.text, text))

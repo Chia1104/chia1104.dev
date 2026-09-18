@@ -68,7 +68,11 @@ Better Auth 的 `get-session` 帶有 `access`：session 自身的 tier、dashboa
 
 Generic 層不攜帶 admin 身分。Writing binding 只在建立 content port 時讀設定作者；public binding 不會收到該身分或任何可寫 port。
 
-Public kind 只有共用 content-read tools，沒有 approval tier、web、memory 或 draft。House usage 限定在便宜模型清單；原生 BYOK provider 可以開放，因為費用由訪客承擔。每個 turn 另有限制 tool calls、重複次數與執行時間的 budget。
+Public kind 有共用 content-read tools，沒有 approval tier、memory 或 draft；web 是下文所述的單一 turn 授權。House usage 限定在便宜模型清單；原生 BYOK provider 可以開放，因為費用由訪客承擔。每個 turn 另有限制 tool calls、重複次數與執行時間的 budget。
+
+Kind 可以在 model 執行前 `screen` 使用者輸入的訊息。Public kind 會把訪客的文字與選取內容交給 `GuardProvider` seam（`@chia/ai/guard/provider`，未設定 `GUARD_PROVIDER` 時關閉）評分：注入或不當請求的機率達到 `GUARD_THRESHOLD` 時，該 turn 以 `refused` 結束且訊息不會寫入 session，因此無法從 transcript 影響後續 turn。Screen 在三秒後 fail open；這個 kind 的影響範圍由它的 ports 與額度界定，而不是由 guard 界定。調整門檻或問題措辭前後都要跑一次 `guard-eval`。
+
+Host 只有在 operator 開啟 `webAccess`、已設定 guard provider，且 session 擁有者是已登入帳號（不是 guest）時，才會在該 turn 把 `WebPort` 交給 public kind。它的 `web_search` 與 `fetch_url` 是這個 kind 自己的工具，不是 writing kind 的：只有本 turn 搜尋回傳過的頁面才能讀取，因此訪客或被注入的頁面都無法把 fetch 指向自選的 URL；搜尋與讀取每個 turn 都有上限，因為 Firecrawl 的請求不在 usage ledger 內；搜尋結果與頁面在 model 讀取前先通過 `checkDocument`，被標記或 guard 失敗時一律不提供；通過的內容會以隨機邊界包成不可信文字。聊天 markdown 會把 model 輸出的圖片改成先確認才開啟的連結，否則圖片會在未經同意下載入其 URL。
 
 ## 3. Durable state 與 session tree
 
@@ -358,7 +362,7 @@ Host 建立 `ContentReadPort` 時就固定 visibility：
 - `author` 可讀設定作者的草稿與已發佈內容。
 - `public` 只能讀已發佈內容，且不能擴大 filter。
 
-Public kind 只收到 public port，不會收到 `WebPort` 或寫入能力。它的 `ProfileReadPort` 以同樣方式建立：host 只列出設定作者已發佈的 profile rows，kind 將其渲染進 system prompt，而不是開放成工具。
+Public kind 只收到 public port，不會收到寫入能力；`WebPort` 只會透過 §2 的單一 turn 授權交給它。它的 `ProfileReadPort` 以同樣方式建立：host 只列出設定作者已發佈的 profile rows，kind 將其渲染進 system prompt，而不是開放成工具。
 
 ## 10. Operator 設定
 

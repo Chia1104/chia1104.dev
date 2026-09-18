@@ -2,6 +2,7 @@ import type {
   ContentToolContext,
   PostFeedType,
   SearchMatch,
+  WebPort,
 } from "@chia/agent-content/types";
 import type {
   AgentMemoryKind,
@@ -16,7 +17,6 @@ import type {
   DraftStore,
   GitHubPort,
   MemoryPort,
-  WebPort,
 } from "./ports.ts";
 
 /**
@@ -133,33 +133,6 @@ export interface FeedDraftSummary {
 export interface SessionDraftRef {
   draftId: number;
   lastSeenRevision: number;
-}
-
-export interface FetchedPage {
-  url: string;
-  title?: string;
-  /** Truncated for the model. */
-  text: string;
-}
-
-/** Search-engine recency window; the host maps it to the provider's filter syntax. */
-export type WebSearchRecency = (typeof WEB_SEARCH_RECENCIES)[number];
-
-export const WEB_SEARCH_RECENCIES = ["day", "week", "month", "year"] as const;
-
-export interface WebSearchInput {
-  query: string;
-  limit: number;
-  recency?: WebSearchRecency;
-  /** Bare hostnames, without protocol or path. */
-  includeDomains?: string[];
-}
-
-/** Discovery only; `fetch_url` reads the page. */
-export interface WebSearchResult {
-  url: string;
-  title?: string;
-  description?: string;
 }
 
 /** A repository ref pinned to the commit it named when the turn first resolved it. */

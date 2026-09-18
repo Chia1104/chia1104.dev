@@ -7,7 +7,7 @@ import type {
   WebSearchInput,
   WebSearchRecency,
   WebSearchResult,
-} from "@chia/agent-writing/ports";
+} from "@chia/agent-content/types";
 import { untilAborted } from "@chia/utils/request/abort";
 
 import { env } from "../env";

@@ -1,5 +1,6 @@
 import * as z from "zod";
 
+import type { WebPort } from "@chia/agent-content/types";
 import { defaultApprovalKey } from "@chia/agent-runtime/pi/turn";
 import type {
   AgentTurnPlan,
@@ -16,7 +17,6 @@ import type {
   DraftStore,
   GitHubPort,
   MemoryPort,
-  WebPort,
 } from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
