@@ -145,7 +145,8 @@ describe("memory tools", () => {
       content: "The first paragraph names the problem.",
       supersedes: 3,
     });
-    // the first proposal is #1; the port numbers rows from 1
+    // the first proposal is #1; the port numbers rows from 1. Two other sessions backed it.
+    for (const row of context.memory.all) row.reinforcements = 2;
     const revised = await proposeLessonTool(context).execute("call-2", {
       title: "Open with the problem, not the tool",
       content: "The first paragraph names the problem the post solves.",
@@ -153,9 +154,10 @@ describe("memory tools", () => {
     });
 
     expect(revised.details).toMatchObject({ id: 2, kind: "lesson" });
+    // the revision keeps the chain to the active lesson and the sessions behind the proposal
     expect(context.memory.all).toMatchObject([
-      { id: 1, status: "archived", supersedesId: 3 },
-      { id: 2, status: "pending", supersedesId: 3 },
+      { id: 1, status: "archived", supersedesId: 3, reinforcements: 2 },
+      { id: 2, status: "pending", supersedesId: 3, reinforcements: 2 },
     ]);
     await expect(
       context.memory.listBySession(SESSION_ID)
