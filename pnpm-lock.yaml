@@ -1223,6 +1223,9 @@ importers:
 
   apps/workflow:
     dependencies:
+      '@ai-sdk/gateway':
+        specifier: catalog:ai
+        version: 4.0.85(zod@4.5.4)
       '@chia/agent-host':
         specifier: workspace:*
         version: link:../../packages/agent-host
@@ -1259,6 +1262,9 @@ importers:
       '@hono/zod-validator':
         specifier: catalog:hono
         version: 0.9.1(hono@4.13.5)(zod@4.5.4)
+      '@keyv/redis':
+        specifier: catalog:kv
+        version: 5.1.6(@opentelemetry/api@1.9.1)(keyv@5.6.0)
       '@opentelemetry/api':
         specifier: catalog:otel
         version: 1.9.1
