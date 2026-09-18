@@ -81,6 +81,14 @@
       "types": "./src/rerank/jev.ts",
       "default": "./src/rerank/jev.ts"
     },
+    "./guard/provider": {
+      "types": "./src/guard/provider.ts",
+      "default": "./src/guard/provider.ts"
+    },
+    "./guard/jev": {
+      "types": "./src/guard/jev.ts",
+      "default": "./src/guard/jev.ts"
+    },
     "./tools/content": {
       "types": "./src/tools/content.tool.ts",
       "default": "./src/tools/content.tool.ts"

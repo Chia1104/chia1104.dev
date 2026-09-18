@@ -2868,6 +2868,21 @@ importers:
         specifier: workspace:*
         version: link:../../apps/www
 
+  toolings/scripts/guard-eval:
+    devDependencies:
+      '@chia/ai':
+        specifier: workspace:*
+        version: link:../../../packages/ai
+      '@chiastack/tsconfig':
+        specifier: catalog:chiastack
+        version: 2.1.2
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.4.1
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   toolings/scripts/hash: {}
 
   toolings/scripts/rag-eval:
