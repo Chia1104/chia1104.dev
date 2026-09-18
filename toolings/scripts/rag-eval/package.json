@@ -13,7 +13,6 @@
     "eval:agent": "tsx --env-file=../../../.env.global agent.ts"
   },
   "devDependencies": {
-    "@ai-sdk/gateway": "catalog:ai",
     "@chia/agent-content": "workspace:*",
     "@chia/agent-public": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
@@ -22,7 +21,6 @@
     "@chia/services": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
-    "ai": "catalog:ai",
     "drizzle-orm": "catalog:drizzle",
     "typescript": "catalog:"
   }

@@ -2,7 +2,7 @@
 
 > 狀態：現行架構（as-built）
 >
-> 最後更新：2026-09-01
+> 最後更新：2026-09-18
 >
 > English: [docs/rag-architecture.md](./rag-architecture.md)
 
@@ -209,7 +209,13 @@ chunk hits
 - `searchPublicFeedsService` 固定使用 BM25，回傳公開站台需要的欄位。
 - `getRelatedFeedsService` 只比較 card embedding，限定同 locale、published、未刪除，並快取 6 小時。
 
-### 5.4 LLM context
+### 5.4 Rerank
+
+`searchResources` 接受 `rerank: true`。設定了 `RERANK_PROVIDER` 時，它會先聚合前 20 個 resource 而不是 `limit` 個，hydrate 之後把 agent 看到的同一份摘錄（`toSearchMatches`）交給 reranker，再把重排後的清單切回 `limit`。結果同時帶回 `answerable`，也就是 reranker 判斷有某個 hit 能回答 query 的機率；低於 `RERANK_ANSWERABLE_FLOOR` 代表語料庫大概沒有涵蓋，搜尋工具會直接說明，而不是過濾掉結果。
+
+只有 agent 的搜尋 port 會要求 rerank（`search_posts`、`search_memory`）；站台搜尋、dashboard 搜尋和 related posts 維持融合後的順序。每次呼叫受 `RERANK_TIMEOUT_MS` 限制；失敗或逾時會記一筆 warning 並保留融合順序，所以廠商卡住只會讓排序退化，不會讓搜尋變空。`RERANK_PROVIDER=none` 時這個選項是 no-op，也不會多抓候選。
+
+### 5.5 LLM context
 
 `packages/ai/src/embeddings/context.ts` 以每次請求的共享 token budget 組裝文件。每份文件依序嘗試：
 
@@ -232,7 +238,7 @@ Anchor 必須先從完整原文計算，再依實際保留的 heading 篩選。�
 
 公開搜尋、content tools 與相關文章預設只看 `published = true`，因此不會讀到 agent memory。
 
-## 7. Embedding provider
+## 7. Embedding 與 rerank provider
 
 所有 provider 實作同一個 seam：
 
@@ -256,6 +262,21 @@ Provider 層還負責：
 - 在 API 前依模型 token limit 截斷輸入，並替 task prefix 預留空間。
 - 依每批 32 筆與 250k token 兩個上限切 batch。
 - 只在悲觀估算超過預算時動態載入並 memoize `js-tiktoken`，避免 web process 常駐約 32 MB 編碼表。
+
+Reranker 在 `@chia/ai/rerank/provider` 有同樣形狀的 seam：
+
+```ts
+interface RerankProvider {
+  readonly id: string;
+  rerank(
+    query: string,
+    candidates: RerankCandidate[],
+    options: { signal: AbortSignal }
+  ): Promise<{ order: string[]; answerable: number }>;
+}
+```
+
+由 `RERANK_PROVIDER` 選擇（預設 `none`），以 `RERANK_API_KEY` 認證。目前唯一的實作是透過 Vercel AI Gateway 呼叫 TypeSafe 的 Jev（`typesafe-ai/jev`，AI SDK `experimental_evaluate`）：一個對候選的 `choice` 加一個「有沒有任何候選能回答」的 `boolean`，同一次呼叫評估。Gateway SDK 在第一次呼叫時才載入，不在 resolve provider 時載入。廠商沒有記載非英文的品質；在這個語料庫上量測，中文 query 對英文頁面的排序是正確的。
 
 ## 8. 版本與維護
 
@@ -308,6 +329,7 @@ Generated column expression 無法原地修改，相關 migration 必須人工�
 | 責任                         | 位置                                                                                       |
 | ---------------------------- | ------------------------------------------------------------------------------------------ |
 | Embedding、chunking、context | `packages/ai/src/embeddings/`                                                              |
+| Rerank provider              | `packages/ai/src/rerank/`                                                                  |
 | Schema、chunk 與搜尋 SQL     | `packages/db/src/schemas/resources.schema.ts`、`packages/db/src/libs/resources/`           |
 | Adapter 與 resource service  | `packages/services/rag/`                                                                   |
 | Feed 搜尋                    | `packages/services/feeds/search.service.ts`                                                |

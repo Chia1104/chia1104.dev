@@ -85,12 +85,17 @@ describe("createContentReadPort visibility", () => {
       );
     });
 
-    it("searches published chunks only", async () => {
-      await port.searchPosts({ keyword: "x", mode: "keyword", limit: 5 });
+    it("searches published chunks only, asking for the reranked order", async () => {
+      const result = await port.searchPosts({
+        keyword: "x",
+        mode: "keyword",
+        limit: 5,
+      });
 
       expect(searchFeedsService).toHaveBeenCalledWith(
-        expect.objectContaining({ includeUnpublished: false })
+        expect.objectContaining({ includeUnpublished: false, rerank: true })
       );
+      expect(result).toEqual({ hits: [], answerable: null });
     });
 
     it("answers a request for drafts with nothing, without querying", async () => {

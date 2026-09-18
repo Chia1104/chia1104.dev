@@ -17,6 +17,16 @@ export interface PostSearchHit {
   matches: SearchMatch[];
 }
 
+export interface PostSearchResult {
+  /** best first, at most `limit` */
+  hits: PostSearchHit[];
+  /**
+   * The reranker's P(true) that some hit answers the query; null when none ran.
+   * Below `RERANK_ANSWERABLE_FLOOR` the posts probably do not cover it.
+   */
+  answerable: number | null;
+}
+
 /** One matched place in a resource. */
 export interface SearchMatch {
   /** Heading trails of the sections the matched chunk covers, as stored, e.g. `"Setup > Install"`; empty on a card. */
@@ -105,7 +115,7 @@ export interface ListPostsInput {
  * call: tools cannot widen what their port shows them.
  */
 export interface ContentReadPort {
-  searchPosts(input: SearchPostsInput): Promise<PostSearchHit[]>;
+  searchPosts(input: SearchPostsInput): Promise<PostSearchResult>;
   getPost(input: GetPostInput): Promise<PostSnapshot | null>;
   listPosts(input: ListPostsInput): Promise<PostList>;
   listTags(): Promise<TagItem[]>;

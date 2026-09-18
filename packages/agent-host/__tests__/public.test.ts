@@ -35,7 +35,7 @@ const selectionOf = (feedId: number) => ({
 });
 
 const port: ContentReadPort = {
-  searchPosts: () => Promise.resolve([]),
+  searchPosts: () => Promise.resolve({ hits: [], answerable: null }),
   getPost: () => Promise.resolve(null),
   listPosts: () => Promise.resolve({ posts: [], total: 0 }),
   listTags: () => Promise.resolve([]),

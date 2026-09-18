@@ -2,7 +2,7 @@
 
 > Status: as-built
 >
-> Last updated: 2026-09-01
+> Last updated: 2026-09-18
 >
 > 中文版：[docs/rag-architecture.zh.md](./rag-architecture.zh.md)
 
@@ -209,7 +209,13 @@ The best chunk dominates the score while other hits add limited breadth. Scoring
 - `searchPublicFeedsService` always uses BM25 and returns the fields required by the public site.
 - `getRelatedFeedsService` compares only card embeddings, requires the same locale and published, non-deleted content, and caches results for six hours.
 
-### 5.4 LLM context
+### 5.4 Reranking
+
+`searchResources` accepts `rerank: true`. With `RERANK_PROVIDER` set it aggregates the top 20 resources instead of `limit`, hydrates them, hands the reranker the same excerpts an agent sees (`toSearchMatches`) and trims the reordered list to `limit`. The result then carries `answerable`, the reranker's probability that some hit answers the query; below `RERANK_ANSWERABLE_FLOOR` the corpus probably does not cover it, and the search tools say so instead of filtering.
+
+Only the agent search ports ask for it (`search_posts`, `search_memory`); site search, dashboard search and related posts keep the fused order. A call is bounded by `RERANK_TIMEOUT_MS`; a failed or slow call logs a warning and keeps the fused order, so a vendor stall degrades ranking rather than emptying a search. `RERANK_PROVIDER=none` makes the option a no-op and skips the wider fetch.
+
+### 5.5 LLM context
 
 `packages/ai/src/embeddings/context.ts` assembles documents within one request-wide token budget. Each document tries these representations in order:
 
@@ -232,7 +238,7 @@ Anchors must be computed from the complete original document before filtering to
 
 Public search, content tools and related posts default to `published = true`, so they cannot read agent memory.
 
-## 7. Embedding provider
+## 7. Embedding and rerank providers
 
 Every provider implements one seam:
 
@@ -252,6 +258,21 @@ interface EmbeddingProvider {
 OpenAI `text-embedding-3-small` currently emits 1536 dimensions. Available Ollama models emit 384, 768 or 1024 dimensions, so `resolveEmbeddingProvider` rejects them before a database insert can fail.
 
 The provider is chosen by `EMBEDDING_PROVIDER` and authenticates with `EMBEDDING_API_KEY`, both validated in `@chia/ai/env`. The key is dedicated to embeddings; no chat provider shares it, and the SDK is never allowed to fall back to an ambient vendor key.
+
+The reranker has the same shape of seam in `@chia/ai/rerank/provider`:
+
+```ts
+interface RerankProvider {
+  readonly id: string;
+  rerank(
+    query: string,
+    candidates: RerankCandidate[],
+    options: { signal: AbortSignal }
+  ): Promise<{ order: string[]; answerable: number }>;
+}
+```
+
+`RERANK_PROVIDER` selects it (`none` by default) and `RERANK_API_KEY` authenticates it. The only implementation is TypeSafe's Jev through the Vercel AI Gateway (`typesafe-ai/jev`, AI SDK `experimental_evaluate`): one `choice` over the candidates and one `boolean` on whether any answers the query, evaluated in a single call. The gateway SDK is loaded on the first call, not when the provider is resolved. Non-English quality is undocumented by the vendor; measured on this corpus, Chinese queries against English pages rank correctly.
 
 The provider layer also:
 
@@ -310,6 +331,7 @@ Primary locations:
 | Responsibility                   | Location                                                                                   |
 | -------------------------------- | ------------------------------------------------------------------------------------------ |
 | Embeddings, chunking and context | `packages/ai/src/embeddings/`                                                              |
+| Rerank provider                  | `packages/ai/src/rerank/`                                                                  |
 | Schema, chunks and retrieval SQL | `packages/db/src/schemas/resources.schema.ts`, `packages/db/src/libs/resources/`           |
 | Adapters and resource services   | `packages/services/rag/`                                                                   |
 | Feed search                      | `packages/services/feeds/search.service.ts`                                                |

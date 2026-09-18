@@ -3,6 +3,7 @@ import { Type } from "typebox";
 import { defineTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
+import { RERANK_ANSWERABLE_FLOOR } from "@chia/ai/rerank/provider";
 
 import type {
   MemoryFreshness,
@@ -155,7 +156,8 @@ export const searchMemorySpec = {
     "Search what earlier sessions verified and read: saved facts and the full text of pages " +
     "fetched before. Distinct from `search_posts`, which searches the blog itself. Each hit " +
     "carries a memory id and every place in it that matched; pass the id and those " +
-    "`headingPaths` to `get_memory`.",
+    "`headingPaths` to `get_memory`. `answerable` is how likely some hit answers the query; " +
+    "when it is low, earlier sessions never covered this, so research it instead of stretching a hit.",
   parameters: Type.Object({
     query: Type.String({
       description: "Topic, name, API or claim to look for.",
@@ -176,7 +178,7 @@ export const searchMemorySpec = {
 export const searchMemoryTool = defineTool(
   searchMemorySpec,
   (context: WritingToolContext) => async (_toolCallId, params, signal) => {
-    const hits = await context.memory.search(
+    const { hits, answerable } = await context.memory.search(
       { query: params.query, limit: params.limit ?? DEFAULT_SEARCH_LIMIT },
       signal
     );
@@ -184,13 +186,17 @@ export const searchMemoryTool = defineTool(
     if (hits.length === 0) {
       return textResult(
         `No memory matches "${params.query}". Nothing from earlier sessions covers this; research it with \`web_search\` and \`fetch_url\`.`,
-        { query: params.query, hits: [] }
+        { query: params.query, hits: [], answerable }
       );
     }
 
+    const note =
+      answerable !== null && answerable < RERANK_ANSWERABLE_FLOOR
+        ? `Earlier sessions probably never covered this (answerable ${answerable.toFixed(2)}); research it with \`web_search\` and \`fetch_url\` rather than stretching a hit.\n\n`
+        : "";
     return textResult(
-      `${hits.length} memory hit(s) for "${params.query}":\n\n${hits.map(formatHit).join("\n\n")}`,
-      { query: params.query, hits }
+      `${note}${hits.length} memory hit(s) for "${params.query}":\n\n${hits.map(formatHit).join("\n\n")}`,
+      { query: params.query, hits, answerable }
     );
   }
 );

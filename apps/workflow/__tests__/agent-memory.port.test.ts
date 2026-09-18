@@ -100,7 +100,7 @@ describe("createAgentMemoryPort", () => {
     });
     repo.getAgentMemories.mockResolvedValueOnce([row(1), row(2)]);
 
-    const hits = await port.search({ query: "q", limit: 5 });
+    const { hits, answerable } = await port.search({ query: "q", limit: 5 });
 
     expect(api.searchResources).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -110,8 +110,11 @@ describe("createAgentMemoryPort", () => {
         sourceTypes: ["agent_memory"],
         includeUnpublished: true,
         limit: 5,
+        rerank: true,
       })
     );
+    // no reranker ran, so the port cannot say whether the corpus answers
+    expect(answerable).toBeNull();
     // Result order is the search order; a packed chunk names every section it covers.
     expect(hits.map((hit) => hit.id)).toEqual([2, 1]);
     expect(hits[0]?.matches.map((match) => match.headingPaths)).toEqual([
