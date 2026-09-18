@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import type { FetchedPage, WebPort } from "@chia/agent-content/types";
+import type {
+  ContentReadPort,
+  FetchedPage,
+  WebPort,
+} from "@chia/agent-content/types";
 import type { GuardProvider } from "@chia/ai/guard/provider";
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 import { createFakeProfileReadPort } from "@chia/test/fixtures/profile-read-port";
@@ -104,7 +108,10 @@ describe("public web tools", () => {
 
 describe("preparePublicTurn web access", () => {
   const base = {
-    content: createFakeContentReadPort({}),
+    content:
+      /* SAFETY: these tests never call the content port. */ createFakeContentReadPort(
+        {}
+      ) as ContentReadPort,
     profile: createFakeProfileReadPort([]),
   };
 
