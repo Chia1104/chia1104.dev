@@ -3,6 +3,7 @@ import type {
   GetPostInput,
   ListPostsInput,
   PostFeedType,
+  PostList,
   PostListItem,
   PostSearchHit,
   PostSnapshot,
@@ -11,15 +12,17 @@ import type {
 } from "@chia/agent-content/types";
 import type { DB } from "@chia/db/client";
 import {
+  countFeeds,
   getFeedById,
   getFeedBySlug,
   getInfiniteFeeds,
 } from "@chia/db/repos/feeds";
+import { FeedType } from "@chia/db/types";
 import type { Locale } from "@chia/db/types";
 import { feedUrl } from "@chia/utils/config";
-import { truncateEnd } from "@chia/utils/format";
 
 import { searchFeedsService } from "../feeds/search.service";
+import { toSearchMatches } from "../rag/search.service";
 
 /**
  * Reuses `searchFeedsService` and `@chia/db/repos/feeds` so an agent reads exactly what
@@ -36,16 +39,6 @@ export interface CreateContentReadPortOptions {
   authorId: string;
   visibility: ContentVisibility;
 }
-
-/**
- * BM25 snippets come back with `<b>` markers for UI highlighting; the agent
- * reads them as prose, so strip the markup rather than leaking it into a prompt.
- */
-const stripHighlight = (snippet: string | null): string =>
-  snippet?.replaceAll(/<\/?b>/g, "") ?? "";
-
-/** A chunk is up to ~512 tokens; a search hit only needs enough to orient. */
-const SNIPPET_MAX_CHARS = 500;
 
 export const createContentReadPort = (
   options: CreateContentReadPortOptions
@@ -76,14 +69,7 @@ export const createContentReadPort = (
           locale,
           url: feedUrl({ type: item.type, slug: item.slug, locale }),
           title: item.summary.title,
-          // hybrid hits carry no highlighted snippet (ParadeDB cannot combine one with the
-          // fused query), so fall back to the matched chunk's text.
-          snippet:
-            stripHighlight(item.bestChunk.snippet) ||
-            truncateEnd(item.bestChunk.content, SNIPPET_MAX_CHARS) ||
-            item.summary.description ||
-            "",
-          headingPath: item.bestChunk.headingPath ?? undefined,
+          matches: toSearchMatches(item.chunks),
         };
       });
     },
@@ -110,27 +96,51 @@ export const createContentReadPort = (
       return toPostSnapshot(feed);
     },
 
-    async listPosts(input: ListPostsInput): Promise<PostListItem[]> {
+    async listPosts(input: ListPostsInput): Promise<PostList> {
       // A public view has no drafts. Answer without a query so the reader learns "none"
       // rather than a filter being silently overridden.
-      if (publishedScope === true && input.published === false) return [];
+      if (publishedScope === true && input.published === false) {
+        return { posts: [], total: 0 };
+      }
 
       const published = input.published ?? publishedScope;
+      const type = input.type ?? FeedType.All;
+      const createdFrom = input.createdFrom
+        ? new Date(input.createdFrom)
+        : undefined;
+      const createdBefore = input.createdBefore
+        ? new Date(input.createdBefore)
+        : undefined;
 
+      // Sequential: both may run on a transaction's single connection.
       const data = await getInfiniteFeeds(db, {
         limit: input.limit,
         cursor: null,
-        orderBy: "updatedAt",
+        orderBy: "createdAt",
         sortOrder: "desc",
+        type,
+        tagSlug: input.tagSlug,
         withContent: false,
         enableDeleted: false,
         whereAnd: {
           userId: authorId,
           published,
+          createdAt:
+            createdFrom || createdBefore
+              ? { gte: createdFrom, lt: createdBefore }
+              : undefined,
         },
       });
+      const total = await countFeeds(db, {
+        userId: authorId,
+        published,
+        type,
+        tagSlug: input.tagSlug,
+        createdFrom,
+        createdBefore,
+      });
 
-      return (data?.items ?? []).map((feed) => {
+      const posts = (data?.items ?? []).map((feed): PostListItem => {
         const translation =
           feed.translations?.find(
             (candidate) => candidate.locale === feed.defaultLocale
@@ -148,9 +158,11 @@ export const createContentReadPort = (
           defaultLocale:
             /* SAFETY: The producer contract guarantees this value satisfies Locale. */ feed.defaultLocale as Locale,
           title: translation?.title ?? "(untitled)",
+          createdAt: new Date(feed.createdAt).toISOString(),
           updatedAt: new Date(feed.updatedAt).toISOString(),
         };
       });
+      return { posts, total };
     },
 
     /**

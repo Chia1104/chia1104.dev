@@ -8,6 +8,7 @@ import {
 } from "@chia/db/repos/resources/search";
 import type { ChunkHit, ResourceHit } from "@chia/db/repos/resources/search";
 import type { Locale } from "@chia/db/types";
+import { truncateEnd } from "@chia/utils/format";
 
 import { getResourceAdapter } from "./registry";
 import type { ResourceSummary } from "./types";
@@ -22,6 +23,32 @@ export interface ResourceSearchResult {
   mode: ResourceSearchMode;
   items: ResourceSearchHit[];
 }
+
+/** One place in a resource that matched, as an agent reads it. */
+export interface SearchMatch {
+  /** Heading trails of the sections the matched chunk covers, as stored, e.g. `"Setup > Install"`; empty on a card. */
+  headingPaths: string[];
+  snippet: string;
+}
+
+/** A chunk is up to ~512 tokens; the first match orients, the rest only locate further sections. */
+const MATCH_SNIPPET_MAX_CHARS = 500;
+const FURTHER_MATCH_SNIPPET_MAX_CHARS = 200;
+
+/**
+ * A hit's chunks as an agent reads them. BM25 snippets carry `<b>` markers for UI
+ * highlighting, stripped because an agent reads them as prose.
+ */
+export const toSearchMatches = (chunks: ChunkHit[]): SearchMatch[] =>
+  chunks.map((chunk, index) => ({
+    headingPaths: chunk.headingPaths,
+    snippet:
+      chunk.snippet?.replaceAll(/<\/?b>/g, "") ||
+      truncateEnd(
+        chunk.content,
+        index === 0 ? MATCH_SNIPPET_MAX_CHARS : FURTHER_MATCH_SNIPPET_MAX_CHARS
+      ),
+  }));
 
 const embedQuery = async (query: string): Promise<number[]> => {
   if (!query.trim()) {

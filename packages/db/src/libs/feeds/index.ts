@@ -1,5 +1,5 @@
 import type { KnownKeysOnly, RelationsFilterColumns, SQL } from "drizzle-orm";
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
 
 import type { DB } from "../../client.ts";
 import type { Locale, relations } from "../../schemas/schema.ts";
@@ -63,8 +63,17 @@ type SerializedFeed<TFeed extends SerializableFeed> = Omit<
   translations: SerializedTranslation<TFeed["translations"][number]>[];
 };
 
+const hasTag = (feedId: SQL | typeof feeds.id, tagSlug: string): SQL =>
+  sql`exists (
+    select 1 from ${feedsToTags}
+    join ${tags} on ${tags.id} = ${feedsToTags.tagId}
+    where ${feedsToTags.feedId} = ${feedId} and ${tags.slug} = ${tagSlug}
+  )`;
+
 type InfiniteFeedParams = InfiniteDTO & {
   whereAnd?: FeedWhereColumns;
+  /** Only feeds carrying this tag. */
+  tagSlug?: string;
   locale?: Locale;
   enableDeleted?: boolean;
   userId?: string;
@@ -101,6 +110,7 @@ const queryInfiniteFeeds = async (
     type = FeedType.Post,
     locale,
     whereAnd = {},
+    tagSlug,
     withContent = false,
     enableDeleted = false,
     userId,
@@ -108,6 +118,9 @@ const queryInfiniteFeeds = async (
 ) => {
   const filters: FeedWhere[] = [whereAnd];
 
+  if (tagSlug !== undefined) {
+    filters.push({ RAW: (feed) => hasTag(feed.id, tagSlug) });
+  }
   if (userId !== undefined) {
     filters.push({ userId });
   }
@@ -457,6 +470,44 @@ export const countFeedTranslations = withDTO(
     const [row] = await db
       .select({ count: sql<number>`(count(*))::int` })
       .from(feedTranslations);
+
+    return row?.count ?? 0;
+  }
+);
+
+/** How many live feeds match, for a caller that lists a page and must say how many there are in all. */
+export const countFeeds = withDTO(
+  async (
+    db,
+    dto: {
+      userId: string;
+      published?: boolean;
+      type?: FeedType;
+      tagSlug?: string;
+      /** inclusive */
+      createdFrom?: Date;
+      /** exclusive */
+      createdBefore?: Date;
+    }
+  ) => {
+    const [row] = await db
+      .select({ count: sql<number>`(count(*))::int` })
+      .from(feeds)
+      .where(
+        and(
+          eq(feeds.userId, dto.userId),
+          isNull(feeds.deletedAt),
+          dto.published === undefined
+            ? undefined
+            : eq(feeds.published, dto.published),
+          dto.type === undefined || dto.type === FeedType.All
+            ? undefined
+            : eq(feeds.type, dto.type),
+          dto.tagSlug === undefined ? undefined : hasTag(feeds.id, dto.tagSlug),
+          dto.createdFrom ? gte(feeds.createdAt, dto.createdFrom) : undefined,
+          dto.createdBefore ? lt(feeds.createdAt, dto.createdBefore) : undefined
+        )
+      );
 
     return row?.count ?? 0;
   }

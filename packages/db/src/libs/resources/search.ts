@@ -16,10 +16,16 @@ const RRF_K = 60;
 const RESOURCE_SCORE_TOP_N = 3;
 
 /**
- * Weight per rank inside a resource's top-N (1, ¼, ¹⁄₁₆).
- * A plain sum lets three mediocre RRF scores of a long article beat one top chunk of a short one; 0.25 measured better than 0.5 on the hybrid path (`toolings/scripts/rag-eval`).
+ * Weight per rank inside a resource's top-N (1, ¹⁄₁₀, ¹⁄₁₀₀).
+ * RRF scores are nearly flat (`1 / (60 + rank)`), so a heavier breadth term lets three mediocre chunks of a long article beat the one top chunk of a short one. 0.1 measured better than 0.25 on the hybrid path and level on the others (`toolings/scripts/rag-eval`).
  */
-const RESOURCE_SCORE_DECAY = 0.25;
+const RESOURCE_SCORE_DECAY = 0.1;
+
+/**
+ * Chunks a resource hit keeps for its reader, each adding a section the ones before it do not cover.
+ * Wider than the scoring top-N: a second fragment of one section raises the score but gives nowhere new to read.
+ */
+const RESOURCE_KEPT_CHUNKS = 5;
 
 export interface ChunkHit {
   chunkId: number;
@@ -28,6 +34,8 @@ export interface ChunkHit {
   kind: ResourceChunkKind;
   chunkIndex: number;
   headingPath: string | null;
+  /** Every section the chunk covers: small sections are packed into one chunk, and `headingPath` is only the first. Empty on a card. */
+  headingPaths: string[];
   /** Stored text. Hybrid and semantic hits have no snippet: ParadeDB rejects `pdb.snippet()` beside a window function. */
   content: string;
   /** `<b>`-highlighted fragment, when the lexical path produced one */
@@ -44,8 +52,8 @@ export interface ResourceHit {
   /** decayed sum of the resource's top chunk scores */
   score: number;
   matchedChunks: number;
-  /** best-scoring chunk, for citation and preview */
-  bestChunk: ChunkHit;
+  /** best first, each covering a section the ones before it do not; the places in the resource worth reading */
+  chunks: ChunkHit[];
 }
 
 interface SearchScope {
@@ -84,6 +92,10 @@ const chunkColumns = {
   kind: chunks.kind,
   chunkIndex: chunks.chunkIndex,
   headingPath: chunks.headingPath,
+  headingPaths: sql<string[]>`coalesce(
+    ${chunks.metadata}->'headingPaths',
+    case when ${chunks.headingPath} is null then '[]'::jsonb else jsonb_build_array(${chunks.headingPath}) end
+  )`,
   content: chunks.content,
 };
 
@@ -275,12 +287,23 @@ export const aggregateChunkHits = (
         0
       );
       const best = bucket[0]!;
+      const covered = new Set<string>();
+      const kept = bucket.filter((hit, index) => {
+        const adds = hit.headingPaths.some((path) => !covered.has(path));
+        if (index > 0 && !adds) {
+          return false;
+        }
+        for (const path of hit.headingPaths) {
+          covered.add(path);
+        }
+        return true;
+      });
       return {
         sourceType: best.sourceType,
         sourceId: best.sourceId,
         score,
         matchedChunks: bucket.length,
-        bestChunk: best,
+        chunks: kept.slice(0, RESOURCE_KEPT_CHUNKS),
       };
     })
     .sort((a, b) => b.score - a.score)

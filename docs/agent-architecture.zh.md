@@ -309,7 +309,7 @@ Writing kind 組合 host-owned ports：
 
 只有 commit-tier tool 會寫入正式 feed，且需要 approval。Draft 與 memory write 可逆。破壞性刪除與圖片上傳不提供給 agent。
 
-Web search 只回 snippets；`fetch_url` 抓取單一頁面，並透過 `MemoryPort` 記錄來源。Host port 接收 turn abort signal。Domain package 不直接執行 outbound fetch。
+Web search 只回 snippets；`fetch_url` 抓取單一頁面，並透過 `MemoryPort` 記錄來源。模型只看到頁面開頭的固定長度；被截斷的結果會附上 source memory 的 id 與未完整顯示的 heading path，其餘內容透過 `get_memory` 讀取，不需要重抓。Host port 接收 turn abort signal。Domain package 不直接執行 outbound fetch。
 
 ### Connectors
 
@@ -342,6 +342,8 @@ Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts`
 | `lesson` | Operator 教過的寫作偏好               | Operator 核准後 active |
 
 所有 memory write 都經過 `packages/services/memory/write.service.ts`，並在需要時排程 RAG indexing。只有 live、active memory 會進索引。詳見 [RAG 架構](./rag-architecture.zh.md#6-agent-memory-resource)。
+
+Source 以 `fetched_at` 記錄每一次抓取，`updated_at` 只在頁面內容改變時才會移動。Fact 與它的 source 共用 `source_url`；source 的 `updated_at` 晚於 fact 自己的 `updated_at` 時，fact 即為過期。過期狀態在讀取時推導，不另外儲存。兩者都會出現在每個 hit 與每次讀取中，模型因此知道頁面有多舊、哪個 fact 需要重新確認。系統不會定期重抓；只有某個 turn 再次抓取該 URL 時才會發現變更。
 
 Fact 與 source 只透過可見的 `search_memory`、`get_memory` tool call 進入模型。Volatile context 會列出本 session 已保存 memory 的受限識別資訊。Active lesson title 則固定加入，因為它們是 standing preferences。
 

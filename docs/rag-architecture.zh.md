@@ -193,13 +193,13 @@ Hybrid 使用 `FULL OUTER JOIN` 保留只出現在單側的結果，分數為 `�
 ```text
 chunk hits
   → 依 source_type + source_id 分組
-  → 以前三個 chunk 的衰減權重 1、1/4、1/16 加總
-  → 保留最高分 chunk 作為 citation / preview
+  → 以前三個 chunk 的衰減權重 1、1/10、1/100 加總
+  → 保留最多五個 chunk（最佳在前），每個都涵蓋前面尚未涵蓋的章節
   → 排序並截到 limit
   → adapter.hydrate 批次還原 title、description、href、locale
 ```
 
-最佳 chunk 主導分數，其餘命中提供有限加分，避免長文件靠大量普通結果壓過短文件的高相關結果。
+最佳 chunk 主導分數，其餘命中提供有限加分，避免長文件靠大量普通結果壓過短文件的高相關結果。計分與保留是分開的：同一章節的第二個片段會提高分數，但沒有提供新的閱讀位置。chunk 會回報它涵蓋的所有章節，因為小章節會被打包進同一個 chunk，而 `heading_path` 只記第一個。保留下來的 chunk 以 `matches` 交給 agent，因此一次搜尋就能看到同一份 resource 的所有命中章節，agent 不必為了找下一段而重新搜尋。
 
 `hydrate` 必須使用與 `buildChunks` 相同的刪除與可見性判定。兩者不一致會讓命中的 resource 在 hydrate 時消失。
 
@@ -217,7 +217,7 @@ chunk hits
 全文 → 命中 heading 優先的 sections → summary + outline
 ```
 
-單一文件最多使用總預算的 60%。連 outline 都放不下時才截斷 outline，不會直接移除整份文件。
+除最後一份外，每份文件最多使用總預算的 60%，避免排擠後面的文件；最後一份（或唯一的一份）可以用完剩餘預算。連 outline 都放不下時才截斷 outline，不會直接移除整份文件。
 
 Anchor 必須先從完整原文計算，再依實際保留的 heading 篩選。直接對子集產生 slug 會破壞重複標題的 `-1` 編號。
 

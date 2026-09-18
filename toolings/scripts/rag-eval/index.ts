@@ -1,14 +1,18 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 
+import { POST_BODY_TOKEN_BUDGET } from "@chia/agent-content/tools/read";
+import { buildDocumentContext } from "@chia/ai/embeddings/context";
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
 import { connectDatabase, getConnection } from "@chia/db/client";
 import * as schema from "@chia/db/schema";
 import { searchFeedsService } from "@chia/services/feeds/search.service";
 import type { SearchFeedsProvider } from "@chia/services/feeds/search.service";
+import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/resource-types";
+import { searchResources } from "@chia/services/rag/search.service";
 
 import { GOLDEN_QUERIES } from "./golden-queries.ts";
 import type { GoldenQuery, GoldenQueryKind } from "./golden-queries.ts";
@@ -74,6 +78,15 @@ interface QueryResult {
    * queries with `expectedHeading`; a ranked miss counts as a citation miss.
    */
   citationHit: boolean | null;
+  /** Whether any chunk the hit returned is a section under the expected heading. */
+  sectionHit: boolean | null;
+  /** Share of `expectedHeadings` some returned chunk sits under; null without them. */
+  coverage: number | null;
+  /**
+   * Share of the expected headings still present once `get_post` has fitted the post into its
+   * token budget with the hit's headings as focus: found is not read. Null without expectations.
+   */
+  readCoverage: number | null;
   durationMs: number;
   error?: string;
 }
@@ -83,9 +96,17 @@ interface ModeReport {
   results: QueryResult[];
   recall: Record<number, number>;
   recallByKind: Record<GoldenQueryKind, number>;
+  /** R@1 per kind: R@5 cannot tell a `confusable` query's neighbours from its answer */
+  topRankByKind: Record<GoldenQueryKind, number>;
   mrr: number;
   /** share of `expectedHeading` queries whose best chunk is the right section */
   citationAccuracy: number | null;
+  /** share of `expectedHeading` queries where any returned chunk is the right section */
+  sectionAccuracy: number | null;
+  /** mean `coverage` over the queries that set `expectedHeadings` */
+  coverage: number | null;
+  /** mean `readCoverage` */
+  readCoverage: number | null;
   avgDurationMs: number;
   errors: number;
 }
@@ -98,6 +119,46 @@ const mean = (values: number[]): number =>
 const recallAt = (expected: string[], returned: string[], k: number): number =>
   expected.filter((slug) => returned.slice(0, k).includes(slug)).length /
   expected.length;
+
+/** Reads the hit the way `get_post` does and reports which expected headings survive the budget. */
+const readCoverageOf = async (
+  db: Awaited<ReturnType<typeof connectDatabase>>,
+  translationId: number,
+  matchedHeadingPaths: string[],
+  expectedHeadings: string[]
+): Promise<number> => {
+  const [translation] = await db
+    .select({
+      title: schema.feedTranslations.title,
+      locale: schema.feedTranslations.locale,
+      content: schema.feedTranslations.content,
+    })
+    .from(schema.feedTranslations)
+    .where(eq(schema.feedTranslations.id, translationId));
+  if (!translation) {
+    return 0;
+  }
+  const { documents } = await buildDocumentContext(
+    [
+      {
+        slug: String(translationId),
+        locale: translation.locale,
+        title: translation.title,
+        content: translation.content ?? "",
+        matchedHeadingPaths,
+      },
+    ],
+    { budget: POST_BODY_TOKEN_BUDGET }
+  );
+  const kept = (documents[0]?.anchors ?? []).map((anchor) =>
+    anchor.path.toLowerCase()
+  );
+  return (
+    expectedHeadings.filter((heading) =>
+      kept.some((path) => path.includes(heading.toLowerCase()))
+    ).length / expectedHeadings.length
+  );
+};
 
 const runQuery = async (
   db: Awaited<ReturnType<typeof connectDatabase>>,
@@ -114,23 +175,51 @@ const runQuery = async (
 
   const startedAt = performance.now();
   try {
-    const { items } = await searchFeedsService({
-      db,
-      keyword: golden.query,
-      model: mode,
-      locale: golden.locale,
-      limit: MAX_K,
-    });
+    const items =
+      golden.kind === "memory"
+        ? (
+            await searchResources({
+              db,
+              query: golden.query,
+              mode,
+              sourceTypes: [AGENT_MEMORY_SOURCE_TYPE],
+              includeUnpublished: true,
+              limit: MAX_K,
+            })
+          ).items.map((item) => ({
+            ...item,
+            // the memory adapter hydrates a source's URL into `description`
+            slug: item.summary.description ?? "",
+          }))
+        : (
+            await searchFeedsService({
+              db,
+              keyword: golden.query,
+              model: mode,
+              locale: golden.locale,
+              limit: MAX_K,
+            })
+          ).items;
     const returned = items.map((item) => item.slug);
     const firstHit = returned.findIndex((slug) =>
       golden.expected.includes(slug)
     );
     const hitItem = firstHit === -1 ? null : items[firstHit]!;
-    const bestChunk = hitItem
-      ? {
-          kind: hitItem.bestChunk.kind,
-          headingPath: hitItem.bestChunk.headingPath,
-        }
+    const isUnder =
+      (heading: string) => (chunk: { kind: string; headingPaths: string[] }) =>
+        chunk.kind === "section" &&
+        chunk.headingPaths.some((path) =>
+          path.toLowerCase().includes(heading.toLowerCase())
+        );
+    const underExpectedHeading = isUnder(golden.expectedHeading ?? "");
+    const chunks = hitItem?.chunks ?? [];
+    const [best] = chunks;
+    const durationMs = performance.now() - startedAt;
+    const expectedHeadings =
+      golden.expectedHeadings ??
+      (golden.expectedHeading ? [golden.expectedHeading] : []);
+    const bestChunk = best
+      ? { kind: best.kind, headingPath: best.headingPath }
       : null;
 
     return {
@@ -142,12 +231,28 @@ const runQuery = async (
       ),
       bestChunk,
       citationHit: golden.expectedHeading
-        ? bestChunk?.kind === "section" &&
-          (bestChunk.headingPath ?? "")
-            .toLowerCase()
-            .includes(golden.expectedHeading.toLowerCase())
+        ? best !== undefined && underExpectedHeading(best)
         : null,
-      durationMs: performance.now() - startedAt,
+      sectionHit: golden.expectedHeading
+        ? chunks.some(underExpectedHeading)
+        : null,
+      coverage: golden.expectedHeadings
+        ? golden.expectedHeadings.filter((heading) =>
+            chunks.some(isUnder(heading))
+          ).length / golden.expectedHeadings.length
+        : null,
+      readCoverage:
+        expectedHeadings.length === 0
+          ? null
+          : hitItem
+            ? await readCoverageOf(
+                db,
+                hitItem.sourceId,
+                chunks.flatMap((chunk) => chunk.headingPaths),
+                expectedHeadings
+              )
+            : 0,
+      durationMs,
     };
   } catch (error) {
     return {
@@ -157,6 +262,10 @@ const runQuery = async (
       recall: Object.fromEntries(RECALL_KS.map((k) => [k, 0])),
       bestChunk: null,
       citationHit: golden.expectedHeading ? false : null,
+      sectionHit: golden.expectedHeading ? false : null,
+      coverage: golden.expectedHeadings ? 0 : null,
+      readCoverage:
+        golden.expectedHeadings || golden.expectedHeading ? 0 : null,
       durationMs: performance.now() - startedAt,
       error: String(error),
     };
@@ -168,6 +277,17 @@ const buildModeReport = (
   results: QueryResult[]
 ): ModeReport => {
   const kinds = [...new Set(results.map((result) => result.kind))];
+  const recallByKindAt = (k: number) =>
+    /* SAFETY: The producer contract guarantees this value satisfies Record<GoldenQueryKind, number>. */ Object.fromEntries(
+      kinds.map((kind) => [
+        kind,
+        mean(
+          results
+            .filter((result) => result.kind === kind)
+            .map((result) => result.recall[k]!)
+        ),
+      ])
+    ) as Record<GoldenQueryKind, number>;
   return {
     mode,
     results,
@@ -177,17 +297,8 @@ const buildModeReport = (
         mean(results.map((result) => result.recall[k]!)),
       ])
     ),
-    recallByKind:
-      /* SAFETY: The producer contract guarantees this value satisfies Record<GoldenQueryKind, number>. */ Object.fromEntries(
-        kinds.map((kind) => [
-          kind,
-          mean(
-            results
-              .filter((result) => result.kind === kind)
-              .map((result) => result.recall[5]!)
-          ),
-        ])
-      ) as Record<GoldenQueryKind, number>,
+    recallByKind: recallByKindAt(5),
+    topRankByKind: recallByKindAt(1),
     mrr: mean(
       results.map((result) =>
         result.firstHitRank === null ? 0 : 1 / result.firstHitRank
@@ -198,6 +309,24 @@ const buildModeReport = (
       return cited.length === 0
         ? null
         : mean(cited.map((result) => (result.citationHit ? 1 : 0)));
+    })(),
+    sectionAccuracy: (() => {
+      const cited = results.filter((result) => result.sectionHit !== null);
+      return cited.length === 0
+        ? null
+        : mean(cited.map((result) => (result.sectionHit ? 1 : 0)));
+    })(),
+    coverage: (() => {
+      const covered = results.flatMap((result) =>
+        result.coverage === null ? [] : [result.coverage]
+      );
+      return covered.length === 0 ? null : mean(covered);
+    })(),
+    readCoverage: (() => {
+      const read = results.flatMap((result) =>
+        result.readCoverage === null ? [] : [result.readCoverage]
+      );
+      return read.length === 0 ? null : mean(read);
     })(),
     avgDurationMs: mean(results.map((result) => result.durationMs)),
     errors: results.filter((result) => result.error).length,
@@ -212,27 +341,56 @@ const assertFixtureSlugs = async (
   db: Awaited<ReturnType<typeof connectDatabase>>,
   queries: GoldenQuery[]
 ): Promise<void> => {
-  const slugs = [...new Set(queries.flatMap((query) => query.expected))];
-  const rows = await db
-    .select({ slug: schema.feeds.slug })
-    .from(schema.feeds)
-    .where(inArray(schema.feeds.slug, slugs));
-  const known = new Set(rows.map((row) => row.slug));
-  const missing = slugs.filter((slug) => !known.has(slug));
+  const expectedOf = (memory: boolean) => [
+    ...new Set(
+      queries
+        .filter((query) => (query.kind === "memory") === memory)
+        .flatMap((query) => query.expected)
+    ),
+  ];
+  const slugs = expectedOf(false);
+  const urls = expectedOf(true);
+
+  const feedRows =
+    slugs.length === 0
+      ? []
+      : await db
+          .select({ key: schema.feeds.slug })
+          .from(schema.feeds)
+          .where(inArray(schema.feeds.slug, slugs));
+  const memoryRows =
+    urls.length === 0
+      ? []
+      : await db
+          .select({ key: schema.agentMemories.sourceUrl })
+          .from(schema.agentMemories)
+          .where(
+            and(
+              inArray(schema.agentMemories.sourceUrl, urls),
+              eq(schema.agentMemories.kind, "source"),
+              isNull(schema.agentMemories.deletedAt)
+            )
+          );
+
+  const known = new Set([...feedRows, ...memoryRows].map((row) => row.key));
+  const missing = [...slugs, ...urls].filter((key) => !known.has(key));
   if (missing.length > 0) {
     throw new Error(
-      `Golden queries reference slugs that do not exist: ${missing.join(", ")}. ` +
+      `Golden queries reference posts or stored pages that do not exist: ${missing.join(", ")}. ` +
         `Fix golden-queries.ts (or restore the local database).`
     );
   }
 };
 
-/** `1✓` — rank, plus the citation verdict when the query checks one. */
-const formatRank = (result: QueryResult): string => {
+/** `1✓` — rank, plus the citation verdict or `2/3` section coverage when the query checks one. */
+const formatRank = (result: QueryResult, expectedHeadings = 0): string => {
   if (result.error) {
     return "err";
   }
   const rank = result.firstHitRank?.toString() ?? "-";
+  if (result.coverage !== null) {
+    return `${rank} ${Math.round(result.coverage * expectedHeadings)}/${expectedHeadings}`;
+  }
   return result.citationHit === null
     ? rank
     : `${rank}${result.citationHit ? "✓" : "✗"}`;
@@ -253,7 +411,7 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   for (const query of queries) {
     const cells = reports.map((report) => {
       const result = report.results.find((entry) => entry.id === query.id)!;
-      return pad(formatRank(result), colWidth);
+      return pad(formatRank(result, query.expectedHeadings?.length), colWidth);
     });
     console.log(
       `${pad(query.id, idWidth)}${pad(query.kind, kindWidth)}${cells.join("")}`
@@ -261,7 +419,7 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   }
 
   console.log(
-    `\n${pad("mode", 10)}R@1     R@3     R@5     R@10    MRR@10  cite    avg ms`
+    `\n${pad("mode", 10)}R@1     R@3     R@5     R@10    MRR@10  cite    cite@3  cover   read    avg ms`
   );
   for (const report of reports) {
     console.log(
@@ -272,22 +430,33 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
           report.citationAccuracy === null ? "-" : num(report.citationAccuracy),
           8
         ) +
+        pad(
+          report.sectionAccuracy === null ? "-" : num(report.sectionAccuracy),
+          8
+        ) +
+        pad(report.coverage === null ? "-" : num(report.coverage), 8) +
+        pad(report.readCoverage === null ? "-" : num(report.readCoverage), 8) +
         Math.round(report.avgDurationMs).toString()
     );
   }
 
   const kinds = [...new Set(queries.map((query) => query.kind))];
-  console.log(`\nR@5 by kind`);
-  console.log(
-    `${pad("mode", 10)}` + kinds.map((kind) => pad(kind, kindWidth)).join("")
-  );
-  for (const report of reports) {
+  for (const [title, pick] of [
+    ["R@1 by kind", (report: ModeReport) => report.topRankByKind],
+    ["R@5 by kind", (report: ModeReport) => report.recallByKind],
+  ] as const) {
+    console.log(`\n${title}`);
     console.log(
-      pad(report.mode, 10) +
-        kinds
-          .map((kind) => pad(num(report.recallByKind[kind] ?? 0), kindWidth))
-          .join("")
+      `${pad("mode", 10)}` + kinds.map((kind) => pad(kind, kindWidth)).join("")
     );
+    for (const report of reports) {
+      console.log(
+        pad(report.mode, 10) +
+          kinds
+            .map((kind) => pad(num(pick(report)[kind] ?? 0), kindWidth))
+            .join("")
+      );
+    }
   }
 
   for (const report of reports) {

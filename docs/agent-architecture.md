@@ -309,7 +309,7 @@ The writing kind composes host-owned ports:
 
 Only commit-tier tools write live feed data and require approval. Draft and memory writes are reversible. Destructive deletion and image upload are not agent tools.
 
-Web search returns snippets; `fetch_url` performs one page scrape and records the page through `MemoryPort`. Host ports receive the turn abort signal. There is no direct outbound fetch in the domain package.
+Web search returns snippets; `fetch_url` performs one page scrape and records the page through `MemoryPort`. The model sees a bounded head of the page; a cut result names the source memory and the heading paths it did not fully show, so the rest is read with `get_memory` instead of a second fetch. Host ports receive the turn abort signal. There is no direct outbound fetch in the domain package.
 
 ### Connectors
 
@@ -342,6 +342,8 @@ On the public site, `@chia/agent-elements/selection` measures a DOM selection an
 | `lesson` | A writing preference the operator taught | Pending until operator approval |
 
 Every memory write goes through `packages/services/memory/write.service.ts` and schedules RAG indexing when needed. Only live, active memory is indexed. See [RAG architecture](./rag-architecture.md#6-agent-memory-resource).
+
+A source records every fetch in `fetched_at`, while its `updated_at` moves only when the page's content does. A fact shares its source's `source_url`, and is stale once that source's `updated_at` is later than its own: staleness is derived at read time, never stored. Both reach the model on every hit and read, so it knows how old a page is and when a fact must be checked again. Nothing re-fetches on a schedule; a change is noticed only when some turn fetches the URL again.
 
 Facts and sources reach the model only through visible `search_memory` and `get_memory` tool calls. The volatile context lists bounded identifiers for memories saved in the current session. Active lesson titles are always included because they are standing preferences.
 

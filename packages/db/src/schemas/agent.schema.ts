@@ -229,6 +229,11 @@ export const agentMemories = agentSchema.table(
     content: text("content").notNull(),
     /** Required for a `source`, expected on a `fact`, null on a `lesson`. */
     sourceUrl: text("source_url"),
+    /**
+     * When a `source` page was last fetched, changed or not. `updated_at` moves only when the
+     * page's content does, which is what makes a fact saved before it stale.
+     */
+    fetchedAt: timestamp("fetched_at", { withTimezone: true, mode: "date" }),
     sessionId: text("session_id").references(() => agentSessions.id, {
       onDelete: "set null",
     }),

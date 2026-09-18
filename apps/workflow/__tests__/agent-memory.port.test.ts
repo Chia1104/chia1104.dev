@@ -18,13 +18,17 @@ const { api, repo, hooks } = vi.hoisted(() => ({
   repo: {
     getAgentMemory: vi.fn(),
     getAgentMemories: vi.fn(),
+    getChangedFactSources: vi.fn(async () => new Map<number, Date>()),
     listAgentMemoriesBySession: vi.fn(async () => []),
     listActiveAgentLessons: vi.fn(async () => []),
   },
   hooks: { memoryHooks: { onMemoryChanged: vi.fn() } },
 }));
 
-vi.mock("@chia/services/rag/search.service", () => ({
+vi.mock("@chia/services/rag/search.service", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("@chia/services/rag/search.service")
+  >()),
   searchResources: api.searchResources,
 }));
 vi.mock("@chia/services/memory/write.service", () => ({
@@ -54,6 +58,7 @@ const row = (id: number, overrides: { deletedAt?: Date | null } = {}) => ({
   sessionId: SESSION_ID,
   createdAt: new Date("2026-08-01T00:00:00Z"),
   updatedAt: new Date("2026-08-02T00:00:00Z"),
+  fetchedAt: null,
   deletedAt: null,
   ...overrides,
 });
@@ -74,10 +79,13 @@ describe("createAgentMemoryPort", () => {
           sourceId: 2,
           score: 1,
           matchedChunks: 1,
-          bestChunk: {
-            content: "x".repeat(600),
-            headingPath: "Setup > Install",
-          },
+          chunks: [
+            {
+              content: "x".repeat(600),
+              headingPaths: ["Setup > Install", "Setup > Verify"],
+            },
+            { content: "z".repeat(600), headingPaths: ["Caveats"] },
+          ],
           summary: {},
         },
         {
@@ -85,7 +93,7 @@ describe("createAgentMemoryPort", () => {
           sourceId: 1,
           score: 0.5,
           matchedChunks: 1,
-          bestChunk: { content: "short", headingPath: null },
+          chunks: [{ content: "short", headingPaths: [] }],
           summary: {},
         },
       ],
@@ -104,11 +112,19 @@ describe("createAgentMemoryPort", () => {
         limit: 5,
       })
     );
-    // Result order is the search order, and the snippet is bounded.
+    // Result order is the search order; a packed chunk names every section it covers.
     expect(hits.map((hit) => hit.id)).toEqual([2, 1]);
-    expect(hits[0]?.snippet).toHaveLength(500);
-    expect(hits[0]?.headingPath).toBe("Setup > Install");
-    expect(hits[1]).toMatchObject({ kind: "fact", snippet: "short" });
+    expect(hits[0]?.matches.map((match) => match.headingPaths)).toEqual([
+      ["Setup > Install", "Setup > Verify"],
+      ["Caveats"],
+    ]);
+    expect(hits[0]?.matches.map((match) => match.snippet.length)).toEqual([
+      500, 200,
+    ]);
+    expect(hits[1]).toMatchObject({
+      kind: "fact",
+      matches: [{ headingPaths: [], snippet: "short" }],
+    });
   });
 
   it("writes facts through the write service with the session as provenance", async () => {
@@ -195,5 +211,18 @@ describe("createAgentMemoryPort", () => {
       content: "body",
       createdAt: "2026-08-01T00:00:00.000Z",
     });
+  });
+
+  it("tells a reader when a fact's source page changed after the fact was written", async () => {
+    repo.getAgentMemory.mockResolvedValueOnce(row(5));
+    repo.getChangedFactSources.mockResolvedValueOnce(
+      new Map([[5, new Date("2026-09-10T00:00:00Z")]])
+    );
+
+    await expect(port.get(5)).resolves.toMatchObject({
+      fetchedAt: null,
+      sourceChangedAt: "2026-09-10T00:00:00.000Z",
+    });
+    expect(repo.getChangedFactSources).toHaveBeenCalledWith(db, [5]);
   });
 });

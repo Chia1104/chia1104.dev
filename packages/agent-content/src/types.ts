@@ -13,10 +13,15 @@ export interface PostSearchHit {
   /** The page on the public site; the only link an agent should give for the hit. */
   url: string;
   title: string;
-  /** Best-matching fragment: a BM25 snippet, or the summary when there is none. */
+  /** The places in the post that matched, best first; never empty. */
+  matches: SearchMatch[];
+}
+
+/** One matched place in a resource. */
+export interface SearchMatch {
+  /** Heading trails of the sections the matched chunk covers, as stored, e.g. `"Setup > Install"`; empty on a card. */
+  headingPaths: string[];
   snippet: string;
-  /** Heading trail of the matched chunk, as stored, e.g. `"Setup > Install"`. */
-  headingPath?: string;
 }
 
 export interface PostListItem {
@@ -28,7 +33,15 @@ export interface PostListItem {
   published: boolean;
   defaultLocale: Locale;
   title: string;
+  createdAt: string;
   updatedAt: string;
+}
+
+export interface PostList {
+  /** Newest first, at most `limit`. */
+  posts: PostListItem[];
+  /** How many posts match in all, so a truncated list still answers "how many". */
+  total: number;
 }
 
 export interface PostSnapshot {
@@ -78,6 +91,13 @@ export interface ListPostsInput {
   limit: number;
   /** `true` for published only, `false` for drafts only. Omit for everything the port can see. */
   published?: boolean;
+  /** Omit for posts and notes alike. */
+  type?: PostFeedType;
+  tagSlug?: string;
+  /** ISO instant, inclusive. */
+  createdFrom?: string;
+  /** ISO instant, exclusive. */
+  createdBefore?: string;
 }
 
 /**
@@ -87,7 +107,7 @@ export interface ListPostsInput {
 export interface ContentReadPort {
   searchPosts(input: SearchPostsInput): Promise<PostSearchHit[]>;
   getPost(input: GetPostInput): Promise<PostSnapshot | null>;
-  listPosts(input: ListPostsInput): Promise<PostListItem[]>;
+  listPosts(input: ListPostsInput): Promise<PostList>;
   listTags(): Promise<TagItem[]>;
 }
 

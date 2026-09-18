@@ -1,5 +1,6 @@
 import type {
   MemoryDetail,
+  MemoryFreshness,
   MemoryHit,
   MemoryPort,
   MemorySummary,
@@ -9,6 +10,7 @@ import type { DB } from "@chia/db/client";
 import {
   getAgentMemories,
   getAgentMemory,
+  getChangedFactSources,
   listActiveAgentLessons,
   listAgentMemoriesBySession,
 } from "@chia/db/repos/agent/memory";
@@ -20,8 +22,10 @@ import {
   recordSourceMemoryService,
 } from "@chia/services/memory/write.service";
 import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/resource-types";
-import { searchResources } from "@chia/services/rag/search.service";
-import { truncateEnd } from "@chia/utils/format";
+import {
+  searchResources,
+  toSearchMatches,
+} from "@chia/services/rag/search.service";
 
 import { memoryHooks } from "./agent-memory-indexing.service";
 
@@ -31,14 +35,19 @@ import { memoryHooks } from "./agent-memory-indexing.service";
  * chunks are indexed `published: false`. Built with a `DB` and session id (provenance), not a request.
  */
 
-/** A chunk is up to ~512 tokens; a hit only needs enough to orient. */
-const SNIPPET_MAX_CHARS = 500;
-
 const summaryOf = (row: AgentMemory): MemorySummary => ({
   id: row.id,
   kind: row.kind,
   title: row.title,
   sourceUrl: row.sourceUrl,
+});
+
+const freshnessOf = (
+  row: AgentMemory,
+  changedSources: Map<number, Date>
+): MemoryFreshness => ({
+  fetchedAt: row.fetchedAt?.toISOString() ?? null,
+  sourceChangedAt: changedSources.get(row.id)?.toISOString() ?? null,
 });
 
 export interface CreateAgentMemoryPortOptions {
@@ -114,6 +123,10 @@ export const createAgentMemoryPort = (
         items.map((item) => item.sourceId)
       );
       const rowsById = new Map(rows.map((row) => [row.id, row]));
+      const changedSources = await getChangedFactSources(
+        db,
+        rows.map((row) => row.id)
+      );
 
       return items.flatMap((item) => {
         const row = rowsById.get(item.sourceId);
@@ -121,8 +134,8 @@ export const createAgentMemoryPort = (
           ? [
               {
                 ...summaryOf(row),
-                snippet: truncateEnd(item.bestChunk.content, SNIPPET_MAX_CHARS),
-                headingPath: item.bestChunk.headingPath,
+                ...freshnessOf(row, changedSources),
+                matches: toSearchMatches(item.chunks),
               },
             ]
           : [];
@@ -134,6 +147,7 @@ export const createAgentMemoryPort = (
       if (!row || row.deletedAt !== null) return null;
       return {
         ...summaryOf(row),
+        ...freshnessOf(row, await getChangedFactSources(db, [row.id])),
         status: row.status,
         content: row.content,
         createdAt: row.createdAt.toISOString(),

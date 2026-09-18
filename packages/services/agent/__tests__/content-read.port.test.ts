@@ -15,6 +15,7 @@ vi.mock("@chia/db/repos/feeds", async () => {
     getFeedById: mocks.getFeedById,
     getFeedBySlug: mocks.getFeedBySlug,
     getInfiniteFeeds: mocks.getInfiniteFeeds,
+    countFeeds: mocks.countFeeds,
   };
 });
 
@@ -67,8 +68,10 @@ describe("createContentReadPort visibility", () => {
         ],
       });
 
-      const [first] = await port.listPosts({ limit: 10 });
-      expect(first?.url).toBe("http://localhost:3000/en-US/posts/test-feed-1");
+      const { posts } = await port.listPosts({ limit: 10 });
+      expect(posts[0]?.url).toBe(
+        "http://localhost:3000/en-US/posts/test-feed-1"
+      );
     });
 
     it("lists published posts when asked for everything", async () => {
@@ -93,9 +96,10 @@ describe("createContentReadPort visibility", () => {
     it("answers a request for drafts with nothing, without querying", async () => {
       await expect(
         port.listPosts({ limit: 10, published: false })
-      ).resolves.toEqual([]);
+      ).resolves.toEqual({ posts: [], total: 0 });
 
       expect(dbMocks.getInfiniteFeeds).not.toHaveBeenCalled();
+      expect(dbMocks.countFeeds).not.toHaveBeenCalled();
     });
   });
 
@@ -131,6 +135,48 @@ describe("createContentReadPort visibility", () => {
         expect.objectContaining({
           whereAnd: { userId: AUTHOR, published: false },
         })
+      );
+    });
+
+    it("lists and counts under the same filters, notes included", async () => {
+      dbMocks.countFeeds.mockResolvedValueOnce(42);
+
+      const { total } = await port.listPosts({
+        limit: 10,
+        type: "note",
+        tagSlug: "react",
+        createdFrom: "2025-01-01",
+        createdBefore: "2026-01-01",
+      });
+
+      expect(total).toBe(42);
+      expect(dbMocks.getInfiniteFeeds).toHaveBeenCalledWith(
+        db,
+        expect.objectContaining({
+          type: "note",
+          tagSlug: "react",
+          orderBy: "createdAt",
+          whereAnd: expect.objectContaining({
+            createdAt: {
+              gte: new Date("2025-01-01"),
+              lt: new Date("2026-01-01"),
+            },
+          }),
+        })
+      );
+      expect(dbMocks.countFeeds).toHaveBeenCalledWith(db, {
+        userId: AUTHOR,
+        published: undefined,
+        type: "note",
+        tagSlug: "react",
+        createdFrom: new Date("2025-01-01"),
+        createdBefore: new Date("2026-01-01"),
+      });
+
+      await port.listPosts({ limit: 10 });
+      expect(dbMocks.getInfiniteFeeds).toHaveBeenLastCalledWith(
+        db,
+        expect.objectContaining({ type: "all" })
       );
     });
 

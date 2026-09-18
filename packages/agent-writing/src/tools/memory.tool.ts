@@ -4,7 +4,11 @@ import { defineTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 
-import type { MemoryHit, WritingToolContext } from "../types.ts";
+import type {
+  MemoryFreshness,
+  MemoryHit,
+  WritingToolContext,
+} from "../types.ts";
 
 import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
 
@@ -21,9 +25,8 @@ const MAX_LESSON_CHARS = 2_000;
 const DEFAULT_SEARCH_LIMIT = 5;
 const MAX_SEARCH_LIMIT = 10;
 /**
- * Token budget for one `get_memory`. A `source` is a whole page; `buildDocumentContext`
- * lets one document take 60% of this, so a long English page returns in full and a Chinese
- * one degrades to matched sections, then an outline.
+ * Token budget for one `get_memory`. A `source` is a whole page: past this it degrades to
+ * matched sections, then an outline.
  */
 const MEMORY_BODY_TOKEN_BUDGET = 8_000;
 
@@ -151,7 +154,8 @@ export const searchMemorySpec = {
   description:
     "Search what earlier sessions verified and read: saved facts and the full text of pages " +
     "fetched before. Distinct from `search_posts`, which searches the blog itself. Each hit " +
-    "carries a memory id and the heading that matched; pass both to `get_memory`.",
+    "carries a memory id and every place in it that matched; pass the id and those " +
+    "`headingPaths` to `get_memory`.",
   parameters: Type.Object({
     query: Type.String({
       description: "Topic, name, API or claim to look for.",
@@ -194,8 +198,24 @@ export const searchMemoryTool = defineTool(
 const formatHit = (hit: MemoryHit, index: number): string => {
   const heading = `${index + 1}. [${hit.kind}] **${hit.title}** (#${hit.id})`;
   const source = hit.sourceUrl ? `\n   <${hit.sourceUrl}>` : "";
-  const path = hit.headingPath ? `\n   at: ${hit.headingPath}` : "";
-  return `${heading}${source}${path}\n   ${hit.snippet}`;
+  const freshness = freshnessNote(hit);
+  const matches = hit.matches
+    .map(
+      (match) =>
+        `\n   ${match.headingPaths.length > 0 ? `at: ${match.headingPaths.join(" | ")}\n   ` : ""}${match.snippet}`
+    )
+    .join("");
+  return `${heading}${source}${freshness ? `\n   ${freshness}` : ""}${matches}`;
+};
+
+/** What a reader must know before trusting the memory to describe its page as it is now. */
+const freshnessNote = (memory: MemoryFreshness): string | null => {
+  if (memory.sourceChangedAt) {
+    return `Its source page changed on ${memory.sourceChangedAt.slice(0, 10)}, after this fact was written: read the page again before relying on it.`;
+  }
+  return memory.fetchedAt
+    ? `Fetched ${memory.fetchedAt.slice(0, 10)}; \`fetch_url\` again if the answer depends on the page being current.`
+    : null;
 };
 
 export const getMemorySpec = {
@@ -214,7 +234,7 @@ export const getMemorySpec = {
       Type.Array(Type.String(), {
         description:
           "Heading paths to keep first when the memory is too long to return in full. Pass " +
-          "each hit's `headingPath` unchanged.",
+          "each match's `headingPaths` unchanged.",
       })
     ),
   }),
@@ -249,8 +269,10 @@ export const getMemoryTool = defineTool(
     const body = document?.text ?? content;
     const detail = document?.detail ?? "full";
 
+    const freshness = freshnessNote(memory);
     return textResult(
       `# [${memory.kind}] ${memory.title}\n${memory.sourceUrl ? `<${memory.sourceUrl}>\n` : ""}` +
+        `${freshness ? `${freshness}\n` : ""}` +
         `(${detail}, ${totalTokens} tokens)\n\n${body}\n\n${jsonBlock(meta)}`,
       { ...meta, detail, contentTokens: totalTokens }
     );
