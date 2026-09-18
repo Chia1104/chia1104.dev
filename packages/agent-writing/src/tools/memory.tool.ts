@@ -1,6 +1,11 @@
 import { Type } from "typebox";
 
-import { defineTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
+import {
+  defineTool,
+  jsonBlock,
+  optional,
+  textResult,
+} from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 import { RERANK_ANSWERABLE_FLOOR } from "@chia/ai/rerank/provider";
@@ -52,7 +57,7 @@ export const saveMemorySpec = {
       minLength: 1,
       maxLength: MAX_FACT_CHARS,
     }),
-    sourceUrl: Type.Optional(
+    sourceUrl: optional(
       Type.String({
         description:
           "Absolute http(s) URL of the page that establishes the fact. Omit only for facts that " +
@@ -115,7 +120,7 @@ export const proposeLessonSpec = {
       minLength: 1,
       maxLength: MAX_LESSON_CHARS,
     }),
-    supersedes: Type.Optional(
+    supersedes: optional(
       Type.Integer({
         description:
           "Id of the learned preference this one replaces, or of the pending lesson this " +
@@ -166,7 +171,7 @@ export const searchMemorySpec = {
       description: "Topic, name, API or claim to look for.",
       minLength: 1,
     }),
-    limit: Type.Optional(
+    limit: optional(
       Type.Integer({
         description: `Maximum hits (1-${MAX_SEARCH_LIMIT}).`,
         minimum: 1,
@@ -239,7 +244,7 @@ export const getMemorySpec = {
       description: "Memory id from `search_memory`.",
       minimum: 1,
     }),
-    focusHeadings: Type.Optional(
+    focusHeadings: optional(
       Type.Array(Type.String(), {
         description:
           "Heading paths to keep first when the memory is too long to return in full. Pass " +
