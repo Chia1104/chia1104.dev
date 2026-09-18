@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "guard-eval",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "clean": "git clean -xdf .turbo node_modules .cache",
+    "eval": "tsx --env-file=../../../.env.global index.ts"
+  },
+  "devDependencies": {
+    "@chia/ai": "workspace:*",
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}
