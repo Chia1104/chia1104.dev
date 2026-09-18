@@ -16,6 +16,7 @@ import { searchResources } from "@chia/services/rag/search.service";
 
 import { GOLDEN_QUERIES } from "./golden-queries.ts";
 import type { GoldenQuery, GoldenQueryKind } from "./golden-queries.ts";
+import { JEV_CANDIDATES, rerankWithJev } from "./jev.ts";
 
 /**
  * Retrieval-quality benchmark: runs the golden queries through the real search
@@ -27,16 +28,22 @@ import type { GoldenQuery, GoldenQueryKind } from "./golden-queries.ts";
  *   pnpm --filter rag-eval eval
  *   pnpm --filter rag-eval eval mode=bm25 kind=heading
  *   pnpm --filter rag-eval eval out=baseline.json
+ *   pnpm --filter rag-eval eval jev=true   # adds hybrid+jev; needs AI_GATEWAY_API_KEY
  */
 
 const MODES: SearchFeedsProvider[] = ["bm25", "semantic", "hybrid"];
+/** hybrid's top `JEV_CANDIDATES`, reordered by Jev; opt-in because it calls a paid model */
+const JEV_MODE = "hybrid+jev";
+type EvalMode = SearchFeedsProvider | typeof JEV_MODE;
 /** Ranks past this count as a miss. */
 const MAX_K = 10;
 const RECALL_KS = [1, 3, 5, 10] as const;
 
 interface CLIOptions {
-  /** `all` (default) or one of `bm25 | semantic | hybrid` */
+  /** `all` (default) or one of `bm25 | semantic | hybrid | hybrid+jev` */
   mode?: string;
+  /** `true` appends `hybrid+jev` to the modes */
+  jev?: string;
   /** run only queries with this kind */
   kind?: string;
   /** run only the query with this id */
@@ -87,12 +94,15 @@ interface QueryResult {
    * token budget with the hit's headings as focus: found is not read. Null without expectations.
    */
   readCoverage: number | null;
+  /** Jev's P(true) that some candidate answers the query; null outside `hybrid+jev` */
+  answerable: number | null;
+  jevInputTokens: number;
   durationMs: number;
   error?: string;
 }
 
 interface ModeReport {
-  mode: SearchFeedsProvider;
+  mode: EvalMode;
   results: QueryResult[];
   recall: Record<number, number>;
   recallByKind: Record<GoldenQueryKind, number>;
@@ -107,6 +117,10 @@ interface ModeReport {
   coverage: number | null;
   /** mean `readCoverage` */
   readCoverage: number | null;
+  /** mean `answerable` */
+  answerable: number | null;
+  /** tokens billed to Jev over the run */
+  jevInputTokens: number;
   avgDurationMs: number;
   errors: number;
 }
@@ -162,9 +176,11 @@ const readCoverageOf = async (
 
 const runQuery = async (
   db: Awaited<ReturnType<typeof connectDatabase>>,
-  mode: SearchFeedsProvider,
+  mode: EvalMode,
   golden: GoldenQuery
 ): Promise<QueryResult> => {
+  const searchMode: SearchFeedsProvider = mode === JEV_MODE ? "hybrid" : mode;
+  const limit = mode === JEV_MODE ? JEV_CANDIDATES : MAX_K;
   const base = {
     id: golden.id,
     kind: golden.kind,
@@ -175,16 +191,16 @@ const runQuery = async (
 
   const startedAt = performance.now();
   try {
-    const items =
+    const found =
       golden.kind === "memory"
         ? (
             await searchResources({
               db,
               query: golden.query,
-              mode,
+              mode: searchMode,
               sourceTypes: [AGENT_MEMORY_SOURCE_TYPE],
               includeUnpublished: true,
-              limit: MAX_K,
+              limit,
             })
           ).items.map((item) => ({
             ...item,
@@ -195,11 +211,29 @@ const runQuery = async (
             await searchFeedsService({
               db,
               keyword: golden.query,
-              model: mode,
+              model: searchMode,
               locale: golden.locale,
-              limit: MAX_K,
+              limit,
             })
           ).items;
+    let answerable: number | null = null;
+    let jevInputTokens = 0;
+    let items = found;
+    if (mode === JEV_MODE && found.length > 0) {
+      const reranked = await rerankWithJev(
+        golden.query,
+        found.map((item) => ({
+          key: item.slug,
+          title: item.summary.title,
+          chunks: item.chunks,
+        }))
+      );
+      items = reranked.order
+        .map((key) => found.find((item) => item.slug === key)!)
+        .slice(0, MAX_K);
+      answerable = reranked.answerable;
+      jevInputTokens = reranked.inputTokens ?? 0;
+    }
     const returned = items.map((item) => item.slug);
     const firstHit = returned.findIndex((slug) =>
       golden.expected.includes(slug)
@@ -252,6 +286,8 @@ const runQuery = async (
                 expectedHeadings
               )
             : 0,
+      answerable,
+      jevInputTokens,
       durationMs,
     };
   } catch (error) {
@@ -266,6 +302,8 @@ const runQuery = async (
       coverage: golden.expectedHeadings ? 0 : null,
       readCoverage:
         golden.expectedHeadings || golden.expectedHeading ? 0 : null,
+      answerable: null,
+      jevInputTokens: 0,
       durationMs: performance.now() - startedAt,
       error: String(error),
     };
@@ -273,7 +311,7 @@ const runQuery = async (
 };
 
 const buildModeReport = (
-  mode: SearchFeedsProvider,
+  mode: EvalMode,
   results: QueryResult[]
 ): ModeReport => {
   const kinds = [...new Set(results.map((result) => result.kind))];
@@ -328,6 +366,16 @@ const buildModeReport = (
       );
       return read.length === 0 ? null : mean(read);
     })(),
+    answerable: (() => {
+      const judged = results.flatMap((result) =>
+        result.answerable === null ? [] : [result.answerable]
+      );
+      return judged.length === 0 ? null : mean(judged);
+    })(),
+    jevInputTokens: results.reduce(
+      (sum, result) => sum + result.jevInputTokens,
+      0
+    ),
     avgDurationMs: mean(results.map((result) => result.durationMs)),
     errors: results.filter((result) => result.error).length,
   };
@@ -382,18 +430,27 @@ const assertFixtureSlugs = async (
   }
 };
 
-/** `1✓` — rank, plus the citation verdict or `2/3` section coverage when the query checks one. */
+/**
+ * `1✓` — rank, plus the citation verdict or `2/3` section coverage when the
+ * query checks one, and Jev's answer probability as `.93` under `hybrid+jev`.
+ */
 const formatRank = (result: QueryResult, expectedHeadings = 0): string => {
   if (result.error) {
     return "err";
   }
   const rank = result.firstHitRank?.toString() ?? "-";
+  const answerable =
+    result.answerable === null
+      ? ""
+      : ` ${result.answerable.toFixed(2).replace(/^0/, "")}`;
   if (result.coverage !== null) {
-    return `${rank} ${Math.round(result.coverage * expectedHeadings)}/${expectedHeadings}`;
+    return `${rank} ${Math.round(result.coverage * expectedHeadings)}/${expectedHeadings}${answerable}`;
   }
-  return result.citationHit === null
-    ? rank
-    : `${rank}${result.citationHit ? "✓" : "✗"}`;
+  return (
+    (result.citationHit === null
+      ? rank
+      : `${rank}${result.citationHit ? "✓" : "✗"}`) + answerable
+  );
 };
 
 const pad = (value: string, width: number): string => value.padEnd(width);
@@ -402,7 +459,7 @@ const num = (value: number): string => value.toFixed(2);
 const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   const idWidth = Math.max(...queries.map((query) => query.id.length)) + 2;
   const kindWidth = 12;
-  const colWidth = 10;
+  const colWidth = 12;
 
   console.log(
     `\n${pad("query", idWidth)}${pad("kind", kindWidth)}` +
@@ -419,11 +476,11 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   }
 
   console.log(
-    `\n${pad("mode", 10)}R@1     R@3     R@5     R@10    MRR@10  cite    cite@3  cover   read    avg ms`
+    `\n${pad("mode", 12)}R@1     R@3     R@5     R@10    MRR@10  cite    cite@3  cover   read    ans     avg ms`
   );
   for (const report of reports) {
     console.log(
-      pad(report.mode, 10) +
+      pad(report.mode, 12) +
         RECALL_KS.map((k) => pad(num(report.recall[k]!), 8)).join("") +
         pad(num(report.mrr), 8) +
         pad(
@@ -436,8 +493,16 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
         ) +
         pad(report.coverage === null ? "-" : num(report.coverage), 8) +
         pad(report.readCoverage === null ? "-" : num(report.readCoverage), 8) +
+        pad(report.answerable === null ? "-" : num(report.answerable), 8) +
         Math.round(report.avgDurationMs).toString()
     );
+  }
+  for (const report of reports) {
+    if (report.jevInputTokens > 0) {
+      console.log(
+        `\n${report.mode}: ${report.jevInputTokens} input tokens billed to Jev`
+      );
+    }
   }
 
   const kinds = [...new Set(queries.map((query) => query.kind))];
@@ -447,11 +512,11 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   ] as const) {
     console.log(`\n${title}`);
     console.log(
-      `${pad("mode", 10)}` + kinds.map((kind) => pad(kind, kindWidth)).join("")
+      `${pad("mode", 12)}` + kinds.map((kind) => pad(kind, kindWidth)).join("")
     );
     for (const report of reports) {
       console.log(
-        pad(report.mode, 10) +
+        pad(report.mode, 12) +
           kinds
             .map((kind) => pad(num(pick(report)[kind] ?? 0), kindWidth))
             .join("")
@@ -472,13 +537,17 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
 const main = async (): Promise<void> => {
   const options = getCLIOptions();
 
-  const modes =
+  const allModes: EvalMode[] = [...MODES, JEV_MODE];
+  const modes: EvalMode[] =
     options.mode && options.mode !== "all"
-      ? MODES.filter((mode) => mode === options.mode)
-      : MODES;
+      ? allModes.filter((mode) => mode === options.mode)
+      : [...MODES];
+  if (options.jev === "true" && !modes.includes(JEV_MODE)) {
+    modes.push(JEV_MODE);
+  }
   if (modes.length === 0) {
     throw new Error(
-      `Unknown mode "${options.mode}". Use ${MODES.join(" | ")} | all.`
+      `Unknown mode "${options.mode}". Use ${MODES.join(" | ")} | ${JEV_MODE} | all.`
     );
   }
 
