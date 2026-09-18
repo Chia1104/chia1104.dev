@@ -73,6 +73,14 @@
       "types": "./src/embeddings/tokenizer.ts",
       "default": "./src/embeddings/tokenizer.ts"
     },
+    "./rerank/provider": {
+      "types": "./src/rerank/provider.ts",
+      "default": "./src/rerank/provider.ts"
+    },
+    "./rerank/jev": {
+      "types": "./src/rerank/jev.ts",
+      "default": "./src/rerank/jev.ts"
+    },
     "./tools/content": {
       "types": "./src/tools/content.tool.ts",
       "default": "./src/tools/content.tool.ts"

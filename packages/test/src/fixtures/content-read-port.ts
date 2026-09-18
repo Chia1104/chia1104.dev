@@ -24,7 +24,8 @@ export const createFakeContentReadPort = <
 >(
   options: FakeContentReadPortOptions<THit, TPost, TList, TTag> = {}
 ) => ({
-  searchPosts: () => Promise.resolve(options.searchHits ?? []),
+  searchPosts: () =>
+    Promise.resolve({ hits: options.searchHits ?? [], answerable: null }),
   getPost: (input: { slug?: string; feedId?: number }) =>
     Promise.resolve(
       (options.posts ?? []).find((post) =>

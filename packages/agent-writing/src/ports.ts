@@ -14,8 +14,8 @@ import type {
   GitHubRef,
   GitHubTree,
   MemoryDetail,
-  MemoryHit,
   MemorySearchInput,
+  MemorySearchResult,
   MemorySummary,
   SavedMemory,
   SaveMemoryInput,
@@ -39,6 +39,7 @@ export type {
   MemoryDetail,
   MemoryFreshness,
   MemoryHit,
+  MemorySearchResult,
   MemoryKind,
   MemorySearchInput,
   MemoryStatus,
@@ -149,7 +150,10 @@ export interface DraftStore {
  */
 export interface MemoryPort {
   save(input: SaveMemoryInput, signal?: AbortSignal): Promise<SavedMemory>;
-  search(input: MemorySearchInput, signal?: AbortSignal): Promise<MemoryHit[]>;
+  search(
+    input: MemorySearchInput,
+    signal?: AbortSignal
+  ): Promise<MemorySearchResult>;
   get(id: number, signal?: AbortSignal): Promise<MemoryDetail | null>;
   listBySession(sessionId: string): Promise<MemorySummary[]>;
   listActiveLessons(limit: number): Promise<MemorySummary[]>;

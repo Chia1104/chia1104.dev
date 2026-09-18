@@ -1,4 +1,6 @@
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
+import { resolveRerankProvider } from "@chia/ai/rerank/provider";
+import type { RerankProvider } from "@chia/ai/rerank/provider";
 import type { DB } from "@chia/db/client";
 import {
   aggregateChunkHits,
@@ -8,6 +10,7 @@ import {
 } from "@chia/db/repos/resources/search";
 import type { ChunkHit, ResourceHit } from "@chia/db/repos/resources/search";
 import type { Locale } from "@chia/db/types";
+import { logger } from "@chia/observability/logger";
 import { truncateEnd } from "@chia/utils/format";
 
 import { getResourceAdapter } from "./registry";
@@ -22,6 +25,8 @@ export interface ResourceSearchHit extends ResourceHit {
 export interface ResourceSearchResult {
   mode: ResourceSearchMode;
   items: ResourceSearchHit[];
+  /** The reranker's P(true) that some hit answers the query; absent when none ran. */
+  answerable?: number;
 }
 
 /** One place in a resource that matched, as an agent reads it. */
@@ -87,6 +92,57 @@ const hydrate = async (
   });
 };
 
+/** Hits the reranker judges; in the fused order a query's answer has sat as deep as rank 8. */
+const RERANK_CANDIDATES = 20;
+/** Bounds the round trip an agent search waits for; past it the fused order stands. */
+const RERANK_TIMEOUT_MS = 5_000;
+
+const hitKey = (hit: ResourceHit): string =>
+  `${hit.sourceType}:${hit.sourceId}`;
+
+/**
+ * Reorders hydrated hits by the reranker and trims to `limit`. A failed or slow
+ * call keeps the fused order: a search that returns nothing because a vendor
+ * stalled is worse than one ranked by RRF alone.
+ */
+export const rerankHits = async (
+  query: string,
+  items: ResourceSearchHit[],
+  limit: number,
+  provider: RerankProvider
+): Promise<Pick<ResourceSearchResult, "items" | "answerable">> => {
+  try {
+    const result = await provider.rerank(
+      query,
+      items.map((item) => ({
+        key: hitKey(item),
+        title: item.summary.title,
+        matches: toSearchMatches(item.chunks),
+      })),
+      { signal: AbortSignal.timeout(RERANK_TIMEOUT_MS) }
+    );
+    const byKey = new Map(items.map((item) => [hitKey(item), item]));
+    const ranked = result.order.flatMap((key) => {
+      const item = byKey.get(key);
+      return item ? [item] : [];
+    });
+    // a hit the provider left out keeps its fused position behind the ranked ones
+    const dropped = items.filter(
+      (item) => !result.order.includes(hitKey(item))
+    );
+    return {
+      items: [...ranked, ...dropped].slice(0, limit),
+      answerable: result.answerable,
+    };
+  } catch (error) {
+    logger.warn(
+      { err: error, provider: provider.id },
+      "Rerank failed; keeping the fused order"
+    );
+    return { items: items.slice(0, limit) };
+  }
+};
+
 export async function searchResources({
   db,
   query,
@@ -96,6 +152,7 @@ export async function searchResources({
   includeUnpublished = false,
   limit = 5,
   chunkLimit,
+  rerank = false,
 }: {
   db: DB;
   query: string;
@@ -108,9 +165,13 @@ export async function searchResources({
   limit?: number;
   /** chunks fetched before aggregation */
   chunkLimit?: number;
+  /** Reorder by the configured `RERANK_PROVIDER`; a no-op while it is `none`. */
+  rerank?: boolean;
 }): Promise<ResourceSearchResult> {
   const scope = { locale, sourceTypes, includeUnpublished };
-  const candidates = chunkLimit ?? Math.max(limit * 6, 30);
+  const reranker = rerank ? resolveRerankProvider() : null;
+  const fetchLimit = reranker ? Math.max(limit, RERANK_CANDIDATES) : limit;
+  const candidates = chunkLimit ?? Math.max(fetchLimit * 6, 30);
 
   let hits: ChunkHit[];
   if (mode === "bm25") {
@@ -138,8 +199,9 @@ export async function searchResources({
     });
   }
 
-  return {
-    mode,
-    items: await hydrate(db, aggregateChunkHits(hits, limit)),
-  };
+  const items = await hydrate(db, aggregateChunkHits(hits, fetchLimit));
+  if (!reranker) {
+    return { mode, items };
+  }
+  return { mode, ...(await rerankHits(query, items, limit, reranker)) };
 }
