@@ -8,11 +8,13 @@ import type {
   RenderedAttachments,
 } from "@chia/agent-runtime/pi/turn";
 import type { AgentAttachment } from "@chia/agent-runtime/wire/schema";
+import type { GuardProvider } from "@chia/ai/guard/provider";
 import { Locale } from "@chia/db/types";
 
 import { publicTurnBudget } from "./policy.ts";
 import { renderProfileBrief } from "./prompts/profile.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
+import { createMessageScreen } from "./screen.ts";
 
 export interface PreparePublicTurnOptions {
   /** Built by the host with `public` visibility; the tools cannot widen it. */
@@ -20,6 +22,8 @@ export interface PreparePublicTurnOptions {
   /** Published rows only; rendered into the system prompt once per turn. */
   profile: ProfileReadPort;
   instructions?: string;
+  /** Grades the visitor's message before the model reads it; null when no guard is configured. */
+  guard: GuardProvider | null;
 }
 
 /** Quoted as a fenced block so the passage reads as the visitor's citation, not their words. */
@@ -121,6 +125,7 @@ export const preparePublicTurn = async (
       buildTurnContext({ defaultLocale: Locale.zhTW, now: new Date() }),
     renderAttachments: (attachments) =>
       renderAttachments(options.content, attachments),
+    screen: options.guard ? createMessageScreen(options.guard) : undefined,
     budget: publicTurnBudget,
   };
 };

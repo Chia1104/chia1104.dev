@@ -70,6 +70,8 @@ The generic layer does not carry an admin identity. The writing binding reads th
 
 The public kind has only the shared content-read tools, no approval tier, web access, memory or draft. Without a key of their own a visitor may run only the model pinned as the kind default; a visitor who brought a gateway or vendor key may pick any model that key reaches, because they pay for it. Its per-turn budget limits tool calls, repeats and duration.
 
+A kind may `screen` a typed message before the model runs. The public kind grades the visitor's words and any selected text through the `GuardProvider` seam (`@chia/ai/guard/provider`, off unless `GUARD_PROVIDER` is set): a message at or above `GUARD_THRESHOLD` as an injection attempt or an inappropriate request ends the turn as `refused` and is never persisted, so it cannot steer a later turn from the transcript. The screen fails open after three seconds; the kind's blast radius is bounded by its ports and quota, not by the guard. Thresholds and question wording change only with a `guard-eval` run before and after.
+
 ## 3. Durable state and session tree
 
 The transcript is a tree. `agent.session_entry.parentId` links a branch and `agent.session.leafEntryId` selects the active leaf. `seq` records persistence order across all branches and is safe because each session has one writer at a time.

@@ -103,6 +103,7 @@
     "rate_limited": "供應商正在限制請求速率",
     "context_overflow": "對話已超出模型的 context，請壓縮對話",
     "budget_exhausted": "這一輪超出預算已被停止",
+    "refused": "助理無法處理這則訊息",
     "provider": "供應商發生錯誤",
     "internal": "agent 發生錯誤"
   },

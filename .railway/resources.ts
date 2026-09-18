@@ -75,6 +75,8 @@ export const createWorkflowEnv = () => ({
   EMBEDDING_API_KEY: preserve(),
   RERANK_PROVIDER: preserve(),
   RERANK_API_KEY: preserve(),
+  GUARD_PROVIDER: preserve(),
+  GUARD_API_KEY: preserve(),
   WORKFLOW_POSTGRES_JOB_PREFIX: preserve(),
   WORKFLOW_POSTGRES_MAX_POOL_SIZE: preserve(),
   WORKFLOW_POSTGRES_URL: preserve(),

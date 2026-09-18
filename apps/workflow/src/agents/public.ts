@@ -1,4 +1,5 @@
 import { createPublicAgentExecutor } from "@chia/agent-host/public";
+import { resolveGuardProvider } from "@chia/ai/guard/provider";
 import { createContentReadPort } from "@chia/services/agent/content-read.port";
 import { createProfileReadPort } from "@chia/services/agent/profile-read.port";
 import { getAdminId } from "@chia/utils/config";
@@ -13,4 +14,5 @@ export const publicAgentKind = createPublicAgentExecutor({
     }),
   createProfilePort: ({ db }) =>
     createProfileReadPort({ db, authorId: getAdminId() }),
+  guard: resolveGuardProvider(),
 });

@@ -32,7 +32,9 @@
   "dependencies": {
     "@chia/agent-content": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
+    "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
+    "@chia/observability": "workspace:*",
     "@earendil-works/pi-ai": "catalog:agent",
     "es-toolkit": "catalog:",
     "zod": "catalog:"

@@ -131,6 +131,7 @@ describe("createPublicAgentExecutor", () => {
     const executor = createPublicAgentExecutor({
       createContentPort: () => port,
       createProfilePort: () => profile,
+      guard: null,
     });
 
     const turn = await executor.prepareTurn(

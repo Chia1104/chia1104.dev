@@ -103,6 +103,7 @@
     "rate_limited": "The provider is rate limiting requests",
     "context_overflow": "The conversation no longer fits the model's context. Compact it",
     "budget_exhausted": "The turn ran past its budget and was stopped",
+    "refused": "The assistant cannot help with this message",
     "provider": "The provider failed",
     "internal": "The agent failed"
   },

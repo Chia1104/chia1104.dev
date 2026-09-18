@@ -17,6 +17,7 @@ import {
 } from "@chia/agent-public/models";
 import { publicPolicy } from "@chia/agent-public/policy";
 import { preparePublicTurn } from "@chia/agent-public/runtime";
+import type { GuardProvider } from "@chia/ai/guard/provider";
 import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { getFeedById } from "@chia/db/repos/feeds";
@@ -40,6 +41,8 @@ export interface PublicExecutionHost {
   createContentPort(options: { db: DB }): ContentReadPort;
   /** Published rows only, for the same reason. */
   createProfilePort(options: { db: DB }): ProfileReadPort;
+  /** Null runs the kind unguarded. */
+  guard: GuardProvider | null;
 }
 
 export const createPublicAgentKind = (): PublicAgentKind => ({
@@ -125,5 +128,6 @@ export const createPublicAgentExecutor = (
       content: host.createContentPort({ db: context.db }),
       profile: host.createProfilePort({ db: context.db }),
       instructions: context.config.instructions,
+      guard: host.guard,
     }),
 });

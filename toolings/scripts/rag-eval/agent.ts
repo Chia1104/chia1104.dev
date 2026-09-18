@@ -202,6 +202,7 @@ const main = async (): Promise<void> => {
         ...(await preparePublicTurn({
           content,
           profile: { listPublished: () => Promise.resolve([]) },
+          guard: null,
         })),
         policy: publicPolicy,
         session,

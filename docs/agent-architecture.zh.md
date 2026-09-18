@@ -70,6 +70,8 @@ Generic 層不攜帶 admin 身分。Writing binding 只在建立 content port �
 
 Public kind 只有共用 content-read tools，沒有 approval tier、web、memory 或 draft。House usage 限定在便宜模型清單；原生 BYOK provider 可以開放，因為費用由訪客承擔。每個 turn 另有限制 tool calls、重複次數與執行時間的 budget。
 
+Kind 可以在 model 執行前 `screen` 使用者輸入的訊息。Public kind 會把訪客的文字與選取內容交給 `GuardProvider` seam（`@chia/ai/guard/provider`，未設定 `GUARD_PROVIDER` 時關閉）評分：注入或不當請求的機率達到 `GUARD_THRESHOLD` 時，該 turn 以 `refused` 結束且訊息不會寫入 session，因此無法從 transcript 影響後續 turn。Screen 在三秒後 fail open；這個 kind 的影響範圍由它的 ports 與額度界定，而不是由 guard 界定。調整門檻或問題措辭前後都要跑一次 `guard-eval`。
+
 ## 3. Durable state 與 session tree
 
 Transcript 是一棵樹。`agent.session_entry.parentId` 連接 branch，`agent.session.leafEntryId` 選擇 active leaf。`seq` 記錄所有 branch 的持久化順序；每個 session 同時只有一個 writer，因此此順序可靠。

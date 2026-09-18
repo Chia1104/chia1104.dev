@@ -1774,9 +1774,15 @@ importers:
       '@chia/agent-runtime':
         specifier: workspace:*
         version: link:../agent-runtime
+      '@chia/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@chia/db':
         specifier: workspace:*
         version: link:../db
+      '@chia/observability':
+        specifier: workspace:*
+        version: link:../observability
       '@earendil-works/pi-ai':
         specifier: catalog:agent
         version: 0.85.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.5.4))(supports-color@10.2.2)(ws@8.21.3)(zod@4.5.4)
