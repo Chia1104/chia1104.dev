@@ -6,6 +6,7 @@ import {
   defineTool,
   LocaleSchema,
   jsonBlock,
+  optional,
   textResult,
 } from "@chia/agent-runtime/tools";
 import type { ToolFactory, ToolSpec } from "@chia/agent-runtime/tools";
@@ -53,17 +54,17 @@ export const searchPostsSpec = {
     // Optional, not required-with-a-default: typebox's `default` is documentation for the model,
     // it does not make a field optional, and a required field the model must always restate is
     // pure friction. `execute` falls back to semantic.
-    mode: Type.Optional(
+    mode: optional(
       StringEnum(["semantic", "keyword"], {
         description:
           "`semantic` (default) for conceptual similarity, `keyword` for literal term matching.",
         default: "semantic",
       })
     ),
-    locale: Type.Optional(
+    locale: optional(
       LocaleSchema("Restrict to one locale. Omit to search all.")
     ),
-    limit: Type.Optional(
+    limit: optional(
       Type.Integer({
         description: "Maximum results (1-20).",
         minimum: 1,
@@ -112,10 +113,10 @@ export const getPostSpec = {
       description: "Post slug returned by `search_posts` or `list_posts`.",
       minLength: 1,
     }),
-    locale: Type.Optional(
+    locale: optional(
       LocaleSchema("Return only this locale. Omit for all locales.")
     ),
-    focusHeadings: Type.Optional(
+    focusHeadings: optional(
       Type.Array(Type.String(), {
         description:
           "Heading paths to keep first when the post is too long to return in full. Pass each " +
@@ -189,32 +190,32 @@ export const listPostsSpec = {
     '("how many posts in 2025", "everything tagged react"); search ranks by relevance and ' +
     "cannot do either. Each post carries the `url` of its page; link with it as given.",
   parameters: Type.Object({
-    type: Type.Optional(
+    type: optional(
       StringEnum(["post", "note"], {
         description: "Only posts or only notes. Omit for both.",
       })
     ),
-    tag: Type.Optional(
+    tag: optional(
       Type.String({
         description: "Tag slug from `list_tags`.",
         minLength: 1,
       })
     ),
-    createdFrom: Type.Optional(
+    createdFrom: optional(
       Type.String({
         description:
           "Only posts created at or after this ISO date, e.g. `2025-01-01`.",
         format: "date",
       })
     ),
-    createdBefore: Type.Optional(
+    createdBefore: optional(
       Type.String({
         description:
           "Only posts created before this ISO date, e.g. `2026-01-01`.",
         format: "date",
       })
     ),
-    limit: Type.Optional(
+    limit: optional(
       Type.Integer({
         description: "Maximum results (1-50).",
         minimum: 1,
@@ -222,7 +223,7 @@ export const listPostsSpec = {
         default: 20,
       })
     ),
-    published: Type.Optional(
+    published: optional(
       Type.Boolean({
         description:
           "`true` for published only, `false` for drafts only. Omit for everything you can see.",

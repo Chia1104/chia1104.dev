@@ -1,7 +1,12 @@
 import { Type } from "typebox";
 import * as z from "zod";
 
-import { defineTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
+import {
+  defineTool,
+  jsonBlock,
+  optional,
+  textResult,
+} from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import type {
   ToolCallRefusal,
@@ -119,7 +124,7 @@ export const commitDraftSpec = {
         "When committing with empty metadata, name the empty fields here.",
       minLength: 1,
     }),
-    allowEmptyMetadata: Type.Optional(
+    allowEmptyMetadata: optional(
       Type.Boolean({
         description:
           "Commit even though excerpt, description or summary is empty for some locale. The " +

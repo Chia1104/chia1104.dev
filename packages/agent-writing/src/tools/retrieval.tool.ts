@@ -1,7 +1,12 @@
 import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
-import { defineTool, textResult, truncate } from "@chia/agent-runtime/tools";
+import {
+  defineTool,
+  optional,
+  textResult,
+  truncate,
+} from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { splitByHeadings } from "@chia/ai/embeddings/markdown";
 import { reportError } from "@chia/observability/report";
@@ -70,7 +75,7 @@ export const webSearchSpec = {
         "Topic or phrase to search for. Use `includeDomains` instead of embedding `site:` when restricting domains.",
       minLength: 1,
     }),
-    limit: Type.Optional(
+    limit: optional(
       Type.Integer({
         description: `Maximum results (1-${MAX_SEARCH_RESULTS}).`,
         minimum: 1,
@@ -78,13 +83,13 @@ export const webSearchSpec = {
         default: DEFAULT_SEARCH_RESULTS,
       })
     ),
-    recency: Type.Optional(
+    recency: optional(
       StringEnum([...WEB_SEARCH_RECENCIES], {
         description:
           "Only results published within this window. Omit for no time filter.",
       })
     ),
-    includeDomains: Type.Optional(
+    includeDomains: optional(
       Type.Array(Type.String(), {
         description:
           "Restrict results to these bare hostnames, without protocol or path. Prefer this over writing `site:` in the query.",
