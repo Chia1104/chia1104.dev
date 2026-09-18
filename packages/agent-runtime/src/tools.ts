@@ -1,9 +1,12 @@
 import type { AgentTool, AgentToolResult } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
-import type { TSchema } from "typebox";
+import { IsArray, IsObject, Type } from "typebox";
+import type { TNull, TOptional, TSchema, TUnion } from "typebox";
 import * as z from "zod";
 
 import { locale } from "@chia/db/schema/enums";
+import { asJsonArray, asJsonObject, asJsonValue } from "@chia/utils/json";
+import type { JsonObject, JsonValue } from "@chia/utils/json";
 
 /**
  * pi validates tool arguments with typebox, while domain schemas are zod.
@@ -18,6 +21,72 @@ import { locale } from "@chia/db/schema/enums";
  */
 export const LocaleSchema = (description: string) =>
   StringEnum([...locale.enumValues], { description });
+
+/**
+ * Marks a schema {@link optional} built; `defineTool` drops a `null` argument for it. A `~`
+ * key, non-enumerable like TypeBox's own, survives the deep clone `Type.Optional` makes of
+ * whatever it wraps and never reaches the provider.
+ */
+const OMITS_NULL = "~omitsNull";
+
+interface OmitsNullSchema extends TUnion<[TSchema, TNull]> {
+  [OMITS_NULL]: true;
+}
+
+const omitsNull = (schema: TSchema): schema is OmitsNullSchema =>
+  OMITS_NULL in schema && schema[OMITS_NULL] === true;
+
+const schemaOptions = z
+  .object({ description: z.string().optional(), default: z.json().optional() })
+  .loose();
+
+/**
+ * An optional parameter the model may also pass as `null`. `Type.Optional` alone offers no
+ * way to leave a field out, and a model that fills every field then invents a value (a
+ * lesson id, a heading of `##`); one that offers `null` gets `null`, which `defineTool`
+ * drops before `execute`. A field where `null` means something, such as clearing it, writes
+ * its union by hand instead.
+ */
+export const optional = <T extends TSchema>(schema: T): TOptional<T> => {
+  const { description, default: fallback } = schemaOptions.parse(schema);
+  const nullable = Type.Optional(
+    Type.Union([schema, Type.Null()], {
+      ...(description !== undefined && { description }),
+      ...(fallback !== undefined && { default: fallback }),
+    })
+  );
+  Object.defineProperty(nullable, OMITS_NULL, { value: true });
+  // SAFETY: `defineTool` removes a `null` before `execute`, so the static type never carries
+  // one; the union's own static type is what the cast discards.
+  // oxlint-disable-next-line anti-slop/no-chained-type-assertions
+  return nullable as unknown as TOptional<T>;
+};
+
+/** The arguments without any `null` an {@link optional} parameter received, at any depth. */
+const omitNulls = (schema: TSchema, value: JsonValue): JsonValue => {
+  if (IsArray(schema)) {
+    const items = asJsonArray(value);
+    return items ? items.map((item) => omitNulls(schema.items, item)) : value;
+  }
+  if (!IsObject(schema)) return value;
+  const record = asJsonObject(value);
+  if (!record) return value;
+  const cleaned: JsonObject = {};
+  for (const [key, entry] of Object.entries(record)) {
+    const property = schema.properties[key];
+    if (!property) {
+      cleaned[key] = entry;
+    } else if (entry === null) {
+      if (!omitsNull(property)) cleaned[key] = null;
+    } else {
+      cleaned[key] = omitNulls(
+        omitsNull(property) ? property.anyOf[0] : property,
+        entry
+      );
+    }
+  }
+  return cleaned;
+};
 
 /** A tool's model-facing half: what Pi sends the provider, readable without a turn's ports. */
 export type ToolSpec<TParameters extends TSchema = TSchema> = Omit<
@@ -41,11 +110,23 @@ export const defineTool = <TContext, TParameters extends TSchema>(
   execute: (context: TContext) => AgentTool<TParameters, unknown>["execute"]
 ): ToolFactory<TContext> =>
   Object.assign(
-    (context: TContext): AgentTool => ({
-      ...spec,
-      // SAFETY: Pi validates arguments against `spec.parameters` before it calls `execute`.
-      execute: execute(context) as AgentTool["execute"],
-    }),
+    (context: TContext): AgentTool => {
+      // SAFETY: Pi validates arguments against `spec.parameters` before it calls `execute`;
+      // a `null` on an `optional` parameter passes that check and is dropped here.
+      const run = execute(context) as AgentTool["execute"];
+      return {
+        ...spec,
+        execute: (toolCallId, params, signal, onUpdate) => {
+          const json = asJsonValue(params);
+          return run(
+            toolCallId,
+            json === undefined ? params : omitNulls(spec.parameters, json),
+            signal,
+            onUpdate
+          );
+        },
+      };
+    },
     { spec }
   );
 

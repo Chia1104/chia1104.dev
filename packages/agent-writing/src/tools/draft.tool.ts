@@ -5,6 +5,7 @@ import {
   defineTool,
   LocaleSchema,
   jsonBlock,
+  optional,
   textResult,
 } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
@@ -201,16 +202,16 @@ export const readDraftSpec = {
     "`replace_section`; their results show where each edit landed, so no read-back is needed.",
   parameters: Type.Object({
     draftId: DraftIdSchema,
-    locale: Type.Optional(
+    locale: optional(
       LocaleSchema(
         "Locale whose body to return. Omit to get metadata and the locale list only."
       )
     ),
-    heading: Type.Optional(HeadingSchema),
-    fromLine: Type.Optional(
+    heading: optional(HeadingSchema),
+    fromLine: optional(
       LineSchema("First body line to return, 1-based. Omit to start at line 1.")
     ),
-    toLine: Type.Optional(
+    toLine: optional(
       LineSchema(
         "Last body line to return, inclusive. Omit to read to the end."
       )
@@ -502,7 +503,7 @@ export const editDraftContentSpec = {
         newString: Type.String({
           description: "Replacement text. Pass an empty string to delete.",
         }),
-        replaceAll: Type.Optional(
+        replaceAll: optional(
           Type.Boolean({
             description:
               "Replace every occurrence instead of failing on ambiguity.",

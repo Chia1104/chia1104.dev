@@ -1,6 +1,11 @@
 import { Type } from "typebox";
 
-import { defineTool, jsonBlock, textResult } from "@chia/agent-runtime/tools";
+import {
+  defineTool,
+  jsonBlock,
+  optional,
+  textResult,
+} from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 import { RERANK_ANSWERABLE_FLOOR } from "@chia/ai/rerank/provider";
@@ -52,7 +57,7 @@ export const saveMemorySpec = {
       minLength: 1,
       maxLength: MAX_FACT_CHARS,
     }),
-    sourceUrl: Type.Optional(
+    sourceUrl: optional(
       Type.String({
         description:
           "Absolute http(s) URL of the page that establishes the fact. Omit only for facts that " +
@@ -94,11 +99,13 @@ export const proposeLessonSpec = {
   label: TOOL_INFO_BY_NAME[TOOL_NAMES.proposeLesson].label,
   description:
     "Propose a standing lesson for the operator to review: a preference about structure, " +
-    "tone, length, sourcing or what to avoid that they just stated, corrected you on, or " +
-    "declined a commit over, and that should apply to every future post. It takes effect " +
-    "only once they approve it in the dashboard. Pass `supersedes` when their feedback " +
-    "contradicts a learned preference listed in your context; the new text replaces that " +
-    "preference entirely. Not for facts (`save_memory`) or for requests about this post alone.",
+    "tone, length, sourcing or what to avoid that they stated, corrected you on, declined a " +
+    "commit over, or that you noticed as a pattern across their edits, and that should apply " +
+    "to every future post. It takes effect only once they approve it in the dashboard. Pass " +
+    "`supersedes` only with an id from your context: a learned preference the feedback " +
+    "contradicts, or a lesson this session already proposed that you are revising; the new " +
+    "text replaces it entirely. Otherwise omit it. Not for facts (`save_memory`) or for " +
+    "requests about this post alone.",
   parameters: Type.Object({
     title: Type.String({
       description:
@@ -113,10 +120,11 @@ export const proposeLessonSpec = {
       minLength: 1,
       maxLength: MAX_LESSON_CHARS,
     }),
-    supersedes: Type.Optional(
+    supersedes: optional(
       Type.Integer({
         description:
-          "Id of the learned preference this one replaces, from the list in your context.",
+          "Id of the learned preference this one replaces, or of the pending lesson this " +
+          "session proposed and now revises, both from your context. Omit when neither applies.",
         minimum: 1,
       })
     ),
@@ -163,7 +171,7 @@ export const searchMemorySpec = {
       description: "Topic, name, API or claim to look for.",
       minLength: 1,
     }),
-    limit: Type.Optional(
+    limit: optional(
       Type.Integer({
         description: `Maximum hits (1-${MAX_SEARCH_LIMIT}).`,
         minimum: 1,
@@ -236,7 +244,7 @@ export const getMemorySpec = {
       description: "Memory id from `search_memory`.",
       minimum: 1,
     }),
-    focusHeadings: Type.Optional(
+    focusHeadings: optional(
       Type.Array(Type.String(), {
         description:
           "Heading paths to keep first when the memory is too long to return in full. Pass " +

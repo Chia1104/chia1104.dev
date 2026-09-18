@@ -24,7 +24,7 @@ import {
 import { memoryHooks } from "../services/agent-memory-indexing.service";
 
 const LESSON_TIMEOUT_MS = 60_000;
-/** Lessons the model is shown per status; the prompt clips each active one's content. */
+/** Lessons the model is shown per status; the prompt clips each one's content. */
 const LESSONS_SHOWN_MAX = 50;
 
 export interface MemoryConsolidationResult {
@@ -183,6 +183,8 @@ export const consolidateSessionMemoryStep = async (request: {
 
   const activeIds = new Set(active.map((lesson) => lesson.id));
   const pendingById = new Map(pending.map((lesson) => [lesson.id, lesson]));
+  /** A pending target is archived by its first revision; a second would hit the archived row. */
+  const revised = new Set<number>();
   const created: number[] = [];
   let reinforced = 0;
   for (const proposal of proposals) {
@@ -193,7 +195,14 @@ export const consolidateSessionMemoryStep = async (request: {
       if (await reinforceLessonService(db, { id: proposal.id })) reinforced++;
       continue;
     }
-    if (proposal.action === "revise" && !activeIds.has(proposal.id)) continue;
+    if (
+      proposal.action === "revise" &&
+      (revised.has(proposal.id) ||
+        (!activeIds.has(proposal.id) && !pendingById.has(proposal.id)))
+    ) {
+      continue;
+    }
+    if (proposal.action === "revise") revised.add(proposal.id);
     const saved = await createMemoryService(
       db,
       {

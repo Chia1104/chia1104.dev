@@ -1,6 +1,11 @@
 import { Type } from "typebox";
 
-import { defineTool, textResult, truncate } from "@chia/agent-runtime/tools";
+import {
+  defineTool,
+  optional,
+  textResult,
+  truncate,
+} from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 
 import type {
@@ -26,7 +31,7 @@ const RepoSchema = Type.String({
   minLength: 3,
 });
 
-const RefSchema = Type.Optional(
+const RefSchema = optional(
   Type.String({
     description:
       "Branch, tag or commit sha. Omit for the default branch. Within a turn a branch stays pinned to the commit it first resolved to.",
@@ -120,13 +125,13 @@ export const githubListTreeSpec = {
   parameters: Type.Object({
     repo: RepoSchema,
     ref: RefSchema,
-    path: Type.Optional(
+    path: optional(
       Type.String({
         description:
           "Directory to list, relative to the repository root. Omit for the root.",
       })
     ),
-    recursive: Type.Optional(
+    recursive: optional(
       Type.Boolean({
         description: `Include every nested entry. Capped at ${MAX_TREE_ENTRIES} entries; prefer a deeper \`path\` over a recursive root listing on a large repository.`,
         default: false,
@@ -227,14 +232,14 @@ export const githubReadFileSpec = {
       description: "File path relative to the repository root.",
       minLength: 1,
     }),
-    startLine: Type.Optional(
+    startLine: optional(
       Type.Integer({
         description:
           "First line to return (1-based). Omit to start at the top.",
         minimum: 1,
       })
     ),
-    endLine: Type.Optional(
+    endLine: optional(
       Type.Integer({
         description: "Last line to return, inclusive. Omit to read to the end.",
         minimum: 1,
