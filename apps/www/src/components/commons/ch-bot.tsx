@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 
 import { motion, useReducedMotion } from "motion/react";
 
@@ -18,6 +19,17 @@ export const CHBot = ({
   const { isDarkMode } = useDarkMode();
   const reducedMotion = useReducedMotion();
   const breathe = !resting && !reducedMotion;
+  // Rendering `Bot` on the server makes Next put the shader runtime in the initial HTML of every page.
+  const [idle, setIdle] = useState(false);
+
+  useEffect(() => {
+    if (!("requestIdleCallback" in window)) {
+      const timer = setTimeout(() => setIdle(true), 200);
+      return () => clearTimeout(timer);
+    }
+    const handle = requestIdleCallback(() => setIdle(true));
+    return () => cancelIdleCallback(handle);
+  }, []);
 
   return (
     <motion.span
@@ -28,33 +40,37 @@ export const CHBot = ({
         ease: "easeInOut",
       }}
       className="inline-flex">
-      <Bot
-        solidColorProps={{ color: isDarkMode ? "#08071a" : "#ffffff" }}
-        {...props}
-        blobsProps={
-          reducedMotion || resting
-            ? {
-                alpha: {
-                  ...props.blobsProps?.alpha,
-                  speed: reducedMotion ? 0 : 0.2,
-                },
-                beta: {
-                  ...props.blobsProps?.beta,
-                  speed: reducedMotion ? 0 : 0.2,
-                },
-                gamma: {
-                  ...props.blobsProps?.gamma,
-                  speed: reducedMotion ? 0 : 0.2,
-                },
-              }
-            : props.blobsProps
-        }
-        chromaFlowProps={
-          reducedMotion
-            ? { ...props.chromaFlowProps, visible: false }
-            : props.chromaFlowProps
-        }
-      />
+      {idle ? (
+        <Bot
+          solidColorProps={{ color: isDarkMode ? "#08071a" : "#ffffff" }}
+          {...props}
+          blobsProps={
+            reducedMotion || resting
+              ? {
+                  alpha: {
+                    ...props.blobsProps?.alpha,
+                    speed: reducedMotion ? 0 : 0.2,
+                  },
+                  beta: {
+                    ...props.blobsProps?.beta,
+                    speed: reducedMotion ? 0 : 0.2,
+                  },
+                  gamma: {
+                    ...props.blobsProps?.gamma,
+                    speed: reducedMotion ? 0 : 0.2,
+                  },
+                }
+              : props.blobsProps
+          }
+          chromaFlowProps={
+            reducedMotion
+              ? { ...props.chromaFlowProps, visible: false }
+              : props.chromaFlowProps
+          }
+        />
+      ) : (
+        <span className={props.className} />
+      )}
     </motion.span>
   );
 };

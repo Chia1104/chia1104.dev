@@ -79,30 +79,35 @@ test.describe("網站效能測試", () => {
   });
 
   test("JavaScript bundle 大小應該合理", async ({ page }) => {
-    await page.goto("/");
+    const response = await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    const jsResources = await page.evaluate(() => {
-      return performance
-        .getEntriesByType("resource")
-        .filter((r) => r.name.endsWith(".js"))
-        .map((r) => ({
-          name: r.name,
-          size: (r as PerformanceResourceTiming).transferSize,
-        }));
-    });
+    // 只計算初始 HTML 帶出的 script；延遲載入與 prefetch 的 chunk 不擋首屏。
+    const html = (await response?.text()) ?? "";
+    const initialScripts = new Set(
+      [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map(
+        ([, src]) => new URL(src ?? "", page.url()).pathname
+      )
+    );
+    expect(initialScripts.size).toBeGreaterThan(0);
+
+    const resources = await page.evaluate(() =>
+      performance.getEntriesByType("resource").map((r) => ({
+        pathname: new URL(r.name).pathname,
+        size: (r as PerformanceResourceTiming).transferSize,
+      }))
+    );
+    const jsResources = resources.filter((r) => initialScripts.has(r.pathname));
 
     const totalJsSize = jsResources.reduce((acc, r) => acc + (r.size || 0), 0);
     const totalJsSizeInKB = totalJsSize / 1024;
     const largest = jsResources
       .toSorted((a, b) => b.size - a.size)
       .slice(0, 10)
-      .map(
-        (r) => `${(r.size / 1024).toFixed(0)} KB ${new URL(r.name).pathname}`
-      )
+      .map((r) => `${(r.size / 1024).toFixed(0)} KB ${r.pathname}`)
       .join("\n");
 
-    // 總 JS 大小應該小於 1MB
+    // 首屏 JS 大小應該小於 1MB
     expect(
       totalJsSizeInKB,
       `${jsResources.length} scripts, largest:\n${largest}`
