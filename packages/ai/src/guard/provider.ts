@@ -47,7 +47,7 @@ const apiKey = (): string => {
   return env.GUARD_API_KEY;
 };
 
-/** `./jev.ts` is imported inside the calls so resolving the provider does not load the gateway SDK. */
+/** `./jev.ts` is imported inside the calls so resolving the provider does not load the TypeSafe SDK. */
 export const jevGuardProvider = (): GuardProvider => ({
   id: JEV_MODEL_ID,
   checkMessage: async (text, options) =>

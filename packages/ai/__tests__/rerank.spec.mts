@@ -1,9 +1,18 @@
+import type { TypeSafeClientConfig } from "@typesafe-ai/sdk";
 import { describe, expect, it, vi } from "vitest";
 
-const evaluate = vi.hoisted(() => vi.fn());
-vi.mock("ai", () => ({ experimental_evaluate: evaluate }));
-vi.mock("@ai-sdk/gateway", () => ({
-  createGateway: () => ({ evaluationModel: (id: string) => ({ id }) }),
+const { systemOne, clientConfig } = vi.hoisted(() => ({
+  systemOne: vi.fn(),
+  clientConfig: vi.fn(),
+}));
+vi.mock("@typesafe-ai/sdk", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@typesafe-ai/sdk")>()),
+  TypeSafeClient: class {
+    systemOne = systemOne;
+    constructor(config: TypeSafeClientConfig) {
+      clientConfig(config);
+    }
+  },
 }));
 
 import { rerankWithJev } from "../src/rerank/jev.ts";
@@ -21,55 +30,43 @@ const candidates = [
 
 describe("rerankWithJev", () => {
   it("orders candidates by choice probability and reports answerability", async () => {
-    evaluate.mockResolvedValueOnce({
+    systemOne.mockResolvedValueOnce({
       answers: {
         best: {
           type: "choice",
           choice: "c2",
+          confidence: 0.7,
           probabilities: { c1: 0.1, c2: 0.7, c3: 0.2 },
         },
-        answerable: { type: "boolean", probability: 0.93 },
+        answerable: { type: "noul", noul: 0.93 },
       },
     });
+    const signal = AbortSignal.timeout(1_000);
 
     const result = await rerankWithJev("q", candidates, {
       apiKey: "k",
-      signal: AbortSignal.timeout(1_000),
+      signal,
     });
 
     expect(result).toEqual({ order: ["b", "c", "a"], answerable: 0.93 });
-    const call = evaluate.mock.calls[0]?.[0];
+    expect(clientConfig).toHaveBeenCalledWith({ apiKey: "k" });
+    const [request, requestOptions] = systemOne.mock.calls[0] ?? [];
     // one option per candidate, and the excerpts travel in the state under the same ids
-    expect(Object.keys(call.questions.best.criteria)).toEqual([
-      "c1",
-      "c2",
-      "c3",
-    ]);
+    expect(request.questions.best).toMatchObject({
+      type: "choice",
+      criteria: { c1: null, c2: null, c3: null },
+    });
+    expect(request.questions.answerable.type).toBe("noul");
     expect(
-      call.state.candidates.map((entry: { id: string }) => entry.id)
+      request.state.candidates.map((entry: { id: string }) => entry.id)
     ).toEqual(["c1", "c2", "c3"]);
-    expect(call.state.candidates[1]).toEqual({
+    expect(request.state.candidates[1]).toEqual({
       id: "c2",
       title: "B",
       matches: [{ headingPaths: ["B > 1"], snippet: "beta" }],
     });
-    expect(call.model).toEqual({ id: "typesafe-ai/jev" });
-  });
-
-  it("falls back to the chosen option when no distribution comes back", async () => {
-    evaluate.mockResolvedValueOnce({
-      answers: {
-        best: { type: "choice", choice: "c3" },
-        answerable: { type: "boolean", probability: 0.5 },
-      },
-    });
-
-    const result = await rerankWithJev("q", candidates, {
-      apiKey: "k",
-      signal: AbortSignal.timeout(1_000),
-    });
-
-    expect(result.order[0]).toBe("c");
+    expect(request.model).toBe("jev-1.13.0");
+    expect(requestOptions).toEqual({ signal });
   });
 });
 

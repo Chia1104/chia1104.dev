@@ -1,7 +1,10 @@
 import { env, RerankProviderId } from "../env.ts";
 
-/** Vercel AI Gateway id, as `getAvailableModels()` lists it; the SDK's typed `jev-latest` is not served. */
-export const JEV_MODEL_ID = "typesafe-ai/jev";
+/**
+ * Pinned, not the `jev-latest` alias: `RERANK_ANSWERABLE_FLOOR` and `GUARD_THRESHOLD` were
+ * measured on this version, so it moves only with a `rag-eval` and `guard-eval` run.
+ */
+export const JEV_MODEL_ID = "jev-1.13.0";
 
 /**
  * Below this `answerable` the corpus probably does not cover the query. Measured on
@@ -41,7 +44,7 @@ export interface RerankProvider {
 
 /**
  * `./jev.ts` is imported inside `rerank`, not at module scope: resolving the
- * provider is on the path of every search, but the gateway SDK is only needed
+ * provider is on the path of every search, but the TypeSafe SDK is only needed
  * once a call is made.
  */
 export const jevRerankProvider = (): RerankProvider => ({

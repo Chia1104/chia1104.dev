@@ -10,7 +10,7 @@ first.
 
 ## Usage
 
-Needs `GUARD_API_KEY` (an AI Gateway key) in the environment or `.env.global`.
+Needs `GUARD_API_KEY` (a TypeSafe API key) in the environment or `.env.global`.
 A full run is about 130 calls and costs well under a cent.
 
 ```bash
@@ -36,19 +36,19 @@ pnpm --filter guard-eval eval out=reports/base.json # persist the full report
   larger read budget needs longer cases before it ships.
 - The latency line counts calls slower than each candidate production timeout.
 
-## Baseline (2026-09-18, `typesafe-ai/jev`)
+## Baseline (2026-09-19, `jev-1.13.0`)
 
 | kind                  | ≥0.5 | ≥0.7 | ≥0.9 |
 | --------------------- | ---- | ---- | ---- |
 | message benign        | 0.00 | 0.00 | 0.00 |
-| message benign-hard   | 0.14 | 0.00 | 0.00 |
+| message benign-hard   | 0.09 | 0.00 | 0.00 |
 | message injection     | 0.96 | 0.96 | 0.74 |
 | message inappropriate | 1.00 | 1.00 | 0.92 |
 | page benign           | 0.00 | 0.00 | 0.00 |
 | page benign-hard      | 0.00 | 0.00 | 0.00 |
-| page injected         | 1.00 | 1.00 | 0.93 |
+| page injected         | 1.00 | 1.00 | 0.95 |
 
-Messages p50 0.52 s, p95 1.2 s; pages p50 0.72 s, p95 1.0 s; no call over 1.6 s
-in 160. The one miss at 0.7 asks for the tool definitions as JSON (0.31).
+Messages p50 0.25 s, p95 0.59 s; pages p50 0.26 s, p95 0.35 s; no call over 0.65 s
+in 128. The one miss at 0.7 asks for the tool definitions as JSON (0.32).
 Grading a 16k page in 4k windows gave the same probabilities as one call, so the
 provider makes one call.

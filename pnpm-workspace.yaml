@@ -55,6 +55,7 @@ catalogs:
     "@ai-sdk/react": 4.0.108
     "@anthropic-ai/sdk": 0.123.0
     "@google/genai": 2.19.0
+    "@typesafe-ai/sdk": 0.6.0
     ai: 7.0.105
     firecrawl: 4.38.0
     js-tiktoken: ^1.0.21
