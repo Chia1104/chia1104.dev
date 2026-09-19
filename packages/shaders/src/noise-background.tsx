@@ -1,20 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import type { ComponentPropsWithoutRef, ReactNode, RefObject } from "react";
 
-import {
-  Circle,
-  FilmGrain,
-  FlowField,
-  Shader,
-  SolidColor,
-} from "shaders/react";
 import { useResizeObserver } from "usehooks-ts";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
 import useShaderEnvironment from "./utils/use-shader-environment";
+
+/** A static import would put the whole shader runtime in the initial scripts of every page that renders this. */
+const NoiseBackgroundLayer = lazy(() => import("./noise-background-layer"));
 
 type GradientColors = readonly [string, string];
 
@@ -85,45 +81,25 @@ export const NoiseBackground = ({
         containerClassName
       )}>
       {canRender && status !== "unavailable" ? (
-        <Shader
-          aria-hidden
-          className="pointer-events-none absolute inset-0 size-full"
-          onReady={() => setStatus("ready")}
-          onUnavailable={() => setStatus("unavailable")}>
-          {/* The base sits inside the flow so its render target stays opaque; soft edges over a
-              transparent target lose their color when the flow resamples them. */}
-          <FlowField
-            strength={0.25}
-            detail={0.5}
-            speed={flowSpeed}
-            evolutionSpeed={flowSpeed}>
-            <SolidColor
-              color={isDarkMode ? BASE_COLOR.dark : BASE_COLOR.light}
-            />
-            <Circle
-              center={{ x: 0.35, y: 0.4 }}
-              radius={glowRadius}
-              softness={1}
-              color={colors[0]}
-              opacity={gradientLayerOpacity?.first ?? 0.4}
-            />
-            <Circle
-              center={{ x: 0.7, y: 0.65 }}
-              radius={glowRadius}
-              softness={1}
-              color={colors[1]}
-              opacity={gradientLayerOpacity?.second ?? 0.3}
-            />
-          </FlowField>
-          <FilmGrain
-            strength={
+        <Suspense fallback={null}>
+          <NoiseBackgroundLayer
+            baseColor={isDarkMode ? BASE_COLOR.dark : BASE_COLOR.light}
+            colors={colors}
+            glowRadius={glowRadius}
+            layerOpacity={{
+              first: gradientLayerOpacity?.first ?? 0.4,
+              second: gradientLayerOpacity?.second ?? 0.3,
+            }}
+            grain={
               isDarkMode
                 ? (noiseIntensity?.dark ?? 0.05)
                 : (noiseIntensity?.light ?? 0.3)
             }
-            bias={0}
+            flowSpeed={flowSpeed}
+            onReady={() => setStatus("ready")}
+            onUnavailable={() => setStatus("unavailable")}
           />
-        </Shader>
+        </Suspense>
       ) : null}
       <div className={cn("relative z-10", className)}>{children}</div>
     </div>
