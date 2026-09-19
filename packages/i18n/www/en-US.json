@@ -104,6 +104,7 @@
     "view-as-markdown": "View as Markdown",
     "open-in-gemini": "Open in Gemini",
     "related-feeds": "Related articles",
+    "related-feeds-description": "Ordered by how closely each one matches this article.",
     "warning": "Warning"
   },
   "projects": {

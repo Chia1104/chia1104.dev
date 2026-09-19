@@ -20,13 +20,11 @@ const imageSize = {
 interface CreateFeedOpenGraphImageOptions {
   locale: string;
   slug: string;
-  theme?: "light" | "dark";
 }
 
 export async function createFeedOpenGraphImage({
   locale,
   slug,
-  theme = "light",
 }: CreateFeedOpenGraphImageOptions) {
   const { error, data: post } = await safe(
     client.feeds["details-by-slug"]({
@@ -47,7 +45,6 @@ export async function createFeedOpenGraphImage({
 
   return new ImageResponse(
     <OpenGraph
-      theme={theme}
       metadata={{
         title: translation.title,
         excerpt: translation.excerpt,

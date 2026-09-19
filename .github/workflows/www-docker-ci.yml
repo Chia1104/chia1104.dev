@@ -26,7 +26,6 @@ env:
   GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-  SHA_256_HASH: ${{ secrets.SHA_256_HASH }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   GIT_HASH: ${{ github.sha }}
@@ -72,7 +71,6 @@ jobs:
             GH_PUBLIC_TOKEN=${{ env.GH_PUBLIC_TOKEN }}
             TURBO_TEAM=${{ env.TURBO_TEAM }}
             TURBO_TOKEN=${{ env.TURBO_TOKEN }}
-            SHA_256_HASH=${{ env.SHA_256_HASH }}
             REDIS_URL=${{ env.REDIS_URL }}
             UPSTASH_TOKEN=${{ env.UPSTASH_TOKEN }}
             CACHE_PROVIDER=upstash

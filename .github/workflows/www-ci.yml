@@ -20,7 +20,6 @@ concurrency:
 env:
   APP_CODE: www
   GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
-  SHA_256_HASH: ${{ secrets.SHA_256_HASH }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   GIT_HASH: ${{ github.sha }}

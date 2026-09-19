@@ -13,7 +13,6 @@ interface Props {
     excerpt?: CSSProperties;
     subtitle?: CSSProperties;
   };
-  theme?: "light" | "dark";
 }
 
 // million-ignore

@@ -130,13 +130,9 @@ export async function SpotifyPlaylist() {
     <FadeIn className="w-full flex-col">
       <NoiseBackground
         gradientColors={{
-          light: ["#F9C851", "#FCA5A5", "#FECACA"],
-          // Tailwind purple-400, pink-400 and pink-600; the shader needs concrete colors.
-          dark: [
-            "oklch(71.4% 0.203 305.504)",
-            "oklch(71.8% 0.202 349.761)",
-            "oklch(59.2% 0.249 0.584)",
-          ],
+          light: ["#F9C851", "#FCA5A5"],
+          // Tailwind purple-400 and pink-400; the shader needs concrete colors.
+          dark: ["oklch(71.4% 0.203 305.504)", "oklch(71.8% 0.202 349.761)"],
         }}
         className="page-sm:grid-cols-2 page-sm:py-3 grid w-full grid-cols-1 gap-2 overflow-hidden px-5 py-7">
         <div className="flex w-full items-center">

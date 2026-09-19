@@ -803,7 +803,7 @@ importers:
         version: 2.15.0(@types/node@26.4.1)(typescript@7.0.2)
       nx:
         specifier: catalog:tooling
-        version: 23.2.1(@swc/core@1.16.2)
+        version: 23.2.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
       oxfmt:
         specifier: catalog:oxc
         version: 0.68.0
@@ -2620,6 +2620,9 @@ importers:
       three:
         specifier: catalog:three
         version: 0.186.0
+      usehooks-ts:
+        specifier: catalog:ui
+        version: 3.1.1(react@19.3.0)
     devDependencies:
       '@chia/test':
         specifier: workspace:*
@@ -24506,7 +24509,7 @@ snapshots:
     optionalDependencies:
       next: 16.3.5(@babel/core@7.29.7(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
 
-  nx@23.2.1(@swc/core@1.16.2):
+  nx@23.2.1(@swc/core@1.16.2(@swc/helpers@0.5.23)):
     dependencies:
       '@clack/core': 1.4.3
       '@clack/prompts': 1.7.0
