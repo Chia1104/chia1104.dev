@@ -117,7 +117,14 @@ export const useFormRules = () => {
           error: "File size must be less than 10MB",
         })
         .mime(
-          ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"],
+          [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/heic",
+            "image/heif",
+            "image/svg+xml",
+          ],
           {
             error: "File must be an image",
           }
@@ -172,6 +179,7 @@ export const useFormRules = () => {
               "image/webp",
               "image/heic",
               "image/heif",
+              "image/svg+xml",
             ],
             { error: "Invalid file type or size" }
           ),

@@ -18,6 +18,7 @@ export const createSignedUrlForUploadContract = oc
         "image/webp",
         "image/heic",
         "image/heif",
+        "image/svg+xml",
         "application/pdf",
         "video/mp4",
         "video/webm",
