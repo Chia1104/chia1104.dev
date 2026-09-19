@@ -5,6 +5,8 @@ import { basename, join } from "node:path";
 // Turbo's graph does not cover these, so a change here selects every workspace.
 const CI_SOURCES = [".github/workflows/ci.yml", ".github/scripts"];
 const E2E_WORKSPACE = "www-e2e";
+// Deploys on Vercel, so its Dockerfile is not a deployment artifact.
+const SKIPPED_IMAGES = ["www"];
 
 const base = process.env.TURBO_SCM_BASE;
 if (!base) throw new Error("TURBO_SCM_BASE is required");
@@ -37,7 +39,7 @@ const { packages } = JSON.parse(
 
 const names = packages.items.map((item) => item.name);
 // A Dockerfile that runs `turbo prune` copies the whole monorepo, so it builds from the root.
-const images = packages.items
+const deployables = packages.items
   .map((item) => ({ ...item, dockerfile: join(item.path, "Dockerfile") }))
   .filter((item) => existsSync(item.dockerfile))
   .map((item) => ({
@@ -48,6 +50,9 @@ const images = packages.items
       ? "."
       : item.path,
   }));
+const images = deployables.filter(
+  (item) => !SKIPPED_IMAGES.includes(item.name)
+);
 
 const outputs = {
   all: String(ciChanged),
@@ -55,7 +60,7 @@ const outputs = {
   e2e: String(names.includes(E2E_WORKSPACE)),
   images: JSON.stringify(images),
   labels: JSON.stringify({
-    labels: images.map((image) => `area:${basename(image.path)}`),
+    labels: deployables.map((item) => `area:${basename(item.path)}`),
   }),
 };
 
