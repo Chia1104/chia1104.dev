@@ -40,4 +40,5 @@ Both frontends call `service` through the contract-first oRPC client. `service` 
 - Server code logs through `@chia/observability/logger`. The boundary that handles a failure this system caused calls `reportError` once; caller failures are logged at most.
 - Resolve service URLs with `withServiceEndpoint` from `@chia/utils/config`.
 - Scope validation to affected workspaces with `pnpm turbo run <task> --filter <name>...` when practical.
+- CI selects work from Turbo's dependency graph with `--affected`; do not add path filters or per-app workflows. A workspace with a `Dockerfile` gets an image build, except `www`, which deploys on Vercel.
 - Branch from and open pull requests into `develop`.

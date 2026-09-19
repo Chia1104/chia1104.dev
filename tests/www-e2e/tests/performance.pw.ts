@@ -94,9 +94,19 @@ test.describe("網站效能測試", () => {
 
     const totalJsSize = jsResources.reduce((acc, r) => acc + (r.size || 0), 0);
     const totalJsSizeInKB = totalJsSize / 1024;
+    const largest = jsResources
+      .toSorted((a, b) => b.size - a.size)
+      .slice(0, 10)
+      .map(
+        (r) => `${(r.size / 1024).toFixed(0)} KB ${new URL(r.name).pathname}`
+      )
+      .join("\n");
 
     // 總 JS 大小應該小於 1MB
-    expect(totalJsSizeInKB).toBeLessThan(1024);
+    expect(
+      totalJsSizeInKB,
+      `${jsResources.length} scripts, largest:\n${largest}`
+    ).toBeLessThan(1024);
   });
 
   test("CSS 資源應該被正確載入", async ({ page }) => {
