@@ -272,7 +272,7 @@ interface RerankProvider {
 }
 ```
 
-`RERANK_PROVIDER` selects it (`none` by default) and `RERANK_API_KEY` authenticates it. The only implementation is TypeSafe's Jev through the Vercel AI Gateway (`typesafe-ai/jev`, AI SDK `experimental_evaluate`): one `choice` over the candidates and one `boolean` on whether any answers the query, evaluated in a single call. The gateway SDK is loaded on the first call, not when the provider is resolved. Non-English quality is undocumented by the vendor; measured on this corpus, Chinese queries against English pages rank correctly.
+`RERANK_PROVIDER` selects it (`none` by default) and `RERANK_API_KEY` authenticates it. The only implementation is TypeSafe's Jev through `@typesafe-ai/sdk` (`systemOne`, pinned to the version the thresholds were measured on), so the key is a TypeSafe API key: one `choice` over the candidates and one `noul` on whether any answers the query, evaluated in a single call. The SDK is loaded on the first call, not when the provider is resolved. Non-English quality is undocumented by the vendor; measured on this corpus, Chinese queries against English pages rank correctly.
 
 The provider layer also:
 

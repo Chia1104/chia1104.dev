@@ -29,7 +29,8 @@
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
     "shaders": "catalog:three",
-    "three": "catalog:three"
+    "three": "catalog:three",
+    "usehooks-ts": "catalog:ui"
   },
   "devDependencies": {
     "@chia/test": "workspace:*",

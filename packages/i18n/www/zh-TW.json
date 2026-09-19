@@ -104,6 +104,7 @@
     "view-as-markdown": "以 Markdown 格式開啟",
     "open-in-gemini": "在 Gemini 中開啟",
     "related-feeds": "相關文章",
+    "related-feeds-description": "依內容與本文的相近程度排序。",
     "warning": "警告"
   },
   "projects": {

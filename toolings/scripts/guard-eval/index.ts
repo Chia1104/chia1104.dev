@@ -149,7 +149,7 @@ const main = async () => {
   const options = getCLIOptions();
   const apiKey = process.env.GUARD_API_KEY;
   if (!apiKey) {
-    throw new Error("GUARD_API_KEY is not set; it is an AI Gateway key.");
+    throw new Error("GUARD_API_KEY is not set; it is a TypeSafe API key.");
   }
   const timeoutMs = Number(options.timeout ?? 20_000);
   const concurrency = Number(options.concurrency ?? 4);

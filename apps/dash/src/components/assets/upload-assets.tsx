@@ -137,6 +137,7 @@ export function UploadAssets({
             | "image/webp"
             | "image/heic"
             | "image/heif"
+            | "image/svg+xml"
             | "application/pdf"
             | "video/mp4"
             | "video/webm"
@@ -402,7 +403,7 @@ export function UploadAssets({
                       ref={fileInputRef}
                       type="file"
                       multiple
-                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf,video/mp4,video/webm,video/quicktime,video/x-msvideo,video/avi"
+                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/svg+xml,application/pdf,video/mp4,video/webm,video/quicktime,video/x-msvideo,video/avi"
                       onChange={handleFileSelectWithUpload}
                       className="hidden"
                       id="file-upload"

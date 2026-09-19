@@ -141,8 +141,8 @@ export const AIForm = ({ provider }: Props) => {
   const handleSubmit = form.handleSubmit((data) => save.mutate(data));
 
   return (
-    <Form onSubmit={handleSubmit} className="space-y-4">
-      <Fieldset>
+    <Form onSubmit={handleSubmit}>
+      <Fieldset className="flex flex-col gap-4">
         <Fieldset.Group>
           <Controller
             control={form.control}
@@ -186,10 +186,8 @@ export const AIForm = ({ provider }: Props) => {
           />
         </Fieldset.Group>
 
-        <Fieldset.Actions className="flex w-full items-center gap-2">
-          <SubmitForm size="sm" fullWidth>
-            Save
-          </SubmitForm>
+        <Fieldset.Actions className="flex gap-2 self-end">
+          <SubmitForm size="sm">Save</SubmitForm>
           <CheckAIKeyStatus provider={provider} />
           {isConfigured ? (
             <Button

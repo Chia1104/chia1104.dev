@@ -39,6 +39,11 @@
   }
 }
 
+/* The frame of every workspace page and the footer, so their edges line up. */
+@utility page-container {
+  @apply page-md:px-6 page-lg:px-8 mx-auto w-full max-w-6xl px-4;
+}
+
 @layer components {
   /* The draft editor's change bar: Monaco places these in its line-decorations lane. */
   .monaco-editor .draft-change-added,

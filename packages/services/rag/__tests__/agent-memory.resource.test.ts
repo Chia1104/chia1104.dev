@@ -31,6 +31,7 @@ const memory = (overrides: Partial<AgentMemory> = {}): AgentMemory => ({
   content:
     "## Iterative scans\n\nSet `hnsw.iterative_scan = relaxed_order` on pgvector 0.8+.\n\n## Why\n\nFiltered queries otherwise under-fetch candidates.",
   sourceUrl: "https://github.com/pgvector/pgvector",
+  fetchedAt: null,
   sessionId: "session-1",
   supersedesId: null,
   reinforcements: 0,

@@ -10,7 +10,7 @@ import { ProfileSetting } from "@/components/settings/profile-setting";
 
 const Pages = () => {
   return (
-    <div className="mx-auto flex w-full max-w-175 flex-col items-start gap-5 p-4 py-10">
+    <div className="page-container flex flex-col items-start gap-5 py-8">
       <h1 className="text-2xl font-semibold">Settings</h1>
       <ErrorBoundary>
         <AuthGuard fallback={<Spinner />}>

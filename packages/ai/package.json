@@ -109,6 +109,7 @@
     "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "catalog:env",
+    "@typesafe-ai/sdk": "catalog:ai",
     "ai": "catalog:ai",
     "es-toolkit": "catalog:",
     "github-slugger": "catalog:unified",

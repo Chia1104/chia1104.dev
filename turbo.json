@@ -87,8 +87,7 @@
     "GH_PUBLIC_TOKEN",
     "INTERNAL_SERVICE_ENDPOINT",
     "CH_API_KEY",
-    "CF_BYPASS_TOKEN",
-    "SHA_256_HASH"
+    "CF_BYPASS_TOKEN"
   ],
   "globalPassThroughEnv": [
     "APP_CODE",
@@ -115,8 +114,7 @@
     "GH_PUBLIC_TOKEN",
     "INTERNAL_SERVICE_ENDPOINT",
     "CH_API_KEY",
-    "CF_BYPASS_TOKEN",
-    "SHA_256_HASH"
+    "CF_BYPASS_TOKEN"
   ],
   "globalDependencies": [".env.global", ".env"]
 }

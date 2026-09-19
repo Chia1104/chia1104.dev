@@ -16,7 +16,7 @@ const Footer = ({ className }: { className?: string }) => {
         "bg-sidebar border-sidebar-border flex w-full flex-col border-t",
         className
       )}>
-      <div className="page-md:flex page-md:items-center page-md:justify-between page-lg:px-8 mx-auto w-full px-6 py-5">
+      <div className="page-container page-md:flex page-md:items-center page-md:justify-between py-5">
         <div className="page-md:order-2 page-md:items-end flex flex-col items-center justify-center gap-2">
           <ThemeSwitch
             dropdownProps={{

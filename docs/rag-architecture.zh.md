@@ -276,7 +276,7 @@ interface RerankProvider {
 }
 ```
 
-由 `RERANK_PROVIDER` 選擇（預設 `none`），以 `RERANK_API_KEY` 認證。目前唯一的實作是透過 Vercel AI Gateway 呼叫 TypeSafe 的 Jev（`typesafe-ai/jev`，AI SDK `experimental_evaluate`）：一個對候選的 `choice` 加一個「有沒有任何候選能回答」的 `boolean`，同一次呼叫評估。Gateway SDK 在第一次呼叫時才載入，不在 resolve provider 時載入。廠商沒有記載非英文的品質；在這個語料庫上量測，中文 query 對英文頁面的排序是正確的。
+由 `RERANK_PROVIDER` 選擇（預設 `none`），以 `RERANK_API_KEY` 認證。目前唯一的實作是透過 `@typesafe-ai/sdk` 呼叫 TypeSafe 的 Jev（`systemOne`，固定在量測 threshold 時的版本），所以金鑰是 TypeSafe API key：一個對候選的 `choice` 加一個「有沒有任何候選能回答」的 `noul`，同一次呼叫評估。SDK 在第一次呼叫時才載入，不在 resolve provider 時載入。廠商沒有記載非英文的品質；在這個語料庫上量測，中文 query 對英文頁面的排序是正確的。
 
 ## 8. 版本與維護
 

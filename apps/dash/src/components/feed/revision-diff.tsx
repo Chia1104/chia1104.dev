@@ -248,12 +248,6 @@ export const RevisionDiff = ({
               {locales.map((locale) => (
                 <Tabs.Tab key={locale} id={locale}>
                   {LOCALE_LABEL[locale]}
-                  {differing.includes(locale) ? (
-                    <span
-                      aria-label="differs"
-                      className="bg-warning ml-1.5 inline-block size-1.5 rounded-full"
-                    />
-                  ) : null}
                   <Tabs.Indicator />
                 </Tabs.Tab>
               ))}

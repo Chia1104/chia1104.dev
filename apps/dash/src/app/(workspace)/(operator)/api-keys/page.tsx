@@ -8,7 +8,7 @@ import { ApiKeysExplorer } from "@/components/api-keys/api-keys-explorer";
 export const dynamic = "force-dynamic";
 
 const ApiKeysPage = () => (
-  <article className="container flex flex-col gap-6 py-8">
+  <article className="page-container flex flex-col gap-6 py-8">
     <div className="flex flex-col gap-1">
       <h1 className="text-2xl font-semibold">API keys</h1>
       <p className="text-muted text-sm">
