@@ -46,10 +46,10 @@ const provider = (rerank: RerankProvider["rerank"]): RerankProvider => ({
 
 describe("rerankHits", () => {
   it("applies the provider's order, trims to the limit and reports answerability", async () => {
-    const rerank = vi.fn(async () => ({
+    const rerank = vi.fn<RerankProvider["rerank"]>().mockResolvedValue({
       order: ["feed_translation:3", "feed_translation:1", "feed_translation:2"],
       answerable: 0.9,
-    }));
+    });
 
     const result = await rerankHits(
       "q",

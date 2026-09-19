@@ -5,7 +5,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "clean": "git clean -xdf .turbo node_modules .cache",
     "eval": "tsx --env-file=../../../.env.global index.ts"
