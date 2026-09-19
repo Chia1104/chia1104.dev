@@ -70,7 +70,7 @@ export const ProfileSetting = (props: Props) => {
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <Form onSubmit={handleSubmit} className="space-y-4">
+        <Form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
             <Controller
               control={form.control}
@@ -117,7 +117,7 @@ export const ProfileSetting = (props: Props) => {
             )}
           />
 
-          <SubmitForm fullWidth className="mt-5" isPending={isPending}>
+          <SubmitForm className="self-end" isPending={isPending} size="sm">
             Update Profile
           </SubmitForm>
         </Form>

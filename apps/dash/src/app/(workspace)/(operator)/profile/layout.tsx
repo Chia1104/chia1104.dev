@@ -4,11 +4,7 @@ import { ViewTransition } from "react";
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <ViewTransition>
-      <article className="flex w-full justify-center">
-        <div className="page-md:px-6 page-lg:px-8 w-full max-w-6xl px-4 py-8">
-          {children}
-        </div>
-      </article>
+      <article className="page-container py-8">{children}</article>
     </ViewTransition>
   );
 };

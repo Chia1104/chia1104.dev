@@ -14,7 +14,7 @@ import { orpc } from "@/libs/orpc/client";
 
 const FeedTabs = dynamic(() => import("@/components/feed/feed-tabs"), {
   ssr: false,
-  loading: () => <Skeleton className="h-10 w-[290px] rounded-full" />,
+  loading: () => <Skeleton className="h-9 w-65 rounded-3xl" />,
 });
 
 /** A new post starts as an empty draft on the server, so the agent can be invited into it at once. */
@@ -42,20 +42,16 @@ const CreateFeedButton = () => {
 };
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="flex w-full flex-col">
-      <section className="flex min-h-screen w-full justify-center">
-        <div className="page-md:px-6 page-lg:px-8 w-full px-4 py-8">
-          <div className="mb-6 flex flex-col items-start gap-4">
-            <FeedTabs className="w-fit" />
-            <div className="flex w-full items-center justify-between">
-              <SearchFeed className="max-w-fit" />
-              <CreateFeedButton />
-            </div>
-          </div>
-          {children}
+    <section className="page-container min-h-screen py-8">
+      <div className="mb-6 flex flex-col items-start gap-4">
+        <FeedTabs className="w-fit" />
+        <div className="flex w-full items-center justify-between">
+          <SearchFeed className="max-w-fit" />
+          <CreateFeedButton />
         </div>
-      </section>
-    </div>
+      </div>
+      {children}
+    </section>
   );
 };
 

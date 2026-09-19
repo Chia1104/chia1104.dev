@@ -20,10 +20,8 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <ViewTransition>
-      <section className="flex min-h-screen w-full justify-center">
-        <div className="page-md:px-6 page-lg:px-8 w-full max-w-4xl px-4 py-8">
-          <EditFeed feedId={Number(parsed.data.id)} />
-        </div>
+      <section className="page-container min-h-screen py-8">
+        <EditFeed feedId={Number(parsed.data.id)} />
       </section>
     </ViewTransition>
   );

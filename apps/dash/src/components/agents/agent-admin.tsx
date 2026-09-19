@@ -40,7 +40,6 @@ const TabLabel = ({
     ) : null}
     {overridden ? (
       <>
-        <span aria-hidden className="bg-warning size-1.5 rounded-full" />
         <span className="sr-only">, overridden</span>
       </>
     ) : null}

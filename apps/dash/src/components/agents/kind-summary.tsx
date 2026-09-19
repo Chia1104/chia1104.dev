@@ -70,12 +70,6 @@ export const KindSummary = ({
           {row.label}
         </dt>
         <dd className="flex min-w-0 items-start gap-1.5 text-sm font-medium">
-          {row.overridden ? (
-            <span
-              aria-hidden
-              className="bg-warning mt-2 size-1.5 shrink-0 rounded-full"
-            />
-          ) : null}
           <span className="text-pretty">{row.value}</span>
           {row.overridden ? (
             <span className="sr-only">, overridden</span>
