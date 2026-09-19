@@ -1,0 +1,187 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TELEMETRY_DISABLED: 1
+  TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
+
+jobs:
+  detect:
+    name: "detect affected"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    outputs:
+      all: ${{ steps.affected.outputs.all }}
+      any: ${{ steps.affected.outputs.any }}
+      e2e: ${{ steps.affected.outputs.e2e }}
+      images: ${{ steps.affected.outputs.images }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          package-manager-cache: false
+
+      - id: affected
+        run: node .github/scripts/affected.mjs
+
+      - name: "Label affected apps"
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository && steps.affected.outputs.images != '[]' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LABELS: ${{ steps.affected.outputs.labels }}
+        run: |
+          gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels" --input - <<< "$LABELS"
+
+  check:
+    name: ${{ matrix.task }}
+    needs: detect
+    if: ${{ needs.detect.outputs.any == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [lint, "type:check"]
+        include:
+          # Each test task spawns its own vitest worker pool; more than two at once starves them into timeouts.
+          - task: test
+            args: --concurrency=2
+    env:
+      SKIP_ENV_VALIDATION: 1
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
+
+      - run: pnpm turbo run ${{ matrix.task }} ${{ needs.detect.outputs.all != 'true' && '--affected' || '' }} --continue ${{ matrix.args }}
+
+  docker:
+    name: "docker ${{ matrix.image.name }}"
+    needs: detect
+    if: ${{ needs.detect.outputs.images != '[]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJSON(needs.detect.outputs.images) }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v4
+
+      # Every image receives the same arguments; a Dockerfile ignores the ones it does not declare.
+      - uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}
+          build-args: |
+            TURBO_TEAM=${{ secrets.TURBO_TEAM }}
+            TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}
+            GH_PUBLIC_TOKEN=${{ secrets.GH_PUBLIC_TOKEN }}
+            CACHE_PROVIDER=upstash
+            NEXT_PUBLIC_ENV=beta
+            INTERNAL_SERVICE_ENDPOINT=${{ secrets.BETA_INTERNAL_SERVICE_ENDPOINT }}
+            NEXT_PUBLIC_SERVICE_ENDPOINT=${{ secrets.BETA_NEXT_PUBLIC_SERVICE_ENDPOINT }}
+            CF_BYPASS_TOKEN=${{ secrets.CF_BYPASS_TOKEN }}
+            CH_API_KEY=${{ secrets.WWW_CH_API_KEY }}
+
+  e2e:
+    name: "www e2e"
+    needs: detect
+    if: ${{ needs.detect.outputs.e2e == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_CODE: www
+      GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+      UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
+      CACHE_PROVIDER: upstash
+      NEXT_PUBLIC_ENV: beta
+      INTERNAL_SERVICE_ENDPOINT: ${{ secrets.BETA_INTERNAL_SERVICE_ENDPOINT }}
+      NEXT_PUBLIC_SERVICE_ENDPOINT: ${{ secrets.BETA_NEXT_PUBLIC_SERVICE_ENDPOINT }}
+      CF_BYPASS_TOKEN: ${{ secrets.CF_BYPASS_TOKEN }}
+      CH_API_KEY: ${{ secrets.WWW_CH_API_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
+
+      - name: "Next.js cache"
+        uses: actions/cache@v5
+        with:
+          path: ${{ github.workspace }}/apps/www/.next/cache
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
+
+      - name: "Resolve Playwright version"
+        run: |
+          PLAYWRIGHT_VERSION=$(pnpm ls @playwright/test | grep @playwright | sed 's/.*@//')
+          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+
+      - name: "Playwright browser cache"
+        id: playwright-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ env.PLAYWRIGHT_VERSION }}
+
+      - name: "Install Playwright browsers"
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps
+
+      - name: "Install Playwright system dependencies"
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps
+
+      - run: pnpm turbo run test:e2e --filter www-e2e...
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: tests/www-e2e/playwright-report/
+          retention-days: 30
+
+  ci-ok:
+    name: "ci ok"
+    needs: [detect, check, docker, e2e]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: exit 1
