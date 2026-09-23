@@ -29,16 +29,16 @@ jobs:
       e2e: ${{ steps.affected.outputs.e2e }}
       images: ${{ steps.affected.outputs.images }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           run_install: false
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
           package-manager-cache: false
@@ -73,7 +73,7 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       SKIP_ENV_VALIDATION: 1
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -93,7 +93,7 @@ jobs:
       matrix:
         image: ${{ fromJSON(needs.detect.outputs.images) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -134,14 +134,14 @@ jobs:
       CF_BYPASS_TOKEN: ${{ secrets.CF_BYPASS_TOKEN }}
       CH_API_KEY: ${{ secrets.WWW_CH_API_KEY }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "Next.js cache"
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/apps/www/.next/cache
           key: ${{ runner.os }}-${{ hashFiles('.nvmrc') }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
@@ -153,7 +153,7 @@ jobs:
 
       - name: "Playwright browser cache"
         id: playwright-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-browsers-${{ env.PLAYWRIGHT_VERSION }}

@@ -1,5 +1,5 @@
-import { createModels } from "@earendil-works/pi-ai";
-import type { Context } from "@earendil-works/pi-ai";
+import { createModels, getCurrentSystemPrompt } from "@earendil-works/pi-ai";
+import type { TranscriptContext } from "@earendil-works/pi-ai";
 import {
   fauxAssistantMessage,
   fauxProvider,
@@ -699,7 +699,7 @@ describe("prepareWritingTurn", () => {
 
   it("sends the draft state as a volatile last message, not in the system prompt or transcript", async () => {
     await fixture.draft.patchFeedMeta(DRAFT_ID, { slug: "hello-world" });
-    const seen: Context[] = [];
+    const seen: TranscriptContext[] = [];
     fixture.setResponses([
       (context) => {
         seen.push(context);
@@ -717,7 +717,9 @@ describe("prepareWritingTurn", () => {
 
     expect(seen).toHaveLength(2);
     for (const context of seen) {
-      expect(context.systemPrompt).not.toContain("# Current session");
+      expect(getCurrentSystemPrompt(context.messages)).not.toContain(
+        "# Current session"
+      );
       const last = context.messages.at(-1);
       expect(last?.role).toBe("user");
       const text = JSON.stringify(last?.content);
@@ -726,7 +728,9 @@ describe("prepareWritingTurn", () => {
       expect(text).toMatch(/Current time: \d{4}-\d{2}-\d{2}T/);
     }
     // Both requests share one system prompt: the cacheable prefix is stable across hops.
-    expect(seen[0]?.systemPrompt).toBe(seen[1]?.systemPrompt);
+    expect(getCurrentSystemPrompt(seen[0]?.messages ?? [])).toBe(
+      getCurrentSystemPrompt(seen[1]?.messages ?? [])
+    );
 
     const persisted = JSON.stringify(await fixture.session.getBranch());
     expect(persisted).not.toContain("# Current session");
@@ -737,7 +741,7 @@ describe("prepareWritingTurn", () => {
     await fixture.draft.patchTranslation(DRAFT_ID, "zh-TW", {
       title: "Hello world",
     });
-    const seen: Context[] = [];
+    const seen: TranscriptContext[] = [];
     fixture.setResponses([
       (context) => {
         seen.push(context);
@@ -770,7 +774,7 @@ describe("prepareWritingTurn", () => {
       title: "Hello world",
       content: "Intro line\n\nThe middle paragraph.\n",
     });
-    const seen: Context[] = [];
+    const seen: TranscriptContext[] = [];
     fixture.setResponses([
       (context) => {
         seen.push(context);

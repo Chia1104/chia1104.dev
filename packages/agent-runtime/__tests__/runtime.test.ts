@@ -2,7 +2,8 @@ const { reportError } = vi.hoisted(() => ({ reportError: vi.fn() }));
 
 vi.mock("@chia/observability/report", () => ({ reportError }));
 
-import type { Context } from "@earendil-works/pi-ai";
+import { getCurrentTools } from "@earendil-works/pi-ai";
+import type { TranscriptContext } from "@earendil-works/pi-ai";
 import {
   fauxAssistantMessage,
   fauxToolCall,
@@ -251,7 +252,7 @@ describe("runPiTurn", () => {
 
   it("expands a prompt template into the persisted user message", async () => {
     const fixture = build();
-    const seen: Context[] = [];
+    const seen: TranscriptContext[] = [];
     fixture.faux.setResponses([
       (context) => {
         seen.push(context);
@@ -341,7 +342,7 @@ describe("runPiTurn", () => {
     const volatileContext = vi.fn(
       async () => "# Current session\n- draft: empty"
     );
-    const seen: Context[] = [];
+    const seen: TranscriptContext[] = [];
     fixture.faux.setResponses([
       (context) => {
         seen.push(context);
@@ -353,6 +354,7 @@ describe("runPiTurn", () => {
 
     expect(volatileContext).toHaveBeenCalledOnce();
     expect(seen[0]?.messages.map((message) => message.role)).toEqual([
+      "system",
       "user",
       "user",
     ]);
@@ -496,7 +498,7 @@ describe("runPiTurn", () => {
 
   it("only exposes the session's active tools to the model", async () => {
     const fixture = build();
-    const seen: Context[] = [];
+    const seen: TranscriptContext[] = [];
     fixture.faux.setResponses([
       (context) => {
         seen.push(context);
@@ -508,6 +510,8 @@ describe("runPiTurn", () => {
       settings: { ...fixture.options.settings, activeToolNames: ["search"] },
     });
 
-    expect(seen[0]?.tools?.map((tool) => tool.name)).toEqual(["search"]);
+    expect(
+      getCurrentTools(seen[0]?.messages ?? []).map((tool) => tool.name)
+    ).toEqual(["search"]);
   });
 });
