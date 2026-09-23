@@ -18,12 +18,6 @@ export const generateExcerptInput = z.object({
   locale: z.string().default("en"),
 });
 
-export const generateSummaryInput = z.object({
-  title: z.string(),
-  content: z.string(),
-  locale: z.string().default("en"),
-});
-
 export const generateDescriptionInput = z.object({
   title: z.string(),
   content: z.string().optional(),
@@ -47,7 +41,6 @@ export const generateContentCompleteInput = z.object({
 
 export type GenerateSlugInput = z.infer<typeof generateSlugInput>;
 export type GenerateExcerptInput = z.infer<typeof generateExcerptInput>;
-export type GenerateSummaryInput = z.infer<typeof generateSummaryInput>;
 export type GenerateDescriptionInput = z.infer<typeof generateDescriptionInput>;
 export type GenerateContentInput = z.infer<typeof generateContentInput>;
 export type GenerateContentCompleteInput = z.infer<
@@ -80,21 +73,6 @@ export async function generateExcerpt(
       `You are a content writer. Write a short excerpt of 1-2 sentences for the given article. ` +
       `The excerpt should be engaging, accurate, and written in the locale: ${locale}. ` +
       `Return ONLY the excerpt text with no extra formatting.`,
-    prompt: buildPrompt(title, content),
-  });
-  return text.trim();
-}
-
-export async function generateSummary(
-  model: LanguageModel,
-  { title, content, locale }: GenerateSummaryInput
-): Promise<string> {
-  const { text } = await generateText({
-    model,
-    system:
-      `You are a content summariser. Write a structured summary of 3-5 sentences for the given article. ` +
-      `Cover the main argument, key points, and takeaway. Write in the locale: ${locale}. ` +
-      `Return ONLY the summary text with no extra formatting.`,
     prompt: buildPrompt(title, content),
   });
   return text.trim();

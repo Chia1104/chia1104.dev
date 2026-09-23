@@ -56,7 +56,6 @@ export interface DraftTranslation {
   title?: string | null;
   excerpt?: string | null;
   description?: string | null;
-  summary?: string | null;
   content?: string | null;
 }
 

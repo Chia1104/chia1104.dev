@@ -82,7 +82,6 @@ describe("diffFeedDraftSnapshots", () => {
     title: "T",
     excerpt: null,
     description: null,
-    summary: null,
     content: "body",
   };
   const base: FeedDraftSnapshot = {
@@ -112,7 +111,6 @@ describe("diffFeedDraftSnapshots", () => {
       title: null,
       excerpt: null,
       description: null,
-      summary: null,
       content: null,
     };
     expect(
@@ -123,7 +121,7 @@ describe("diffFeedDraftSnapshots", () => {
     ).toEqual([
       {
         locale: "zh-TW",
-        fields: ["title", "excerpt", "description", "summary", "content"],
+        fields: ["title", "excerpt", "description", "content"],
       },
     ]);
     expect(diffFeedDraftSnapshots(base, { ...base, translations: {} })).toEqual(

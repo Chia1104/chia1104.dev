@@ -7,7 +7,6 @@ const empty = {
   title: null,
   excerpt: null,
   description: null,
-  summary: null,
   content: null,
 };
 
@@ -21,7 +20,6 @@ const full: FeedDraftSnapshot = {
       title: "標題 😀",
       excerpt: null,
       description: "",
-      summary: "摘要",
       content: '# 內文\n\n「引號」— dash\ttab \\ backslash "q"\n',
     },
     en: { ...empty, title: "Title", content: "body +12:fake -" },
@@ -29,11 +27,11 @@ const full: FeedDraftSnapshot = {
 };
 
 describe("hashFeedDraftSnapshot", () => {
-  // Expected values come from the SQL backfill in `20260917042320_feed_draft_content_hash`
+  // Expected values come from the SQL rehash in `20260923093845_feed_summary_workflow_owned`
   // run over the same rows, so a drift between the two implementations fails here.
   it("matches the migration's SQL backfill", () => {
     expect(hashFeedDraftSnapshot(full)).toBe(
-      "89f60f2fe0afc0b78f51a789dd4caa849c24d32dbcef9652611f89da0a23ff67"
+      "efc084268468120ba62c2c36d57e0311f17f7da3fe5a69fc6e14b5912db08ce2"
     );
     expect(
       hashFeedDraftSnapshot({
@@ -43,7 +41,7 @@ describe("hashFeedDraftSnapshot", () => {
         mainImage: "https://x/y.png",
         translations: { en: { ...empty, title: "Only" } },
       })
-    ).toBe("08bfd4c5d19ab8fbe3d92fb714153043a17110b0080f9da7cf8f8d8a0abf992e");
+    ).toBe("17c2b3feb294bcf701a2ff7273363c0d465d0f8033ae146b0bf7fa515d984f1f");
     expect(
       hashFeedDraftSnapshot({
         slug: "",
@@ -52,7 +50,7 @@ describe("hashFeedDraftSnapshot", () => {
         mainImage: null,
         translations: { en: empty },
       })
-    ).toBe("741cec1b65f58f95c540820e0523d1fc3b574140dfb3150e4563d26e74268bb9");
+    ).toBe("42dde9109daf8c43782402dafe97280e6a27598fee1a316d5005b86cb0931fb1");
   });
 
   it("ignores the order locales were written in", () => {

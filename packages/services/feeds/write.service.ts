@@ -20,13 +20,14 @@ import type { FeedHooks } from "../shared/context";
  * the feed unindexed. A caller with no indexer passes `{}`.
  */
 
-/** `title` is required on create — `feed_translation.title` is `NOT NULL`. */
+/**
+ * `title` is required on create — `feed_translation.title` is `NOT NULL`. `summary` and
+ * `read_time` are absent: workflows own them, and an apply must leave them alone.
+ */
 export interface CreateFeedTranslationInput {
   title: string;
   excerpt?: string | null;
   description?: string | null;
-  summary?: string | null;
-  readTime?: number | null;
   /** MDX body. `undefined` leaves the stored body alone on update. */
   content?: string | null;
 }
@@ -158,8 +159,6 @@ export const updateFeedService = async (
         title: translation.title,
         excerpt: translation.excerpt ?? null,
         description: translation.description ?? null,
-        summary: translation.summary ?? null,
-        readTime: translation.readTime ?? null,
       });
 
       if (!translationData) continue;

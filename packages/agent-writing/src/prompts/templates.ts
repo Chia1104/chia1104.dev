@@ -34,7 +34,7 @@ Work in this order:
 2. Decide the default locale (zh-TW unless the topic is clearly English-first).
 3. \`read_skill\` \`mdx-authoring\`, \`seo-metadata\` and the tone skill for that locale. Set the
    feed metadata: \`type\`, \`slug\`, \`defaultLocale\`.
-4. Write the body for the default locale, then set its title, excerpt, description and summary.
+4. Write the body for the default locale, then set its title, excerpt and description.
 5. Stop and show me a summary. Do NOT commit — I will tell you when.
 `,
   "<topic>"
@@ -61,7 +61,7 @@ export const seoPassTemplate = template(
 Do a metadata pass over every locale of the current draft.
 
 \`read_skill\` \`seo-metadata\`. For each locale: read the draft, then judge whether the title,
-excerpt, description and summary each do their distinct job. Rewrite the ones that do not.
+excerpt and description each do their distinct job. Rewrite the ones that do not.
 Check the description length. Make sure the slug is short, stable and descriptive.
 
 Report what you changed and why, per locale. Do not touch the body.

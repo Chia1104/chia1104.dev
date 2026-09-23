@@ -12,38 +12,6 @@ vi.mock("../src/steps/agent-turn.step", () => ({
   runAgentTurnStep: mocks.runTurn,
 }));
 
-vi.mock("@chia/workflow-control/agent-hooks", async () => {
-  const z = await import("zod");
-  const decision = z.object({
-    toolCallId: z.string(),
-    toolName: z.string(),
-    approved: z.boolean(),
-    comment: z.string().optional(),
-  });
-  return {
-    agentAbortControllerRefSchema: z.object({
-      id: z.string(),
-      runId: z.string(),
-    }),
-    agentMessagePayloadSchema: z.object({
-      text: z.string(),
-      template: z
-        .object({ name: z.string(), args: z.array(z.string()).optional() })
-        .optional(),
-      attachments: z
-        .array(z.object({ type: z.string(), id: z.number().int() }))
-        .optional(),
-      decision: decision.optional(),
-      credentials: z
-        .object({
-          openai: z.string().optional(),
-          anthropic: z.string().optional(),
-        })
-        .optional(),
-    }),
-  };
-});
-
 import { agentSessionWorkflow } from "../src/workflows/agent-session.workflow";
 
 const abortController = { id: "abort-1", runId: "abort-run-1" };

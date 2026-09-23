@@ -28,7 +28,6 @@ describe("SessionDrafts", () => {
                 title: "Older draft",
                 excerpt: null,
                 description: null,
-                summary: null,
                 content: "Body",
               },
             },

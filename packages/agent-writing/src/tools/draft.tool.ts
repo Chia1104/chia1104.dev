@@ -328,11 +328,6 @@ const TranslationWriteSchema = Type.Object({
       description: `SEO meta description. Keep it under ${MAX_DESCRIPTION_CHARS} characters.`,
     })
   ),
-  summary: Type.Optional(
-    Type.Union([Type.String(), Type.Null()], {
-      description: "Structured summary, 3-5 sentences.",
-    })
-  ),
   content: Type.Optional(
     Type.String({
       description:
@@ -466,7 +461,6 @@ export const writeDraftTool = defineTool(
         title: translation?.title,
         excerpt: translation?.excerpt,
         description: translation?.description,
-        summary: translation?.summary,
       };
       const content = writes[key]?.content;
       if (content !== undefined && content !== null) {

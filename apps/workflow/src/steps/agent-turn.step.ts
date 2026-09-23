@@ -44,7 +44,7 @@ import type { JsonObject } from "@chia/utils/json";
 import type {
   AgentAbortControllerRef,
   EncryptedAgentCredentials,
-} from "@chia/workflow-control/agent-hooks";
+} from "@chia/workflow-control/agent-schema";
 
 import { agentFactory } from "../agents/factory";
 import { env } from "../env";

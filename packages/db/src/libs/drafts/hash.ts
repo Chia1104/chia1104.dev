@@ -33,7 +33,6 @@ export const hashFeedDraftSnapshot = (snapshot: FeedDraftSnapshot): string => {
     hash.update(field(translation.title));
     hash.update(field(translation.excerpt));
     hash.update(field(translation.description));
-    hash.update(field(translation.summary));
     hash.update(field(translation.content));
   }
   return hash.digest("hex");

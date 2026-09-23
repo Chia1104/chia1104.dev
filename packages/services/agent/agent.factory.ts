@@ -5,7 +5,7 @@ import type {
 } from "@chia/agent-host/kind";
 import type { AgentCredentials } from "@chia/agent-runtime/models";
 import type { CallerTier } from "@chia/auth/tier";
-import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-hooks";
+import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-schema";
 
 import type { AgentAdminService } from "./admin";
 import type { AgentKindService } from "./agent.service";

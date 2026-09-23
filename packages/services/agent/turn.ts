@@ -30,7 +30,7 @@ import { reportError } from "@chia/observability/report";
 import { AppError, isAppError } from "@chia/service-kit/errors";
 import type { AppErrorCode } from "@chia/service-kit/errors";
 import type { JsonObject } from "@chia/utils/json";
-import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-hooks";
+import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-schema";
 import type {
   AgentMessagePayload,
   WorkflowControlClient,

@@ -39,7 +39,6 @@ const translationPatchSchema = z.object({
   title: z.string().min(1).optional(),
   excerpt: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
-  summary: z.string().nullable().optional(),
   content: z.string().nullable().optional().describe("MDX body"),
 });
 

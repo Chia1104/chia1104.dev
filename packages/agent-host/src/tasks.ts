@@ -31,10 +31,15 @@ import { getAgentTaskConfig } from "@chia/db/repos/agent/config";
 import type { AgentTaskParams } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 
+import {
+  FEED_SUMMARY_PARAMS,
+  FEED_SUMMARY_SYSTEM_PROMPT,
+} from "./feed-summary";
 import type { AgentModels } from "./kind";
 
 /**
- * One-shot model calls beside a session (title, lesson extraction, compaction). The definition
+ * One-shot model calls beside a session (title, lesson extraction, compaction) or on the
+ * operator's request (post summary). The definition
  * is the code's choice, `agent.task_config` the operator's override, and {@link resolveAgentTask}
  * the only place the two meet. A task is code; a row only re-points it.
  */
@@ -67,6 +72,7 @@ export const AGENT_TASK_IDS = {
   sessionCompaction: "session.compaction",
   sessionBranchSummary: "session.branch-summary",
   writingLessons: "writing.lessons",
+  feedSummary: "feed.summary",
 } as const;
 
 export type AgentTaskId = (typeof AGENT_TASK_IDS)[keyof typeof AGENT_TASK_IDS];
@@ -104,6 +110,15 @@ export const AGENT_TASKS = {
     defaultModel: houseModel("cheap"),
     prompt: { default: LESSON_EXTRACTION_SYSTEM_PROMPT },
     params: LESSON_EXTRACTION_PARAMS,
+  },
+  [AGENT_TASK_IDS.feedSummary]: {
+    id: AGENT_TASK_IDS.feedSummary,
+    label: "Post summary",
+    description:
+      "Writes the abstract shown above a published post, one per language, when the editor asks for it.",
+    defaultModel: houseModel("content"),
+    prompt: { default: FEED_SUMMARY_SYSTEM_PROMPT },
+    params: FEED_SUMMARY_PARAMS,
   },
 } satisfies Readonly<Record<AgentTaskId, AgentTaskDefinition>>;
 

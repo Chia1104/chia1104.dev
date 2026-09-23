@@ -13,7 +13,7 @@ export const HOUSE_MODELS = {
   writing: "openai/gpt-6-luna",
   /** Public-agent sessions without a caller key. */
   public: "openai/gpt-6-luna",
-  /** The dash editor's content tools (slug, description, summary, excerpt, completion). */
+  /** The dash editor's content tools (slug, description, excerpt, completion) and the post summary task. */
   content: "openai/gpt-6-luna",
 } as const;
 

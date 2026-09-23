@@ -24,6 +24,7 @@ import {
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
+import { feedSummaryOutputSchema } from "@chia/workflow-control/contract";
 
 import { contractOS } from "../shared/context";
 import { sessionGuard } from "../shared/guards/auth.guard";
@@ -225,6 +226,39 @@ export const restoreFeedRoute = contractOS.feeds.restore
       throw opts.errors.NOT_FOUND();
     }
     await opts.context.hooks?.onFeedChanged?.(data.id);
+  });
+
+export const summarizeFeedRoute = contractOS.feeds.summarize
+  .use(rootWriteGuard)
+  .handler(async (opts) => {
+    const feed = await getFeedForIndexing(opts.context.db, {
+      feedId: opts.input.feedId,
+    });
+    if (!feed || feed.deletedAt) {
+      throw opts.errors.NOT_FOUND();
+    }
+    if (!feed.published) {
+      throw opts.errors.BAD_REQUEST({
+        message: "Only a published post is summarised. Publish it first.",
+      });
+    }
+    const runId = await opts.context.workflow.startFeedSummary(feed.id);
+    return { runId };
+  });
+
+export const getFeedSummaryRunRoute = contractOS.feeds["summarize:run"]
+  .use(rootWriteGuard)
+  .handler(async (opts) => {
+    const run = await opts.context.workflow.getRun(opts.input.runId);
+    if (!run.exists || !run.status) {
+      throw opts.errors.NOT_FOUND();
+    }
+    // A run of another workflow, or one that threw, has no output of this shape.
+    const output = feedSummaryOutputSchema.safeParse(run.output);
+    return {
+      status: run.status,
+      output: output.success ? output.data : undefined,
+    };
   });
 
 // The working draft is the operator's; the agent reaches it through its own port, never here.
@@ -460,6 +494,8 @@ export const feedsRouter = contractOS.feeds.router({
   update: updateFeedRoute,
   delete: deleteFeedRoute,
   restore: restoreFeedRoute,
+  summarize: summarizeFeedRoute,
+  "summarize:run": getFeedSummaryRunRoute,
   "draft:open": openFeedDraftRoute,
   "draft:get": getFeedDraftRoute,
   "draft:list": listFeedDraftsRoute,

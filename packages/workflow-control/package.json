@@ -9,6 +9,10 @@
       "types": "./src/agent.hooks.ts",
       "default": "./src/agent.hooks.ts"
     },
+    "./agent-schema": {
+      "types": "./src/agent.schema.ts",
+      "default": "./src/agent.schema.ts"
+    },
     "./client": {
       "types": "./src/client.ts",
       "default": "./src/client.ts"
