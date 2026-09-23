@@ -8,6 +8,7 @@ import { healthRouter } from "./health/health.route";
 import { memoryRouter } from "./memory/memory.route";
 import { profileRouter } from "./profile/profile.route";
 import { ragRouter } from "./rag/rag.route";
+import { reportsRouter } from "./reports/reports.route";
 import { contractOS } from "./shared/context";
 import { spotifyRouter } from "./spotify/spotify.route";
 import { tagsRouter } from "./tags/tags.route";
@@ -28,5 +29,6 @@ export const router = contractOS.router({
   memory: memoryRouter,
   profile: profileRouter,
   spotify: spotifyRouter,
+  reports: reportsRouter,
   tags: tagsRouter,
 });

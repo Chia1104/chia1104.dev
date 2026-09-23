@@ -269,6 +269,10 @@ export type FeedReportCategory =
 
 export const FEED_REPORT_STATUS = {
   Open: "open",
+  /** The operator took it up; applying the post's draft resolves it. */
+  InProgress: "in_progress",
+  Resolved: "resolved",
+  Dismissed: "dismissed",
 } as const;
 
 export type FeedReportStatus =
