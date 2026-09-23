@@ -70,6 +70,38 @@ const hasTag = (feedId: SQL | typeof feeds.id, tagSlug: string): SQL =>
     where ${feedsToTags.feedId} = ${feedId} and ${tags.slug} = ${tagSlug}
   )`;
 
+export interface FeedTag {
+  id: number;
+  slug: string;
+  name: string;
+  description: string | null;
+}
+
+interface TagWithTranslations {
+  id: number;
+  slug: string;
+  translations: { locale: Locale; name: string; description: string | null }[];
+}
+
+/** Each tag named in `locale`, else in any locale it has, else by slug. Ordered by slug. */
+const feedTagsOf = (
+  tagRows: TagWithTranslations[],
+  locale: Locale
+): FeedTag[] =>
+  tagRows
+    .map((tag) => {
+      const translation =
+        tag.translations.find((candidate) => candidate.locale === locale) ??
+        tag.translations[0];
+      return {
+        id: tag.id,
+        slug: tag.slug,
+        name: translation?.name ?? tag.slug,
+        description: translation?.description ?? null,
+      };
+    })
+    .sort((a, b) => a.slug.localeCompare(b.slug));
+
 type InfiniteFeedParams = InfiniteDTO & {
   whereAnd?: FeedWhereColumns;
   /** Only feeds carrying this tag. */
@@ -161,15 +193,12 @@ const queryInfiniteFeeds = async (
             )`.as("has_embedding"),
         },
       },
+      // Every translation, so a name is still found when `locale` is not the one asked for.
       feedsToTags: {
         with: {
           tag: {
             with: {
-              translations: {
-                where: {
-                  locale,
-                },
-              },
+              translations: true,
             },
           },
         },
@@ -183,7 +212,15 @@ const queryInfiniteFeeds = async (
   const { items, nextCursor } = sliceKeysetPage(rawItems, limit);
 
   return {
-    items: items.map(serializeFeed),
+    items: items.map(({ feedsToTags: links, ...feed }) =>
+      serializeFeed({
+        ...feed,
+        tags: feedTagsOf(
+          links.flatMap((link) => (link.tag ? [link.tag] : [])),
+          locale ?? feed.defaultLocale
+        ),
+      })
+    ),
     nextCursor,
   };
 };
@@ -257,66 +294,40 @@ const getFeedDetails = async (
       .$withCache({ config: { ex: 300 } }),
     db
       .select({
-        feedId: feedsToTags.feedId,
-        tagId: feedsToTags.tagId,
-        tag: {
-          id: tags.id,
-          slug: tags.slug,
-          createdAt: tags.createdAt,
-          updatedAt: tags.updatedAt,
-        },
-        translation: {
-          id: tagTranslations.id,
-          tagId: tagTranslations.tagId,
-          locale: tagTranslations.locale,
-          name: tagTranslations.name,
-          description: tagTranslations.description,
-        },
+        id: tags.id,
+        slug: tags.slug,
+        locale: tagTranslations.locale,
+        name: tagTranslations.name,
+        description: tagTranslations.description,
       })
       .from(feedsToTags)
       .innerJoin(tags, eq(feedsToTags.tagId, tags.id))
-      .leftJoin(
-        tagTranslations,
-        and(
-          eq(tagTranslations.tagId, tags.id),
-          locale ? eq(tagTranslations.locale, locale) : undefined
-        )
-      )
+      .leftJoin(tagTranslations, eq(tagTranslations.tagId, tags.id))
       .where(eq(feedsToTags.feedId, feed.id))
       .$withCache({ config: { ex: 300 } }),
   ]);
 
-  const translations = feedTranslationRows;
-  type TagRow = (typeof tagRows)[number];
-  type FeedTag = Omit<TagRow, "translation"> & {
-    tag: TagRow["tag"] & {
-      translations: NonNullable<TagRow["translation"]>[];
-    };
-  };
-  const feedTags = new Map<number, FeedTag>();
-
+  const tagsById = new Map<number, TagWithTranslations>();
   for (const row of tagRows) {
-    const existingTag = feedTags.get(row.tagId);
-    if (existingTag) {
-      if (row.translation) {
-        existingTag.tag.translations.push(row.translation);
-      }
-      continue;
+    const tag = tagsById.get(row.id) ?? {
+      id: row.id,
+      slug: row.slug,
+      translations: [],
+    };
+    if (row.locale !== null && row.name !== null) {
+      tag.translations.push({
+        locale: row.locale,
+        name: row.name,
+        description: row.description,
+      });
     }
-    feedTags.set(row.tagId, {
-      feedId: row.feedId,
-      tagId: row.tagId,
-      tag: {
-        ...row.tag,
-        translations: row.translation ? [row.translation] : [],
-      },
-    });
+    tagsById.set(row.id, tag);
   }
 
   return serializeFeed({
     ...feed,
-    translations,
-    feedsToTags: [...feedTags.values()],
+    translations: feedTranslationRows,
+    tags: feedTagsOf([...tagsById.values()], locale ?? feed.defaultLocale),
   });
 };
 

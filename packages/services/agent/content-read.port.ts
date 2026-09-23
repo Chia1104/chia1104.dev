@@ -17,6 +17,7 @@ import {
   getFeedBySlug,
   getInfiniteFeeds,
 } from "@chia/db/repos/feeds";
+import { listTags } from "@chia/db/repos/tags";
 import { FeedType } from "@chia/db/types";
 import type { Locale } from "@chia/db/types";
 import { feedUrl } from "@chia/utils/config";
@@ -169,21 +170,14 @@ export const createContentReadPort = (
       return { posts, total };
     },
 
-    /**
-     * Read from the tag tables. There is no tag repository yet because nothing in the app
-     * writes tags; a read-only projection is enough for an agent to name existing tags.
-     */
     async listTags(): Promise<TagItem[]> {
-      const rows = await db.query.tags.findMany({
-        with: { translations: true },
-        limit: 200,
-      });
+      const rows = await listTags(db);
       return rows.map((tag) => ({
         slug: tag.slug,
         names:
-          /* SAFETY: The producer contract guarantees this value satisfies TagItem["names"]. */ Object.fromEntries(
-            (tag.translations ?? []).map((translation) => [
-              translation.locale,
+          /* SAFETY: `translations` is keyed by Locale, which is what TagItem["names"] is keyed by. */ Object.fromEntries(
+            Object.entries(tag.translations).map(([locale, translation]) => [
+              locale,
               translation.name,
             ])
           ) as TagItem["names"],
@@ -210,7 +204,7 @@ const toPostSnapshot = (feed: {
         content?: string | null;
       }[]
     | null;
-  feedsToTags?: { tag?: { slug: string } | null }[] | null;
+  tags?: { slug: string }[] | null;
 }): PostSnapshot => ({
   feedId: feed.id,
   slug: feed.slug,
@@ -238,7 +232,5 @@ const toPostSnapshot = (feed: {
     summary: translation.summary,
     content: translation.content ?? null,
   })),
-  tagSlugs: (feed.feedsToTags ?? [])
-    .map((relation) => relation.tag?.slug)
-    .filter((slug): slug is string => slug !== undefined),
+  tagSlugs: (feed.tags ?? []).map((tag) => tag.slug),
 });

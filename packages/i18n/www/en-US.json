@@ -91,6 +91,13 @@
       "no-content": "No notes yet.",
       "view-all": "View all notes"
     },
+    "tags": {
+      "doc-title": "Tags",
+      "description": "Articles by topic.",
+      "no-content": "No tags yet.",
+      "view-all": "View all tags",
+      "count": "{count, plural, =1 {1 article} other {# articles}}"
+    },
     "read-with-minutes": "{minutes} minutes read",
     "open-in-chat-query": "I have a question about this article: {url}",
     "open-in-chat": "Open in chat",

@@ -31,6 +31,7 @@ import { client, orpc } from "@/libs/orpc/client";
 import { DeleteButton } from "./delete-button";
 import type { DraftView } from "./draft-values";
 import { MetaChip } from "./meta-chip";
+import { PostTags } from "./post-tags";
 import { RevisionsDrawer } from "./revisions-drawer";
 
 const feedDetailsOptions = (feedId: number) =>
@@ -72,8 +73,8 @@ const FeedEmbedding = ({ feedId }: { feedId: number }) => {
 };
 
 /**
- * Feed-level switches that are not part of the draft: visibility and the publication date
- * write straight to the feed, so they only exist once the draft has been applied.
+ * Feed-level fields that are not part of the draft: visibility, the publication date and the
+ * tag set write straight to the feed, so they only exist once the draft has been applied.
  */
 const PostSettings = ({ feedId }: { feedId: number }) => {
   const queryClient = useQueryClient();
@@ -163,6 +164,11 @@ const PostSettings = ({ feedId }: { feedId: number }) => {
           </Calendar>
         </DatePicker.Popover>
       </DatePicker>
+      <PostTags
+        isDisabled={update.isPending}
+        onChange={(tagIds) => update.mutate({ feedId, tagIds })}
+        selected={feed.tags}
+      />
       <div className="page-sm:ml-auto justify-self-center">
         <DeleteButton
           feedId={feedId}
@@ -446,7 +452,7 @@ export const DraftActions = ({
           <Disclosure.Content>
             <Disclosure.Body className="flex flex-col gap-3 px-2">
               <p className="text-muted text-xs">
-                Visibility and date changes take effect immediately.
+                Visibility, date and tag changes take effect immediately.
               </p>
               <div inert={isBusy}>
                 <PostSettings feedId={draft.feedId} />

@@ -5,8 +5,9 @@ import { locale } from "@chia/db/schema/enums";
 import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import { feedSchema, feedTranslationSchema } from "@chia/db/validator/feeds";
 import { keysetCursorSchema } from "@chia/db/validator/shared";
+import { FEED_TAGS_MAX, tagSlugSchema } from "@chia/db/validator/tags";
 
-import { withMetaSchema } from "../shared/schema";
+import { flexibleBoolean, withMetaSchema } from "../shared/schema";
 
 import type { SearchFeedsServiceResult } from "./search.service";
 import { publicFeedSearchItemSchema, searchFeedsSchema } from "./validator";
@@ -19,12 +20,15 @@ const dateFields = {
 };
 
 /**
- * What may change on a post without going through its draft: whether it is visible, and its
- * dates. Everything a reader sees of its content changes only when a draft is applied.
+ * What may change on a post without going through its draft: whether it is visible, its
+ * dates and its tags. Everything a reader sees of its content changes only when a draft is
+ * applied.
  */
 export const updateFeedSchema = z.object({
   feedId: z.number(),
   published: z.boolean().optional(),
+  /** The whole tag set; an empty array clears it. */
+  tagIds: z.array(z.number().int().positive()).max(FEED_TAGS_MAX).optional(),
   ...dateFields,
 });
 
@@ -36,12 +40,6 @@ export const deleteFeedSchema = z.object({
 export const restoreFeedSchema = z.object({
   feedId: z.number(),
 });
-
-/**
- * Accepts a JSON boolean or its query-string spelling, so the same schema works over RPC
- * (real JSON) and over the OpenAPI mount (every value a string).
- */
-const flexibleBoolean = z.union([z.boolean(), z.stringbool()]);
 
 /** `resolveFeedVisibility` clamps each flag for callers below the required tier rather than rejecting, so a browser that sends `includeUnpublished` receives the published set instead of a 403. */
 const feedVisibilityFields = {
@@ -67,6 +65,8 @@ export const feedsInfiniteSchema = z.object({
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.CreatedAt),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
   type: z.enum(FeedType).optional(),
+  /** Only feeds carrying this tag. */
+  tag: tagSlugSchema.optional(),
   ...localeQueryFields,
   ...feedVisibilityFields,
 });
@@ -106,31 +106,20 @@ const translationOutputSchema = feedTranslationSchema
     hasEmbedding: z.boolean(),
   });
 
+/** Named in the requested locale, else in the feed's default locale. */
+export const feedTagSchema = z.object({
+  id: z.number(),
+  slug: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+});
+
 export const feedWithTranslationsSchema = feedSchema.extend({
   createdAt: z.string(),
   updatedAt: z.string(),
   deletedAt: z.string().nullable(),
   translations: z.array(translationOutputSchema),
-  feedsToTags: z
-    .array(
-      z.object({
-        tag: z
-          .object({
-            id: z.number(),
-            slug: z.string(),
-            translations: z.array(
-              z.object({
-                id: z.number(),
-                name: z.string(),
-                locale: z.enum(locale.enumValues),
-                description: z.string().nullable(),
-              })
-            ),
-          })
-          .nullable(),
-      })
-    )
-    .optional(),
+  tags: z.array(feedTagSchema),
 });
 
 export const feedListSchema = feedWithTranslationsSchema;

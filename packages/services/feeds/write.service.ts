@@ -5,6 +5,7 @@ import {
   upsertContent,
   upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
+import { findTagIds, setFeedTags } from "@chia/db/repos/tags";
 import { Locale } from "@chia/db/types";
 import type { FeedType, Locale as LocaleType } from "@chia/db/types";
 import { AppError } from "@chia/service-kit/errors";
@@ -106,6 +107,8 @@ export interface UpdateFeedServiceInput {
   defaultLocale?: LocaleType;
   mainImage?: string | null;
   published?: boolean;
+  /** The whole tag set; an empty array clears it. */
+  tagIds?: number[];
   createdAt?: number;
   updatedAt?: number;
   translations?: Partial<Record<LocaleType, UpdateFeedTranslationInput>>;
@@ -130,6 +133,17 @@ export const updateFeedService = async (
     throw new AppError("NOT_FOUND", {
       message: `Feed ${input.feedId} not found`,
     });
+  }
+
+  if (input.tagIds) {
+    const known = new Set(await findTagIds(db, input.tagIds));
+    const unknown = input.tagIds.filter((id) => !known.has(id));
+    if (unknown.length > 0) {
+      throw new AppError("BAD_REQUEST", {
+        message: `No tag has id ${unknown.join(", ")}`,
+      });
+    }
+    await setFeedTags(db, { feedId: input.feedId, tagIds: input.tagIds });
   }
 
   const translationsData = [];

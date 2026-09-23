@@ -4,6 +4,7 @@ import { FeedOrderBy, FeedType } from "@chia/db/types";
 import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
 import FeedNavigation from "@/components/blog/feed-navigation";
+import TagNavigation from "@/components/blog/tag-navigation";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
@@ -38,6 +39,7 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
             })}
             type="note"
           />
+          <TagNavigation tags={client.tags.list()} locale={dbLocale} />
         </NavigationMenuList>
       </NavigationMenu>
     </div>

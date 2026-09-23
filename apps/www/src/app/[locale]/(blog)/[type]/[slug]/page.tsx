@@ -19,6 +19,7 @@ import dayjs from "@chia/utils/day";
 
 import { ArticleAgentContext } from "@/components/agent/article-agent-context";
 import { ActionGroup } from "@/components/blog/action-group";
+import { FeedTags } from "@/components/blog/feed-tags";
 import {
   RelatedFeeds,
   RelatedFeedsSkeleton,
@@ -59,9 +60,18 @@ export const generateMetadata = async ({
       slug,
       locale: dbLocaleResolver(locale),
     });
+    const tags = feed.tags.map((tag) => tag.name);
     return {
       title: feed.translations[0]?.title,
       description: feed.translations[0]?.description,
+      keywords: tags,
+      openGraph: {
+        type: "article",
+        publishedTime: dayjs(feed.createdAt).toISOString(),
+        modifiedTime: dayjs(feed.updatedAt).toISOString(),
+        authors: [Meta.name],
+        tags,
+      },
     };
   } catch (error) {
     reportServiceError(error);
@@ -116,6 +126,7 @@ const Page = async ({
       "@type": "Person",
       name: "Chia1104",
     },
+    keywords: feed.tags.map((tag) => tag.name),
   };
 
   return (
@@ -134,6 +145,7 @@ const Page = async ({
             </ViewTransition>
           </div>
           <p>{feed.translations[0]?.description}</p>
+          <FeedTags className="mt-3" tags={feed.tags} />
           <div className="mt-5 flex items-center justify-between ">
             <div className="not-prose flex items-center gap-2">
               <Avatar>
