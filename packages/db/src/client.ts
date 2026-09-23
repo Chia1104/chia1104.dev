@@ -1,3 +1,5 @@
+import { getTableName } from "drizzle-orm";
+import type { Table } from "drizzle-orm";
 import type { NodePgQueryResultHKT } from "drizzle-orm/node-postgres";
 import { drizzle } from "drizzle-orm/node-postgres";
 import type { PgAsyncDatabase } from "drizzle-orm/pg-core";
@@ -70,6 +72,27 @@ export async function getConnection(
     throw error;
   }
 }
+
+/**
+ * Drops every cached query that read one of `tables`, from any process. For a write made on a
+ * `withCache: false` connection: the cache is shared through Redis, but only a cached connection
+ * invalidates on its own mutations, so a workflow step that writes a table the request path
+ * caches calls this afterwards. A cache that cannot be reached leaves stale reads until they
+ * expire, which is not worth failing the write for.
+ */
+export const invalidateCache = async (tables: Table[]): Promise<void> => {
+  try {
+    const [{ DrizzleCache }, { getRedisKv }] = await Promise.all([
+      import("@chia/kv/drizzle/cache"),
+      import("@chia/kv/redis"),
+    ]);
+    await new DrizzleCache(getRedisKv()).onMutate({ tables });
+  } catch (error) {
+    reportError(error, "Query cache could not be invalidated", {
+      tables: tables.map((table) => getTableName(table)).join(","),
+    });
+  }
+};
 
 /** The primary connection string for `env`, for a connection outside the pool such as LISTEN. */
 export const resolveDatabaseUrl = (env?: string): string =>

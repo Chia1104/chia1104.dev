@@ -82,6 +82,7 @@ export const createWorkflowEnv = () => ({
   WORKFLOW_POSTGRES_URL: preserve(),
   WORKFLOW_POSTGRES_WORKER_CONCURRENCY: preserve(),
   WORKFLOW_REDIS_URI: preserve(),
+  REDIS_URI: preserve(),
   WORKFLOW_TARGET_WORLD: preserve(),
   OTEL_EXPORTER_OTLP_ENDPOINT: preserve(),
   OTEL_EXPORTER_OTLP_HEADERS: preserve(),

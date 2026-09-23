@@ -5,11 +5,12 @@ import {
 } from "@chia/agent-host/feed-summary";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
 import { recordAgentUsage } from "@chia/agent-host/usage";
-import { connectDatabase } from "@chia/db/client";
+import { connectDatabase, invalidateCache } from "@chia/db/client";
 import {
   getFeedForIndexing,
   upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
+import { feedTranslations } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
@@ -55,7 +56,7 @@ export const summarizeFeedStep = async (
     return refs.map((ref) => ({ ...ref, status: "failed: model unavailable" }));
   }
 
-  return await Promise.all(
+  const results = await Promise.all(
     feed.translations.map(
       async (translation, index): Promise<FeedSummaryTranslation> => {
         const ref = refs[index]!;
@@ -100,6 +101,10 @@ export const summarizeFeedStep = async (
       }
     )
   );
+  if (results.some((translation) => translation.status === "ok")) {
+    await invalidateCache([feedTranslations]);
+  }
+  return results;
 };
 
 /** A retry would bill the model calls again; a failed language is re-run from the editor. */
