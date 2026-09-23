@@ -82,7 +82,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
   const { control, formState, handleSubmit, reset, setValue, watch } = form;
 
   const models = useQuery(
-    orpc.agent.models.list.queryOptions({ input: { kind: kind.kind } })
+    orpc.agent.admin.kinds.models.queryOptions({ input: { kind: kind.kind } })
   );
   const capabilities = useQuery(
     orpc.agent.capabilities.list.queryOptions({ input: { kind: kind.kind } })
@@ -175,7 +175,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
                           items={[
                             {
                               id: "",
-                              label: `Default — ${audienceOf(kind.minTier.code)}`,
+                              label: `Default (${audienceOf(kind.minTier.code)})`,
                             },
                             ...audienceOptions,
                           ]}>
@@ -269,7 +269,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
                   Default:{" "}
                   {code.autoApprove.length > 0
                     ? code.autoApprove.join(", ")
-                    : "none — every gated tool asks first"}
+                    : "none, every gated tool asks first"}
                 </Description>
               </Switch>
               {autoApprove !== null ? (

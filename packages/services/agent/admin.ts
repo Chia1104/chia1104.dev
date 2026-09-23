@@ -87,6 +87,8 @@ export interface AgentAdminService {
       config?: JsonObject;
     }
   ): Promise<AgentKindAdmin>;
+  /** `NOT_FOUND` for an unregistered kind. House access: the default is billed to the house. */
+  listKindModels(input: { kind: string }): Promise<AgentModelInfo[]>;
 
   listTasks(caller: AgentAdminCaller): Promise<AgentTaskAdmin[]>;
   /** `NOT_FOUND` for an unregistered task, `BAD_REQUEST` for a model off the house catalogue. */
@@ -393,6 +395,11 @@ export const createAgentAdminService = (
         config,
       });
       return kindView(definition, row);
+    },
+
+    async listKindModels(input) {
+      const definition = await kindOrNotFound(source, input.kind);
+      return definition.models.list(HOUSE_ACCESS, definition.defaults);
     },
 
     listTasks,

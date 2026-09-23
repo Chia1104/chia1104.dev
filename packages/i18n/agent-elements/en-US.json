@@ -62,6 +62,10 @@
   "forked": "Branched",
   "forkedFrom": "Branched from {title}",
   "modelPicker": "Model",
+  "modelPickerDefault": "Default ({model})",
+  "modelUnavailableTitle": "This conversation's model is no longer available",
+  "modelUnavailableDescription": "Switch to the default ({model}) to keep chatting.",
+  "modelUnavailableUseDefault": "Use default",
   "thinkingLevel": "Thinking",
   "thinkingLevelNames": {
     "off": "Off",
@@ -104,6 +108,7 @@
     "context_overflow": "The conversation no longer fits the model's context. Compact it",
     "budget_exhausted": "The turn ran past its budget and was stopped",
     "refused": "The assistant cannot help with this message",
+    "model_unavailable": "The model this conversation uses is no longer available",
     "provider": "The provider failed",
     "internal": "The agent failed"
   },

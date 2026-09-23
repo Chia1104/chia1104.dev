@@ -10,7 +10,7 @@ import {
 } from "@chia/db/repos/agent";
 import type { AgentSession } from "@chia/db/schema";
 
-import { PgSessionRepo } from "../src/session/pg-repo.ts";
+import { PgSessionRepo, settingsFromRow } from "../src/session/pg-repo.ts";
 
 vi.mock("@chia/db/repos/agent", () => ({
   appendAgentSessionEntryAsLeaf: vi.fn(),
@@ -160,5 +160,76 @@ describe("PgSessionRepo.fork", () => {
       "fork-1",
       { leafEntryId: "a1" }
     );
+  });
+});
+
+describe("PgSessionRepo.create", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("leaves the model unset when the caller chose none, so the row follows the kind default", async () => {
+    await new PgSessionRepo(db, "writing").create({
+      id: "s-1",
+      userId: "user-1",
+      defaults: { thinkingLevel: "low" },
+    });
+
+    expect(vi.mocked(createAgentSession)).toHaveBeenCalledWith(
+      db,
+      expect.objectContaining({
+        providerId: null,
+        modelId: null,
+        thinkingLevel: "low",
+      })
+    );
+  });
+
+  it("stores the pair the caller chose", async () => {
+    await new PgSessionRepo(db, "writing").create({
+      id: "s-1",
+      userId: "user-1",
+      settings: { providerId: "faux", modelId: "chosen" },
+      defaults: {},
+    });
+
+    expect(vi.mocked(createAgentSession)).toHaveBeenCalledWith(
+      db,
+      expect.objectContaining({ providerId: "faux", modelId: "chosen" })
+    );
+  });
+
+  it("forks an unpinned session as unpinned", async () => {
+    vi.mocked(getAgentSessionEntries).mockResolvedValue([]);
+    await new PgSessionRepo(db, "writing").fork(
+      { ...sessionRow, providerId: null, modelId: null },
+      { id: "fork-1" }
+    );
+
+    expect(vi.mocked(createAgentSession)).toHaveBeenCalledWith(
+      db,
+      expect.objectContaining({ providerId: null, modelId: null })
+    );
+  });
+});
+
+describe("settingsFromRow", () => {
+  const house = { providerId: "faux", modelId: "house" };
+
+  it("runs an unpinned row on the house model", () => {
+    expect(
+      settingsFromRow({ ...sessionRow, providerId: null, modelId: null }, house)
+    ).toMatchObject({ providerId: "faux", modelId: "house" });
+  });
+
+  it("keeps a pinned row's own model", () => {
+    expect(settingsFromRow(sessionRow, house)).toMatchObject({
+      providerId: "faux",
+      modelId: "test-model",
+    });
+  });
+
+  it("rejects a row without a thinking level", () => {
+    expect(() =>
+      settingsFromRow({ ...sessionRow, thinkingLevel: null }, house)
+    ).toThrow("incomplete LLM settings");
   });
 });

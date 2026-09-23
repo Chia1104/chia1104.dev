@@ -289,6 +289,8 @@ A model ref names a provider and that provider's id (`vercel-ai-gateway` + `anth
 
 Each domain owns its model policy, decided per ref and caller. One-shot tasks run on the house gateway key, never on a caller's key.
 
+A session row names a model only when the caller chose one. `null` columns mean the session follows the kind's effective default, read per turn, so a default is never copied onto a row and an operator's change reaches every unpinned session on its next turn. A pinned model the catalogue or the caller's keys no longer serve refuses the turn as `model_unavailable`, and the client offers another choice.
+
 ### Usage ledger and quota
 
 Every billed provider call creates one `agent.usage_ledger` row, including turns, compaction, branch summaries, titles and lesson extraction. Cost is stored in integer micro-dollars with the provider ID and a `credential_source` (`house`, `byok-gateway`, `byok-native`), so house spend and BYOK spend remain one ledger with different filters. Quota counts `house` rows only; the provider ID never decides who paid. Ledger rows survive session deletion.

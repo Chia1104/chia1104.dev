@@ -119,13 +119,13 @@ export const createAgentMaintenanceOperations = <
   ) => {
     const db = caller.context.db;
     const session = sessions.repoFor(db).open(row);
-    const settings = settingsFromRow(row);
+    const { defaults: house } = await loadKindConfig(db, definition);
+    const settings = settingsFromRow(row, house);
     const credentials = host.credentials.decrypt(
       host.credentials.read(caller.context.headers)
     );
     const models = createAgentModels(credentials);
     const access = accessOf(credentials);
-    const { defaults: house } = await loadKindConfig(db, definition);
     const operationFor = async (taskId: string) => {
       const task = await resolveAgentTask(db, taskId, {
         session: () => ({

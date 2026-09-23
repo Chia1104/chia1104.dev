@@ -24,7 +24,12 @@ import { agentQueryKeys, sessionDetailQuery } from "./queries.ts";
 import { formatSlashCommand } from "./slash-command.ts";
 import { consumeStream } from "./stream.ts";
 import { formatMessageTime } from "./time.ts";
-import type { AgentSessionClient, AgentSessionDetail } from "./types.ts";
+import type {
+  AgentModel,
+  AgentModelRef,
+  AgentSessionClient,
+  AgentSessionDetail,
+} from "./types.ts";
 
 export type AgentConnection = "hydrating" | "idle" | "streaming";
 
@@ -570,3 +575,26 @@ export const canPrompt = (state: AgentSessionState, detail: RunInfo): boolean =>
   state.connection === "idle" &&
   detail.run?.status !== "running" &&
   state.view.pendingApprovals.length === 0;
+
+export const findAgentModel = (
+  models: readonly AgentModel[] | undefined,
+  ref: AgentModelRef | undefined
+): AgentModel | undefined =>
+  models?.find(
+    (model) =>
+      model.providerId === ref?.providerId && model.modelId === ref.modelId
+  );
+
+/**
+ * Whether the next turn would be refused as `model_unavailable`: the session pins a model the
+ * caller's keys no longer reach or the catalogue no longer carries. Unknown, so false, until
+ * both the detail and the model list have loaded.
+ */
+export const pinnedModelUnavailable = (
+  settings: AgentSessionDetail["settings"],
+  models: readonly AgentModel[] | undefined
+): boolean => {
+  if (!settings?.modelPinned || !models) return false;
+  const pinned = findAgentModel(models, settings);
+  return !pinned || pinned.requiresApiKey;
+};

@@ -38,7 +38,10 @@ import {
   useAgentStatus,
   useCanPrompt,
 } from "./provider.tsx";
-import { SessionModelPicker } from "./session-model-picker.tsx";
+import {
+  SessionModelNotice,
+  SessionModelPicker,
+} from "./session-model-picker.tsx";
 import {
   filterSlashMenuItems,
   findSlashCommand,
@@ -553,6 +556,7 @@ const ComposerEditor = ({
           />
         ) : null}
         <PendingApprovals />
+        <SessionModelNotice />
         <ComposerFailure />
 
         {attachments ? (
