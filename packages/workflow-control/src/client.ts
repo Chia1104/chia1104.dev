@@ -4,7 +4,7 @@ import { AppError, appErrorCodeFromStatus } from "@chia/service-kit/errors";
 import type {
   AgentAbortControllerRef,
   EncryptedAgentCredentials,
-} from "./agent.hooks";
+} from "./agent.schema";
 import {
   startedRunId,
   workflowControlErrorSchema,
@@ -109,6 +109,11 @@ export const createWorkflowControlClient = ({
     async startFeedIndex(feedID: number) {
       return startedRunId(
         await execute({ type: "feed-index:start", request: { feedID } })
+      );
+    },
+    async startFeedSummary(feedID: number) {
+      return startedRunId(
+        await execute({ type: "feed-summary:start", request: { feedID } })
       );
     },
     async startFeedRemoval(translationIDs: number[]) {

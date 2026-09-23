@@ -4,7 +4,7 @@ import * as z from "zod";
 import {
   agentAbortControllerRefSchema,
   agentMessagePayloadSchema,
-} from "@chia/workflow-control/agent-hooks";
+} from "@chia/workflow-control/agent-schema";
 
 import {
   closeAgentStreamsStep,

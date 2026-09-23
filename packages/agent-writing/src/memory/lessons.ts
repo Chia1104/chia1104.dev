@@ -147,7 +147,6 @@ const TRANSLATION_FIELDS = [
   "title",
   "excerpt",
   "description",
-  "summary",
   "content",
 ] as const;
 

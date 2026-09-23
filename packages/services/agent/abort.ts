@@ -1,7 +1,7 @@
 import { reportError } from "@chia/observability/report";
 import type { JsonObject } from "@chia/utils/json";
-import { agentAbortControllerRefSchema } from "@chia/workflow-control/agent-hooks";
-import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-hooks";
+import { agentAbortControllerRefSchema } from "@chia/workflow-control/agent-schema";
+import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-schema";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 const AGENT_ABORT_TTL_MS = 24 * 60 * 60 * 1000;

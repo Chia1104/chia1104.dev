@@ -7,7 +7,6 @@ import type {
   generateDescriptionInput,
   generateExcerptInput,
   generateSlugInput,
-  generateSummaryInput,
 } from "@chia/ai/tools/content";
 import type { baseRequestSchema, SupportedTools } from "@chia/ai/types";
 import { withServiceEndpoint } from "@chia/utils/config";
@@ -50,10 +49,6 @@ export type GenerateAIContentMetaInput =
       input: z.infer<typeof generateDescriptionInput>;
     }
   | {
-      feature: typeof SupportedTools.GenerateSummary;
-      input: z.infer<typeof generateSummaryInput>;
-    }
-  | {
       feature: typeof SupportedTools.GenerateExcerpt;
       input: z.infer<typeof generateExcerptInput>;
     };
@@ -66,10 +61,6 @@ export type GenerateAIContentMetaResponse =
   | {
       feature: typeof SupportedTools.GenerateDescription;
       content: { description: string };
-    }
-  | {
-      feature: typeof SupportedTools.GenerateSummary;
-      content: { summary: string };
     }
   | {
       feature: typeof SupportedTools.GenerateExcerpt;

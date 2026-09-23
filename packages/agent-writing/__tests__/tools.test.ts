@@ -371,7 +371,7 @@ describe("draft slug handling", () => {
     await context.draft.write(DRAFT_ID, {
       meta: { defaultLocale: "en", slug: "a-post" },
       translations: {
-        en: { title: "A post", content: "## Body", summary: "S" },
+        en: { title: "A post", content: "## Body" },
       },
     });
     const preflight = commitPreflight(context);
@@ -661,7 +661,6 @@ describe("draft slug handling", () => {
           content: "## Body\n\nShort.",
           excerpt: "E",
           description: "D",
-          summary: "S",
         },
       },
     });

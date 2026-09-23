@@ -141,7 +141,7 @@ export const feedDrafts = pgTable(
   ]
 );
 
-/** Per-locale draft fields; mirrors `feed_translation` minus the indexer-owned `read_time`. */
+/** Per-locale draft fields; mirrors `feed_translation` minus `read_time` and `summary`, which workflows own. */
 export const feedDraftTranslations = pgTable(
   "feed_draft_translation",
   {
@@ -153,7 +153,6 @@ export const feedDraftTranslations = pgTable(
     title: text("title"),
     excerpt: text("excerpt"),
     description: text("description"),
-    summary: text("summary"),
     content: text("content"),
     ...timestamps,
   },
@@ -178,7 +177,6 @@ export interface FeedDraftTranslationSnapshot {
   title: string | null;
   excerpt: string | null;
   description: string | null;
-  summary: string | null;
   content: string | null;
 }
 

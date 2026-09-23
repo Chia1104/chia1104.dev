@@ -31,6 +31,7 @@ import { client, orpc } from "@/libs/orpc/client";
 import { DeleteButton } from "./delete-button";
 import type { DraftView } from "./draft-values";
 import { MetaChip } from "./meta-chip";
+import { PostSummary } from "./post-summary";
 import { PostTags } from "./post-tags";
 import { RevisionsDrawer } from "./revisions-drawer";
 
@@ -176,6 +177,14 @@ const PostSettings = ({ feedId }: { feedId: number }) => {
           deleted={!!feed.deletedAt}
         />
       </div>
+      <PostSummary
+        feedId={feedId}
+        published={feed.published}
+        translations={feed.translations.map((translation) => ({
+          locale: translation.locale,
+          summary: translation.summary,
+        }))}
+      />
     </div>
   );
 };
@@ -452,7 +461,8 @@ export const DraftActions = ({
           <Disclosure.Content>
             <Disclosure.Body className="flex flex-col gap-3 px-2">
               <p className="text-muted text-xs">
-                Visibility, date and tag changes take effect immediately.
+                Visibility, date, tag and summary changes take effect
+                immediately.
               </p>
               <div inert={isBusy}>
                 <PostSettings feedId={draft.feedId} />

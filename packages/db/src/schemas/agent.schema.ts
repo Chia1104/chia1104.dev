@@ -380,7 +380,8 @@ export type AgentUsageSource =
   | "compaction"
   | "branch_summary"
   | "title"
-  | "lessons";
+  | "lessons"
+  | "summary";
 
 /**
  * Whose key paid for a call. `providerId` alone cannot say: the same provider serves the house

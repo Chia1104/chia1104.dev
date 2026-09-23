@@ -23,14 +23,12 @@ const TRANSLATION_FIELDS = [
   "title",
   "excerpt",
   "description",
-  "summary",
   "content",
 ] as const;
 const emptyTranslation = (): TranslationValues => ({
   title: null,
   excerpt: null,
   description: null,
-  summary: null,
   content: null,
 });
 

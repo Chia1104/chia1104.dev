@@ -1,6 +1,6 @@
 import type { AgentCredentials } from "@chia/agent-runtime/models";
 import { verifyApiKey } from "@chia/ai/utils";
-import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-hooks";
+import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-schema";
 
 export class AgentCredentialError extends Error {
   constructor(

@@ -6,6 +6,10 @@ import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import { feedSchema, feedTranslationSchema } from "@chia/db/validator/feeds";
 import { keysetCursorSchema } from "@chia/db/validator/shared";
 import { FEED_TAGS_MAX, tagSlugSchema } from "@chia/db/validator/tags";
+import {
+  feedSummaryOutputSchema,
+  workflowRunStatusSchema,
+} from "@chia/workflow-control/contract";
 
 import { flexibleBoolean, withMetaSchema } from "../shared/schema";
 
@@ -39,6 +43,14 @@ export const deleteFeedSchema = z.object({
 
 export const restoreFeedSchema = z.object({
   feedId: z.number(),
+});
+
+export const summarizeFeedSchema = z.object({
+  feedId: z.number().int(),
+});
+
+export const feedSummaryRunSchema = z.object({
+  runId: z.string().min(1),
 });
 
 /** `resolveFeedVisibility` clamps each flag for callers below the required tier rather than rejecting, so a browser that sends `includeUnpublished` receives the published set instead of a 403. */
@@ -235,6 +247,26 @@ export const restoreFeedContract = oc
   .input(restoreFeedSchema);
 
 /**
+ * Starts the summarize workflow on a published post: `feed_translation.summary` is the
+ * workflow's, not the draft's. The run is read back by id until it settles.
+ */
+export const summarizeFeedContract = oc
+  .errors({ ...WRITE_ERRORS, BAD_REQUEST: {} })
+  .input(summarizeFeedSchema)
+  .output(z.object({ runId: z.string() }));
+
+export const getFeedSummaryRunContract = oc
+  .errors(WRITE_ERRORS)
+  .input(feedSummaryRunSchema)
+  .output(
+    z.object({
+      status: workflowRunStatusSchema,
+      /** Only once the run completed. */
+      output: feedSummaryOutputSchema.optional(),
+    })
+  );
+
+/**
  * The working draft of a post, shared by the dashboard editor and the writing agent. Applying it
  * is what commits a version; `contentHash` names the content, `revision` only orders writes.
  */
@@ -243,7 +275,6 @@ export const feedDraftTranslationSchema = z.object({
   title: z.string().nullable(),
   excerpt: z.string().nullable(),
   description: z.string().nullable(),
-  summary: z.string().nullable(),
   content: z.string().nullable(),
 });
 
@@ -555,6 +586,8 @@ export const feedsContract = {
   update: updateFeedContract,
   delete: deleteFeedContract,
   restore: restoreFeedContract,
+  summarize: summarizeFeedContract,
+  "summarize:run": getFeedSummaryRunContract,
   "draft:open": openFeedDraftContract,
   "draft:get": getFeedDraftContract,
   "draft:list": listFeedDraftsContract,

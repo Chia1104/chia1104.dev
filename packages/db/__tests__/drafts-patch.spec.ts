@@ -7,7 +7,6 @@ const translation = (title: string, content: string | null) => ({
   title,
   excerpt: null,
   description: null,
-  summary: null,
   content,
 });
 

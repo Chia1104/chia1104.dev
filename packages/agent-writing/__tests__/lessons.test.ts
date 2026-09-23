@@ -185,7 +185,6 @@ describe("collectOperatorEdits", () => {
         title,
         excerpt: null,
         description: null,
-        summary: null,
         content,
       },
     },

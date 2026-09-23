@@ -15,7 +15,6 @@ export type Model = z.infer<typeof modelSchema>;
 export const SupportedTools = {
   GenerateSlug: "generate-slug",
   GenerateExcerpt: "generate-excerpt",
-  GenerateSummary: "generate-summary",
   GenerateDescription: "generate-description",
   GenerateContent: "generate-content",
 } as const;

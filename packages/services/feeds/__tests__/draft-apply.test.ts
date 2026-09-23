@@ -65,7 +65,6 @@ const draft = (revision: number) => ({
       title: "A post",
       excerpt: null,
       description: null,
-      summary: null,
       content: "## Body",
     },
   },

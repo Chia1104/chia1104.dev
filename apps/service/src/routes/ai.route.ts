@@ -12,8 +12,6 @@ import {
   generateDescription,
   generateSlugInput,
   generateDescriptionInput,
-  generateSummary,
-  generateSummaryInput,
   generateExcerpt,
   generateExcerptInput,
   generateContentInput,
@@ -168,10 +166,6 @@ const api = new Hono<HonoContext>()
           input: generateDescriptionInput,
         }),
         z.object({
-          feature: z.literal(SupportedTools.GenerateSummary),
-          input: generateSummaryInput,
-        }),
-        z.object({
           feature: z.literal(SupportedTools.GenerateExcerpt),
           input: generateExcerptInput,
         }),
@@ -195,13 +189,6 @@ const api = new Hono<HonoContext>()
             feature: SupportedTools.GenerateDescription,
             content: {
               description: await generateDescription(contentModel, json.input),
-            },
-          });
-        case SupportedTools.GenerateSummary:
-          return c.json({
-            feature: SupportedTools.GenerateSummary,
-            content: {
-              summary: await generateSummary(contentModel, json.input),
             },
           });
         case SupportedTools.GenerateExcerpt:
