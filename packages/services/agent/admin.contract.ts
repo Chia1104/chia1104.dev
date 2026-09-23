@@ -62,6 +62,16 @@ export const listAgentKindsAdminContract = oc
   .errors(errors)
   .output(z.array(agentKindAdminSchema));
 
+/**
+ * The models a kind's default may be pinned to. Listed with house access, not the admin's
+ * keys: the default is what the house pays for, so every gateway model is open and native
+ * providers stay behind a caller key.
+ */
+export const listAgentKindModelsAdminContract = oc
+  .errors({ ...errors, NOT_FOUND: {} })
+  .input(z.object({ kind: z.string().min(1) }))
+  .output(z.array(agentModelInfoSchema));
+
 /** `null` clears an override back to the code default; an absent key leaves it alone. */
 export const updateAgentKindAdminContract = oc
   .errors(writeErrors)
@@ -246,6 +256,7 @@ export const agentAdminContract = {
   kinds: {
     list: listAgentKindsAdminContract,
     update: updateAgentKindAdminContract,
+    models: listAgentKindModelsAdminContract,
   },
   tasks: {
     list: listAgentTasksAdminContract,

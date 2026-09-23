@@ -148,6 +148,15 @@ describe("listPublicModels", () => {
     expect(usable[0]).toMatchObject(HOUSE);
   });
 
+  it("marks every gateway model usable with house access, so the operator can pin any of them", () => {
+    const gateway = listPublicModels(HOUSE_ACCESS, HOUSE).filter(
+      (model) => model.providerId === AGENT_PROVIDERS.gateway
+    );
+
+    expect(gateway.length).toBeGreaterThan(1);
+    expect(gateway.every((model) => !model.requiresApiKey)).toBe(true);
+  });
+
   it("marks every gateway model usable for a visitor with a gateway key", () => {
     const gateway = listPublicModels(
       accessOf({ gateway: "vck" }),

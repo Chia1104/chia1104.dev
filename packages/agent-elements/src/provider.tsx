@@ -23,6 +23,7 @@ import {
   canPrompt,
   createAgentSessionStore,
   isBusy,
+  pinnedModelUnavailable,
   statusOf,
 } from "./store.ts";
 import type {
@@ -202,7 +203,8 @@ export const useAgentCapabilities = () => {
 };
 
 export interface UpdateSettingsInput {
-  model?: AgentModelRef;
+  /** `null` unpins the session so it follows the kind default. */
+  model?: AgentModelRef | null;
   thinkingLevel?: AgentThinkingLevel;
   autoApprove?: string[];
 }
@@ -323,7 +325,13 @@ export const useAgentBusy = () => {
   return useAgentSession((state) => isBusy(state, detail));
 };
 
+/** Also false while the session pins a model the caller cannot run; the composer says why. */
 export const useCanPrompt = () => {
   const detail = useSessionDetail().data;
-  return useAgentSession((state) => canPrompt(state, detail));
+  const models = useAgentModels().data;
+  return useAgentSession(
+    (state) =>
+      canPrompt(state, detail) &&
+      !pinnedModelUnavailable(detail?.settings, models)
+  );
 };

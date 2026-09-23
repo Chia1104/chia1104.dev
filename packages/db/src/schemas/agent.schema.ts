@@ -40,7 +40,7 @@ export const agentSessions = agentSchema.table(
     /** Stable runtime registry key, e.g. `writing` or `site-assistant`. */
     kind: text("kind").notNull(),
     title: text("title"),
-    /** Nullable; a harness that needs a model validates these at runtime. */
+    /** Set together when the caller pinned a model; `null` follows the kind's effective default at each turn. */
     providerId: text("provider_id"),
     modelId: text("model_id"),
     thinkingLevel: text("thinking_level"),

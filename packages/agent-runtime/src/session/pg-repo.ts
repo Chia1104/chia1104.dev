@@ -9,6 +9,8 @@ import {
 import type { AgentSession } from "@chia/db/schema";
 import type { JsonObject } from "@chia/utils/json";
 
+import { modelRefOf } from "../models.ts";
+import type { AgentModelRef } from "../models.ts";
 import type {
   AgentSessionDefaults,
   AgentSessionSettings,
@@ -27,9 +29,10 @@ export interface PgSessionCreateOptions {
   id?: string;
   userId: string;
   title?: string;
+  /** The row names a model only when `settings` does; otherwise it follows the kind default. */
   settings?: Partial<AgentSessionSettings>;
-  /** Fills any setting `settings` leaves out. */
-  defaults: AgentSessionDefaults;
+  /** Fills the thinking level and approvals `settings` leaves out. */
+  defaults: Pick<AgentSessionDefaults, "thinkingLevel" | "autoApprove">;
   runtimeConfig?: JsonObject;
   configVersion?: number;
   /** Lineage recorded on the row; set by `fork`. */
@@ -81,8 +84,8 @@ export class PgSessionRepo {
       userId: options.userId,
       kind,
       title: options.title ?? null,
-      providerId: settings.providerId ?? defaults.providerId,
-      modelId: settings.modelId ?? defaults.modelId,
+      providerId: settings.providerId ?? null,
+      modelId: settings.modelId ?? null,
       thinkingLevel: settings.thinkingLevel ?? defaults.thinkingLevel ?? "off",
       activeToolNames: settings.activeToolNames ?? null,
       autoApprove: settings.autoApprove ?? defaults.autoApprove ?? [],
@@ -125,7 +128,7 @@ export class PgSessionRepo {
     options: PgSessionForkOptions
   ): Promise<PgSessionStorage> {
     const entries = await entriesToFork(this.open(source), options);
-    const sourceSettings = settingsFromRow(source);
+    const sourceSettings = ownSettingsOf(source);
 
     const forked = await this.create({
       id: options.id,
@@ -175,17 +178,25 @@ const entriesToFork = async (
   return session.getBranch(target.parentId);
 };
 
+export interface SessionSettingsPatch extends Partial<
+  Omit<AgentSessionSettings, "providerId" | "modelId">
+> {
+  /** `null` clears the pair so the session follows the kind default again. */
+  model?: AgentModelRef | null;
+  title?: string;
+  runtimeConfig?: JsonObject;
+}
+
 export const writeSessionSettings = async (
   db: DB,
   sessionId: string,
-  patch: Partial<AgentSessionSettings> & {
-    title?: string;
-    runtimeConfig?: JsonObject;
-  }
+  patch: SessionSettingsPatch
 ): Promise<void> => {
   await updateAgentSession(db, sessionId, {
-    providerId: patch.providerId,
-    modelId: patch.modelId,
+    providerId:
+      patch.model === undefined ? undefined : (patch.model?.providerId ?? null),
+    modelId:
+      patch.model === undefined ? undefined : (patch.model?.modelId ?? null),
     thinkingLevel: patch.thinkingLevel,
     activeToolNames: patch.activeToolNames,
     autoApprove: patch.autoApprove,
@@ -194,25 +205,44 @@ export const writeSessionSettings = async (
   });
 };
 
-/**
- * Runtime settings live on the session row rather than as tree entries: the transport needs
- * the current values before a turn exists in order to build one. Every reader goes through
- * here, so an incomplete row fails the same way everywhere.
- */
-export const settingsFromRow = (row: {
+interface SessionSettingsRow {
   id: string;
   providerId: string | null;
   modelId: string | null;
   thinkingLevel: string | null;
   activeToolNames: string[] | null;
   autoApprove: string[];
-}): AgentSessionSettings => {
-  if (!row.providerId || !row.modelId || !row.thinkingLevel) {
+}
+
+/**
+ * Runtime settings live on the session row rather than as tree entries: the transport needs
+ * the current values before a turn exists in order to build one. Every reader goes through
+ * here, so an incomplete row fails the same way everywhere.
+ * A row that names no model runs on `house`, the kind's effective default as read for this
+ * call, so an operator's change reaches every such session on its next turn.
+ */
+export const settingsFromRow = (
+  row: SessionSettingsRow,
+  house: AgentModelRef
+): AgentSessionSettings => {
+  const model = modelRefOf(row) ?? house;
+  return {
+    ...ownSettingsOf(row),
+    providerId: model.providerId,
+    modelId: model.modelId,
+  };
+};
+
+/** The row's own settings: the model only when the row names one. */
+export const ownSettingsOf = (
+  row: SessionSettingsRow
+): Omit<AgentSessionSettings, "providerId" | "modelId"> &
+  Partial<AgentModelRef> => {
+  if (!row.thinkingLevel) {
     throw new Error(`Agent session ${row.id} has incomplete LLM settings.`);
   }
   return {
-    providerId: row.providerId,
-    modelId: row.modelId,
+    ...modelRefOf(row),
     thinkingLevel:
       /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
     activeToolNames: row.activeToolNames,

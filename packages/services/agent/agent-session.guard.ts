@@ -41,7 +41,7 @@ export const canUseAgentKind = (
 interface AgentSessionInput {
   sessionId: string;
   kind?: string;
-  model?: AgentModelRef;
+  model?: AgentModelRef | null;
 }
 
 /**

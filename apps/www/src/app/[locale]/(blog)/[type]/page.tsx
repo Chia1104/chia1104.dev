@@ -59,7 +59,6 @@ const CacheFeeds = async ({
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <FeedList
-        type={formattedType}
         nextCursor={null}
         query={{
           limit,

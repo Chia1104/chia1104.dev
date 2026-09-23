@@ -44,6 +44,8 @@ declare namespace __next_route_internal_types__ {
     | `/${SafeSlug<T>}/note/${SafeSlug<T>}` // /[locale]/note/[slug]
     | `/${SafeSlug<T>}/post/${SafeSlug<T>}` // /[locale]/post/[slug]
     | `/${SafeSlug<T>}/projects` // ../../../src/app/[locale]/projects/page.tsx
+    | `/${SafeSlug<T>}/tags` // ../../../src/app/[locale]/(blog)/tags/page.tsx
+    | `/${SafeSlug<T>}/tags/${SafeSlug<T>}` // ../../../src/app/[locale]/(blog)/tags/[slug]/page.tsx
     | `/note/${SafeSlug<T>}` // /note/[slug]
     | `/post/${SafeSlug<T>}` // /post/[slug]
 

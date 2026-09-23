@@ -39,6 +39,7 @@ const kind: AgentKindAdmin = {
 
 const service = {
   listKinds: vi.fn(),
+  listKindModels: vi.fn(),
   updateKind: vi.fn(),
   listTasks: vi.fn(),
   updateTask: vi.fn(),
@@ -98,6 +99,13 @@ describe("agent admin routes", () => {
         call(
           routes.updateAgentKindAdminRoute,
           { kind: "writing", config: {} },
+          { context }
+        )
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(
+        call(
+          routes.listAgentKindModelsAdminRoute,
+          { kind: "writing" },
           { context }
         )
       ).rejects.toMatchObject({ code: "FORBIDDEN" });

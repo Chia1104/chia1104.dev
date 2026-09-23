@@ -55,7 +55,7 @@ export const ModelSelect = ({
   value,
 }: ModelSelectProps) => (
   <ModelPicker
-    fallback={{ label: `Default — ${defaultLabel}` }}
+    fallback={{ label: `Default (${defaultLabel})` }}
     isDisabled={isDisabled}
     models={models}
     onChange={onChange}

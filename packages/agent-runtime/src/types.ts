@@ -63,6 +63,7 @@ export interface ToolCallRefusal {
   terminate?: true;
 }
 
+/** What a turn runs with. The model is the session's own or, when it names none, the kind's effective default. */
 export interface AgentSessionSettings {
   providerId: string;
   modelId: string;
@@ -115,6 +116,7 @@ export type AgentErrorKind =
   | "context_overflow"
   | "budget_exhausted"
   | "refused"
+  | "model_unavailable"
   | "provider"
   | "internal";
 

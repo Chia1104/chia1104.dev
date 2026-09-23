@@ -1,6 +1,8 @@
 import { loadKindConfig } from "@chia/agent-host/config";
 import { readAgentTurnMarker } from "@chia/agent-host/execution";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
+import { modelRefOf } from "@chia/agent-runtime/models";
+import type { AgentModelRef } from "@chia/agent-runtime/models";
 import { canCompactBranch } from "@chia/agent-runtime/pi/compaction";
 import {
   computeSessionStats,
@@ -90,8 +92,13 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     context: { ...caller.context, db },
   });
 
-  const summaryOf = (row: AgentSession) => {
-    const settings = settingsFromRow(row);
+  const houseModelFor = async (db: DB): Promise<AgentModelRef> => {
+    const { defaults } = await loadKindConfig(db, definition);
+    return { providerId: defaults.providerId, modelId: defaults.modelId };
+  };
+
+  const summaryOf = (row: AgentSession, house: AgentModelRef) => {
+    const settings = settingsFromRow(row, house);
     return {
       id: row.id,
       title: row.title,
@@ -121,6 +128,7 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
 
     const db = caller.context.db;
     const session = repoFor(db).open(row);
+    const house = await houseModelFor(db);
 
     // The row was read in this transaction, so its leaf is the leaf the entries were read under.
     const leafId = row.leafEntryId;
@@ -155,8 +163,12 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
         : branch;
 
     return {
-      session: summaryOf(row),
-      settings: settingsFromRow(row),
+      session: summaryOf(row, house),
+      settings: {
+        ...settingsFromRow(row, house),
+        modelPinned: modelRefOf(row) !== null,
+        defaultModel: house,
+      },
       runtimeConfig: row.runtimeConfig,
       configVersion: row.configVersion,
       ...kindDetail,
@@ -186,7 +198,11 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
         userId: caller.userId,
         limit: input?.limit,
       });
-      return { items: rows.map(summaryOf), nextCursor: null };
+      const house = await houseModelFor(caller.context.db);
+      return {
+        items: rows.map((row) => summaryOf(row, house)),
+        nextCursor: null,
+      };
     },
 
     async createSession(caller, input) {
@@ -252,8 +268,7 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
       if (!row) return null;
       await writeSessionSettings(caller.context.db, input.sessionId, {
         title: input.title,
-        providerId: input.model?.providerId,
-        modelId: input.model?.modelId,
+        model: input.model,
         thinkingLevel:
           /* SAFETY: the route validates this setting before persistence. */ input.thinkingLevel as
             | ThinkingLevel

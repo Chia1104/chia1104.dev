@@ -16,8 +16,6 @@ import {
 import { apikey } from "./apikey.schema.ts";
 import { account, passkey, session } from "./auth.schema.ts";
 import {
-  assets,
-  assetsToTags,
   feedDraftRevisions,
   feedDrafts,
   feedDraftTranslations,
@@ -44,13 +42,11 @@ const schema = {
   spotifyCredential,
   tags,
   tagTranslations,
-  assets,
   feeds,
   feedTranslations,
   feedDrafts,
   feedDraftTranslations,
   feedDraftRevisions,
-  assetsToTags,
   feedsToTags,
   agentSessions,
   agentRuns,
@@ -75,7 +71,6 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.spotifyCredential.userId,
     }),
     feeds: r.many.feeds({ from: r.user.id, to: r.feeds.userId }),
-    assets: r.many.assets({ from: r.user.id, to: r.assets.userId }),
     profileEntries: r.many.profileEntries({
       from: r.user.id,
       to: r.profileEntries.userId,
@@ -103,10 +98,6 @@ export const relations = defineRelations(schema, (r) => ({
     translations: r.many.tagTranslations({
       from: r.tags.id,
       to: r.tagTranslations.tagId,
-    }),
-    assetsToTags: r.many.assetsToTags({
-      from: r.tags.id,
-      to: r.assetsToTags.tagId,
     }),
     feedsToTags: r.many.feedsToTags({
       from: r.tags.id,
@@ -184,20 +175,6 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.resourceEmbeddings.chunkId,
       to: r.resourceChunks.id,
     }),
-  },
-  assets: {
-    user: r.one.user({ from: r.assets.userId, to: r.user.id }),
-    assetsToTags: r.many.assetsToTags({
-      from: r.assets.id,
-      to: r.assetsToTags.assetId,
-    }),
-  },
-  assetsToTags: {
-    asset: r.one.assets({
-      from: r.assetsToTags.assetId,
-      to: r.assets.id,
-    }),
-    tag: r.one.tags({ from: r.assetsToTags.tagId, to: r.tags.id }),
   },
   feedsToTags: {
     feed: r.one.feeds({ from: r.feedsToTags.feedId, to: r.feeds.id }),
@@ -303,8 +280,6 @@ export const feedTranslationsRelations = relations.feedTranslations;
 export const feedDraftsRelations = relations.feedDrafts;
 export const feedDraftTranslationsRelations = relations.feedDraftTranslations;
 export const feedDraftRevisionsRelations = relations.feedDraftRevisions;
-export const assetsRelations = relations.assets;
-export const assetsToTagsRelations = relations.assetsToTags;
 export const feedsToTagsRelations = relations.feedsToTags;
 export const profileEntriesRelations = relations.profileEntries;
 export const agentSessionsRelations = relations.agentSessions;

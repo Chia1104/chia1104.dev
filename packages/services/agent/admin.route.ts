@@ -39,6 +39,16 @@ export const updateAgentKindAdminRoute = contractOS.agent.admin.kinds.update
     )
   );
 
+export const listAgentKindModelsAdminRoute = contractOS.agent.admin.kinds.models
+  .use(adminGuard())
+  .handler((opts) =>
+    withORPCErrors(async () =>
+      (await requireAgentFactory(opts.context).createAdmin()).listKindModels(
+        opts.input
+      )
+    )
+  );
+
 export const listAgentTasksAdminRoute = contractOS.agent.admin.tasks.list
   .use(adminGuard())
   .handler((opts) =>
@@ -114,6 +124,7 @@ export const agentAdminRouter = contractOS.agent.admin.router({
   kinds: {
     list: listAgentKindsAdminRoute,
     update: updateAgentKindAdminRoute,
+    models: listAgentKindModelsAdminRoute,
   },
   tasks: {
     list: listAgentTasksAdminRoute,

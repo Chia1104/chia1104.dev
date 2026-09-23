@@ -10,6 +10,7 @@ import { profileRouter } from "./profile/profile.route";
 import { ragRouter } from "./rag/rag.route";
 import { contractOS } from "./shared/context";
 import { spotifyRouter } from "./spotify/spotify.route";
+import { tagsRouter } from "./tags/tags.route";
 import { toolingsRouter } from "./toolings/toolings.route";
 import { userRouter } from "./user/user.route";
 
@@ -27,4 +28,5 @@ export const router = contractOS.router({
   memory: memoryRouter,
   profile: profileRouter,
   spotify: spotifyRouter,
+  tags: tagsRouter,
 });
