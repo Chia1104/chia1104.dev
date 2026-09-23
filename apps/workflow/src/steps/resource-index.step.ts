@@ -3,16 +3,29 @@ import { FatalError, fetch } from "workflow";
 
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
-import { connectDatabase } from "@chia/db/client";
+import { connectDatabase, invalidateCache } from "@chia/db/client";
 import {
   deleteResourceChunks,
   listChunksNeedingEmbedding,
   replaceResourceChunks,
   saveChunkEmbeddings,
 } from "@chia/db/repos/resources/chunk";
+import { feedTranslations } from "@chia/db/schema";
 import { getResourceAdapter } from "@chia/services/rag/registry";
+import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/services/rag/resource-types";
 
 const EMBED_BATCH_SIZE = 32;
+
+/**
+ * A feed translation's cached read carries `hasEmbedding`, computed from its chunks, so a
+ * chunk or vector change is a change to that read. The cache tracks only the tables a query
+ * selects from, never the ones its subquery touches.
+ */
+const invalidateSourceReads = async (sourceType: string): Promise<void> => {
+  if (sourceType === FEED_TRANSLATION_SOURCE_TYPE) {
+    await invalidateCache([feedTranslations]);
+  }
+};
 
 export interface ResourceIndexRequest {
   sourceType: string;
@@ -30,6 +43,7 @@ export const syncResourceChunksStep = async (request: ResourceIndexRequest) => {
   const chunkSet = await adapter.buildChunks(db, request.sourceId);
   if (!chunkSet || chunkSet.chunks.length === 0) {
     const { deletedCount } = await deleteResourceChunks(db, { ref });
+    if (deletedCount > 0) await invalidateSourceReads(request.sourceType);
     return { status: "cleared" as const, deletedCount };
   }
 
@@ -38,6 +52,9 @@ export const syncResourceChunksStep = async (request: ResourceIndexRequest) => {
     visibility: chunkSet.visibility,
     chunks: chunkSet.chunks,
   });
+  if (result.written > 0 || result.removed > 0) {
+    await invalidateSourceReads(request.sourceType);
+  }
 
   return { status: "synced" as const, ...result };
 };
@@ -115,9 +132,9 @@ export const embedPendingChunksStep = async (request: ResourceIndexRequest) => {
     embedded += savedCount;
   }
 
-  return embedded === 0
-    ? { status: "up-to-date" as const, embedded: 0 }
-    : { status: "embedded" as const, embedded };
+  if (embedded === 0) return { status: "up-to-date" as const, embedded: 0 };
+  await invalidateSourceReads(request.sourceType);
+  return { status: "embedded" as const, embedded };
 };
 
 export const clearResourceChunksStep = async (
@@ -126,9 +143,11 @@ export const clearResourceChunksStep = async (
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
-  return await deleteResourceChunks(db, {
+  const deleted = await deleteResourceChunks(db, {
     ref: { sourceType: request.sourceType, sourceId: request.sourceId },
   });
+  if (deleted.deletedCount > 0) await invalidateSourceReads(request.sourceType);
+  return deleted;
 };
 
 export type ResourceIndexResult =
