@@ -198,7 +198,9 @@ const TagDrawer = ({
 
 export const TagsManager = () => {
   const [editor, setEditor] = useState<Editor>(null);
-  const { data, isLoading } = useQuery(orpc.tags.list.queryOptions());
+  const { data, isLoading } = useQuery(
+    orpc.tags.list.queryOptions({ input: { includeUnpublished: true } })
+  );
   const rows = data?.items ?? [];
 
   return (

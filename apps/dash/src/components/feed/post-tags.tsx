@@ -41,7 +41,9 @@ export const PostTags = ({
   selected: FeedTag[];
 }) => {
   const { contains } = useFilter({ sensitivity: "base" });
-  const { data } = useQuery(orpc.tags.list.queryOptions());
+  const { data } = useQuery(
+    orpc.tags.list.queryOptions({ input: { includeUnpublished: true } })
+  );
   const all = data?.items ?? [];
 
   if (all.length === 0) {

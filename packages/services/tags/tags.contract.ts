@@ -8,6 +8,8 @@ import {
   tagWriteSchema,
 } from "@chia/db/validator/tags";
 
+import { flexibleBoolean } from "../shared/schema";
+
 /**
  * The post taxonomy. Reads are public because the site lists tags; writes are the
  * operator's. A tag reaches a post through `feeds.update`, not here.
@@ -26,7 +28,7 @@ const tagSchema = tagIdSchema.extend({
     z.enum(locale.enumValues),
     tagTranslationViewSchema
   ),
-  /** Live posts carrying the tag, drafts included. */
+  /** Live posts carrying the tag; drafts counted only when `includeUnpublished` was honoured. */
   feedCount: z.number().int(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -50,6 +52,15 @@ const writeErrors = {
 /** Unpaginated: the taxonomy is bounded. Ordered by slug. */
 export const listTagsContract = oc
   .errors(readErrors)
+  .input(
+    z
+      .object({
+        /** Count drafts as well. Clamped like `feeds.list`: honoured from an API key up. */
+        includeUnpublished: flexibleBoolean.optional().default(false),
+      })
+      .optional()
+      .default({ includeUnpublished: false })
+  )
   .output(z.object({ items: z.array(tagSchema) }));
 
 export const createTagContract = oc

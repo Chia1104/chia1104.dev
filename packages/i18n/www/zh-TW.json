@@ -91,6 +91,12 @@
       "no-content": "尚無筆記。",
       "view-all": "查看全部筆記"
     },
+    "tags": {
+      "doc-title": "標籤",
+      "description": "依主題瀏覽文章。",
+      "no-content": "尚無標籤。",
+      "count": "{count} 篇文章"
+    },
     "read-with-minutes": "{minutes} 分鐘閱讀",
     "open-in-chat-query": "我想詢問關於這篇文章的問題：{url}",
     "open-in-chat": "在聊天中開啟",

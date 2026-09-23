@@ -7,6 +7,7 @@ import {
   updateTag,
 } from "@chia/db/repos/tags";
 
+import { resolveFeedVisibility } from "../feeds/access";
 import { contractOS } from "../shared/context";
 import { adminGuard } from "../shared/guards/admin.guard";
 import { callerGuard } from "../shared/guards/caller.guard";
@@ -18,7 +19,12 @@ const publicReadGuard = callerGuard({ scopes: [ApiKeyScope.FeedsRead] });
 export const listTagsRoute = contractOS.tags.list
   .use(publicReadGuard)
   .use(rateLimitGuard("feeds"))
-  .handler(async (opts) => ({ items: await listTags(opts.context.db) }));
+  .handler(async (opts) => ({
+    items: await listTags(opts.context.db, {
+      published: resolveFeedVisibility(opts.context.caller, opts.input)
+        .published,
+    }),
+  }));
 
 export const createTagRoute = contractOS.tags.create
   .use(adminGuard())

@@ -1,12 +1,11 @@
 "use client";
 
 import type { FC } from "react";
-import { useMemo, useCallback } from "react";
+import { useMemo } from "react";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 
-import { FeedType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
@@ -16,13 +15,14 @@ import type { TimelineItemData } from "@chia/ui/timeline/types";
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs } from "@/libs/orpc/types";
 
+import { FeedTags } from "./feed-tags";
+
 interface Props {
   query?: RouterInputs["feeds"]["list"];
   nextCursor?: string | null;
-  type: FeedType;
 }
 
-const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
+const FeedList: FC<Props> = ({ nextCursor, query = {} }) => {
   const locale = useLocale();
   const t = useTranslations(`blog.posts`);
   const { data, isSuccess, isLoading, isError, fetchNextPage, hasNextPage } =
@@ -38,22 +38,11 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
       })
     );
 
-  const getLinkPrefix = useCallback(() => {
-    switch (type) {
-      case FeedType.Note:
-        return "/notes";
-      case FeedType.Post:
-        return "/posts";
-      default:
-        return "";
-    }
-  }, [type]);
-
   const transformData = useMemo(() => {
     if ((!isSuccess && !data) || (isError && !data)) return [];
     return data.pages.flatMap((page) =>
       page.items.map((item) => {
-        const { id, createdAt, slug, translations } = item;
+        const { id, createdAt, slug, translations, tags } = item;
         return {
           id,
           title: translations[0]?.title,
@@ -68,12 +57,20 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
             />
           ),
           startDate: createdAt ?? null,
-          content: translations[0]?.description,
-          link: `${getLinkPrefix()}/${slug}`,
+          content:
+            tags.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                <p className="m-0">{translations[0]?.description}</p>
+                <FeedTags tags={tags} />
+              </div>
+            ) : (
+              translations[0]?.description
+            ),
+          link: `/${item.type}s/${slug}`,
         } satisfies TimelineItemData;
       })
     );
-  }, [isSuccess, data, isError, locale, getLinkPrefix]);
+  }, [isSuccess, data, isError, locale]);
 
   if (isSuccess && transformData.length === 0) {
     return (

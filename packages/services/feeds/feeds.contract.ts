@@ -5,9 +5,9 @@ import { locale } from "@chia/db/schema/enums";
 import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import { feedSchema, feedTranslationSchema } from "@chia/db/validator/feeds";
 import { keysetCursorSchema } from "@chia/db/validator/shared";
-import { FEED_TAGS_MAX } from "@chia/db/validator/tags";
+import { FEED_TAGS_MAX, tagSlugSchema } from "@chia/db/validator/tags";
 
-import { withMetaSchema } from "../shared/schema";
+import { flexibleBoolean, withMetaSchema } from "../shared/schema";
 
 import type { SearchFeedsServiceResult } from "./search.service";
 import { publicFeedSearchItemSchema, searchFeedsSchema } from "./validator";
@@ -41,12 +41,6 @@ export const restoreFeedSchema = z.object({
   feedId: z.number(),
 });
 
-/**
- * Accepts a JSON boolean or its query-string spelling, so the same schema works over RPC
- * (real JSON) and over the OpenAPI mount (every value a string).
- */
-const flexibleBoolean = z.union([z.boolean(), z.stringbool()]);
-
 /** `resolveFeedVisibility` clamps each flag for callers below the required tier rather than rejecting, so a browser that sends `includeUnpublished` receives the published set instead of a 403. */
 const feedVisibilityFields = {
   /** Include drafts. Requires an API key or a session. */
@@ -71,6 +65,8 @@ export const feedsInfiniteSchema = z.object({
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.CreatedAt),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
   type: z.enum(FeedType).optional(),
+  /** Only feeds carrying this tag. */
+  tag: tagSlugSchema.optional(),
   ...localeQueryFields,
   ...feedVisibilityFields,
 });

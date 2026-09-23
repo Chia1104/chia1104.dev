@@ -22,17 +22,23 @@ export interface TagRecord {
   createdAt: Date;
   updatedAt: Date;
   translations: Partial<Record<Locale, TagTranslationView>>;
-  /** Live feeds carrying the tag, drafts included. */
+  /** Live feeds carrying the tag; drafts included unless the scope is published. */
   feedCount: number;
+}
+
+export interface TagCountScope {
+  /** `true` counts published feeds only; `undefined` counts every live feed. */
+  published?: true;
 }
 
 const LOCALES = [LocaleEnum.zhTW, LocaleEnum.En] as const;
 
-const feedCountOf = (tagId: typeof tags.id) =>
+const feedCountOf = (tagId: typeof tags.id, scope: TagCountScope) =>
   sql<number>`(
     select count(*) from ${feedsToTags} ft
     join ${feeds} f on f.id = ft.feed_id
     where ft.tag_id = ${tagId} and f.deleted_at is null
+    ${scope.published ? sql`and f.published` : sql``}
   )::int`;
 
 const toRecord = (row: {
@@ -57,12 +63,15 @@ const toRecord = (row: {
 });
 
 /** Unpaginated: the taxonomy is bounded. Ordered by slug. */
-export const listTags = async (db: DB): Promise<TagRecord[]> => {
+export const listTags = async (
+  db: DB,
+  scope: TagCountScope = {}
+): Promise<TagRecord[]> => {
   const rows = await db.query.tags.findMany({
     with: { translations: true },
     orderBy: (tag, { asc }) => [asc(tag.slug)],
     extras: {
-      feedCount: (tag) => feedCountOf(tag.id).as("feed_count"),
+      feedCount: (tag) => feedCountOf(tag.id, scope).as("feed_count"),
     },
   });
   return rows.map(toRecord);
@@ -76,7 +85,7 @@ export const getTag = async (
     where: { id },
     with: { translations: true },
     extras: {
-      feedCount: (tag) => feedCountOf(tag.id).as("feed_count"),
+      feedCount: (tag) => feedCountOf(tag.id, {}).as("feed_count"),
     },
   });
   return row ? toRecord(row) : undefined;

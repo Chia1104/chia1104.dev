@@ -54,6 +54,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     )
   ).flat();
 
+  const { items: tags } = await client.tags.list();
+  const tagsSitemapData = Object.values(Locale).flatMap((locale) => [
+    {
+      url: `${baseUrl}/${localeResolver(locale)}/tags`,
+      lastModified: new Date().toISOString(),
+      priority: 0.6,
+      changeFrequency: "weekly",
+    } satisfies MetadataRoute.Sitemap[0],
+    ...tags
+      .filter((tag) => tag.feedCount > 0)
+      .map(
+        (tag) =>
+          ({
+            url: `${baseUrl}/${localeResolver(locale)}/tags/${tag.slug}`,
+            lastModified: tag.updatedAt,
+            priority: 0.6,
+            changeFrequency: "weekly",
+          }) satisfies MetadataRoute.Sitemap[0]
+      ),
+  ]);
+
   return [
     {
       url: `${baseUrl}/${localeResolver(Locale.En)}`,
@@ -81,6 +102,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...staticSitemapData,
     ...feedsSitemapData,
+    ...tagsSitemapData,
   ];
 }
 
