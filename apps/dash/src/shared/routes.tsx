@@ -18,6 +18,7 @@ import {
   Wrench,
   Brain,
   SlidersHorizontal,
+  Tags,
   UserRound,
   Users,
 } from "lucide-react";
@@ -90,6 +91,13 @@ export const useRouteItems = (level: AccessLevel) => {
               isActive: segments[0] === "feed" && segments[1] === "drafts",
             },
           ],
+        },
+        {
+          url: "/tags",
+          isActive: segments[0] === "tags",
+          icon: <Tags />,
+          title: "Tags",
+          operator: true,
         },
         {
           url: "/assets",

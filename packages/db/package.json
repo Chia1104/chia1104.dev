@@ -77,6 +77,10 @@
       "types": "./src/libs/profile/index.ts",
       "default": "./src/libs/profile/index.ts"
     },
+    "./repos/tags": {
+      "types": "./src/libs/tags/index.ts",
+      "default": "./src/libs/tags/index.ts"
+    },
     "./validator/feeds": {
       "types": "./src/libs/validator/feeds.ts",
       "default": "./src/libs/validator/feeds.ts"
@@ -96,6 +100,10 @@
     "./validator/profile": {
       "types": "./src/libs/validator/profile.ts",
       "default": "./src/libs/validator/profile.ts"
+    },
+    "./validator/tags": {
+      "types": "./src/libs/validator/tags.ts",
+      "default": "./src/libs/validator/tags.ts"
     },
     "./env": {
       "types": "./src/env.ts",

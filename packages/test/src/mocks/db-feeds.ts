@@ -34,6 +34,7 @@ const mockFeed = (
   updatedAt: new Date("2024-01-01").toISOString(),
   deletedAt: null,
   translations: [mockTranslation(locale, title)],
+  tags: [],
 });
 
 export const mockFeeds = [

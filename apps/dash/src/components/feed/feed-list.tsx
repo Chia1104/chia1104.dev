@@ -133,6 +133,15 @@ const FeedItem = memo(
               );
             })}
           </div>
+          {feed.tags.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {feed.tags.map((tag) => (
+                <Chip key={tag.id} size="sm" variant="soft">
+                  <Chip.Label className="text-[10px]">{tag.name}</Chip.Label>
+                </Chip>
+              ))}
+            </div>
+          ) : null}
         </Card.Content>
         <Card.Footer className="mt-auto flex items-center justify-between text-xs font-bold">
           <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
