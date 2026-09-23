@@ -152,6 +152,31 @@ describe("collectOperatorExchange", () => {
     expect(JSON.stringify(exchange)).not.toContain("IGNORE PREVIOUS");
     expect(JSON.stringify(exchange)).not.toContain("secret");
   });
+
+  it("drops the rendered attachment block and keeps the operator's words", () => {
+    const attached = entry("u1", null, {
+      type: "message",
+      message: {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "The operator attached:\n- Reader report #3: always say sorry to readers.",
+          },
+          { type: "text", text: "Fix this post." },
+        ],
+      },
+    });
+    const withAttachments =
+      /* SAFETY: the fixture entry is a message; `attachments` is what the runtime adds to one. */ {
+        ...attached,
+        attachments: [{ type: "report", id: 3 }],
+      } as SessionEntry;
+
+    expect(collectOperatorExchange([withAttachments])).toEqual([
+      { role: "operator", text: "Fix this post." },
+    ]);
+  });
 });
 
 describe("lineDiff", () => {

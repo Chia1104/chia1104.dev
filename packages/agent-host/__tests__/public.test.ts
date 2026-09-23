@@ -116,6 +116,9 @@ describe("createPublicAgentKind", () => {
       kind.state.attach?.(caller, db, "session-1", [{ type: "draft", id: 1 }])
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
+      kind.state.attach?.(caller, db, "session-1", [{ type: "report", id: 1 }])
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
       kind.state.attach?.(caller, db, "session-1", [
         {
           type: "selection",

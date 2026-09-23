@@ -53,8 +53,8 @@ export const agentSelectionSourceSchema = z.discriminatedUnion("type", [
 
 /**
  * What a prompt hands the agent beside the text: a record by reference (a draft the operator
- * has open, or the published post the visitor is reading), or text selected on screen with its
- * source. Which of these a kind admits is that kind's policy.
+ * has open, the published post the visitor is reading, or a reader report to act on), or text
+ * selected on screen with its source. Which of these a kind admits is that kind's policy.
  */
 export const agentAttachmentInputSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("draft"), id: z.number().int() }),
@@ -68,6 +68,7 @@ export const agentAttachmentInputSchema = z.discriminatedUnion("type", [
     text: z.string().min(1).max(SELECTION_TEXT_MAX_CHARS),
     source: agentSelectionSourceSchema,
   }),
+  z.object({ type: z.literal("report"), id: z.number().int() }),
 ]);
 
 /** The input as persisted and replayed, with the label the kind filled for clients. */
@@ -79,6 +80,9 @@ export const agentAttachmentSchema = z.discriminatedUnion("type", [
     label: z.string().optional(),
   }),
   agentAttachmentInputSchema.options[2].extend({
+    label: z.string().optional(),
+  }),
+  agentAttachmentInputSchema.options[3].extend({
     label: z.string().optional(),
   }),
 ]);

@@ -10,8 +10,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
+import { useAgentContext } from "@chia/agent-elements/context";
 import { formatDateTime } from "@chia/utils/format";
 
+import { showAgentDock } from "@/components/agent/dock-store";
 import { orpc } from "@/libs/orpc/client";
 
 import { CATEGORY_LABEL, STATUS_LABEL, VERDICT } from "./labels";
@@ -170,8 +172,12 @@ const useTriageRun = (id: number) => {
   };
 };
 
+const FIX_PROMPT =
+  "Look into this reader report. Check the claim against the post and its sources; if it holds, fix the post's draft and ask me before committing.";
+
 const Actions = ({ report }: { report: ReportView }) => {
   const router = useRouter();
+  const requestTurn = useAgentContext((state) => state.request);
   const { setStatus, settingStatus, applyEdits, applying } = useReportMutations(
     report.id
   );
@@ -188,6 +194,20 @@ const Actions = ({ report }: { report: ReportView }) => {
           variant="primary"
           onPress={applyEdits}>
           Write {edits} suggestion{edits === 1 ? "" : "s"} to the draft
+        </Button>
+      ) : null}
+      {active ? (
+        <Button
+          size="sm"
+          variant="secondary"
+          onPress={() => {
+            requestTurn({
+              text: FIX_PROMPT,
+              attachments: [{ type: "report", id: report.id }],
+            });
+            showAgentDock();
+          }}>
+          Fix with the writing agent
         </Button>
       ) : null}
       {report.draftId !== null ? (

@@ -113,9 +113,9 @@ export const createPublicAgentKind = (): PublicAgentKind => ({
      */
     async attach(_caller, db, _sessionId, attachments) {
       for (const attachment of attachments) {
-        if (attachment.type === "draft") {
+        if (attachment.type === "draft" || attachment.type === "report") {
           throw new AppError("BAD_REQUEST", {
-            message: `The public agent takes no "draft" attachments.`,
+            message: `The public agent takes no "${attachment.type}" attachments.`,
           });
         }
         if (

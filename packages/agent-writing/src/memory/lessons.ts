@@ -96,8 +96,9 @@ const textOf = (
 
 /**
  * Only the operator's own messages and the assistant's prose. Tool results, thinking and tool
- * calls are dropped, so nothing a web page said can become a lesson. Approval relay turns are
- * kept: they carry the operator's rejection comments.
+ * calls are dropped, so nothing a web page said can become a lesson; so is the rendered
+ * attachment block, which quotes drafts and reader reports rather than the operator. Approval
+ * relay turns are kept: they carry the operator's rejection comments.
  */
 export const collectOperatorExchange = (
   entries: readonly SessionEntry[]
@@ -107,7 +108,11 @@ export const collectOperatorExchange = (
     if (entry.type !== "message") continue;
     const message = entry.message;
     if (message.role === "user") {
-      const text = textOf(message.content).trim();
+      const attached =
+        (entry.attachments?.length ?? 0) > 0 && Array.isArray(message.content);
+      const text = textOf(
+        attached ? message.content.slice(1) : message.content
+      ).trim();
       if (text) turns.push({ role: "operator", text });
     } else if (message.role === "assistant") {
       const text = textOf(message.content).trim();
