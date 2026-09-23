@@ -1,5 +1,5 @@
-import { createModels } from "@earendil-works/pi-ai";
-import type { Context } from "@earendil-works/pi-ai";
+import { createModels, getCurrentSystemPrompt } from "@earendil-works/pi-ai";
+import type { TranscriptContext } from "@earendil-works/pi-ai";
 import {
   fauxAssistantMessage,
   fauxProvider,
@@ -248,7 +248,7 @@ describe("preparePublicTurn", () => {
   });
 
   it("sends the clock as a volatile last message and keeps the system prompt stable", async () => {
-    const seen: Context[] = [];
+    const seen: TranscriptContext[] = [];
     fixture.setResponses([
       (context) => {
         seen.push(context);
@@ -264,8 +264,9 @@ describe("preparePublicTurn", () => {
 
     expect(seen).toHaveLength(2);
     for (const context of seen) {
-      expect(context.systemPrompt).not.toContain("# Current session");
-      expect(context.systemPrompt).toContain(
+      const systemPrompt = getCurrentSystemPrompt(context.messages);
+      expect(systemPrompt).not.toContain("# Current session");
+      expect(systemPrompt).toContain(
         "# About the author\n\n### Frontend engineer"
       );
       const last = context.messages.at(-1);
@@ -274,14 +275,16 @@ describe("preparePublicTurn", () => {
         /Current time: \d{4}-\d{2}-\d{2}T/
       );
     }
-    expect(seen[0]?.systemPrompt).toBe(seen[1]?.systemPrompt);
+    expect(getCurrentSystemPrompt(seen[0]?.messages ?? [])).toBe(
+      getCurrentSystemPrompt(seen[1]?.messages ?? [])
+    );
     expect(JSON.stringify(await fixture.session.getBranch())).not.toContain(
       "# Current session"
     );
   });
 
   it("quotes a selection from a published post with its heading, and skips one it cannot read", async () => {
-    const seen: Context[] = [];
+    const seen: TranscriptContext[] = [];
     fixture.setResponses([
       (context) => {
         seen.push(context);
@@ -324,7 +327,7 @@ describe("preparePublicTurn", () => {
   });
 
   it("names the post the visitor is reading, and skips one it cannot read", async () => {
-    const seen: Context[] = [];
+    const seen: TranscriptContext[] = [];
     fixture.setResponses([
       (context) => {
         seen.push(context);

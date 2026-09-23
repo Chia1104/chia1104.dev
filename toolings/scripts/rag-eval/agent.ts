@@ -30,7 +30,7 @@ import type { AgentTask } from "./agent-tasks.ts";
  */
 
 /** The model the public kind runs in production, on the native provider the local key serves. */
-const DEFAULT_MODEL_ID = "gpt-5.6-luna";
+const DEFAULT_MODEL_ID = "gpt-6-luna";
 const PROVIDER_ID = "openai";
 
 const DECLINES =

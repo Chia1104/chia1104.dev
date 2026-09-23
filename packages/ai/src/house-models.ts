@@ -8,20 +8,20 @@ import type { KeyId } from "./provider";
  */
 export const HOUSE_MODELS = {
   /** One-shot side jobs: session titles, lesson extraction. */
-  cheap: "openai/gpt-5.6-luna",
+  cheap: "openai/gpt-6-luna",
   /** Writing-agent sessions. */
-  writing: "openai/gpt-5.6-luna",
+  writing: "openai/gpt-6-luna",
   /** Public-agent sessions without a caller key. */
-  public: "openai/gpt-5.6-luna",
+  public: "openai/gpt-6-luna",
   /** The dash editor's content tools (slug, description, summary, excerpt, completion). */
-  content: "openai/gpt-5.6-luna",
+  content: "openai/gpt-6-luna",
 } as const;
 
 export type HouseModelRole = keyof typeof HOUSE_MODELS;
 
 /** A cheap model per key, spelled as that key's API wants it, for checking that the key works. */
 export const KEY_PROBE_MODELS = {
-  openai: "openai/gpt-5.6-luna",
+  openai: "openai/gpt-6-luna",
   anthropic: "claude-haiku-4-5",
   gateway: HOUSE_MODELS.cheap,
 } as const satisfies Readonly<Record<KeyId, string>>;
