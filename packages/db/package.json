@@ -170,6 +170,7 @@
     "@types/node": "catalog:",
     "@types/pg": "catalog:drizzle",
     "drizzle-kit": "catalog:drizzle",
+    "keyv": "catalog:kv",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
   }

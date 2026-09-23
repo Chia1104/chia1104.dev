@@ -40,6 +40,12 @@ export const executeLocalWorkflowCommand = async (
       const run = await start(feedIndexingWorkflow, [command.request]);
       return { type: "started", runId: run.runId };
     }
+    case "feed-summary:start": {
+      const { feedSummaryWorkflow } =
+        await import("../workflows/feed-summary.workflow");
+      const run = await start(feedSummaryWorkflow, [command.request]);
+      return { type: "started", runId: run.runId };
+    }
     case "feed-remove:start": {
       const { removeFeedFromSearchIndexWorkflow } =
         await import("../workflows/feed-removal.workflow");

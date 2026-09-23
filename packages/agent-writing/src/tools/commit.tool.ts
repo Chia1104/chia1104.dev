@@ -55,9 +55,9 @@ const commitBlocker = (draft: FeedDraft): string | undefined => {
   return undefined;
 };
 
-const METADATA_FIELDS = ["excerpt", "description", "summary"] as const;
+const METADATA_FIELDS = ["excerpt", "description"] as const;
 
-/** Per locale, the optional metadata still empty, as `"en: excerpt, summary"`. */
+/** Per locale, the optional metadata still empty, as `"en: excerpt, description"`. */
 const metadataGapsOf = (draft: FeedDraft): string[] =>
   // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
   (Object.keys(draft.translations) as Locale[]).flatMap((locale) => {
@@ -114,7 +114,7 @@ export const commitDraftSpec = {
   description:
     "Apply a draft to the database as an UNPUBLISHED post (or update the post the draft is " +
     "already bound to). Requires human approval. This does NOT publish; use `set_published` " +
-    "for that. Refused before approval while excerpt, description or summary is empty for any " +
+    "for that. Refused before approval while excerpt or description is empty for any " +
     "locale, unless `allowEmptyMetadata` is set.",
   parameters: Type.Object({
     draftId: DraftIdSchema,
@@ -127,7 +127,7 @@ export const commitDraftSpec = {
     allowEmptyMetadata: optional(
       Type.Boolean({
         description:
-          "Commit even though excerpt, description or summary is empty for some locale. The " +
+          "Commit even though excerpt or description is empty for some locale. The " +
           "operator sees this flag in the approval prompt.",
       })
     ),

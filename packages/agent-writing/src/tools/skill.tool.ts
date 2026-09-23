@@ -19,7 +19,7 @@ export const readSkillSpec = {
   description:
     "Load the full instructions of a skill listed in the system prompt. Read the matching skills " +
     "before writing a body or metadata — `mdx-authoring` for any body, the locale's tone skill " +
-    "for prose, `seo-metadata` for title/excerpt/description/summary. Cheap and side-effect free.",
+    "for prose, `seo-metadata` for title/excerpt/description. Cheap and side-effect free.",
   parameters: Type.Object({
     name: StringEnum(
       writingSkills.map((skill) => skill.name),

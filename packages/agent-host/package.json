@@ -17,6 +17,10 @@
       "types": "./src/execution.ts",
       "default": "./src/execution.ts"
     },
+    "./feed-summary": {
+      "types": "./src/feed-summary.ts",
+      "default": "./src/feed-summary.ts"
+    },
     "./kind": {
       "types": "./src/kind.ts",
       "default": "./src/kind.ts"

@@ -40,7 +40,6 @@ const initial: DraftView = {
       content: "Body",
       description: null,
       excerpt: null,
-      summary: null,
     },
   },
   createdAt: "2026-09-05T00:00:00Z",

@@ -109,7 +109,6 @@ const translationOf = (
   title: row.title,
   excerpt: row.excerpt,
   description: row.description,
-  summary: row.summary,
   content: row.content,
 });
 

@@ -19,6 +19,7 @@ import dayjs from "@chia/utils/day";
 
 import { ArticleAgentContext } from "@/components/agent/article-agent-context";
 import { ActionGroup } from "@/components/blog/action-group";
+import { FeedSummary } from "@/components/blog/feed-summary";
 import { FeedTags } from "@/components/blog/feed-tags";
 import {
   RelatedFeeds,
@@ -185,6 +186,9 @@ const Page = async ({
             </div>
           </div>
         </header>
+        {translation.summary ? (
+          <FeedSummary label={t("summary")} summary={translation.summary} />
+        ) : null}
         <ArticleAgentContext
           feedId={feed.id}
           locale={dbLocale}

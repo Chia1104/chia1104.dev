@@ -71,7 +71,6 @@ const feedSnapshot = async (
       title: translation.title,
       excerpt: translation.excerpt,
       description: translation.description,
-      summary: translation.summary,
       content: translation.content,
     };
   }
@@ -426,7 +425,6 @@ const applyLockedDraft = async (
       title: string;
       excerpt: string | null;
       description: string | null;
-      summary: string | null;
       content: string | null;
     }
   > = {};
@@ -436,7 +434,6 @@ const applyLockedDraft = async (
       title: translation.title!,
       excerpt: translation.excerpt,
       description: translation.description,
-      summary: translation.summary,
       content: translation.content,
     };
   }

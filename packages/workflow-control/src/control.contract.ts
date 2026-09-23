@@ -3,7 +3,7 @@ import * as z from "zod";
 import {
   agentAbortControllerRefSchema,
   agentMessagePayloadSchema,
-} from "./agent.hooks";
+} from "./agent.schema";
 
 const agentSessionRequestSchema = z.object({
   sessionId: z.string(),
@@ -29,6 +29,10 @@ export const workflowControlCommandSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("feed-index:start"),
+    request: z.object({ feedID: z.number() }),
+  }),
+  z.object({
+    type: z.literal("feed-summary:start"),
     request: z.object({ feedID: z.number() }),
   }),
   z.object({
@@ -94,6 +98,24 @@ export const workflowControlResultSchema = z.discriminatedUnion("type", [
 export type WorkflowControlResult = z.infer<typeof workflowControlResultSchema>;
 
 export const workflowControlErrorSchema = z.object({ error: z.string() });
+
+/** What `feed-summary:start` leaves as its run output, per translation. */
+export const feedSummaryOutputSchema = z.object({
+  success: z.boolean(),
+  /** Absent when the feed was gone by the time the run read it. */
+  error: z.string().optional(),
+  translations: z
+    .array(
+      z.object({
+        locale: z.string(),
+        /** `ok`, `skipped: …` or `failed: …`. */
+        status: z.string(),
+      })
+    )
+    .optional(),
+});
+
+export type FeedSummaryOutput = z.infer<typeof feedSummaryOutputSchema>;
 
 /** The run id a start command answered with. */
 export const startedRunId = (result: WorkflowControlResult): string => {

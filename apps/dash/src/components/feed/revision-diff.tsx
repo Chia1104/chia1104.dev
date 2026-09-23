@@ -29,7 +29,7 @@ type Snapshot = RouterOutputs["feeds"]["draft:revision"]["snapshot"];
 const LOCALES = [Locale.zhTW, Locale.En] as const;
 const LOCALE_LABEL = { [Locale.zhTW]: "中文", [Locale.En]: "English" } as const;
 const FEED_FIELDS = ["slug", "type", "defaultLocale", "mainImage"] as const;
-const LOCALE_FIELDS = ["title", "excerpt", "description", "summary"] as const;
+const LOCALE_FIELDS = ["title", "excerpt", "description"] as const;
 
 /** What the version is read against: the state before it, or the draft as it stands. */
 const MODES = [

@@ -44,11 +44,11 @@ describe("feedDraftNoticeSchema", () => {
         { fields: ["slug", "type", "defaultLocale", "mainImage"] },
         {
           locale: "zh-TW",
-          fields: ["title", "excerpt", "description", "summary", "content"],
+          fields: ["title", "excerpt", "description", "content"],
         },
         {
           locale: "en",
-          fields: ["title", "excerpt", "description", "summary", "content"],
+          fields: ["title", "excerpt", "description", "content"],
         },
       ],
     };

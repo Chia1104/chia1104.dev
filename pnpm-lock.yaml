@@ -2291,6 +2291,9 @@ importers:
       drizzle-kit:
         specifier: catalog:drizzle
         version: 1.0.0-rc.4
+      keyv:
+        specifier: catalog:kv
+        version: 5.6.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2

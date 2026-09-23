@@ -41,11 +41,9 @@ describe("buildTurnContext drafts", () => {
     expect(context).toContain(
       '  - Draft #12 "Hello": feed 5, revision 7, slug hello-world, type post, default locale en'
     );
+    expect(context).toContain("    - en: 3 lines, missing excerpt/description");
     expect(context).toContain(
-      "    - en: 3 lines, missing excerpt/description/summary"
-    );
-    expect(context).toContain(
-      "    - zh-TW: no body, missing title/excerpt/description/summary"
+      "    - zh-TW: no body, missing title/excerpt/description"
     );
     expect(context).toContain("  - Draft #13: new post, not yet committed");
     expect(context).toContain("    - no locales yet");

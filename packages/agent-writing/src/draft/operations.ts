@@ -28,7 +28,6 @@ export const snapshotOfDraft = (
       title: translation.title ?? null,
       excerpt: translation.excerpt ?? null,
       description: translation.description ?? null,
-      summary: translation.summary ?? null,
       content: translation.content ?? null,
     };
   }

@@ -1,8 +1,9 @@
 import "zod/compile";
 import { readingTime } from "reading-time-estimator";
 
-import { connectDatabase } from "@chia/db/client";
+import { connectDatabase, invalidateCache } from "@chia/db/client";
 import { upsertFeedTranslation } from "@chia/db/repos/feeds";
+import { feedTranslations } from "@chia/db/schema";
 import { Locale } from "@chia/db/types";
 import { logger } from "@chia/observability/logger";
 
@@ -27,9 +28,11 @@ export const estimateReadingTimeStep = async (
     "Reading time estimated"
   );
 
-  return await upsertFeedTranslation(db, {
+  const translation = await upsertFeedTranslation(db, {
     feedId: feedID,
     locale: locale,
     readTime: readingTimeResult.minutes,
   });
+  await invalidateCache([feedTranslations]);
+  return translation;
 };

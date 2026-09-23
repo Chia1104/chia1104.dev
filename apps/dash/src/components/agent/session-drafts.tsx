@@ -24,7 +24,7 @@ type DraftLocale = keyof AgentDraft["translations"];
 type DraftTranslation = NonNullable<AgentDraft["translations"][DraftLocale]>;
 
 /** Per-locale prose the apply step carries; shown even when empty so a gap is visible. */
-const TRANSLATION_FIELDS = ["excerpt", "description", "summary"] as const;
+const TRANSLATION_FIELDS = ["excerpt", "description"] as const;
 
 /** Longer bodies open collapsed so the meta above them stays on screen. */
 const CONTENT_MAX_HEIGHT = 320;

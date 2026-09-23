@@ -68,7 +68,6 @@ vi.mock("@chia/db/repos/drafts", () => ({
         title: null,
         excerpt: null,
         description: null,
-        summary: null,
         content: null,
         ...translations[key],
         ...defined(patch ?? {}),
@@ -131,7 +130,6 @@ describe("PgDraftStore", () => {
           title: "Title",
           excerpt: "Excerpt",
           description: "Description",
-          summary: "Summary",
         },
       },
     });
@@ -143,7 +141,6 @@ describe("PgDraftStore", () => {
           title: "New title",
           excerpt: undefined,
           description: undefined,
-          summary: undefined,
         },
       },
     });
@@ -152,7 +149,6 @@ describe("PgDraftStore", () => {
       title: "New title",
       excerpt: "Excerpt",
       description: "Description",
-      summary: "Summary",
     });
   });
 
@@ -202,7 +198,6 @@ describe("PgDraftStore", () => {
           title: null,
           excerpt: null,
           description: null,
-          summary: null,
           content: null,
           ...current.translations[locale],
           ...patch,

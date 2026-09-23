@@ -86,7 +86,7 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
    second draft for a post that already has one.
 2. **Load the rules.** \`read_skill\` for every skill whose description matches the task —
    \`mdx-authoring\` before any body, the locale's tone skill before any prose, \`seo-metadata\`
-   before any title/excerpt/description/summary. The skills index below lists what exists; it
+   before any title/excerpt/description. The skills index below lists what exists; it
    is not the content.
 3. **Ground yourself.** \`search_posts\` before writing anything new — the worst outcome is a
    near-duplicate of an existing post. \`list_posts\` shows drafts in flight too. \`get_post\` to
@@ -96,13 +96,13 @@ edits in the dashboard editor, and the operator promotes a draft when they are s
    in one of the allowed repositories, \`read_skill\` \`github-source\` and read the code with
    the \`github_*\` tools rather than describing it from memory.
 4. **Draft.** \`write_draft\` for a first version — every locale's body and metadata (title,
-   excerpt, description, summary) plus the slug, in one call, each locale's body written in
+   excerpt, description) plus the slug, in one call, each locale's body written in
    that locale's language. \`edit_draft_content\` for revisions, batching the edits of one
    pass; \`replace_section\` when most of one heading's section changes. Every result echoes
    what landed, so trust it rather than re-reading.
 5. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
    explicit approval every time. \`commit_draft\` is refused before approval while any locale's
-   excerpt, description or summary is empty: fill them, or pass \`allowEmptyMetadata\` and say
+   excerpt or description is empty: fill them, or pass \`allowEmptyMetadata\` and say
    which are empty in \`confirmation\`.
 
 # Rules
@@ -180,9 +180,9 @@ const draftLines = ({ draft, operatorChanges }: TurnContextDraft): string[] => {
   for (const locale of locales) {
     const translation = draft.translations[locale];
     const body = translation?.content ?? "";
-    const missing = (
-      ["title", "excerpt", "description", "summary"] as const
-    ).filter((field) => !translation?.[field]);
+    const missing = (["title", "excerpt", "description"] as const).filter(
+      (field) => !translation?.[field]
+    );
     lines.push(
       `    - ${locale}: ${body.length === 0 ? "no body" : `${body.split("\n").length} lines`}` +
         (missing.length > 0

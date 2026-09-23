@@ -1,7 +1,7 @@
 import { parse } from "hono/utils/cookie";
 
 import { KEY_COOKIE_NAMES } from "@chia/ai/provider";
-import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-hooks";
+import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-schema";
 
 /**
  * Ciphertext crosses the workflow boundary (it is journaled); decrypt only inside the turn.

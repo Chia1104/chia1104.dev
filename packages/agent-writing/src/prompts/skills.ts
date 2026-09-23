@@ -26,7 +26,7 @@ works. Beyond it:
 
 ## Frontmatter — do NOT write any
 
-Title, excerpt, description and summary are **structured metadata**, not frontmatter. Set them
+Title, excerpt and description are **structured metadata**, not frontmatter. Set them
 with \`write_draft\`, in the same call as the body. A \`---\` block at the top of the body renders
 as literal text.
 
@@ -613,11 +613,13 @@ Before handing back an edit, verify all of these:
 
 export const seoMetadataSkill = skill(
   "seo-metadata",
-  "Rules and length limits for slug, excerpt, description and summary.",
+  "Rules and length limits for slug, excerpt and description.",
   `
 # Metadata
 
-Four per-locale fields, each with a distinct job. Do not paste the same text into more than one.
+Three per-locale fields, each with a distinct job. Do not paste the same text into more than one.
+The post's summary is not yours to write: a workflow the operator runs after publishing
+generates it.
 
 ## \`title\`
 
@@ -632,12 +634,6 @@ Written for a human browsing a list.
 
 SEO meta description. **Hard limit 160 characters** — it is truncated beyond that.
 Front-load the distinguishing keywords. One sentence, no ellipsis.
-
-## \`summary\`
-
-3–5 sentences. A standalone abstract for someone deciding whether to read the whole thing, and
-the text used for semantic search embeddings — so it should be dense with the concepts the post
-actually covers, not a hook.
 
 ## \`slug\`
 
@@ -664,8 +660,8 @@ A post can carry a translation per locale. \`defaultLocale\` marks the canonical
    may be translated; the code may not.
 3. **Prose is rewritten, not translated.** Read the source paragraph, understand it, write it
    again in the target language. Sentence counts will differ. That is correct.
-4. **Metadata is per-locale.** Write a real \`excerpt\`, \`description\` and \`summary\` for each —
-   never reuse the other locale's, and never leave them empty.
+4. **Metadata is per-locale.** Write a real \`excerpt\` and \`description\` for each — never
+   reuse the other locale's, and never leave them empty.
 5. **The slug is shared.** One slug for the whole post, regardless of locale.
 6. **Language matches locale.** The \`en\` body is English prose and the \`zh-TW\` body is
    Chinese prose; code, identifiers and product names are exempt. A body in the other
