@@ -274,6 +274,31 @@ export const FEED_REPORT_STATUS = {
 export type FeedReportStatus =
   (typeof FEED_REPORT_STATUS)[keyof typeof FEED_REPORT_STATUS];
 
+export const FEED_REPORT_VERDICT = {
+  LikelyValid: "likely_valid",
+  NeedsVerification: "needs_verification",
+  NotValid: "not_valid",
+} as const;
+
+export type FeedReportVerdict =
+  (typeof FEED_REPORT_VERDICT)[keyof typeof FEED_REPORT_VERDICT];
+
+/** One suggested replacement; `find` occurred exactly once in the published body when triaged. */
+export interface FeedReportEdit {
+  locale: Locale;
+  find: string;
+  replace: string;
+}
+
+/** The `report.triage` task's reading of a report; model output, reviewed before any use. */
+export interface FeedReportTriage {
+  verdict: FeedReportVerdict;
+  summary: string;
+  edits: FeedReportEdit[];
+  /** Suggestions dropped because their `find` did not match the published body exactly once. */
+  droppedEdits: number;
+}
+
 /**
  * A reader's correction to a published post, filed by the public agent for the operator.
  * Every text column is reader-supplied or model-written and is quoted, never followed.
@@ -306,6 +331,8 @@ export const feedReports = pgTable(
       .$type<FeedReportStatus>()
       .notNull()
       .default(FEED_REPORT_STATUS.Open),
+    /** `null` until triage ran, and after a triage that produced nothing usable. */
+    triage: jsonb("triage").$type<FeedReportTriage>(),
     ...timestamps,
   },
   (table) => [

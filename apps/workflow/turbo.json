@@ -28,6 +28,7 @@
         "GUARD_API_KEY",
         "FIRECRAWL_API_KEY",
         "GH_AGENT_TOKEN",
+        "RESEND_API_KEY",
         "SENTRY_DSN"
       ],
       "passThroughEnv": [
@@ -53,6 +54,7 @@
         "GUARD_API_KEY",
         "FIRECRAWL_API_KEY",
         "GH_AGENT_TOKEN",
+        "RESEND_API_KEY",
         "SENTRY_DSN"
       ]
     }

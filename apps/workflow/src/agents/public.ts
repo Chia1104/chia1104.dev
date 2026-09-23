@@ -7,6 +7,7 @@ import { createReportPort } from "@chia/services/agent/report.port";
 import { getAdminId } from "@chia/utils/config";
 
 import { createAgentWebPort } from "../services/agent-web.port";
+import { workflowControl } from "../services/workflow-control";
 
 /** The read ports see the configured author's published rows. `getAdminId()` is whose profile and posts these are, not who is asking. */
 export const publicAgentKind = createPublicAgentExecutor({
@@ -21,6 +22,14 @@ export const publicAgentKind = createPublicAgentExecutor({
   guard: resolveGuardProvider(),
   createWebPort: createAgentWebPort,
   createReportPort: ({ db, reporterId, sessionId }) =>
-    createReportPort({ db, authorId: getAdminId(), reporterId, sessionId }),
+    createReportPort({
+      db,
+      authorId: getAdminId(),
+      reporterId,
+      sessionId,
+      onReported: async (report) => {
+        await workflowControl.startReportTriage(report.id);
+      },
+    }),
   isSignedIn: ({ db, userId }) => isSignedInUser(db, { id: userId }),
 });

@@ -14,6 +14,7 @@ const { reports, feeds } = vi.hoisted(() => ({
 }));
 
 vi.mock("@chia/db/repos/feed-reports", () => reports);
+vi.mock("@chia/observability/report", () => ({ reportError: vi.fn() }));
 vi.mock("@chia/db/repos/feeds", () => feeds);
 vi.mock("@chia/observability/report", () => ({ reportError: vi.fn() }));
 

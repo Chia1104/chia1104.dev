@@ -74,7 +74,7 @@ A kind may `screen` a typed message before the model runs. The public kind grade
 
 The host grants the public kind `WebPort` for one turn only when the operator's `webAccess` is on, a guard provider is configured and the session's owner is a signed-in account, never a guest. Its `web_search` and `fetch_url` are the kind's own, not the writing kind's: a page is read only if this turn's search returned it, so neither a visitor nor an injected page can aim a fetch at a URL of their choosing; searches and pages are capped per turn because Firecrawl requests are outside the usage ledger; results and pages pass `checkDocument` before the model reads them and are withheld when flagged or when the guard fails; what passes is quoted between a random boundary as untrusted text. Chat markdown renders a model-emitted image as a confirm-first link, since an image would otherwise load its URL unasked.
 
-A signed-in owner also gets `ReportPort` for the turn, bound to that owner and session. `report_issue` files one `feed_report` row per turn against a published post: the passage, the reader's claim, the model's assessment and the corrected wording when either could give one, all stored as quoted text the operator reviews. It changes nothing a visitor reads, and a reader may file a bounded number of reports per day. A guest's prompt says corrections need a signed-in visitor instead of carrying the tool.
+A signed-in owner also gets `ReportPort` for the turn, bound to that owner and session. `report_issue` files one `feed_report` row per turn against a published post: the passage, the reader's claim, the model's assessment and the corrected wording when either could give one, all stored as quoted text the operator reviews. It changes nothing a visitor reads, and a reader may file a bounded number of reports per day. A guest's prompt says corrections need a signed-in visitor instead of carrying the tool. Filing a report starts a workflow that runs the `report.triage` task, a tool-less call on the house model that stores a verdict and exact replacements checked against the published body, then emails the operator in plain text. Neither step touches the draft; a failed triage still sends the email.
 
 ## 3. Durable state and session tree
 
@@ -380,7 +380,7 @@ Three override sources are stored separately:
 
 House model ids are written once, by role, in `@chia/ai/house-models`; kinds and tasks reference a role through `houseModel`. Kind defaults are copied when a session is created; later edits do not mutate existing sessions. The effective default model of a kind is also the model a keyless caller of that kind may run, so pinning it in the dashboard is the operator's cost boundary. Kind `config` is loaded every turn, so preference changes apply on the next turn. Safety boundaries such as tool tiers, approval requirements, turn budgets and model policies remain in code.
 
-Tasks cover title generation, compaction, branch summaries and lesson extraction. A task may default to the session model or a house model. Operator-pinned task models always use the house catalogue.
+Tasks cover title generation, compaction, branch summaries, lesson extraction, post summaries and report triage. A task may default to the session model or a house model. Operator-pinned task models always use the house catalogue.
 
 Admin writes are validated against their code definition before persistence. API views return `default`, `override` and `effective` values so the dashboard does not reimplement resolution rules.
 

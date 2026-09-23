@@ -36,6 +36,10 @@ export const workflowControlCommandSchema = z.discriminatedUnion("type", [
     request: z.object({ feedID: z.number() }),
   }),
   z.object({
+    type: z.literal("report-triage:start"),
+    request: z.object({ reportId: z.number().int().positive() }),
+  }),
+  z.object({
     type: z.literal("feed-remove:start"),
     request: z.object({ translationIDs: z.array(z.number()) }),
   }),

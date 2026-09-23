@@ -71,6 +71,7 @@ export const createWorkflowEnv = () => ({
   GH_AGENT_TOKEN: preserve(),
   INTERNAL_WORKFLOW_SERVICE_TOKEN: preserve(),
   NODE_ENV: preserve(),
+  RESEND_API_KEY: preserve(),
   EMBEDDING_PROVIDER: preserve(),
   EMBEDDING_API_KEY: preserve(),
   RERANK_PROVIDER: preserve(),

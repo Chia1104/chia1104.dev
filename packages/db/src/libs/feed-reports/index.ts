@@ -5,6 +5,7 @@ import { feedReports } from "../../schemas/schema.ts";
 import type {
   FeedReport,
   FeedReportCategory,
+  FeedReportTriage,
   Locale,
 } from "../../schemas/schema.ts";
 
@@ -58,4 +59,24 @@ export const countFeedReportsSince = async (
       )
     );
   return row?.value ?? 0;
+};
+
+export const getFeedReport = async (
+  db: DB,
+  id: number
+): Promise<FeedReport | undefined> => {
+  const [row] = await db
+    .select()
+    .from(feedReports)
+    .where(eq(feedReports.id, id))
+    .limit(1);
+  return row;
+};
+
+export const setFeedReportTriage = async (
+  db: DB,
+  id: number,
+  triage: FeedReportTriage
+): Promise<void> => {
+  await db.update(feedReports).set({ triage }).where(eq(feedReports.id, id));
 };

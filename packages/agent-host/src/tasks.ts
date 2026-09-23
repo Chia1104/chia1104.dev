@@ -36,10 +36,14 @@ import {
   FEED_SUMMARY_SYSTEM_PROMPT,
 } from "./feed-summary";
 import type { AgentModels } from "./kind";
+import {
+  REPORT_TRIAGE_PARAMS,
+  REPORT_TRIAGE_SYSTEM_PROMPT,
+} from "./report-triage";
 
 /**
- * One-shot model calls beside a session (title, lesson extraction, compaction) or on the
- * operator's request (post summary). The definition
+ * One-shot model calls beside a session (title, lesson extraction, compaction), on the
+ * operator's request (post summary) or on a reader's report (triage). The definition
  * is the code's choice, `agent.task_config` the operator's override, and {@link resolveAgentTask}
  * the only place the two meet. A task is code; a row only re-points it.
  */
@@ -73,6 +77,7 @@ export const AGENT_TASK_IDS = {
   sessionBranchSummary: "session.branch-summary",
   writingLessons: "writing.lessons",
   feedSummary: "feed.summary",
+  reportTriage: "report.triage",
 } as const;
 
 export type AgentTaskId = (typeof AGENT_TASK_IDS)[keyof typeof AGENT_TASK_IDS];
@@ -119,6 +124,15 @@ export const AGENT_TASKS = {
     defaultModel: houseModel("content"),
     prompt: { default: FEED_SUMMARY_SYSTEM_PROMPT },
     params: FEED_SUMMARY_PARAMS,
+  },
+  [AGENT_TASK_IDS.reportTriage]: {
+    id: AGENT_TASK_IDS.reportTriage,
+    label: "Report triage",
+    description:
+      "Reads a reader's correction against the published post and suggests exact edits for review, before the report reaches the inbox.",
+    defaultModel: houseModel("cheap"),
+    prompt: { default: REPORT_TRIAGE_SYSTEM_PROMPT },
+    params: REPORT_TRIAGE_PARAMS,
   },
 } satisfies Readonly<Record<AgentTaskId, AgentTaskDefinition>>;
 
