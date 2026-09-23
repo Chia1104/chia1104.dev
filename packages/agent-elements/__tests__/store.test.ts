@@ -14,6 +14,7 @@ import {
   createAgentSessionStore,
   failureOf,
   foldDetail,
+  pinnedModelUnavailable,
 } from "../src/store.ts";
 import type { AgentSessionClient, AgentSessionDetail } from "../src/types.ts";
 
@@ -30,6 +31,8 @@ const detailOf = (
   settings: {
     providerId: "openai",
     modelId: "gpt-5",
+    modelPinned: true,
+    defaultModel: { providerId: "openai", modelId: "gpt-5" },
     thinkingLevel: "medium",
     activeToolNames: null,
     autoApprove: [],
@@ -780,5 +783,42 @@ describe("createAgentSessionStore", () => {
 
     expect(stream.returned).toBe(true);
     expect(store.getState().view.items).toHaveLength(0);
+  });
+});
+
+describe("pinnedModelUnavailable", () => {
+  const settings = {
+    providerId: "openai",
+    modelId: "gpt-5",
+    modelPinned: true,
+    defaultModel: { providerId: "vercel-ai-gateway", modelId: "openai/gpt-5" },
+    thinkingLevel: "off" as const,
+    activeToolNames: null,
+    autoApprove: [],
+  };
+  const model = (requiresApiKey: boolean) => ({
+    providerId: "openai",
+    modelId: "gpt-5",
+    name: "GPT-5",
+    contextWindow: 1,
+    supportsReasoning: false,
+    supportsImageInput: false,
+    requiresApiKey,
+  });
+
+  it("is unknown, so false, until the model list has loaded", () => {
+    expect(pinnedModelUnavailable(settings, undefined)).toBe(false);
+  });
+
+  it("is false for a session that follows the kind default", () => {
+    expect(
+      pinnedModelUnavailable({ ...settings, modelPinned: false }, [])
+    ).toBe(false);
+  });
+
+  it("is true when the pinned model needs a key the caller lacks or left the catalogue", () => {
+    expect(pinnedModelUnavailable(settings, [model(true)])).toBe(true);
+    expect(pinnedModelUnavailable(settings, [])).toBe(true);
+    expect(pinnedModelUnavailable(settings, [model(false)])).toBe(false);
   });
 });

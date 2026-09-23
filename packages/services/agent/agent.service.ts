@@ -96,7 +96,8 @@ export interface AgentKindService {
     input: {
       sessionId: string;
       title?: string;
-      model?: AgentModelRef;
+      /** `null` unpins the session so it follows the kind default again. */
+      model?: AgentModelRef | null;
       thinkingLevel?: string;
       activeToolNames?: string[] | null;
       autoApprove?: string[];

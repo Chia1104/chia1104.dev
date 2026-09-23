@@ -14,6 +14,7 @@ export const agentErrorKindSchema = z.enum([
   "context_overflow",
   "budget_exhausted",
   "refused",
+  "model_unavailable",
   "provider",
   "internal",
 ]);

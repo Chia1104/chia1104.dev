@@ -12,6 +12,7 @@ import type { AgentTurnMarker } from "@chia/agent-host/execution";
 import type { AgentKindExecutor } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
 import { recordAgentUsage, sessionUsageListener } from "@chia/agent-host/usage";
+import type { AgentModel } from "@chia/agent-runtime/models";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
@@ -35,6 +36,7 @@ import {
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
+import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 import { signalAgentAbort } from "@chia/services/agent/abort";
 import { messageOf } from "@chia/utils/error-helper";
@@ -238,7 +240,7 @@ async function runKindTurn(
   writer: EventWriter
 ): Promise<AgentTurnOutcome> {
   const [
-    { accessOf, createAgentModels },
+    { accessOf, createAgentModels, UnknownAgentModelError },
     { PgSessionRepo, settingsFromRow },
     { runPiTurn },
   ] = await Promise.all([
@@ -262,7 +264,7 @@ async function runKindTurn(
   // An incomplete row fails the same way on every attempt, so it must not read as retryable.
   let settings: AgentSessionSettings;
   try {
-    settings = settingsFromRow(row);
+    settings = settingsFromRow(row, defaults);
   } catch (error) {
     const fatal = new FatalError(messageOf(error));
     fatal.cause = error;
@@ -280,12 +282,32 @@ async function runKindTurn(
   );
   const models = createAgentModels(credentials);
   // Before the kind prepares the turn: a model the caller may not run costs no further query.
-  const model = definition.models.resolve(
-    settings,
-    models,
-    accessOf(credentials),
-    defaults
-  );
+  let model: AgentModel;
+  try {
+    model = definition.models.resolve(
+      settings,
+      models,
+      accessOf(credentials),
+      defaults
+    );
+  } catch (error) {
+    if (!(error instanceof UnknownAgentModelError)) throw error;
+    // The session's pinned model left the catalogue or the caller's keys; the turn is refused
+    // like any other caller-side failure, so the client can offer a different model.
+    logger.warn(
+      {
+        sessionId: row.id,
+        runId: request.runId,
+        providerId: settings.providerId,
+        modelId: settings.modelId,
+      },
+      "Agent turn refused: session model unavailable"
+    );
+    writer.push({ type: "error", kind: "model_unavailable" });
+    writer.push({ type: "run:end", reason: "error" });
+    await writer.flush();
+    return { status: "error" };
+  }
   // The compaction task may be pinned to a house model; the session's own is its default.
   const compaction = await resolveAgentTask(
     db,

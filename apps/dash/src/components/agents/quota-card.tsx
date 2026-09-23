@@ -98,7 +98,7 @@ export const QuotaCard = ({ quota }: { quota: QuotaAdmin }) => {
           </div>
           <Card.Description className="text-xs">
             Applies to every caller below the operator. Counts house-gateway
-            spend only — a visitor&apos;s own API key is their own bill. A turn
+            spend only; a visitor&apos;s own API key is their own bill. A turn
             is accepted while anything remains, so the last one may overrun by
             one turn.
           </Card.Description>

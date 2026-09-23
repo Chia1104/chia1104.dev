@@ -15,10 +15,9 @@ import type { RouterOutputs } from "@/libs/orpc/types";
 const { client } = vi.hoisted(() => ({
   client: {
     agent: {
-      models: { list: vi.fn() },
       capabilities: { list: vi.fn() },
       admin: {
-        kinds: { list: vi.fn(), update: vi.fn() },
+        kinds: { list: vi.fn(), update: vi.fn(), models: vi.fn() },
         tasks: { list: vi.fn(), update: vi.fn(), models: vi.fn() },
       },
     },
@@ -166,7 +165,7 @@ describe("TaskCard", () => {
 describe("KindCard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    client.agent.models.list.mockResolvedValue([]);
+    client.agent.admin.kinds.models.mockResolvedValue([]);
     client.agent.capabilities.list.mockResolvedValue({
       tools: [
         { name: "get_post", label: "Read", tier: "read", description: "" },

@@ -62,6 +62,10 @@
   "forked": "分支",
   "forkedFrom": "分支自 {title}",
   "modelPicker": "模型",
+  "modelPickerDefault": "預設（{model}）",
+  "modelUnavailableTitle": "這個對話的模型已無法使用",
+  "modelUnavailableDescription": "切換到預設模型（{model}）即可繼續對話。",
+  "modelUnavailableUseDefault": "改用預設模型",
   "thinkingLevel": "思考程度",
   "thinkingLevelNames": {
     "off": "關閉",
@@ -104,6 +108,7 @@
     "context_overflow": "對話已超出模型的 context，請壓縮對話",
     "budget_exhausted": "這一輪超出預算已被停止",
     "refused": "助理無法處理這則訊息",
+    "model_unavailable": "這個對話使用的模型已不再提供",
     "provider": "供應商發生錯誤",
     "internal": "agent 發生錯誤"
   },

@@ -83,8 +83,13 @@ export const agentSessionDetailSchema = z.object({
   /** Common LLM settings. A non-LLM harness can omit this block. */
   settings: z
     .object({
+      /** The model the next turn runs on: the session's own when pinned, else `defaultModel`. */
       providerId: z.string(),
       modelId: z.string(),
+      /** Whether the session names its own model rather than following the kind default. */
+      modelPinned: z.boolean(),
+      /** The kind's effective default as of this read; an operator may change it at any time. */
+      defaultModel: agentModelRefSchema,
       thinkingLevel: thinkingLevelSchema,
       activeToolNames: z.array(z.string()).nullable(),
       autoApprove: z.array(toolTierSchema),
@@ -202,7 +207,8 @@ export const updateAgentSessionSettingsContract = oc
       kind: z.string().optional(),
       sessionId: z.string(),
       title: z.string().max(200).optional(),
-      model: agentModelRefSchema.optional(),
+      /** `null` unpins the session so it follows the kind default again. */
+      model: agentModelRefSchema.nullable().optional(),
       thinkingLevel: thinkingLevelSchema.optional(),
       activeToolNames: z.array(z.string()).nullable().optional(),
       autoApprove: z.array(toolTierSchema).optional(),
