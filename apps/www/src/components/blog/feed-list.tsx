@@ -50,22 +50,20 @@ const FeedList: FC<Props> = ({ nextCursor, query = {} }) => {
             className: "line-clamp-1",
           },
           subtitle: (
-            <DateFormat
-              date={createdAt}
-              format="MMMM D, YYYY"
-              locale={locale}
-            />
+            <>
+              <DateFormat
+                date={createdAt}
+                format="MMMM D, YYYY"
+                locale={locale}
+              />
+              <FeedTags tags={tags} />
+            </>
           ),
+          subtitleProps: {
+            className: "flex flex-wrap items-center gap-x-3 gap-y-1",
+          },
           startDate: createdAt ?? null,
-          content:
-            tags.length > 0 ? (
-              <div className="flex flex-col gap-2">
-                <p className="m-0">{translations[0]?.description}</p>
-                <FeedTags tags={tags} />
-              </div>
-            ) : (
-              translations[0]?.description
-            ),
+          content: translations[0]?.description,
           link: `/${item.type}s/${slug}`,
         } satisfies TimelineItemData;
       })

@@ -95,6 +95,7 @@
       "doc-title": "Tags",
       "description": "Articles by topic.",
       "no-content": "No tags yet.",
+      "view-all": "View all tags",
       "count": "{count, plural, =1 {1 article} other {# articles}}"
     },
     "read-with-minutes": "{minutes} minutes read",

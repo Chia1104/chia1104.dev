@@ -95,6 +95,7 @@
       "doc-title": "標籤",
       "description": "依主題瀏覽文章。",
       "no-content": "尚無標籤。",
+      "view-all": "查看全部標籤",
       "count": "{count} 篇文章"
     },
     "read-with-minutes": "{minutes} 分鐘閱讀",
