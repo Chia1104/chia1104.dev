@@ -414,7 +414,9 @@ What an integration would change:
 - A Postgres `Storage` and `SessionRepo` must be written; upstream ships only Memory, JSONL and SQLite. `@earendil-works/pi-agent-core/harness/session/testing` exports the conformance suites to validate one. Entries already match Pi's union; values, lists and the harness usage ledger are new tables.
 - Most of `packages/agent-runtime/src/pi/` is replaced by lane calls. `AgentWireEvent` stays the client boundary with a mapper over `HarnessEvent`.
 
-Do not start until all of these hold upstream: the storage format is declared stable with a migration mechanism (its spec marks format 4 as pre-stabilization, changeable in place), `Storage` interface changes appear in the changelog, and the open harness work packages (forks, `watchSession`, remote mutation transport) are closed. Then write the Postgres backend against the conformance suite first and swap `runAgentTurnStep` to `accept` plus `drive` second.
+Do not start until all of these hold upstream: the storage format is declared stable with a migration mechanism (its spec marks format 4 as pre-stabilization, changeable in place), `Storage` interface changes appear in the changelog, the open harness work packages (forks, `watchSession`, remote mutation transport) are closed, and `experimental/pico3`, a task-scheduler design that may replace the lane runtime, is either promoted or dropped. Then write the Postgres backend against the conformance suite first and swap `runAgentTurnStep` to `accept` plus `drive` second.
+
+As of Pi 0.87.1 none of these hold: format 4 is still pre-stabilization with R11 migrations unimplemented, harness session code changes without changelog entries, WP08 forks are in progress, `watchSession` throws `SliceNotImplemented`, the RemoteSession transport (C1) is undecided, and pico3 is a design under discussion.
 
 ## 13. Reference map
 
