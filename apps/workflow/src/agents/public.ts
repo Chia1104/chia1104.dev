@@ -3,11 +3,12 @@ import { resolveGuardProvider } from "@chia/ai/guard/provider";
 import { isSignedInUser } from "@chia/db/repos/users";
 import { createContentReadPort } from "@chia/services/agent/content-read.port";
 import { createProfileReadPort } from "@chia/services/agent/profile-read.port";
+import { createReportPort } from "@chia/services/agent/report.port";
 import { getAdminId } from "@chia/utils/config";
 
 import { createAgentWebPort } from "../services/agent-web.port";
 
-/** Both ports see the configured author's published rows. `getAdminId()` is whose profile and posts these are, not who is asking. */
+/** The read ports see the configured author's published rows. `getAdminId()` is whose profile and posts these are, not who is asking. */
 export const publicAgentKind = createPublicAgentExecutor({
   createContentPort: ({ db }) =>
     createContentReadPort({
@@ -19,5 +20,7 @@ export const publicAgentKind = createPublicAgentExecutor({
     createProfileReadPort({ db, authorId: getAdminId() }),
   guard: resolveGuardProvider(),
   createWebPort: createAgentWebPort,
+  createReportPort: ({ db, reporterId, sessionId }) =>
+    createReportPort({ db, authorId: getAdminId(), reporterId, sessionId }),
   isSignedIn: ({ db, userId }) => isSignedInUser(db, { id: userId }),
 });

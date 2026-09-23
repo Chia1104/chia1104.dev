@@ -2,7 +2,7 @@
 
 > Status: as-built
 >
-> Last updated: 2026-09-16
+> Last updated: 2026-09-24
 >
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 >
@@ -62,7 +62,7 @@ Every agent route resolves a `CallerTier` (`@chia/auth/tier`). Kind and session 
 | Kind      | Definition floor | Content visibility                                | Mutable domain state    |
 | --------- | ---------------- | ------------------------------------------------- | ----------------------- |
 | `writing` | `Root`           | Configured author's drafts and published content  | Shared draft and memory |
-| `public`  | `Guest`          | Configured author's published content and profile | None                    |
+| `public`  | `Guest`          | Configured author's published content and profile | Reader reports          |
 
 Better Auth's `get-session` carries `access`: the session's own tier, its dashboard level and the floor of every hosted kind. Frontends decide what to render from it; guards never read it and grade the caller on every request.
 
@@ -73,6 +73,8 @@ The public kind has the shared content-read tools and no approval tier, memory o
 A kind may `screen` a typed message before the model runs. The public kind grades the visitor's words and any selected text through the `GuardProvider` seam (`@chia/ai/guard/provider`, off unless `GUARD_PROVIDER` is set): a message at or above `GUARD_THRESHOLD` as an injection attempt or an inappropriate request ends the turn as `refused` and is never persisted, so it cannot steer a later turn from the transcript. The screen fails open after three seconds; the kind's blast radius is bounded by its ports and quota, not by the guard. Thresholds and question wording change only with a `guard-eval` run before and after.
 
 The host grants the public kind `WebPort` for one turn only when the operator's `webAccess` is on, a guard provider is configured and the session's owner is a signed-in account, never a guest. Its `web_search` and `fetch_url` are the kind's own, not the writing kind's: a page is read only if this turn's search returned it, so neither a visitor nor an injected page can aim a fetch at a URL of their choosing; searches and pages are capped per turn because Firecrawl requests are outside the usage ledger; results and pages pass `checkDocument` before the model reads them and are withheld when flagged or when the guard fails; what passes is quoted between a random boundary as untrusted text. Chat markdown renders a model-emitted image as a confirm-first link, since an image would otherwise load its URL unasked.
+
+A signed-in owner also gets `ReportPort` for the turn, bound to that owner and session. `report_issue` files one `feed_report` row per turn against a published post: the passage, the reader's claim and the model's assessment, all stored as quoted text the operator reviews. It changes nothing a visitor reads, and a reader may file a bounded number of reports per day. A guest's prompt says corrections need a signed-in visitor instead of carrying the tool.
 
 ## 3. Durable state and session tree
 
@@ -364,7 +366,7 @@ Visibility is fixed when the host constructs `ContentReadPort`:
 - `author` can read the configured author's drafts and published content.
 - `public` can read only published content and cannot widen that filter.
 
-The public kind receives the public port and never receives write capabilities; `WebPort` reaches it only through the per-turn grant in §2. Its `ProfileReadPort` is built the same way: the host lists only the configured author's published profile rows, and the kind renders them into the system prompt rather than exposing a tool.
+The public kind receives the public port and never receives content write capabilities; `WebPort` and `ReportPort` reach it only through the per-turn grants in §2. Its `ProfileReadPort` is built the same way: the host lists only the configured author's published profile rows, and the kind renders them into the system prompt rather than exposing a tool.
 
 ## 10. Operator configuration
 

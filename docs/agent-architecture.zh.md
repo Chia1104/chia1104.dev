@@ -2,7 +2,7 @@
 
 > 狀態：as-built
 >
-> 最後更新：2026-09-16
+> 最後更新：2026-09-24
 >
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 >
@@ -62,7 +62,7 @@ oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建�
 | Kind      | Definition floor | 內容可見性                     | 可變 domain state    |
 | --------- | ---------------- | ------------------------------ | -------------------- |
 | `writing` | `Root`           | 設定作者的草稿與已發佈內容     | 共用 draft 與 memory |
-| `public`  | `Guest`          | 設定作者的已發佈內容與 profile | 無                   |
+| `public`  | `Guest`          | 設定作者的已發佈內容與 profile | 讀者回報             |
 
 Better Auth 的 `get-session` 帶有 `access`：session 自身的 tier、dashboard 等級，以及每個 hosted kind 目前的 floor。前端據此決定要渲染什麼；guards 不讀它，每個請求都重新分級 caller。
 
@@ -73,6 +73,8 @@ Public kind 有共用 content-read tools，沒有 approval tier、memory 或 dra
 Kind 可以在 model 執行前 `screen` 使用者輸入的訊息。Public kind 會把訪客的文字與選取內容交給 `GuardProvider` seam（`@chia/ai/guard/provider`，未設定 `GUARD_PROVIDER` 時關閉）評分：注入或不當請求的機率達到 `GUARD_THRESHOLD` 時，該 turn 以 `refused` 結束且訊息不會寫入 session，因此無法從 transcript 影響後續 turn。Screen 在三秒後 fail open；這個 kind 的影響範圍由它的 ports 與額度界定，而不是由 guard 界定。調整門檻或問題措辭前後都要跑一次 `guard-eval`。
 
 Host 只有在 operator 開啟 `webAccess`、已設定 guard provider，且 session 擁有者是已登入帳號（不是 guest）時，才會在該 turn 把 `WebPort` 交給 public kind。它的 `web_search` 與 `fetch_url` 是這個 kind 自己的工具，不是 writing kind 的：只有本 turn 搜尋回傳過的頁面才能讀取，因此訪客或被注入的頁面都無法把 fetch 指向自選的 URL；搜尋與讀取每個 turn 都有上限，因為 Firecrawl 的請求不在 usage ledger 內；搜尋結果與頁面在 model 讀取前先通過 `checkDocument`，被標記或 guard 失敗時一律不提供；通過的內容會以隨機邊界包成不可信文字。聊天 markdown 會把 model 輸出的圖片改成先確認才開啟的連結，否則圖片會在未經同意下載入其 URL。
+
+已登入的 session 擁有者也會在該 turn 取得 `ReportPort`，綁定該擁有者與 session。`report_issue` 每個 turn 針對一篇已發佈文章寫入一筆 `feed_report`：段落、讀者的主張與 model 的判斷，全部以引用文字保存，由 operator 審閱。它不會改動訪客讀到的任何內容，每位讀者每天可送出的回報數有上限。Guest 的 prompt 不帶這個工具，改為說明回報需要登入。
 
 ## 3. Durable state 與 session tree
 
@@ -362,7 +364,7 @@ Host 建立 `ContentReadPort` 時就固定 visibility：
 - `author` 可讀設定作者的草稿與已發佈內容。
 - `public` 只能讀已發佈內容，且不能擴大 filter。
 
-Public kind 只收到 public port，不會收到寫入能力；`WebPort` 只會透過 §2 的單一 turn 授權交給它。它的 `ProfileReadPort` 以同樣方式建立：host 只列出設定作者已發佈的 profile rows，kind 將其渲染進 system prompt，而不是開放成工具。
+Public kind 只收到 public port，不會收到內容寫入能力；`WebPort` 與 `ReportPort` 只會透過 §2 的單一 turn 授權交給它。它的 `ProfileReadPort` 以同樣方式建立：host 只列出設定作者已發佈的 profile rows，kind 將其渲染進 system prompt，而不是開放成工具。
 
 ## 10. Operator 設定
 

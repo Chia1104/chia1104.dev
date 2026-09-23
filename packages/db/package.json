@@ -77,6 +77,10 @@
       "types": "./src/libs/profile/index.ts",
       "default": "./src/libs/profile/index.ts"
     },
+    "./repos/feed-reports": {
+      "types": "./src/libs/feed-reports/index.ts",
+      "default": "./src/libs/feed-reports/index.ts"
+    },
     "./repos/tags": {
       "types": "./src/libs/tags/index.ts",
       "default": "./src/libs/tags/index.ts"

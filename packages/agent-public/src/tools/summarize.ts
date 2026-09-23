@@ -3,9 +3,9 @@ import { toolErrorText, toolResultDetails } from "@chia/agent-runtime/tools";
 import { asNumber, asString } from "@chia/utils/json";
 import { hostnameOf } from "@chia/utils/url";
 
-import { WEB_TOOL_NAMES } from "./registry.ts";
+import { REPORT_TOOL_NAMES, WEB_TOOL_NAMES } from "./registry.ts";
 
-const summarizeWebToolResult = <TResult>(
+const summarizeKindToolResult = <TResult>(
   toolName: string,
   result: TResult
 ): string | undefined => {
@@ -21,6 +21,8 @@ const summarizeWebToolResult = <TResult>(
       const url = asString(details?.url);
       return url ? `Read ${hostnameOf(url)}.` : "Read page.";
     }
+    case REPORT_TOOL_NAMES.reportIssue:
+      return "Sent to the author.";
     default:
       return undefined;
   }
@@ -35,7 +37,7 @@ export const summarizeToolResult = <TResult>(
   if (isError) return toolErrorText(result) ?? "Failed.";
   return (
     summarizeContentToolResult(toolName, result) ??
-    summarizeWebToolResult(toolName, result) ??
+    summarizeKindToolResult(toolName, result) ??
     "Done."
   );
 };

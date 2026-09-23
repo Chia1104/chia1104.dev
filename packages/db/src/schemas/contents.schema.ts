@@ -252,6 +252,73 @@ export const feedsToTags = pgTable(
   ]
 );
 
+export const FEED_REPORT_CATEGORY = {
+  /** A claim the post gets wrong. */
+  Error: "error",
+  /** Right when written, no longer current. */
+  Outdated: "outdated",
+  Typo: "typo",
+  /** A link, image or code sample that does not work. */
+  Broken: "broken",
+  /** Something the post should cover and does not. */
+  Gap: "gap",
+} as const;
+
+export type FeedReportCategory =
+  (typeof FEED_REPORT_CATEGORY)[keyof typeof FEED_REPORT_CATEGORY];
+
+export const FEED_REPORT_STATUS = {
+  Open: "open",
+} as const;
+
+export type FeedReportStatus =
+  (typeof FEED_REPORT_STATUS)[keyof typeof FEED_REPORT_STATUS];
+
+/**
+ * A reader's correction to a published post, filed by the public agent for the operator.
+ * Every text column is reader-supplied or model-written and is quoted, never followed.
+ */
+export const feedReports = pgTable(
+  "feed_report",
+  {
+    id: serial("id").primaryKey(),
+    feedId: integer("feed_id")
+      .notNull()
+      .references(() => feeds.id, { onDelete: "cascade" }),
+    locale: locale("locale").notNull(),
+    /** Heading trail as the post's sections are addressed, e.g. `"Setup > Install"`. */
+    headingPath: text("heading_path"),
+    /** The passage the report is about, as it read when reported. */
+    quote: text("quote"),
+    category: text("category").$type<FeedReportCategory>().notNull(),
+    /** What the reader says is wrong or missing. */
+    claim: text("claim").notNull(),
+    /** What the public agent found when it checked the claim; not authoritative. */
+    assessment: text("assessment").notNull(),
+    reporterId: text("reporter_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    /** The public session it was filed from; kept as text so the report outlives it. */
+    sessionId: text("session_id"),
+    status: text("status")
+      .$type<FeedReportStatus>()
+      .notNull()
+      .default(FEED_REPORT_STATUS.Open),
+    ...timestamps,
+  },
+  (table) => [
+    index("feed_report_status_created_at_idx").on(
+      table.status,
+      table.createdAt
+    ),
+    index("feed_report_feed_id_idx").on(table.feedId),
+    index("feed_report_reporter_created_at_idx").on(
+      table.reporterId,
+      table.createdAt
+    ),
+  ]
+);
+
 export type Feed = InferSelectModel<typeof feeds>;
 export type FeedTranslation = InferSelectModel<typeof feedTranslations>;
 export type FeedDraft = InferSelectModel<typeof feedDrafts>;
@@ -259,5 +326,6 @@ export type FeedDraftTranslation = InferSelectModel<
   typeof feedDraftTranslations
 >;
 export type FeedDraftRevision = InferSelectModel<typeof feedDraftRevisions>;
+export type FeedReport = InferSelectModel<typeof feedReports>;
 export type Tag = InferSelectModel<typeof tags>;
 export type TagTranslation = InferSelectModel<typeof tagTranslations>;

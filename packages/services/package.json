@@ -53,6 +53,10 @@
       "types": "./agent/content-read.port.ts",
       "default": "./agent/content-read.port.ts"
     },
+    "./agent/report.port": {
+      "types": "./agent/report.port.ts",
+      "default": "./agent/report.port.ts"
+    },
     "./agent/profile-read.port": {
       "types": "./agent/profile-read.port.ts",
       "default": "./agent/profile-read.port.ts"
@@ -112,6 +116,7 @@
   "dependencies": {
     "@chia/agent-content": "workspace:*",
     "@chia/agent-host": "workspace:*",
+    "@chia/agent-public": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/auth": "workspace:*",

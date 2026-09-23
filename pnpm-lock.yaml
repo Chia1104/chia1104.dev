@@ -2574,6 +2574,9 @@ importers:
       '@chia/agent-host':
         specifier: workspace:*
         version: link:../agent-host
+      '@chia/agent-public':
+        specifier: workspace:*
+        version: link:../agent-public
       '@chia/agent-runtime':
         specifier: workspace:*
         version: link:../agent-runtime
