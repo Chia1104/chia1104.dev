@@ -8,7 +8,7 @@ const { reports, feeds } = vi.hoisted(() => ({
   reports: {
     countFeedReportsSince: vi.fn(),
     createFeedReport: vi.fn(),
-    lockFeedReporter: vi.fn(async () => {}),
+    lockFeedReporter: vi.fn(() => Promise.resolve()),
   },
   feeds: { getFeedBySlug: vi.fn() },
 }));
@@ -16,10 +16,13 @@ const { reports, feeds } = vi.hoisted(() => ({
 vi.mock("@chia/db/repos/feed-reports", () => reports);
 vi.mock("@chia/db/repos/feeds", () => feeds);
 
-/* SAFETY: the repositories are mocked; the handle only opens the transaction they run in. */
-const db = {
-  transaction: (fn: (tx: DB) => Promise<unknown>) => fn(db),
-} as unknown as DB;
+/** Whatever the transaction callback returns; the fake passes it through untouched. */
+type Filed = object;
+
+const db: DB =
+  /* SAFETY: the repositories are mocked; only `transaction` is called on the handle. */ {
+    transaction: (fn: (tx: DB) => Promise<Filed>) => fn(db),
+  } as never;
 
 const input = {
   slug: "hello-world",
