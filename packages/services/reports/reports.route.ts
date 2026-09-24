@@ -3,6 +3,7 @@ import {
   setFeedReportStatus,
 } from "@chia/db/repos/feed-reports";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
+import { reportTriageOutputSchema } from "@chia/workflow-control/contract";
 
 import { contractOS } from "../shared/context";
 import { adminGuard } from "../shared/guards/admin.guard";
@@ -59,9 +60,39 @@ export const applyReportEditsRoute = contractOS.reports["edits:apply"]
     })
   );
 
+export const startReportTriageRoute = contractOS.reports["triage:start"]
+  .use(adminGuard())
+  .handler((opts) =>
+    withORPCErrors(async () => {
+      const { db, workflow } = opts.context;
+      await requireFeedReport(db, opts.input.id);
+      const runId = await workflow.startReportTriage(opts.input.id, {
+        notify: false,
+      });
+      return { runId };
+    })
+  );
+
+export const getReportTriageRunRoute = contractOS.reports["triage:run"]
+  .use(adminGuard())
+  .handler(async (opts) => {
+    const run = await opts.context.workflow.getRun(opts.input.runId);
+    if (!run.exists || !run.status) {
+      throw opts.errors.NOT_FOUND();
+    }
+    // A run of another workflow, or one that threw, has no output of this shape.
+    const output = reportTriageOutputSchema.safeParse(run.output);
+    return {
+      status: run.status,
+      output: output.success ? output.data : undefined,
+    };
+  });
+
 export const reportsRouter = contractOS.reports.router({
   list: listReportsRoute,
   get: getReportRoute,
   "status:set": setReportStatusRoute,
   "edits:apply": applyReportEditsRoute,
+  "triage:start": startReportTriageRoute,
+  "triage:run": getReportTriageRunRoute,
 });

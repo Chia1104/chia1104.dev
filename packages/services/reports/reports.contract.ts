@@ -7,6 +7,10 @@ import {
   FEED_REPORT_VERDICT,
 } from "@chia/db/schema";
 import { feedType, locale } from "@chia/db/schema/enums";
+import {
+  reportTriageOutputSchema,
+  workflowRunStatusSchema,
+} from "@chia/workflow-control/contract";
 
 /**
  * Reader reports the public agent filed on published posts. Operator-only: every text field
@@ -104,9 +108,31 @@ export const applyReportEditsContract = oc
   .input(reportIdSchema)
   .output(z.object({ report: feedReportSchema, draftId: z.number().int() }));
 
+/**
+ * Runs the triage task again on a report, without the email: the operator is already looking
+ * at it. The run is read back by id until it settles; the report carries the result.
+ */
+export const startReportTriageContract = oc
+  .errors(errors)
+  .input(reportIdSchema)
+  .output(z.object({ runId: z.string() }));
+
+export const getReportTriageRunContract = oc
+  .errors(errors)
+  .input(z.object({ runId: z.string().min(1) }))
+  .output(
+    z.object({
+      status: workflowRunStatusSchema,
+      /** Only once the run completed. */
+      output: reportTriageOutputSchema.optional(),
+    })
+  );
+
 export const reportsContract = {
   list: listReportsContract,
   get: getReportContract,
   "status:set": setReportStatusContract,
   "edits:apply": applyReportEditsContract,
+  "triage:start": startReportTriageContract,
+  "triage:run": getReportTriageRunContract,
 };

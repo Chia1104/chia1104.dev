@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { Button, Card, Chip, Spinner } from "@heroui/react";
@@ -17,6 +18,7 @@ import { CATEGORY_LABEL, STATUS_LABEL, VERDICT } from "./labels";
 import type { ReportStatus, ReportView } from "./labels";
 
 const LOCALE_LABEL = { "zh-TW": "中文", en: "English" } as const;
+const TRIAGE_POLL_MS = 2000;
 
 /** Reader and model text is shown as-is inside a block, never rendered as markdown. */
 const Quoted = ({
@@ -107,11 +109,73 @@ const useReportMutations = (id: number) => {
   };
 };
 
+/** Starts a triage run on the report and follows it until it settles; the report query is refreshed then. */
+const useTriageRun = (id: number) => {
+  const queryClient = useQueryClient();
+  const [runId, setRunId] = useState<string | null>(null);
+  const handledRunId = useRef<string | null>(null);
+
+  const start = useMutation(
+    orpc.reports["triage:start"].mutationOptions({
+      onSuccess: (started) => setRunId(started.runId),
+      onError: (error) => toast.error(error.message),
+    })
+  );
+
+  const run = useQuery(
+    orpc.reports["triage:run"].queryOptions({
+      input: { runId: runId ?? "" },
+      enabled: runId !== null,
+      staleTime: Infinity,
+      refetchInterval: (query) => {
+        if (query.state.status === "error") return false;
+        const status = query.state.data?.status;
+        return status === "pending" || status === "running" || !status
+          ? TRIAGE_POLL_MS
+          : false;
+      },
+    })
+  );
+
+  useEffect(() => {
+    if (!runId || handledRunId.current === runId) return;
+
+    if (run.isError) {
+      handledRunId.current = runId;
+      setRunId(null);
+      toast.error(run.error.message);
+      return;
+    }
+
+    const result = run.data;
+    if (!result || result.status === "pending" || result.status === "running") {
+      return;
+    }
+
+    handledRunId.current = runId;
+    setRunId(null);
+    void queryClient.invalidateQueries({ queryKey: orpc.reports.key() });
+    if (result.status !== "completed" || !result.output) {
+      toast.error(`Triage run ${result.status}.`);
+    } else if (result.output.triage === "ok") {
+      toast.success("Triage updated");
+    } else {
+      toast.warning(`Triage ended with "${result.output.triage}".`);
+    }
+  }, [queryClient, run.data, run.error, run.isError, runId]);
+
+  return {
+    start: () => start.mutate({ id }),
+    running: start.isPending || runId !== null,
+  };
+};
+
 const Actions = ({ report }: { report: ReportView }) => {
   const router = useRouter();
   const { setStatus, settingStatus, applyEdits, applying } = useReportMutations(
     report.id
   );
+  const triageRun = useTriageRun(report.id);
   const active = report.status === "open" || report.status === "in_progress";
   const edits = report.triage?.edits.length ?? 0;
 
@@ -134,6 +198,13 @@ const Actions = ({ report }: { report: ReportView }) => {
           Open draft
         </Button>
       ) : null}
+      <Button
+        isPending={triageRun.running}
+        size="sm"
+        variant="secondary"
+        onPress={triageRun.start}>
+        {report.triage ? "Rerun triage" : "Run triage"}
+      </Button>
       {report.status === "open" ? (
         <Button
           isPending={settingStatus === "in_progress"}
