@@ -134,6 +134,7 @@ export const buildReportEmail = (
     "",
     `Reader agent's assessment:\n${quote(report.assessment)}`,
     "",
+    report.suggestion ? `Suggested fix:\n${quote(report.suggestion)}\n` : null,
     triage
       ? [
           `Triage: ${VERDICT_LABELS[triage.verdict]}`,

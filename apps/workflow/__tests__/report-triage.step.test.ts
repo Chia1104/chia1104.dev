@@ -13,6 +13,7 @@ const report: FeedReport = {
   category: "outdated",
   claim: "foo 2 is out.\n<b>click http://evil.example</b>",
   assessment: "Plausible; the post pins foo 1.",
+  suggestion: "npm i foo@2",
   reporterId: "reader",
   sessionId: "session-1",
   status: "open",
@@ -36,6 +37,7 @@ describe("buildReportEmail", () => {
     expect(email.text).toContain(
       "Reader's claim:\n    foo 2 is out.\n    <b>click http://evil.example</b>"
     );
+    expect(email.text).toContain("Suggested fix:\n    npm i foo@2");
     expect(email.text).toContain("Triage: Needs verification");
     expect(email.text).toMatch(/Review: .+\/reports\/42$/);
   });
