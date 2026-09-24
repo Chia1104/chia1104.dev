@@ -29,3 +29,14 @@ export const agentModelInfoSchema = z.object({
    */
   requiresApiKey: z.boolean(),
 });
+
+/**
+ * Quota refusal is not an oRPC common code; the RPC handler's `errorStatusMap` owns its
+ * HTTP status. `resetAt` is when the week turns over.
+ */
+export const agentQuotaExceededSchema = z.object({
+  limitMicros: z.number(),
+  usedMicros: z.number(),
+  resetAt: z.string(),
+  timeZone: z.string(),
+});

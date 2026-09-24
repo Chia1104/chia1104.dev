@@ -14,12 +14,12 @@ import {
 } from "@heroui/react";
 import type { FormProps } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ORPCError } from "@orpc/client";
+import { isDefinedError } from "@orpc/client";
+import type { InferClientError } from "@orpc/client";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
 
 import { ErrorCode as CaptchaErrorCode } from "@chia/integrations/captcha/constants";
 import meta from "@chia/meta";
@@ -29,13 +29,11 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { SiteCaptcha } from "@/components/commons/captcha";
 import { FeatureCard } from "@/components/commons/feature-card";
 import { orpc } from "@/libs/orpc/client";
+import type { client } from "@/libs/orpc/client";
 import type { Contact as ContactInput } from "@/shared/validator";
 import { contactSchema } from "@/shared/validator";
 
-/** The `issues` an `AppError` carries on the wire; the first message is the captcha code. */
-const errorIssuesSchema = z.object({
-  errors: z.array(z.object({ message: z.string().optional() })).optional(),
-});
+type SendContactError = InferClientError<typeof client.email.send>;
 
 export const ContactForm = ({
   className,
@@ -77,17 +75,14 @@ export const ContactForm = ({
         onSuccess?.();
         return t("success");
       },
-      error: (error) => {
+      error: (error: SendContactError) => {
         form.resetField("captchaToken");
         setCaptchaAttempt((count) => count + 1);
         if (error instanceof Error) {
           onError?.(error);
         }
-        // Captcha codes live in AppError `issues` on both REST and RPC.
-        if (error instanceof ORPCError) {
-          const issues = errorIssuesSchema.safeParse(error.data).data;
-
-          switch (issues?.errors?.[0]?.message) {
+        if (isDefinedError(error) && error.code === "BAD_REQUEST") {
+          switch (error.data.errors[0]?.message) {
             case CaptchaErrorCode.CaptchaFailed:
               return t("error.captcha-validation");
             case CaptchaErrorCode.CaptchaProviderNotSupported:

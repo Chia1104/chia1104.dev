@@ -14,21 +14,11 @@ import { agentAdminContract } from "./admin.contract";
 import {
   agentModelInfoSchema,
   agentModelRefSchema,
+  agentQuotaExceededSchema,
   thinkingLevelSchema,
 } from "./agent.schema";
 
 /** Kind-specific fields stay optional; the runtime selected by `agent.session.kind` owns their validation. */
-
-/**
- * Quota refusal is not an oRPC common code; the RPC handler's `errorStatusMap` owns its
- * HTTP status. `resetAt` is when the week turns over.
- */
-export const agentQuotaExceededSchema = z.object({
-  limitMicros: z.number(),
-  usedMicros: z.number(),
-  resetAt: z.string(),
-  timeZone: z.string(),
-});
 
 export const quotaExceededError = {
   QUOTA_EXCEEDED: { data: agentQuotaExceededSchema },

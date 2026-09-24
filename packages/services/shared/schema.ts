@@ -6,6 +6,17 @@ import * as z from "zod";
  */
 export const flexibleBoolean = z.union([z.boolean(), z.stringbool()]);
 
+/** The `data` an `AppError` with issues carries on the wire (`toORPCError`), in the order they were raised. */
+export const appErrorIssuesSchema = z.object({
+  errors: z.array(
+    z.object({
+      field: z.string(),
+      message: z.string(),
+      code: z.string().optional(),
+    })
+  ),
+});
+
 export const withMetaSchema = <Out, In>(schema: z.ZodType<Out, In>) =>
   z.object({
     items: z.array(schema),

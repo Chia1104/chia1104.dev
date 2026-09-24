@@ -14,6 +14,7 @@ import type {
   AgentAttachmentInput,
   AgentWireEvent,
 } from "@chia/agent-runtime/wire/schema";
+import { agentQuotaExceededSchema } from "@chia/services/agent/agent.schema";
 import { messageOf } from "@chia/utils/error-helper";
 import { createQueryInvalidator } from "@chia/utils/query-client";
 
@@ -157,7 +158,6 @@ const attachmentsOf = (
 export const VIEW_FLUSH_MS = 32;
 
 /** The part of `QUOTA_EXCEEDED`'s data the sentence needs; the rest is for the host's meter. */
-const quotaExceededData = z.object({ resetAt: z.iso.datetime() });
 
 /** Set by the service on failures it reported, so a user can quote them. */
 const failureReferenceData = z.object({ requestId: z.string() });
@@ -171,7 +171,7 @@ export const failureOf = (cause: unknown, labels: AgentLabels): string => {
   if (cause instanceof ORPCError) {
     switch (cause.code) {
       case "QUOTA_EXCEEDED": {
-        const data = quotaExceededData.safeParse(cause.data);
+        const data = agentQuotaExceededSchema.safeParse(cause.data);
         return fill(labels.quotaExceeded, {
           resetAt: data.success
             ? formatMessageTime(Date.parse(data.data.resetAt))

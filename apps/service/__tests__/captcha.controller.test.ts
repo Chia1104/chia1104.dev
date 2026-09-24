@@ -54,6 +54,14 @@ describe("email.send captcha enforcement", () => {
       expect.objectContaining({ token: "invalid-token" })
     );
     expect(res.status).toBe(400);
+    // The contract declares this data, so the client narrows it with `isDefinedError`.
+    expect(await res.json()).toMatchObject({
+      json: {
+        inferable: true,
+        code: "BAD_REQUEST",
+        data: { errors: [{ field: "captcha", message: "CAPTCHA_FAILED" }] },
+      },
+    });
     expect(mockSendContactEmail).not.toHaveBeenCalled();
   });
 
