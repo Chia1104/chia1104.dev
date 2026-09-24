@@ -27,6 +27,8 @@ export const ReportTriageStatus = {
   Ok: "ok",
   /** The report or its post is gone; nothing to triage and nobody to notify. */
   ReportGone: "report_gone",
+  /** The post was unpublished or deleted since the report was filed; its bodies are not what readers see. */
+  PostUnpublished: "post_unpublished",
   NoReply: "no_reply",
   UnreadableReply: "unreadable_reply",
   Failed: "failed",
@@ -112,6 +114,9 @@ export const triageReportStep = async (
     if (!report) return ReportTriageStatus.ReportGone;
     const feed = await getFeedForIndexing(db, { feedId: report.feedId });
     if (!feed) return ReportTriageStatus.ReportGone;
+    if (!feed.published || feed.deletedAt) {
+      return ReportTriageStatus.PostUnpublished;
+    }
     return await runTriage(db, report, feed);
   } catch (error) {
     reportError(error, "Reader report triage failed", { reportId });
