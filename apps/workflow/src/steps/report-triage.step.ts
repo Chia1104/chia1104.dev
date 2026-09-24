@@ -22,10 +22,27 @@ import { DASH_BASE_URL, feedUrl } from "@chia/utils/config";
 
 const TRIAGE_TIMEOUT_MS = 120_000;
 
+/** A failure leaves `feed_report.triage` empty; the workflow still notifies the operator. */
+export const ReportTriageStatus = {
+  Ok: "ok",
+  /** The report or its post is gone; nothing to triage and nobody to notify. */
+  ReportGone: "report_gone",
+  NoReply: "no_reply",
+  UnreadableReply: "unreadable_reply",
+  Failed: "failed",
+} as const;
+
 export type ReportTriageStatus =
-  | "ok"
-  | "skipped: report gone"
-  | `failed: ${string}`;
+  (typeof ReportTriageStatus)[keyof typeof ReportTriageStatus];
+
+export const ReportNotifyStatus = {
+  Sent: "sent",
+  ReportGone: "report_gone",
+  NoEmailKey: "no_email_key",
+} as const;
+
+export type ReportNotifyStatus =
+  (typeof ReportNotifyStatus)[keyof typeof ReportNotifyStatus];
 
 type TriageFeed = NonNullable<Awaited<ReturnType<typeof getFeedForIndexing>>>;
 
@@ -55,7 +72,7 @@ const runTriage = async (
         ...usage,
       }),
   });
-  if (reply === null) return "failed: no reply";
+  if (reply === null) return ReportTriageStatus.NoReply;
 
   const bodies: Partial<Record<Locale, string>> = Object.fromEntries(
     feed.translations
@@ -63,7 +80,7 @@ const runTriage = async (
       .map((translation) => [translation.locale, translation.content])
   );
   const triage = parseReportTriage(reply, bodies);
-  if (!triage) return "failed: unreadable reply";
+  if (!triage) return ReportTriageStatus.UnreadableReply;
 
   await setFeedReportTriage(db, report.id, triage);
   logger.info(
@@ -75,31 +92,30 @@ const runTriage = async (
     },
     "Reader report triaged"
   );
-  return "ok";
+  return ReportTriageStatus.Ok;
 };
 
 /**
  * One model call that writes `feed_report.triage`. Nothing here throws past the step: a
- * failed triage leaves the column empty and the report still reaches the operator. Runtime
- * is imported at first use: this step is registered at boot and the runtime carries the
- * provider stack.
+ * failed read or triage leaves the column empty and the report still reaches the operator.
+ * Runtime is imported at first use: this step is registered at boot and the runtime carries
+ * the provider stack.
  */
 export const triageReportStep = async (
   reportId: number
 ): Promise<ReportTriageStatus> => {
   "use step";
 
-  const db = await connectDatabase(undefined, { withCache: false });
-  const report = await getFeedReport(db, reportId);
-  if (!report) return "skipped: report gone";
-  const feed = await getFeedForIndexing(db, { feedId: report.feedId });
-  if (!feed) return "skipped: report gone";
-
   try {
+    const db = await connectDatabase(undefined, { withCache: false });
+    const report = await getFeedReport(db, reportId);
+    if (!report) return ReportTriageStatus.ReportGone;
+    const feed = await getFeedForIndexing(db, { feedId: report.feedId });
+    if (!feed) return ReportTriageStatus.ReportGone;
     return await runTriage(db, report, feed);
   } catch (error) {
     reportError(error, "Reader report triage failed", { reportId });
-    return "failed: error";
+    return ReportTriageStatus.Failed;
   }
 };
 
@@ -158,19 +174,19 @@ export const buildReportEmail = (
 /** Emails the operator. Retried by the workflow: a send bills nothing. */
 export const notifyReportStep = async (
   reportId: number
-): Promise<"sent" | "skipped: report gone" | "skipped: no email key"> => {
+): Promise<ReportNotifyStatus> => {
   "use step";
 
   if (!emailEnv.RESEND_API_KEY) {
     logger.warn({ reportId }, "RESEND_API_KEY is unset; report not emailed");
-    return "skipped: no email key";
+    return ReportNotifyStatus.NoEmailKey;
   }
 
   const db = await connectDatabase(undefined, { withCache: false });
   const report = await getFeedReport(db, reportId);
-  if (!report) return "skipped: report gone";
+  if (!report) return ReportNotifyStatus.ReportGone;
   const feed = await getFeedForIndexing(db, { feedId: report.feedId });
-  if (!feed) return "skipped: report gone";
+  if (!feed) return ReportNotifyStatus.ReportGone;
 
   const translation =
     feed.translations.find((entry) => entry.locale === report.locale) ??
@@ -186,5 +202,5 @@ export const notifyReportStep = async (
       }),
     })
   );
-  return "sent";
+  return ReportNotifyStatus.Sent;
 };

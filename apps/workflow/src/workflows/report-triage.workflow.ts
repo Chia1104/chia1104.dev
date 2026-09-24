@@ -3,6 +3,7 @@ import * as z from "zod";
 
 import {
   notifyReportStep,
+  ReportTriageStatus,
   triageReportStep,
 } from "../steps/report-triage.step";
 
@@ -22,7 +23,7 @@ export const reportTriageWorkflow = async (
   const { reportId } = reportTriageRequestSchema.parse(request);
 
   const triage = await triageReportStep(reportId);
-  if (triage === "skipped: report gone") {
+  if (triage === ReportTriageStatus.ReportGone) {
     return { reportId, triage };
   }
   const notified = await notifyReportStep(reportId);
