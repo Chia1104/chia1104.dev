@@ -140,6 +140,7 @@ const renderReport = (report: ReaderReport): string => {
     report.quote ? `Passage:\n${report.quote}` : null,
     `Reader's claim:\n${report.claim}`,
     `Reading assistant's assessment:\n${report.assessment}`,
+    report.suggestion ? `Suggested fix:\n${quoted(report.suggestion)}` : null,
     triage ? `Triage (${triage.verdict}):\n${triage.summary}` : null,
     ...(triage?.edits ?? []).map(
       (edit) =>
