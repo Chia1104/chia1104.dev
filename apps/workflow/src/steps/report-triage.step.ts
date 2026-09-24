@@ -4,8 +4,9 @@ import {
   parseReportTriage,
 } from "@chia/agent-host/report-triage";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
-import { recordAgentUsage } from "@chia/agent-host/usage";
+import { FEED_TASK_USAGE_KIND, recordAgentUsage } from "@chia/agent-host/usage";
 import { connectDatabase } from "@chia/db/client";
+import type { DB } from "@chia/db/client";
 import {
   getFeedReport,
   setFeedReportTriage,
@@ -20,40 +21,21 @@ import { reportError } from "@chia/observability/report";
 import { DASH_BASE_URL, feedUrl } from "@chia/utils/config";
 
 const TRIAGE_TIMEOUT_MS = 120_000;
-/** The ledger's `kind` says what a call was for; a report belongs to no agent kind. */
-const REPORT_USAGE_KIND = "feed";
 
 export type ReportTriageStatus =
   | "ok"
   | "skipped: report gone"
   | `failed: ${string}`;
 
-/**
- * One model call that writes `feed_report.triage`. A failed triage leaves the column empty and
- * the report still reaches the operator. Runtime is imported at first use: this step is
- * registered at boot and the runtime carries the provider stack.
- */
-export const triageReportStep = async (
-  reportId: number
+type TriageFeed = NonNullable<Awaited<ReturnType<typeof getFeedForIndexing>>>;
+
+const runTriage = async (
+  db: DB,
+  report: FeedReport,
+  feed: TriageFeed
 ): Promise<ReportTriageStatus> => {
-  "use step";
-
-  const db = await connectDatabase(undefined, { withCache: false });
-  const report = await getFeedReport(db, reportId);
-  if (!report) return "skipped: report gone";
-  const feed = await getFeedForIndexing(db, { feedId: report.feedId });
-  if (!feed) return "skipped: report gone";
-
   const { completeText } = await import("@chia/agent-runtime/pi/complete");
-  let task: Awaited<ReturnType<typeof resolveAgentTask>>;
-  try {
-    task = await resolveAgentTask(db, AGENT_TASK_IDS.reportTriage);
-  } catch (error) {
-    reportError(error, "Report triage task could not be resolved", {
-      reportId,
-    });
-    return "failed: model unavailable";
-  }
+  const task = await resolveAgentTask(db, AGENT_TASK_IDS.reportTriage);
 
   const reply = await completeText({
     models: task.models,
@@ -67,7 +49,7 @@ export const triageReportStep = async (
     onUsage: (usage) =>
       recordAgentUsage(db, {
         userId: feed.userId,
-        kind: REPORT_USAGE_KIND,
+        kind: FEED_TASK_USAGE_KIND,
         source: "triage",
         credentialSource: "house",
         ...usage,
@@ -83,10 +65,10 @@ export const triageReportStep = async (
   const triage = parseReportTriage(reply, bodies);
   if (!triage) return "failed: unreadable reply";
 
-  await setFeedReportTriage(db, reportId, triage);
+  await setFeedReportTriage(db, report.id, triage);
   logger.info(
     {
-      reportId,
+      reportId: report.id,
       verdict: triage.verdict,
       edits: triage.edits.length,
       droppedEdits: triage.droppedEdits,
@@ -94,6 +76,31 @@ export const triageReportStep = async (
     "Reader report triaged"
   );
   return "ok";
+};
+
+/**
+ * One model call that writes `feed_report.triage`. Nothing here throws past the step: a
+ * failed triage leaves the column empty and the report still reaches the operator. Runtime
+ * is imported at first use: this step is registered at boot and the runtime carries the
+ * provider stack.
+ */
+export const triageReportStep = async (
+  reportId: number
+): Promise<ReportTriageStatus> => {
+  "use step";
+
+  const db = await connectDatabase(undefined, { withCache: false });
+  const report = await getFeedReport(db, reportId);
+  if (!report) return "skipped: report gone";
+  const feed = await getFeedForIndexing(db, { feedId: report.feedId });
+  if (!feed) return "skipped: report gone";
+
+  try {
+    return await runTriage(db, report, feed);
+  } catch (error) {
+    reportError(error, "Reader report triage failed", { reportId });
+    return "failed: error";
+  }
 };
 
 /** A retry would bill the model call again; the operator can read the report without it. */

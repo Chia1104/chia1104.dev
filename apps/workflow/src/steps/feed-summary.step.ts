@@ -4,7 +4,7 @@ import {
   normalizeFeedSummary,
 } from "@chia/agent-host/feed-summary";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
-import { recordAgentUsage } from "@chia/agent-host/usage";
+import { FEED_TASK_USAGE_KIND, recordAgentUsage } from "@chia/agent-host/usage";
 import { connectDatabase, invalidateCache } from "@chia/db/client";
 import {
   getFeedForIndexing,
@@ -16,8 +16,6 @@ import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 
 const SUMMARY_TIMEOUT_MS = 120_000;
-/** The ledger's `kind` says what a call was for; a post summary belongs to no agent kind. */
-const FEED_SUMMARY_USAGE_KIND = "feed";
 
 export type FeedSummaryStatus = "ok" | "skipped: no body" | `failed: ${string}`;
 
@@ -79,7 +77,7 @@ export const summarizeFeedStep = async (
           onUsage: (usage) =>
             recordAgentUsage(db, {
               userId: feed.userId,
-              kind: FEED_SUMMARY_USAGE_KIND,
+              kind: FEED_TASK_USAGE_KIND,
               source: "summary",
               credentialSource: "house",
               ...usage,
