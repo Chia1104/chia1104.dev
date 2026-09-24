@@ -7,6 +7,7 @@ import {
 } from "@chia/db/repos/feed-reports";
 import { getFeedBySlug } from "@chia/db/repos/feeds";
 import type { FeedReport } from "@chia/db/schema";
+import { reportError } from "@chia/observability/report";
 import { AppError } from "@chia/service-kit/errors";
 
 /** Per reporter over a rolling day; reports cost the operator's attention, not the reader's quota. */
@@ -21,7 +22,10 @@ export interface CreateReportPortOptions {
   /** The session's signed-in owner; the host never builds this port for a guest. */
   reporterId: string;
   sessionId: string;
-  /** Runs after the row is written; a failure is the caller's to report, not the reader's. */
+  /**
+   * Runs after the row is written. Its failure is reported and swallowed: the report exists, and
+   * an error here would have the model file it again.
+   */
   onReported?: (report: FeedReport) => Promise<void>;
 }
 
@@ -67,7 +71,13 @@ export const createReportPort = (
         sessionId: options.sessionId,
       });
     });
-    await options.onReported?.(report);
+    try {
+      await options.onReported?.(report);
+    } catch (error) {
+      reportError(error, "Reader report follow-up failed", {
+        reportId: report.id,
+      });
+    }
     return { id: report.id };
   },
 });

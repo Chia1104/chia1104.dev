@@ -15,6 +15,7 @@ const { reports, feeds } = vi.hoisted(() => ({
 
 vi.mock("@chia/db/repos/feed-reports", () => reports);
 vi.mock("@chia/db/repos/feeds", () => feeds);
+vi.mock("@chia/observability/report", () => ({ reportError: vi.fn() }));
 
 /** Whatever the transaction callback returns; the fake passes it through untouched. */
 type Filed = object;
@@ -73,6 +74,16 @@ describe("createReportPort", () => {
     });
     expect(reports.lockFeedReporter).toHaveBeenCalledWith(db, "reader");
     expect(onReported).toHaveBeenCalledWith(row);
+  });
+
+  it("returns the filed report even when its follow-up fails", async () => {
+    reports.countFeedReportsSince.mockResolvedValueOnce(0);
+    feeds.getFeedBySlug.mockResolvedValueOnce({ id: 3 });
+    reports.createFeedReport.mockResolvedValueOnce({ id: 12 });
+
+    await expect(
+      port(() => Promise.reject(new Error("workflow down"))).submit(input)
+    ).resolves.toEqual({ id: 12 });
   });
 
   it("refuses a reader over the daily limit before looking anything up", async () => {
