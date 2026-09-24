@@ -321,6 +321,10 @@ const unwrapWrite = (
       throw new AppError(AppErrorCode.NotFound, {
         message: `Draft ${draftId} not found`,
       });
+    default: {
+      const _exhaustive: never = result;
+      return _exhaustive;
+    }
   }
 };
 

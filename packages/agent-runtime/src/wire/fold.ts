@@ -303,6 +303,10 @@ export const applyEvent = (
         pendingApprovals: [],
         runStatus: event.reason === "error" ? "error" : "idle",
       };
+    default: {
+      const _exhaustive: never = event;
+      return _exhaustive;
+    }
   }
 };
 

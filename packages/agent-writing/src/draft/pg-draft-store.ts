@@ -91,6 +91,10 @@ export class PgDraftStore implements DraftStore {
         );
       case "not_found":
         throw new DraftNotFoundError(draftId);
+      default: {
+        const _exhaustive: never = result;
+        return _exhaustive;
+      }
     }
   }
 
@@ -133,6 +137,10 @@ export class PgDraftStore implements DraftStore {
         throw new DraftConflictError([`${locale}.content`]);
       case "not_found":
         throw new DraftNotFoundError(draftId);
+      default: {
+        const _exhaustive: never = result;
+        return _exhaustive;
+      }
     }
   }
 

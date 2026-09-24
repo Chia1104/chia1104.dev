@@ -44,10 +44,11 @@ export const summarizeFeedStep = async (
   const feed = await getFeedForIndexing(db, { feedId: feedID });
   if (!feed) return null;
 
-  const refs = feed.translations.map((translation) => ({
+  const refOf = (translation: (typeof feed.translations)[number]) => ({
     translationID: translation.id,
     locale: translation.locale,
-  }));
+  });
+  const refs = feed.translations.map(refOf);
 
   const { completeText } = await import("@chia/agent-runtime/pi/complete");
   let task: Awaited<ReturnType<typeof resolveAgentTask>>;
@@ -60,8 +61,8 @@ export const summarizeFeedStep = async (
 
   const results = await Promise.all(
     feed.translations.map(
-      async (translation, index): Promise<FeedSummaryTranslation> => {
-        const ref = refs[index]!;
+      async (translation): Promise<FeedSummaryTranslation> => {
+        const ref = refOf(translation);
         const content = translation.content?.trim();
         if (!content) return { ...ref, status: "skipped: no body" };
 

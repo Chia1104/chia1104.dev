@@ -277,6 +277,10 @@ function serviceNameResolver(service: Service) {
       return "AI_SERVICE";
     case Service.Workflow:
       return "WORKFLOW_SERVICE";
+    default: {
+      const _exhaustive: never = service;
+      return _exhaustive;
+    }
   }
 }
 

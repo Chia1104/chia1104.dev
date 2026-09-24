@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 import { ThinkingSlider } from "@chia/agent-elements/thinking-slider";
-import { ThinkingLevel } from "@chia/services/agent/agent.schema";
+import { thinkingLevelSchema } from "@chia/services/agent/agent.schema";
 import { formatDateTime } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
@@ -48,7 +48,7 @@ import type { KindAdmin } from "./shared";
 const kindFormSchema = z.object({
   minTier: z.number().int().nullable(),
   model: modelRefSchema.nullable(),
-  thinkingLevel: z.enum(ThinkingLevel).nullable(),
+  thinkingLevel: thinkingLevelSchema.nullable(),
   autoApprove: z.array(z.string()).nullable(),
   config: z.record(z.string(), configFieldValueSchema),
 });

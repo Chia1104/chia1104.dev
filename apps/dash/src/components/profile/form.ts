@@ -238,6 +238,10 @@ export const formValuesOf = (entry: ProfileEntryView): ProfileFormInput => {
           stack: entry.data.stack.join(", "),
         },
       };
+    default: {
+      const _exhaustive: never = entry;
+      return _exhaustive;
+    }
   }
 };
 
@@ -254,5 +258,9 @@ export const contentOf = (
       return { kind: entry.kind, data: entry.data };
     case ProfileEntryKind.Project:
       return { kind: entry.kind, data: entry.data };
+    default: {
+      const _exhaustive: never = entry;
+      return _exhaustive;
+    }
   }
 };

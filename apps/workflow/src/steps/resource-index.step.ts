@@ -121,10 +121,10 @@ export const embedPendingChunksStep = async (request: ResourceIndexRequest) => {
     const { savedCount } = await saveChunkEmbeddings(db, {
       model: provider.id,
       indexVersion: EMBEDDING_INDEX_VERSION,
-      rows: batch.map((chunk, index) => ({
-        chunkId: chunk.id,
-        embedding: vectors[index]!,
-      })),
+      rows: batch.flatMap((chunk, index) => {
+        const embedding = vectors[index];
+        return embedding ? [{ chunkId: chunk.id, embedding }] : [];
+      }),
     });
     // The next query re-reads the backlog, so a batch that persisted nothing would spin forever.
     if (savedCount === 0) {

@@ -1,19 +1,8 @@
 import * as z from "zod";
 
+import { ThinkingLevel } from "@chia/agent-runtime/types";
+
 /** Schemas both the session and the admin contracts build on. */
-
-/** Ordered from no reasoning to the most. */
-export const ThinkingLevel = {
-  Off: "off",
-  Minimal: "minimal",
-  Low: "low",
-  Medium: "medium",
-  High: "high",
-  XHigh: "xhigh",
-  Max: "max",
-} as const;
-
-export type ThinkingLevel = (typeof ThinkingLevel)[keyof typeof ThinkingLevel];
 
 export const thinkingLevelSchema = z.enum(ThinkingLevel);
 

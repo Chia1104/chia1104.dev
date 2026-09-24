@@ -326,6 +326,10 @@ const KindFields = ({
           <StackInput control={control} isDisabled={isDisabled} />
         </>
       );
+    default: {
+      const _exhaustive: never = kind;
+      return _exhaustive;
+    }
   }
 };
 

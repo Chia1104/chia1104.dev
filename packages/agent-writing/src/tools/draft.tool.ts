@@ -173,8 +173,9 @@ const sectionAt = (
   onDuplicate: string
 ): MarkdownSectionSpan => {
   const found = sections.filter((section) => section.path === heading);
-  if (found.length === 1) return found[0]!;
-  if (found.length === 0) {
+  const [only, ...others] = found;
+  if (only && others.length === 0) return only;
+  if (!only) {
     throw new Error(
       `No section at heading "${heading}". The outline is:\n${outlineOf(sections)}`
     );

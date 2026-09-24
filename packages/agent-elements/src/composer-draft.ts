@@ -45,5 +45,9 @@ export const composerDraftReducer = (
         : { ...draft, activeDescendantId: action.id };
     case "dismissMenu":
       return { ...draft, dismissedSlashKey: action.key };
+    default: {
+      const _exhaustive: never = action;
+      return _exhaustive;
+    }
   }
 };

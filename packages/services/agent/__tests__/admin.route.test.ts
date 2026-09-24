@@ -1,6 +1,7 @@
 import { call } from "@orpc/server";
 import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest";
 
+import { ThinkingLevel } from "@chia/agent-runtime/types";
 import { CallerTier } from "@chia/auth/tier";
 import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 import { contextOf } from "@chia/test/context";
@@ -13,7 +14,6 @@ import type { AgentAdminService } from "../admin";
 import type { AgentKindAdmin } from "../admin.contract";
 import type * as adminRouteModule from "../admin.route";
 import type { AgentFactory } from "../agent.factory";
-import { ThinkingLevel } from "../agent.schema";
 
 const kind: AgentKindAdmin = {
   kind: "writing",

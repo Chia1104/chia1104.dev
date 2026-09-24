@@ -269,13 +269,13 @@ export const aggregateChunkHits = (
   limit: number,
   topN = RESOURCE_SCORE_TOP_N
 ): ResourceHit[] => {
-  const byResource = new Map<string, ChunkHit[]>();
+  const byResource = new Map<string, [ChunkHit, ...ChunkHit[]]>();
 
   for (const hit of hits) {
     const key = `${hit.sourceType}:${hit.sourceId}`;
-    const bucket = byResource.get(key) ?? [];
-    bucket.push(hit);
-    byResource.set(key, bucket);
+    const bucket = byResource.get(key);
+    if (bucket) bucket.push(hit);
+    else byResource.set(key, [hit]);
   }
 
   return [...byResource.values()]
@@ -286,7 +286,7 @@ export const aggregateChunkHits = (
         (sum, hit, index) => sum + hit.score * RESOURCE_SCORE_DECAY ** index,
         0
       );
-      const best = bucket[0]!;
+      const [best] = bucket;
       const covered = new Set<string>();
       const kept = bucket.filter((hit, index) => {
         const adds = hit.headingPaths.some((path) => !covered.has(path));

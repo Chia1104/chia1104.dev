@@ -39,6 +39,15 @@ type EvalMode = SearchFeedsProvider | typeof RERANK_MODE;
 /** Ranks past this count as a miss. */
 const MAX_K = 10;
 const RECALL_KS = [1, 3, 5, 10] as const;
+type RecallK = (typeof RECALL_KS)[number];
+
+/** One value per K in `RECALL_KS`; a K added there without one here does not compile. */
+const perK = <T>(valueAt: (k: RecallK) => T): Record<RecallK, T> => ({
+  1: valueAt(1),
+  3: valueAt(3),
+  5: valueAt(5),
+  10: valueAt(10),
+});
 
 interface CLIOptions {
   /** `all` (default) or one of `bm25 | semantic | hybrid | hybrid+rerank` */
@@ -78,7 +87,7 @@ interface QueryResult {
   returned: string[];
   /** 1-based rank of the first expected slug, null on a miss */
   firstHitRank: number | null;
-  recall: Record<number, number>;
+  recall: Record<RecallK, number>;
   /** best chunk of the first expected hit — what a citation would point at */
   bestChunk: { kind: string; headingPath: string | null } | null;
   /**
@@ -104,7 +113,7 @@ interface QueryResult {
 interface ModeReport {
   mode: EvalMode;
   results: QueryResult[];
-  recall: Record<number, number>;
+  recall: Record<RecallK, number>;
   /** Only the kinds the run's queries cover. */
   recallByKind: Partial<Record<GoldenQueryKind, number>>;
   /** R@1 per kind: R@5 cannot tell a `confusable` query's neighbours from its answer */
@@ -229,7 +238,7 @@ const runQuery = async (
     const firstHit = returned.findIndex((slug) =>
       golden.expected.includes(slug)
     );
-    const hitItem = firstHit === -1 ? null : items[firstHit]!;
+    const hitItem = items[firstHit] ?? null;
     const isUnder =
       (heading: string) => (chunk: { kind: string; headingPaths: string[] }) =>
         chunk.kind === "section" &&
@@ -251,9 +260,7 @@ const runQuery = async (
       ...base,
       returned,
       firstHitRank: firstHit === -1 ? null : firstHit + 1,
-      recall: Object.fromEntries(
-        RECALL_KS.map((k) => [k, recallAt(golden.expected, returned, k)])
-      ),
+      recall: perK((k) => recallAt(golden.expected, returned, k)),
       bestChunk,
       citationHit: golden.expectedHeading
         ? best !== undefined && underExpectedHeading(best)
@@ -285,7 +292,7 @@ const runQuery = async (
       ...base,
       returned: [],
       firstHitRank: null,
-      recall: Object.fromEntries(RECALL_KS.map((k) => [k, 0])),
+      recall: perK(() => 0),
       bestChunk: null,
       citationHit: golden.expectedHeading ? false : null,
       sectionHit: golden.expectedHeading ? false : null,
@@ -304,13 +311,13 @@ const buildModeReport = (
   results: QueryResult[]
 ): ModeReport => {
   const kinds = [...new Set(results.map((result) => result.kind))];
-  const recallByKindAt = (k: number) => {
+  const recallByKindAt = (k: RecallK) => {
     const byKind: Partial<Record<GoldenQueryKind, number>> = {};
     for (const kind of kinds) {
       byKind[kind] = mean(
         results
           .filter((result) => result.kind === kind)
-          .map((result) => result.recall[k]!)
+          .map((result) => result.recall[k])
       );
     }
     return byKind;
@@ -318,12 +325,7 @@ const buildModeReport = (
   return {
     mode,
     results,
-    recall: Object.fromEntries(
-      RECALL_KS.map((k) => [
-        k,
-        mean(results.map((result) => result.recall[k]!)),
-      ])
-    ),
+    recall: perK((k) => mean(results.map((result) => result.recall[k]))),
     recallByKind: recallByKindAt(5),
     topRankByKind: recallByKindAt(1),
     mrr: mean(
@@ -466,7 +468,7 @@ const printReport = (queries: GoldenQuery[], reports: ModeReport[]): void => {
   for (const report of reports) {
     console.log(
       pad(report.mode, 14) +
-        RECALL_KS.map((k) => pad(num(report.recall[k]!), 8)).join("") +
+        RECALL_KS.map((k) => pad(num(report.recall[k]), 8)).join("") +
         pad(num(report.mrr), 8) +
         pad(
           report.citationAccuracy === null ? "-" : num(report.citationAccuracy),

@@ -89,6 +89,10 @@ const detailOf = (entry: ProfileEntryView): string => {
         entry.data.translations[Locale.En]?.summary ??
         ""
       );
+    default: {
+      const _exhaustive: never = entry;
+      return _exhaustive;
+    }
   }
 };
 

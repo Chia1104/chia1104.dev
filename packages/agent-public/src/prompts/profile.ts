@@ -78,6 +78,10 @@ const itemOf = (entry: ProfileEntrySnapshot, locale: Locale): Item | null => {
       if (entry.data.stack.length > 0)
         facts.push(`Stack: ${entry.data.stack.join(", ")}`);
       break;
+    default: {
+      const _exhaustive: never = entry;
+      void _exhaustive;
+    }
   }
   const period =
     entry.kind === ProfileEntryKind.About ? null : periodOf(entry.data);

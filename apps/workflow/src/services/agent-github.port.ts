@@ -69,6 +69,10 @@ const entryTypeOf = (type: "blob" | "tree" | "commit"): GitHubEntryType => {
       return "dir";
     case "commit":
       return "submodule";
+    default: {
+      const _exhaustive: never = type;
+      return _exhaustive;
+    }
   }
 };
 

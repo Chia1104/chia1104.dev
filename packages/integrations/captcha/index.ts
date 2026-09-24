@@ -80,6 +80,7 @@ export const captchaSiteverifyWithCredentials = async (
     case "google-recaptcha":
       return await reCAPTCHASiteverify(credentials);
     default: {
+      const _exhaustive: never = provider;
       options?.onError?.(ErrorCode.CaptchaProviderNotSupported);
       throw new CaptchaError(ErrorCode.CaptchaProviderNotSupported);
     }

@@ -1,5 +1,6 @@
 "use client";
 
+import * as z from "zod";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -165,6 +166,26 @@ export interface SettingsState {
   cursorEnabled: boolean;
 }
 
+const themeConfigSchema = z.object({
+  colors: z.record(z.string(), z.string()),
+  layout: z.record(z.string(), z.string()),
+  typography: z.record(z.string(), z.string()),
+});
+
+/** What `partialize` writes; storage that does not parse restores the defaults. */
+const persistedSettingsSchema = z
+  .object({
+    aiEnabled: z.boolean(),
+    agentSessionId: z.string().nullable(),
+    theme: z.object({
+      [Theme.Light]: themeConfigSchema,
+      [Theme.Dark]: themeConfigSchema,
+    }),
+    backgroundEnabled: z.boolean(),
+    cursorEnabled: z.boolean(),
+  })
+  .partial();
+
 export interface SettingsActions {
   setAiEnabled: (enabled: boolean) => void;
   setAgentSessionId: (sessionId: string | null) => void;
@@ -298,10 +319,13 @@ export const useSettingsStore = create<SettingsStore>()(
       /** 1: AI features became opt-out; every earlier visitor had `false` persisted by default. */
       version: 1,
       migrate: (persisted, version) => {
-        const state =
-          /* SAFETY: Only this store writes `SETTINGS_STORE`; earlier versions persisted a subset of these keys. */ persisted as Partial<SettingsState>;
+        const state = persistedSettingsSchema.safeParse(persisted).data ?? {};
         return version < 1 ? { ...state, aiEnabled: true } : state;
       },
+      merge: (persisted, current) => ({
+        ...current,
+        ...persistedSettingsSchema.safeParse(persisted).data,
+      }),
       partialize: (state) => ({
         aiEnabled: state.aiEnabled,
         agentSessionId: state.agentSessionId,

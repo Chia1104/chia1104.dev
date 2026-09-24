@@ -66,8 +66,8 @@ interface TaskResult {
 /** Slugs of the posts and notes a text links or names by URL. */
 const linkedSlugs = (text: string): string[] => [
   ...new Set(
-    [...text.matchAll(/\/(?:posts|notes)\/([^\s)#"'<>\]]+)/g)].map((match) =>
-      decodeURIComponent(match[1]!)
+    [...text.matchAll(/\/(?:posts|notes)\/([^\s)#"'<>\]]+)/g)].flatMap(
+      ([, slug]) => (slug ? [decodeURIComponent(slug)] : [])
     )
   ),
 ];

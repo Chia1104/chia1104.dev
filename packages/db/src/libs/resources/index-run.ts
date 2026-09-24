@@ -75,6 +75,10 @@ const targetFilter = (target: ResourceIndexRunTarget) => {
       );
     case ResourceIndexRunScope.All:
       return eq(runs.scope, target.scope);
+    default: {
+      const _exhaustive: never = target.scope;
+      return _exhaustive;
+    }
   }
 };
 

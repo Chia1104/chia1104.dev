@@ -23,5 +23,9 @@ export const createModel = (
       return createAnthropic({ apiKey: options.authToken })(options.model.id);
     case KeyId.Gateway:
       return createGateway({ apiKey: options.authToken })(options.model.id);
+    default: {
+      const _exhaustive: never = options.model.provider;
+      return _exhaustive;
+    }
   }
 };

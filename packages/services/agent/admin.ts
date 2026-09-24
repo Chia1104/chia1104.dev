@@ -28,6 +28,7 @@ import {
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
 import type { AgentModelRef } from "@chia/agent-runtime/models";
+import { ThinkingLevel } from "@chia/agent-runtime/types";
 import { agentKindFloor, isCallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { countAgentSessions } from "@chia/db/repos/agent";
@@ -62,7 +63,6 @@ import type {
   AgentUserUsageAdmin,
 } from "./admin.contract";
 import type { AgentModelInfo } from "./agent.contract";
-import { ThinkingLevel } from "./agent.schema";
 
 /**
  * Every write is checked against the definition it overrides before it lands, so a row

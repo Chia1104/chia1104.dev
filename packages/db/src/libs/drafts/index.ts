@@ -1119,17 +1119,20 @@ export const listFeedDraftChangesSince = async (
   }
 
   let changes: FeedDraftChange[] = [];
-  for (let index = 1; index < trail.length; index += 1) {
-    const entry = trail[index]!;
+  let previous: (typeof trail)[number] | undefined;
+  for (const entry of trail) {
+    const prior = previous;
+    previous = entry;
     if (
-      entry.author === FeedDraftAuthor.Agent &&
-      entry.sessionId === input.exceptSessionId
+      !prior ||
+      (entry.author === FeedDraftAuthor.Agent &&
+        entry.sessionId === input.exceptSessionId)
     ) {
       continue;
     }
     changes = mergeChanges(
       changes,
-      diffFeedDraftSnapshots(trail[index - 1]!.snapshot, entry.snapshot)
+      diffFeedDraftSnapshots(prior.snapshot, entry.snapshot)
     );
   }
   return changes;

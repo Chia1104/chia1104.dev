@@ -113,6 +113,10 @@ const stateFilter = (key: ResourceIndexKey, state: ChunkEmbeddingState) => {
       return sql`${hasAnyVector} and not ${hasCurrentVector(key)}`;
     case ChunkEmbeddingState.Missing:
       return sql`not ${hasAnyVector}`;
+    default: {
+      const _exhaustive: never = state;
+      return _exhaustive;
+    }
   }
 };
 

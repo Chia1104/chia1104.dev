@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Alert, Button } from "@heroui/react";
 import { CircleAlert } from "lucide-react";
 
-import { ThinkingLevel } from "@chia/services/agent/agent.schema";
+import { ThinkingLevel } from "@chia/agent-runtime/types";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { useAgentLabels } from "./labels-context.tsx";

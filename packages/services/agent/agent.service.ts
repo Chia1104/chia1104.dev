@@ -2,6 +2,7 @@ import type {
   AgentKindCaller,
   AgentKindCapabilities,
 } from "@chia/agent-host/kind";
+import type { ThinkingLevel } from "@chia/agent-runtime/types";
 import type {
   AgentAttachmentInput,
   AgentWireEvent,
@@ -22,7 +23,6 @@ import type { BaseOSContext } from "../shared/context";
 
 import type * as agentContracts from "./agent.contract";
 import type { AgentFactory } from "./agent.factory";
-import type { ThinkingLevel } from "./agent.schema";
 
 /**
  * The oRPC package owns session, durable-run and maintenance. The host supplies a typed

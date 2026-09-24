@@ -34,6 +34,10 @@ const monitorLabel = (status: MonitorStatus) => {
       return { label: "Service Paused", color: "default" } as const;
     case "validating":
       return { label: "Service Validating", color: "warning" } as const;
+    default: {
+      const _exhaustive: never = status;
+      return _exhaustive;
+    }
   }
 };
 

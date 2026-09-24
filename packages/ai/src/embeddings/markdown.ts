@@ -193,6 +193,15 @@ export interface MarkdownHeading {
   path: string;
 }
 
+/** Pops the open headings at `depth` or deeper, leaving the new heading's ancestors. */
+const closeHeadings = (open: { level: number }[], depth: number): void => {
+  let top = open.at(-1);
+  while (top && top.level >= depth) {
+    open.pop();
+    top = open.at(-1);
+  }
+};
+
 const walkHeadings = (
   nodes: RootContent[],
   parser: Parser,
@@ -218,12 +227,7 @@ export const extractHeadings = async (
   const stack: { level: number; title: string }[] = [];
 
   walkHeadings(tree.children, parser, (heading, title) => {
-    while (
-      stack.length > 0 &&
-      stack[stack.length - 1]!.level >= heading.depth
-    ) {
-      stack.pop();
-    }
+    closeHeadings(stack, heading.depth);
     stack.push({ level: heading.depth, title });
     headings.push({
       level: heading.depth,
@@ -272,9 +276,7 @@ export const splitByHeadings = async (
   for (const node of tree.children) {
     if (node.type === "heading") {
       flush();
-      while (stack.length > 0 && stack[stack.length - 1]!.level >= node.depth) {
-        stack.pop();
-      }
+      closeHeadings(stack, node.depth);
       stack.push({ level: node.depth, title: parser.toString(node).trim() });
       continue;
     }
@@ -319,9 +321,7 @@ export const extractSections = async (
     const span = spanOf(node);
     if (!span) continue;
     if (node.type === "heading") {
-      while (open.length > 0 && open[open.length - 1]!.level >= node.depth) {
-        open.pop();
-      }
+      closeHeadings(open, node.depth);
       const title = parser.toString(node).trim();
       const section: MarkdownSectionSpan = {
         level: node.depth,

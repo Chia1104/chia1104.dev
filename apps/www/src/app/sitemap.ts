@@ -112,7 +112,9 @@ function localeResolver(locale: Locale) {
       return ILocale.En;
     case Locale.ZhTW:
       return ILocale.ZhTW;
-    default:
-      return ILocale.ZhTW;
+    default: {
+      const _exhaustive: never = locale;
+      return _exhaustive;
+    }
   }
 }

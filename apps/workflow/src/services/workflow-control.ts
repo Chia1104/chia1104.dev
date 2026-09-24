@@ -103,6 +103,10 @@ export const executeLocalWorkflowCommand = async (
           : undefined;
       return { type: "run", exists: true, status, output };
     }
+    default: {
+      const _exhaustive: never = command;
+      return _exhaustive;
+    }
   }
 };
 

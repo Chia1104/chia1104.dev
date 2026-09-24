@@ -190,10 +190,12 @@ export const collectOperatorEdits = (
   revisions: readonly DraftRevisionLike[]
 ): OperatorEdit[] => {
   const edits: OperatorEdit[] = [];
-  for (let index = 1; index < revisions.length; index++) {
-    const current = revisions[index]!;
-    if (current.author !== FeedDraftAuthor.Operator) continue;
-    const before = revisions[index - 1]!.snapshot;
+  let previous: DraftRevisionLike | undefined;
+  for (const current of revisions) {
+    const prior = previous;
+    previous = current;
+    if (!prior || current.author !== FeedDraftAuthor.Operator) continue;
+    const before = prior.snapshot;
     const after = current.snapshot;
 
     for (const field of META_FIELDS) {
