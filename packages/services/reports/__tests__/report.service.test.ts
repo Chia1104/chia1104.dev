@@ -19,10 +19,13 @@ vi.mock("../../feeds/draft.service", () => drafts);
 
 const { applyReportEditsService } = await import("../report.service");
 
-/* SAFETY: every repository and service the function reaches is mocked; the handle only opens their transaction. */
-const db = {
-  transaction: (fn: (tx: DB) => Promise<unknown>) => fn(db),
-} as unknown as DB;
+/** Whatever the transaction callback returns; the fake passes it through untouched. */
+type Applied = object;
+
+const db: DB =
+  /* SAFETY: every repository and service the function reaches is mocked; only `transaction` is called on the handle. */ {
+    transaction: (fn: (tx: DB) => Promise<Applied>) => fn(db),
+  } as never;
 
 const record = (
   edits: NonNullable<FeedReportRecord["triage"]>["edits"],
