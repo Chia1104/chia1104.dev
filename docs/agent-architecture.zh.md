@@ -74,7 +74,7 @@ Kind 可以在 model 執行前 `screen` 使用者輸入的訊息。Public kind �
 
 Host 只有在 operator 開啟 `webAccess`、已設定 guard provider，且 session 擁有者是已登入帳號（不是 guest）時，才會在該 turn 把 `WebPort` 交給 public kind。它的 `web_search` 與 `fetch_url` 是這個 kind 自己的工具，不是 writing kind 的：只有本 turn 搜尋回傳過的頁面才能讀取，因此訪客或被注入的頁面都無法把 fetch 指向自選的 URL；搜尋與讀取每個 turn 都有上限，因為 Firecrawl 的請求不在 usage ledger 內；搜尋結果與頁面在 model 讀取前先通過 `checkDocument`，被標記或 guard 失敗時一律不提供；通過的內容會以隨機邊界包成不可信文字。聊天 markdown 會把 model 輸出的圖片改成先確認才開啟的連結，否則圖片會在未經同意下載入其 URL。
 
-已登入的 session 擁有者也會在該 turn 取得 `ReportPort`，綁定該擁有者與 session。`report_issue` 每個 turn 針對一篇已發佈文章寫入一筆 `feed_report`：段落、讀者的主張與 model 的判斷，全部以引用文字保存，由 operator 審閱。它不會改動訪客讀到的任何內容，每位讀者每天可送出的回報數有上限。Guest 的 prompt 不帶這個工具，改為說明回報需要登入。
+已登入的 session 擁有者也會在該 turn 取得 `ReportPort`，綁定該擁有者與 session。`report_issue` 每個 turn 針對一篇已發佈文章寫入一筆 `feed_report`：段落、讀者的主張、model 的判斷，以及讀者或 model 能給出的修正文字，全部以引用文字保存，由 operator 審閱。它不會改動訪客讀到的任何內容，每位讀者每天可送出的回報數有上限。Guest 的 prompt 不帶這個工具，改為說明回報需要登入。
 
 ## 3. Durable state 與 session tree
 

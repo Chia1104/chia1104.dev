@@ -62,6 +62,7 @@ export const createReportPort = (
         category: input.category,
         claim: input.claim,
         assessment: input.assessment,
+        suggestion: input.suggestion ?? null,
         reporterId: options.reporterId,
         sessionId: options.sessionId,
       });

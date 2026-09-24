@@ -7,6 +7,7 @@ CREATE TABLE "chia_feed_report" (
 	"category" text NOT NULL,
 	"claim" text NOT NULL,
 	"assessment" text NOT NULL,
+	"suggestion" text,
 	"reporter_id" text,
 	"session_id" text,
 	"status" text DEFAULT 'open' NOT NULL,

@@ -15,9 +15,10 @@ export const reportIssueSpec = {
   name: REPORT_TOOL_NAMES.reportIssue,
   label: REPORT_TOOL_INFO_BY_NAME[REPORT_TOOL_NAMES.reportIssue].label,
   description:
-    "Send the author a correction to a published post. Call it only after you checked the " +
-    "post with `get_post`, told the visitor what you would send and they agreed. One report " +
-    "per turn. The author reviews every report; nothing on the site changes by itself.",
+    "Send the author a correction to a published post. Call it after you checked the post " +
+    "with `get_post` and the visitor agreed to send what you described, or asked you to " +
+    "send it. One report per turn. The author reviews every report; nothing on the site " +
+    "changes by itself.",
   parameters: Type.Object({
     slug: Type.String({
       description: "The post's slug, as a tool or the attachment gave it.",
@@ -58,6 +59,14 @@ export const reportIssueSpec = {
       minLength: 1,
       maxLength: 2000,
     }),
+    suggestion: optional(
+      Type.String({
+        description:
+          "How the passage should read instead, or what the fix is, when you or the visitor " +
+          "can say. Leave it out when you only know something is wrong.",
+        maxLength: 2000,
+      })
+    ),
   }),
   executionMode: "sequential",
 } satisfies ToolSpec;

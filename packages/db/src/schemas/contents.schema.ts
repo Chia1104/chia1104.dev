@@ -295,6 +295,8 @@ export const feedReports = pgTable(
     claim: text("claim").notNull(),
     /** What the public agent found when it checked the claim; not authoritative. */
     assessment: text("assessment").notNull(),
+    /** The corrected wording as the reader or the agent proposed it; a candidate for the operator, never applied as is. */
+    suggestion: text("suggestion"),
     reporterId: text("reporter_id").references(() => user.id, {
       onDelete: "set null",
     }),

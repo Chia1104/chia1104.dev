@@ -9,6 +9,7 @@ export interface ReportIssueInput {
   category: FeedReportCategory;
   claim: string;
   assessment: string;
+  suggestion?: string;
 }
 
 /**

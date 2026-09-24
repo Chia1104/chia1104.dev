@@ -16,6 +16,7 @@ export interface FeedReportInsert {
   category: FeedReportCategory;
   claim: string;
   assessment: string;
+  suggestion?: string | null;
   reporterId: string;
   sessionId?: string | null;
 }

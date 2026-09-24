@@ -64,6 +64,7 @@ describe("createReportPort", () => {
       category: "typo",
       claim: input.claim,
       assessment: input.assessment,
+      suggestion: null,
       reporterId: "reader",
       sessionId: "session-1",
     });
