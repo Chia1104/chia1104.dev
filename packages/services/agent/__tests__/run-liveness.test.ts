@@ -1,10 +1,13 @@
+import { drizzle } from "drizzle-orm/node-postgres";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { AgentRunStatus, relations } from "@chia/db/schema";
 import {
   createFakeRuns,
   getRun,
   resetWorkflowMocks,
 } from "@chia/test/mocks/workflow";
+import { createWorkflowControlClient } from "@chia/workflow-control/client";
 
 const runs = createFakeRuns();
 
@@ -27,10 +30,12 @@ vi.mock("../abort", () => ({
   signalAgentAbort: abort.signalAgentAbort,
 }));
 
-const db =
-  /* SAFETY: the repo is mocked; nothing reads the handle. */ {} as never;
-const workflow =
-  /* SAFETY: the abort function is mocked; nothing reads the client. */ {} as never;
+const db = drizzle.mock({ relations });
+const workflow = createWorkflowControlClient({
+  url: "http://workflow.test",
+  token: "test",
+  fetch: () => Promise.reject(new Error("the workflow client is not called")),
+});
 
 const row = (overrides: {
   id: string;
@@ -42,7 +47,7 @@ const row = (overrides: {
   sessionId: "session-1",
   harnessKind: "workflow",
   harnessVersion: 1,
-  status: "active" as const,
+  status: AgentRunStatus.Active,
   externalRunId: overrides.externalRunId,
   metadata: {
     turn: {
@@ -99,7 +104,7 @@ describe("reconcileRunningAgentTurns", () => {
       db,
       "run-dead",
       "wf-dead",
-      "failed"
+      AgentRunStatus.Failed
     );
     expect(abort.signalAgentAbort).toHaveBeenCalledExactlyOnceWith(
       workflow,
@@ -129,7 +134,7 @@ describe("reconcileRunningAgentTurns", () => {
       db,
       "lease-old",
       "lease-old",
-      "failed"
+      AgentRunStatus.Failed
     );
   });
 

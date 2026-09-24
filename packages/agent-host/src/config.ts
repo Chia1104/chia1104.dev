@@ -1,12 +1,11 @@
 import { modelRefOf } from "@chia/agent-runtime/models";
-import type {
-  AgentSessionDefaults,
-  ThinkingLevel,
-} from "@chia/agent-runtime/types";
+import { ThinkingLevel } from "@chia/agent-runtime/types";
+import type { AgentSessionDefaults } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import { getAgentKindConfig } from "@chia/db/repos/agent/config";
 import type { AgentKindConfig } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
+import { isEnumValue } from "@chia/utils/is";
 
 import type { AgentKindDefinition } from "./kind";
 
@@ -43,10 +42,9 @@ export const effectiveKindDefaults = (
     providerId: model?.providerId ?? definition.defaults.providerId,
     modelId: model?.modelId ?? definition.defaults.modelId,
     thinkingLevel:
-      /* SAFETY: The admin write validated the column against the contract's enum. */ (row?.thinkingLevel as
-        | ThinkingLevel
-        | null
-        | undefined) ?? definition.defaults.thinkingLevel,
+      row?.thinkingLevel && isEnumValue(ThinkingLevel, row.thinkingLevel)
+        ? row.thinkingLevel
+        : definition.defaults.thinkingLevel,
     autoApprove: row?.autoApprove ?? definition.defaults.autoApprove,
   };
 };

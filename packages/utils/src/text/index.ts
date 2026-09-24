@@ -1,4 +1,11 @@
-export type ExactReplaceFailure = "empty_target" | "not_found" | "ambiguous";
+export const ExactReplaceFailure = {
+  EmptyTarget: "empty_target",
+  NotFound: "not_found",
+  Ambiguous: "ambiguous",
+} as const;
+
+export type ExactReplaceFailure =
+  (typeof ExactReplaceFailure)[keyof typeof ExactReplaceFailure];
 
 /**
  * How loosely the target was matched, in the order the rounds run: `exact` byte for byte;
@@ -8,11 +15,14 @@ export type ExactReplaceFailure = "empty_target" | "not_found" | "ambiguous";
  * meet a non-word character or the text's edge, so a fragment never matches inside a word. The
  * first round that matches wins.
  */
-export type MatchMode =
-  | "exact"
-  | "trailing_whitespace"
-  | "whitespace"
-  | "punctuation";
+export const MatchMode = {
+  Exact: "exact",
+  TrailingWhitespace: "trailing_whitespace",
+  Whitespace: "whitespace",
+  Punctuation: "punctuation",
+} as const;
+
+export type MatchMode = (typeof MatchMode)[keyof typeof MatchMode];
 
 /** One matched span of the input content. */
 export interface MatchSpan {
@@ -76,23 +86,26 @@ const WORD_CHAR = "[\\p{L}\\p{N}_]";
  * absorbed at line boundaries only, so the indentation before the first line and the space
  * after the last stay in the content rather than being replaced.
  */
-const relaxedPattern = (target: string, mode: Exclude<MatchMode, "exact">) => {
+const relaxedPattern = (
+  target: string,
+  mode: Exclude<MatchMode, typeof MatchMode.Exact>
+) => {
   const raw = target.split("\n");
   const lines = raw.map((line) => {
     const trimmed =
-      mode === "trailing_whitespace" ? line.trimEnd() : line.trim();
-    return mode === "punctuation"
+      mode === MatchMode.TrailingWhitespace ? line.trimEnd() : line.trim();
+    return mode === MatchMode.Punctuation
       ? punctuationPattern(trimmed)
       : escapeRegExp(trimmed);
   });
   const boundary =
-    mode === "trailing_whitespace"
+    mode === MatchMode.TrailingWhitespace
       ? `[ \\t]*\\n`
       : `${HORIZONTAL_SPACE}\\n${HORIZONTAL_SPACE}`;
   const first = raw[0] ?? "";
   const last = raw[raw.length - 1] ?? "";
   const leadDropped =
-    mode !== "trailing_whitespace" && first !== first.trimStart();
+    mode !== MatchMode.TrailingWhitespace && first !== first.trimStart();
   const tailDropped = last !== last.trimEnd();
   return new RegExp(
     `${leadDropped ? `(?<!${WORD_CHAR})` : ""}${lines.join(boundary)}${tailDropped ? `(?!${WORD_CHAR})` : ""}`,
@@ -101,9 +114,9 @@ const relaxedPattern = (target: string, mode: Exclude<MatchMode, "exact">) => {
 };
 
 const RELAXED_ROUNDS = [
-  "trailing_whitespace",
-  "whitespace",
-  "punctuation",
+  MatchMode.TrailingWhitespace,
+  MatchMode.Whitespace,
+  MatchMode.Punctuation,
 ] as const;
 
 interface TargetMatch {
@@ -117,7 +130,9 @@ const findTarget = (
   exactOnly: boolean
 ): TargetMatch => {
   const exact = occurrencesOf(content, target);
-  if (exact.length > 0 || exactOnly) return { spans: exact, match: "exact" };
+  if (exact.length > 0 || exactOnly) {
+    return { spans: exact, match: MatchMode.Exact };
+  }
   for (const mode of RELAXED_ROUNDS) {
     const spans = Array.from(
       content.matchAll(relaxedPattern(target, mode)),
@@ -128,7 +143,7 @@ const findTarget = (
     ).filter((span) => span.end > span.start);
     if (spans.length > 0) return { spans, match: mode };
   }
-  return { spans: [], match: "exact" };
+  return { spans: [], match: MatchMode.Exact };
 };
 
 /**
@@ -148,7 +163,7 @@ export const replaceExact = (
   if (oldString.length === 0) {
     return {
       ok: false,
-      reason: "empty_target",
+      reason: ExactReplaceFailure.EmptyTarget,
       message:
         "`oldString` must not be empty. Replace the whole body to start over.",
     };
@@ -159,7 +174,7 @@ export const replaceExact = (
   if (spans.length === 0) {
     return {
       ok: false,
-      reason: "not_found",
+      reason: ExactReplaceFailure.NotFound,
       message: exactOnly
         ? "`oldString` was not found. Read the current body again and copy the target from it."
         : "`oldString` was not found, even ignoring whitespace and quote or dash style. Read the current body again and copy the target from it.",
@@ -169,7 +184,7 @@ export const replaceExact = (
   if (spans.length > 1 && !replaceAll) {
     return {
       ok: false,
-      reason: "ambiguous",
+      reason: ExactReplaceFailure.Ambiguous,
       message: `\`oldString\` matches ${spans.length} places. Include more surrounding context to make it unique, or pass replaceAll: true.`,
     };
   }

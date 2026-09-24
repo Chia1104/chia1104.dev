@@ -3,6 +3,8 @@ import * as z from "zod";
 import { locale } from "@chia/db/schema/enums";
 import { FeedType } from "@chia/db/types";
 
+import { ResourceSearchMode } from "../rag/resource-types";
+
 export const searchFeedsSchema = z.object({
   keyword: z.string().trim().min(1).max(256),
   /**
@@ -10,7 +12,7 @@ export const searchFeedsSchema = z.object({
    * provider is resolved server-side, so a caller cannot ask for vectors that were never
    * indexed.
    */
-  model: z.enum(["hybrid", "bm25", "semantic"]).default("hybrid"),
+  model: z.enum(ResourceSearchMode).default(ResourceSearchMode.Hybrid),
 });
 
 export const publicFeedSearchItemSchema = z.object({

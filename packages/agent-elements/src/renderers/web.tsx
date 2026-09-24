@@ -3,7 +3,7 @@
 import { ExternalLink, Globe } from "lucide-react";
 import * as z from "zod";
 
-import { TOOL_NAMES } from "@chia/agent-writing/tools/registry";
+import { ToolName } from "@chia/agent-writing/tools/registry";
 import { hostnameOf } from "@chia/utils/url";
 
 import { useAgentLabels } from "../labels-context.tsx";
@@ -93,6 +93,6 @@ const FetchUrl: ToolRenderer = ({ tool }) => {
 };
 
 export const webToolRenderers: ToolRenderers = {
-  [TOOL_NAMES.webSearch]: WebSearch,
-  [TOOL_NAMES.fetchUrl]: FetchUrl,
+  [ToolName.WebSearch]: WebSearch,
+  [ToolName.FetchUrl]: FetchUrl,
 };

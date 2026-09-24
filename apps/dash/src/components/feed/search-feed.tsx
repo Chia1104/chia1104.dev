@@ -47,7 +47,7 @@ const normaliseHits = (
 const SearchForm = ({ isOpen, onOpenChange }: SearchFormProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [locale, setLocale] = useState<Locale>(Locale.zhTW);
+  const [locale, setLocale] = useState<Locale>(Locale.ZhTW);
   const [model, setModel] = useState<"hybrid" | "bm25" | "semantic">("hybrid");
 
   /**
@@ -110,8 +110,8 @@ const SearchForm = ({ isOpen, onOpenChange }: SearchFormProps) => {
           </Button>
           <Button
             className="h-5.5"
-            onPress={() => setLocale(Locale.zhTW)}
-            variant={locale === Locale.zhTW ? "primary" : "outline"}>
+            onPress={() => setLocale(Locale.ZhTW)}
+            variant={locale === Locale.ZhTW ? "primary" : "outline"}>
             <ButtonGroup.Separator />
             中文
           </Button>

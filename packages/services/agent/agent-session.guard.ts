@@ -1,7 +1,6 @@
 import { os } from "@orpc/server";
 
 import { CallerTier } from "@chia/auth/tier";
-import type { DB } from "@chia/db/client";
 import { getAgentSession } from "@chia/db/repos/agent";
 
 import type { CallerContext } from "../shared/guards/caller.guard";
@@ -54,10 +53,7 @@ export const agentSessionGuard = () =>
     .middleware(async ({ context, errors, next }, input: AgentSessionInput) => {
       const caller = agentCallerOf(context, errors);
 
-      const row = await getAgentSession(
-        /* SAFETY: The producer contract guarantees this value satisfies DB. */ context.db as DB,
-        input.sessionId
-      );
+      const row = await getAgentSession(context.db, input.sessionId);
       /**
        * One `NOT_FOUND` for absent, deleted and someone else's, so a caller cannot probe
        * which session ids exist. Ownership is checked before tier for the same reason.

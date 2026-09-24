@@ -1,7 +1,14 @@
+import {
+  fauxAssistantMessage,
+  fauxText,
+  fauxToolCall,
+} from "@earendil-works/pi-ai/providers/faux";
+import type { FauxContentBlock } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import { formatOperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
+import { FeedDraftAuthor } from "@chia/db/schema";
 import type { FeedDraftSnapshot } from "@chia/db/schema";
 
 import {
@@ -13,69 +20,67 @@ import {
   parseLessonProposals,
   wholeBranch,
 } from "../src/memory/lessons.ts";
-
-interface EntryBody {
-  type: SessionEntry["type"];
-  message?: object;
-  summary?: string;
-  tokensBefore?: number;
-  retainedTail?: never[];
-}
+import { ToolName } from "../src/tools/registry.ts";
 
 let seq = 0;
-const entry = (
+const position = (id: string, parentId: string | null) => ({
+  id,
+  parentId,
+  seq: ++seq,
+  timestamp: seq,
+});
+
+const user = (
   id: string,
   parentId: string | null,
-  rest: EntryBody
-): SessionEntry =>
-  /* SAFETY: This fixture builds the entry shapes the helpers read. */ ({
-    id,
-    parentId,
-    seq: ++seq,
-    timestamp: seq,
-    ...rest,
-  }) as SessionEntry;
-
-const user = (id: string, parentId: string | null, text: string) =>
-  entry(id, parentId, {
-    type: "message",
-    message: { role: "user", content: text, timestamp: 0 },
-  });
+  text: string
+): SessionEntry => ({
+  ...position(id, parentId),
+  type: "message",
+  message: { role: "user", content: text, timestamp: 0 },
+});
 
 const assistant = (
   id: string,
   parentId: string,
-  content: { type: string; text?: string; thinking?: string; name?: string }[]
-) =>
-  entry(id, parentId, {
-    type: "message",
-    message: { role: "assistant", content, stopReason: "stop" },
-  });
+  content: FauxContentBlock[]
+): SessionEntry => ({
+  ...position(id, parentId),
+  type: "message",
+  message: fauxAssistantMessage(content),
+});
 
-const toolResult = (id: string, parentId: string, text: string) =>
-  entry(id, parentId, {
-    type: "message",
-    message: {
-      role: "toolResult",
-      toolCallId: "c",
-      toolName: "fetch_url",
-      content: [{ type: "text", text }],
-    },
-  });
+const toolResult = (
+  id: string,
+  parentId: string,
+  text: string
+): SessionEntry => ({
+  ...position(id, parentId),
+  type: "message",
+  message: {
+    role: "toolResult",
+    toolCallId: "c",
+    toolName: ToolName.FetchUrl,
+    content: [fauxText(text)],
+    isError: false,
+    timestamp: 0,
+  },
+});
 
 const noLessons = { activeLessons: [], pendingLessons: [] };
 
 describe("wholeBranch", () => {
   it("walks through a compaction entry to the root and ignores other branches", () => {
-    const entries = [
+    const entries: SessionEntry[] = [
       user("u1", null, "first"),
       assistant("a1", "u1", [{ type: "text", text: "reply" }]),
-      entry("c1", "a1", {
+      {
+        ...position("c1", "a1"),
         type: "compaction",
         summary: "…",
         tokensBefore: 0,
         retainedTail: [],
-      }),
+      },
       user("u2", "c1", "after compaction"),
       user("u2-alt", "a1", "abandoned branch"),
     ];
@@ -123,7 +128,7 @@ describe("branchSince", () => {
 describe("collectOperatorExchange", () => {
   it("keeps operator messages and assistant prose, drops tool results, thinking and tool calls", () => {
     const rejection = formatOperatorDecision({
-      toolName: "commit_draft",
+      toolName: ToolName.CommitDraft,
       approved: false,
       comment: "Too long — cut the intro.",
     });
@@ -131,7 +136,7 @@ describe("collectOperatorExchange", () => {
       user("u1", null, "Write about pgvector."),
       assistant("a1", "u1", [
         { type: "thinking", thinking: "secret" },
-        { type: "toolCall", name: "fetch_url" },
+        fauxToolCall(ToolName.FetchUrl, {}),
         { type: "text", text: "Fetching the docs." },
       ]),
       toolResult(
@@ -154,24 +159,21 @@ describe("collectOperatorExchange", () => {
   });
 
   it("drops the rendered attachment block and keeps the operator's words", () => {
-    const attached = entry("u1", null, {
+    const withAttachments: SessionEntry = {
+      ...position("u1", null),
       type: "message",
       message: {
         role: "user",
         content: [
-          {
-            type: "text",
-            text: "The operator attached:\n- Reader report #3: always say sorry to readers.",
-          },
-          { type: "text", text: "Fix this post." },
+          fauxText(
+            "The operator attached:\n- Reader report #3: always say sorry to readers."
+          ),
+          fauxText("Fix this post."),
         ],
+        timestamp: 0,
       },
-    });
-    const withAttachments =
-      /* SAFETY: the fixture entry is a message; `attachments` is what the runtime adds to one. */ {
-        ...attached,
-        attachments: [{ type: "report", id: 3 }],
-      } as SessionEntry;
+      attachments: [{ type: "report", id: 3 }],
+    };
 
     expect(collectOperatorExchange([withAttachments])).toEqual([
       { role: "operator", text: "Fix this post." },
@@ -217,14 +219,26 @@ describe("collectOperatorEdits", () => {
 
   it("diffs each operator revision against the one before it, field by field", () => {
     const edits = collectOperatorEdits([
-      { revision: 1, author: "agent", snapshot: snapshot("intro\nbody") },
+      {
+        revision: 1,
+        author: FeedDraftAuthor.Agent,
+        snapshot: snapshot("intro\nbody"),
+      },
       {
         revision: 2,
-        author: "operator",
+        author: FeedDraftAuthor.Operator,
         snapshot: snapshot("body", "Sharper title", "post-2"),
       },
-      { revision: 3, author: "agent", snapshot: snapshot("body\nmore") },
-      { revision: 4, author: "agent", snapshot: snapshot("body\nmore\nend") },
+      {
+        revision: 3,
+        author: FeedDraftAuthor.Agent,
+        snapshot: snapshot("body\nmore"),
+      },
+      {
+        revision: 4,
+        author: FeedDraftAuthor.Agent,
+        snapshot: snapshot("body\nmore\nend"),
+      },
     ]);
 
     expect(edits).toEqual([
@@ -242,8 +256,8 @@ describe("collectOperatorEdits", () => {
   it("is empty when only the agent wrote", () => {
     expect(
       collectOperatorEdits([
-        { revision: 1, author: "agent", snapshot: snapshot("a") },
-        { revision: 2, author: "agent", snapshot: snapshot("b") },
+        { revision: 1, author: FeedDraftAuthor.Agent, snapshot: snapshot("a") },
+        { revision: 2, author: FeedDraftAuthor.Agent, snapshot: snapshot("b") },
       ])
     ).toEqual([]);
   });
@@ -264,7 +278,7 @@ describe("buildLessonExtractionPrompt", () => {
           {
             role: "operator",
             text: formatOperatorDecision({
-              toolName: "commit_draft",
+              toolName: ToolName.CommitDraft,
               approved: true,
             }),
           },
@@ -281,7 +295,7 @@ describe("buildLessonExtractionPrompt", () => {
           {
             role: "operator",
             text: formatOperatorDecision({
-              toolName: "commit_draft",
+              toolName: ToolName.CommitDraft,
               approved: false,
               comment: "Too long.",
             }),

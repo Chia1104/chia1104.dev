@@ -14,16 +14,16 @@ import type {
 import type { ResourceIndexKey } from "@chia/db/repos/resources/stats";
 import {
   RESOURCE_INDEX_RUN_ACTIVE_STATUSES,
-  RESOURCE_INDEX_RUN_STATUS,
+  ResourceIndexRunStatus,
 } from "@chia/db/schema";
 import type {
   ResourceIndexRun,
   ResourceIndexRunProgress,
   ResourceIndexRunScope,
-  ResourceIndexRunStatus,
 } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
+import { WorkflowRunStatus } from "@chia/workflow-control/contract";
 
 /**
  * Operator-triggered index runs. Each gets a `resource_index_run` row so the dashboard
@@ -78,9 +78,9 @@ const isActive = (status: ResourceIndexRunStatus): boolean =>
   RESOURCE_INDEX_RUN_ACTIVE_STATUSES.includes(status);
 
 const TERMINAL_STATUSES: ResourceIndexRunTerminalStatus[] = [
-  RESOURCE_INDEX_RUN_STATUS.Completed,
-  RESOURCE_INDEX_RUN_STATUS.Failed,
-  RESOURCE_INDEX_RUN_STATUS.Cancelled,
+  ResourceIndexRunStatus.Completed,
+  ResourceIndexRunStatus.Failed,
+  ResourceIndexRunStatus.Cancelled,
 ];
 
 /**
@@ -150,13 +150,16 @@ export const reconcileIndexRun = async (
         return row;
       }
       // the World no longer has the run, so nothing will ever finalize it
-      return await finalize(db, row, RESOURCE_INDEX_RUN_STATUS.Failed, {
+      return await finalize(db, row, ResourceIndexRunStatus.Failed, {
         error: `Workflow run ${row.externalRunId} no longer exists.`,
       });
     }
 
     const status = run.status;
-    if (status === "pending" || status === "running") {
+    if (
+      status === WorkflowRunStatus.Pending ||
+      status === WorkflowRunStatus.Running
+    ) {
       return row;
     }
 
@@ -166,11 +169,7 @@ export const reconcileIndexRun = async (
      * active partial unique indexes, and free the target for a second run while the
      * first is still going.
      */
-    if (
-      !TERMINAL_STATUSES.includes(
-        /* SAFETY: The producer contract guarantees this value satisfies ResourceIndexRunTerminalStatus. */ status as ResourceIndexRunTerminalStatus
-      )
-    ) {
+    if (!TERMINAL_STATUSES.includes(status)) {
       reportError(
         new Error(`Unrecognised workflow run status: ${status}`),
         "Unrecognised workflow run status; leaving the row active",
@@ -185,8 +184,11 @@ export const reconcileIndexRun = async (
      * their result lands.
      */
     return await finalize(db, row, status, {
-      result: status === "completed" ? run.output : undefined,
-      error: status === "completed" ? null : `Workflow run ${status}.`,
+      result: status === WorkflowRunStatus.Completed ? run.output : undefined,
+      error:
+        status === WorkflowRunStatus.Completed
+          ? null
+          : `Workflow run ${status}.`,
     });
   } catch (error) {
     // A lookup failure is infrastructural; finalizing on it would bury a live run.

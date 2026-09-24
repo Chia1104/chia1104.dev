@@ -51,12 +51,11 @@ export function LoginForm(props: FormProps) {
     (formData: FormData) => {
       startTransition(async () => {
         const email = formData.get("email");
-        if (!email || !captchaToken) return;
+        if (!email || email instanceof File || !captchaToken) return;
 
         await authClient.signIn.magicLink(
           {
-            email:
-              /* SAFETY: The producer contract guarantees this value satisfies string. */ email as string,
+            email,
             callbackURL: getCurrentDomain(),
           },
           {
@@ -131,7 +130,7 @@ export function LoginForm(props: FormProps) {
               variant="outline"
               type="button"
               fullWidth
-              onPress={() => handleSocialLogin(Provider.github)}
+              onPress={() => handleSocialLogin(Provider.GitHub)}
               isDisabled={!captchaToken}
               isPending={isPending}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -146,7 +145,7 @@ export function LoginForm(props: FormProps) {
               variant="outline"
               type="button"
               fullWidth
-              onPress={() => handleSocialLogin(Provider.google)}
+              onPress={() => handleSocialLogin(Provider.Google)}
               isDisabled={!captchaToken}
               isPending={isPending}>
               <svg

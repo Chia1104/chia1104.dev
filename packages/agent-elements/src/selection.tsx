@@ -66,7 +66,7 @@ const readSelection = (
   // A range that ends at a block boundary reports an empty box; the last line has the real one.
   const rects = range.getClientRects();
   const box = range.getBoundingClientRect();
-  const last = rects.length > 0 ? rects[rects.length - 1]! : box;
+  const last = Array.from(rects).at(-1) ?? box;
   return {
     text,
     rect: {

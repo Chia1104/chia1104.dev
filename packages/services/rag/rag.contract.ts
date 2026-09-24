@@ -2,15 +2,16 @@ import { oc } from "@orpc/contract";
 import * as z from "zod";
 
 import {
-  RESOURCE_CHUNK_KIND,
-  RESOURCE_INDEX_RUN_SCOPE,
-  RESOURCE_INDEX_RUN_STATUS,
+  ChunkEmbeddingState,
+  ResourceChunkKind,
+  ResourceIndexRunScope,
+  ResourceIndexRunStatus,
 } from "@chia/db/schema";
 import { locale } from "@chia/db/schema/enums";
 
 import { withMetaSchema } from "../shared/schema";
 
-import { isResourceType, resourceTypes } from "./resource-types";
+import { isResourceType, ResourceType } from "./resource-types";
 
 /**
  * RPC-only; every consumer is the dashboard's browser client. Every output carries the
@@ -24,9 +25,9 @@ const indexKeyFields = {
   indexVersion: z.string(),
 };
 
-const chunkStateSchema = z.enum(["current", "stale", "missing"]);
+const chunkStateSchema = z.enum(ChunkEmbeddingState);
 
-const runStatusSchema = z.enum(RESOURCE_INDEX_RUN_STATUS);
+const runStatusSchema = z.enum(ResourceIndexRunStatus);
 
 const indexCountsSchema = z.object({
   total: z.number(),
@@ -42,14 +43,14 @@ const indexCountsSchema = z.object({
  */
 const resourceRefSchema = z.object({
   sourceType: z.string().refine(isResourceType, {
-    message: `Must be one of: ${resourceTypes.join(", ")}`,
+    message: `Must be one of: ${Object.values(ResourceType).join(", ")}`,
   }),
   sourceId: z.number().int().positive(),
 });
 
 const chunkStatusSchema = z.object({
   chunkId: z.number(),
-  kind: z.enum(RESOURCE_CHUNK_KIND),
+  kind: z.enum(ResourceChunkKind),
   chunkIndex: z.number(),
   headingPath: z.string().nullable(),
   tokenCount: z.number().nullable(),
@@ -100,7 +101,7 @@ const activeRunIdSchema = z.string().nullable();
 export const runSnapshotSchema = z.object({
   runId: z.string(),
   recordId: z.number(),
-  scope: z.enum(RESOURCE_INDEX_RUN_SCOPE),
+  scope: z.enum(ResourceIndexRunScope),
   sourceType: z.string().nullable(),
   sourceId: z.number().nullable(),
   feedId: z.number().nullable(),
@@ -159,7 +160,7 @@ export const getRagOverviewContract = oc
       ),
       byKind: z.array(
         z.object({
-          kind: z.enum(RESOURCE_CHUNK_KIND),
+          kind: z.enum(ResourceChunkKind),
           counts: indexCountsSchema,
         })
       ),
@@ -185,7 +186,7 @@ export const listRagChunksContract = oc
     z.object({
       sourceType: z.string().optional(),
       locale: z.enum(locale.enumValues).optional(),
-      kind: z.enum(RESOURCE_CHUNK_KIND).optional(),
+      kind: z.enum(ResourceChunkKind).optional(),
       state: chunkStateSchema.optional(),
       /** Substring match on `content`. */
       query: z.string().max(200).optional(),

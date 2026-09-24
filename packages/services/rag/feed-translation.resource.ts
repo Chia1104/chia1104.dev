@@ -6,10 +6,10 @@ import {
   hashEmbeddingInput,
 } from "@chia/ai/embeddings/utils";
 import type { DB } from "@chia/db/client";
-import { feeds, feedTranslations, RESOURCE_CHUNK_KIND } from "@chia/db/schema";
+import { feeds, feedTranslations, ResourceChunkKind } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 
-import { FEED_TRANSLATION_SOURCE_TYPE } from "./resource-types";
+import { ResourceType } from "./resource-types";
 import type {
   ChunkableResource,
   ResourceChunkInput,
@@ -76,7 +76,7 @@ const buildChunkSet = async (
   });
   if (card) {
     chunks.push({
-      kind: RESOURCE_CHUNK_KIND.Card,
+      kind: ResourceChunkKind.Card,
       chunkIndex: 0,
       content: card,
       contentHash: await hashEmbeddingInput(card),
@@ -86,7 +86,7 @@ const buildChunkSet = async (
   if (source.content) {
     for (const chunk of await chunkMarkdown({ content: source.content })) {
       chunks.push({
-        kind: RESOURCE_CHUNK_KIND.Section,
+        kind: ResourceChunkKind.Section,
         chunkIndex: chunk.chunkIndex,
         content: chunk.content,
         headingPath: chunk.headingPath,
@@ -111,7 +111,7 @@ const buildChunkSet = async (
 };
 
 export const feedTranslationResource: ChunkableResource = {
-  sourceType: FEED_TRANSLATION_SOURCE_TYPE,
+  sourceType: ResourceType.FeedTranslation,
 
   async buildChunks(db, sourceId) {
     const source = await loadSource(db, sourceId);
@@ -150,7 +150,7 @@ export const feedTranslationResource: ChunkableResource = {
       rows.map((row) => [
         row.id,
         {
-          sourceType: FEED_TRANSLATION_SOURCE_TYPE,
+          sourceType: ResourceType.FeedTranslation,
           sourceId: row.id,
           title: row.title,
           description: row.summary ?? row.description ?? row.excerpt ?? null,

@@ -1,13 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AgentTurnExecution } from "@chia/agent-runtime/types";
+import type { WritingConfig } from "@chia/agent-writing/config";
 import type { PrepareWritingTurnOptions } from "@chia/agent-writing/runtime";
 import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
-import type { WritingSessionConsolidation } from "@chia/db/repos/agent";
+import type {
+  WritingAgentSessionState,
+  WritingSessionConsolidation,
+} from "@chia/db/repos/agent";
 import type { FeedDraftRecord } from "@chia/db/repos/drafts";
+import { FeedDraftAuthor, FeedReportStatus } from "@chia/db/schema";
+import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 
-import type { AgentKindCaller, AgentTurnContext } from "../src/kind";
+import { callerOf, db, turnContextOf } from "./kind.fixture";
 
 const repo = vi.hoisted(() => ({
   copyWritingSessionDrafts: vi.fn(),
@@ -34,7 +40,7 @@ const reports = vi.hoisted(() => ({
 }));
 
 const runtime = vi.hoisted(() => ({
-  prepareWritingTurn: vi.fn(),
+  prepareWritingTurn: vi.fn<(options: PrepareWritingTurnOptions) => object>(),
 }));
 
 vi.mock("@chia/db/repos/agent", () => repo);
@@ -44,15 +50,7 @@ vi.mock("@chia/agent-writing/runtime", () => runtime);
 const { createWritingAgentExecutor, createWritingAgentKind } =
   await import("../src/writing");
 
-/* SAFETY: every repository call in this suite is mocked; nothing reaches the handle. */
-const db = {} as DB;
-
-const caller: AgentKindCaller =
-  /* SAFETY: the kind reads only `userId` and `adminId` from the caller. */ {
-    tier: CallerTier.Root,
-    userId: "author",
-    adminId: "author",
-  } as AgentKindCaller;
+const caller = callerOf(CallerTier.Root, "author");
 
 const record = (id: number, userId = "author"): FeedDraftRecord => ({
   id,
@@ -66,7 +64,7 @@ const record = (id: number, userId = "author"): FeedDraftRecord => ({
   contentHash: "hash",
   appliedRevisionId: null,
   appliedHash: null,
-  lastAuthor: "operator",
+  lastAuthor: FeedDraftAuthor.Operator,
   lastSessionId: null,
   createdAt: new Date("2026-09-05T00:00:00Z"),
   updatedAt: new Date("2026-09-05T00:00:00Z"),
@@ -166,7 +164,10 @@ describe("createWritingAgentKind state", () => {
   });
 
   it("admits a report that exists without touching its status", async () => {
-    reports.getFeedReport.mockResolvedValueOnce({ id: 3, status: "open" });
+    reports.getFeedReport.mockResolvedValueOnce({
+      id: 3,
+      status: FeedReportStatus.Open,
+    });
     await kind.state.attach?.(caller, db, "session-1", [
       { type: "report", id: 3 },
     ]);
@@ -215,37 +216,41 @@ describe("createWritingAgentExecutor", () => {
   const done: AgentTurnExecution = { status: "done" };
   const startMemoryConsolidation = vi.fn(async () => "wf-1");
   const cancelWorkflowRun = vi.fn(async () => undefined);
+  /** Stands in for every port method the simulated turn never calls. */
+  const unused = () =>
+    Promise.reject(new Error("The simulated turn never calls this port."));
   const executor = createWritingAgentExecutor({
     openDraft,
     listDrafts,
     adminId: () => "author",
-    createContentPort: ({ onCommitted }) =>
-      /* SAFETY: the simulated turn calls only `applyDraft` on the content port. */ ({
-        applyDraft: async () => {
-          onCommitted();
-          return { feedId: 5, slug: "post", created: false };
-        },
-      }) as never,
-    createMemoryPort: () =>
-      /* SAFETY: the simulated turn never calls the memory port. */ ({}) as never,
-    createWebPort: () =>
-      /* SAFETY: the simulated turn never calls the web port. */ ({}) as never,
-    createGitHubPort: () =>
-      /* SAFETY: the simulated turn never calls the GitHub port. */ ({}) as never,
+    createContentPort: ({ onCommitted }) => ({
+      ...createFakeContentReadPort<never, never>(),
+      applyDraft: async () => {
+        onCommitted();
+        return { feedId: 5, slug: "post", created: false };
+      },
+      setPublished: unused,
+    }),
+    createMemoryPort: () => ({
+      save: unused,
+      search: unused,
+      get: unused,
+      listBySession: unused,
+      listActiveLessons: unused,
+    }),
+    createWebPort: () => ({ search: unused, fetchPage: unused }),
+    createGitHubPort: () => ({
+      resolveRef: unused,
+      listTree: unused,
+      readFile: unused,
+    }),
     startMemoryConsolidation,
     cancelWorkflowRun,
   });
-  const context: AgentTurnContext<
-    { sessionId: string; drafts: never[] },
-    { instructions?: string }
-  > =
-    /* SAFETY: the kind reads only the row, state, config, settings and db from the context. */ {
-      db,
-      row: { id: "session-1" },
-      state: { sessionId: "session-1", drafts: [] },
-      config: {},
-      settings: { autoApprove: [] },
-    } as never;
+  const context = turnContextOf<WritingAgentSessionState, WritingConfig>({
+    state: { sessionId: "session-1", drafts: [] },
+    config: {},
+  });
 
   /** Prepares the turn, lets `turn` stand in for Pi using the ports the kind built, then settles. */
   const runTurn = async (
@@ -253,12 +258,10 @@ describe("createWritingAgentExecutor", () => {
     turn?: (options: PrepareWritingTurnOptions) => Promise<void>
   ) => {
     runtime.prepareWritingTurn.mockReturnValue({});
-    const prepared = await executor.prepareTurn(
-      /* SAFETY: the executor is typed for the writing state and config this context carries. */ context as never
-    );
-    const [options] =
-      /* SAFETY: `prepareTurn` just called the mocked `prepareWritingTurn` with its options. */ runtime
-        .prepareWritingTurn.mock.lastCall as [PrepareWritingTurnOptions];
+    const prepared = await executor.prepareTurn(context);
+    const [options] = runtime.prepareWritingTurn.mock.lastCall ?? [];
+    if (!options)
+      throw new Error("prepareTurn did not prepare a writing turn.");
     await turn?.(options);
     await prepared.settle?.(execution);
   };

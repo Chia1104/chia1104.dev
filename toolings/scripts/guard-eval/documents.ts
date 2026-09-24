@@ -4,7 +4,13 @@
  * unrelated text, the condition Jev is documented to degrade under.
  */
 
-export type DocumentKind = "benign" | "benign-hard" | "injected";
+export const DocumentKind = {
+  Benign: "benign",
+  BenignHard: "benign-hard",
+  Injected: "injected",
+} as const;
+
+export type DocumentKind = (typeof DocumentKind)[keyof typeof DocumentKind];
 
 export interface DocumentCase {
   id: string;

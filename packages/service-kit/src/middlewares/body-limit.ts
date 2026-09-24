@@ -1,6 +1,6 @@
 import { createMiddleware } from "hono/factory";
 
-import { AppError } from "../errors";
+import { AppError, AppErrorCode } from "../errors";
 import type { ServiceHonoEnv } from "../hono";
 
 /**
@@ -20,7 +20,7 @@ export const bodyLimit = (maxSize: number) =>
       return next();
     }
 
-    const tooLarge = () => new AppError("PAYLOAD_TOO_LARGE");
+    const tooLarge = () => new AppError(AppErrorCode.PayloadTooLarge);
 
     const contentLength = raw.headers.get("content-length");
     if (contentLength !== null && !raw.headers.has("transfer-encoding")) {

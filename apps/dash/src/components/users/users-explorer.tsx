@@ -36,9 +36,23 @@ type UserRow = RouterOutputs["user"]["list"]["items"][number];
 const ANY = "any";
 const SEARCH_DEBOUNCE_MS = 300;
 
-const ROLE_VALUES = [ANY, Role.User, Role.Admin, Role.Root] as const;
-const STATE_VALUES = [ANY, "active", "banned"] as const;
-const KIND_VALUES = [ANY, "account", "guest"] as const;
+const UserState = {
+  Active: "active",
+  Banned: "banned",
+} as const;
+
+type UserState = (typeof UserState)[keyof typeof UserState];
+
+const UserKind = {
+  Account: "account",
+  Guest: "guest",
+} as const;
+
+type UserKind = (typeof UserKind)[keyof typeof UserKind];
+
+const ROLE_VALUES = [ANY, ...Object.values(Role)] as const;
+const STATE_VALUES = [ANY, ...Object.values(UserState)] as const;
+const KIND_VALUES = [ANY, ...Object.values(UserKind)] as const;
 
 const ROLE_OPTIONS: { id: (typeof ROLE_VALUES)[number]; label: string }[] = [
   { id: ANY, label: "Any role" },
@@ -49,14 +63,14 @@ const ROLE_OPTIONS: { id: (typeof ROLE_VALUES)[number]; label: string }[] = [
 
 const STATE_OPTIONS: { id: (typeof STATE_VALUES)[number]; label: string }[] = [
   { id: ANY, label: "Any status" },
-  { id: "active", label: "Active" },
-  { id: "banned", label: "Banned" },
+  { id: UserState.Active, label: "Active" },
+  { id: UserState.Banned, label: "Banned" },
 ];
 
 const KIND_OPTIONS: { id: (typeof KIND_VALUES)[number]; label: string }[] = [
   { id: ANY, label: "Accounts and guests" },
-  { id: "account", label: "Accounts" },
-  { id: "guest", label: "Guests" },
+  { id: UserKind.Account, label: "Accounts" },
+  { id: UserKind.Guest, label: "Guests" },
 ];
 
 const COLUMNS = [
@@ -80,11 +94,10 @@ const FilterSelect = <T extends string>({
   <Select
     aria-label={label}
     className="w-44"
-    onChange={(key) =>
-      /* SAFETY: The listbox only offers the ids in `options`. */ onChange(
-        String(key) as T
-      )
-    }
+    onChange={(key) => {
+      const option = options.find(({ id }) => id === key);
+      if (option) onChange(option.id);
+    }}
     value={value}>
     <Select.Trigger>
       <Select.Value />
@@ -117,8 +130,10 @@ export const UsersExplorer = () => {
     () => ({
       query: debouncedSearch || undefined,
       role: params.role === ANY ? undefined : params.role,
-      banned: params.state === ANY ? undefined : params.state === "banned",
-      anonymous: params.kind === ANY ? undefined : params.kind === "guest",
+      banned:
+        params.state === ANY ? undefined : params.state === UserState.Banned,
+      anonymous:
+        params.kind === ANY ? undefined : params.kind === UserKind.Guest,
     }),
     [debouncedSearch, params.role, params.state, params.kind]
   );
@@ -132,13 +147,10 @@ export const UsersExplorer = () => {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery(
-    orpc.user.list.infiniteOptions({
+    orpc.user.list.infiniteOptions<string | null>({
       input: (pageParam) => ({ ...filters, cursor: pageParam }),
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? null,
-      initialPageParam:
-        /* SAFETY: The producer contract guarantees this value satisfies string | null. */ null as
-          | string
-          | null,
+      initialPageParam: null,
     })
   );
 

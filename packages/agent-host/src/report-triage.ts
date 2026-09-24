@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import * as z from "zod";
 
 import { extractSections } from "@chia/ai/embeddings/markdown";
-import { FEED_REPORT_VERDICT } from "@chia/db/schema";
+import { FeedReportVerdict } from "@chia/db/schema";
 import type {
   FeedReport,
   FeedReportEdit,
@@ -143,12 +143,12 @@ export const buildReportTriagePrompt = async (
 };
 
 const replySchema = z.object({
-  verdict: z.enum(Object.values(FEED_REPORT_VERDICT)),
+  verdict: z.enum(FeedReportVerdict),
   summary: z.string().trim().min(1).max(2000),
   edits: z
     .array(
       z.object({
-        locale: z.enum(Object.values(Locale)),
+        locale: z.enum(Locale),
         find: z.string().min(1),
         replace: z.string(),
       })

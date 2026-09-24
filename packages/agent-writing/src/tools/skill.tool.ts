@@ -7,15 +7,15 @@ import type { ToolSpec } from "@chia/agent-runtime/tools";
 
 import { writingSkills } from "../prompts/skills.ts";
 
-import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
+import { TOOL_INFO_BY_NAME, ToolName } from "./registry.ts";
 
 /**
  * The only path from the skills index to a skill's full text. Pi's file-reading convention
  * has no tool here; going through a tool also records which rules were loaded.
  */
 export const readSkillSpec = {
-  name: TOOL_NAMES.readSkill,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.readSkill].label,
+  name: ToolName.ReadSkill,
+  label: TOOL_INFO_BY_NAME[ToolName.ReadSkill].label,
   description:
     "Load the full instructions of a skill listed in the system prompt. Read the matching skills " +
     "before writing a body or metadata — `mdx-authoring` for any body, the locale's tone skill " +

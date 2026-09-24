@@ -1,93 +1,108 @@
 import {
   CONTENT_TOOL_INFO_BY_NAME,
-  CONTENT_TOOL_NAMES,
+  ContentToolName,
 } from "@chia/agent-content/tools/registry";
 import type { AgentToolInfo } from "@chia/agent-runtime/types";
 
-import type { WritingToolTier } from "../types.ts";
+import { WritingToolTier } from "../types.ts";
 
 /**
  * Tool identity (name → label, tier and the state a call changes), kept apart from the tool
  * specs so the policy classifies a call without importing the tools.
  */
 
-export const TOOL_NAMES = {
-  readSkill: "read_skill",
-  ...CONTENT_TOOL_NAMES,
-  webSearch: "web_search",
-  fetchUrl: "fetch_url",
-  githubResolveRef: "github_resolve_ref",
-  githubListTree: "github_list_tree",
-  githubReadFile: "github_read_file",
-  searchMemory: "search_memory",
-  getMemory: "get_memory",
-  saveMemory: "save_memory",
-  proposeLesson: "propose_lesson",
-  listDrafts: "list_drafts",
-  newDraft: "new_draft",
-  openDraft: "open_draft",
-  readDraft: "read_draft",
-  writeDraft: "write_draft",
-  editDraftContent: "edit_draft_content",
-  replaceSection: "replace_section",
-  commitDraft: "commit_draft",
-  setPublished: "set_published",
+export const ToolName = {
+  ReadSkill: "read_skill",
+  ...ContentToolName,
+  WebSearch: "web_search",
+  FetchUrl: "fetch_url",
+  GitHubResolveRef: "github_resolve_ref",
+  GitHubListTree: "github_list_tree",
+  GitHubReadFile: "github_read_file",
+  SearchMemory: "search_memory",
+  GetMemory: "get_memory",
+  SaveMemory: "save_memory",
+  ProposeLesson: "propose_lesson",
+  ListDrafts: "list_drafts",
+  NewDraft: "new_draft",
+  OpenDraft: "open_draft",
+  ReadDraft: "read_draft",
+  WriteDraft: "write_draft",
+  EditDraftContent: "edit_draft_content",
+  ReplaceSection: "replace_section",
+  CommitDraft: "commit_draft",
+  SetPublished: "set_published",
 } as const;
 
-export type ToolName = (typeof TOOL_NAMES)[keyof typeof TOOL_NAMES];
+export type ToolName = (typeof ToolName)[keyof typeof ToolName];
 
 /** The session's drafts, as the session detail carries them. */
 const DRAFT_STATE = "draft";
 
 export const TOOL_INFO_BY_NAME = {
-  [TOOL_NAMES.readSkill]: { label: "Read skill", tier: "read" },
+  [ToolName.ReadSkill]: { label: "Read skill", tier: WritingToolTier.Read },
   ...CONTENT_TOOL_INFO_BY_NAME,
-  [TOOL_NAMES.webSearch]: { label: "Search web", tier: "read" },
-  [TOOL_NAMES.fetchUrl]: { label: "Fetch page", tier: "read" },
-  [TOOL_NAMES.githubResolveRef]: { label: "Resolve GitHub ref", tier: "read" },
-  [TOOL_NAMES.githubListTree]: { label: "List GitHub tree", tier: "read" },
-  [TOOL_NAMES.githubReadFile]: { label: "Read GitHub file", tier: "read" },
-  [TOOL_NAMES.searchMemory]: { label: "Search memory", tier: "read" },
-  [TOOL_NAMES.getMemory]: { label: "Read memory", tier: "read" },
-  [TOOL_NAMES.listDrafts]: { label: "List drafts", tier: "read" },
+  [ToolName.WebSearch]: { label: "Search web", tier: WritingToolTier.Read },
+  [ToolName.FetchUrl]: { label: "Fetch page", tier: WritingToolTier.Read },
+  [ToolName.GitHubResolveRef]: {
+    label: "Resolve GitHub ref",
+    tier: WritingToolTier.Read,
+  },
+  [ToolName.GitHubListTree]: {
+    label: "List GitHub tree",
+    tier: WritingToolTier.Read,
+  },
+  [ToolName.GitHubReadFile]: {
+    label: "Read GitHub file",
+    tier: WritingToolTier.Read,
+  },
+  [ToolName.SearchMemory]: {
+    label: "Search memory",
+    tier: WritingToolTier.Read,
+  },
+  [ToolName.GetMemory]: { label: "Read memory", tier: WritingToolTier.Read },
+  [ToolName.ListDrafts]: { label: "List drafts", tier: WritingToolTier.Read },
 
-  [TOOL_NAMES.saveMemory]: { label: "Save memory", tier: "draft" },
-  [TOOL_NAMES.proposeLesson]: { label: "Propose lesson", tier: "draft" },
-  [TOOL_NAMES.newDraft]: {
+  [ToolName.SaveMemory]: { label: "Save memory", tier: WritingToolTier.Draft },
+  [ToolName.ProposeLesson]: {
+    label: "Propose lesson",
+    tier: WritingToolTier.Draft,
+  },
+  [ToolName.NewDraft]: {
     label: "Start new draft",
-    tier: "draft",
+    tier: WritingToolTier.Draft,
     changes: DRAFT_STATE,
   },
-  [TOOL_NAMES.openDraft]: {
+  [ToolName.OpenDraft]: {
     label: "Open draft",
-    tier: "draft",
+    tier: WritingToolTier.Draft,
     changes: DRAFT_STATE,
   },
-  [TOOL_NAMES.readDraft]: { label: "Read draft", tier: "draft" },
-  [TOOL_NAMES.writeDraft]: {
+  [ToolName.ReadDraft]: { label: "Read draft", tier: WritingToolTier.Draft },
+  [ToolName.WriteDraft]: {
     label: "Write draft",
-    tier: "draft",
+    tier: WritingToolTier.Draft,
     changes: DRAFT_STATE,
   },
-  [TOOL_NAMES.editDraftContent]: {
+  [ToolName.EditDraftContent]: {
     label: "Edit draft body",
-    tier: "draft",
+    tier: WritingToolTier.Draft,
     changes: DRAFT_STATE,
   },
-  [TOOL_NAMES.replaceSection]: {
+  [ToolName.ReplaceSection]: {
     label: "Replace draft section",
-    tier: "draft",
+    tier: WritingToolTier.Draft,
     changes: DRAFT_STATE,
   },
 
-  [TOOL_NAMES.commitDraft]: {
+  [ToolName.CommitDraft]: {
     label: "Commit draft",
-    tier: "commit",
+    tier: WritingToolTier.Commit,
     changes: DRAFT_STATE,
   },
-  [TOOL_NAMES.setPublished]: {
+  [ToolName.SetPublished]: {
     label: "Change published state",
-    tier: "commit",
+    tier: WritingToolTier.Commit,
   },
 } as const satisfies Record<
   ToolName,
@@ -104,4 +119,4 @@ const isToolName = (toolName: string): toolName is ToolName =>
 export const toolInfo = (toolName: string): AgentToolInfo =>
   isToolName(toolName)
     ? TOOL_INFO_BY_NAME[toolName]
-    : { label: toolName, tier: "commit" };
+    : { label: toolName, tier: WritingToolTier.Commit };

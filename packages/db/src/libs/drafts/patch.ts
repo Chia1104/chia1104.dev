@@ -1,3 +1,5 @@
+import { pick } from "es-toolkit";
+
 import { applyEdits } from "@chia/utils/text";
 import type { ContentEdit, ExactReplaceFailure } from "@chia/utils/text";
 
@@ -5,19 +7,17 @@ import type {
   FeedDraftSnapshot,
   FeedDraftTranslationSnapshot,
   FeedType,
-  Locale,
 } from "../../schemas/schema.ts";
+import { Locale } from "../../types.ts";
 
 /** What a draft write may change and what it is checked against; no database in here. */
-
-export type StorableFeedType = Exclude<FeedType, "all">;
 
 /** `undefined` leaves a field alone; `null` clears it. */
 export type FeedDraftTranslationPatch = Partial<FeedDraftTranslationSnapshot>;
 
 export interface FeedDraftMetaPatch {
   slug?: string | null;
-  type?: StorableFeedType;
+  type?: FeedType;
   defaultLocale?: Locale;
   mainImage?: string | null;
 }
@@ -81,27 +81,20 @@ export const settleFeedDraftPatch = (
   | { ok: true; fields: FeedDraftFields }
   | { ok: false; rejected: FeedDraftRejectedChange[] } => {
   const rejected: FeedDraftRejectedChange[] = [];
-  const meta: Record<string, string | null> = {};
-  for (const field of definedKeys(input.meta ?? {}, META_FIELDS)) {
-    const value = input.meta?.[field] ?? null;
-    if (current[field] === value) continue;
+  const inputMeta = input.meta ?? {};
+  const metaFields: (keyof FeedDraftMetaPatch)[] = [];
+  for (const field of definedKeys(inputMeta, META_FIELDS)) {
+    if (current[field] === inputMeta[field]) continue;
     const base = input.base?.meta?.[field];
     if (base !== undefined && base !== current[field]) {
       rejected.push({ field, reason: "changed" });
       continue;
     }
-    meta[field] = value;
+    metaFields.push(field);
   }
 
   const translations: NonNullable<FeedDraftFields["translations"]> = {};
-  // SAFETY: patch translations and edits are keyed by Locale.
-  const locales = [
-    ...new Set([
-      ...Object.keys(input.translations ?? {}),
-      ...Object.keys(input.edits ?? {}),
-    ]),
-  ] as Locale[];
-  for (const locale of locales) {
+  for (const locale of Object.values(Locale)) {
     const held = current.translations[locale];
     const patch = input.translations?.[locale] ?? {};
     const next: FeedDraftTranslationPatch = {};
@@ -133,9 +126,8 @@ export const settleFeedDraftPatch = (
   }
 
   if (rejected.length > 0) return { ok: false, rejected };
-  // SAFETY: every key of `meta` is a META_FIELD whose value came from `input.meta`.
   return {
     ok: true,
-    fields: { meta: meta as FeedDraftMetaPatch, translations },
+    fields: { meta: pick(inputMeta, metaFields), translations },
   };
 };

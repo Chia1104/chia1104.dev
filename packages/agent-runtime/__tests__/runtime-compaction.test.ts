@@ -1,6 +1,8 @@
 import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
+import { AgentUsageSource } from "@chia/db/schema";
+
 import type { AgentUsageReport } from "../src/types.ts";
 
 import {
@@ -78,14 +80,14 @@ describe("runPiTurn compaction", () => {
     const branch = await fixture.branch();
     expect(reports).toEqual([
       {
-        source: "turn",
+        source: AgentUsageSource.Turn,
         providerId: "faux",
         modelId: "test-model",
         entryId: branch[1]?.id,
         usage: assistantUsageOf(branch[1]),
       },
       {
-        source: "turn",
+        source: AgentUsageSource.Turn,
         providerId: "faux",
         modelId: "test-model",
         entryId: branch[3]?.id,
@@ -111,11 +113,11 @@ describe("runPiTurn compaction", () => {
       (entry) => entry.type === "compaction"
     );
     expect(reports.map((report) => report.source)).toEqual([
-      "turn",
-      "compaction",
+      AgentUsageSource.Turn,
+      AgentUsageSource.Compaction,
     ]);
     expect(reports[1]).toEqual({
-      source: "compaction",
+      source: AgentUsageSource.Compaction,
       providerId: "faux",
       modelId: "test-model",
       entryId: compaction?.id,

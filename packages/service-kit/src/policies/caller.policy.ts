@@ -5,7 +5,7 @@ import type { Session } from "@chia/auth/types";
 import { X_CH_API_KEY } from "@chia/auth/utils";
 import { getAdminId } from "@chia/utils/config";
 
-import { AppError } from "../errors";
+import { AppError, AppErrorCode } from "../errors";
 
 import type { VerifiedApiKey } from "./apikey.policy";
 import { apiKeyPolicy, missingApiKeyScope } from "./apikey.policy";
@@ -66,7 +66,9 @@ const admit = (
   if (caller.tier < minTier) {
     return deny(
       new AppError(
-        caller.tier === CallerTier.Anonymous ? "UNAUTHORIZED" : "FORBIDDEN"
+        caller.tier === CallerTier.Anonymous
+          ? AppErrorCode.Unauthorized
+          : AppErrorCode.Forbidden
       )
     );
   }
@@ -100,10 +102,8 @@ export const callerPolicy = (
         return result;
       }
 
-      caller.apiKey = result.patch?.apiKey;
-      caller.tier = caller.apiKey
-        ? tierForApiKey(caller.apiKey, adminId)
-        : CallerTier.ApiKey;
+      caller.apiKey = result.patch.apiKey;
+      caller.tier = tierForApiKey(result.patch.apiKey, adminId);
     }
 
     if (hasSessionCredential(context.headers, context.session)) {
@@ -111,13 +111,10 @@ export const callerPolicy = (
       const result = await sessionPolicy({ allowAnonymous: true })(context);
 
       // An expired or absent cookie is an ordinary visitor, not an error.
-      if (result.ok && result.patch) {
+      if (result.ok) {
         caller.session = result.patch.session;
-        caller.tier =
-          /* SAFETY: The producer contract guarantees this value satisfies CallerTier. */ Math.max(
-            caller.tier,
-            tierForUser(result.patch.session.user, adminId)
-          ) as CallerTier;
+        const sessionTier = tierForUser(result.patch.session.user, adminId);
+        if (sessionTier > caller.tier) caller.tier = sessionTier;
       }
     }
 

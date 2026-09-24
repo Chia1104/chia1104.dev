@@ -1,6 +1,9 @@
 import type { ContentPort } from "@chia/agent-writing/ports";
 import type { DB } from "@chia/db/client";
-import { createContentReadPort } from "@chia/services/agent/content-read.port";
+import {
+  ContentVisibility,
+  createContentReadPort,
+} from "@chia/services/agent/content-read.port";
 import { applyFeedDraftService } from "@chia/services/feeds/draft.service";
 import { updateFeedService } from "@chia/services/feeds/write.service";
 
@@ -28,7 +31,7 @@ export const createAgentContentPort = (
   const read = createContentReadPort({
     db,
     authorId: adminId,
-    visibility: "author",
+    visibility: ContentVisibility.Author,
   });
 
   return {

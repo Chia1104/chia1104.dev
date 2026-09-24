@@ -22,8 +22,8 @@ const endpoint = new URL(
  */
 export const link = new RPCLink({
   origin: endpoint.origin,
-  /** SAFETY: `URL.pathname` always starts with `/`. */
-  url: endpoint.pathname as `/${string}`,
+  /** `URL.pathname` always starts with `/`, so this is the pathname unchanged. */
+  url: `/${endpoint.pathname.slice(1)}`,
   headers: async () => ({ cookie: (await headers()).get("cookie") ?? "" }),
 });
 

@@ -27,7 +27,7 @@ import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import type { TurnContextDraft } from "./prompts/system.ts";
 import { writingPromptTemplates } from "./prompts/templates.ts";
 import { commitPreflight } from "./tools/commit.tool.ts";
-import { TOOL_NAMES } from "./tools/registry.ts";
+import { ToolName } from "./tools/registry.ts";
 import { createWritingTools } from "./tools/tool-set.ts";
 import type { SessionDraftRef, WritingToolContext } from "./types.ts";
 
@@ -65,7 +65,7 @@ export const writingApprovalKeyOf =
   async (request: ToolCallRequest): Promise<string> => {
     const args = commitArgsSchema.safeParse(request.input).data ?? {};
     switch (request.toolName) {
-      case TOOL_NAMES.commitDraft: {
+      case ToolName.CommitDraft: {
         const draftId = args.draftId;
         try {
           const draft = await store.get(draftId ?? Number.NaN);
@@ -78,7 +78,7 @@ export const writingApprovalKeyOf =
           throw error;
         }
       }
-      case TOOL_NAMES.setPublished:
+      case ToolName.SetPublished:
         return `${request.toolName}:${args.feedId}:${args.published}`;
       default:
         return defaultApprovalKey(request);
@@ -290,7 +290,7 @@ export const prepareWritingTurn = (
         drafts,
         sessionMemories,
         lessons,
-        defaultLocale: Locale.zhTW,
+        defaultLocale: Locale.ZhTW,
         now: new Date(),
       });
     },

@@ -34,7 +34,7 @@ import { SignInRequired } from "./sign-in-required";
 /** House first: no setup. BYOK providers follow once the visitor registers a key. */
 const PROVIDER_ORDER = ["vercel-ai-gateway", "openai", "anthropic"];
 
-const agentLabelsOf = (locale: string) => (locale === Locale.EN ? enUS : zhTW);
+const agentLabelsOf = (locale: string) => (locale === Locale.En ? enUS : zhTW);
 
 /** The kind's floor moved under a live session; the session carries the new floor once refetched. */
 const isRefused = (error: Error | null): boolean =>

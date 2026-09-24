@@ -6,7 +6,7 @@ import type {
   PatchFeedDraftInput,
 } from "@chia/db/repos/drafts";
 import { settleFeedDraftPatch } from "@chia/db/repos/drafts/patch";
-import type { Locale } from "@chia/db/types";
+import { FeedType, Locale } from "@chia/db/types";
 
 /**
  * Fakes the drafts repo with the same write semantics as the real one: `undefined` leaves a
@@ -61,16 +61,16 @@ vi.mock("@chia/db/repos/drafts", () => ({
       };
     }
     const translations = { ...draft.translations };
-    for (const [locale, patch] of Object.entries(input.translations ?? {})) {
-      // SAFETY: the store only ever keys translations by Locale.
-      const key = locale as Locale;
-      translations[key] = {
+    for (const locale of Object.values(Locale)) {
+      const patch = input.translations?.[locale];
+      if (!patch) continue;
+      translations[locale] = {
         title: null,
         excerpt: null,
         description: null,
         content: null,
-        ...translations[key],
-        ...defined(patch ?? {}),
+        ...translations[locale],
+        ...defined(patch),
       };
     }
     const next = {
@@ -171,15 +171,17 @@ describe("PgDraftStore", () => {
 
   it("merges feed-level metadata the same way", async () => {
     const store = build();
-    await store.write(DRAFT_ID, { meta: { slug: "a-slug", type: "post" } });
+    await store.write(DRAFT_ID, {
+      meta: { slug: "a-slug", type: FeedType.Post },
+    });
     const next = await store.write(DRAFT_ID, {
-      meta: { slug: undefined, type: undefined, defaultLocale: "en" },
+      meta: { slug: undefined, type: undefined, defaultLocale: Locale.En },
     });
 
     expect(next).toMatchObject({
       slug: "a-slug",
-      type: "post",
-      defaultLocale: "en",
+      type: FeedType.Post,
+      defaultLocale: Locale.En,
     });
   });
 
@@ -211,7 +213,7 @@ describe("PgDraftStore", () => {
     await store.write(DRAFT_ID, {
       translations: { en: { content: "## Old" } },
     });
-    operatorWrites("en", { content: "## Operator version" });
+    operatorWrites(Locale.En, { content: "## Operator version" });
 
     await expect(
       store.write(DRAFT_ID, { translations: { en: { content: "## Stale" } } })
@@ -231,7 +233,7 @@ describe("PgDraftStore", () => {
   it("writes one locale while the operator keeps writing another", async () => {
     const store = build();
     await store.get(DRAFT_ID);
-    operatorWrites("zh-TW", { title: "標題", content: "內文" });
+    operatorWrites(Locale.ZhTW, { title: "標題", content: "內文" });
 
     const next = await store.write(DRAFT_ID, {
       translations: { en: { title: "Title", content: "## Translated" } },

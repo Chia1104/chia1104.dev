@@ -43,7 +43,7 @@ describe("useSearchFeeds", () => {
     vi.useFakeTimers();
     const { wrapper } = withQueryClient();
     const { result, rerender } = renderHook(
-      ({ value }) => useSearchFeeds(value, Locale.zhTW),
+      ({ value }) => useSearchFeeds(value, Locale.ZhTW),
       {
         initialProps: { value: "first" },
         wrapper,
@@ -67,7 +67,7 @@ describe("useSearchFeeds", () => {
   it("does not request a one-character query", () => {
     const { wrapper } = withQueryClient();
 
-    const { result } = renderHook(() => useSearchFeeds("x", Locale.zhTW), {
+    const { result } = renderHook(() => useSearchFeeds("x", Locale.ZhTW), {
       wrapper,
     });
 

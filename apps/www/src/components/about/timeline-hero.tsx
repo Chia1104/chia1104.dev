@@ -18,6 +18,10 @@ const TimelineTitle = memo(
         return `${t("timeline.education")} (${duration})`;
       case TimelineType.Other:
         return `${t("timeline.hello-world")} (${duration})`;
+      default: {
+        const _exhaustive: never = type;
+        return _exhaustive;
+      }
     }
   },
   (prev, next) => prev.type === next.type && prev.duration === next.duration

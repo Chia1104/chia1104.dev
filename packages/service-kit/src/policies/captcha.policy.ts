@@ -1,6 +1,6 @@
 import { logger } from "@chia/observability/logger";
 
-import { AppError } from "../errors";
+import { AppError, AppErrorCode } from "../errors";
 
 import type { Policy } from "./types";
 import { allow, deny } from "./types";
@@ -29,7 +29,7 @@ export const captchaPolicy = (options: CaptchaPolicyOptions): Policy => {
   return async (context) => {
     if (!options.token) {
       return deny(
-        new AppError("BAD_REQUEST", {
+        new AppError(AppErrorCode.BadRequest, {
           issues: [{ field: "captcha", message: CaptchaErrorCode.Required }],
         })
       );
@@ -44,7 +44,7 @@ export const captchaPolicy = (options: CaptchaPolicyOptions): Policy => {
       if (!result.success) {
         logger.warn({ code: CaptchaErrorCode.Failed }, "Captcha rejected");
         return deny(
-          new AppError("BAD_REQUEST", {
+          new AppError(AppErrorCode.BadRequest, {
             issues: [{ field: "captcha", message: CaptchaErrorCode.Failed }],
           })
         );
@@ -57,18 +57,20 @@ export const captchaPolicy = (options: CaptchaPolicyOptions): Policy => {
 
       // A provider misconfiguration is ours, not the caller's.
       if (!code) {
-        return deny(new AppError("INTERNAL_SERVER_ERROR", { cause: error }));
+        return deny(
+          new AppError(AppErrorCode.InternalServerError, { cause: error })
+        );
       }
 
       logger.warn({ code }, "Captcha rejected");
       return deny(
-        new AppError("BAD_REQUEST", {
+        new AppError(AppErrorCode.BadRequest, {
           issues: [{ field: "captcha", message: code }],
           cause: error,
         })
       );
     }
 
-    return allow();
+    return allow({});
   };
 };

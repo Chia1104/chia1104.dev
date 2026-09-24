@@ -4,6 +4,8 @@ import type { JsonObject } from "@chia/utils/json";
 
 import type { DB } from "../../client.ts";
 import {
+  AgentApprovalStatus,
+  AgentRunStatus,
   agentRuns,
   agentSessionEntries,
   agentSessions,
@@ -12,7 +14,6 @@ import {
   writingAgentSessionDrafts,
   writingAgentSessions,
 } from "../../schemas/schema.ts";
-import type { AgentRunStatus } from "../../schemas/schema.ts";
 
 export interface InsertAgentSessionDTO {
   id: string;
@@ -198,11 +199,11 @@ export const createAgentRun = async (
   await db.transaction(async (tx) => {
     await tx
       .update(agentRuns)
-      .set({ status: "completed", endedAt: new Date() })
+      .set({ status: AgentRunStatus.Completed, endedAt: new Date() })
       .where(
         and(
           eq(agentRuns.sessionId, input.sessionId),
-          eq(agentRuns.status, "active")
+          eq(agentRuns.status, AgentRunStatus.Active)
         )
       );
 
@@ -219,7 +220,7 @@ export const createAgentRun = async (
 
 export const getActiveAgentRun = async (db: DB, sessionId: string) =>
   await db.query.agentRuns.findFirst({
-    where: { sessionId, status: "active" },
+    where: { sessionId, status: AgentRunStatus.Active },
     orderBy: { startedAt: "desc" },
   });
 
@@ -264,7 +265,7 @@ export const claimAgentRunTurn = async (
         )
       )
       .for("update");
-    if (run?.status !== "active") return false;
+    if (run?.status !== AgentRunStatus.Active) return false;
     await tx
       .update(agentRuns)
       .set({
@@ -317,7 +318,7 @@ export const lockAgentUser = async (tx: DB, userId: string): Promise<void> => {
 const runningTurnsOf = (options: { userId: string; turnKey: string }) =>
   and(
     eq(agentSessions.userId, options.userId),
-    eq(agentRuns.status, "active"),
+    eq(agentRuns.status, AgentRunStatus.Active),
     sql`${agentRuns.metadata} -> ${options.turnKey} ->> 'running' = 'true'`
   );
 
@@ -352,7 +353,7 @@ export const listRunningAgentRuns = async (
 export const completeAgentRun = async (
   db: DB,
   runId: string,
-  status: Exclude<AgentRunStatus, "active">
+  status: Exclude<AgentRunStatus, typeof AgentRunStatus.Active>
 ) => {
   await db
     .update(agentRuns)
@@ -369,7 +370,7 @@ export const completeAgentRunIfUnbound = async (
   db: DB,
   runId: string,
   externalRunId: string,
-  status: Exclude<AgentRunStatus, "active">
+  status: Exclude<AgentRunStatus, typeof AgentRunStatus.Active>
 ): Promise<boolean> => {
   const rows = await db
     .update(agentRuns)
@@ -378,7 +379,7 @@ export const completeAgentRunIfUnbound = async (
       and(
         eq(agentRuns.id, runId),
         eq(agentRuns.externalRunId, externalRunId),
-        eq(agentRuns.status, "active")
+        eq(agentRuns.status, AgentRunStatus.Active)
       )
     )
     .returning({ id: agentRuns.id });
@@ -683,7 +684,9 @@ export const decideAgentApproval = async (
   const [row] = await db
     .update(agentToolApprovals)
     .set({
-      status: input.approved ? "approved" : "rejected",
+      status: input.approved
+        ? AgentApprovalStatus.Approved
+        : AgentApprovalStatus.Rejected,
       comment: input.comment ?? null,
       decidedBy: input.decidedBy ?? null,
       decidedAt: new Date(),
@@ -692,7 +695,7 @@ export const decideAgentApproval = async (
       and(
         eq(agentToolApprovals.sessionId, input.sessionId),
         eq(agentToolApprovals.toolCallId, input.toolCallId),
-        eq(agentToolApprovals.status, "pending")
+        eq(agentToolApprovals.status, AgentApprovalStatus.Pending)
       )
     )
     .returning();
@@ -729,7 +732,7 @@ export const listUnspentAgentApprovalKeys = async (
     .where(
       and(
         eq(agentToolApprovals.sessionId, sessionId),
-        eq(agentToolApprovals.status, "approved"),
+        eq(agentToolApprovals.status, AgentApprovalStatus.Approved),
         isNull(agentToolApprovals.consumedAt)
       )
     );
@@ -749,7 +752,7 @@ export const consumeAgentApproval = async (
       and(
         eq(agentToolApprovals.sessionId, sessionId),
         eq(agentToolApprovals.approvalKey, approvalKey),
-        eq(agentToolApprovals.status, "approved"),
+        eq(agentToolApprovals.status, AgentApprovalStatus.Approved),
         isNull(agentToolApprovals.consumedAt)
       )
     )

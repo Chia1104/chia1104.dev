@@ -5,20 +5,21 @@ import type {
   ExistingChunkRow,
   ResourceChunkInput,
 } from "../src/libs/resources/chunk.ts";
+import { ResourceChunkKind } from "../src/schemas/resources.schema.ts";
 
 let nextId = 1;
 const row = (
-  kind: string,
+  kind: ResourceChunkKind,
   chunkIndex: number,
   contentHash: string
 ): ExistingChunkRow => ({ id: nextId++, kind, chunkIndex, contentHash });
 
 const input = (
-  kind: string,
+  kind: ResourceChunkKind,
   chunkIndex: number,
   contentHash: string
 ): ResourceChunkInput => ({
-  kind: /* SAFETY: This fixture implements the ResourceChunkInput["kind"] members exercised by this case. */ kind as ResourceChunkInput["kind"],
+  kind,
   chunkIndex,
   content: `content-${contentHash}`,
   contentHash,
@@ -27,14 +28,14 @@ const input = (
 describe("planChunkReplacement", () => {
   it("keeps an identical chunk set fully unchanged", () => {
     const existing = [
-      row("card", 0, "c"),
-      row("section", 0, "a"),
-      row("section", 1, "b"),
+      row(ResourceChunkKind.Card, 0, "c"),
+      row(ResourceChunkKind.Section, 0, "a"),
+      row(ResourceChunkKind.Section, 1, "b"),
     ];
     const incoming = [
-      input("card", 0, "c"),
-      input("section", 0, "a"),
-      input("section", 1, "b"),
+      input(ResourceChunkKind.Card, 0, "c"),
+      input(ResourceChunkKind.Section, 0, "a"),
+      input(ResourceChunkKind.Section, 1, "b"),
     ];
 
     const plan = planChunkReplacement(existing, incoming);
@@ -48,15 +49,15 @@ describe("planChunkReplacement", () => {
   it("recognises an inserted paragraph as one insert plus moves, not a tail rewrite", () => {
     // A new section at index 1 shifts later sections. Under (kind, index) identity the whole tail would have re-embedded.
     const existing = [
-      row("section", 0, "a"),
-      row("section", 1, "b"),
-      row("section", 2, "c"),
+      row(ResourceChunkKind.Section, 0, "a"),
+      row(ResourceChunkKind.Section, 1, "b"),
+      row(ResourceChunkKind.Section, 2, "c"),
     ];
     const incoming = [
-      input("section", 0, "a"),
-      input("section", 1, "new"),
-      input("section", 2, "b"),
-      input("section", 3, "c"),
+      input(ResourceChunkKind.Section, 0, "a"),
+      input(ResourceChunkKind.Section, 1, "new"),
+      input(ResourceChunkKind.Section, 2, "b"),
+      input(ResourceChunkKind.Section, 3, "c"),
     ];
 
     const plan = planChunkReplacement(existing, incoming);
@@ -68,8 +69,14 @@ describe("planChunkReplacement", () => {
   });
 
   it("rewrites in place when content changes at a position", () => {
-    const existing = [row("section", 0, "a"), row("section", 1, "b")];
-    const incoming = [input("section", 0, "a"), input("section", 1, "b2")];
+    const existing = [
+      row(ResourceChunkKind.Section, 0, "a"),
+      row(ResourceChunkKind.Section, 1, "b"),
+    ];
+    const incoming = [
+      input(ResourceChunkKind.Section, 0, "a"),
+      input(ResourceChunkKind.Section, 1, "b2"),
+    ];
 
     const plan = planChunkReplacement(existing, incoming);
     expect(plan.unchanged).toHaveLength(1);
@@ -80,11 +87,11 @@ describe("planChunkReplacement", () => {
 
   it("removes rows for a shrunken document and moves the survivors", () => {
     const existing = [
-      row("section", 0, "a"),
-      row("section", 1, "b"),
-      row("section", 2, "c"),
+      row(ResourceChunkKind.Section, 0, "a"),
+      row(ResourceChunkKind.Section, 1, "b"),
+      row(ResourceChunkKind.Section, 2, "c"),
     ];
-    const incoming = [input("section", 0, "c")];
+    const incoming = [input(ResourceChunkKind.Section, 0, "c")];
 
     const plan = planChunkReplacement(existing, incoming);
     expect(plan.moved.map((m) => m.chunk.contentHash)).toEqual(["c"]);
@@ -95,11 +102,14 @@ describe("planChunkReplacement", () => {
   it("claims duplicate hashes one row at a time", () => {
     // the same content appears twice; each incoming duplicate must claim a
     // distinct row, and a third occurrence is an insert
-    const existing = [row("section", 0, "dup"), row("section", 1, "dup")];
+    const existing = [
+      row(ResourceChunkKind.Section, 0, "dup"),
+      row(ResourceChunkKind.Section, 1, "dup"),
+    ];
     const incoming = [
-      input("section", 0, "dup"),
-      input("section", 1, "dup"),
-      input("section", 2, "dup"),
+      input(ResourceChunkKind.Section, 0, "dup"),
+      input(ResourceChunkKind.Section, 1, "dup"),
+      input(ResourceChunkKind.Section, 2, "dup"),
     ];
 
     const plan = planChunkReplacement(existing, incoming);
@@ -109,8 +119,8 @@ describe("planChunkReplacement", () => {
   });
 
   it("does not cross kinds: a card never claims a section's row", () => {
-    const existing = [row("section", 0, "same")];
-    const incoming = [input("card", 0, "same")];
+    const existing = [row(ResourceChunkKind.Section, 0, "same")];
+    const incoming = [input(ResourceChunkKind.Card, 0, "same")];
 
     const plan = planChunkReplacement(existing, incoming);
     expect(plan.inserted).toHaveLength(1);

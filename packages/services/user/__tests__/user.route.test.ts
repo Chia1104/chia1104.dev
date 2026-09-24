@@ -1,6 +1,7 @@
 import { call } from "@orpc/server";
 import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest";
 
+import { FeedOrderBy } from "@chia/db/types";
 import { contextOf } from "@chia/test/context";
 import { stubTestEnv } from "@chia/test/env";
 import { it as orpcIt } from "@chia/test/orpc";
@@ -96,7 +97,7 @@ describe("user routes", () => {
         banned: true,
         anonymous: false,
         limit: 10,
-        orderBy: "createdAt",
+        orderBy: FeedOrderBy.CreatedAt,
         sortOrder: "desc",
       })
     );

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isUrl } from "./index";
+import { isEnumValue, isUrl } from "./index";
 
 describe("isUrl", () => {
   it("returns true for an https URL", () => {
@@ -29,5 +29,19 @@ describe("isUrl", () => {
         allowedProtocols: ["postgres"],
       })
     ).toBe(true);
+  });
+});
+
+describe("isEnumValue", () => {
+  const Color = { Red: "red", Blue: "blue" } as const;
+
+  it("accepts a member value", () => {
+    expect(isEnumValue(Color, "red")).toBe(true);
+  });
+
+  it("rejects a key, an unknown value and a number", () => {
+    expect(isEnumValue(Color, "Red")).toBe(false);
+    expect(isEnumValue(Color, "green")).toBe(false);
+    expect(isEnumValue(Color, 1)).toBe(false);
   });
 });

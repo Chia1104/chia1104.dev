@@ -1,3 +1,5 @@
+import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
+
 import type { MemoryPort } from "../ports.ts";
 import type {
   MemoryDetail,
@@ -34,9 +36,10 @@ export class InMemoryMemoryPort implements MemoryPort {
 
     // a `source` is keyed on its URL, like the partial unique index in Postgres
     const existing =
-      input.kind === "source" && sourceUrl
+      input.kind === AgentMemoryKind.Source && sourceUrl
         ? this.all.find(
-            (row) => row.kind === "source" && row.sourceUrl === sourceUrl
+            (row) =>
+              row.kind === AgentMemoryKind.Source && row.sourceUrl === sourceUrl
           )
         : undefined;
     if (existing) {
@@ -57,22 +60,26 @@ export class InMemoryMemoryPort implements MemoryPort {
     // a lesson is a proposal until the operator approves it, like the Postgres port; revising
     // a pending proposal archives it and the revision inherits what it superseded
     const revised =
-      input.kind === "lesson" && input.supersedesId !== undefined
+      input.kind === AgentMemoryKind.Lesson && input.supersedesId !== undefined
         ? this.rows.get(input.supersedesId)
         : undefined;
     const replacesPending =
-      revised?.kind === "lesson" && revised.status === "pending";
+      revised?.kind === AgentMemoryKind.Lesson &&
+      revised.status === AgentMemoryStatus.Pending;
     if (replacesPending) {
       this.rows.set(revised.id, {
         ...revised,
-        status: "archived",
+        status: AgentMemoryStatus.Archived,
         updatedAt: now,
       });
     }
     const row: StoredMemory = {
       id: this.nextId++,
       kind: input.kind,
-      status: input.kind === "lesson" ? "pending" : "active",
+      status:
+        input.kind === AgentMemoryKind.Lesson
+          ? AgentMemoryStatus.Pending
+          : AgentMemoryStatus.Active,
       title: input.title,
       content: input.content,
       sourceUrl,
@@ -81,7 +88,7 @@ export class InMemoryMemoryPort implements MemoryPort {
         ? revised.supersedesId
         : (input.supersedesId ?? null),
       reinforcements: replacesPending ? revised.reinforcements : 0,
-      fetchedAt: input.kind === "source" ? now : null,
+      fetchedAt: input.kind === AgentMemoryKind.Source ? now : null,
       sourceChangedAt: null,
       createdAt: now,
       updatedAt: now,
@@ -94,7 +101,7 @@ export class InMemoryMemoryPort implements MemoryPort {
     const query = input.query.trim().toLowerCase();
     if (!query) return Promise.resolve({ hits: [], answerable: null });
     const hits = this.all
-      .filter((row) => row.status !== "archived")
+      .filter((row) => row.status !== AgentMemoryStatus.Archived)
       .filter(
         (row) =>
           row.title.toLowerCase().includes(query) ||
@@ -131,7 +138,11 @@ export class InMemoryMemoryPort implements MemoryPort {
   listActiveLessons(limit: number): Promise<MemorySummary[]> {
     return Promise.resolve(
       this.all
-        .filter((row) => row.kind === "lesson" && row.status === "active")
+        .filter(
+          (row) =>
+            row.kind === AgentMemoryKind.Lesson &&
+            row.status === AgentMemoryStatus.Active
+        )
         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
         .slice(0, limit)
         .map(summaryOf)

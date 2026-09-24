@@ -120,7 +120,7 @@ export const preparePublicTurn = async (
   options: PreparePublicTurnOptions
 ): Promise<AgentTurnPlan> => {
   const profile = renderProfileBrief(await options.profile.listPublished(), {
-    locale: Locale.zhTW,
+    locale: Locale.ZhTW,
   });
 
   const webTools =
@@ -141,7 +141,7 @@ export const preparePublicTurn = async (
       report: options.report !== undefined,
     }),
     volatileContext: () =>
-      buildTurnContext({ defaultLocale: Locale.zhTW, now: new Date() }),
+      buildTurnContext({ defaultLocale: Locale.ZhTW, now: new Date() }),
     renderAttachments: (attachments) =>
       renderAttachments(options.content, attachments),
     screen: options.guard ? createMessageScreen(options.guard) : undefined,

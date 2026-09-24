@@ -25,7 +25,7 @@ import type { GuardProvider } from "@chia/ai/guard/provider";
 import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { getFeedById } from "@chia/db/repos/feeds";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 
 import { toolCapabilities } from "./kind";
 import type { AgentKindDefinition, AgentKindExecutor } from "./kind";
@@ -114,7 +114,7 @@ export const createPublicAgentKind = (): PublicAgentKind => ({
     async attach(_caller, db, _sessionId, attachments) {
       for (const attachment of attachments) {
         if (attachment.type === "draft" || attachment.type === "report") {
-          throw new AppError("BAD_REQUEST", {
+          throw new AppError(AppErrorCode.BadRequest, {
             message: `The public agent takes no "${attachment.type}" attachments.`,
           });
         }
@@ -122,7 +122,7 @@ export const createPublicAgentKind = (): PublicAgentKind => ({
           attachment.type === "selection" &&
           attachment.source.type !== "feed"
         ) {
-          throw new AppError("BAD_REQUEST", {
+          throw new AppError(AppErrorCode.BadRequest, {
             message: `The public agent takes no "${attachment.source.type}" selections.`,
           });
         }
@@ -130,7 +130,7 @@ export const createPublicAgentKind = (): PublicAgentKind => ({
           attachment.type === "feed" ? attachment.id : attachment.source.id;
         const feed = await getFeedById(db, { feedId, published: true });
         if (!feed) {
-          throw new AppError("NOT_FOUND", {
+          throw new AppError(AppErrorCode.NotFound, {
             message: `Unknown post: ${feedId}`,
           });
         }

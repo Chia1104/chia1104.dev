@@ -1,6 +1,8 @@
 import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
+import { AgentErrorKind } from "../src/types.ts";
+
 import {
   budget,
   build,
@@ -52,7 +54,7 @@ describe("runPiTurn budget", () => {
 
     expect(result).toMatchObject({
       status: "error",
-      error: { kind: "budget_exhausted" },
+      error: { kind: AgentErrorKind.BudgetExhausted },
     });
     expect(fixture.calls).toEqual(["0", "1", "2"]);
     expect(fixture.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
@@ -72,7 +74,7 @@ describe("runPiTurn budget", () => {
     expect(result).toMatchObject({
       status: "error",
       error: {
-        kind: "budget_exhausted",
+        kind: AgentErrorKind.BudgetExhausted,
         message: expect.stringMatching(/ran longer than/),
       },
     });

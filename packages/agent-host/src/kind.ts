@@ -1,5 +1,6 @@
 import type * as z from "zod";
 
+import type { PostFeedType } from "@chia/agent-content/types";
 import type { createAgentModels } from "@chia/agent-runtime/models";
 import type {
   AgentModel,
@@ -135,7 +136,7 @@ export interface AgentDraftPayload {
   appliedRevisionId: number | null;
   appliedHash: string | null;
   slug: string | null;
-  type: "post" | "note";
+  type: PostFeedType;
   defaultLocale: Locale;
   mainImage: string | null;
   translations: Partial<

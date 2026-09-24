@@ -1,6 +1,6 @@
 import { parse } from "hono/utils/cookie";
 
-import { AppError } from "../errors";
+import { AppError, AppErrorCode } from "../errors";
 
 import type { Policy } from "./types";
 import { allow, deny } from "./types";
@@ -21,7 +21,7 @@ export interface AiKeyPolicyOptions {
 }
 
 const missingKey = () =>
-  new AppError("UNAUTHORIZED", {
+  new AppError(AppErrorCode.Unauthorized, {
     issues: [{ field: "api_key", message: "Missing or invalid API key" }],
   });
 
@@ -52,7 +52,7 @@ export const aiKeyPolicy = (
       return allow({ [AI_AUTH_TOKEN]: apiKey });
     } catch (error) {
       return deny(
-        new AppError("UNAUTHORIZED", {
+        new AppError(AppErrorCode.Unauthorized, {
           issues: [{ field: "api_key", message: "Missing or invalid API key" }],
           cause: error,
         })

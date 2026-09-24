@@ -2,6 +2,33 @@ import { diffLines } from "diff";
 
 import type { ContentEdit } from "./index.ts";
 
+type DiffPart = ReturnType<typeof diffLines>[number];
+
+/** A run both texts share, or one change: lines removed, lines added, or a removal and the addition right after it. */
+type DiffHunk =
+  | { kind: "same"; part: DiffPart }
+  | { kind: "removed"; removed: DiffPart }
+  | { kind: "added"; added: DiffPart }
+  | { kind: "replaced"; removed: DiffPart; added: DiffPart };
+
+function* hunksOf(parts: readonly DiffPart[]): Generator<DiffHunk> {
+  let removed: DiffPart | undefined;
+  for (const part of parts) {
+    if (part.added) {
+      yield removed
+        ? { kind: "replaced", removed, added: part }
+        : { kind: "added", added: part };
+      removed = undefined;
+      continue;
+    }
+    if (removed) yield { kind: "removed", removed };
+    removed = undefined;
+    if (part.removed) removed = part;
+    else yield { kind: "same", part };
+  }
+  if (removed) yield { kind: "removed", removed };
+}
+
 /** Overlapping matches count too: a target that also starts one character earlier names two places. */
 const countOf = (haystack: string, needle: string): number => {
   let count = 0;
@@ -29,21 +56,13 @@ export const toEdits = (before: string, after: string): ContentEdit[] => {
   const edits: ContentEdit[] = [];
   let current = before;
   let cursor = 0;
-  const parts = diffLines(before, after);
-  for (let index = 0; index < parts.length; index += 1) {
-    const part = parts[index]!;
-    if (!part.added && !part.removed) {
-      cursor += part.value.length;
+  for (const hunk of hunksOf(diffLines(before, after))) {
+    if (hunk.kind === "same") {
+      cursor += hunk.part.value.length;
       continue;
     }
-    const removed = part.removed ? part.value : "";
-    const next = parts[index + 1];
-    const added = part.added
-      ? part.value
-      : part.removed && next?.added
-        ? next.value
-        : "";
-    if (part.removed && next?.added) index += 1;
+    const removed = "removed" in hunk ? hunk.removed.value : "";
+    const added = "added" in hunk ? hunk.added.value : "";
 
     let start = cursor;
     let end = cursor + removed.length;
@@ -73,9 +92,18 @@ export const toEdits = (before: string, after: string): ContentEdit[] => {
   return edits;
 };
 
+/** `Added` and `Modified` cover lines of `after`; `Deleted` marks the line that lines of `before` are gone above. */
+export const LineChangeKind = {
+  Added: "added",
+  Modified: "modified",
+  Deleted: "deleted",
+} as const;
+
+export type LineChangeKind =
+  (typeof LineChangeKind)[keyof typeof LineChangeKind];
+
 export interface LineChange {
-  /** `added` and `modified` cover lines of `after`; `deleted` marks the line that lines of `before` are gone above. */
-  kind: "added" | "modified" | "deleted";
+  kind: LineChangeKind;
   /** 1-based, in `after`. */
   startLine: number;
   endLine: number;
@@ -87,34 +115,44 @@ export const lineChangesOf = (before: string, after: string): LineChange[] => {
   const changes: LineChange[] = [];
   const lastLine = after.split("\n").length;
   let line = 1;
-  const parts = diffLines(before, after);
-  for (let index = 0; index < parts.length; index += 1) {
-    const part = parts[index]!;
-    const count = part.count ?? 0;
-    if (!part.added && !part.removed) {
-      line += count;
-      continue;
-    }
-    const next = parts[index + 1];
-    if (part.removed && next?.added) {
-      const added = next.count ?? 0;
-      changes.push({
-        kind: "modified",
-        startLine: line,
-        endLine: line + added - 1,
-      });
-      line += added;
-      index += 1;
-    } else if (part.added) {
-      changes.push({
-        kind: "added",
-        startLine: line,
-        endLine: line + count - 1,
-      });
-      line += count;
-    } else {
-      const at = Math.min(line, lastLine);
-      changes.push({ kind: "deleted", startLine: at, endLine: at });
+  for (const hunk of hunksOf(diffLines(before, after))) {
+    switch (hunk.kind) {
+      case "same":
+        line += hunk.part.count ?? 0;
+        break;
+      case "replaced": {
+        const added = hunk.added.count ?? 0;
+        changes.push({
+          kind: LineChangeKind.Modified,
+          startLine: line,
+          endLine: line + added - 1,
+        });
+        line += added;
+        break;
+      }
+      case "added": {
+        const added = hunk.added.count ?? 0;
+        changes.push({
+          kind: LineChangeKind.Added,
+          startLine: line,
+          endLine: line + added - 1,
+        });
+        line += added;
+        break;
+      }
+      case "removed": {
+        const at = Math.min(line, lastLine);
+        changes.push({
+          kind: LineChangeKind.Deleted,
+          startLine: at,
+          endLine: at,
+        });
+        break;
+      }
+      default: {
+        const _exhaustive: never = hunk;
+        void _exhaustive;
+      }
     }
   }
   return changes;
@@ -137,21 +175,13 @@ export const textChangesOf = (before: string, after: string): TextChange[] => {
   if (before === after) return [];
   const changes: TextChange[] = [];
   let offset = 0;
-  const parts = diffLines(before, after);
-  for (let index = 0; index < parts.length; index += 1) {
-    const part = parts[index]!;
-    if (!part.added && !part.removed) {
-      offset += part.value.length;
+  for (const hunk of hunksOf(diffLines(before, after))) {
+    if (hunk.kind === "same") {
+      offset += hunk.part.value.length;
       continue;
     }
-    const removed = part.removed ? part.value : "";
-    const next = parts[index + 1];
-    const added = part.added
-      ? part.value
-      : part.removed && next?.added
-        ? next.value
-        : "";
-    if (part.removed && next?.added) index += 1;
+    const removed = "removed" in hunk ? hunk.removed.value : "";
+    const added = "added" in hunk ? hunk.added.value : "";
 
     let head = 0;
     const limit = Math.min(removed.length, added.length);

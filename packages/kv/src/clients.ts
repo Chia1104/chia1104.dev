@@ -4,9 +4,7 @@ import { createPostgresKv } from "./adapters/postgres.ts";
 import { createRedisKv } from "./adapters/redis.ts";
 import { createValkeyKv } from "./adapters/valkey.ts";
 import { env } from "./env.ts";
-import { resolveCacheProvider } from "./provider.ts";
-
-export { resolveCacheProvider, type CacheProvider } from "./provider.ts";
+import { CacheProvider, resolveCacheProvider } from "./provider.ts";
 
 let kv: Keyv | null = null;
 
@@ -16,15 +14,15 @@ export const createKeyv = () => {
   }
 
   switch (resolveCacheProvider()) {
-    case "redis": {
+    case CacheProvider.Redis: {
       kv = createRedisKv();
       break;
     }
-    case "valkey": {
+    case CacheProvider.Valkey: {
       kv = createValkeyKv();
       break;
     }
-    case "postgres": {
+    case CacheProvider.Postgres: {
       kv = createPostgresKv();
       break;
     }

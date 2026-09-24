@@ -1,14 +1,25 @@
-import type {
-  PromptTemplate,
-  Skill,
-  ThinkingLevel,
-} from "@earendil-works/pi-agent-core";
+import type { PromptTemplate, Skill } from "@earendil-works/pi-agent-core";
 import type { Usage } from "@earendil-works/pi-ai";
+
+import type { AgentUsageSource } from "@chia/db/schema";
 
 import type { OperatorDecision } from "./wire/operator-decision.ts";
 import type { AgentAttachment } from "./wire/schema.ts";
 
-export type { PromptTemplate, Skill, ThinkingLevel };
+export type { PromptTemplate, Skill };
+
+/** Pi's reasoning levels, from none to the most; the compiler checks them wherever a level reaches Pi. */
+export const ThinkingLevel = {
+  Off: "off",
+  Minimal: "minimal",
+  Low: "low",
+  Medium: "medium",
+  High: "high",
+  XHigh: "xhigh",
+  Max: "max",
+} as const;
+
+export type ThinkingLevel = (typeof ThinkingLevel)[keyof typeof ThinkingLevel];
 
 export type ToolTier = string;
 
@@ -109,16 +120,20 @@ export interface AgentTurnMessage {
  * Why a turn failed, coarse enough for a client to pick the next step.
  * Closed vocabulary shared by the wire `error` event.
  */
+export const AgentErrorKind = {
+  Auth: "auth",
+  Quota: "quota",
+  RateLimited: "rate_limited",
+  ContextOverflow: "context_overflow",
+  BudgetExhausted: "budget_exhausted",
+  Refused: "refused",
+  ModelUnavailable: "model_unavailable",
+  Provider: "provider",
+  Internal: "internal",
+} as const;
+
 export type AgentErrorKind =
-  | "auth"
-  | "quota"
-  | "rate_limited"
-  | "context_overflow"
-  | "budget_exhausted"
-  | "refused"
-  | "model_unavailable"
-  | "provider"
-  | "internal";
+  (typeof AgentErrorKind)[keyof typeof AgentErrorKind];
 
 export interface AgentTurnError {
   kind: AgentErrorKind;
@@ -155,8 +170,6 @@ export type AgentTurnExecution =
   | { status: "awaiting_approval"; approval: ApprovalRequest }
   | { status: "error"; error: AgentTurnError };
 
-export type AgentUsageSource = "turn" | "compaction" | "branch_summary";
-
 /** The model that answered and what it charged. */
 export interface AgentModelUsage {
   providerId: string;
@@ -165,7 +178,8 @@ export interface AgentModelUsage {
 }
 
 export interface AgentUsageReport extends AgentModelUsage {
-  source: AgentUsageSource;
+  /** The runtime's own calls: turns, compactions and branch summaries. */
+  source: (typeof AgentUsageSource)["Turn" | "Compaction" | "BranchSummary"];
   /** The tree entry that carries this usage; appended before the report is made. */
   entryId: string;
 }

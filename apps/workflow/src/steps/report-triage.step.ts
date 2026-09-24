@@ -3,7 +3,7 @@ import {
   buildReportTriagePrompt,
   parseReportTriage,
 } from "@chia/agent-host/report-triage";
-import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
+import { AgentTaskId, resolveAgentTask } from "@chia/agent-host/tasks";
 import { FEED_TASK_USAGE_KIND, recordAgentUsage } from "@chia/agent-host/usage";
 import { connectDatabase } from "@chia/db/client";
 import type { DB } from "@chia/db/client";
@@ -12,7 +12,12 @@ import {
   setFeedReportTriage,
 } from "@chia/db/repos/feed-reports";
 import { getFeedForIndexing } from "@chia/db/repos/feeds";
-import type { FeedReport, FeedReportVerdict } from "@chia/db/schema";
+import {
+  AgentCredentialSource,
+  AgentUsageSource,
+  FeedReportVerdict,
+} from "@chia/db/schema";
+import type { FeedReport } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 import { env as emailEnv } from "@chia/integrations/email/env";
 import type { ReportEmail } from "@chia/integrations/email/report";
@@ -54,7 +59,7 @@ const runTriage = async (
   feed: TriageFeed
 ): Promise<ReportTriageStatus> => {
   const { completeText } = await import("@chia/agent-runtime/pi/complete");
-  const task = await resolveAgentTask(db, AGENT_TASK_IDS.reportTriage);
+  const task = await resolveAgentTask(db, AgentTaskId.ReportTriage);
 
   const reply = await completeText({
     models: task.models,
@@ -69,8 +74,8 @@ const runTriage = async (
       recordAgentUsage(db, {
         userId: feed.userId,
         kind: FEED_TASK_USAGE_KIND,
-        source: "triage",
-        credentialSource: "house",
+        source: AgentUsageSource.Triage,
+        credentialSource: AgentCredentialSource.House,
         ...usage,
       }),
   });
@@ -128,9 +133,9 @@ export const triageReportStep = async (
 triageReportStep.maxRetries = 0;
 
 const VERDICT_LABELS = {
-  likely_valid: "Likely valid",
-  needs_verification: "Needs verification",
-  not_valid: "Not valid",
+  [FeedReportVerdict.LikelyValid]: "Likely valid",
+  [FeedReportVerdict.NeedsVerification]: "Needs verification",
+  [FeedReportVerdict.NotValid]: "Not valid",
 } satisfies Record<FeedReportVerdict, string>;
 
 /** Reader text is indented as a quote so it reads as cited, never as the message itself. */

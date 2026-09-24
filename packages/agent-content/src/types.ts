@@ -140,9 +140,15 @@ export interface FetchedPage {
 }
 
 /** Search-engine recency window; the host maps it to the provider's filter syntax. */
-export type WebSearchRecency = (typeof WEB_SEARCH_RECENCIES)[number];
+export const WebSearchRecency = {
+  Day: "day",
+  Week: "week",
+  Month: "month",
+  Year: "year",
+} as const;
 
-export const WEB_SEARCH_RECENCIES = ["day", "week", "month", "year"] as const;
+export type WebSearchRecency =
+  (typeof WebSearchRecency)[keyof typeof WebSearchRecency];
 
 export interface WebSearchInput {
   query: string;

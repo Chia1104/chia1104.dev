@@ -9,16 +9,19 @@ import {
   vi,
 } from "vitest";
 
+import { ResourceIndexRunScope, ResourceIndexRunStatus } from "@chia/db/schema";
 import { contextOf } from "@chia/test/context";
 import { stubTestEnv } from "@chia/test/env";
 import { it as orpcIt } from "@chia/test/orpc";
 import { ADMIN_ID, sessionOf } from "@chia/test/session";
-import type { WorkflowControlClient } from "@chia/workflow-control/client";
+import { createWorkflowControlClient } from "@chia/workflow-control/client";
+import { WorkflowRunStatus } from "@chia/workflow-control/contract";
 
 import type { BaseOSContext } from "../../shared/context";
 import type * as ragRouteModule from "../rag.route";
+import { ResourceType } from "../resource-types";
 
-const { repo, workflow } = vi.hoisted(() => ({
+const { repo } = vi.hoisted(() => ({
   repo: {
     getRagOverview: vi.fn(),
     getEmbeddingKeyDistribution: vi.fn(),
@@ -34,14 +37,6 @@ const { repo, workflow } = vi.hoisted(() => ({
     finalizeResourceIndexRun: vi.fn(),
     countFeedTranslations: vi.fn(),
     countAgentMemories: vi.fn(),
-  },
-  workflow: {
-    startResourceIndex: vi.fn<WorkflowControlClient["startResourceIndex"]>(),
-    startFeedIndex: vi.fn<WorkflowControlClient["startFeedIndex"]>(),
-    startResourceReindex:
-      vi.fn<WorkflowControlClient["startResourceReindex"]>(),
-    cancelRun: vi.fn<WorkflowControlClient["cancelRun"]>(),
-    getRun: vi.fn<WorkflowControlClient["getRun"]>(),
   },
 }));
 
@@ -71,23 +66,31 @@ vi.mock("@chia/db/repos/resources/index-run", () => ({
   finalizeResourceIndexRun: repo.finalizeResourceIndexRun,
 }));
 
-const workflowClient: Partial<WorkflowControlClient> = workflow;
+const workflowClient = createWorkflowControlClient({
+  url: "http://workflow.test",
+  token: "test",
+  fetch: () => Promise.reject(new Error("unmocked workflow command")),
+});
+const workflow = {
+  startResourceIndex: vi.spyOn(workflowClient, "startResourceIndex"),
+  startFeedIndex: vi.spyOn(workflowClient, "startFeedIndex"),
+  startResourceReindex: vi.spyOn(workflowClient, "startResourceReindex"),
+  cancelRun: vi.spyOn(workflowClient, "cancelRun"),
+  getRun: vi.spyOn(workflowClient, "getRun"),
+};
 
 const it = orpcIt.extend("context", ({ session }) =>
-  contextOf<BaseOSContext>(session, {
-    /* SAFETY: This fixture implements the client member these routes exercise. */
-    workflow: workflowClient as BaseOSContext["workflow"],
-  })
+  contextOf<BaseOSContext>(session, { workflow: workflowClient })
 );
 
 const RUN_ROW = {
   id: 11,
   externalRunId: "wrun_1",
-  scope: "resource",
-  sourceType: "feed_translation",
+  scope: ResourceIndexRunScope.Resource,
+  sourceType: ResourceType.FeedTranslation,
   sourceId: 1,
   feedId: null,
-  status: "running",
+  status: ResourceIndexRunStatus.Running,
   model: "text-embedding-3-small",
   indexVersion: "v1",
   progress: null,
@@ -123,7 +126,7 @@ describe("rag routes", () => {
       counts: { total: 6, current: 2, stale: 2, missing: 2 },
       bySourceType: [
         {
-          sourceType: "feed_translation",
+          sourceType: ResourceType.FeedTranslation,
           counts: { total: 6, current: 2, stale: 2, missing: 2 },
         },
       ],
@@ -159,7 +162,7 @@ describe("rag routes", () => {
 
       const handle = await call(
         routes.indexResourceRoute,
-        { sourceType: "feed_translation", sourceId: 1 },
+        { sourceType: ResourceType.FeedTranslation, sourceId: 1 },
         { context }
       );
 
@@ -169,7 +172,7 @@ describe("rag routes", () => {
         reused: false,
       });
       expect(workflow.startResourceIndex).toHaveBeenCalledWith({
-        sourceType: "feed_translation",
+        sourceType: ResourceType.FeedTranslation,
         sourceId: 1,
       });
       expect(repo.claimResourceIndexRun).toHaveBeenCalledWith(
@@ -188,12 +191,12 @@ describe("rag routes", () => {
       workflow.getRun.mockResolvedValue({
         type: "run",
         exists: true,
-        status: "running",
+        status: WorkflowRunStatus.Running,
       });
 
       const handle = await call(
         routes.indexResourceRoute,
-        { sourceType: "feed_translation", sourceId: 1 },
+        { sourceType: ResourceType.FeedTranslation, sourceId: 1 },
         { context }
       );
 
@@ -211,12 +214,12 @@ describe("rag routes", () => {
       workflow.getRun.mockResolvedValue({
         type: "run",
         exists: true,
-        status: "completed",
+        status: WorkflowRunStatus.Completed,
         output: { chunks: 3 },
       });
       repo.finalizeResourceIndexRun.mockResolvedValue({
         ...RUN_ROW,
-        status: "completed",
+        status: ResourceIndexRunStatus.Completed,
         result: { chunks: 3 },
       });
 
@@ -226,13 +229,13 @@ describe("rag routes", () => {
         expect.anything(),
         expect.objectContaining({
           id: 11,
-          status: "completed",
+          status: ResourceIndexRunStatus.Completed,
           result: { chunks: 3 },
         })
       );
       expect(page.items[0]).toMatchObject({
         runId: "wrun_1",
-        status: "completed",
+        status: ResourceIndexRunStatus.Completed,
       });
     });
 
@@ -277,7 +280,7 @@ describe("rag routes", () => {
         await expect(
           call(
             routes.indexResourceRoute,
-            { sourceType: "feed_translation", sourceId: 1 },
+            { sourceType: ResourceType.FeedTranslation, sourceId: 1 },
             { context }
           )
         ).rejects.toMatchObject({ code: "FORBIDDEN" });
@@ -288,11 +291,10 @@ describe("rag routes", () => {
       await expect(
         call(
           routes.indexResourceRoute,
-          { sourceType: "feed_translation", sourceId: 1 },
+          { sourceType: ResourceType.FeedTranslation, sourceId: 1 },
           {
             context: contextOf<BaseOSContext>(null, {
-              /* SAFETY: This fixture implements the client member these routes exercise. */
-              workflow: workflowClient as BaseOSContext["workflow"],
+              workflow: workflowClient,
             }),
           }
         )
@@ -349,7 +351,7 @@ describe("rag routes", () => {
         await expect(
           call(
             routes.getResourceIndexStatusRoute,
-            { sourceType: "feed_translation", sourceId: 1 },
+            { sourceType: ResourceType.FeedTranslation, sourceId: 1 },
             { context }
           )
         ).rejects.toMatchObject({ code: "FORBIDDEN" });
@@ -359,7 +361,7 @@ describe("rag routes", () => {
     it("still serves the configured admin", async ({ context }) => {
       const status = await call(
         routes.getResourceIndexStatusRoute,
-        { sourceType: "feed_translation", sourceId: 1 },
+        { sourceType: ResourceType.FeedTranslation, sourceId: 1 },
         { context }
       );
 

@@ -1,7 +1,10 @@
 import type { Tiktoken } from "js-tiktoken";
 
-import { cleanMdxKeepStructure, splitByHeadings } from "./markdown.ts";
-import type { MarkdownFormat } from "./markdown.ts";
+import {
+  MarkdownFormat,
+  cleanMdxKeepStructure,
+  splitByHeadings,
+} from "./markdown.ts";
 import { countEmbeddingTokens, loadTokenizer } from "./tokenizer.ts";
 import { truncateForEmbedding } from "./utils.ts";
 
@@ -155,7 +158,7 @@ export const chunkMarkdown = async (params: {
 }): Promise<MarkdownChunk[]> => {
   const cleaned = await cleanMdxKeepStructure(
     params.content,
-    params.format ?? "mdx"
+    params.format ?? MarkdownFormat.Mdx
   );
   if (!cleaned) {
     return [];
@@ -195,7 +198,10 @@ export const chunkMarkdown = async (params: {
   };
 
   // `cleaned` is canonical markdown whatever the source was
-  for (const section of await splitByHeadings(cleaned, "markdown")) {
+  for (const section of await splitByHeadings(
+    cleaned,
+    MarkdownFormat.Markdown
+  )) {
     if (section.level !== null && section.level <= GROUP_BOUNDARY_LEVEL) {
       flush();
     }

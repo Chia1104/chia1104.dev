@@ -1,6 +1,6 @@
 import { createWritingAgentExecutor } from "@chia/agent-host/writing";
 import { listOpenFeedDrafts } from "@chia/db/repos/drafts";
-import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
+import { FeedDraftAuthor } from "@chia/db/schema";
 import { openFeedDraftService } from "@chia/services/feeds/draft.service";
 import { getAdminId } from "@chia/utils/config";
 
@@ -15,7 +15,7 @@ export const writingAgentKind = createWritingAgentExecutor({
     openFeedDraftService(db, {
       adminId,
       feedId,
-      author: FEED_DRAFT_AUTHOR.Agent,
+      author: FeedDraftAuthor.Agent,
       sessionId,
     }),
   listDrafts: ({ db, adminId }) => listOpenFeedDrafts(db, adminId),

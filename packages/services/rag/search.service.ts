@@ -14,9 +14,8 @@ import { logger } from "@chia/observability/logger";
 import { truncateEnd } from "@chia/utils/format";
 
 import { getResourceAdapter } from "./registry";
+import { ResourceSearchMode } from "./resource-types";
 import type { ResourceSummary } from "./types";
-
-export type ResourceSearchMode = "hybrid" | "bm25" | "semantic";
 
 export interface ResourceSearchHit extends ResourceHit {
   summary: ResourceSummary;
@@ -146,7 +145,7 @@ export const rerankHits = async (
 export async function searchResources({
   db,
   query,
-  mode = "hybrid",
+  mode = ResourceSearchMode.Hybrid,
   locale,
   sourceTypes,
   includeUnpublished = false,
@@ -174,13 +173,13 @@ export async function searchResources({
   const candidates = chunkLimit ?? Math.max(fetchLimit * 6, 30);
 
   let hits: ChunkHit[];
-  if (mode === "bm25") {
+  if (mode === ResourceSearchMode.Bm25) {
     hits = await searchChunksLexical(db, {
       ...scope,
       query,
       limit: candidates,
     });
-  } else if (mode === "semantic") {
+  } else if (mode === ResourceSearchMode.Semantic) {
     const provider = resolveEmbeddingProvider();
     hits = await searchChunksSemantic(db, {
       ...scope,

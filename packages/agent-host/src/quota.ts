@@ -3,8 +3,9 @@ import type { DB } from "@chia/db/client";
 import { countRunningAgentTurns, lockAgentUser } from "@chia/db/repos/agent";
 import { getAgentQuotaConfig } from "@chia/db/repos/agent/config";
 import { sumAgentUsageCost } from "@chia/db/repos/agent/usage";
-import type { AgentCredentialSource, AgentQuotaConfig } from "@chia/db/schema";
-import { AppError } from "@chia/service-kit/errors";
+import { AgentCredentialSource } from "@chia/db/schema";
+import type { AgentQuotaConfig } from "@chia/db/schema";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 import dayjs from "@chia/utils/day";
 
 import { AGENT_TURN_KEY } from "./execution";
@@ -50,7 +51,7 @@ export const AGENT_QUOTA_DEFAULTS: AgentQuota = {
 
 /** The bills a quota counts: the house account's only. */
 export const QUOTA_CREDENTIAL_SOURCES: readonly AgentCredentialSource[] = [
-  "house",
+  AgentCredentialSource.House,
 ];
 
 /** Tiers the quota never applies to. */
@@ -185,7 +186,7 @@ export const assertWithinAgentQuota = async (
   const standing = await readAgentQuotaStanding(db, caller.userId, now);
   if (standing.usedMicros < standing.quota.weeklyLimitMicros) return;
   const timeZone = standing.quota.resetTimeZone;
-  throw new AppError("QUOTA_EXCEEDED", {
+  throw new AppError(AppErrorCode.QuotaExceeded, {
     message: `Weekly usage limit of $${microsToUsd(standing.quota.weeklyLimitMicros)} reached. It resets ${formatReset(standing.period, timeZone)} (${timeZone}).`,
     data: {
       limitMicros: standing.quota.weeklyLimitMicros,
@@ -214,7 +215,7 @@ export const assertBelowRunningTurnCap = async (
     turnKey: AGENT_TURN_KEY,
   });
   if (running < quota.maxRunningTurns) return;
-  throw new AppError("TOO_MANY_REQUESTS", {
+  throw new AppError(AppErrorCode.TooManyRequests, {
     message:
       quota.maxRunningTurns === 0
         ? "New turns are closed right now."

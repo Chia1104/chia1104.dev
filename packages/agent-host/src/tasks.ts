@@ -1,5 +1,5 @@
 import {
-  AGENT_PROVIDERS,
+  AgentProvider,
   createAgentCatalog,
   createAgentModels,
   HOUSE_ACCESS,
@@ -71,20 +71,20 @@ export interface AgentTaskDefinition {
   readonly params?: AgentTaskParamsResolved;
 }
 
-export const AGENT_TASK_IDS = {
-  sessionTitle: "session.title",
-  sessionCompaction: "session.compaction",
-  sessionBranchSummary: "session.branch-summary",
-  writingLessons: "writing.lessons",
-  feedSummary: "feed.summary",
-  reportTriage: "report.triage",
+export const AgentTaskId = {
+  SessionTitle: "session.title",
+  SessionCompaction: "session.compaction",
+  SessionBranchSummary: "session.branch-summary",
+  WritingLessons: "writing.lessons",
+  FeedSummary: "feed.summary",
+  ReportTriage: "report.triage",
 } as const;
 
-export type AgentTaskId = (typeof AGENT_TASK_IDS)[keyof typeof AGENT_TASK_IDS];
+export type AgentTaskId = (typeof AgentTaskId)[keyof typeof AgentTaskId];
 
 export const AGENT_TASKS = {
-  [AGENT_TASK_IDS.sessionTitle]: {
-    id: AGENT_TASK_IDS.sessionTitle,
+  [AgentTaskId.SessionTitle]: {
+    id: AgentTaskId.SessionTitle,
     label: "Session title",
     description:
       "Condenses the first prompt of a session into the short title shown in the session list.",
@@ -92,22 +92,22 @@ export const AGENT_TASKS = {
     prompt: { default: SESSION_TITLE_SYSTEM_PROMPT },
     params: SESSION_TITLE_PARAMS,
   },
-  [AGENT_TASK_IDS.sessionCompaction]: {
-    id: AGENT_TASK_IDS.sessionCompaction,
+  [AgentTaskId.SessionCompaction]: {
+    id: AgentTaskId.SessionCompaction,
     label: "Compaction",
     description:
       "Summarises the transcript when it nears the model's context window, and on request.",
     defaultModel: "session",
   },
-  [AGENT_TASK_IDS.sessionBranchSummary]: {
-    id: AGENT_TASK_IDS.sessionBranchSummary,
+  [AgentTaskId.SessionBranchSummary]: {
+    id: AgentTaskId.SessionBranchSummary,
     label: "Branch summary",
     description:
       "Summarises the messages left behind by a rewind, when the operator asks to keep the gist.",
     defaultModel: "session",
   },
-  [AGENT_TASK_IDS.writingLessons]: {
-    id: AGENT_TASK_IDS.writingLessons,
+  [AgentTaskId.WritingLessons]: {
+    id: AgentTaskId.WritingLessons,
     label: "Lesson extraction",
     description:
       "Reads a finished writing session and proposes the lessons the operator taught the agent, for review.",
@@ -116,8 +116,8 @@ export const AGENT_TASKS = {
     prompt: { default: LESSON_EXTRACTION_SYSTEM_PROMPT },
     params: LESSON_EXTRACTION_PARAMS,
   },
-  [AGENT_TASK_IDS.feedSummary]: {
-    id: AGENT_TASK_IDS.feedSummary,
+  [AgentTaskId.FeedSummary]: {
+    id: AgentTaskId.FeedSummary,
     label: "Post summary",
     description:
       "Writes the abstract shown above a published post, one per language, when the editor asks for it.",
@@ -125,8 +125,8 @@ export const AGENT_TASKS = {
     prompt: { default: FEED_SUMMARY_SYSTEM_PROMPT },
     params: FEED_SUMMARY_PARAMS,
   },
-  [AGENT_TASK_IDS.reportTriage]: {
-    id: AGENT_TASK_IDS.reportTriage,
+  [AgentTaskId.ReportTriage]: {
+    id: AgentTaskId.ReportTriage,
     label: "Report triage",
     description:
       "Reads a reader's correction against the published post and suggests exact edits for review, before the report reaches the inbox.",
@@ -149,7 +149,7 @@ export const getAgentTaskDefinition = (
 
 /** House-billed, so the gateway only; a task never rides a caller's key. */
 export const isAgentTaskModel: AgentModelPredicate = (ref) =>
-  ref.providerId === AGENT_PROVIDERS.gateway;
+  ref.providerId === AgentProvider.Gateway;
 
 /** Throws `UnknownAgentModelError` when the pair is off the house catalogue. */
 export const assertAgentTaskModel = (ref: AgentModelRef): void => {

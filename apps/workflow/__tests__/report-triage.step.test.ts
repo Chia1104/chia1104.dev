@@ -1,24 +1,30 @@
 import { describe, expect, it } from "vitest";
 
+import {
+  FeedReportCategory,
+  FeedReportStatus,
+  FeedReportVerdict,
+} from "@chia/db/schema";
 import type { FeedReport } from "@chia/db/schema";
+import { Locale } from "@chia/db/types";
 
 import { buildReportEmail } from "../src/steps/report-triage.step";
 
 const report: FeedReport = {
   id: 42,
   feedId: 3,
-  locale: "en",
+  locale: Locale.En,
   headingPath: "Setup",
   quote: "npm i foo@1",
-  category: "outdated",
+  category: FeedReportCategory.Outdated,
   claim: "foo 2 is out.\n<b>click http://evil.example</b>",
   assessment: "Plausible; the post pins foo 1.",
   suggestion: "npm i foo@2",
   reporterId: "reader",
   sessionId: "session-1",
-  status: "open",
+  status: FeedReportStatus.Open,
   triage: {
-    verdict: "needs_verification",
+    verdict: FeedReportVerdict.NeedsVerification,
     summary: "需要確認 foo 2 的安裝方式。",
     edits: [],
     droppedEdits: 0,

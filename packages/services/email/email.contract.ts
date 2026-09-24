@@ -1,9 +1,12 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
+import { appErrorIssuesSchema } from "../shared/schema";
+
 export const sendContactEmailContract = oc
   .errors({
-    BAD_REQUEST: {},
+    /** A rejected captcha; its code is the first issue's `message`. */
+    BAD_REQUEST: { data: appErrorIssuesSchema },
     TOO_MANY_REQUESTS: {},
     INTERNAL_SERVER_ERROR: {},
   })

@@ -1,6 +1,6 @@
 import type { DB } from "@chia/db/client";
 import { getFeedDraftStatus } from "@chia/db/repos/drafts";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 
 import type { FeedDraftBus } from "./draft-bus";
 import type { FeedDraftWatchEvent } from "./feeds.contract";
@@ -57,10 +57,10 @@ export const watchFeedDraft = async (
 ): Promise<AsyncGenerator<FeedDraftWatchEvent, void, void>> => {
   const initial = await getFeedDraftStatus(db, input.draftId);
   if (initial && initial.userId !== input.adminId) {
-    throw new AppError("NOT_FOUND", {
+    throw new AppError(AppErrorCode.NotFound, {
       message: `Draft ${input.draftId} not found`,
     });
   }
-  if (!input.bus) throw new AppError("SERVICE_UNAVAILABLE");
+  if (!input.bus) throw new AppError(AppErrorCode.ServiceUnavailable);
   return subscribe(input.bus, input);
 };

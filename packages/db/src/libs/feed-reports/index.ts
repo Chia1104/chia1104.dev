@@ -11,12 +11,11 @@ import {
 import type {
   FeedReport,
   FeedReportCategory,
-  FeedReportStatus,
   FeedReportTriage,
   FeedType,
   Locale,
 } from "../../schemas/schema.ts";
-import { FEED_REPORT_STATUS } from "../../schemas/schema.ts";
+import { FeedReportStatus } from "../../schemas/schema.ts";
 
 export interface FeedReportInsert {
   feedId: number;
@@ -180,11 +179,11 @@ export const resolveFeedReports = async (
 ): Promise<number> => {
   const rows = await db
     .update(feedReports)
-    .set({ status: FEED_REPORT_STATUS.Resolved })
+    .set({ status: FeedReportStatus.Resolved })
     .where(
       and(
         eq(feedReports.feedId, feedId),
-        eq(feedReports.status, FEED_REPORT_STATUS.InProgress)
+        eq(feedReports.status, FeedReportStatus.InProgress)
       )
     )
     .returning({ id: feedReports.id });

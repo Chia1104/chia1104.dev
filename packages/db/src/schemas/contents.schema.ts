@@ -1,4 +1,4 @@
-import type { InferSelectModel } from "drizzle-orm";
+import type { InferEnum, InferSelectModel } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
   bigint,
@@ -14,9 +14,9 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { timestamps, softDelete } from "../libs/common.schema.ts";
+import { FeedType, Locale } from "../types.ts";
 
 import { locale, feedType } from "./enums.ts";
-import type { FeedType, Locale } from "./enums.ts";
 import { pgTable } from "./table.ts";
 import { user } from "./user.schema.ts";
 
@@ -48,7 +48,7 @@ const baseFeedsColumns = {
   slug: text("slug").notNull().unique(),
   type: feedType("type").notNull(),
   published: boolean("published").default(false).notNull(),
-  defaultLocale: locale("default_locale").notNull().default("zh-TW"),
+  defaultLocale: locale("default_locale").notNull().default(Locale.ZhTW),
   ...timestamps,
   ...softDelete,
   userId: text("user_id")
@@ -118,8 +118,8 @@ export const feedDrafts = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     /** `null` until an English/ASCII slug is chosen; required to apply a new post. */
     slug: text("slug"),
-    type: feedType("type").notNull().default("post"),
-    defaultLocale: locale("default_locale").notNull().default("zh-TW"),
+    type: feedType("type").notNull().default(FeedType.Post),
+    defaultLocale: locale("default_locale").notNull().default(Locale.ZhTW),
     mainImage: text("main_image"),
     /** Orders writes; bumped under the row lock. `contentHash` is what identifies a version. */
     revision: integer("revision").notNull().default(1),
@@ -159,13 +159,13 @@ export const feedDraftTranslations = pgTable(
   (table) => [primaryKey({ columns: [table.draftId, table.locale] })]
 );
 
-export const FEED_DRAFT_AUTHOR = {
+export const FeedDraftAuthor = {
   Operator: "operator",
   Agent: "agent",
 } as const;
 
 export type FeedDraftAuthor =
-  (typeof FEED_DRAFT_AUTHOR)[keyof typeof FEED_DRAFT_AUTHOR];
+  (typeof FeedDraftAuthor)[keyof typeof FeedDraftAuthor];
 
 /** Which fields one revision touched; `locale` is absent for feed-level fields. */
 export interface FeedDraftChange {
@@ -183,13 +183,13 @@ export interface FeedDraftTranslationSnapshot {
 /** The editable half of a draft, as stored on a revision and restored from it. */
 export interface FeedDraftSnapshot {
   slug: string | null;
-  type: FeedType;
+  type: InferEnum<typeof feedType>;
   defaultLocale: Locale;
   mainImage: string | null;
   translations: Partial<Record<Locale, FeedDraftTranslationSnapshot>>;
 }
 
-export const FEED_DRAFT_REVISION_KIND = {
+export const FeedDraftRevisionKind = {
   /** A version the operator applied to the post. Listed as the draft's history, never pruned. */
   Commit: "commit",
   /** A restore point the write path keeps by itself; pruned unless pinned. */
@@ -197,7 +197,7 @@ export const FEED_DRAFT_REVISION_KIND = {
 } as const;
 
 export type FeedDraftRevisionKind =
-  (typeof FEED_DRAFT_REVISION_KIND)[keyof typeof FEED_DRAFT_REVISION_KIND];
+  (typeof FeedDraftRevisionKind)[keyof typeof FeedDraftRevisionKind];
 
 /**
  * Immutable snapshots of a draft. Between two consecutive rows only one writer wrote, the
@@ -252,7 +252,7 @@ export const feedsToTags = pgTable(
   ]
 );
 
-export const FEED_REPORT_CATEGORY = {
+export const FeedReportCategory = {
   /** A claim the post gets wrong. */
   Error: "error",
   /** Right when written, no longer current. */
@@ -265,9 +265,9 @@ export const FEED_REPORT_CATEGORY = {
 } as const;
 
 export type FeedReportCategory =
-  (typeof FEED_REPORT_CATEGORY)[keyof typeof FEED_REPORT_CATEGORY];
+  (typeof FeedReportCategory)[keyof typeof FeedReportCategory];
 
-export const FEED_REPORT_STATUS = {
+export const FeedReportStatus = {
   Open: "open",
   /** The operator took it up; applying the post's draft resolves it. */
   InProgress: "in_progress",
@@ -276,16 +276,16 @@ export const FEED_REPORT_STATUS = {
 } as const;
 
 export type FeedReportStatus =
-  (typeof FEED_REPORT_STATUS)[keyof typeof FEED_REPORT_STATUS];
+  (typeof FeedReportStatus)[keyof typeof FeedReportStatus];
 
-export const FEED_REPORT_VERDICT = {
+export const FeedReportVerdict = {
   LikelyValid: "likely_valid",
   NeedsVerification: "needs_verification",
   NotValid: "not_valid",
 } as const;
 
 export type FeedReportVerdict =
-  (typeof FEED_REPORT_VERDICT)[keyof typeof FEED_REPORT_VERDICT];
+  (typeof FeedReportVerdict)[keyof typeof FeedReportVerdict];
 
 /** One suggested replacement; `find` occurred exactly once in the published body when triaged. */
 export interface FeedReportEdit {
@@ -334,7 +334,7 @@ export const feedReports = pgTable(
     status: text("status")
       .$type<FeedReportStatus>()
       .notNull()
-      .default(FEED_REPORT_STATUS.Open),
+      .default(FeedReportStatus.Open),
     /** `null` until triage ran, and after a triage that produced nothing usable. */
     triage: jsonb("triage").$type<FeedReportTriage>(),
     ...timestamps,

@@ -2,6 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
 import type { FeedReportRecord } from "@chia/db/repos/feed-reports";
+import {
+  FeedDraftAuthor,
+  FeedReportCategory,
+  FeedReportStatus,
+  FeedReportVerdict,
+} from "@chia/db/schema";
+import { FeedType, Locale } from "@chia/db/types";
+import { AppErrorCode } from "@chia/service-kit/errors";
 
 const { reports, drafts } = vi.hoisted(() => ({
   reports: {
@@ -29,14 +37,14 @@ const db: DB =
 
 const record = (
   edits: NonNullable<FeedReportRecord["triage"]>["edits"],
-  status: FeedReportRecord["status"] = "open"
+  status: FeedReportRecord["status"] = FeedReportStatus.Open
 ): FeedReportRecord => ({
   id: 1,
   feedId: 5,
-  locale: "en",
+  locale: Locale.En,
   headingPath: null,
   quote: null,
-  category: "typo",
+  category: FeedReportCategory.Typo,
   claim: "teh",
   assessment: "It says teh.",
   suggestion: "the",
@@ -44,12 +52,12 @@ const record = (
   sessionId: "session-1",
   status,
   triage: {
-    verdict: "likely_valid",
+    verdict: FeedReportVerdict.LikelyValid,
     summary: "錯字。",
     edits,
     droppedEdits: 0,
   },
-  post: { slug: "a-post", type: "post", title: "A post" },
+  post: { slug: "a-post", type: FeedType.Post, title: "A post" },
   reporter: null,
   draftId: null,
   createdAt: new Date(0),
@@ -64,9 +72,9 @@ describe("applyReportEditsService", () => {
   it("patches every locale's suggestions against the revision it opened, then takes the report up", async () => {
     reports.getFeedReportRecord.mockResolvedValue(
       record([
-        { locale: "en", find: "teh", replace: "the" },
-        { locale: "zh-TW", find: "錯自", replace: "錯字" },
-        { locale: "en", find: "recieve", replace: "receive" },
+        { locale: Locale.En, find: "teh", replace: "the" },
+        { locale: Locale.ZhTW, find: "錯自", replace: "錯字" },
+        { locale: Locale.En, find: "recieve", replace: "receive" },
       ])
     );
 
@@ -77,25 +85,25 @@ describe("applyReportEditsService", () => {
     expect(drafts.openFeedDraftService).toHaveBeenCalledWith(db, {
       adminId: "admin",
       feedId: 5,
-      author: "operator",
+      author: FeedDraftAuthor.Operator,
     });
     expect(drafts.patchFeedDraftService).toHaveBeenCalledWith(db, {
       draftId: 9,
       adminId: "admin",
       expectedRevision: 4,
-      author: "operator",
+      author: FeedDraftAuthor.Operator,
       edits: {
-        en: [
+        [Locale.En]: [
           { oldString: "teh", newString: "the" },
           { oldString: "recieve", newString: "receive" },
         ],
-        "zh-TW": [{ oldString: "錯自", newString: "錯字" }],
+        [Locale.ZhTW]: [{ oldString: "錯自", newString: "錯字" }],
       },
     });
     expect(reports.setFeedReportStatus).toHaveBeenCalledWith(
       db,
       1,
-      "in_progress"
+      FeedReportStatus.InProgress
     );
   });
 
@@ -104,24 +112,27 @@ describe("applyReportEditsService", () => {
 
     await expect(
       applyReportEditsService(db, { id: 1, adminId: "admin" })
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    ).rejects.toMatchObject({ code: AppErrorCode.BadRequest });
     expect(drafts.openFeedDraftService).not.toHaveBeenCalled();
   });
 
   it("refuses a settled report rather than reopening it through the draft", async () => {
     reports.getFeedReportRecord.mockResolvedValue(
-      record([{ locale: "en", find: "teh", replace: "the" }], "dismissed")
+      record(
+        [{ locale: Locale.En, find: "teh", replace: "the" }],
+        FeedReportStatus.Dismissed
+      )
     );
 
     await expect(
       applyReportEditsService(db, { id: 1, adminId: "admin" })
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    ).rejects.toMatchObject({ code: AppErrorCode.BadRequest });
     expect(drafts.openFeedDraftService).not.toHaveBeenCalled();
   });
 
   it("leaves the report open when the draft refuses the patch", async () => {
     reports.getFeedReportRecord.mockResolvedValue(
-      record([{ locale: "en", find: "teh", replace: "the" }])
+      record([{ locale: Locale.En, find: "teh", replace: "the" }])
     );
     drafts.patchFeedDraftService.mockRejectedValueOnce(
       new Error("Edit 1 of 1 was not applied")

@@ -20,21 +20,19 @@ import type {
 
 import type { DB } from "../../client.ts";
 import type {
-  FeedDraftAuthor,
   FeedDraftChange,
   FeedDraftRevision,
-  FeedDraftRevisionKind,
   FeedDraftSnapshot,
   FeedDraftTranslationSnapshot,
-  Locale,
 } from "../../schemas/schema.ts";
 import {
-  FEED_DRAFT_AUTHOR,
-  FEED_DRAFT_REVISION_KIND,
+  FeedDraftAuthor,
+  FeedDraftRevisionKind,
   feedDraftRevisions,
   feedDrafts,
   feedDraftTranslations,
 } from "../../schemas/schema.ts";
+import { FeedType, Locale } from "../../types.ts";
 
 import { hashFeedDraftSnapshot } from "./hash.ts";
 import { FEED_DRAFT_CHANNEL } from "./notice.ts";
@@ -119,6 +117,16 @@ const translationsOf = (
   for (const row of rows) translations[row.locale] = translationOf(row);
   return translations;
 };
+
+/** One `feed_draft_translation` row per locale `translations` holds. */
+const translationRows = (
+  draftId: number,
+  translations: FeedDraftSnapshot["translations"]
+) =>
+  Object.values(Locale).flatMap((locale) => {
+    const translation = translations[locale];
+    return translation ? [{ draftId, locale, ...translation }] : [];
+  });
 
 const toRecord = (
   draft: typeof feedDrafts.$inferSelect,
@@ -327,14 +335,7 @@ export const diffFeedDraftSnapshots = (
   );
   if (metaFields.length > 0) changes.push({ fields: metaFields });
 
-  // SAFETY: snapshot translations are keyed by Locale.
-  const locales = [
-    ...new Set([
-      ...Object.keys(before?.translations ?? {}),
-      ...Object.keys(after.translations),
-    ]),
-  ] as Locale[];
-  for (const locale of locales) {
+  for (const locale of Object.values(Locale)) {
     const previous = before?.translations[locale];
     const next = after.translations[locale];
     const fields = TRANSLATION_FIELDS.filter(
@@ -432,18 +433,18 @@ const keepSafetyPoint = async (
     return;
 
   await recordRevision(tx, current, {
-    kind: FEED_DRAFT_REVISION_KIND.Safety,
+    kind: FeedDraftRevisionKind.Safety,
     latest,
   });
   await tx.delete(feedDraftRevisions).where(
     and(
       eq(feedDraftRevisions.draftId, current.id),
-      eq(feedDraftRevisions.kind, FEED_DRAFT_REVISION_KIND.Safety),
+      eq(feedDraftRevisions.kind, FeedDraftRevisionKind.Safety),
       eq(feedDraftRevisions.pinned, false),
       sql`${feedDraftRevisions.id} not in (
         select id from ${feedDraftRevisions}
         where ${feedDraftRevisions.draftId} = ${current.id}
-          and ${feedDraftRevisions.kind} = ${FEED_DRAFT_REVISION_KIND.Safety}
+          and ${feedDraftRevisions.kind} = ${FeedDraftRevisionKind.Safety}
           and ${feedDraftRevisions.pinned} = false
         order by ${feedDraftRevisions.id} desc
         limit ${MAX_SAFETY_POINTS_PER_DRAFT}
@@ -467,8 +468,8 @@ export const createFeedDraft = (
   db.transaction(async (tx) => {
     const snapshot: FeedDraftSnapshot = {
       slug: input.snapshot?.slug ?? null,
-      type: input.snapshot?.type ?? "post",
-      defaultLocale: input.snapshot?.defaultLocale ?? "zh-TW",
+      type: input.snapshot?.type ?? FeedType.Post,
+      defaultLocale: input.snapshot?.defaultLocale ?? Locale.ZhTW,
       mainImage: input.snapshot?.mainImage ?? null,
       translations: input.snapshot?.translations ?? {},
     };
@@ -489,28 +490,21 @@ export const createFeedDraft = (
       .returning();
     if (!draft) throw new Error("Creating the draft returned no row.");
 
-    const translations = Object.entries(snapshot.translations);
+    const translations = translationRows(draft.id, snapshot.translations);
     if (translations.length > 0) {
-      await tx.insert(feedDraftTranslations).values(
-        translations.map(([locale, translation]) => ({
-          draftId: draft.id,
-          locale:
-            /* SAFETY: snapshot translations are keyed by Locale. */ locale as Locale,
-          ...translation,
-        }))
-      );
+      await tx.insert(feedDraftTranslations).values(translations);
     }
 
     const record = (await readDraft(tx, draft.id))!;
     if (!input.applied) {
       await recordRevision(tx, record, {
-        kind: FEED_DRAFT_REVISION_KIND.Safety,
+        kind: FeedDraftRevisionKind.Safety,
         latest: null,
       });
       return record;
     }
     const commit = await recordRevision(tx, record, {
-      kind: FEED_DRAFT_REVISION_KIND.Commit,
+      kind: FeedDraftRevisionKind.Commit,
       message: "Opened from the post",
       latest: null,
     });
@@ -649,14 +643,11 @@ const writePatch = async (
   const metaFields = input.meta ? definedKeys(input.meta, META_FIELDS) : [];
   if (metaFields.length > 0) changes.push({ fields: metaFields });
 
-  const translationEntries = Object.entries(input.translations ?? {})
-    .map(([locale, patch]) => ({
-      locale:
-        /* SAFETY: patch translations are keyed by Locale. */ locale as Locale,
-      patch: patch ?? {},
-      fields: definedKeys(patch ?? {}, TRANSLATION_FIELDS),
-    }))
-    .filter((entry) => entry.fields.length > 0);
+  const translationEntries = Object.values(Locale).flatMap((locale) => {
+    const patch = input.translations?.[locale] ?? {};
+    const fields = definedKeys(patch, TRANSLATION_FIELDS);
+    return fields.length > 0 ? [{ locale, patch, fields }] : [];
+  });
   for (const entry of translationEntries) {
     changes.push({ locale: entry.locale, fields: entry.fields });
   }
@@ -749,19 +740,15 @@ export const replaceFeedDraft = (
     await tx
       .delete(feedDraftTranslations)
       .where(eq(feedDraftTranslations.draftId, input.draftId));
-    const translations = Object.entries(input.snapshot.translations);
+    const translations = translationRows(
+      input.draftId,
+      input.snapshot.translations
+    );
     const written =
       translations.length > 0
         ? await tx
             .insert(feedDraftTranslations)
-            .values(
-              translations.map(([locale, translation]) => ({
-                draftId: input.draftId,
-                locale:
-                  /* SAFETY: snapshot translations are keyed by Locale. */ locale as Locale,
-                ...translation,
-              }))
-            )
+            .values(translations)
             .returning()
         : [];
 
@@ -817,7 +804,7 @@ export const commitFeedDraft = (
         : "First version");
 
     const commit = await recordRevision(tx, draft, {
-      kind: FEED_DRAFT_REVISION_KIND.Commit,
+      kind: FeedDraftRevisionKind.Commit,
       message,
       latest: await latestRevision(tx, draft.id),
     });
@@ -926,8 +913,8 @@ export const getFeedDraftRevisionBase = async (
             lt(feedDraftRevisions.id, revision.id)
           )
         ),
-        revision.kind === FEED_DRAFT_REVISION_KIND.Commit
-          ? eq(feedDraftRevisions.kind, FEED_DRAFT_REVISION_KIND.Commit)
+        revision.kind === FeedDraftRevisionKind.Commit
+          ? eq(feedDraftRevisions.kind, FeedDraftRevisionKind.Commit)
           : undefined
       )
     )
@@ -957,7 +944,7 @@ export const pinFeedDraftRevision = async (
     .where(
       and(
         eq(feedDraftRevisions.id, input.revisionId),
-        eq(feedDraftRevisions.kind, FEED_DRAFT_REVISION_KIND.Safety),
+        eq(feedDraftRevisions.kind, FeedDraftRevisionKind.Safety),
         inArray(
           feedDraftRevisions.draftId,
           db
@@ -1132,17 +1119,20 @@ export const listFeedDraftChangesSince = async (
   }
 
   let changes: FeedDraftChange[] = [];
-  for (let index = 1; index < trail.length; index += 1) {
-    const entry = trail[index]!;
+  let previous: (typeof trail)[number] | undefined;
+  for (const entry of trail) {
+    const prior = previous;
+    previous = entry;
     if (
-      entry.author === FEED_DRAFT_AUTHOR.Agent &&
-      entry.sessionId === input.exceptSessionId
+      !prior ||
+      (entry.author === FeedDraftAuthor.Agent &&
+        entry.sessionId === input.exceptSessionId)
     ) {
       continue;
     }
     changes = mergeChanges(
       changes,
-      diffFeedDraftSnapshots(trail[index - 1]!.snapshot, entry.snapshot)
+      diffFeedDraftSnapshots(prior.snapshot, entry.snapshot)
     );
   }
   return changes;

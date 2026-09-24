@@ -12,6 +12,7 @@ import {
   OpenInTrigger,
   OpenInMarkdown,
   OpenInGemini,
+  Provider,
   providers,
 } from "@chia/ui/open-in-chat";
 
@@ -24,29 +25,29 @@ export const OpenInChat = ({ articleUrl }: { articleUrl: string }) => {
       })}
       providers={{
         ...providers,
-        markdown: {
-          ...providers.markdown,
+        [Provider.Markdown]: {
+          ...providers[Provider.Markdown],
           createUrl: () => articleUrl,
           title: t("view-as-markdown"),
         },
-        chatgpt: {
-          ...providers.chatgpt,
+        [Provider.ChatGPT]: {
+          ...providers[Provider.ChatGPT],
           title: t("open-in-chatgpt"),
         },
-        claude: {
-          ...providers.claude,
+        [Provider.Claude]: {
+          ...providers[Provider.Claude],
           title: t("open-in-claude"),
         },
-        gemini: {
-          ...providers.gemini,
+        [Provider.Gemini]: {
+          ...providers[Provider.Gemini],
           title: t("open-in-gemini"),
         },
-        t3: {
-          ...providers.t3,
+        [Provider.T3]: {
+          ...providers[Provider.T3],
           title: t("open-in-t3"),
         },
-        perplexity: {
-          ...providers.perplexity,
+        [Provider.Perplexity]: {
+          ...providers[Provider.Perplexity],
           title: t("open-in-perplexity"),
         },
       }}>

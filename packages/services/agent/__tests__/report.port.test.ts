@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
+import { FeedReportCategory } from "@chia/db/schema";
+import { Locale } from "@chia/db/types";
+import { AppErrorCode } from "@chia/service-kit/errors";
 
 import { createReportPort, FEED_REPORT_DAILY_LIMIT } from "../report.port";
 
@@ -28,8 +31,8 @@ const db: DB =
 
 const input = {
   slug: "hello-world",
-  locale: "en" as const,
-  category: "typo" as const,
+  locale: Locale.En,
+  category: FeedReportCategory.Typo,
   claim: '"teh" in the intro.',
   assessment: 'The intro does say "teh".',
 };
@@ -63,10 +66,10 @@ describe("createReportPort", () => {
     });
     expect(reports.createFeedReport).toHaveBeenCalledWith(db, {
       feedId: 3,
-      locale: "en",
+      locale: Locale.En,
       headingPath: null,
       quote: null,
-      category: "typo",
+      category: FeedReportCategory.Typo,
       claim: input.claim,
       assessment: input.assessment,
       suggestion: null,
@@ -103,7 +106,7 @@ describe("createReportPort", () => {
     feeds.getFeedBySlug.mockResolvedValueOnce(undefined);
 
     await expect(port().submit(input)).rejects.toMatchObject({
-      code: "NOT_FOUND",
+      code: AppErrorCode.NotFound,
     });
     expect(reports.createFeedReport).not.toHaveBeenCalled();
   });

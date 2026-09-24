@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { ProfileEntrySnapshot } from "@chia/agent-content/types";
+import { Locale, ProfileEntryKind } from "@chia/db/types";
 
 import { renderProfileBrief } from "../src/prompts/profile.ts";
 
 const about: ProfileEntrySnapshot = {
-  kind: "about",
+  kind: ProfileEntryKind.About,
   data: {
     translations: {
       "zh-TW": { title: "前端工程師", summary: "熱衷於現代網頁技術。" },
@@ -15,7 +16,7 @@ const about: ProfileEntrySnapshot = {
 };
 
 const leadbest: ProfileEntrySnapshot = {
-  kind: "experience",
+  kind: ProfileEntryKind.Experience,
   data: {
     organization: "LeadBest",
     location: "Taipei",
@@ -32,7 +33,7 @@ const leadbest: ProfileEntrySnapshot = {
 };
 
 const wanin: ProfileEntrySnapshot = {
-  kind: "experience",
+  kind: ProfileEntryKind.Experience,
   data: {
     organization: "WANIN",
     startDate: "2022-07-01",
@@ -45,7 +46,7 @@ const wanin: ProfileEntrySnapshot = {
 };
 
 const project: ProfileEntrySnapshot = {
-  kind: "project",
+  kind: ProfileEntryKind.Project,
   data: {
     repository: "https://github.com/Chia1104/chia1104.dev",
     stack: ["Next.js"],
@@ -56,7 +57,7 @@ const project: ProfileEntrySnapshot = {
 describe("renderProfileBrief", () => {
   it("renders about first, then sections in a fixed order, falling back across locales", () => {
     const brief = renderProfileBrief([project, wanin, leadbest, about], {
-      locale: "zh-TW",
+      locale: Locale.ZhTW,
     });
     expect(brief).toBe(
       [
@@ -87,18 +88,18 @@ describe("renderProfileBrief", () => {
   });
 
   it("is null with nothing to say and keeps only the first about entry", () => {
-    expect(renderProfileBrief([], { locale: "en" })).toBeNull();
-    const twice = renderProfileBrief([about, about], { locale: "en" });
+    expect(renderProfileBrief([], { locale: Locale.En })).toBeNull();
+    const twice = renderProfileBrief([about, about], { locale: Locale.En });
     expect(twice?.match(/### Frontend engineer/g)).toHaveLength(1);
   });
 
   it("drops bodies from the last entry backwards before cutting text", () => {
-    const full = renderProfileBrief([leadbest, wanin], { locale: "en" });
+    const full = renderProfileBrief([leadbest, wanin], { locale: Locale.En });
     expect(full).toContain("- Turborepo migration");
     expect(full).toContain("- 開發多鏈錢包");
 
     const trimmed = renderProfileBrief([leadbest, wanin], {
-      locale: "en",
+      locale: Locale.En,
       maxChars: (full?.length ?? 0) - 1,
     });
     expect(trimmed).not.toContain("- Turborepo migration");
@@ -107,7 +108,7 @@ describe("renderProfileBrief", () => {
     expect(trimmed).toContain("### Frontend engineer · WANIN");
 
     const cut = renderProfileBrief([leadbest, wanin], {
-      locale: "en",
+      locale: Locale.En,
       maxChars: 20,
     });
     expect(cut).toHaveLength(20);

@@ -9,7 +9,7 @@ import { resolveFeedLimit, resolveFeedVisibility } from "../access";
 const ADMIN_ID = "admin-1";
 
 const session = (userId: string) =>
-  /* SAFETY: This fixture implements the Session members exercised by this case. */ ({
+  /* SAFETY: `resolveFeedVisibility` reads only `session.user.id`. */ ({
     user: { id: userId },
   }) as Session;
 

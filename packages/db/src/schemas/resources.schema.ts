@@ -27,35 +27,30 @@ import { user } from "./user.schema.ts";
 const { paradedbIndex, paradedbField } = indexing;
 const { icu, simple } = tokenizer;
 
-/**
- * `@paradedb/drizzle-paradedb` resolves a separate `drizzle-orm` whose column types are not assignable here.
- * Casts derive their target from the helpers so they follow whichever instance the package resolves.
- */
-type ParadedbIndexArgs = Parameters<ReturnType<typeof paradedbIndex>["on"]>;
-const pdbKeyField = <TColumn>(column: TColumn) =>
-  // SAFETY: ParadeDB accepts the same Drizzle column at runtime across duplicated type instances.
-  column as ParadedbIndexArgs[0];
-const pdbField = <TColumn>(column: TColumn) =>
-  // SAFETY: ParadeDB accepts the same Drizzle column at runtime across duplicated type instances.
-  column as ParadedbIndexArgs[1];
-const pdbTokenized = <TColumn>(column: TColumn) =>
-  // SAFETY: ParadeDB accepts the same Drizzle column at runtime across duplicated type instances.
-  column as Parameters<typeof paradedbField>[0];
-
 /** Every source column that can own a chunk. Add one per new resource type. */
 const CHUNK_SOURCE_COLUMNS = [
   "feed_translation_id",
   "agent_memory_id",
 ] as const;
 
-export const RESOURCE_CHUNK_KIND = {
+export const ResourceChunkKind = {
   /** One per resource: title + summary + tags + outline. Bounded in size. */
   Card: "card",
   Section: "section",
 } as const;
 
 export type ResourceChunkKind =
-  (typeof RESOURCE_CHUNK_KIND)[keyof typeof RESOURCE_CHUNK_KIND];
+  (typeof ResourceChunkKind)[keyof typeof ResourceChunkKind];
+
+/** A chunk's vector against the current `(model, index_version)`: matching, outdated, or absent. */
+export const ChunkEmbeddingState = {
+  Current: "current",
+  Stale: "stale",
+  Missing: "missing",
+} as const;
+
+export type ChunkEmbeddingState =
+  (typeof ChunkEmbeddingState)[keyof typeof ChunkEmbeddingState];
 
 /**
  * Retrievable unit of any resource. `source_type` / `source_id` are generated from the nullable FKs so callers never pick a key column.
@@ -89,7 +84,7 @@ export const resourceChunks = pgTable(
       ),
 
     kind: text("kind", {
-      enum: [RESOURCE_CHUNK_KIND.Card, RESOURCE_CHUNK_KIND.Section],
+      enum: [ResourceChunkKind.Card, ResourceChunkKind.Section],
     }).notNull(),
     /** 0-based within `kind`; always 0 for a card. */
     chunkIndex: integer("chunk_index").notNull().default(0),
@@ -126,14 +121,14 @@ export const resourceChunks = pgTable(
      * `body_sub` (`simple`) splits dotted paths so a phrase query can reach the sub-identifier; query Chinese against `icu` only.
      */
     paradedbIndex("resource_chunk_bm25_idx").on(
-      pdbKeyField(table.id),
-      paradedbField(pdbTokenized(table.content), icu()),
-      paradedbField(pdbTokenized(table.content), simple({ alias: "body_sub" })),
-      pdbField(table.sourceType),
-      pdbField(table.kind),
-      pdbField(table.locale),
-      pdbField(table.published),
-      pdbField(table.deleted)
+      table.id,
+      paradedbField(table.content, icu()),
+      paradedbField(table.content, simple({ alias: "body_sub" })),
+      table.sourceType,
+      table.kind,
+      table.locale,
+      table.published,
+      table.deleted
     ),
   ]
 );
@@ -165,7 +160,7 @@ export const resourceEmbeddings = pgTable(
   ]
 );
 
-export const RESOURCE_INDEX_RUN_SCOPE = {
+export const ResourceIndexRunScope = {
   /** One `(source_type, source_id)` pair. */
   Resource: "resource",
   /** Every translation of one feed. */
@@ -175,9 +170,9 @@ export const RESOURCE_INDEX_RUN_SCOPE = {
 } as const;
 
 export type ResourceIndexRunScope =
-  (typeof RESOURCE_INDEX_RUN_SCOPE)[keyof typeof RESOURCE_INDEX_RUN_SCOPE];
+  (typeof ResourceIndexRunScope)[keyof typeof ResourceIndexRunScope];
 
-export const RESOURCE_INDEX_RUN_STATUS = {
+export const ResourceIndexRunStatus = {
   Pending: "pending",
   Running: "running",
   Completed: "completed",
@@ -186,12 +181,12 @@ export const RESOURCE_INDEX_RUN_STATUS = {
 } as const;
 
 export type ResourceIndexRunStatus =
-  (typeof RESOURCE_INDEX_RUN_STATUS)[keyof typeof RESOURCE_INDEX_RUN_STATUS];
+  (typeof ResourceIndexRunStatus)[keyof typeof ResourceIndexRunStatus];
 
 /** The statuses the partial unique indexes below treat as occupying a target. */
 export const RESOURCE_INDEX_RUN_ACTIVE_STATUSES: ResourceIndexRunStatus[] = [
-  RESOURCE_INDEX_RUN_STATUS.Pending,
-  RESOURCE_INDEX_RUN_STATUS.Running,
+  ResourceIndexRunStatus.Pending,
+  ResourceIndexRunStatus.Running,
 ];
 
 export interface ResourceIndexRunProgress {
@@ -221,7 +216,7 @@ export const resourceIndexRuns = pgTable(
     status: text("status")
       .$type<ResourceIndexRunStatus>()
       .notNull()
-      .default(RESOURCE_INDEX_RUN_STATUS.Pending),
+      .default(ResourceIndexRunStatus.Pending),
     triggeredBy: text("triggered_by").references(() => user.id),
     /** `EmbeddingProvider.id` this run embedded with. */
     model: text("model").notNull(),

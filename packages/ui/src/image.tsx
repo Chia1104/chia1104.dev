@@ -6,7 +6,8 @@ import { Skeleton } from "@heroui/react";
 
 import { Root, ResourceActivity, Fallback } from "@chiastack/ui/image";
 
-export type ImageProps = NextImageProps;
+/** `src` is a URL: the loading-status probe assigns it to an `<img>`. */
+export type ImageProps = Omit<NextImageProps, "src"> & { src: string };
 
 const Image = (
   props: ImageProps & {
@@ -16,10 +17,7 @@ const Image = (
   const { experimental_lazyLoading = true, ...rest } = props;
   return (
     <Root>
-      <ResourceActivity
-        src={
-          /* SAFETY: The producer contract guarantees this value satisfies string. */ props.src as string
-        }>
+      <ResourceActivity src={props.src}>
         <NextImage {...rest} aria-label={props.alt} />
       </ResourceActivity>
       {experimental_lazyLoading && (

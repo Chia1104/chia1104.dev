@@ -25,7 +25,7 @@ export type FeedOrderBy = (typeof FeedOrderBy)[keyof typeof FeedOrderBy];
 
 export const Locale = {
   En: "en",
-  zhTW: "zh-TW",
+  ZhTW: "zh-TW",
 } as const;
 
 export type Locale = (typeof Locale)[keyof typeof Locale];

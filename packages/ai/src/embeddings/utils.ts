@@ -1,5 +1,4 @@
-import { buildHeadingOutline, stripMdx } from "./markdown.ts";
-import type { MarkdownFormat } from "./markdown.ts";
+import { MarkdownFormat, buildHeadingOutline, stripMdx } from "./markdown.ts";
 
 /**
  * One dimension, one column. Changing this is a schema change plus a reindex.
@@ -17,13 +16,18 @@ export const EMBEDDING_INDEX_VERSION = "2026-09-01.1";
  * Asymmetric task. Models like nomic-embed-text need different prefixes for
  * documents (index time) and queries (search time).
  */
-export type EmbeddingTask = "search_document" | "search_query";
+export const EmbeddingTask = {
+  SearchDocument: "search_document",
+  SearchQuery: "search_query",
+} as const;
+
+export type EmbeddingTask = (typeof EmbeddingTask)[keyof typeof EmbeddingTask];
 
 /** Local model ids; used for Ollama task prefixes and model listing. */
 export const OllamaEmbeddingModel = {
-  "mxbai-embed-large": "mxbai-embed-large",
-  "nomic-embed-text": "nomic-embed-text",
-  "all-minilm": "all-minilm",
+  MxbaiEmbedLarge: "mxbai-embed-large",
+  NomicEmbedText: "nomic-embed-text",
+  AllMiniLM: "all-minilm",
 } as const;
 
 export type OllamaEmbeddingModel =
@@ -36,9 +40,9 @@ export type OllamaEmbeddingModel =
  * `EMBEDDING_DIMENSIONS`.
  */
 export const OLLAMA_EMBEDDING_DIMENSIONS = {
-  "mxbai-embed-large": 1024,
-  "nomic-embed-text": 768,
-  "all-minilm": 384,
+  [OllamaEmbeddingModel.MxbaiEmbedLarge]: 1024,
+  [OllamaEmbeddingModel.NomicEmbedText]: 768,
+  [OllamaEmbeddingModel.AllMiniLM]: 384,
 } satisfies Record<OllamaEmbeddingModel, number>;
 
 /**
@@ -47,9 +51,9 @@ export const OLLAMA_EMBEDDING_DIMENSIONS = {
  * stored text and the vector in sync.
  */
 export const OLLAMA_EMBEDDING_MAX_TOKENS = {
-  "mxbai-embed-large": 512,
-  "nomic-embed-text": 8192,
-  "all-minilm": 256,
+  [OllamaEmbeddingModel.MxbaiEmbedLarge]: 512,
+  [OllamaEmbeddingModel.NomicEmbedText]: 8192,
+  [OllamaEmbeddingModel.AllMiniLM]: 256,
 } satisfies Record<OllamaEmbeddingModel, number>;
 
 /**
@@ -148,7 +152,7 @@ export const buildEmbeddingInput = async (
     .find((value): value is string => !!value);
 
   const tags = input.tags?.filter((tag) => !!tag.trim()) ?? [];
-  const format = input.format ?? "mdx";
+  const format = input.format ?? MarkdownFormat.Mdx;
   const outline = input.content
     ? await buildHeadingOutline(input.content, { format })
     : "";

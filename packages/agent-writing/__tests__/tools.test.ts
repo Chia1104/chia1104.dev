@@ -4,6 +4,10 @@ vi.mock("@chia/observability/report", () => ({ reportError }));
 
 import { describe, expect, it, vi } from "vitest";
 
+import { AgentMemoryKind } from "@chia/db/schema";
+import { Locale } from "@chia/db/types";
+import { MatchMode } from "@chia/utils/text";
+
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
 import {
@@ -31,6 +35,7 @@ import {
 import { fetchUrlTool, webSearchTool } from "../src/tools/retrieval.tool.ts";
 import { summarizeToolResult } from "../src/tools/summarize.ts";
 import { writingToolSpecs } from "../src/tools/tool-set.ts";
+import { GitHubEntryType } from "../src/types.ts";
 import type { WritingToolContext } from "../src/types.ts";
 
 import {
@@ -144,7 +149,7 @@ describe("fetchUrlTool source trail", () => {
 
     const [source] = context.memory.all;
     expect(source).toMatchObject({
-      kind: "source",
+      kind: AgentMemoryKind.Source,
       title: "Example docs",
       sourceUrl: "https://example.com/docs#intro",
     });
@@ -337,10 +342,10 @@ describe("draft slug handling", () => {
   it("applies the content it read when no approval pinned one, and the pinned one otherwise", async () => {
     const context = createContext();
     await context.draft.patchFeedMeta(DRAFT_ID, {
-      defaultLocale: "en",
+      defaultLocale: Locale.En,
       slug: "a-post",
     });
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       title: "A post",
       content: "## Body",
     });
@@ -452,8 +457,8 @@ describe("draft slug handling", () => {
 
   it("requires an explicit slug before creating a feed", async () => {
     const context = createContext();
-    await context.draft.patchFeedMeta(DRAFT_ID, { defaultLocale: "en" });
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchFeedMeta(DRAFT_ID, { defaultLocale: Locale.En });
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       title: "Embedding RAG architecture",
       content: "## Architecture",
     });
@@ -469,10 +474,10 @@ describe("draft slug handling", () => {
 
   it("lands an exact edit on the body the operator saved in between", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       content: "## Title\n\nFirst paragraph.\n\nSecond paragraph.",
     });
-    context.draft.operatorEdit(DRAFT_ID, "en", {
+    context.draft.operatorEdit(DRAFT_ID, Locale.En, {
       content:
         "## Title\n\nFirst paragraph.\n\nSecond paragraph.\n\nOperator note.",
     });
@@ -497,7 +502,7 @@ describe("draft slug handling", () => {
 
   it("applies a batch in order as one revision and refuses the whole batch on one miss", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       content: "alpha\nbeta\ngamma",
     });
     const before = (await context.draft.get(DRAFT_ID)).revision;
@@ -535,7 +540,7 @@ describe("draft slug handling", () => {
 
   it("lands a target that differs only in whitespace or quote style, and says so", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       content: "## Title\n\nShe said \u201Chello\u201D \u2014 twice.  \n\nEnd.",
     });
 
@@ -548,7 +553,7 @@ describe("draft slug handling", () => {
     });
 
     expect(result.details).toMatchObject({
-      edits: [{ match: "punctuation", line: 3 }],
+      edits: [{ match: MatchMode.Punctuation, line: 3 }],
     });
     expect(result.content[0]).toMatchObject({
       text: expect.stringContaining("matched reading curly quotes"),
@@ -560,7 +565,7 @@ describe("draft slug handling", () => {
 
   it("refuses an ambiguous target with the way forward, instead of guessing", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       content: "same line\nsame line",
     });
 
@@ -578,8 +583,10 @@ describe("draft slug handling", () => {
 
   it("refuses a whole-body write over an operator edit the model has not read", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", { content: "## Old" });
-    context.draft.operatorEdit(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
+      content: "## Old",
+    });
+    context.draft.operatorEdit(DRAFT_ID, Locale.En, {
       content: "## Operator version",
     });
 
@@ -608,7 +615,9 @@ describe("draft slug handling", () => {
 
   it("lists open drafts with the id the other tools take, and opens a post's draft once", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", { title: "First" });
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
+      title: "First",
+    });
 
     const listed = await listDraftsTool(context).execute("call-1", {});
     expect(listed.details).toMatchObject({
@@ -737,8 +746,12 @@ describe("github tools", () => {
     context.connectors.github = createFakeGitHubPort({
       trees: {
         "owner/repo/src": [
-          { path: "src/tools", type: "dir" },
-          { path: "src/index.ts", type: "file", size: 120 },
+          { path: "src/tools", type: GitHubEntryType.Dir },
+          {
+            path: "src/index.ts",
+            type: GitHubEntryType.File,
+            size: 120,
+          },
         ],
       },
     });
@@ -860,7 +873,7 @@ const SECTIONED = [
 describe("readDraftTool", () => {
   it("prefixes a body read with its outline and reads one section or a line range", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       title: "T",
       content: SECTIONED,
     });
@@ -910,7 +923,7 @@ describe("readDraftTool", () => {
 
   it("narrows a section to the lines given with it", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       content: SECTIONED,
     });
 
@@ -948,7 +961,7 @@ describe("readDraftTool", () => {
 
   it("refuses an unknown heading with the outline", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       content: SECTIONED,
     });
     await expect(
@@ -964,7 +977,7 @@ describe("readDraftTool", () => {
 describe("replaceSectionTool", () => {
   it("replaces a heading's section with its subsections as one exact edit", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       content: SECTIONED,
     });
     const before = (await context.draft.get(DRAFT_ID)).revision;
@@ -984,7 +997,7 @@ describe("replaceSectionTool", () => {
     expect(result.details).toMatchObject({
       heading: "Setup",
       deleted: false,
-      edits: [{ match: "exact", line: 3, replacements: 1 }],
+      edits: [{ match: MatchMode.Exact, line: 3, replacements: 1 }],
     });
     expect(result.content[0]).toMatchObject({
       text: expect.stringContaining('Replaced section "Setup" (was lines 3-9)'),
@@ -993,7 +1006,7 @@ describe("replaceSectionTool", () => {
 
   it("deletes a section together with the blank lines before it", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       content: SECTIONED,
     });
 
@@ -1016,7 +1029,7 @@ describe("replaceSectionTool", () => {
 
   it("refuses content that drops the heading line, and an operator edit made since the read", async () => {
     const context = createContext();
-    await context.draft.patchTranslation(DRAFT_ID, "en", {
+    await context.draft.patchTranslation(DRAFT_ID, Locale.En, {
       content: SECTIONED,
     });
 
@@ -1032,7 +1045,7 @@ describe("replaceSectionTool", () => {
     const original = context.draft.get.bind(context.draft);
     vi.spyOn(context.draft, "get").mockImplementationOnce(async (id) => {
       const draft = await original(id);
-      context.draft.operatorEdit(DRAFT_ID, "en", {
+      context.draft.operatorEdit(DRAFT_ID, Locale.En, {
         content: SECTIONED.replace("None yet.", "Some now."),
       });
       return draft;

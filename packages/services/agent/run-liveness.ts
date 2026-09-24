@@ -8,10 +8,13 @@ import {
   completeAgentRunIfUnbound,
   listRunningAgentRuns,
 } from "@chia/db/repos/agent";
+import { AgentRunStatus } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
+import { WorkflowRunStatus } from "@chia/workflow-control/contract";
 
 import { readAgentAbortControllerRef, signalAgentAbort } from "./abort";
+import { AgentRunState } from "./agent.contract";
 import type { AgentRunHost } from "./agent.factory";
 
 /**
@@ -37,7 +40,10 @@ export const isRunLive = async (
     const run = runs.get(runId);
     if (!(await run.exists)) return false;
     const status = await run.status;
-    return status === "pending" || status === "running";
+    return (
+      status === WorkflowRunStatus.Pending ||
+      status === WorkflowRunStatus.Running
+    );
   } catch (error) {
     // A run from a previous deployment may no longer resolve; treat it as gone.
     logger.warn({ err: error, runId }, "Run state could not be read");
@@ -66,18 +72,18 @@ export const RUN_LEASE_TTL_MS = 60_000;
 export const runStateOf = async (
   runs: AgentRunHost,
   row: AgentRunRef
-): Promise<{ id: string; status: "running" | "waiting" } | null> => {
+): Promise<{ id: string; status: AgentRunState } | null> => {
   if (!row.workflowRunId) return null;
   if (isRunLease(row)) {
     const age = Date.now() - (row.startedAt?.getTime() ?? 0);
     return age < RUN_LEASE_TTL_MS
-      ? { id: row.workflowRunId, status: "running" }
+      ? { id: row.workflowRunId, status: AgentRunState.Running }
       : null;
   }
   if (!(await isRunLive(runs, row.workflowRunId))) return null;
   return {
     id: row.workflowRunId,
-    status: row.turn?.running ? "running" : "waiting",
+    status: row.turn?.running ? AgentRunState.Running : AgentRunState.Waiting,
   };
 };
 
@@ -104,14 +110,14 @@ export const reconcileRunningAgentTurns = async (
       startedAt: row.startedAt,
       turn: readAgentTurnMarker(row.metadata),
     });
-    if (state?.status === "running") continue;
+    if (state?.status === AgentRunState.Running) continue;
     // Conditional on the id this verdict was read against: an executor that claimed the lease
     // since bound its real run id, and that run is alive and must not be closed from here.
     const wasClosed = await completeAgentRunIfUnbound(
       db,
       row.id,
       row.externalRunId,
-      "failed"
+      AgentRunStatus.Failed
     );
     if (!wasClosed) continue;
     // Like `completeAgentRunStep`: a dead run must not leave its controller parked until its TTL.

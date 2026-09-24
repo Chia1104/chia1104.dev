@@ -1,6 +1,6 @@
 import { parse } from "hono/utils/cookie";
 
-import { KEY_COOKIE_NAMES } from "@chia/ai/provider";
+import { KEY_COOKIE_NAMES, KeyId } from "@chia/ai/provider";
 import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-schema";
 
 /**
@@ -14,12 +14,10 @@ export const readEncryptedAgentCredentials = (
 ): EncryptedAgentCredentials | undefined => {
   const cookies = parse(headers.get("Cookie") ?? "");
   const credentials: EncryptedAgentCredentials = {};
-  for (const [providerId, cookieName] of Object.entries(KEY_COOKIE_NAMES)) {
-    const encoded = cookies[cookieName];
+  for (const keyId of Object.values(KeyId)) {
+    const encoded = cookies[KEY_COOKIE_NAMES[keyId]];
     if (encoded) {
-      credentials[
-        /* SAFETY: The producer contract guarantees this value satisfies keyof EncryptedAgentCredentials. */ providerId as keyof EncryptedAgentCredentials
-      ] = encoded;
+      credentials[keyId] = encoded;
     }
   }
   return Object.keys(credentials).length > 0 ? credentials : undefined;

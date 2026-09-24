@@ -4,8 +4,11 @@ vi.mock("@chia/observability/report", () => ({ reportError }));
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { AgentProvider } from "@chia/agent-runtime/models";
 import type { AgentModelUsage } from "@chia/agent-runtime/types";
-import type { DB } from "@chia/db/client";
+import { AgentCredentialSource, AgentUsageSource } from "@chia/db/schema";
+
+import { db } from "./kind.fixture";
 
 type Usage = AgentModelUsage["usage"];
 
@@ -19,8 +22,6 @@ const { repo } = vi.hoisted(() => ({
 }));
 
 vi.mock("@chia/db/repos/agent/usage", () => repo);
-
-const db = /* SAFETY: the repo is mocked; nothing reads the handle. */ {} as DB;
 
 const usage = (overrides: Partial<Usage> = {}): Usage => ({
   input: 1200,
@@ -45,10 +46,10 @@ const call = {
   runId: "run-1",
   entryId: "entry-1",
   kind: "writing",
-  source: "turn" as const,
-  providerId: "vercel-ai-gateway",
+  source: AgentUsageSource.Turn,
+  providerId: AgentProvider.Gateway,
   modelId: "anthropic/claude-haiku-4.5",
-  credentialSource: "house" as const,
+  credentialSource: AgentCredentialSource.House,
 };
 
 describe("costToMicros", () => {
@@ -81,22 +82,26 @@ describe("costToMicros", () => {
 describe("credentialSourceOf", () => {
   it("bills the house for a gateway call when the caller brought no gateway key", async () => {
     const { credentialSourceOf } = await import("../src/usage");
-    expect(credentialSourceOf({}, "vercel-ai-gateway")).toBe("house");
-    expect(credentialSourceOf({ anthropic: "sk" }, "vercel-ai-gateway")).toBe(
-      "house"
+    expect(credentialSourceOf({}, AgentProvider.Gateway)).toBe(
+      AgentCredentialSource.House
+    );
+    expect(credentialSourceOf({ anthropic: "sk" }, AgentProvider.Gateway)).toBe(
+      AgentCredentialSource.House
     );
   });
 
   it("bills the caller for a gateway call on their own gateway key", async () => {
     const { credentialSourceOf } = await import("../src/usage");
-    expect(credentialSourceOf({ gateway: "vck" }, "vercel-ai-gateway")).toBe(
-      "byok-gateway"
+    expect(credentialSourceOf({ gateway: "vck" }, AgentProvider.Gateway)).toBe(
+      AgentCredentialSource.ByokGateway
     );
   });
 
   it("bills the caller for a call on a vendor wire, which only their key opens", async () => {
     const { credentialSourceOf } = await import("../src/usage");
-    expect(credentialSourceOf({ openai: "sk" }, "openai")).toBe("byok-native");
+    expect(credentialSourceOf({ openai: "sk" }, AgentProvider.OpenAI)).toBe(
+      AgentCredentialSource.ByokNative
+    );
   });
 });
 
@@ -117,10 +122,10 @@ describe("recordAgentUsage", () => {
       runId: "run-1",
       entryId: "entry-1",
       kind: "writing",
-      source: "turn",
-      providerId: "vercel-ai-gateway",
+      source: AgentUsageSource.Turn,
+      providerId: AgentProvider.Gateway,
       modelId: "anthropic/claude-haiku-4.5",
-      credentialSource: "house",
+      credentialSource: AgentCredentialSource.House,
       input: 1200,
       output: 300,
       cacheRead: 8000,
@@ -172,7 +177,10 @@ describe("recordAgentUsage", () => {
     expect(reportError).toHaveBeenCalledExactlyOnceWith(
       expect.anything(),
       "Could not record agent usage",
-      expect.objectContaining({ userId: "user-1", source: "turn" })
+      expect.objectContaining({
+        userId: "user-1",
+        source: AgentUsageSource.Turn,
+      })
     );
   });
 
@@ -188,7 +196,10 @@ describe("recordAgentUsage", () => {
     expect(reportError).toHaveBeenCalledExactlyOnceWith(
       expect.anything(),
       "Could not record agent usage",
-      expect.objectContaining({ userId: "user-1", source: "turn" })
+      expect.objectContaining({
+        userId: "user-1",
+        source: AgentUsageSource.Turn,
+      })
     );
   });
 });

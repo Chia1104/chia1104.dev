@@ -9,12 +9,9 @@ import {
   getResourceIndexRunByExternalId,
   recordResourceIndexRunProgress,
 } from "@chia/db/repos/resources/index-run";
-import { RESOURCE_INDEX_RUN_STATUS } from "@chia/db/schema";
+import { ResourceIndexRunStatus } from "@chia/db/schema";
 import type { ResourceIndexRunProgress } from "@chia/db/schema";
-import {
-  AGENT_MEMORY_SOURCE_TYPE,
-  FEED_TRANSLATION_SOURCE_TYPE,
-} from "@chia/services/rag/resource-types";
+import { ResourceType } from "@chia/services/rag/resource-types";
 
 import type { ResourceIndexRequest } from "./resource-index.step";
 
@@ -40,11 +37,11 @@ export const listReindexTargetsStep = async (): Promise<
 
   return [
     ...translationIds.map((sourceId) => ({
-      sourceType: FEED_TRANSLATION_SOURCE_TYPE,
+      sourceType: ResourceType.FeedTranslation,
       sourceId,
     })),
     ...memoryIds.map((sourceId) => ({
-      sourceType: AGENT_MEMORY_SOURCE_TYPE,
+      sourceType: ResourceType.AgentMemory,
       sourceId,
     })),
   ];
@@ -104,8 +101,8 @@ export const finalizeReindexRunStep = async (request: {
     id: request.recordId,
     status:
       failed.length === 0
-        ? RESOURCE_INDEX_RUN_STATUS.Completed
-        : RESOURCE_INDEX_RUN_STATUS.Failed,
+        ? ResourceIndexRunStatus.Completed
+        : ResourceIndexRunStatus.Failed,
     result: request.result,
     error:
       failed.length === 0

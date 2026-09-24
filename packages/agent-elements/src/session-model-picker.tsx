@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Alert, Button } from "@heroui/react";
 import { CircleAlert } from "lucide-react";
 
+import { ThinkingLevel } from "@chia/agent-runtime/types";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { useAgentLabels } from "./labels-context.tsx";
@@ -18,7 +19,11 @@ import {
   useSessionDetail,
   useUpdateSettings,
 } from "./provider.tsx";
-import { findAgentModel, pinnedModelUnavailable } from "./store.ts";
+import {
+  AgentConnection,
+  findAgentModel,
+  pinnedModelUnavailable,
+} from "./store.ts";
 import type {
   AgentModel,
   AgentSessionDetail,
@@ -54,7 +59,9 @@ export const SessionModelPicker = (props: SessionModelPickerProps) => {
   const models = useAgentModels().data;
   const labels = useAgentLabels();
   const updateSettings = useUpdateSettings();
-  const busy = useAgentSession((state) => state.connection !== "idle");
+  const busy = useAgentSession(
+    (state) => state.connection !== AgentConnection.Idle
+  );
   const [draftLevel, setDraftLevel] = useState<AgentThinkingLevel | null>(null);
 
   const defaultName = defaultModelNameOf(settings, models);
@@ -83,7 +90,7 @@ export const SessionModelPicker = (props: SessionModelPickerProps) => {
           { onSettled: () => setDraftLevel(null) }
         );
       }}
-      thinkingLevel={draftLevel ?? settings?.thinkingLevel ?? "off"}
+      thinkingLevel={draftLevel ?? settings?.thinkingLevel ?? ThinkingLevel.Off}
       value={
         settings?.modelPinned
           ? { providerId: settings.providerId, modelId: settings.modelId }

@@ -38,13 +38,10 @@ export const ApiKeysExplorer = () => {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery(
-    orpc.apikey.list.infiniteOptions({
+    orpc.apikey.list.infiniteOptions<string | null>({
       input: (pageParam) => ({ cursor: pageParam }),
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      initialPageParam:
-        /* SAFETY: The producer contract guarantees this value satisfies string | null. */ null as
-          | string
-          | null,
+      initialPageParam: null,
     })
   );
 

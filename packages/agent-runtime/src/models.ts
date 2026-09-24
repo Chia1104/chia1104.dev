@@ -13,8 +13,7 @@ import { vercelAIGatewayProvider } from "@earendil-works/pi-ai/providers/vercel-
 
 import { HOUSE_MODELS } from "@chia/ai/house-models";
 import type { HouseModelRole } from "@chia/ai/house-models";
-import { GATEWAY_KEY_ID, PROVIDER_IDS, ProviderId } from "@chia/ai/provider";
-import type { KeyId } from "@chia/ai/provider";
+import { KeyId, ProviderId } from "@chia/ai/provider";
 
 import { withModelSpans } from "./telemetry.ts";
 
@@ -34,10 +33,10 @@ import { withModelSpans } from "./telemetry.ts";
  * `Models` is per-credential-set, not process-wide. See {@link createAgentModels}.
  */
 
-export const AGENT_PROVIDERS = {
-  gateway: "vercel-ai-gateway",
-  openai: ProviderId.OpenAI,
-  anthropic: ProviderId.Anthropic,
+export const AgentProvider = {
+  Gateway: "vercel-ai-gateway",
+  OpenAI: ProviderId.OpenAI,
+  Anthropic: ProviderId.Anthropic,
 } as const;
 
 /** Decrypted, request-scoped keys. Ciphertext is a transport concern; decrypted at the last moment. */
@@ -66,8 +65,8 @@ export const HOUSE_ACCESS: AgentModelAccess = { gateway: true, native: [] };
 export const accessOf = (
   credentials: Partial<Record<KeyId, string>> | undefined
 ): AgentModelAccess => ({
-  gateway: Boolean(credentials?.[GATEWAY_KEY_ID]),
-  native: PROVIDER_IDS.filter((providerId) =>
+  gateway: Boolean(credentials?.[KeyId.Gateway]),
+  native: Object.values(ProviderId).filter((providerId) =>
     Boolean(credentials?.[providerId])
   ),
 });
@@ -97,7 +96,7 @@ export type AgentModelPredicate = (
 
 /** The house-billed ref for a role; every house model runs through the gateway. */
 export const houseModel = (role: HouseModelRole): AgentModelRef => ({
-  providerId: AGENT_PROVIDERS.gateway,
+  providerId: AgentProvider.Gateway,
   modelId: HOUSE_MODELS[role],
 });
 
@@ -106,10 +105,8 @@ export const sameModel = (a: AgentModelRef, b: AgentModelRef): boolean =>
 
 /** Whether the caller holds a key that opens `providerId`; the gateway always has the house's. */
 const holdsKeyFor = (providerId: string, access: AgentModelAccess): boolean =>
-  providerId === AGENT_PROVIDERS.gateway ||
-  /* SAFETY: `native` only ever holds ProviderId values; a foreign id simply fails the lookup. */ (
-    access.native as readonly string[]
-  ).includes(providerId);
+  providerId === AgentProvider.Gateway ||
+  access.native.some((held) => held === providerId);
 
 /**
  * Read-only {@link CredentialStore} over a fixed set of keys, keyed by pi-ai provider id.
@@ -121,12 +118,12 @@ const fixedCredentialStore = (
   credentials: AgentCredentials
 ): CredentialStore => {
   const entries = new Map<string, Credential>();
-  for (const providerId of PROVIDER_IDS) {
+  for (const providerId of Object.values(ProviderId)) {
     const key = credentials[providerId];
     if (key) entries.set(providerId, { type: "api_key", key });
   }
   if (credentials.gateway) {
-    entries.set(AGENT_PROVIDERS.gateway, {
+    entries.set(AgentProvider.Gateway, {
       type: "api_key",
       key: credentials.gateway,
     });
@@ -169,7 +166,7 @@ export const createAgentModels = (
     credentials: fixedCredentialStore(credentials),
   });
   models.setProvider(vercelAIGatewayProvider());
-  for (const providerId of PROVIDER_IDS) {
+  for (const providerId of Object.values(ProviderId)) {
     if (credentials[providerId]) models.setProvider(nativeProvider(providerId));
   }
   return withModelSpans(models);
@@ -184,7 +181,7 @@ export const createAgentModels = (
 export const createAgentCatalog = (): Models => {
   const models = createModels({ modelsStore });
   models.setProvider(vercelAIGatewayProvider());
-  for (const providerId of PROVIDER_IDS) {
+  for (const providerId of Object.values(ProviderId)) {
     models.setProvider(nativeProvider(providerId));
   }
   return models;

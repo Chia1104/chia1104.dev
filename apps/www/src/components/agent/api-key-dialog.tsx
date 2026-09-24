@@ -18,13 +18,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { agentQueryKeys } from "@chia/agent-elements/queries";
-import {
-  GATEWAY_KEY_ID,
-  isKeyId,
-  KEY_IDS,
-  KEY_LABELS,
-} from "@chia/ai/provider";
-import type { KeyId } from "@chia/ai/provider";
+import { isKeyId, KeyId, KEY_LABELS } from "@chia/ai/provider";
 import { withServiceEndpoint } from "@chia/utils/config";
 import { del, get, post } from "@chia/utils/request";
 import { Service } from "@chia/utils/schema";
@@ -60,7 +54,7 @@ interface ApiKeyDialogProps {
 export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
   const t = useTranslations("chbot.apiKey");
   const queryClient = useQueryClient();
-  const [provider, setProvider] = useState<KeyId>(GATEWAY_KEY_ID);
+  const [provider, setProvider] = useState<KeyId>(KeyId.Gateway);
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
 
@@ -165,7 +159,7 @@ export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
                 <Label className="text-muted col-span-3 mb-1 text-xs">
                   {t("provider")}
                 </Label>
-                {KEY_IDS.map((id) => (
+                {Object.values(KeyId).map((id) => (
                   <Radio
                     key={id}
                     value={id}
@@ -176,7 +170,7 @@ export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
                         <Radio.Indicator />
                       </Radio.Control>
                       <span className="text-xs font-medium">
-                        {id === GATEWAY_KEY_ID ? "Gateway" : KEY_LABELS[id]}
+                        {id === KeyId.Gateway ? "Gateway" : KEY_LABELS[id]}
                       </span>
                       {keys.isSuccess && configured.has(id) ? (
                         <span
@@ -189,7 +183,7 @@ export const ApiKeyDialog = ({ isOpen, onOpenChange }: ApiKeyDialogProps) => {
                 ))}
               </RadioGroup>
               <p className="text-muted -mt-1 text-xs leading-relaxed">
-                {provider === GATEWAY_KEY_ID
+                {provider === KeyId.Gateway
                   ? t("gatewayHint")
                   : t("vendorHint", { provider: KEY_LABELS[provider] })}
               </p>

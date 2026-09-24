@@ -28,7 +28,8 @@ import { DEFAULT_WRITING_MODEL, resolveWritingModel } from "../src/models.ts";
 import { writingPolicy } from "../src/policy.ts";
 import type { ReaderReport } from "../src/ports.ts";
 import { prepareWritingTurn } from "../src/runtime.ts";
-import { TOOL_NAMES } from "../src/tools/registry.ts";
+import { ToolName } from "../src/tools/registry.ts";
+import { WritingToolTier } from "../src/types.ts";
 
 import {
   createFakeContentPort,
@@ -206,7 +207,7 @@ describe("prepareWritingTurn", () => {
   it("runs a tool then reports back, and maps both into wire events", async () => {
     fixture.setResponses([
       fauxAssistantMessage(
-        [fauxToolCall(TOOL_NAMES.searchPosts, { keyword: "typescript" })],
+        [fauxToolCall(ToolName.SearchPosts, { keyword: "typescript" })],
         { stopReason: "toolUse" }
       ),
       fauxAssistantMessage("There is already a post about TypeScript."),
@@ -218,11 +219,11 @@ describe("prepareWritingTurn", () => {
     const toolEnd = fixture.events.find((e) => e.type === "tool:end");
 
     expect(toolStart).toMatchObject({
-      toolName: TOOL_NAMES.searchPosts,
-      tier: "read",
+      toolName: ToolName.SearchPosts,
+      tier: WritingToolTier.Read,
     });
     expect(toolEnd).toMatchObject({
-      toolName: TOOL_NAMES.searchPosts,
+      toolName: ToolName.SearchPosts,
       isError: false,
       summary: "1 match(es).",
     });
@@ -239,7 +240,7 @@ describe("prepareWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.getPost, {
+          fauxToolCall(ToolName.GetPost, {
             slug: "existing-post",
             feedId: 999,
           }),
@@ -253,7 +254,7 @@ describe("prepareWritingTurn", () => {
 
     const toolEnd = fixture.events.find(
       (event) =>
-        event.type === "tool:end" && event.toolName === TOOL_NAMES.getPost
+        event.type === "tool:end" && event.toolName === ToolName.GetPost
     );
     expect(toolEnd).toMatchObject({
       isError: false,
@@ -273,7 +274,7 @@ describe("prepareWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.webSearch, {
+          fauxToolCall(ToolName.WebSearch, {
             query: "example 2.0 release notes",
             recency: "month",
             includeDomains: ["docs.example.com"],
@@ -296,7 +297,7 @@ describe("prepareWritingTurn", () => {
     ]);
 
     const toolEnd = fixture.events.find(
-      (e) => e.type === "tool:end" && e.toolName === TOOL_NAMES.webSearch
+      (e) => e.type === "tool:end" && e.toolName === ToolName.WebSearch
     );
     expect(toolEnd).toMatchObject({
       isError: false,
@@ -323,7 +324,7 @@ describe("prepareWritingTurn", () => {
     expect(fixture.draft.observedRevisions.has(2)).toBe(false);
 
     fixture.setResponses([
-      fauxAssistantMessage([fauxToolCall(TOOL_NAMES.listDrafts, {})], {
+      fauxAssistantMessage([fauxToolCall(ToolName.ListDrafts, {})], {
         stopReason: "toolUse",
       }),
       fauxAssistantMessage("Here are the drafts."),
@@ -351,7 +352,7 @@ describe("prepareWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             translations: { en: { content: "## Hello\n\nSome body text." } },
           }),
@@ -375,11 +376,11 @@ describe("prepareWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             translations: { en: { content: "## Post\n\nBody." } },
           }),
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             slug: "a-post",
             defaultLocale: "en",
@@ -390,7 +391,7 @@ describe("prepareWritingTurn", () => {
       ),
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.commitDraft, {
+          fauxToolCall(ToolName.CommitDraft, {
             draftId: DRAFT_ID,
             allowEmptyMetadata: true,
             confirmation: "Committing the English post.",
@@ -404,30 +405,30 @@ describe("prepareWritingTurn", () => {
     const result = await fixture.run("Write and commit a post");
 
     expect(fixture.content.commits).toHaveLength(0);
-    expect(approvalOf(result)?.toolName).toBe(TOOL_NAMES.commitDraft);
+    expect(approvalOf(result)?.toolName).toBe(ToolName.CommitDraft);
 
     const request = fixture.events.find((e) => e.type === "approval:request");
     expect(request).toMatchObject({
-      toolName: TOOL_NAMES.commitDraft,
-      tier: "commit",
+      toolName: ToolName.CommitDraft,
+      tier: WritingToolTier.Commit,
     });
 
     const view = foldEvents(fixture.events);
     expect(view.pendingApprovals.map((p) => p.toolName)).toEqual([
-      TOOL_NAMES.commitDraft,
+      ToolName.CommitDraft,
     ]);
   });
 
   it("lets a commit through once the tier is pre-approved", async () => {
-    const approved = await build({ autoApprove: ["commit"] });
+    const approved = await build({ autoApprove: [WritingToolTier.Commit] });
     approved.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             translations: { en: { content: "## Post\n\nBody." } },
           }),
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             slug: "a-post",
             defaultLocale: "en",
@@ -438,7 +439,7 @@ describe("prepareWritingTurn", () => {
       ),
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.commitDraft, {
+          fauxToolCall(ToolName.CommitDraft, {
             draftId: DRAFT_ID,
             allowEmptyMetadata: true,
             confirmation: "Committing the English post.",
@@ -465,11 +466,11 @@ describe("prepareWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             translations: { en: { content: "## Post\n\nBody." } },
           }),
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             slug: "a-post",
             defaultLocale: "en",
@@ -480,7 +481,7 @@ describe("prepareWritingTurn", () => {
       ),
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.commitDraft, {
+          fauxToolCall(ToolName.CommitDraft, {
             draftId: DRAFT_ID,
             allowEmptyMetadata: true,
             confirmation: "Committing the English post.",
@@ -493,7 +494,7 @@ describe("prepareWritingTurn", () => {
     const gated = await fixture.run("Write and commit a post");
     const { contentHash } = await fixture.draft.get(DRAFT_ID);
     expect(approvalOf(gated)?.key).toBe(
-      `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${contentHash}`
+      `${ToolName.CommitDraft}:${DRAFT_ID}@${contentHash}`
     );
 
     // The relay turn re-issues the call under a new id; the key is what the approval matches.
@@ -501,7 +502,7 @@ describe("prepareWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.commitDraft, {
+          fauxToolCall(ToolName.CommitDraft, {
             draftId: DRAFT_ID,
             allowEmptyMetadata: true,
             confirmation: "Committing as approved.",
@@ -527,13 +528,13 @@ describe("prepareWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             slug: "a-post",
             defaultLocale: "en",
             translations: { en: { title: "A post" } },
           }),
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             translations: { en: { content: "## Post\n\nBody." } },
           }),
@@ -561,7 +562,7 @@ describe("prepareWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.commitDraft, {
+          fauxToolCall(ToolName.CommitDraft, {
             draftId: DRAFT_ID,
             allowEmptyMetadata: true,
             confirmation: "Committing as approved.",
@@ -573,7 +574,7 @@ describe("prepareWritingTurn", () => {
     ]);
     await fixture.run("Approved.", {
       approvedApprovalKeys: new Set([
-        `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approved.contentHash}`,
+        `${ToolName.CommitDraft}:${DRAFT_ID}@${approved.contentHash}`,
       ]),
       consumeApproval: async () => undefined,
     });
@@ -596,13 +597,13 @@ describe("prepareWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             slug: "a-post",
             defaultLocale: "en",
             translations: { en: { title: "A post" } },
           }),
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             translations: { en: { content: "## Post\n\nBody." } },
           }),
@@ -619,7 +620,7 @@ describe("prepareWritingTurn", () => {
     fixture.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             translations: {
               en: { content: "## Post\n\nA body the operator never saw." },
@@ -630,7 +631,7 @@ describe("prepareWritingTurn", () => {
       ),
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.commitDraft, {
+          fauxToolCall(ToolName.CommitDraft, {
             draftId: DRAFT_ID,
             allowEmptyMetadata: true,
             confirmation: "Committing.",
@@ -642,7 +643,7 @@ describe("prepareWritingTurn", () => {
     ]);
     const result = await fixture.run("Approved.", {
       approvedApprovalKeys: new Set([
-        `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${approved.contentHash}`,
+        `${ToolName.CommitDraft}:${DRAFT_ID}@${approved.contentHash}`,
       ]),
       consumeApproval,
     });
@@ -651,20 +652,20 @@ describe("prepareWritingTurn", () => {
     expect(consumeApproval).not.toHaveBeenCalled();
     expect(result.status).toBe("awaiting_approval");
     expect(approvalOf(result)?.key).toBe(
-      `${TOOL_NAMES.commitDraft}:${DRAFT_ID}@${(await fixture.draft.get(DRAFT_ID)).contentHash}`
+      `${ToolName.CommitDraft}:${DRAFT_ID}@${(await fixture.draft.get(DRAFT_ID)).contentHash}`
     );
   });
 
   it("refuses to commit a draft whose default locale has no title", async () => {
-    const approved = await build({ autoApprove: ["commit"] });
+    const approved = await build({ autoApprove: [WritingToolTier.Commit] });
     approved.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall(TOOL_NAMES.writeDraft, {
+          fauxToolCall(ToolName.WriteDraft, {
             draftId: DRAFT_ID,
             translations: { en: { content: "## Post\n\nBody." } },
           }),
-          fauxToolCall(TOOL_NAMES.commitDraft, {
+          fauxToolCall(ToolName.CommitDraft, {
             draftId: DRAFT_ID,
             allowEmptyMetadata: true,
             confirmation: "Committing.",
@@ -679,7 +680,7 @@ describe("prepareWritingTurn", () => {
 
     expect(approved.content.commits).toHaveLength(0);
     const commitEvent = approved.events.find(
-      (e) => e.type === "tool:end" && e.toolName === TOOL_NAMES.commitDraft
+      (e) => e.type === "tool:end" && e.toolName === ToolName.CommitDraft
     );
     expect(commitEvent).toMatchObject({ isError: true });
   });
@@ -735,7 +736,7 @@ describe("prepareWritingTurn", () => {
       (context) => {
         seen.push(context);
         return fauxAssistantMessage([
-          fauxToolCall(TOOL_NAMES.listTags, {}, { id: "call-tags" }),
+          fauxToolCall(ToolName.ListTags, {}, { id: "call-tags" }),
         ]);
       },
       (context) => {

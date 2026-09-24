@@ -27,12 +27,13 @@ describe("feeds writes require the right tier", () => {
     });
 
     it("cannot write a post's content, which only applying a draft changes", async () => {
-      await client.feeds.update({
+      // A variable, not an inline literal: excess-property checks would reject the key a stale caller still sends.
+      const input = {
         feedId: 1,
         published: true,
-        // SAFETY: what a caller on the old contract would still send; the schema drops it.
-        ...({ translations: { en: { content: "# bypass" } } } as object),
-      });
+        translations: { en: { content: "# bypass" } },
+      };
+      await client.feeds.update(input);
 
       expect(dbMocks.updateFeed).toHaveBeenCalledWith(
         expect.anything(),

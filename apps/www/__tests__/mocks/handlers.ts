@@ -1,4 +1,5 @@
 import { http, HttpResponse } from "msw";
+import type { DefaultBodyType, PathParams } from "msw";
 
 import type { mockEmail } from "./data";
 import { mockFeeds } from "./data";
@@ -31,25 +32,27 @@ export const handlers = [
     return HttpResponse.json({ data: feed });
   }),
 
-  http.post("*/api/v1/email/send", async ({ request }) => {
-    const body =
-      /* SAFETY: This fixture implements the typeof mockEmail members exercised by this case. */ (await request.json()) as typeof mockEmail;
+  http.post<PathParams, Partial<typeof mockEmail>, DefaultBodyType>(
+    "*/api/v1/email/send",
+    async ({ request }) => {
+      const body = await request.json();
 
-    if (!body.email || !body.title || !body.message) {
-      return HttpResponse.json(
-        {
-          code: "VALIDATION_ERROR",
-          errors: [{ message: "Missing required fields" }],
-        },
-        { status: 400 }
-      );
+      if (!body.email || !body.title || !body.message) {
+        return HttpResponse.json(
+          {
+            code: "VALIDATION_ERROR",
+            errors: [{ message: "Missing required fields" }],
+          },
+          { status: 400 }
+        );
+      }
+
+      return HttpResponse.json({
+        success: true,
+        message: "Email sent successfully",
+      });
     }
-
-    return HttpResponse.json({
-      success: true,
-      message: "Email sent successfully",
-    });
-  }),
+  ),
 
   http.get("*/api/v1/spotify/current-playing", () => {
     return HttpResponse.json({

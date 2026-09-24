@@ -24,13 +24,21 @@ export const generateDescriptionInput = z.object({
   locale: z.string().default("en"),
 });
 
+export const ContentLength = {
+  Short: "short",
+  Medium: "medium",
+  Long: "long",
+} as const;
+
+export type ContentLength = (typeof ContentLength)[keyof typeof ContentLength];
+
 export const generateContentInput = z.object({
   title: z.string(),
   context: z.string().optional(),
   outline: z.string().optional(),
   keywords: z.array(z.string()).optional(),
   locale: z.string().default("en"),
-  length: z.enum(["short", "medium", "long"]).default("medium"),
+  length: z.enum(ContentLength).default(ContentLength.Medium),
 });
 
 export const generateContentCompleteInput = z.object({
@@ -94,10 +102,10 @@ export async function generateDescription(
 }
 
 const LENGTH_GUIDE = {
-  short: "300-500 words",
-  medium: "600-900 words",
-  long: "1000-1500 words",
-} as const;
+  [ContentLength.Short]: "300-500 words",
+  [ContentLength.Medium]: "600-900 words",
+  [ContentLength.Long]: "1000-1500 words",
+} as const satisfies Record<ContentLength, string>;
 
 const buildContentPrompt = ({
   title,

@@ -3,7 +3,7 @@ import { createGateway } from "@ai-sdk/gateway";
 import { createOpenAI } from "@ai-sdk/openai";
 import type { LanguageModel } from "ai";
 
-import { GATEWAY_KEY_ID, ProviderId } from "../provider";
+import { KeyId, ProviderId } from "../provider";
 
 import type { BaseRequest } from "./types";
 
@@ -21,7 +21,11 @@ export const createModel = (
       return createOpenAI({ apiKey: options.authToken })(options.model.id);
     case ProviderId.Anthropic:
       return createAnthropic({ apiKey: options.authToken })(options.model.id);
-    case GATEWAY_KEY_ID:
+    case KeyId.Gateway:
       return createGateway({ apiKey: options.authToken })(options.model.id);
+    default: {
+      const _exhaustive: never = options.model.provider;
+      return _exhaustive;
+    }
   }
 };

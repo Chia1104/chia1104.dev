@@ -1,6 +1,12 @@
+import { drizzle } from "drizzle-orm/node-postgres";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { DB } from "@chia/db/client";
+import {
+  AgentMemoryKind,
+  AgentMemoryStatus,
+  relations,
+  ResourceChunkKind,
+} from "@chia/db/schema";
 import type { AgentMemory } from "@chia/db/schema";
 
 const { repo } = vi.hoisted(() => ({
@@ -17,16 +23,14 @@ vi.mock("@chia/db/repos/agent/memory", () => ({
 
 const { agentMemoryResource } = await import("../agent-memory.resource.ts");
 const { getResourceAdapter } = await import("../registry.ts");
-const { AGENT_MEMORY_SOURCE_TYPE, isResourceType } =
-  await import("../resource-types.ts");
+const { ResourceType, isResourceType } = await import("../resource-types.ts");
 
-// SAFETY: every repository call is mocked; nothing reaches the database.
-const db = {} as DB;
+const db = drizzle.mock({ relations });
 
 const memory = (overrides: Partial<AgentMemory> = {}): AgentMemory => ({
   id: 7,
-  kind: "fact",
-  status: "active",
+  kind: AgentMemoryKind.Fact,
+  status: AgentMemoryStatus.Active,
   title: "pgvector 0.8 adds iterative index scans",
   content:
     "## Iterative scans\n\nSet `hnsw.iterative_scan = relaxed_order` on pgvector 0.8+.\n\n## Why\n\nFiltered queries otherwise under-fetch candidates.",
@@ -48,8 +52,8 @@ describe("agentMemoryResource", () => {
   });
 
   it("is registered under its source type", () => {
-    expect(isResourceType(AGENT_MEMORY_SOURCE_TYPE)).toBe(true);
-    expect(getResourceAdapter(AGENT_MEMORY_SOURCE_TYPE)).toBe(
+    expect(isResourceType(ResourceType.AgentMemory)).toBe(true);
+    expect(getResourceAdapter(ResourceType.AgentMemory)).toBe(
       agentMemoryResource
     );
   });
@@ -66,14 +70,14 @@ describe("agentMemoryResource", () => {
     });
     const [card, ...sections] = set?.chunks ?? [];
     expect(card).toMatchObject({
-      kind: "card",
+      kind: ResourceChunkKind.Card,
       chunkIndex: 0,
       content:
         "Kind: fact\nSource: https://github.com/pgvector/pgvector\nTitle: pgvector 0.8 adds iterative index scans",
     });
     expect(sections.length).toBeGreaterThan(0);
     for (const section of sections) {
-      expect(section.kind).toBe("section");
+      expect(section.kind).toBe(ResourceChunkKind.Section);
       expect(section.contentHash).toMatch(/^[0-9a-f]{64}$/);
     }
     expect(sections.some((s) => s.content.includes("relaxed_order"))).toBe(
@@ -84,7 +88,7 @@ describe("agentMemoryResource", () => {
   it("gives a source page the outline card a post gets", async () => {
     repo.getAgentMemory.mockResolvedValue(
       memory({
-        kind: "source",
+        kind: AgentMemoryKind.Source,
         title: "pgvector README",
         content:
           "## Installation\n\nRun make.\n\n## Indexing\n\n### HNSW\n\nBuild an index.",
@@ -101,12 +105,17 @@ describe("agentMemoryResource", () => {
   });
 
   it("indexes only live, active memories: archived, deleted and pending stay out, in hydration too", async () => {
-    repo.getAgentMemory.mockResolvedValueOnce(memory({ status: "archived" }));
+    repo.getAgentMemory.mockResolvedValueOnce(
+      memory({ status: AgentMemoryStatus.Archived })
+    );
     await expect(agentMemoryResource.buildChunks(db, 7)).resolves.toBeNull();
 
     // an unreviewed lesson is not agent context yet
     repo.getAgentMemory.mockResolvedValueOnce(
-      memory({ kind: "lesson", status: "pending" })
+      memory({
+        kind: AgentMemoryKind.Lesson,
+        status: AgentMemoryStatus.Pending,
+      })
     );
     await expect(agentMemoryResource.buildChunks(db, 7)).resolves.toBeNull();
 
@@ -120,13 +129,17 @@ describe("agentMemoryResource", () => {
 
     repo.getAgentMemories.mockResolvedValue([
       memory({ id: 1 }),
-      memory({ id: 2, status: "archived" }),
-      memory({ id: 3, kind: "lesson", status: "pending" }),
+      memory({ id: 2, status: AgentMemoryStatus.Archived }),
+      memory({
+        id: 3,
+        kind: AgentMemoryKind.Lesson,
+        status: AgentMemoryStatus.Pending,
+      }),
     ]);
     const summaries = await agentMemoryResource.hydrate(db, [1, 2, 3]);
     expect([...summaries.keys()]).toEqual([1]);
     expect(summaries.get(1)).toMatchObject({
-      sourceType: AGENT_MEMORY_SOURCE_TYPE,
+      sourceType: ResourceType.AgentMemory,
       sourceId: 1,
       href: null,
       locale: null,

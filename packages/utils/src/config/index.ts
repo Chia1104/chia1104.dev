@@ -153,7 +153,7 @@ function switchServiceVersion(version: ServiceVersion, url: string) {
     case "LEGACY":
     case "v1":
       return removeEndSlash(url).replace(/\/api\/v1$/, "") + "/api/v1";
-    case "auth":
+    case Service.Auth:
       return removeEndSlash(url).replace(/\/auth$/, "") + "/auth";
     default:
       return removeEndSlash(url);
@@ -277,6 +277,10 @@ function serviceNameResolver(service: Service) {
       return "AI_SERVICE";
     case Service.Workflow:
       return "WORKFLOW_SERVICE";
+    default: {
+      const _exhaustive: never = service;
+      return _exhaustive;
+    }
   }
 }
 

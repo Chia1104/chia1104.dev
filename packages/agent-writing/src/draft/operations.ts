@@ -1,7 +1,14 @@
+import { pick } from "es-toolkit";
+
 import { hashFeedDraftSnapshot } from "@chia/db/repos/drafts/hash";
+import {
+  META_FIELDS,
+  TRANSLATION_FIELDS,
+  definedKeys,
+} from "@chia/db/repos/drafts/patch";
 import type { FeedDraftFields } from "@chia/db/repos/drafts/patch";
 import type { FeedDraftSnapshot } from "@chia/db/schema";
-import type { Locale } from "@chia/db/types";
+import { FeedType, Locale } from "@chia/db/types";
 import { mergeDefined, omitUndefined } from "@chia/utils/object";
 import { applyEdits, excerptAround } from "@chia/utils/text";
 import type { AppliedEdit, ExactReplaceFailure } from "@chia/utils/text";
@@ -17,14 +24,21 @@ import type {
   FeedDraftSummary,
 } from "../types.ts";
 
+/** The locales `translations` holds, in `Locale` order. */
+export const localesOf = <TTranslation>(
+  translations: Partial<Record<Locale, TTranslation>>
+): Locale[] =>
+  Object.values(Locale).filter((locale) => translations[locale] !== undefined);
+
 /** The draft as the shared row stores it: every field present, `null` where empty. */
 export const snapshotOfDraft = (
   draft: Omit<FeedDraft, "contentHash">
 ): FeedDraftSnapshot => {
   const translations: FeedDraftSnapshot["translations"] = {};
-  for (const [locale, translation] of Object.entries(draft.translations)) {
-    // SAFETY: draft translations are keyed by Locale.
-    translations[locale as Locale] = {
+  for (const locale of Object.values(Locale)) {
+    const translation = draft.translations[locale];
+    if (!translation) continue;
+    translations[locale] = {
       title: translation.title ?? null,
       excerpt: translation.excerpt ?? null,
       description: translation.description ?? null,
@@ -47,10 +61,9 @@ export const hashDraft = (draft: Omit<FeedDraft, "contentHash">): string =>
 /** A write in the repository's terms, without the fields it leaves alone. */
 export const toDraftFields = (input: DraftWrite): FeedDraftFields => {
   const translations: NonNullable<FeedDraftFields["translations"]> = {};
-  for (const [locale, patch] of Object.entries(input.translations ?? {})) {
-    if (!patch) continue;
-    // SAFETY: DraftWrite.translations is keyed by Locale.
-    translations[locale as Locale] = omitUndefined(patch);
+  for (const locale of Object.values(Locale)) {
+    const patch = input.translations?.[locale];
+    if (patch) translations[locale] = omitUndefined(patch);
   }
   return {
     meta: input.meta ? omitUndefined(input.meta) : undefined,
@@ -64,8 +77,8 @@ export const emptyDraft = (overrides: Partial<FeedDraft> = {}): FeedDraft => {
     feedId: null,
     revision: 1,
     slug: null,
-    type: "post" as const,
-    defaultLocale: "zh-TW" as const,
+    type: FeedType.Post,
+    defaultLocale: Locale.ZhTW,
     mainImage: null,
     translations: {},
     ...overrides,
@@ -121,8 +134,7 @@ export const draftSummary = (
   type: draft.type,
   defaultLocale: draft.defaultLocale,
   title: draftTitle(draft),
-  // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
-  locales: Object.keys(draft.translations) as Locale[],
+  locales: localesOf(draft.translations),
   updatedAt: updatedAt.toISOString(),
 });
 
@@ -202,29 +214,22 @@ export class ObservedDrafts {
   baseOf(draftId: number, input: DraftWrite): DraftWrite | null {
     const view = this.views.get(draftId);
     if (!view) return null;
-    const meta: Record<string, string | null> = {};
-    for (const [field, value] of Object.entries(input.meta ?? {})) {
-      if (value === undefined) continue;
-      // SAFETY: `field` is a key of DraftFeedMeta, all of which FeedDraft carries.
-      meta[field] = view[field as keyof DraftFeedMeta];
-    }
     const translations: NonNullable<DraftWrite["translations"]> = {};
-    for (const [locale, patch] of Object.entries(input.translations ?? {})) {
-      // SAFETY: DraftWrite.translations is keyed by Locale.
-      const held = view.translations[locale as Locale];
-      const seen: Record<string, string | null> = {};
-      for (const [field, value] of Object.entries(patch ?? {})) {
-        if (value === undefined) continue;
-        // SAFETY: `field` is a key of DraftTranslation.
-        seen[field] = held?.[field as keyof DraftTranslation] ?? null;
-      }
-      if (Object.keys(seen).length > 0) {
-        // SAFETY: as above.
-        translations[locale as Locale] = seen;
-      }
+    for (const locale of Object.values(Locale)) {
+      const fields = definedKeys(
+        input.translations?.[locale] ?? {},
+        TRANSLATION_FIELDS
+      );
+      if (fields.length === 0) continue;
+      const held = view.translations[locale];
+      const seen: DraftTranslation = {};
+      for (const field of fields) seen[field] = held?.[field] ?? null;
+      translations[locale] = seen;
     }
-    // SAFETY: every key of `meta` came from `input.meta`.
-    return { meta: meta as DraftFeedMeta, translations };
+    return {
+      meta: pick(view, definedKeys(input.meta ?? {}, META_FIELDS)),
+      translations,
+    };
   }
 }
 
@@ -293,13 +298,13 @@ export const describeEdits = (
 /** Applies a write to an in-memory draft: meta first, then every locale, as one step. */
 export const applyWrite = (draft: FeedDraft, input: DraftWrite): FeedDraft => {
   let next = input.meta ? patchFeedMeta(draft, input.meta) : draft;
-  for (const [locale, patch] of Object.entries(input.translations ?? {})) {
+  for (const locale of Object.values(Locale)) {
+    const patch = input.translations?.[locale];
     // A patch with no defined field must not create the locale or bump the revision.
     if (!patch || Object.values(patch).every((value) => value === undefined)) {
       continue;
     }
-    // SAFETY: DraftWrite.translations is keyed by Locale.
-    next = patchTranslation(next, locale as Locale, patch);
+    next = patchTranslation(next, locale, patch);
   }
   return next;
 };

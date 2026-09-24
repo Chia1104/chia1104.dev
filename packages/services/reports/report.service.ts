@@ -4,9 +4,9 @@ import {
   setFeedReportStatus,
 } from "@chia/db/repos/feed-reports";
 import type { FeedReportRecord } from "@chia/db/repos/feed-reports";
-import { FEED_DRAFT_AUTHOR, FEED_REPORT_STATUS } from "@chia/db/schema";
+import { FeedDraftAuthor, FeedReportStatus } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 import { feedUrl } from "@chia/utils/config";
 
 import {
@@ -32,7 +32,9 @@ export const requireFeedReport = async (
 ): Promise<FeedReportRecord> => {
   const record = await getFeedReportRecord(db, id);
   if (!record) {
-    throw new AppError("NOT_FOUND", { message: `Report ${id} not found` });
+    throw new AppError(AppErrorCode.NotFound, {
+      message: `Report ${id} not found`,
+    });
   }
   return record;
 };
@@ -50,16 +52,16 @@ export const applyReportEditsService = async (
   db.transaction(async (tx) => {
     const record = await requireFeedReport(tx, input.id);
     if (
-      record.status !== FEED_REPORT_STATUS.Open &&
-      record.status !== FEED_REPORT_STATUS.InProgress
+      record.status !== FeedReportStatus.Open &&
+      record.status !== FeedReportStatus.InProgress
     ) {
-      throw new AppError("BAD_REQUEST", {
+      throw new AppError(AppErrorCode.BadRequest, {
         message: `Report ${input.id} is ${record.status}; reopen it first.`,
       });
     }
     const edits = record.triage?.edits ?? [];
     if (edits.length === 0) {
-      throw new AppError("BAD_REQUEST", {
+      throw new AppError(AppErrorCode.BadRequest, {
         message: `Report ${input.id} has no suggested edits.`,
       });
     }
@@ -67,7 +69,7 @@ export const applyReportEditsService = async (
     const draft = await openFeedDraftService(tx, {
       adminId: input.adminId,
       feedId: record.feedId,
-      author: FEED_DRAFT_AUTHOR.Operator,
+      author: FeedDraftAuthor.Operator,
     });
     const byLocale: Partial<
       Record<Locale, { oldString: string; newString: string }[]>
@@ -82,11 +84,11 @@ export const applyReportEditsService = async (
       draftId: draft.id,
       adminId: input.adminId,
       expectedRevision: draft.revision,
-      author: FEED_DRAFT_AUTHOR.Operator,
+      author: FeedDraftAuthor.Operator,
       edits: byLocale,
     });
 
-    await setFeedReportStatus(tx, input.id, FEED_REPORT_STATUS.InProgress);
+    await setFeedReportStatus(tx, input.id, FeedReportStatus.InProgress);
     return {
       record: await requireFeedReport(tx, input.id),
       draftId: draft.id,

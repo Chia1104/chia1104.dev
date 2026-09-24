@@ -20,6 +20,7 @@ import type {
   AgentSessionStoreApi,
 } from "./store.ts";
 import {
+  AgentConnection,
   canPrompt,
   createAgentSessionStore,
   isBusy,
@@ -121,7 +122,7 @@ export const AgentSessionProvider = ({
       if (!contextStore.getState().pending) return;
       const state = store.getState();
       if (
-        state.connection !== "idle" ||
+        state.connection !== AgentConnection.Idle ||
         state.view.runStatus === "running" ||
         state.view.pendingApprovals.length > 0
       )

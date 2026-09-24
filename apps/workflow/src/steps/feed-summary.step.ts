@@ -3,14 +3,18 @@ import {
   buildFeedSummaryPrompt,
   normalizeFeedSummary,
 } from "@chia/agent-host/feed-summary";
-import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
+import { AgentTaskId, resolveAgentTask } from "@chia/agent-host/tasks";
 import { FEED_TASK_USAGE_KIND, recordAgentUsage } from "@chia/agent-host/usage";
 import { connectDatabase, invalidateCache } from "@chia/db/client";
 import {
   getFeedForIndexing,
   upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
-import { feedTranslations } from "@chia/db/schema";
+import {
+  AgentCredentialSource,
+  AgentUsageSource,
+  feedTranslations,
+} from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
@@ -40,15 +44,16 @@ export const summarizeFeedStep = async (
   const feed = await getFeedForIndexing(db, { feedId: feedID });
   if (!feed) return null;
 
-  const refs = feed.translations.map((translation) => ({
+  const refOf = (translation: (typeof feed.translations)[number]) => ({
     translationID: translation.id,
     locale: translation.locale,
-  }));
+  });
+  const refs = feed.translations.map(refOf);
 
   const { completeText } = await import("@chia/agent-runtime/pi/complete");
   let task: Awaited<ReturnType<typeof resolveAgentTask>>;
   try {
-    task = await resolveAgentTask(db, AGENT_TASK_IDS.feedSummary);
+    task = await resolveAgentTask(db, AgentTaskId.FeedSummary);
   } catch (error) {
     reportError(error, "Post summary task could not be resolved", { feedID });
     return refs.map((ref) => ({ ...ref, status: "failed: model unavailable" }));
@@ -56,8 +61,8 @@ export const summarizeFeedStep = async (
 
   const results = await Promise.all(
     feed.translations.map(
-      async (translation, index): Promise<FeedSummaryTranslation> => {
-        const ref = refs[index]!;
+      async (translation): Promise<FeedSummaryTranslation> => {
+        const ref = refOf(translation);
         const content = translation.content?.trim();
         if (!content) return { ...ref, status: "skipped: no body" };
 
@@ -78,8 +83,8 @@ export const summarizeFeedStep = async (
             recordAgentUsage(db, {
               userId: feed.userId,
               kind: FEED_TASK_USAGE_KIND,
-              source: "summary",
-              credentialSource: "house",
+              source: AgentUsageSource.Summary,
+              credentialSource: AgentCredentialSource.House,
               ...usage,
             }),
         });

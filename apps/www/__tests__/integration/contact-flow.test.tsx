@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { contactSchema } from "@/shared/validator";
+import type { Contact } from "@/shared/validator";
 
 describe("Contact Form Integration", () => {
   beforeEach(() => {
@@ -167,19 +168,22 @@ describe("Contact Form Integration", () => {
     });
 
     it("應該驗證所有必要欄位都存在", () => {
-      const requiredFields = ["email", "title", "message", "captchaToken"];
+      const requiredFields: (keyof Contact)[] = [
+        "email",
+        "title",
+        "message",
+        "captchaToken",
+      ];
 
       requiredFields.forEach((field) => {
-        const data = {
+        const data: Partial<Contact> = {
           email: "test@example.com",
           title: "測試標題",
           message: "測試訊息內容",
           captchaToken: "token",
         };
 
-        delete data[
-          /* SAFETY: This fixture implements the keyof typeof data members exercised by this case. */ field as keyof typeof data
-        ];
+        delete data[field];
 
         const result = contactSchema.safeParse(data);
         expect(result.success).toBe(false);

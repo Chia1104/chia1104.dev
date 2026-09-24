@@ -28,7 +28,7 @@ import {
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
 import type { AgentModelRef } from "@chia/agent-runtime/models";
-import type { ThinkingLevel } from "@chia/agent-runtime/types";
+import { ThinkingLevel } from "@chia/agent-runtime/types";
 import { agentKindFloor, isCallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { countAgentSessions } from "@chia/db/repos/agent";
@@ -49,9 +49,11 @@ import type {
   AgentQuotaConfig,
   AgentTaskConfig,
 } from "@chia/db/schema";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
+import { isEnumValue } from "@chia/utils/is";
 import type { JsonObject } from "@chia/utils/json";
 
+import { jsonObjectSchema } from "./admin.contract";
 import type {
   AgentKindAdmin,
   AgentQuotaAdmin,
@@ -135,18 +137,17 @@ const kindOrNotFound = async (
 ): Promise<LoadedKind> => {
   const definition = await source.load(kind);
   if (!definition) {
-    throw new AppError("NOT_FOUND", {
+    throw new AppError(AppErrorCode.NotFound, {
       message: `Agent kind "${kind}" is not registered.`,
     });
   }
-  /* SAFETY: every registered kind's config is an object schema; `AgentKindConfigDefinition` says so. */
-  return definition as LoadedKind;
+  return definition;
 };
 
 const taskOrNotFound = (taskId: string): AgentTaskDefinition => {
   const definition = getAgentTaskDefinition(taskId);
   if (!definition) {
-    throw new AppError("NOT_FOUND", {
+    throw new AppError(AppErrorCode.NotFound, {
       message: `Agent task "${taskId}" is not registered.`,
     });
   }
@@ -154,7 +155,7 @@ const taskOrNotFound = (taskId: string): AgentTaskDefinition => {
 };
 
 const badRequest = (message: string) =>
-  new AppError("BAD_REQUEST", { message });
+  new AppError(AppErrorCode.BadRequest, { message });
 
 const assertKindFloor = (definition: LoadedKind, minTier: number) => {
   if (!isCallerTier(minTier)) {
@@ -167,6 +168,14 @@ const assertKindFloor = (definition: LoadedKind, minTier: number) => {
   }
 };
 
+/** A persisted level the contract no longer lists reads as no override. */
+const thinkingLevelOf = (
+  value: string | null | undefined
+): ThinkingLevel | null =>
+  value !== null && value !== undefined && isEnumValue(ThinkingLevel, value)
+    ? value
+    : null;
+
 const kindView = (
   definition: LoadedKind,
   row: AgentKindConfig | undefined
@@ -174,7 +183,7 @@ const kindView = (
   const code = {
     providerId: definition.defaults.providerId,
     modelId: definition.defaults.modelId,
-    thinkingLevel: definition.defaults.thinkingLevel ?? "off",
+    thinkingLevel: definition.defaults.thinkingLevel ?? ThinkingLevel.Off,
     autoApprove: definition.defaults.autoApprove ?? [],
   };
   const effective = effectiveKindDefaults(definition, row);
@@ -191,28 +200,21 @@ const kindView = (
       code,
       override: {
         model: modelRefOf(row),
-        thinkingLevel:
-          /* SAFETY: The admin write validated the column against the contract's enum. */ (row?.thinkingLevel as
-            | ThinkingLevel
-            | null
-            | undefined) ?? null,
+        thinkingLevel: thinkingLevelOf(row?.thinkingLevel),
         autoApprove: row?.autoApprove ?? null,
       },
       effective: {
         providerId: effective.providerId,
         modelId: effective.modelId,
-        thinkingLevel: effective.thinkingLevel ?? "off",
+        thinkingLevel: effective.thinkingLevel ?? ThinkingLevel.Off,
         autoApprove: effective.autoApprove ?? [],
       },
     },
     config: {
-      /* SAFETY: JSON Schema is a JSON object. */
-      schema: z.toJSONSchema(definition.config.schema) as JsonObject,
-      /* SAFETY: a kind's config is validated by a JSON-compatible zod object schema. */
-      defaults: definition.config.defaults as JsonObject,
+      schema: jsonObjectSchema.parse(z.toJSONSchema(definition.config.schema)),
+      defaults: jsonObjectSchema.parse(definition.config.defaults),
       override: row?.config ?? {},
-      /* SAFETY: as above. */
-      effective: effectiveKindConfig(definition, row) as JsonObject,
+      effective: jsonObjectSchema.parse(effectiveKindConfig(definition, row)),
     },
     updatedAt: row?.updatedAt.getTime() ?? null,
   };
@@ -331,8 +333,8 @@ const parseKindConfig = (
       `Invalid configuration for "${definition.kind}": ${z.prettifyError(parsed.error)}`
     );
   }
-  /* SAFETY: the schema is a JSON-compatible object schema; its output is a JSON object. */
-  return parsed.data as JsonObject;
+  // The kind's schema is typed only as an object; jsonb takes JSON alone.
+  return jsonObjectSchema.parse(parsed.data);
 };
 
 const assertTaskModel = (ref: AgentModelRef): void => {

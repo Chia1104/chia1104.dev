@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   accessOf,
-  AGENT_PROVIDERS,
+  AgentProvider,
   createAgentModels,
   HOUSE_ACCESS,
   NO_ACCESS,
@@ -26,11 +26,11 @@ import {
 
 const HOUSE = DEFAULT_PUBLIC_MODEL;
 const GATEWAY_SONNET = {
-  providerId: AGENT_PROVIDERS.gateway,
+  providerId: AgentProvider.Gateway,
   modelId: "anthropic/claude-sonnet-5",
 };
 const NATIVE_SONNET = {
-  providerId: AGENT_PROVIDERS.anthropic,
+  providerId: AgentProvider.Anthropic,
   modelId: "claude-sonnet-5",
 };
 const isPublic = publicModelPolicy(HOUSE);
@@ -57,7 +57,7 @@ describe("publicModelPolicy", () => {
     expect(isPublic(NATIVE_SONNET, NO_ACCESS)).toBe(true);
     expect(
       isPublic(
-        { providerId: AGENT_PROVIDERS.openai, modelId: "gpt-5.4" },
+        { providerId: AgentProvider.OpenAI, modelId: "gpt-5.4" },
         NO_ACCESS
       )
     ).toBe(true);
@@ -89,7 +89,7 @@ describe("resolvePublicModel", () => {
       accessOf(credentials)
     );
 
-    expect(model.provider).toBe(AGENT_PROVIDERS.gateway);
+    expect(model.provider).toBe(AgentProvider.Gateway);
     expect(model.id).toBe(GATEWAY_SONNET.modelId);
   });
 
@@ -104,7 +104,7 @@ describe("resolvePublicModel", () => {
         createAgentModels(credentials),
         accessOf(credentials)
       ).provider
-    ).toBe(AGENT_PROVIDERS.anthropic);
+    ).toBe(AgentProvider.Anthropic);
   });
 });
 
@@ -128,7 +128,7 @@ describe("assertPublicModel", () => {
   it("rejects an id policy admits but the catalogue has never heard of", () => {
     expect(() =>
       assertPublicModel(
-        { providerId: AGENT_PROVIDERS.openai, modelId: "gpt-does-not-exist" },
+        { providerId: AgentProvider.OpenAI, modelId: "gpt-does-not-exist" },
         HOUSE_ACCESS,
         HOUSE
       )
@@ -139,7 +139,7 @@ describe("assertPublicModel", () => {
 describe("listPublicModels", () => {
   it("lists the gateway with only the pinned model usable for a keyless visitor", () => {
     const gateway = listPublicModels(NO_ACCESS, HOUSE).filter(
-      (model) => model.providerId === AGENT_PROVIDERS.gateway
+      (model) => model.providerId === AgentProvider.Gateway
     );
     const usable = gateway.filter((model) => !model.requiresApiKey);
 
@@ -150,7 +150,7 @@ describe("listPublicModels", () => {
 
   it("marks every gateway model usable with house access, so the operator can pin any of them", () => {
     const gateway = listPublicModels(HOUSE_ACCESS, HOUSE).filter(
-      (model) => model.providerId === AGENT_PROVIDERS.gateway
+      (model) => model.providerId === AgentProvider.Gateway
     );
 
     expect(gateway.length).toBeGreaterThan(1);
@@ -161,29 +161,29 @@ describe("listPublicModels", () => {
     const gateway = listPublicModels(
       accessOf({ gateway: "vck" }),
       HOUSE
-    ).filter((model) => model.providerId === AGENT_PROVIDERS.gateway);
+    ).filter((model) => model.providerId === AgentProvider.Gateway);
 
     expect(gateway.every((model) => !model.requiresApiKey)).toBe(true);
   });
 
   it("includes both native providers, flagged until the visitor registers that key", () => {
     const keyless = listPublicModels(NO_ACCESS, HOUSE).filter(
-      (model) => model.providerId !== AGENT_PROVIDERS.gateway
+      (model) => model.providerId !== AgentProvider.Gateway
     );
     expect(new Set(keyless.map((model) => model.providerId))).toEqual(
-      new Set([AGENT_PROVIDERS.openai, AGENT_PROVIDERS.anthropic])
+      new Set([AgentProvider.OpenAI, AgentProvider.Anthropic])
     );
     expect(keyless.every((model) => model.requiresApiKey)).toBe(true);
 
     const withOpenAI = listPublicModels(accessOf({ openai: "sk" }), HOUSE);
     expect(
       withOpenAI
-        .filter((model) => model.providerId === AGENT_PROVIDERS.openai)
+        .filter((model) => model.providerId === AgentProvider.OpenAI)
         .every((model) => !model.requiresApiKey)
     ).toBe(true);
     expect(
       withOpenAI
-        .filter((model) => model.providerId === AGENT_PROVIDERS.anthropic)
+        .filter((model) => model.providerId === AgentProvider.Anthropic)
         .every((model) => model.requiresApiKey)
     ).toBe(true);
   });
@@ -192,6 +192,6 @@ describe("listPublicModels", () => {
 describe("PUBLIC_SESSION_DEFAULTS", () => {
   it("defaults a new session to the house model", () => {
     expect(PUBLIC_SESSION_DEFAULTS).toMatchObject(HOUSE);
-    expect(PUBLIC_SESSION_DEFAULTS.providerId).toBe(AGENT_PROVIDERS.gateway);
+    expect(PUBLIC_SESSION_DEFAULTS.providerId).toBe(AgentProvider.Gateway);
   });
 });

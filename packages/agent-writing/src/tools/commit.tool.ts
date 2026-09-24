@@ -12,12 +12,15 @@ import type {
   ToolCallRefusal,
   ToolCallRequest,
 } from "@chia/agent-runtime/types";
-import type { Locale } from "@chia/db/types";
 
-import { DraftNotFoundError, languageMismatch } from "../draft/operations.ts";
+import {
+  DraftNotFoundError,
+  languageMismatch,
+  localesOf,
+} from "../draft/operations.ts";
 import type { FeedDraft, WritingToolContext } from "../types.ts";
 
-import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
+import { TOOL_INFO_BY_NAME, ToolName } from "./registry.ts";
 import { DraftIdSchema } from "./schema.ts";
 
 /**
@@ -28,8 +31,7 @@ import { DraftIdSchema } from "./schema.ts";
 
 /** Why a draft cannot be applied yet; the apply service rejects the same cases. */
 const commitBlocker = (draft: FeedDraft): string | undefined => {
-  // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
-  const locales = Object.keys(draft.translations) as Locale[];
+  const locales = localesOf(draft.translations);
   if (locales.length === 0) {
     return "The draft is empty. Write at least one locale before committing.";
   }
@@ -59,8 +61,7 @@ const METADATA_FIELDS = ["excerpt", "description"] as const;
 
 /** Per locale, the optional metadata still empty, as `"en: excerpt, description"`. */
 const metadataGapsOf = (draft: FeedDraft): string[] =>
-  // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
-  (Object.keys(draft.translations) as Locale[]).flatMap((locale) => {
+  localesOf(draft.translations).flatMap((locale) => {
     const translation = draft.translations[locale];
     const missing = METADATA_FIELDS.filter((field) => !translation?.[field]);
     return missing.length > 0 ? [`${locale}: ${missing.join(", ")}`] : [];
@@ -78,7 +79,7 @@ const commitArgsSchema = z.object({
 export const commitPreflight =
   (context: WritingToolContext) =>
   async (request: ToolCallRequest): Promise<ToolCallRefusal | undefined> => {
-    if (request.toolName !== TOOL_NAMES.commitDraft) return undefined;
+    if (request.toolName !== ToolName.CommitDraft) return undefined;
     const args = commitArgsSchema.safeParse(request.input);
     if (!args.success) return undefined;
 
@@ -109,8 +110,8 @@ export const commitPreflight =
   };
 
 export const commitDraftSpec = {
-  name: TOOL_NAMES.commitDraft,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.commitDraft].label,
+  name: ToolName.CommitDraft,
+  label: TOOL_INFO_BY_NAME[ToolName.CommitDraft].label,
   description:
     "Apply a draft to the database as an UNPUBLISHED post (or update the post the draft is " +
     "already bound to). Requires human approval. This does NOT publish; use `set_published` " +
@@ -169,8 +170,8 @@ export const commitDraftTool = defineTool(
 );
 
 export const setPublishedSpec = {
-  name: TOOL_NAMES.setPublished,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.setPublished].label,
+  name: ToolName.SetPublished,
+  label: TOOL_INFO_BY_NAME[ToolName.SetPublished].label,
   description:
     "Publish or unpublish a post. Requires human approval. Publishing makes the post publicly " +
     "visible and triggers reading-time, search-index and embedding jobs. A draft has to be " +

@@ -70,7 +70,12 @@ const defaultFormatTime = (timestamp: number) =>
     timeStyle: "short",
   }).format(timestamp);
 
-type SessionAction = "rename" | "delete";
+const SessionAction = {
+  Rename: "rename",
+  Delete: "delete",
+} as const;
+
+type SessionAction = (typeof SessionAction)[keyof typeof SessionAction];
 
 interface PendingAction {
   type: SessionAction;
@@ -305,11 +310,17 @@ export const SessionTabs = ({
 
       {onRename ? (
         <RenameSessionDialog
-          key={pending?.type === "rename" ? pending.session.id : "closed"}
+          key={
+            pending?.type === SessionAction.Rename
+              ? pending.session.id
+              : "closed"
+          }
           labels={labels}
           onClose={() => setPending(null)}
           onRename={onRename}
-          session={pending?.type === "rename" ? pending.session : null}
+          session={
+            pending?.type === SessionAction.Rename ? pending.session : null
+          }
         />
       ) : null}
       {onDelete ? (
@@ -317,7 +328,9 @@ export const SessionTabs = ({
           labels={labels}
           onClose={() => setPending(null)}
           onDelete={onDelete}
-          session={pending?.type === "delete" ? pending.session : null}
+          session={
+            pending?.type === SessionAction.Delete ? pending.session : null
+          }
         />
       ) : null}
     </div>
@@ -351,12 +364,13 @@ const SessionActions = ({
         className="p-0"
         aria-label={labels.sessionActions}
         onAction={(key) => {
-          if (key === "rename" || key === "delete") onAction(key);
+          if (key === SessionAction.Rename || key === SessionAction.Delete)
+            onAction(key);
         }}>
         {withRename ? (
           <Dropdown.Item
             className="text-xs"
-            id="rename"
+            id={SessionAction.Rename}
             textValue={labels.renameSession}>
             <Pencil className="size-3.5" />
             {labels.renameSession}
@@ -364,7 +378,7 @@ const SessionActions = ({
         ) : null}
         {withDelete ? (
           <Dropdown.Item
-            id="delete"
+            id={SessionAction.Delete}
             className="text-xs"
             textValue={labels.deleteSession}
             variant="danger">

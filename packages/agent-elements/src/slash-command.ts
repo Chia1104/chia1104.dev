@@ -38,7 +38,7 @@ const quoteArgument = (value: string): string =>
   value.length === 0 || /[\s"'\\]/.test(value) ? JSON.stringify(value) : value;
 
 const isSlashBoundary = (text: string, index: number): boolean =>
-  index === 0 || !/[A-Za-z0-9_./:-]/.test(text[index - 1]!);
+  index === 0 || !/[A-Za-z0-9_./:-]/.test(text.charAt(index - 1));
 
 export const formatSlashCommand = (
   name: string,
@@ -149,13 +149,14 @@ const tokenizeArguments = (input: string): string[] | null => {
 };
 
 export const parseSlashCommand = (text: string): SlashCommandParseResult => {
-  const match = /^\/([^\s]+)(?:\s+([\s\S]*))?$/.exec(text.trim());
-  if (!match) return { type: "none" };
-  const args = tokenizeArguments(match[2] ?? "");
+  const [, name, rest] =
+    /^\/([^\s]+)(?:\s+([\s\S]*))?$/.exec(text.trim()) ?? [];
+  if (!name) return { type: "none" };
+  const args = tokenizeArguments(rest ?? "");
   if (!args) return { type: "invalid" };
   return {
     type: "command",
-    command: { name: match[1]!, args },
+    command: { name, args },
   };
 };
 
@@ -166,8 +167,8 @@ export const findSlashCommand = (
   const pattern = /\/([^\s]+)/g;
   for (const match of text.matchAll(pattern)) {
     if (!isSlashBoundary(text, match.index)) continue;
-    const name = match[1]!;
-    if (!names.has(name)) continue;
+    const name = match[1];
+    if (!name || !names.has(name)) continue;
     const start = match.index;
     const end = start + name.length + 1;
     const args = tokenizeArguments(text.slice(end).trim());

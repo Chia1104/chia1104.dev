@@ -1,7 +1,9 @@
 import { call } from "@orpc/server";
 import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest";
 
-import { AppError } from "@chia/service-kit/errors";
+import { ThinkingLevel } from "@chia/agent-runtime/types";
+import { CallerTier } from "@chia/auth/tier";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 import { contextOf } from "@chia/test/context";
 import { stubTestEnv } from "@chia/test/env";
 import { it as orpcIt } from "@chia/test/orpc";
@@ -17,19 +19,23 @@ const kind: AgentKindAdmin = {
   kind: "writing",
   label: "Writing",
   description: "Drafts posts.",
-  minTier: { code: 4, override: null, effective: 4 },
+  minTier: {
+    code: CallerTier.Root,
+    override: null,
+    effective: CallerTier.Root,
+  },
   defaults: {
     code: {
       providerId: "vercel-ai-gateway",
       modelId: "anthropic/claude-sonnet-5",
-      thinkingLevel: "off",
+      thinkingLevel: ThinkingLevel.Off,
       autoApprove: [],
     },
     override: { model: null, thinkingLevel: null, autoApprove: null },
     effective: {
       providerId: "vercel-ai-gateway",
       modelId: "anthropic/claude-sonnet-5",
-      thinkingLevel: "off",
+      thinkingLevel: ThinkingLevel.Off,
       autoApprove: [],
     },
   },
@@ -241,7 +247,7 @@ describe("agent admin routes", () => {
     context,
   }) => {
     service.updateTask.mockRejectedValue(
-      new AppError("NOT_FOUND", {
+      new AppError(AppErrorCode.NotFound, {
         message: 'Agent task "nope" is not registered.',
       })
     );

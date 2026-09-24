@@ -4,11 +4,13 @@ import type {
   ContentReadPort,
   ProfileReadPort,
 } from "@chia/agent-content/types";
+import type { PublicConfig } from "@chia/agent-public/config";
 import { PUBLIC_AGENT_KIND } from "@chia/agent-public/models";
 import { CallerTier } from "@chia/auth/tier";
-import type { DB } from "@chia/db/client";
 
-import type { AgentKindCaller } from "../src/kind";
+import type { PublicAgentState } from "../src/public";
+
+import { callerOf, db, turnContextOf } from "./kind.fixture";
 
 const feeds = vi.hoisted(() => ({
   getFeedById: vi.fn(),
@@ -19,14 +21,15 @@ vi.mock("@chia/db/repos/feeds", () => feeds);
 const { createPublicAgentExecutor, createPublicAgentKind } =
   await import("../src/public");
 
-/* SAFETY: the feed lookup is mocked; nothing else in the kind touches the handle. */
-const db = {} as DB;
+const caller = callerOf(CallerTier.Guest, "guest");
 
-const caller: AgentKindCaller =
-  /* SAFETY: `attach` ignores the caller; a guest's selection is scoped by the post's visibility. */ {
-    tier: CallerTier.Guest,
-    userId: "guest",
-  } as AgentKindCaller;
+/** A public session owned by `userId`, under the operator's `config`. */
+const contextOf = (userId: string, config: PublicConfig = {}) =>
+  turnContextOf<PublicAgentState, PublicConfig>({
+    state: {},
+    config,
+    row: { kind: PUBLIC_AGENT_KIND, userId },
+  });
 
 const selectionOf = (feedId: number) => ({
   type: "selection" as const,
@@ -155,13 +158,7 @@ describe("createPublicAgentExecutor", () => {
       isSignedIn: () => Promise.resolve(false),
     });
 
-    const turn = await executor.prepareTurn(
-      /* SAFETY: the kind reads only the db handle, the owner and config from the context. */ {
-        db,
-        row: { id: "session-1", userId: "guest" },
-        config: {},
-      } as never
-    );
+    const turn = await executor.prepareTurn(contextOf("guest"));
 
     expect(turn.tools.map((tool) => tool.name)).toEqual([
       "search_posts",
@@ -195,11 +192,7 @@ describe("createPublicAgentExecutor", () => {
         isSignedIn: () => Promise.resolve(options.signedIn),
       });
       const turn = await executor.prepareTurn(
-        /* SAFETY: the kind reads only the db handle, the owner and config from the context. */ {
-          db,
-          row: { id: "session-1", userId: "user-1" },
-          config: { webAccess: options.webAccess },
-        } as never
+        contextOf("user-1", { webAccess: options.webAccess })
       );
       return turn.tools.map((tool) => tool.name);
     };
@@ -228,13 +221,7 @@ describe("createPublicAgentExecutor", () => {
         },
         createReportPort,
         isSignedIn: () => Promise.resolve(signedIn),
-      }).prepareTurn(
-        /* SAFETY: the kind reads only the db handle, the owner and config from the context. */ {
-          db,
-          row: { id: "session-1", userId: "user-1" },
-          config: {},
-        } as never
-      );
+      }).prepareTurn(contextOf("user-1"));
 
     const granted = await prepare(true);
     expect(granted.tools.map((tool) => tool.name)).toContain("report_issue");

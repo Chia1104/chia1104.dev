@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { applyEdits } from "../src/text";
-import { lineChangesOf, textChangesOf, toEdits } from "../src/text/diff";
+import { ExactReplaceFailure, applyEdits } from "../src/text";
+import {
+  LineChangeKind,
+  lineChangesOf,
+  textChangesOf,
+  toEdits,
+} from "../src/text/diff";
 
 const land = (content: string, before: string, after: string) =>
   applyEdits(content, toEdits(before, after), { exactOnly: true });
@@ -87,7 +92,7 @@ describe("toEdits", () => {
     const theirs = body.replace("Text of A.", "Text of A, by them.");
     expect(land(theirs, body, mine)).toMatchObject({
       ok: false,
-      reason: "not_found",
+      reason: ExactReplaceFailure.NotFound,
     });
   });
 
@@ -96,7 +101,7 @@ describe("toEdits", () => {
     const theirs = `${body}\n## Section B\n\nText of B.\n`;
     expect(land(theirs, body, mine)).toMatchObject({
       ok: false,
-      reason: "ambiguous",
+      reason: ExactReplaceFailure.Ambiguous,
     });
   });
 
@@ -105,7 +110,7 @@ describe("toEdits", () => {
       applyEdits("say “hi”  \n", [{ oldString: 'say "hi"', newString: "x" }], {
         exactOnly: true,
       })
-    ).toMatchObject({ ok: false, reason: "not_found" });
+    ).toMatchObject({ ok: false, reason: ExactReplaceFailure.NotFound });
   });
 });
 
@@ -119,32 +124,32 @@ describe("lineChangesOf", () => {
   it("marks added lines where they now are", () => {
     expect(
       lineChangesOf(before, "one\ntwo\nnew a\nnew b\nthree\nfour\n")
-    ).toEqual([{ kind: "added", startLine: 3, endLine: 4 }]);
+    ).toEqual([{ kind: LineChangeKind.Added, startLine: 3, endLine: 4 }]);
   });
 
   it("marks a replaced run as modified over the lines that replaced it", () => {
     expect(lineChangesOf(before, "one\nTWO\nTWO again\nthree\nfour\n")).toEqual(
-      [{ kind: "modified", startLine: 2, endLine: 3 }]
+      [{ kind: LineChangeKind.Modified, startLine: 2, endLine: 3 }]
     );
   });
 
   it("marks a deletion on the line that follows it, or below the last line", () => {
     expect(lineChangesOf(before, "one\nfour\n")).toEqual([
-      { kind: "deleted", startLine: 2, endLine: 2 },
+      { kind: LineChangeKind.Deleted, startLine: 2, endLine: 2 },
     ]);
     expect(lineChangesOf("one\ntwo\nthree", "one")).toEqual([
-      { kind: "modified", startLine: 1, endLine: 1 },
+      { kind: LineChangeKind.Modified, startLine: 1, endLine: 1 },
     ]);
     expect(lineChangesOf("one\ntwo\nthree\n", "one\n")).toEqual([
-      { kind: "deleted", startLine: 2, endLine: 2 },
+      { kind: LineChangeKind.Deleted, startLine: 2, endLine: 2 },
     ]);
   });
 
   it("reports several changes in document order", () => {
     expect(lineChangesOf(before, "zero\none\ntwo!\nthree\n")).toEqual([
-      { kind: "added", startLine: 1, endLine: 1 },
-      { kind: "modified", startLine: 3, endLine: 3 },
-      { kind: "deleted", startLine: 5, endLine: 5 },
+      { kind: LineChangeKind.Added, startLine: 1, endLine: 1 },
+      { kind: LineChangeKind.Modified, startLine: 3, endLine: 3 },
+      { kind: LineChangeKind.Deleted, startLine: 5, endLine: 5 },
     ]);
   });
 });

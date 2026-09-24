@@ -79,10 +79,10 @@ export const VideoPlayer = ({ src, poster, className }: VideoPlayerProps) => {
 
   const handleSeek = useCallback(
     (v: number | number[]) => {
-      const t =
-        /* SAFETY: The producer contract guarantees this value satisfies number. */ v as number;
-      if (videoRef.current) videoRef.current.currentTime = t;
-      setCurrentTime(t);
+      // One thumb, so the slider reports a single number.
+      if (Array.isArray(v)) return;
+      if (videoRef.current) videoRef.current.currentTime = v;
+      setCurrentTime(v);
       revealControls();
     },
     [revealControls]

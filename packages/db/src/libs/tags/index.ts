@@ -7,8 +7,7 @@ import {
   tags,
   tagTranslations,
 } from "../../schemas/schema.ts";
-import type { Locale } from "../../schemas/schema.ts";
-import { Locale as LocaleEnum } from "../../types.ts";
+import { Locale } from "../../types.ts";
 import type { TagWrite } from "../validator/tags.ts";
 
 export interface TagTranslationView {
@@ -30,8 +29,6 @@ export interface TagCountScope {
   /** `true` counts published feeds only; `undefined` counts every live feed. */
   published?: true;
 }
-
-const LOCALES = [LocaleEnum.zhTW, LocaleEnum.En] as const;
 
 const feedCountOf = (tagId: typeof tags.id, scope: TagCountScope) =>
   sql<number>`(
@@ -104,7 +101,7 @@ export const getTagIdBySlug = async (
 };
 
 const translationRows = (tagId: number, write: TagWrite) =>
-  LOCALES.map((locale) => ({
+  Object.values(Locale).map((locale) => ({
     tagId,
     locale,
     name: write.translations[locale].name,

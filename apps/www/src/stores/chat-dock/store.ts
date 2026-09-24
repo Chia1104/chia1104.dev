@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { DockMode } from "@chia/ui/dock";
+import { DockMode } from "@chia/ui/dock";
 
 interface ChatDockStore {
   mode: DockMode;
@@ -19,10 +19,13 @@ interface ChatDockStore {
 export const useChatDockStore = create<ChatDockStore>()(
   persist(
     (set) => ({
-      mode: "closed",
+      mode: DockMode.Closed,
       setMode: (mode) => set({ mode }),
       toggle: () =>
-        set((state) => ({ mode: state.mode === "closed" ? "open" : "closed" })),
+        set((state) => ({
+          mode:
+            state.mode === DockMode.Closed ? DockMode.Open : DockMode.Closed,
+        })),
     }),
     {
       name: "CHAT_DOCK_STORE",

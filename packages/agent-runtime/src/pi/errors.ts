@@ -3,7 +3,8 @@ import { isContextOverflow } from "@earendil-works/pi-ai";
 
 import { messageOf } from "@chia/utils/error-helper";
 
-import type { AgentErrorKind, AgentTurnError } from "../types.ts";
+import { AgentErrorKind } from "../types.ts";
+import type { AgentTurnError } from "../types.ts";
 
 /**
  * Maps Pi's failure surface onto one {@link AgentTurnError}.
@@ -19,10 +20,10 @@ const RATE_LIMITED =
   /\b429\b|rate.?limit|too many requests|overloaded|resource.?exhausted/i;
 
 const kindOfMessage = (message: string): AgentErrorKind => {
-  if (QUOTA.test(message)) return "quota";
-  if (AUTH.test(message)) return "auth";
-  if (RATE_LIMITED.test(message)) return "rate_limited";
-  return "provider";
+  if (QUOTA.test(message)) return AgentErrorKind.Quota;
+  if (AUTH.test(message)) return AgentErrorKind.Auth;
+  if (RATE_LIMITED.test(message)) return AgentErrorKind.RateLimited;
+  return AgentErrorKind.Provider;
 };
 
 /** Classifies an assistant message that ended with `stopReason: "error"`. */
@@ -32,13 +33,13 @@ export const errorOfAssistantMessage = (
 ): AgentTurnError => {
   const text = message.errorMessage ?? "The provider returned an error.";
   if (isContextOverflow(message, contextWindow)) {
-    return { kind: "context_overflow", message: text };
+    return { kind: AgentErrorKind.ContextOverflow, message: text };
   }
   return { kind: kindOfMessage(text), message: text };
 };
 
 /** Classifies an error thrown by the harness, a hook, or turn persistence. */
 export const errorOfThrown = (cause: unknown): AgentTurnError => ({
-  kind: "internal",
+  kind: AgentErrorKind.Internal,
   message: messageOf(cause),
 });

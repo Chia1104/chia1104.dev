@@ -6,7 +6,7 @@ import {
   asString,
 } from "@chia/utils/json";
 
-import { CONTENT_TOOL_NAMES } from "./registry.ts";
+import { ContentToolName } from "./registry.ts";
 
 /**
  * One transcript line for a content read tool's result, or `undefined` for a tool that is not
@@ -19,16 +19,16 @@ export const summarizeContentToolResult = <TResult>(
   const details = toolResultDetails(result);
 
   switch (toolName) {
-    case CONTENT_TOOL_NAMES.searchPosts: {
+    case ContentToolName.SearchPosts: {
       const hits = asJsonArray(details?.hits);
       return hits ? `${hits.length} match(es).` : "Searched.";
     }
-    case CONTENT_TOOL_NAMES.getPost: {
+    case ContentToolName.GetPost: {
       const post = asJsonObject(details?.post);
       const slug = asString(post?.slug);
       return slug ? `Read \`${slug}\`.` : "Read post.";
     }
-    case CONTENT_TOOL_NAMES.listPosts: {
+    case ContentToolName.ListPosts: {
       const posts = asJsonArray(details?.posts);
       const total = asNumber(details?.total);
       if (!posts) return "Listed posts.";
@@ -36,7 +36,7 @@ export const summarizeContentToolResult = <TResult>(
         ? `${posts.length} post(s).`
         : `${posts.length} of ${total} post(s).`;
     }
-    case CONTENT_TOOL_NAMES.listTags: {
+    case ContentToolName.ListTags: {
       const tags = asJsonArray(details?.tags);
       return tags ? `${tags.length} tag(s).` : "Listed tags.";
     }

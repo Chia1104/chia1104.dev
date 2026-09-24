@@ -17,8 +17,8 @@ const endpoint = new URL(
 /** The dashboard's only oRPC client. Every call is from the browser with the session cookie; there is no server-side or in-process path. */
 export const link = new RPCLink({
   origin: endpoint.origin,
-  /** SAFETY: `URL.pathname` always starts with `/`. */
-  url: endpoint.pathname as `/${string}`,
+  /** `URL.pathname` always starts with `/`, so this is the pathname unchanged. */
+  url: `/${endpoint.pathname.slice(1)}`,
   fetch: (url, init) =>
     globalThis.fetch(url, { ...init, credentials: "include" }),
 });

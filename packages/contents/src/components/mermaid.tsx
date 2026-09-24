@@ -3,7 +3,10 @@
 import { use, useEffect, useId, useState } from "react";
 
 import { Button, Card, Modal, ScrollShadow } from "@heroui/react";
+import type { RenderResult } from "mermaid";
 import { useTheme } from "next-themes";
+
+import { Theme } from "@chia/ui/utils/use-theme";
 
 export function Mermaid({ chart }: { chart: string }) {
   const [mounted, setMounted] = useState(false);
@@ -14,15 +17,16 @@ export function Mermaid({ chart }: { chart: string }) {
   return <MermaidContent chart={chart} />;
 }
 
-const cache = new Map<string, Promise<unknown>>();
+const moduleCache = new Map<string, Promise<typeof import("mermaid")>>();
+const renderCache = new Map<string, Promise<RenderResult>>();
 
 function cachePromise<T>(
+  cache: Map<string, Promise<T>>,
   key: string,
   setPromise: () => Promise<T>
 ): Promise<T> {
   const cached = cache.get(key);
-  if (cached)
-    return /* SAFETY: The producer contract guarantees this value satisfies Promise<T>. */ cached as Promise<T>;
+  if (cached) return cached;
   const promise = setPromise();
   cache.set(key, promise);
   return promise;
@@ -32,17 +36,17 @@ function MermaidContent({ chart }: { chart: string }) {
   const id = useId();
   const { resolvedTheme } = useTheme();
   const { default: mermaid } = use(
-    cachePromise("mermaid", () => import("mermaid"))
+    cachePromise(moduleCache, "mermaid", () => import("mermaid"))
   );
   mermaid.initialize({
     startOnLoad: false,
     securityLevel: "loose",
     fontFamily: "inherit",
     themeCSS: "margin: 1.5rem auto 0;",
-    theme: resolvedTheme === "dark" ? "dark" : "default",
+    theme: resolvedTheme === Theme.Dark ? "dark" : "default",
   });
   const { svg, bindFunctions } = use(
-    cachePromise(`${chart}-${resolvedTheme}`, () => {
+    cachePromise(renderCache, `${chart}-${resolvedTheme}`, () => {
       return mermaid.render(id, chart.replaceAll("\\n", "\n"));
     })
   );

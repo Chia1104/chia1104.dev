@@ -4,7 +4,7 @@ import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
-import { WEB_SEARCH_RECENCIES } from "@chia/agent-content/types";
+import { WebSearchRecency } from "@chia/agent-content/types";
 import type { WebPort, WebSearchResult } from "@chia/agent-content/types";
 import {
   defineTool,
@@ -17,7 +17,7 @@ import { GUARD_THRESHOLD } from "@chia/ai/guard/provider";
 import type { GuardProvider } from "@chia/ai/guard/provider";
 import { logger } from "@chia/observability/logger";
 
-import { WEB_TOOL_INFO_BY_NAME, WEB_TOOL_NAMES } from "./registry.ts";
+import { WEB_TOOL_INFO_BY_NAME, WebToolName } from "./registry.ts";
 
 /**
  * Outbound web for a visitor's turn. Everything that comes back is text a stranger wrote, so it
@@ -108,8 +108,8 @@ const formatResult = (result: WebSearchResult, index: number): string => {
 };
 
 export const webSearchSpec = {
-  name: WEB_TOOL_NAMES.webSearch,
-  label: WEB_TOOL_INFO_BY_NAME[WEB_TOOL_NAMES.webSearch].label,
+  name: WebToolName.WebSearch,
+  label: WEB_TOOL_INFO_BY_NAME[WebToolName.WebSearch].label,
   description:
     "Search the web. Use it only after the blog's own posts did not settle the question, to " +
     "check whether something a post says is still current or to fill a gap the posts leave. " +
@@ -118,7 +118,7 @@ export const webSearchSpec = {
   parameters: Type.Object({
     query: Type.String({ description: "The search query.", minLength: 1 }),
     recency: optional(
-      StringEnum([...WEB_SEARCH_RECENCIES], {
+      StringEnum(Object.values(WebSearchRecency), {
         description: "Only results from the last day, week, month or year.",
       })
     ),
@@ -127,8 +127,8 @@ export const webSearchSpec = {
 } satisfies ToolSpec;
 
 export const fetchUrlSpec = {
-  name: WEB_TOOL_NAMES.fetchUrl,
-  label: WEB_TOOL_INFO_BY_NAME[WEB_TOOL_NAMES.fetchUrl].label,
+  name: WebToolName.FetchUrl,
+  label: WEB_TOOL_INFO_BY_NAME[WebToolName.FetchUrl].label,
   description:
     "Read one page that `web_search` returned in this turn, as markdown. Any other URL is " +
     `refused, including one the visitor typed. At most ${MAX_FETCHES} pages per turn.`,

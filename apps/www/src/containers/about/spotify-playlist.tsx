@@ -11,6 +11,8 @@ import PreviewLink from "@/components/commons/preview-link";
 import { env } from "@/env";
 import { client } from "@/libs/orpc/client.rsc";
 
+type PlaylistItem = PlayList["tracks"]["items"][number];
+
 const ImageItem: FC<{
   src: string;
   alt: string;
@@ -57,7 +59,7 @@ const PlayIcon: FC<{
 );
 
 const First: FC<{
-  data: ReturnType<typeof getTop4>[0];
+  data: PlaylistItem;
 }> = ({ data }) => {
   return (
     <div className="page-sm:items-start flex w-full flex-col items-center">
@@ -83,7 +85,7 @@ const First: FC<{
 };
 
 const Item: FC<{
-  data: ReturnType<typeof getTop4>[0];
+  data: PlaylistItem;
 }> = ({ data }) => {
   return (
     <div className="hover:dark:bg-dark/80 relative grid w-full grid-cols-3 items-center justify-center gap-3 rounded-2xl transition-all hover:cursor-pointer hover:bg-white/80 hover:shadow-md">
@@ -107,23 +109,11 @@ const Item: FC<{
   );
 };
 
-const getTop4 = (data: PlayList) => {
-  return /* SAFETY: The producer contract guarantees this value satisfies [ PlayList["tracks"]["items"][0], PlayList["tracks"]["items"][1], PlayList["tracks"]["items"][2], Pl. */ data.tracks.items.slice(
-    0,
-    4
-  ) as [
-    PlayList["tracks"]["items"][0],
-    PlayList["tracks"]["items"][1],
-    PlayList["tracks"]["items"][2],
-    PlayList["tracks"]["items"][3],
-  ];
-};
-
 export async function SpotifyPlaylist() {
   const playlist = await client.spotify.playlist({
     playlistId: env.SPOTIFY_FAVORITE_PLAYLIST_ID ?? "default",
   });
-  const data = getTop4(playlist);
+  const [first, second, third, fourth] = playlist.tracks.items;
   const href = `https://open.spotify.com/playlist/${playlist.id}`;
 
   return (
@@ -136,12 +126,12 @@ export async function SpotifyPlaylist() {
         }}
         className="page-sm:grid-cols-2 page-sm:py-3 grid w-full grid-cols-1 gap-2 overflow-hidden px-5 py-7">
         <div className="flex w-full items-center">
-          <First data={data[0]} />
+          {first && <First data={first} />}
         </div>
         <div className="flex w-full flex-col gap-3">
-          <Item data={data[1]} />
-          <Item data={data[2]} />
-          <Item data={data[3]} />
+          {second && <Item data={second} />}
+          {third && <Item data={third} />}
+          {fourth && <Item data={fourth} />}
         </div>
       </NoiseBackground>
       <div className="mt-5 flex items-center gap-3">

@@ -1,14 +1,17 @@
 import { DocsBody } from "fumadocs-ui/page";
-import type { MDXContent } from "mdx/types";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
 import FeedContent from "./content";
-import type { GetContentPropsReturn, ContentContextProps } from "./types";
+import type {
+  ContentContextProps,
+  ContentProps,
+  GetContentPropsReturn,
+} from "./types";
 
 export const MDXBody = (props: {
   className?: string;
-  MDXContent: MDXContent;
+  MDXContent: ContentProps["content"];
 }) => {
   return (
     <DocsBody
@@ -26,12 +29,7 @@ export const Content = async (props: {
   const { content, ...rest } = await props.content;
   return (
     <FeedContent {...rest} {...props.context}>
-      <MDXBody
-        MDXContent={
-          /* SAFETY: `compileMDX` returns the compiled MDX body component. */ content as MDXContent
-        }
-        className={props.className}
-      />
+      <MDXBody MDXContent={content} className={props.className} />
     </FeedContent>
   );
 };

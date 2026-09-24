@@ -1,11 +1,11 @@
 import GithubSlugger from "github-slugger";
 
 import {
+  MarkdownFormat,
   buildHeadingOutline,
   extractHeadings,
   splitByHeadings,
 } from "./markdown.ts";
-import type { MarkdownFormat } from "./markdown.ts";
 import { tryLoadTokenizer } from "./tokenizer.ts";
 import { estimateEmbeddingTokens } from "./utils.ts";
 
@@ -25,7 +25,13 @@ export const DEFAULT_CONTEXT_TOKEN_BUDGET = 24_000;
 /** Cap so one document cannot starve the ones after it; the last document has none and takes what remains. */
 const MAX_SHARE_PER_DOCUMENT = 0.6;
 
-export type ContextDetail = "full" | "sections" | "outline";
+export const ContextDetail = {
+  Full: "full",
+  Sections: "sections",
+  Outline: "outline",
+} as const;
+
+export type ContextDetail = (typeof ContextDetail)[keyof typeof ContextDetail];
 
 export interface DocumentContextInput {
   slug: string;
@@ -79,7 +85,7 @@ export interface BuildContextResult {
 export const buildHeadingAnchors = async (
   content: string,
   keepPaths?: ReadonlySet<string>,
-  format: MarkdownFormat = "mdx"
+  format: MarkdownFormat = MarkdownFormat.Mdx
 ): Promise<HeadingAnchor[]> => {
   const slugger = new GithubSlugger();
   const anchors = (await extractHeadings(content, format)).map((heading) => ({
@@ -122,7 +128,10 @@ const buildSectionsView = async (
   maxTokens: number,
   encoding: Awaited<ReturnType<typeof tryLoadTokenizer>>
 ): Promise<{ text: string; keptPaths: Set<string> }> => {
-  const sections = await splitByHeadings(input.content, input.format ?? "mdx");
+  const sections = await splitByHeadings(
+    input.content,
+    input.format ?? MarkdownFormat.Mdx
+  );
   const matched = new Set(
     (input.matchedHeadingPaths ?? []).filter((path): path is string => !!path)
   );
@@ -162,7 +171,9 @@ const buildSectionsView = async (
 const buildOutlineView = async (input: DocumentContextInput): Promise<string> =>
   [
     input.summary?.trim() ? input.summary.trim() : null,
-    await buildHeadingOutline(input.content, { format: input.format ?? "mdx" }),
+    await buildHeadingOutline(input.content, {
+      format: input.format ?? MarkdownFormat.Mdx,
+    }),
   ]
     .filter((part): part is string => !!part)
     .join("\n\n");
@@ -208,13 +219,13 @@ export const buildDocumentContext = async (
       text: string;
       keepPaths?: ReadonlySet<string>;
     }[] = [
-      { detail: "full", text: input.content },
+      { detail: ContextDetail.Full, text: input.content },
       {
-        detail: "sections",
+        detail: ContextDetail.Sections,
         text: sections.text,
         keepPaths: sections.keptPaths,
       },
-      { detail: "outline", text: outlineView },
+      { detail: ContextDetail.Outline, text: outlineView },
     ];
 
     let chosen: DocumentContext | null = null;
@@ -234,7 +245,7 @@ export const buildDocumentContext = async (
           anchors: await buildHeadingAnchors(
             input.content,
             candidate.keepPaths,
-            input.format ?? "mdx"
+            input.format ?? MarkdownFormat.Mdx
           ),
         };
         break;
@@ -252,7 +263,7 @@ export const buildDocumentContext = async (
         slug: input.slug,
         locale: input.locale,
         title: input.title,
-        detail: "outline",
+        detail: ContextDetail.Outline,
         text,
         tokenCount: countTokens(text, encoding),
         anchors: [],

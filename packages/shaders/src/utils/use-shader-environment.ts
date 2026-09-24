@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 
 import { useHydrated } from "@chia/ui/utils/use-hydrated";
-import useTheme from "@chia/ui/utils/use-theme";
+import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
@@ -28,7 +28,7 @@ const useShaderEnvironment = () => {
   );
   return {
     canRender: isHydrated && !!resolvedTheme,
-    isDarkMode: resolvedTheme === "dark",
+    isDarkMode: resolvedTheme === Theme.Dark,
     reduceMotion,
   };
 };

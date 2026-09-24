@@ -1,7 +1,7 @@
 import { loadKindConfig } from "@chia/agent-host/config";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { assertWithinAgentQuota } from "@chia/agent-host/quota";
-import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
+import { AgentTaskId, resolveAgentTask } from "@chia/agent-host/tasks";
 import { sessionUsageListener } from "@chia/agent-host/usage";
 import { accessOf, createAgentModels } from "@chia/agent-runtime/models";
 import { canCompactBranch } from "@chia/agent-runtime/pi/compaction";
@@ -15,8 +15,9 @@ import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type { AgentNavigationOptions } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import { deleteAgentSession, withAgentSessionLock } from "@chia/db/repos/agent";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 
+import { AgentRunState } from "./agent.contract";
 import type { AgentServiceHost } from "./agent.factory";
 import type { AgentKindService, AgentServiceCaller } from "./agent.service";
 import { runStateOf } from "./run-liveness";
@@ -36,13 +37,13 @@ type OwnedSession<TState, TConfig extends object> = NonNullable<
 const MAINTENANCE_DEADLINE_MS = 120_000;
 
 const maintenanceTimedOut = (action: string, cause?: unknown) =>
-  new AppError("TIMEOUT", {
+  new AppError(AppErrorCode.Timeout, {
     message: `Could not ${action} within ${MAINTENANCE_DEADLINE_MS / 1000}s. The conversation is unchanged.`,
     cause,
   });
 
 const nothingToCompact = () =>
-  new AppError("CONFLICT", {
+  new AppError(AppErrorCode.Conflict, {
     message:
       "Nothing to compact: the conversation still fits in what a compaction keeps.",
   });
@@ -61,14 +62,14 @@ export const createAgentMaintenanceOperations = <
     db: DB,
     action: string
   ): Promise<void> => {
-    if ((await runStateOf(host.runs, row))?.status === "running") {
-      throw new AppError("CONFLICT", {
+    if ((await runStateOf(host.runs, row))?.status === AgentRunState.Running) {
+      throw new AppError(AppErrorCode.Conflict, {
         message: `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`,
       });
     }
     const outstanding = await sessions.undecidedApprovals(db, row.id);
     if (outstanding.length > 0) {
-      throw new AppError("CONFLICT", {
+      throw new AppError(AppErrorCode.Conflict, {
         message: `Cannot ${action} while \`${outstanding.join("`, `")}\` awaits your decision. Approve or reject it first.`,
       });
     }
@@ -99,7 +100,7 @@ export const createAgentMaintenanceOperations = <
   ): Promise<SessionEntry> => {
     const entry = await session.getEntry(entryId);
     if (!entry) {
-      throw new AppError("NOT_FOUND", {
+      throw new AppError(AppErrorCode.NotFound, {
         message: `Entry ${entryId} is not in this session.`,
       });
     }
@@ -152,12 +153,12 @@ export const createAgentMaintenanceOperations = <
       session,
       compact: async (customInstructions?: string) =>
         compactPiSession(
-          await operationFor(AGENT_TASK_IDS.sessionCompaction),
+          await operationFor(AgentTaskId.SessionCompaction),
           customInstructions
         ),
       navigate: async (entryId: string, options: AgentNavigationOptions) =>
         navigatePiSession(
-          await operationFor(AGENT_TASK_IDS.sessionBranchSummary),
+          await operationFor(AgentTaskId.SessionBranchSummary),
           entryId,
           options
         ),
@@ -233,7 +234,7 @@ export const createAgentMaintenanceOperations = <
               position === "before" &&
               (target.type !== "message" || target.message.role !== "user")
             ) {
-              throw new AppError("BAD_REQUEST", {
+              throw new AppError(AppErrorCode.BadRequest, {
                 message:
                   "Only a user message can be forked before; fork at this entry instead.",
               });

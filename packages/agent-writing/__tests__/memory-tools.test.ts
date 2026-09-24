@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { ContextDetail } from "@chia/ai/embeddings/context";
+import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
+
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
 import {
@@ -10,11 +13,12 @@ import {
 } from "../src/tools/memory.tool.ts";
 import {
   TOOL_INFO_BY_NAME,
-  TOOL_NAMES,
+  ToolName,
   toolInfo,
 } from "../src/tools/registry.ts";
 import { summarizeToolResult } from "../src/tools/summarize.ts";
 import { writingToolSpecs } from "../src/tools/tool-set.ts";
+import { WritingToolTier } from "../src/types.ts";
 import type { WritingToolContext } from "../src/types.ts";
 
 import {
@@ -46,8 +50,8 @@ describe("memory tools", () => {
       content: "Set `hnsw.iterative_scan = relaxed_order` on pgvector 0.8+.",
       sourceUrl: "https://github.com/pgvector/pgvector#iterative-index-scans",
     });
-    expect(saved.details).toMatchObject({ id: 1, kind: "fact" });
-    expect(summarizeToolResult(TOOL_NAMES.saveMemory, saved, false)).toBe(
+    expect(saved.details).toMatchObject({ id: 1, kind: AgentMemoryKind.Fact });
+    expect(summarizeToolResult(ToolName.SaveMemory, saved, false)).toBe(
       "Saved memory #1."
     );
 
@@ -57,13 +61,17 @@ describe("memory tools", () => {
     expect(found.details).toMatchObject({
       query: "iterative_scan",
       hits: [
-        { id: 1, kind: "fact", title: expect.stringContaining("pgvector") },
+        {
+          id: 1,
+          kind: AgentMemoryKind.Fact,
+          title: expect.stringContaining("pgvector"),
+        },
       ],
     });
     expect(found.content[0]).toMatchObject({
       text: expect.stringContaining("(#1)"),
     });
-    expect(summarizeToolResult(TOOL_NAMES.searchMemory, found, false)).toBe(
+    expect(summarizeToolResult(ToolName.SearchMemory, found, false)).toBe(
       'Searched memory for "iterative_scan" (1 hits).'
     );
 
@@ -73,8 +81,8 @@ describe("memory tools", () => {
     });
     expect(read.details).toMatchObject({
       id: 1,
-      status: "active",
-      detail: "full",
+      status: AgentMemoryStatus.Active,
+      detail: ContextDetail.Full,
     });
   });
 
@@ -104,7 +112,9 @@ describe("memory tools", () => {
       title: "A decision",
       content: "Use tabs.",
     });
-    expect(context.memory.all.map((row) => row.kind)).toEqual(["fact"]);
+    expect(context.memory.all.map((row) => row.kind)).toEqual([
+      AgentMemoryKind.Fact,
+    ]);
     expect(context.memory.all[0]?.sourceUrl).toBeNull();
   });
 
@@ -119,7 +129,7 @@ describe("memory tools", () => {
 
     expect(proposed.details).toEqual({
       id: 1,
-      kind: "lesson",
+      kind: AgentMemoryKind.Lesson,
       title: "Open with the problem, not the tool",
       supersedes: 3,
     });
@@ -127,13 +137,13 @@ describe("memory tools", () => {
       text: expect.stringContaining("waiting for review"),
     });
     expect(context.memory.all[0]).toMatchObject({
-      kind: "lesson",
-      status: "pending",
+      kind: AgentMemoryKind.Lesson,
+      status: AgentMemoryStatus.Pending,
       supersedesId: 3,
       sessionId: SESSION_ID,
     });
     await expect(context.memory.listActiveLessons(10)).resolves.toEqual([]);
-    expect(summarizeToolResult(TOOL_NAMES.proposeLesson, proposed, false)).toBe(
+    expect(summarizeToolResult(ToolName.ProposeLesson, proposed, false)).toBe(
       "Proposed lesson #1 for review."
     );
   });
@@ -153,40 +163,50 @@ describe("memory tools", () => {
       supersedes: 1,
     });
 
-    expect(revised.details).toMatchObject({ id: 2, kind: "lesson" });
+    expect(revised.details).toMatchObject({
+      id: 2,
+      kind: AgentMemoryKind.Lesson,
+    });
     // the revision keeps the chain to the active lesson and the sessions behind the proposal
     expect(context.memory.all).toMatchObject([
-      { id: 1, status: "archived", supersedesId: 3, reinforcements: 2 },
-      { id: 2, status: "pending", supersedesId: 3, reinforcements: 2 },
+      {
+        id: 1,
+        status: AgentMemoryStatus.Archived,
+        supersedesId: 3,
+        reinforcements: 2,
+      },
+      {
+        id: 2,
+        status: AgentMemoryStatus.Pending,
+        supersedesId: 3,
+        reinforcements: 2,
+      },
     ]);
     await expect(
       context.memory.listBySession(SESSION_ID)
     ).resolves.toMatchObject([
-      { id: 1, status: "archived" },
-      { id: 2, status: "pending" },
+      { id: 1, status: AgentMemoryStatus.Archived },
+      { id: 2, status: AgentMemoryStatus.Pending },
     ]);
   });
 
   it("is classified as read for retrieval and draft for the writes, and sits before the draft tools", () => {
-    expect(toolInfo(TOOL_NAMES.searchMemory).tier).toBe("read");
-    expect(toolInfo(TOOL_NAMES.getMemory).tier).toBe("read");
-    expect(toolInfo(TOOL_NAMES.saveMemory).tier).toBe("draft");
-    expect(toolInfo(TOOL_NAMES.proposeLesson).tier).toBe("draft");
+    expect(toolInfo(ToolName.SearchMemory).tier).toBe(WritingToolTier.Read);
+    expect(toolInfo(ToolName.GetMemory).tier).toBe(WritingToolTier.Read);
+    expect(toolInfo(ToolName.SaveMemory).tier).toBe(WritingToolTier.Draft);
+    expect(toolInfo(ToolName.ProposeLesson).tier).toBe(WritingToolTier.Draft);
 
     const names = writingToolSpecs.map((spec) => spec.name);
-    expect(names.indexOf(TOOL_NAMES.searchMemory)).toBeGreaterThan(
-      names.indexOf(TOOL_NAMES.fetchUrl)
+    expect(names.indexOf(ToolName.SearchMemory)).toBeGreaterThan(
+      names.indexOf(ToolName.FetchUrl)
     );
-    expect(names.indexOf(TOOL_NAMES.saveMemory)).toBeLessThan(
-      names.indexOf(TOOL_NAMES.readDraft)
+    expect(names.indexOf(ToolName.SaveMemory)).toBeLessThan(
+      names.indexOf(ToolName.ReadDraft)
     );
     const commitTier = Object.entries(TOOL_INFO_BY_NAME)
-      .filter(([, info]) => info.tier === "commit")
+      .filter(([, info]) => info.tier === WritingToolTier.Commit)
       .map(([name]) => name);
-    expect(commitTier).toEqual([
-      TOOL_NAMES.commitDraft,
-      TOOL_NAMES.setPublished,
-    ]);
+    expect(commitTier).toEqual([ToolName.CommitDraft, ToolName.SetPublished]);
   });
 });
 
@@ -194,19 +214,19 @@ describe("InMemoryMemoryPort", () => {
   it("keys sources on their URL and reports whether a revisit changed anything", async () => {
     const port = new InMemoryMemoryPort(SESSION_ID);
     const first = await port.save({
-      kind: "source",
+      kind: AgentMemoryKind.Source,
       title: "pgvector",
       content: "README excerpt",
       sourceUrl: "https://github.com/pgvector/pgvector",
     });
     const again = await port.save({
-      kind: "source",
+      kind: AgentMemoryKind.Source,
       title: "pgvector",
       content: "README excerpt",
       sourceUrl: "https://github.com/pgvector/pgvector",
     });
     const edited = await port.save({
-      kind: "source",
+      kind: AgentMemoryKind.Source,
       title: "pgvector",
       content: "README excerpt, updated",
       sourceUrl: "https://github.com/pgvector/pgvector",
@@ -226,7 +246,7 @@ describe("InMemoryMemoryPort", () => {
       (_, i) => `## Section ${i}\n\n${"word ".repeat(400)}`
     ).join("\n\n");
     await port.save({
-      kind: "source",
+      kind: AgentMemoryKind.Source,
       title: "Long page",
       content: sections,
       sourceUrl: "https://example.com/long",
@@ -237,7 +257,10 @@ describe("InMemoryMemoryPort", () => {
       memory: port,
     }).execute("call-1", { id: 1, focusHeadings: ["Section 37"] });
 
-    expect(read.details).toMatchObject({ id: 1, detail: "sections" });
+    expect(read.details).toMatchObject({
+      id: 1,
+      detail: ContextDetail.Sections,
+    });
     expect(read.content[0]).toMatchObject({
       text: expect.stringContaining("Section 37"),
     });

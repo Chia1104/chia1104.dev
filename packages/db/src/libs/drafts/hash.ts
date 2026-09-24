@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import type { FeedDraftSnapshot } from "../../schemas/schema.ts";
 import { toStorableString } from "../../storable.ts";
+import { Locale } from "../../types.ts";
 
 /**
  * `-` for null, else `+<utf-8 byte length>:<value>`. Length-prefixed so adjacent fields cannot
@@ -24,10 +25,8 @@ export const hashFeedDraftSnapshot = (snapshot: FeedDraftSnapshot): string => {
   hash.update(field(snapshot.type));
   hash.update(field(snapshot.defaultLocale));
   hash.update(field(snapshot.mainImage));
-  for (const locale of Object.keys(snapshot.translations).sort()) {
-    // SAFETY: snapshot translations are keyed by Locale.
-    const translation =
-      snapshot.translations[locale as keyof typeof snapshot.translations];
+  for (const locale of Object.values(Locale).sort()) {
+    const translation = snapshot.translations[locale];
     if (!translation) continue;
     hash.update(field(locale));
     hash.update(field(translation.title));

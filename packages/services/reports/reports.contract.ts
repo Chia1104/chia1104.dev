@@ -2,9 +2,9 @@ import { oc } from "@orpc/contract";
 import * as z from "zod";
 
 import {
-  FEED_REPORT_CATEGORY,
-  FEED_REPORT_STATUS,
-  FEED_REPORT_VERDICT,
+  FeedReportCategory,
+  FeedReportStatus,
+  FeedReportVerdict,
 } from "@chia/db/schema";
 import { feedType, locale } from "@chia/db/schema/enums";
 import {
@@ -19,7 +19,7 @@ import {
 
 const reportIdSchema = z.object({ id: z.number().int().positive() });
 
-export const feedReportStatusSchema = z.enum(Object.values(FEED_REPORT_STATUS));
+export const feedReportStatusSchema = z.enum(Object.values(FeedReportStatus));
 
 const feedReportEditSchema = z.object({
   locale: z.enum(locale.enumValues),
@@ -32,7 +32,7 @@ const feedReportSchema = reportIdSchema.extend({
   locale: z.enum(locale.enumValues),
   headingPath: z.string().nullable(),
   quote: z.string().nullable(),
-  category: z.enum(Object.values(FEED_REPORT_CATEGORY)),
+  category: z.enum(Object.values(FeedReportCategory)),
   claim: z.string(),
   assessment: z.string(),
   /** The corrected wording the reader or the reading assistant proposed; a candidate, never applied as is. */
@@ -40,7 +40,7 @@ const feedReportSchema = reportIdSchema.extend({
   status: feedReportStatusSchema,
   triage: z
     .object({
-      verdict: z.enum(Object.values(FEED_REPORT_VERDICT)),
+      verdict: z.enum(Object.values(FeedReportVerdict)),
       summary: z.string(),
       edits: z.array(feedReportEditSchema),
       droppedEdits: z.number().int(),

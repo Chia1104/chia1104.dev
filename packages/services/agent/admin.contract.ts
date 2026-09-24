@@ -16,7 +16,7 @@ import {
 const errors = { UNAUTHORIZED: {}, FORBIDDEN: {}, SERVICE_UNAVAILABLE: {} };
 const writeErrors = { ...errors, NOT_FOUND: {}, BAD_REQUEST: {} } as const;
 
-const jsonObjectSchema = z.record(z.string(), z.json());
+export const jsonObjectSchema = z.record(z.string(), z.json());
 
 const sessionDefaultsSchema = z.object({
   providerId: z.string(),

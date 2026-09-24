@@ -74,15 +74,18 @@ export type WorkflowControlCommand = z.infer<
   typeof workflowControlCommandSchema
 >;
 
-export const workflowRunStatusSchema = z.enum([
-  "pending",
-  "running",
-  "completed",
-  "failed",
-  "cancelled",
-]);
+export const WorkflowRunStatus = {
+  Pending: "pending",
+  Running: "running",
+  Completed: "completed",
+  Failed: "failed",
+  Cancelled: "cancelled",
+} as const;
 
-export type WorkflowRunStatus = z.infer<typeof workflowRunStatusSchema>;
+export type WorkflowRunStatus =
+  (typeof WorkflowRunStatus)[keyof typeof WorkflowRunStatus];
+
+export const workflowRunStatusSchema = z.enum(WorkflowRunStatus);
 
 /**
  * A run as the API process needs it to reconcile records: whether the World

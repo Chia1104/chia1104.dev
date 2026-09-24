@@ -191,7 +191,7 @@ const PreviewLink = ({
             rel="noopener noreferrer"
             {...props}
             {...triggerProps}
-            /* SAFETY: the trigger is an anchor, so its implicit link role must survive HeroUI's button role. */
+            /* The trigger is an anchor, so its implicit link role must survive HeroUI's button role. */
             role={undefined}
             href={href.toString()}>
             {children instanceof Function ? children(result) : children}

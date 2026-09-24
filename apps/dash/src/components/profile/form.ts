@@ -23,7 +23,7 @@ export type ProfileEntryWrite = RouterInputs["profile"]["create"];
 
 const SORT_ORDER_LIMIT = 10_000;
 
-export const LOCALES: readonly Locale[] = [Locale.zhTW, Locale.En];
+export const LOCALES: readonly Locale[] = [Locale.ZhTW, Locale.En];
 
 const translationFieldsSchema = z.object({
   title: z.string(),
@@ -44,7 +44,7 @@ const dataFieldsSchema = z.object({
   stack: z.string(),
   agentNotes: z.string(),
   translations: z.object({
-    [Locale.zhTW]: translationFieldsSchema,
+    [Locale.ZhTW]: translationFieldsSchema,
     [Locale.En]: translationFieldsSchema,
   }),
 });
@@ -74,7 +74,7 @@ const translationOf = (translation: TranslationFields) =>
       };
 
 const translationsOf = (translations: DataFields["translations"]) => ({
-  [Locale.zhTW]: translationOf(translations[Locale.zhTW]),
+  [Locale.ZhTW]: translationOf(translations[Locale.ZhTW]),
   [Locale.En]: translationOf(translations[Locale.En]),
 });
 
@@ -162,7 +162,7 @@ const emptyData = (): DataFields => ({
   stack: "",
   agentNotes: "",
   translations: {
-    [Locale.zhTW]: emptyTranslation(),
+    [Locale.ZhTW]: emptyTranslation(),
     [Locale.En]: emptyTranslation(),
   },
 });
@@ -191,7 +191,7 @@ export const formValuesOf = (entry: ProfileEntryView): ProfileFormInput => {
     ...emptyData(),
     agentNotes: entry.data.agentNotes ?? "",
     translations: {
-      [Locale.zhTW]: translationFieldsOf(entry.data.translations[Locale.zhTW]),
+      [Locale.ZhTW]: translationFieldsOf(entry.data.translations[Locale.ZhTW]),
       [Locale.En]: translationFieldsOf(entry.data.translations[Locale.En]),
     },
   };
@@ -238,6 +238,10 @@ export const formValuesOf = (entry: ProfileEntryView): ProfileFormInput => {
           stack: entry.data.stack.join(", "),
         },
       };
+    default: {
+      const _exhaustive: never = entry;
+      return _exhaustive;
+    }
   }
 };
 
@@ -254,5 +258,9 @@ export const contentOf = (
       return { kind: entry.kind, data: entry.data };
     case ProfileEntryKind.Project:
       return { kind: entry.kind, data: entry.data };
+    default: {
+      const _exhaustive: never = entry;
+      return _exhaustive;
+    }
   }
 };

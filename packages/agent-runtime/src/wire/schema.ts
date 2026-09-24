@@ -7,17 +7,9 @@
 
 import * as z from "zod";
 
-export const agentErrorKindSchema = z.enum([
-  "auth",
-  "quota",
-  "rate_limited",
-  "context_overflow",
-  "budget_exhausted",
-  "refused",
-  "model_unavailable",
-  "provider",
-  "internal",
-]);
+import { AgentErrorKind } from "../types.ts";
+
+export const agentErrorKindSchema = z.enum(AgentErrorKind);
 
 const usageSchema = z.object({
   input: z.number(),

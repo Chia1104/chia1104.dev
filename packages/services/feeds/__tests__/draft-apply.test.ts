@@ -5,6 +5,8 @@ vi.mock("@chia/observability/report", () => ({ reportError }));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
+import { FeedType, Locale } from "@chia/db/types";
+import { AppErrorCode } from "@chia/service-kit/errors";
 
 import type { FeedHooks } from "../../shared/context";
 import type { UpdateFeedServiceInput } from "../write.service";
@@ -64,8 +66,8 @@ const draft = (revision: number) => ({
   appliedRevisionId: null,
   appliedHash: null,
   slug: "a-post",
-  type: "post",
-  defaultLocale: "en",
+  type: FeedType.Post,
+  defaultLocale: Locale.En,
   mainImage: null,
   translations: {
     en: {
@@ -94,7 +96,7 @@ describe("applyFeedDraftService", () => {
         {}
       )
     ).rejects.toMatchObject({
-      code: "CONFLICT",
+      code: AppErrorCode.Conflict,
       data: { revision: 4, contentHash: "h4" },
     });
 

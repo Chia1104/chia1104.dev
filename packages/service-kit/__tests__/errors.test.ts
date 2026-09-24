@@ -3,6 +3,7 @@ import * as z from "zod";
 
 import {
   AppError,
+  AppErrorCode,
   fromZodError,
   isAppError,
   toErrorResponse,
@@ -10,19 +11,19 @@ import {
 
 describe("AppError", () => {
   it("derives the HTTP status from the code", () => {
-    expect(new AppError("UNAUTHORIZED").status).toBe(401);
-    expect(new AppError("QUOTA_EXCEEDED").status).toBe(402);
-    expect(new AppError("TOO_MANY_REQUESTS").status).toBe(429);
-    expect(new AppError("SERVICE_UNAVAILABLE").status).toBe(503);
+    expect(new AppError(AppErrorCode.Unauthorized).status).toBe(401);
+    expect(new AppError(AppErrorCode.QuotaExceeded).status).toBe(402);
+    expect(new AppError(AppErrorCode.TooManyRequests).status).toBe(429);
+    expect(new AppError(AppErrorCode.ServiceUnavailable).status).toBe(503);
   });
 
   it("is detectable across module boundaries", () => {
-    expect(isAppError(new AppError("NOT_FOUND"))).toBe(true);
+    expect(isAppError(new AppError(AppErrorCode.NotFound))).toBe(true);
     expect(isAppError(new Error("nope"))).toBe(false);
   });
 
   it("renders the errorGenerator body shape the frontends parse", () => {
-    const error = new AppError("BAD_REQUEST", {
+    const error = new AppError(AppErrorCode.BadRequest, {
       issues: [{ field: "captcha", message: "CAPTCHA_FAILED" }],
     });
 

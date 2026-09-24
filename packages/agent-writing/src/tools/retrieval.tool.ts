@@ -1,7 +1,7 @@
 import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
-import { WEB_SEARCH_RECENCIES } from "@chia/agent-content/types";
+import { WebSearchRecency } from "@chia/agent-content/types";
 import type { FetchedPage, WebSearchResult } from "@chia/agent-content/types";
 import {
   defineTool,
@@ -10,13 +10,14 @@ import {
   truncate,
 } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
-import { splitByHeadings } from "@chia/ai/embeddings/markdown";
+import { MarkdownFormat, splitByHeadings } from "@chia/ai/embeddings/markdown";
+import { AgentMemoryKind } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
 
 import { closeOpenFence } from "../markdown/fences.ts";
 import type { WritingToolContext } from "../types.ts";
 
-import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
+import { TOOL_INFO_BY_NAME, ToolName } from "./registry.ts";
 
 /**
  * Shared content reads plus outbound web. Search and fetch are a cost and an SSRF surface,
@@ -60,8 +61,8 @@ const normalizeSearchDomain = (input: string): string => {
 };
 
 export const webSearchSpec = {
-  name: TOOL_NAMES.webSearch,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.webSearch].label,
+  name: ToolName.WebSearch,
+  label: TOOL_INFO_BY_NAME[ToolName.WebSearch].label,
   description:
     "Search the web and return result titles, URLs and snippets. Use it to discover a primary " +
     "source (official docs, release notes, the repository) before reading it with `fetch_url`; " +
@@ -81,7 +82,7 @@ export const webSearchSpec = {
       })
     ),
     recency: optional(
-      StringEnum([...WEB_SEARCH_RECENCIES], {
+      StringEnum(Object.values(WebSearchRecency), {
         description:
           "Only results published within this window. Omit for no time filter.",
       })
@@ -137,8 +138,8 @@ const formatResult = (result: WebSearchResult, index: number): string => {
 };
 
 export const fetchUrlSpec = {
-  name: TOOL_NAMES.fetchUrl,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.fetchUrl].label,
+  name: ToolName.FetchUrl,
+  label: TOOL_INFO_BY_NAME[ToolName.FetchUrl].label,
   description:
     "Fetch a public web page (or PDF) and return its main content as markdown. Use it to " +
     "check a fact or read a reference the operator linked. A long page is cut; the result then " +
@@ -199,8 +200,8 @@ const unreadHeadings = async (
   shownChars: number
 ): Promise<string[]> => {
   const [all, shown] = await Promise.all([
-    splitByHeadings(text, "markdown"),
-    splitByHeadings(text.slice(0, shownChars), "markdown"),
+    splitByHeadings(text, MarkdownFormat.Markdown),
+    splitByHeadings(text.slice(0, shownChars), MarkdownFormat.Markdown),
   ]);
   const paths = all
     .slice(Math.max(shown.length - 1, 0))
@@ -234,7 +235,7 @@ const recordSource = async (
   try {
     const saved = await context.memory.save(
       {
-        kind: "source",
+        kind: AgentMemoryKind.Source,
         title: page.title?.trim() || hostnameOf(page.url),
         content: text,
         sourceUrl: page.url,

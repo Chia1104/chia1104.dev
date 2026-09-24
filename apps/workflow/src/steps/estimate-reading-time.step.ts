@@ -9,7 +9,7 @@ import { logger } from "@chia/observability/logger";
 
 /** The estimator counts CJK by character; without the language it applies English wpm. */
 const estimatorLanguage = (locale: Locale) =>
-  locale === Locale.zhTW ? ("zh-tw" as const) : ("en" as const);
+  locale === Locale.ZhTW ? ("zh-tw" as const) : ("en" as const);
 
 export const estimateReadingTimeStep = async (
   feedID: number,

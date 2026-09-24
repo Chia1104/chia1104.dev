@@ -1,9 +1,11 @@
+import { drizzle } from "drizzle-orm/node-postgres";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { DB } from "@chia/db/client";
+import { relations } from "@chia/db/schema";
+import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import * as dbMocks from "@chia/test/mocks/db-feeds";
 
-import { createContentReadPort } from "../content-read.port";
+import { ContentVisibility, createContentReadPort } from "../content-read.port";
 
 const searchFeedsService = vi.hoisted(() =>
   vi.fn(async () => ({ mode: "hybrid", items: [] }))
@@ -26,8 +28,8 @@ vi.mock("@chia/db/repos/feeds", async () => {
  */
 
 const AUTHOR = "author-1";
-// SAFETY: every repository call is mocked, so the port never dereferences the connection.
-const db = {} as DB;
+/** Every repository call is mocked, so the port never reaches the connection. */
+const db = drizzle.mock({ relations });
 
 describe("createContentReadPort visibility", () => {
   beforeEach(() => {
@@ -39,7 +41,7 @@ describe("createContentReadPort visibility", () => {
     const port = createContentReadPort({
       db,
       authorId: AUTHOR,
-      visibility: "public",
+      visibility: ContentVisibility.Public,
     });
 
     it("reads a post only within the published scope, by id and by slug", async () => {
@@ -62,7 +64,7 @@ describe("createContentReadPort visibility", () => {
         url: "http://localhost:3000/en-US/posts/test-feed-1",
         translations: [
           {
-            locale: "en",
+            locale: Locale.En,
             url: "http://localhost:3000/en-US/posts/test-feed-1",
           },
         ],
@@ -112,7 +114,7 @@ describe("createContentReadPort visibility", () => {
     const port = createContentReadPort({
       db,
       authorId: AUTHOR,
-      visibility: "author",
+      visibility: ContentVisibility.Author,
     });
 
     it("reads a post regardless of published state", async () => {
@@ -148,7 +150,7 @@ describe("createContentReadPort visibility", () => {
 
       const { total } = await port.listPosts({
         limit: 10,
-        type: "note",
+        type: FeedType.Note,
         tagSlug: "react",
         createdFrom: "2025-01-01",
         createdBefore: "2026-01-01",
@@ -158,9 +160,9 @@ describe("createContentReadPort visibility", () => {
       expect(dbMocks.getInfiniteFeeds).toHaveBeenCalledWith(
         db,
         expect.objectContaining({
-          type: "note",
+          type: FeedType.Note,
           tagSlug: "react",
-          orderBy: "createdAt",
+          orderBy: FeedOrderBy.CreatedAt,
           whereAnd: expect.objectContaining({
             createdAt: {
               gte: new Date("2025-01-01"),
@@ -172,7 +174,7 @@ describe("createContentReadPort visibility", () => {
       expect(dbMocks.countFeeds).toHaveBeenCalledWith(db, {
         userId: AUTHOR,
         published: undefined,
-        type: "note",
+        type: FeedType.Note,
         tagSlug: "react",
         createdFrom: new Date("2025-01-01"),
         createdBefore: new Date("2026-01-01"),
@@ -181,7 +183,7 @@ describe("createContentReadPort visibility", () => {
       await port.listPosts({ limit: 10 });
       expect(dbMocks.getInfiniteFeeds).toHaveBeenLastCalledWith(
         db,
-        expect.objectContaining({ type: "all" })
+        expect.objectContaining({ type: FeedType.All })
       );
     });
 

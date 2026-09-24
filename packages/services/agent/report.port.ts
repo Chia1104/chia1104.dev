@@ -8,7 +8,7 @@ import {
 import { getFeedBySlug } from "@chia/db/repos/feeds";
 import type { FeedReport } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 
 /** Per reporter over a rolling day; reports cost the operator's attention, not the reader's quota. */
 export const FEED_REPORT_DAILY_LIMIT = 5;
@@ -42,7 +42,7 @@ export const createReportPort = (
         since: new Date(Date.now() - DAY_MS),
       });
       if (recent >= FEED_REPORT_DAILY_LIMIT) {
-        throw new AppError("TOO_MANY_REQUESTS", {
+        throw new AppError(AppErrorCode.TooManyRequests, {
           message: `This visitor already sent ${FEED_REPORT_DAILY_LIMIT} reports in the last 24 hours. Tell them to try again later.`,
         });
       }
@@ -53,7 +53,7 @@ export const createReportPort = (
         published: true,
       });
       if (!feed) {
-        throw new AppError("NOT_FOUND", {
+        throw new AppError(AppErrorCode.NotFound, {
           message: `No published post has the slug "${input.slug}". Use the slug a tool returned.`,
         });
       }

@@ -1,10 +1,10 @@
 import "zod/compile";
 import { connectDatabase } from "@chia/db/client";
 import { getFeedForIndexing } from "@chia/db/repos/feeds";
-import type { Locale } from "@chia/db/types";
+import type { FeedType, Locale } from "@chia/db/types";
 
 export interface FeedIndexingSnapshot {
-  type: "post" | "note";
+  type: Exclude<FeedType, typeof FeedType.All>;
   slug: string;
   /** `published && !deleted`. The flag most branches care about. */
   enabled: boolean;
