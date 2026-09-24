@@ -6,7 +6,7 @@ import {
   patchFeedDraft,
 } from "@chia/db/repos/drafts";
 import type { FeedDraftListItem, FeedDraftRecord } from "@chia/db/repos/drafts";
-import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
+import { FeedDraftAuthor } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 
 import type { DraftStore } from "../ports.ts";
@@ -75,7 +75,7 @@ export class PgDraftStore implements DraftStore {
     const result = await patchFeedDraft(this.db, {
       draftId,
       userId: this.options.userId,
-      author: FEED_DRAFT_AUTHOR.Agent,
+      author: FeedDraftAuthor.Agent,
       sessionId: this.options.sessionId,
       ...toDraftFields(input),
       base: toDraftFields(this.observed.baseOf(draftId, input) ?? {}),
@@ -91,6 +91,10 @@ export class PgDraftStore implements DraftStore {
         );
       case "not_found":
         throw new DraftNotFoundError(draftId);
+      default: {
+        const _exhaustive: never = result;
+        return _exhaustive;
+      }
     }
   }
 
@@ -104,7 +108,7 @@ export class PgDraftStore implements DraftStore {
       userId: this.options.userId,
       locale,
       edits,
-      author: FEED_DRAFT_AUTHOR.Agent,
+      author: FeedDraftAuthor.Agent,
       sessionId: this.options.sessionId,
     });
     switch (result.status) {
@@ -133,6 +137,10 @@ export class PgDraftStore implements DraftStore {
         throw new DraftConflictError([`${locale}.content`]);
       case "not_found":
         throw new DraftNotFoundError(draftId);
+      default: {
+        const _exhaustive: never = result;
+        return _exhaustive;
+      }
     }
   }
 

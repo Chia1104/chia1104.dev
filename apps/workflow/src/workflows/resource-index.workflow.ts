@@ -3,7 +3,7 @@ import * as z from "zod";
 
 import {
   isResourceType,
-  resourceTypes,
+  ResourceType,
 } from "@chia/services/rag/resource-types";
 
 import { indexResource } from "../steps/resource-index.step";
@@ -13,7 +13,7 @@ export const resourceIndexRequestSchema = z.object({
   // Rejected at the boundary rather than deep inside `getResourceAdapter`, so a
   // bad request never becomes a workflow run that retries its way to failure.
   sourceType: z.string().refine(isResourceType, {
-    message: `Must be one of: ${resourceTypes.join(", ")}`,
+    message: `Must be one of: ${Object.values(ResourceType).join(", ")}`,
   }),
   sourceId: z.number().int().positive(),
 });

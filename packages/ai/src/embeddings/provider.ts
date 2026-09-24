@@ -26,7 +26,7 @@ export interface EmbeddingProvider {
 }
 
 export const OPENAI_EMBEDDING_MODEL = "text-embedding-3-small";
-export const OLLAMA_EMBEDDING_MODEL = OllamaEmbeddingModel["nomic-embed-text"];
+export const OLLAMA_EMBEDDING_MODEL = OllamaEmbeddingModel.NomicEmbedText;
 
 export interface OpenAIProviderOptions {
   /** the workflow runtime's instrumented fetch */

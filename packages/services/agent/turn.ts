@@ -6,7 +6,10 @@ import type {
   AgentStreamPosition,
   AgentTurnMarker,
 } from "@chia/agent-host/execution";
-import type { AgentKindDefinition } from "@chia/agent-host/kind";
+import type {
+  AgentKindDefinition,
+  AgentKindState,
+} from "@chia/agent-host/kind";
 import {
   assertBelowRunningTurnCap,
   assertWithinAgentQuota,
@@ -24,11 +27,10 @@ import {
   setAgentApprovalRelayRun,
   withAgentSessionLock,
 } from "@chia/db/repos/agent";
-import type { AgentRunStatus } from "@chia/db/schema";
+import { AgentApprovalStatus, AgentRunStatus } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
-import { AppError, isAppError } from "@chia/service-kit/errors";
-import type { AppErrorCode } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode, isAppError } from "@chia/service-kit/errors";
 import type { JsonObject } from "@chia/utils/json";
 import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-schema";
 import type {
@@ -41,6 +43,7 @@ import {
   signalAgentAbort,
   startAgentAbortController,
 } from "./abort";
+import { AgentRunState } from "./agent.contract";
 import type { AgentServiceHost } from "./agent.factory";
 import type {
   AgentKindService,
@@ -111,7 +114,8 @@ const relayNeverRan = (run: {
   status: AgentRunStatus;
   metadata: JsonObject;
 }): boolean =>
-  (run.status === "failed" || run.status === "cancelled") &&
+  (run.status === AgentRunStatus.Failed ||
+    run.status === AgentRunStatus.Cancelled) &&
   readAgentTurnMarker(run.metadata)?.claimed !== true;
 
 /**
@@ -121,15 +125,20 @@ const relayNeverRan = (run: {
  * TTL passes.
  */
 const deliveryRefused = (code: AppErrorCode | null): boolean =>
-  code === "BAD_REQUEST" ||
-  code === "UNAUTHORIZED" ||
-  code === "FORBIDDEN" ||
-  code === "UNPROCESSABLE_CONTENT";
+  code === AppErrorCode.BadRequest ||
+  code === AppErrorCode.Unauthorized ||
+  code === AppErrorCode.Forbidden ||
+  code === AppErrorCode.UnprocessableContent;
 
 /** Durable turn admission and live transport for one agent kind. */
 export const createAgentTurnOperations = <TState, TConfig extends object>(
-  definition: AgentKindDefinition<TState, TConfig>,
-  sessions: AgentSessionOperations<TState, TConfig>,
+  definition: Pick<AgentKindDefinition<TState, TConfig>, "kind"> & {
+    state: Pick<AgentKindState<TState>, "attach">;
+  },
+  sessions: Pick<
+    AgentSessionOperations<TState, TConfig>,
+    "withDb" | "loadOwnedSession" | "undecidedApprovals"
+  >,
   host: AgentServiceHost
 ): TurnService => {
   /** Every model-producing continuation goes through the same admission policy in this order. */
@@ -178,7 +187,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
             workflowRunId,
           })
       );
-      await completeAgentRun(db, runId, "failed").catch((cause) =>
+      await completeAgentRun(db, runId, AgentRunStatus.Failed).catch((cause) =>
         reportError(cause, "Unbound agent run row could not be closed", {
           sessionId,
           runId,
@@ -211,7 +220,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         const row = await sessions.loadOwnedSession(caller, sessionId);
         // The guard resolved the session already; a miss under the lock means it was just deleted.
         if (!row) {
-          throw new AppError("NOT_FOUND", {
+          throw new AppError(AppErrorCode.NotFound, {
             message: `Unknown agent session: ${sessionId}`,
           });
         }
@@ -223,8 +232,8 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         // One turn at a time: quota and the running cap were checked here, and a turn run
         // behind this one would execute after its cost landed without being checked again.
         const state = await runStateOf(host.runs, row);
-        if (state?.status === "running") {
-          throw new AppError("CONFLICT", {
+        if (state?.status === AgentRunState.Running) {
+          throw new AppError(AppErrorCode.Conflict, {
             message:
               "A turn is still running. Wait for it to finish or stop it before sending another message.",
           });
@@ -321,7 +330,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
     } catch (error) {
       const code = isAppError(error) ? error.code : null;
       if (deliveryRefused(code)) {
-        await completeAgentRun(db, accepted.runId, "failed");
+        await completeAgentRun(db, accepted.runId, AgentRunStatus.Failed);
         await signalAgentAbort(
           workflow,
           accepted.abortController.id,
@@ -368,7 +377,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           // than the turn.
           if (input.attachments && input.attachments.length > 0) {
             if (!definition.state.attach) {
-              throw new AppError("BAD_REQUEST", {
+              throw new AppError(AppErrorCode.BadRequest, {
                 message: `Agent kind "${definition.kind}" takes no attachments.`,
               });
             }
@@ -385,7 +394,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
             input.sessionId
           );
           if (outstanding.length > 0) {
-            throw new AppError("CONFLICT", {
+            throw new AppError(AppErrorCode.Conflict, {
               message: `Waiting on your decision for \`${outstanding.join("`, `")}\`. Approve or reject it before sending another message.`,
             });
           }
@@ -401,7 +410,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         }
       );
       if (!cursor) {
-        throw new AppError("NOT_FOUND", {
+        throw new AppError(AppErrorCode.NotFound, {
           message: `Unknown agent session: ${input.sessionId}`,
         });
       }
@@ -412,7 +421,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
       const row = await sessions.loadOwnedSession(caller, input.sessionId);
       if (!row?.workflowRunId || !row.turn || isRunLease(row)) return null;
       const run = await runStateOf(host.runs, row);
-      return run?.status === "running"
+      return run?.status === AgentRunState.Running
         ? agentStreamCursor(row.workflowRunId, row.turn)
         : null;
     },
@@ -420,7 +429,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
     async *stream(caller, input) {
       const row = await sessions.loadOwnedSession(caller, input.sessionId);
       if (!row) {
-        throw new AppError("NOT_FOUND", {
+        throw new AppError(AppErrorCode.NotFound, {
           message: `Unknown agent session: ${input.sessionId}`,
         });
       }
@@ -464,7 +473,11 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         row.workflowRunId
       );
       if (row.activeRunId) {
-        await completeAgentRun(caller.context.db, row.activeRunId, "cancelled");
+        await completeAgentRun(
+          caller.context.db,
+          row.activeRunId,
+          AgentRunStatus.Cancelled
+        );
       }
       return true;
     },
@@ -485,7 +498,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         if (!existing) return null;
 
         let decision: RecordedDecision;
-        if (existing.status === "pending") {
+        if (existing.status === AgentApprovalStatus.Pending) {
           await assertCanStartTurn(tx, caller);
           const decided = await decideAgentApproval(tx, {
             sessionId: input.sessionId,
@@ -503,7 +516,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           if (!relay || !relayNeverRan(relay)) return null;
           await assertCanStartTurn(tx, caller);
           decision = {
-            approved: existing.status === "approved",
+            approved: existing.status === AgentApprovalStatus.Approved,
             comment: existing.comment ?? undefined,
           };
         }

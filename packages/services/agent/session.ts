@@ -15,7 +15,6 @@ import {
 } from "@chia/agent-runtime/session/pg-repo";
 import { walkBranch, walkTranscript } from "@chia/agent-runtime/session/tree";
 import { estimateBranchContextTokens } from "@chia/agent-runtime/session/usage";
-import type { ThinkingLevel, ToolTier } from "@chia/agent-runtime/types";
 import { entriesToWireEvents } from "@chia/agent-runtime/wire/replay";
 import type { DB } from "@chia/db/client";
 import {
@@ -26,9 +25,11 @@ import {
   getAgentSession,
   softDeleteAgentSession,
 } from "@chia/db/repos/agent";
+import { AgentRunStatus } from "@chia/db/schema";
 import type { AgentSession } from "@chia/db/schema";
 
 import { readAgentAbortControllerRef } from "./abort";
+import { AgentRunState } from "./agent.contract";
 import type { AgentServiceHost } from "./agent.factory";
 import type { AgentKindService, AgentServiceCaller } from "./agent.service";
 import { cancelLiveAgentRun } from "./run-control";
@@ -154,11 +155,11 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
 
     // A running turn is replayed from its stream; the transcript stops at the marker's sequence.
     const transcriptEntries =
-      run?.status === "running" && turn
+      run?.status === AgentRunState.Running && turn
         ? entriesUpToSeq(transcript, turn.seqBefore)
         : transcript;
     const contextEntries =
-      run?.status === "running" && turn
+      run?.status === AgentRunState.Running && turn
         ? entriesUpToSeq(branch, turn.seqBefore)
         : branch;
 
@@ -215,14 +216,8 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
         settings: {
           providerId: input.model?.providerId,
           modelId: input.model?.modelId,
-          thinkingLevel:
-            /* SAFETY: the route validates this setting before persistence. */ input.thinkingLevel as
-              | ThinkingLevel
-              | undefined,
-          autoApprove:
-            /* SAFETY: the route validates these tiers before persistence. */ input.autoApprove as
-              | ToolTier[]
-              | undefined,
+          thinkingLevel: input.thinkingLevel,
+          autoApprove: input.autoApprove,
         },
         runtimeConfig: input.runtimeConfig,
       });
@@ -257,7 +252,11 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
         );
       }
       if (row.activeRunId) {
-        await completeAgentRun(caller.context.db, row.activeRunId, "cancelled");
+        await completeAgentRun(
+          caller.context.db,
+          row.activeRunId,
+          AgentRunStatus.Cancelled
+        );
       }
       await softDeleteAgentSession(caller.context.db, input.sessionId);
       return true;
@@ -269,15 +268,9 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
       await writeSessionSettings(caller.context.db, input.sessionId, {
         title: input.title,
         model: input.model,
-        thinkingLevel:
-          /* SAFETY: the route validates this setting before persistence. */ input.thinkingLevel as
-            | ThinkingLevel
-            | undefined,
+        thinkingLevel: input.thinkingLevel,
         activeToolNames: input.activeToolNames,
-        autoApprove:
-          /* SAFETY: the route validates these tiers before persistence. */ input.autoApprove as
-            | ToolTier[]
-            | undefined,
+        autoApprove: input.autoApprove,
         runtimeConfig: input.runtimeConfig,
       });
       return detailFor(caller, input.sessionId);

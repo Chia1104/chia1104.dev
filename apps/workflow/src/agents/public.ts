@@ -1,23 +1,38 @@
 import { createPublicAgentExecutor } from "@chia/agent-host/public";
 import { resolveGuardProvider } from "@chia/ai/guard/provider";
 import { isSignedInUser } from "@chia/db/repos/users";
-import { createContentReadPort } from "@chia/services/agent/content-read.port";
+import {
+  ContentVisibility,
+  createContentReadPort,
+} from "@chia/services/agent/content-read.port";
 import { createProfileReadPort } from "@chia/services/agent/profile-read.port";
+import { createReportPort } from "@chia/services/agent/report.port";
 import { getAdminId } from "@chia/utils/config";
 
 import { createAgentWebPort } from "../services/agent-web.port";
+import { workflowControl } from "../services/workflow-control";
 
-/** Both ports see the configured author's published rows. `getAdminId()` is whose profile and posts these are, not who is asking. */
+/** The read ports see the configured author's published rows. `getAdminId()` is whose profile and posts these are, not who is asking. */
 export const publicAgentKind = createPublicAgentExecutor({
   createContentPort: ({ db }) =>
     createContentReadPort({
       db,
       authorId: getAdminId(),
-      visibility: "public",
+      visibility: ContentVisibility.Public,
     }),
   createProfilePort: ({ db }) =>
     createProfileReadPort({ db, authorId: getAdminId() }),
   guard: resolveGuardProvider(),
   createWebPort: createAgentWebPort,
+  createReportPort: ({ db, reporterId, sessionId }) =>
+    createReportPort({
+      db,
+      authorId: getAdminId(),
+      reporterId,
+      sessionId,
+      onReported: async (report) => {
+        await workflowControl.startReportTriage(report.id);
+      },
+    }),
   isSignedIn: ({ db, userId }) => isSignedInUser(db, { id: userId }),
 });

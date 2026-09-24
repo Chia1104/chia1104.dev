@@ -1,15 +1,27 @@
 import { describe, expect, it, vi } from "vitest";
+import * as z from "zod";
 
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { CallerTier } from "@chia/auth/tier";
 
 import { createAgentFactory } from "../agent.factory";
 
-const definitionOf = (kind: string, minTier: CallerTier = CallerTier.Root) =>
-  /* SAFETY: factory resolution only reads the discriminator and tier floor in these tests. */ ({
-    kind,
-    minTier,
-  }) as AgentKindDefinition<unknown, object>;
+/** Factory resolution reads only the discriminator and the tier floor. */
+const definitionOf = (
+  kind: string,
+  minTier: CallerTier = CallerTier.Root
+): AgentKindDefinition<unknown, object> => ({
+  kind,
+  label: kind,
+  description: "",
+  minTier,
+  defaults: { providerId: "house", modelId: "house-model" },
+  policy: { toolInfo: vi.fn(), requiresApproval: vi.fn(), summarize: vi.fn() },
+  models: { assert: vi.fn(), list: vi.fn(), resolve: vi.fn() },
+  config: { schema: z.object({}), defaults: {} },
+  capabilities: vi.fn(),
+  state: { create: vi.fn(), load: vi.fn(), fork: vi.fn(), detail: vi.fn() },
+});
 
 const credentials = {
   read: () => undefined,

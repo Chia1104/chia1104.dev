@@ -16,25 +16,17 @@ import type { Variant } from "motion/react";
 import { motion } from "motion/react";
 
 import { cn } from "../utils/cn.util";
-import useTheme from "../utils/use-theme";
+import useTheme, { Theme } from "../utils/use-theme";
 
 interface Props {
   variants?: ThemeVariants;
 }
 
-export const Theme = {
-  SYSTEM: "system",
-  DARK: "dark",
-  LIGHT: "light",
-} as const;
-
-export type Theme = (typeof Theme)[keyof typeof Theme];
-
 const VariantsKey = {
-  SVG: "svgVariant",
-  CIRCLE: "circleVariant",
-  MASK_CIRCLE: "maskCircleVariant",
-  LINES: "linesVariant",
+  Svg: "svgVariant",
+  Circle: "circleVariant",
+  MaskCircle: "maskCircleVariant",
+  Lines: "linesVariant",
 } as const;
 
 type VariantsKey = (typeof VariantsKey)[keyof typeof VariantsKey];
@@ -42,50 +34,50 @@ type VariantsKey = (typeof VariantsKey)[keyof typeof VariantsKey];
 type ThemeVariants = Record<VariantsKey, Record<Theme, Variant>>;
 
 const defaultThemeVariants = {
-  [VariantsKey.SVG]: {
-    dark: {
+  [VariantsKey.Svg]: {
+    [Theme.Dark]: {
       rotate: 40,
     },
-    light: {
+    [Theme.Light]: {
       rotate: 90,
     },
-    system: {
+    [Theme.System]: {
       rotate: 0,
     },
   },
-  [VariantsKey.CIRCLE]: {
-    dark: {
+  [VariantsKey.Circle]: {
+    [Theme.Dark]: {
       r: 9,
     },
-    light: {
+    [Theme.Light]: {
       r: 5,
     },
-    system: {
+    [Theme.System]: {
       r: 5,
     },
   },
-  [VariantsKey.MASK_CIRCLE]: {
-    dark: {
+  [VariantsKey.MaskCircle]: {
+    [Theme.Dark]: {
       cx: "50%",
       cy: "23%",
     },
-    light: {
+    [Theme.Light]: {
       cx: "100%",
       cy: "0%",
     },
-    system: {
+    [Theme.System]: {
       cx: "100%",
       cy: "0%",
     },
   },
-  [VariantsKey.LINES]: {
-    dark: {
+  [VariantsKey.Lines]: {
+    [Theme.Dark]: {
       opacity: 0,
     },
-    light: {
+    [Theme.Light]: {
       opacity: 1,
     },
-    system: {
+    [Theme.System]: {
       opacity: 0,
     },
   },
@@ -107,7 +99,7 @@ const MotionThemeIcon: FC<{
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      initial="system"
+      initial={Theme.System}
       variants={variants.svgVariant}
       animate={theme}>
       <mask id={`${id}-mask`}>
@@ -115,7 +107,7 @@ const MotionThemeIcon: FC<{
         <motion.circle
           r="9"
           fill="black"
-          initial="system"
+          initial={Theme.System}
           variants={variants.maskCircleVariant}
           animate={theme}
         />
@@ -125,13 +117,13 @@ const MotionThemeIcon: FC<{
         cy="12"
         fill="currentColor"
         mask={`url(#${id}-mask)`}
-        initial="system"
+        initial={Theme.System}
         variants={variants.circleVariant}
         animate={theme}
       />
       <motion.g
         stroke="currentColor"
-        initial="system"
+        initial={Theme.System}
         variants={variants.linesVariant}
         animate={theme}>
         <line x1="12" y1="1" x2="12" y2="3" />
@@ -150,11 +142,7 @@ const MotionThemeIcon: FC<{
 const ThemeSelector: FC<
   Props & {
     label?: string;
-    themeLabel?: {
-      system?: string;
-      dark?: string;
-      light?: string;
-    };
+    themeLabel?: Partial<Record<Theme, string>>;
     enableCMD?: boolean;
     buttonProps?: ButtonProps;
     dropdownProps?: {
@@ -173,15 +161,15 @@ const ThemeSelector: FC<
   variants = defaultThemeVariants,
   label = "Theme",
   themeLabel = {
-    system: "System",
-    dark: "Dark",
-    light: "Light",
+    [Theme.System]: "System",
+    [Theme.Dark]: "Dark",
+    [Theme.Light]: "Light",
   },
   enableCMD = false,
   buttonProps,
   dropdownProps,
 }) => {
-  const { theme = "system", setTheme } = useTheme();
+  const { theme = Theme.System, setTheme } = useTheme();
   return (
     <>
       {enableCMD && <ThemeCMD />}
@@ -189,39 +177,33 @@ const ThemeSelector: FC<
         {...dropdownProps?.root}
         className={cn("not-prose", dropdownProps?.root?.className)}>
         <Button type="button" size="sm" {...buttonProps}>
-          <MotionThemeIcon
-            theme={
-              /* SAFETY: The producer contract guarantees this value satisfies Theme. */ theme as Theme
-            }
-            variants={variants}
-          />{" "}
-          {label}
+          <MotionThemeIcon theme={theme} variants={variants} /> {label}
         </Button>
         <Dropdown.Popover {...dropdownProps?.popover}>
           <Dropdown.Menu {...dropdownProps?.menu}>
             <Dropdown.Item
-              key="system"
-              id="system"
+              key={Theme.System}
+              id={Theme.System}
               {...dropdownProps?.item}
-              onPress={() => setTheme(Theme.SYSTEM)}>
-              <MotionThemeIcon theme={Theme.SYSTEM} variants={variants} />{" "}
-              {themeLabel.system}
+              onPress={() => setTheme(Theme.System)}>
+              <MotionThemeIcon theme={Theme.System} variants={variants} />{" "}
+              {themeLabel[Theme.System]}
             </Dropdown.Item>
             <Dropdown.Item
-              key="dark"
-              id="dark"
+              key={Theme.Dark}
+              id={Theme.Dark}
               {...dropdownProps?.item}
-              onPress={() => setTheme(Theme.DARK)}>
-              <MotionThemeIcon theme={Theme.DARK} variants={variants} />
-              {themeLabel.dark}
+              onPress={() => setTheme(Theme.Dark)}>
+              <MotionThemeIcon theme={Theme.Dark} variants={variants} />
+              {themeLabel[Theme.Dark]}
             </Dropdown.Item>
             <Dropdown.Item
-              key="light"
-              id="light"
+              key={Theme.Light}
+              id={Theme.Light}
               {...dropdownProps?.item}
-              onPress={() => setTheme(Theme.LIGHT)}>
-              <MotionThemeIcon theme={Theme.LIGHT} variants={variants} />
-              {themeLabel.light}
+              onPress={() => setTheme(Theme.Light)}>
+              <MotionThemeIcon theme={Theme.Light} variants={variants} />
+              {themeLabel[Theme.Light]}
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown.Popover>
@@ -233,7 +215,7 @@ const ThemeSelector: FC<
 const ThemeCMD = () => {
   const { setTheme, isDarkMode } = useTheme();
   useHotkey("Mod+J", () => {
-    setTheme(isDarkMode ? "light" : "dark");
+    setTheme(isDarkMode ? Theme.Light : Theme.Dark);
   });
   return null;
 };

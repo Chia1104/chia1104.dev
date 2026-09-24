@@ -12,6 +12,7 @@ const hashOf = (text: string): string => {
 /** Identity of an attachment on the client: what dedupes a prompt and keys a context row. */
 export const attachmentKeyOf = (attachment: AgentAttachmentInput): string => {
   if (attachment.type === "draft") return `draft:${attachment.id}`;
+  if (attachment.type === "report") return `report:${attachment.id}`;
   if (attachment.type === "feed")
     return `feed:${attachment.id}:${attachment.locale}`;
   const { source } = attachment;
@@ -26,8 +27,8 @@ export const attachmentKeyOf = (attachment: AgentAttachmentInput): string => {
 export const attachmentInputOf = (
   attachment: AgentAttachmentInput
 ): AgentAttachmentInput =>
-  attachment.type === "draft"
-    ? { type: "draft", id: attachment.id }
+  attachment.type === "draft" || attachment.type === "report"
+    ? { type: attachment.type, id: attachment.id }
     : attachment.type === "feed"
       ? { type: "feed", id: attachment.id, locale: attachment.locale }
       : {

@@ -25,8 +25,8 @@ export async function tryCatch<T, E = Error>(
   } catch (error) {
     return {
       data: null,
-      error:
-        /* SAFETY: The producer contract guarantees this value satisfies E. */ error as E,
+      // SAFETY: a rejection is unchecked; `E` is the caller's claim about what `promise` throws.
+      error: error as E,
     };
   }
 }

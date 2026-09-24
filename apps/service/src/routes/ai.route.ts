@@ -6,7 +6,7 @@ import { timeout } from "hono/timeout";
 import * as z from "zod";
 
 import { HOUSE_MODELS } from "@chia/ai/house-models";
-import { KEY_COOKIE_NAMES, KEY_IDS, keyIdSchema } from "@chia/ai/provider";
+import { KEY_COOKIE_NAMES, KeyId, keyIdSchema } from "@chia/ai/provider";
 import {
   generateSlug,
   generateDescription,
@@ -94,7 +94,7 @@ const api = new Hono<HonoContext>()
   .get("/keys", verifyAuth({ allowAnonymous: true }), (c) =>
     c.json(
       {
-        configured: KEY_IDS.filter((id) =>
+        configured: Object.values(KeyId).filter((id) =>
           Boolean(getCookie(c, KEY_COOKIE_NAMES[id]))
         ),
       },

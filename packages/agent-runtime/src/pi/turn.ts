@@ -16,16 +16,17 @@ import type {
 } from "@earendil-works/pi-ai";
 import { clampThinkingLevel } from "@earendil-works/pi-ai";
 
+import { AgentUsageSource } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 import { isAbortError } from "@chia/utils/error-helper";
-import { stableStringify } from "@chia/utils/json";
-import type { JsonValue } from "@chia/utils/json";
+import { asJsonValue, stableStringify } from "@chia/utils/json";
 
 import { buildBranchContext } from "../session/context.ts";
 import type { MessageEntry, NewSessionEntry } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";
 import { traceAgentTurn, traceToolCall } from "../telemetry.ts";
+import { AgentErrorKind } from "../types.ts";
 import type {
   AgentPolicy,
   AgentSessionSettings,
@@ -161,14 +162,19 @@ const volatileMessage = (text: string): AgentMessage => ({
   timestamp: Date.now(),
 });
 
-/** The tool and its exact arguments: an approval is good for that call and nothing else. */
-export const defaultApprovalKey = (request: ToolCallRequest): string =>
-  `${request.toolName}:${stableStringify(
-    // SAFETY: tool arguments passed their registered TypeBox schema, so they are plain JSON.
-    (request.input ?? null) as JsonValue
-  )}`;
+/**
+ * The tool and its exact arguments: an approval is good for that call and nothing else.
+ * Arguments that are not JSON have no stable identity, so such an approval covers only its own call.
+ */
+export const defaultApprovalKey = (request: ToolCallRequest): string => {
+  const input = asJsonValue(request.input ?? null);
+  return `${request.toolName}:${input === undefined ? request.toolCallId : stableStringify(input)}`;
+};
 
-/** The operator's message as persisted: rendered attachments first, their own words last. */
+/**
+ * The operator's message as persisted: rendered attachments first, their own words last.
+ * Readers of the transcript (lesson extraction) rely on the block being content part 0.
+ */
 const attachedPrompt = (rendered: string, text: string): AgentMessage => ({
   role: "user",
   content: [
@@ -271,7 +277,7 @@ const executePiTurn = async ({
       budget,
       onExhausted: () =>
         failTurn({
-          kind: "budget_exhausted",
+          kind: AgentErrorKind.BudgetExhausted,
           message: `The model issued more than ${budget.hardMaxToolCalls} tool calls in one turn.`,
         }),
     });
@@ -284,7 +290,7 @@ const executePiTurn = async ({
     const deadline = setTimeout(
       () =>
         failTurn({
-          kind: "budget_exhausted",
+          kind: AgentErrorKind.BudgetExhausted,
           message: `The turn ran longer than ${Math.round(budget.maxDurationMs / 1000)}s.`,
         }),
       budget.maxDurationMs
@@ -306,7 +312,7 @@ const executePiTurn = async ({
       } catch (error) {
         failTurn(
           {
-            kind: "internal",
+            kind: AgentErrorKind.Internal,
             message: "The message's attachments could not be rendered.",
           },
           error
@@ -318,7 +324,8 @@ const executePiTurn = async ({
     if (screen && !hostFailure && !message.decision) {
       try {
         const refusal = await screen(message, signal);
-        if (refusal) failTurn({ kind: "refused", message: refusal.reason });
+        if (refusal)
+          failTurn({ kind: AgentErrorKind.Refused, message: refusal.reason });
       } catch (error) {
         failTurn(errorOfThrown(error), error);
       }
@@ -455,7 +462,7 @@ const executePiTurn = async ({
             treeFailed = true;
             failTurn(
               {
-                kind: "internal",
+                kind: AgentErrorKind.Internal,
                 message: `The session tree refused entry ${entry.id}.`,
               },
               error
@@ -468,7 +475,7 @@ const executePiTurn = async ({
             // Reported by what the provider says answered, not what was asked for: the two
             // differ when a gateway routes a request, and the bill follows the provider.
             await onUsage?.({
-              source: "turn",
+              source: AgentUsageSource.Turn,
               providerId: event.message.provider,
               modelId: event.message.model,
               usage: event.message.usage,
@@ -526,7 +533,7 @@ const executePiTurn = async ({
         if (hostFailure) failure = hostFailure;
         else if (!reply) {
           failure = {
-            kind: "internal",
+            kind: AgentErrorKind.Internal,
             message: "The turn completed without an assistant message.",
           };
         } else if (reply.stopReason === "aborted") aborted = true;
@@ -597,7 +604,10 @@ const executePiTurn = async ({
         detail: failure.message,
       };
       // Provider and internal failures are this system's; the other kinds answer the caller.
-      if (failure.kind === "provider" || failure.kind === "internal") {
+      if (
+        failure.kind === AgentErrorKind.Provider ||
+        failure.kind === AgentErrorKind.Internal
+      ) {
         reportError(
           failureCause ?? failure.message,
           "Agent turn failed",

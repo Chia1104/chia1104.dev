@@ -7,8 +7,13 @@ import {
   textResult,
 } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
-import { buildDocumentContext } from "@chia/ai/embeddings/context";
+import {
+  ContextDetail,
+  buildDocumentContext,
+} from "@chia/ai/embeddings/context";
+import { MarkdownFormat } from "@chia/ai/embeddings/markdown";
 import { RERANK_ANSWERABLE_FLOOR } from "@chia/ai/rerank/provider";
+import { AgentMemoryKind } from "@chia/db/schema";
 
 import type {
   MemoryFreshness,
@@ -16,7 +21,7 @@ import type {
   WritingToolContext,
 } from "../types.ts";
 
-import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
+import { TOOL_INFO_BY_NAME, ToolName } from "./registry.ts";
 
 /**
  * `save_memory` writes a `fact`; `propose_lesson` writes a `lesson` that stays pending until
@@ -37,8 +42,8 @@ const MAX_SEARCH_LIMIT = 10;
 const MEMORY_BODY_TOKEN_BUDGET = 8_000;
 
 export const saveMemorySpec = {
-  name: TOOL_NAMES.saveMemory,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.saveMemory].label,
+  name: ToolName.SaveMemory,
+  label: TOOL_INFO_BY_NAME[ToolName.SaveMemory].label,
   description:
     "Remember a verified fact for future sessions: a version number, an API signature, a " +
     "benchmark figure, a decision the operator made. Record the conclusion with its source, not " +
@@ -74,7 +79,7 @@ export const saveMemoryTool = defineTool(
   (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const saved = await context.memory.save(
       {
-        kind: "fact",
+        kind: AgentMemoryKind.Fact,
         title: params.title,
         content: params.content,
         sourceUrl: params.sourceUrl,
@@ -95,8 +100,8 @@ export const saveMemoryTool = defineTool(
 );
 
 export const proposeLessonSpec = {
-  name: TOOL_NAMES.proposeLesson,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.proposeLesson].label,
+  name: ToolName.ProposeLesson,
+  label: TOOL_INFO_BY_NAME[ToolName.ProposeLesson].label,
   description:
     "Propose a standing lesson for the operator to review: a preference about structure, " +
     "tone, length, sourcing or what to avoid that they stated, corrected you on, declined a " +
@@ -137,7 +142,7 @@ export const proposeLessonTool = defineTool(
   (context: WritingToolContext) => async (_toolCallId, params, signal) => {
     const saved = await context.memory.save(
       {
-        kind: "lesson",
+        kind: AgentMemoryKind.Lesson,
         title: params.title,
         content: params.content,
         supersedesId: params.supersedes,
@@ -158,8 +163,8 @@ export const proposeLessonTool = defineTool(
 );
 
 export const searchMemorySpec = {
-  name: TOOL_NAMES.searchMemory,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.searchMemory].label,
+  name: ToolName.SearchMemory,
+  label: TOOL_INFO_BY_NAME[ToolName.SearchMemory].label,
   description:
     "Search what earlier sessions verified and read: saved facts and the full text of pages " +
     "fetched before. Distinct from `search_posts`, which searches the blog itself. Each hit " +
@@ -233,8 +238,8 @@ const freshnessNote = (memory: MemoryFreshness): string | null => {
 };
 
 export const getMemorySpec = {
-  name: TOOL_NAMES.getMemory,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.getMemory].label,
+  name: ToolName.GetMemory,
+  label: TOOL_INFO_BY_NAME[ToolName.GetMemory].label,
   description:
     "Read one memory by the id a `search_memory` hit carries. A long page degrades to its " +
     "matched sections and then to an outline; pass the hit's `headingPath` as `focusHeadings` " +
@@ -274,14 +279,14 @@ export const getMemoryTool = defineTool(
           title: memory.title,
           content,
           matchedHeadingPaths: params.focusHeadings,
-          format: "markdown",
+          format: MarkdownFormat.Markdown,
         },
       ],
       { budget: MEMORY_BODY_TOKEN_BUDGET }
     );
     const document = documents[0];
     const body = document?.text ?? content;
-    const detail = document?.detail ?? "full";
+    const detail = document?.detail ?? ContextDetail.Full;
 
     const freshness = freshnessNote(memory);
     return textResult(

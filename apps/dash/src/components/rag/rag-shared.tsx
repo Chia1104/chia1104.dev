@@ -2,11 +2,10 @@
 
 import { Chip, ProgressBar, Tooltip } from "@heroui/react";
 
+import { ChunkEmbeddingState, ResourceIndexRunStatus } from "@chia/db/schema";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import type { RouterOutputs } from "@/libs/orpc/types";
-
-export const FEED_TRANSLATION_SOURCE_TYPE = "feed_translation";
 
 export type ChunkState =
   RouterOutputs["rag"]["resource:status"]["chunks"][number]["state"];
@@ -14,15 +13,18 @@ export type IndexCounts = RouterOutputs["rag"]["overview"]["counts"];
 export type RunStatus = RouterOutputs["rag"]["run:get"]["run"]["status"];
 
 const STATE_META = {
-  current: {
+  [ChunkEmbeddingState.Current]: {
     label: "Embedded on the current index key",
     className: "bg-success",
   },
-  stale: {
+  [ChunkEmbeddingState.Stale]: {
     label: "Only has a vector from an older index key",
     className: "bg-warning",
   },
-  missing: { label: "No vector at all", className: "bg-muted" },
+  [ChunkEmbeddingState.Missing]: {
+    label: "No vector at all",
+    className: "bg-muted",
+  },
 } satisfies Record<ChunkState, { label: string; className: string }>;
 
 export const StateDot = ({
@@ -107,11 +109,11 @@ export const CountsSummary = ({ counts }: { counts: IndexCounts }) => (
 );
 
 const RUN_STATUS_COLOR = {
-  pending: "default",
-  running: "warning",
-  completed: "success",
-  failed: "danger",
-  cancelled: "default",
+  [ResourceIndexRunStatus.Pending]: "default",
+  [ResourceIndexRunStatus.Running]: "warning",
+  [ResourceIndexRunStatus.Completed]: "success",
+  [ResourceIndexRunStatus.Failed]: "danger",
+  [ResourceIndexRunStatus.Cancelled]: "default",
 } satisfies Record<RunStatus, "default" | "success" | "warning" | "danger">;
 
 export const RunStatusChip = ({ status }: { status: RunStatus }) => (

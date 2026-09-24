@@ -121,6 +121,10 @@ export function isFileType(
       return ["css", "scss", "sass", "less"].includes(ext);
     case "config":
       return ["yaml", "yml", "toml", "ini", "env", "config"].includes(ext);
+    default: {
+      const _exhaustive: never = type;
+      return _exhaustive;
+    }
   }
 
   return false;

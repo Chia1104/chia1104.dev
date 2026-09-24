@@ -18,7 +18,7 @@ export const SUPPORTED_LOCALES: {
     label: "English",
   },
   {
-    key: Locale.zhTW,
+    key: Locale.ZhTW,
     index: 1,
     label: "Chinese (Traditional)",
   },

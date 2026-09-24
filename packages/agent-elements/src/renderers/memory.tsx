@@ -3,7 +3,7 @@
 import { Brain, ExternalLink } from "lucide-react";
 import * as z from "zod";
 
-import { TOOL_NAMES } from "@chia/agent-writing/tools/registry";
+import { ToolName } from "@chia/agent-writing/tools/registry";
 import { hostnameOf } from "@chia/utils/url";
 
 import { DefaultToolBody } from "../tool-call.tsx";
@@ -94,7 +94,7 @@ const OneMemory: ToolRenderer = ({ tool }) => {
 };
 
 export const memoryToolRenderers: ToolRenderers = {
-  [TOOL_NAMES.searchMemory]: SearchMemory,
-  [TOOL_NAMES.getMemory]: OneMemory,
-  [TOOL_NAMES.saveMemory]: OneMemory,
+  [ToolName.SearchMemory]: SearchMemory,
+  [ToolName.GetMemory]: OneMemory,
+  [ToolName.SaveMemory]: OneMemory,
 };

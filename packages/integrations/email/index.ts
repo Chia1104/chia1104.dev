@@ -2,6 +2,7 @@ import meta from "@chia/meta";
 import { CONTACT_EMAIL } from "@chia/utils/config";
 
 import { env } from "./env";
+import { EmailDeliveryError } from "./error";
 
 export interface ContactEmail {
   email: string;
@@ -9,14 +10,6 @@ export interface ContactEmail {
   message: string;
   /** Recorded in the email body so abuse can be traced. */
   ip: string;
-}
-
-export class EmailDeliveryError extends Error {
-  constructor(cause?: unknown) {
-    super("Failed to deliver the contact email");
-    this.name = "EmailDeliveryError";
-    this.cause = cause;
-  }
 }
 
 /**

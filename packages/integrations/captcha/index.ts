@@ -1,24 +1,26 @@
+import * as z from "zod";
+
 import { setSearchParams } from "@chia/utils/request";
 import { getClientIP } from "@chia/utils/server";
 
 import { ErrorCode, X_CAPTCHA_RESPONSE } from "./constants";
-import type { ErrorCode as CaptchaErrorCode } from "./constants";
 import { env } from "./env";
 
-export interface CapthcaResponse {
-  success: boolean;
-  challenge_ts: string;
-  hostname: string;
-  "error-codes": string[];
-}
+/** reCAPTCHA and Turnstile share this shape; a failed check omits the timestamp and hostname. */
+const siteverifyResponseSchema = z.object({
+  success: z.boolean(),
+  challenge_ts: z.string().optional(),
+  hostname: z.string().optional(),
+  "error-codes": z.array(z.string()).optional(),
+});
 
 interface Options {
-  onError?: (code: CaptchaErrorCode) => void;
+  onError?: (code: ErrorCode) => void;
 }
 
 export class CaptchaError extends Error {
-  code: CaptchaErrorCode;
-  constructor(code: CaptchaErrorCode) {
+  code: ErrorCode;
+  constructor(code: ErrorCode) {
     super("Captcha Error");
     this.code = code;
   }
@@ -45,10 +47,7 @@ const reCAPTCHASiteverify = async (credentials: CaptchaCredentials) => {
     }
   );
 
-  const siteverifyJson =
-    /* SAFETY: The producer contract guarantees this value satisfies CapthcaResponse. */ (await siteverify.json()) as CapthcaResponse;
-
-  return siteverifyJson;
+  return siteverifyResponseSchema.parse(await siteverify.json());
 };
 
 const turnstileSiteverify = async (credentials: CaptchaCredentials) => {
@@ -66,10 +65,7 @@ const turnstileSiteverify = async (credentials: CaptchaCredentials) => {
     }
   );
 
-  const siteverifyJson =
-    /* SAFETY: The producer contract guarantees this value satisfies CapthcaResponse. */ (await siteverify.json()) as CapthcaResponse;
-
-  return siteverifyJson;
+  return siteverifyResponseSchema.parse(await siteverify.json());
 };
 
 /** Verifies an extracted captcha token. Wired to `captchaPolicy` in `@chia/service-kit`. */
@@ -84,6 +80,7 @@ export const captchaSiteverifyWithCredentials = async (
     case "google-recaptcha":
       return await reCAPTCHASiteverify(credentials);
     default: {
+      const _exhaustive: never = provider;
       options?.onError?.(ErrorCode.CaptchaProviderNotSupported);
       throw new CaptchaError(ErrorCode.CaptchaProviderNotSupported);
     }

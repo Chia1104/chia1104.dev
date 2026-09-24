@@ -4,7 +4,7 @@ import { useStore } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
-import type { DockMode } from "@chia/ui/dock";
+import { DockMode } from "@chia/ui/dock";
 
 interface AgentDockState {
   mode: DockMode;
@@ -23,11 +23,14 @@ interface AgentDockState {
 export const agentDockStore = createStore<AgentDockState>()(
   persist(
     (set) => ({
-      mode: "closed",
+      mode: DockMode.Closed,
       sessionId: null,
       setMode: (mode) => set({ mode }),
       toggle: () =>
-        set((state) => ({ mode: state.mode === "closed" ? "open" : "closed" })),
+        set((state) => ({
+          mode:
+            state.mode === DockMode.Closed ? DockMode.Open : DockMode.Closed,
+        })),
       setSessionId: (sessionId) => set({ sessionId }),
     }),
     {
@@ -41,6 +44,12 @@ export const agentDockStore = createStore<AgentDockState>()(
     }
   )
 );
+
+/** Opens the dock without disturbing a maximized one. */
+export const showAgentDock = () => {
+  const dock = agentDockStore.getState();
+  if (dock.mode === DockMode.Closed) dock.setMode(DockMode.Open);
+};
 
 export const useAgentDock = <T>(selector: (state: AgentDockState) => T): T =>
   useStore(agentDockStore, selector);

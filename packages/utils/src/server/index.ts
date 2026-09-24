@@ -23,22 +23,17 @@ export const HTTPErrorConfig = {
   503: "Service Unavailable",
 } as const;
 
+const isKnownStatus = (
+  statusCode: number
+): statusCode is keyof typeof HTTPErrorConfig =>
+  Object.hasOwn(HTTPErrorConfig, statusCode);
+
 export function errorGenerator(
   statusCode: number,
   errors?: ErrorResponse["errors"]
 ): ErrorResponse {
-  if (!(statusCode in HTTPErrorConfig)) {
-    return {
-      code: "Unknown",
-      status: statusCode,
-      errors,
-    };
-  }
   return {
-    code:
-      HTTPErrorConfig[
-        /* SAFETY: The producer contract guarantees this value satisfies keyof typeof HTTPErrorConfig. */ statusCode as keyof typeof HTTPErrorConfig
-      ] ?? "Unknown",
+    code: isKnownStatus(statusCode) ? HTTPErrorConfig[statusCode] : "Unknown",
     status: statusCode,
     errors,
   };

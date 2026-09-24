@@ -15,13 +15,16 @@ import {
   listAgentMemoriesBySession,
 } from "@chia/db/repos/agent/memory";
 import type { AgentMemory } from "@chia/db/schema";
-import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
-import { AppError } from "@chia/service-kit/errors";
+import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 import {
   createMemoryService,
   recordSourceMemoryService,
 } from "@chia/services/memory/write.service";
-import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/resource-types";
+import {
+  ResourceSearchMode,
+  ResourceType,
+} from "@chia/services/rag/resource-types";
 import {
   searchResources,
   toSearchMatches,
@@ -64,9 +67,9 @@ export const createAgentMemoryPort = (
 
   return {
     async save(input): Promise<SavedMemory> {
-      if (input.kind === AGENT_MEMORY_KIND.Source) {
+      if (input.kind === AgentMemoryKind.Source) {
         if (!input.sourceUrl) {
-          throw new AppError("BAD_REQUEST", {
+          throw new AppError(AppErrorCode.BadRequest, {
             message: "A source memory needs its URL.",
           });
         }
@@ -83,7 +86,7 @@ export const createAgentMemoryPort = (
         return {
           id,
           kind: input.kind,
-          status: AGENT_MEMORY_STATUS.Active,
+          status: AgentMemoryStatus.Active,
           title: input.title,
           sourceUrl: input.sourceUrl,
           changed,
@@ -91,12 +94,12 @@ export const createAgentMemoryPort = (
       }
 
       // a lesson is a proposal: pending until the operator approves it in the dashboard
-      const lesson = input.kind === AGENT_MEMORY_KIND.Lesson;
+      const lesson = input.kind === AgentMemoryKind.Lesson;
       const row = await createMemoryService(
         db,
         {
           kind: input.kind,
-          status: lesson ? AGENT_MEMORY_STATUS.Pending : undefined,
+          status: lesson ? AgentMemoryStatus.Pending : undefined,
           title: input.title,
           content: input.content,
           sourceUrl: input.sourceUrl,
@@ -112,8 +115,8 @@ export const createAgentMemoryPort = (
       const { items, answerable } = await searchResources({
         db,
         query: input.query,
-        mode: "hybrid",
-        sourceTypes: [AGENT_MEMORY_SOURCE_TYPE],
+        mode: ResourceSearchMode.Hybrid,
+        sourceTypes: [ResourceType.AgentMemory],
         includeUnpublished: true,
         limit: input.limit,
         rerank: true,

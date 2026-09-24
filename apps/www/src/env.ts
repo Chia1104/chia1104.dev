@@ -71,7 +71,7 @@ export const env = createEnv({
     NEXT_PUBLIC_DEFAULT_TIME_ZONE:
       process.env.NEXT_PUBLIC_DEFAULT_TIME_ZONE || "Asia/Taipei",
     NEXT_PUBLIC_DEFAULT_LOCALE:
-      process.env.NEXT_PUBLIC_DEFAULT_LOCALE || Locale.ZH_TW,
+      process.env.NEXT_PUBLIC_DEFAULT_LOCALE || Locale.ZhTW,
     SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
     NEXT_PUBLIC_ENABLE_SENTRY:
       process.env.NEXT_PUBLIC_ENABLE_SENTRY === "true" ||

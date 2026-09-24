@@ -3,15 +3,33 @@ import { createMiddleware } from "hono/factory";
 import { vi } from "vitest";
 
 import { CallerTier } from "@chia/auth/tier";
+import type { VerifiedApiKey } from "@chia/service-kit/policies/apikey.policy";
 import { baseOS } from "@chia/services/shared/context";
 import type { CallerContext } from "@chia/services/shared/guards/caller.guard";
 
-const FAKE_API_KEY =
-  /* SAFETY: This fixture implements the VerifiedApiKey members the routes read. */ {
-    id: "test-api-key-id",
-    userId: "test-user-id",
-    enabled: true,
-  } as never;
+const FAKE_API_KEY: VerifiedApiKey = {
+  id: "test-api-key-id",
+  configId: "default",
+  name: null,
+  start: null,
+  prefix: null,
+  referenceId: "test-user-id",
+  refillInterval: null,
+  refillAmount: null,
+  lastRefillAt: null,
+  enabled: true,
+  rateLimitEnabled: false,
+  rateLimitTimeWindow: null,
+  rateLimitMax: null,
+  requestCount: 0,
+  remaining: null,
+  lastRequest: null,
+  expiresAt: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  metadata: null,
+  permissions: null,
+};
 
 export const orpcRateLimitGuard = vi.fn(() =>
   baseOS.middleware(({ next }) => next())

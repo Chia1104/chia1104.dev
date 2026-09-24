@@ -8,7 +8,7 @@ import type { AppError } from "../errors";
 export type PolicyResult<TPatch extends object = Record<never, never>> =
   | {
       ok: true;
-      patch?: TPatch;
+      patch: TPatch;
       headers?: Record<string, string>;
     }
   | {
@@ -26,7 +26,7 @@ export type Policy<
 > = (context: TContext) => Promise<PolicyResult<TPatch>> | PolicyResult<TPatch>;
 
 export const allow = <TPatch extends object>(
-  patch?: TPatch,
+  patch: TPatch,
   headers?: Record<string, string>
 ): PolicyResult<TPatch> => ({ ok: true, patch, headers });
 

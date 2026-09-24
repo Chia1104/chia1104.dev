@@ -68,24 +68,24 @@ const NeonGradientCard: React.FC<NeonGradientCardProps> = ({
     }
   }, [children]);
 
+  const style: CSSProperties & Record<`--${string}`, string> = {
+    "--border-size": `${borderSize}px`,
+    "--border-radius": `${borderRadius}px`,
+    "--neon-first-color": neonColors.firstColor,
+    "--neon-second-color": neonColors.secondColor,
+    "--card-width": `${dimensions.width}px`,
+    "--card-height": `${dimensions.height}px`,
+    "--card-content-radius": `${borderRadius - borderSize}px`,
+    "--pseudo-element-background-image": `linear-gradient(0deg, ${neonColors.firstColor}, ${neonColors.secondColor})`,
+    "--pseudo-element-width": `${dimensions.width + borderSize * 2}px`,
+    "--pseudo-element-height": `${dimensions.height + borderSize * 2}px`,
+    "--after-blur": `${dimensions.width / 3}px`,
+  };
+
   return (
     <div
       ref={containerRef}
-      style={
-        /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
-          "--border-size": `${borderSize}px`,
-          "--border-radius": `${borderRadius}px`,
-          "--neon-first-color": neonColors.firstColor,
-          "--neon-second-color": neonColors.secondColor,
-          "--card-width": `${dimensions.width}px`,
-          "--card-height": `${dimensions.height}px`,
-          "--card-content-radius": `${borderRadius - borderSize}px`,
-          "--pseudo-element-background-image": `linear-gradient(0deg, ${neonColors.firstColor}, ${neonColors.secondColor})`,
-          "--pseudo-element-width": `${dimensions.width + borderSize * 2}px`,
-          "--pseudo-element-height": `${dimensions.height + borderSize * 2}px`,
-          "--after-blur": `${dimensions.width / 3}px`,
-        } as CSSProperties
-      }
+      style={style}
       className={cn(
         "relative z-10 h-full w-full rounded-[var(--border-radius)]",
         className

@@ -122,11 +122,10 @@ const BanDialog = ({
                 aria-label="Ban duration"
                 className="w-full"
                 isDisabled={isPending}
-                onChange={(key) =>
-                  /* SAFETY: The listbox only offers ids from BAN_DURATIONS. */ setDuration(
-                    String(key) as BanDurationId
-                  )
-                }
+                onChange={(key) => {
+                  const option = BAN_DURATIONS.find(({ id }) => id === key);
+                  if (option) setDuration(option.id);
+                }}
                 value={duration}>
                 <Label className="text-xs">Duration</Label>
                 <Select.Trigger>

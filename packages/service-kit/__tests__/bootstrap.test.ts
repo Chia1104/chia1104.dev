@@ -7,21 +7,23 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { applyPolicy } from "../src/adapters/hono";
 import { bootstrap } from "../src/bootstrap";
-import { AppError } from "../src/errors";
+import { AppError, AppErrorCode } from "../src/errors";
 import { deny } from "../src/policies/types";
 
 const createApp = () =>
   bootstrap(new Hono(), { logger: false })
     .get("/ok", (c) => c.json({ requestId: c.get("requestId") }))
     .get("/refused", () => {
-      throw new AppError("FORBIDDEN");
+      throw new AppError(AppErrorCode.Forbidden);
     })
     .get("/broken", () => {
       throw new Error("boom");
     })
     .get("/denied/:code", async (c) => {
       const code =
-        c.req.param("code") === "503" ? "SERVICE_UNAVAILABLE" : "FORBIDDEN";
+        c.req.param("code") === "503"
+          ? AppErrorCode.ServiceUnavailable
+          : AppErrorCode.Forbidden;
       const denied = await applyPolicy(c, async () =>
         deny(new AppError(code, { headers: { "Retry-After": "30" } }))
       );

@@ -1,6 +1,5 @@
 import type { Context, Env } from "hono";
 import { createMiddleware } from "hono/factory";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import type { ServiceContext } from "../context";
 import { toErrorResponse } from "../errors";
@@ -36,18 +35,15 @@ export const applyPolicy = async <
     if (result.error.status >= 500) throw result.error;
     return c.json(
       toErrorResponse(result.error),
-      /* SAFETY: The producer contract guarantees this value satisfies ContentfulStatusCode. */ result
-        .error.status as ContentfulStatusCode,
+      result.error.status,
       result.error.headers ?? {}
     );
   }
 
   const mutable: MutableContext = c;
 
-  if (result.patch) {
-    for (const [key, value] of Object.entries(result.patch)) {
-      mutable.set(key, value);
-    }
+  for (const [key, value] of Object.entries(result.patch)) {
+    mutable.set(key, value);
   }
 
   if (result.headers) {

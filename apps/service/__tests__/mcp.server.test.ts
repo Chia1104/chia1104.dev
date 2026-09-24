@@ -1,5 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
 import { ORPCError } from "@orpc/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -21,12 +22,8 @@ const connect = async (api: McpApi) => {
 };
 
 const textOf = (result: Awaited<ReturnType<Client["callTool"]>>) => {
-  const [first] =
-    /* SAFETY: Every tool answers with one text block. */ result.content as {
-      type: string;
-      text: string;
-    }[];
-  return first?.text ?? "";
+  const [first] = CallToolResultSchema.parse(result).content;
+  return first?.type === "text" ? first.text : "";
 };
 
 const fakeApi = (overrides: object = {}): McpApi =>

@@ -8,13 +8,19 @@ import {
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type {
-  ContentReadPort,
+  PostSearchHit,
+  PostSnapshot,
   ProfileEntrySnapshot,
+  TagItem,
 } from "@chia/agent-content/types";
-import { UnknownAgentModelError } from "@chia/agent-runtime/models";
+import {
+  AgentProvider,
+  UnknownAgentModelError,
+} from "@chia/agent-runtime/models";
 import { runPiTurn } from "@chia/agent-runtime/pi/turn";
 import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
+import { AgentErrorKind } from "@chia/agent-runtime/types";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
@@ -25,19 +31,20 @@ import type {
   AgentWireEvent,
 } from "@chia/agent-runtime/wire/schema";
 import type { GuardProvider } from "@chia/ai/guard/provider";
+import { FeedType, Locale, ProfileEntryKind } from "@chia/db/types";
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 import { createFakeProfileReadPort } from "@chia/test/fixtures/profile-read-port";
 
 import { DEFAULT_PUBLIC_MODEL, resolvePublicModel } from "../src/models.ts";
 import { publicPolicy, publicTurnBudget } from "../src/policy.ts";
 import { preparePublicTurn } from "../src/runtime.ts";
-import { TOOL_NAMES } from "../src/tools/registry.ts";
+import { ToolName } from "../src/tools/registry.ts";
 
 const SESSION_ID = "session-1";
 
 const PROFILE: ProfileEntrySnapshot[] = [
   {
-    kind: "about",
+    kind: ProfileEntryKind.About,
     data: { translations: { en: { title: "Frontend engineer" } } },
   },
 ];
@@ -68,41 +75,42 @@ const build = (
   models.setProvider(faux.provider);
 
   const session = new InMemorySessionTree(SESSION_ID);
-  const content =
-    /* SAFETY: This fixture implements the ContentReadPort methods these tests exercise. */ createFakeContentReadPort(
+  const content = createFakeContentReadPort<
+    PostSearchHit,
+    PostSnapshot,
+    never,
+    TagItem
+  >({
+    searchHits: [
       {
-        searchHits: [
+        slug: "existing-post",
+        locale: Locale.En,
+        url: "http://localhost:3000/en-US/posts/existing-post",
+        title: "An existing post",
+        matches: [{ headingPaths: [], snippet: "…" }],
+      },
+    ],
+    posts: [
+      {
+        feedId: 1,
+        slug: "existing-post",
+        url: "http://localhost:3000/en-US/posts/existing-post",
+        type: FeedType.Post,
+        published: true,
+        defaultLocale: Locale.En,
+        translations: [
           {
-            slug: "existing-post",
-            locale: "en",
+            locale: Locale.En,
             url: "http://localhost:3000/en-US/posts/existing-post",
             title: "An existing post",
-            matches: [{ headingPaths: [], snippet: "…" }],
+            content: "## Existing section\n\nExisting body.",
           },
         ],
-        posts: [
-          {
-            feedId: 1,
-            slug: "existing-post",
-            url: "http://localhost:3000/en-US/posts/existing-post",
-            type: "post",
-            contentType: "mdx",
-            published: true,
-            defaultLocale: "en",
-            translations: [
-              {
-                locale: "en",
-                url: "http://localhost:3000/en-US/posts/existing-post",
-                title: "An existing post",
-                content: "## Existing section\n\nExisting body.",
-              },
-            ],
-            tagSlugs: ["typescript"],
-          },
-        ],
-        tags: [{ slug: "typescript", names: { en: "TypeScript" } }],
-      }
-    ) as ContentReadPort;
+        tagSlugs: ["typescript"],
+      },
+    ],
+    tags: [{ slug: "typescript", names: { [Locale.En]: "TypeScript" } }],
+  });
   const events: AgentWireEvent[] = [];
   const sessionSettings: AgentSessionSettings = {
     providerId,
@@ -165,9 +173,12 @@ describe("message screen", () => {
 
     expect(result).toMatchObject({
       status: "error",
-      error: { kind: "refused" },
+      error: { kind: AgentErrorKind.Refused },
     });
-    expect(fixture.events).toContainEqual({ type: "error", kind: "refused" });
+    expect(fixture.events).toContainEqual({
+      type: "error",
+      kind: AgentErrorKind.Refused,
+    });
     expect(
       await fixture.session.getBranch(await fixture.session.getLeafId())
     ).toEqual([]);
@@ -203,11 +214,11 @@ describe("preparePublicTurn", () => {
   it("searches, reads and answers, with every tool call marked read", async () => {
     fixture.setResponses([
       fauxAssistantMessage(
-        [fauxToolCall(TOOL_NAMES.searchPosts, { keyword: "typescript" })],
+        [fauxToolCall(ToolName.SearchPosts, { keyword: "typescript" })],
         { stopReason: "toolUse" }
       ),
       fauxAssistantMessage(
-        [fauxToolCall(TOOL_NAMES.getPost, { slug: "existing-post" })],
+        [fauxToolCall(ToolName.GetPost, { slug: "existing-post" })],
         { stopReason: "toolUse" }
       ),
       fauxAssistantMessage("See `existing-post`."),
@@ -219,12 +230,12 @@ describe("preparePublicTurn", () => {
     const ends = fixture.events.filter((event) => event.type === "tool:end");
     expect(ends).toMatchObject([
       {
-        toolName: TOOL_NAMES.searchPosts,
+        toolName: ToolName.SearchPosts,
         isError: false,
         summary: "1 match(es).",
       },
       {
-        toolName: TOOL_NAMES.getPost,
+        toolName: ToolName.GetPost,
         isError: false,
         summary: "Read `existing-post`.",
       },
@@ -252,7 +263,7 @@ describe("preparePublicTurn", () => {
     fixture.setResponses([
       (context) => {
         seen.push(context);
-        return fauxAssistantMessage([fauxToolCall(TOOL_NAMES.listTags, {})]);
+        return fauxAssistantMessage([fauxToolCall(ToolName.ListTags, {})]);
       },
       (context) => {
         seen.push(context);
@@ -359,7 +370,7 @@ describe("preparePublicTurn", () => {
     fixture.setResponses([
       ...Array.from({ length: calls }, (_, index) =>
         fauxAssistantMessage(
-          [fauxToolCall(TOOL_NAMES.searchPosts, { keyword: `query ${index}` })],
+          [fauxToolCall(ToolName.SearchPosts, { keyword: `query ${index}` })],
           { stopReason: "toolUse" }
         )
       ),
@@ -380,7 +391,10 @@ describe("preparePublicTurn", () => {
   });
 
   it("runs on a native provider when the settings name one", async () => {
-    const native = build({ providerId: "openai", modelId: "gpt-5.2" });
+    const native = build({
+      providerId: AgentProvider.OpenAI,
+      modelId: "gpt-5.2",
+    });
     native.setResponses([fauxAssistantMessage("Answered over OpenAI.")]);
 
     await native.run("Who is answering?");

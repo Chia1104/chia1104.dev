@@ -11,6 +11,7 @@ import { EmptyState } from "./empty-state.tsx";
 import type { EmptyStateProps } from "./empty-state.tsx";
 import { useAgentLabels } from "./labels-context.tsx";
 import { useAgentStatus } from "./provider.tsx";
+import { AgentStatus } from "./store.ts";
 import { Thread } from "./thread.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
 
@@ -18,13 +19,13 @@ export const StatusChip = ({ className }: { className?: string }) => {
   const labels = useAgentLabels();
   const status = useAgentStatus();
   const meta = {
-    running: { color: "accent", label: labels.statusStreaming },
-    awaiting_approval: {
+    [AgentStatus.Running]: { color: "accent", label: labels.statusStreaming },
+    [AgentStatus.AwaitingApproval]: {
       color: "warning",
       label: labels.statusAwaitingApproval,
     },
-    error: { color: "danger", label: labels.toolFailed },
-    idle: { color: "default", label: labels.statusReady },
+    [AgentStatus.Error]: { color: "danger", label: labels.toolFailed },
+    [AgentStatus.Idle]: { color: "default", label: labels.statusReady },
   } as const;
   return (
     <Chip

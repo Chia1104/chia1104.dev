@@ -1,7 +1,7 @@
 import "zod/compile";
 import * as z from "zod";
 
-import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/services/rag/resource-types";
+import { ResourceType } from "@chia/services/rag/resource-types";
 
 import { estimateReadingTimeStep } from "../steps/estimate-reading-time.step";
 import { loadFeedForIndexingStep } from "../steps/feed-indexing.step";
@@ -35,7 +35,7 @@ export const feedIndexingWorkflow = async (request: Request) => {
   const translations = await Promise.all(
     feed.translations.map(async (translation) => {
       const resource = {
-        sourceType: FEED_TRANSLATION_SOURCE_TYPE,
+        sourceType: ResourceType.FeedTranslation,
         sourceId: translation.translationID,
       };
 

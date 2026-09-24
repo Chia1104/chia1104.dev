@@ -1,8 +1,12 @@
 import { ollama } from "../ollama/index.ts";
 
 import { guardEmbeddingInput, guardEmbeddingInputs } from "./tokenizer.ts";
-import { EMBEDDING_MAX_TOKENS, OLLAMA_EMBEDDING_MAX_TOKENS } from "./utils.ts";
-import type { EmbeddingTask, OllamaEmbeddingModel } from "./utils.ts";
+import {
+  EMBEDDING_MAX_TOKENS,
+  EmbeddingTask,
+  OLLAMA_EMBEDDING_MAX_TOKENS,
+  OllamaEmbeddingModel,
+} from "./utils.ts";
 
 /**
  * Asymmetric models need task-specific prefixes or retrieval degrades.
@@ -15,10 +19,10 @@ const withTaskPrefix = (
   task: EmbeddingTask
 ) => {
   switch (model) {
-    case "nomic-embed-text":
+    case OllamaEmbeddingModel.NomicEmbedText:
       return `${task}: ${input}`;
-    case "mxbai-embed-large":
-      return task === "search_query"
+    case OllamaEmbeddingModel.MxbaiEmbedLarge:
+      return task === EmbeddingTask.SearchQuery
         ? `Represent this sentence for searching relevant passages: ${input}`
         : input;
     default:
@@ -52,7 +56,7 @@ const inputBudget = (model: OllamaEmbeddingModel): number =>
 export const ollamaEmbedding = async (
   input: string,
   model: OllamaEmbeddingModel,
-  task: EmbeddingTask = "search_query"
+  task: EmbeddingTask = EmbeddingTask.SearchQuery
 ) => {
   const { text } = await guardEmbeddingInput(
     input,
@@ -72,7 +76,7 @@ export const ollamaEmbedding = async (
 export const ollamaEmbeddings = async (
   inputs: string[],
   model: OllamaEmbeddingModel,
-  task: EmbeddingTask = "search_document"
+  task: EmbeddingTask = EmbeddingTask.SearchDocument
 ): Promise<number[][]> => {
   if (inputs.length === 0) {
     return [];

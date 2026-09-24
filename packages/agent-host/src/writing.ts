@@ -36,8 +36,12 @@ import {
 import type { WritingAgentSessionState } from "@chia/db/repos/agent";
 import { getFeedDraft, getFeedDrafts } from "@chia/db/repos/drafts";
 import type { FeedDraftListItem, FeedDraftRecord } from "@chia/db/repos/drafts";
+import {
+  getFeedReport,
+  getFeedReportRecord,
+} from "@chia/db/repos/feed-reports";
 import { reportError } from "@chia/observability/report";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 
 import { toolCapabilities } from "./kind";
 import type {
@@ -185,15 +189,24 @@ export const createWritingAgentKind = (): WritingAgentKind => ({
     },
 
     /**
-     * A draft by reference, or a selection from one. The selection's text is not checked
-     * against the row: the editor sends it before its autosave lands, and the model re-reads
-     * the draft anyway.
+     * A draft by reference, a selection from one, or a reader report. The selection's text is
+     * not checked against the row: the editor sends it before its autosave lands, and the model
+     * re-reads the draft anyway. A report's status stays the operator's: asking the agent about
+     * one must not queue it for resolution by the next draft apply.
      */
     async attach(caller, db, sessionId, attachments) {
       const draftIds = new Set<number>();
       for (const attachment of attachments) {
+        if (attachment.type === "report") {
+          if (!(await getFeedReport(db, attachment.id))) {
+            throw new AppError(AppErrorCode.NotFound, {
+              message: `Unknown report: ${attachment.id}`,
+            });
+          }
+          continue;
+        }
         if (attachment.type === "feed") {
-          throw new AppError("BAD_REQUEST", {
+          throw new AppError(AppErrorCode.BadRequest, {
             message: `The writing agent takes no "feed" attachments.`,
           });
         }
@@ -201,7 +214,7 @@ export const createWritingAgentKind = (): WritingAgentKind => ({
           attachment.type === "selection" &&
           attachment.source.type !== "draft"
         ) {
-          throw new AppError("BAD_REQUEST", {
+          throw new AppError(AppErrorCode.BadRequest, {
             message: `The writing agent takes no "${attachment.source.type}" selections.`,
           });
         }
@@ -209,7 +222,7 @@ export const createWritingAgentKind = (): WritingAgentKind => ({
           attachment.type === "draft" ? attachment.id : attachment.source.id;
         const draft = await getFeedDraft(db, draftId, caller.userId);
         if (!draft) {
-          throw new AppError("NOT_FOUND", {
+          throw new AppError(AppErrorCode.NotFound, {
             message: `Unknown draft: ${draftId}`,
           });
         }
@@ -265,6 +278,9 @@ export const createWritingAgentExecutor = (
         db: context.db,
         sessionId: context.row.id,
       }),
+      reports: {
+        get: async (id) => (await getFeedReportRecord(context.db, id)) ?? null,
+      },
       instructions: context.config.instructions,
       autoApprove: context.settings.autoApprove,
     });

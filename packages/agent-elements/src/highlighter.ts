@@ -1,5 +1,9 @@
 import type { BundledLanguage, Highlighter } from "shiki";
-import { bundledLanguagesInfo, createHighlighter } from "shiki";
+import {
+  bundledLanguages,
+  bundledLanguagesInfo,
+  createHighlighter,
+} from "shiki";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 
 export type { Highlighter };
@@ -7,12 +11,14 @@ export type { Highlighter };
 /** Token colours are emitted for both and resolved with `light-dark()` from the page's `color-scheme`. */
 export const themes = { light: "github-light", dark: "github-dark" } as const;
 
+const isBundledLanguage = (id: string): id is BundledLanguage =>
+  Object.hasOwn(bundledLanguages, id);
+
 const languageIds = new Map<string, BundledLanguage>();
-for (const info of bundledLanguagesInfo) {
-  /* SAFETY: bundledLanguagesInfo enumerates exactly the ids that make up BundledLanguage. */
-  const id = info.id as BundledLanguage;
+for (const { id, aliases } of bundledLanguagesInfo) {
+  if (!isBundledLanguage(id)) continue;
   languageIds.set(id, id);
-  for (const alias of info.aliases ?? []) languageIds.set(alias, id);
+  for (const alias of aliases ?? []) languageIds.set(alias, id);
 }
 
 /** Shiki's `text` grammar: tokens without scopes, so unknown languages still stream. */

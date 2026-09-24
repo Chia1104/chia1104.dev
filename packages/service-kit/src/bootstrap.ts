@@ -6,7 +6,6 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { requestId } from "hono/request-id";
 import { routePath } from "hono/route";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { logger } from "@chia/observability/logger";
 import type { LogFields } from "@chia/observability/logger";
@@ -103,11 +102,7 @@ export const bootstrap = <
     }
 
     if (isAppError(e)) {
-      return c.json(
-        toErrorResponse(e),
-        /* SAFETY: The producer contract guarantees this value satisfies ContentfulStatusCode. */ e.status as ContentfulStatusCode,
-        e.headers ?? {}
-      );
+      return c.json(toErrorResponse(e), e.status, e.headers ?? {});
     }
 
     if (e instanceof HTTPException) {

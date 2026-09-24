@@ -9,6 +9,7 @@ import type { Locale } from "next-intl";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
 
+import { Theme } from "@chia/ui/utils/use-theme";
 import { getQueryClient } from "@chia/utils/query-client";
 
 const RootProvider = ({
@@ -28,7 +29,7 @@ const RootProvider = ({
       messages={messages}
       timeZone={timeZone}
       locale={locale}>
-      <ThemeProvider defaultTheme="system" enableSystem attribute="class">
+      <ThemeProvider defaultTheme={Theme.System} enableSystem attribute="class">
         <FDProvider
           theme={{
             enabled: true,

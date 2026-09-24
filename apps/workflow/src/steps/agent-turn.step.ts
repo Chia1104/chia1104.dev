@@ -10,9 +10,10 @@ import {
 } from "@chia/agent-host/execution";
 import type { AgentTurnMarker } from "@chia/agent-host/execution";
 import type { AgentKindExecutor } from "@chia/agent-host/kind";
-import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
+import { AgentTaskId, resolveAgentTask } from "@chia/agent-host/tasks";
 import { recordAgentUsage, sessionUsageListener } from "@chia/agent-host/usage";
 import type { AgentModel } from "@chia/agent-runtime/models";
+import { AgentErrorKind } from "@chia/agent-runtime/types";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
@@ -36,6 +37,7 @@ import {
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
+import { AgentCredentialSource, AgentUsageSource } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 import { signalAgentAbort } from "@chia/services/agent/abort";
@@ -99,7 +101,7 @@ const titleSession = async (
   try {
     const { fallbackSessionTitle, generateSessionTitle } =
       await import("@chia/agent-runtime/pi/title");
-    const task = await resolveAgentTask(db, AGENT_TASK_IDS.sessionTitle);
+    const task = await resolveAgentTask(db, AgentTaskId.SessionTitle);
     const generated = await generateSessionTitle({
       models: task.models,
       model: task.model,
@@ -113,8 +115,8 @@ const titleSession = async (
           sessionId: row.id,
           runId: request.runId,
           kind: row.kind,
-          source: "title",
-          credentialSource: "house",
+          source: AgentUsageSource.Title,
+          credentialSource: AgentCredentialSource.House,
           ...usage,
         }),
     });
@@ -303,17 +305,15 @@ async function runKindTurn(
       },
       "Agent turn refused: session model unavailable"
     );
-    writer.push({ type: "error", kind: "model_unavailable" });
+    writer.push({ type: "error", kind: AgentErrorKind.ModelUnavailable });
     writer.push({ type: "run:end", reason: "error" });
     await writer.flush();
     return { status: "error" };
   }
   // The compaction task may be pinned to a house model; the session's own is its default.
-  const compaction = await resolveAgentTask(
-    db,
-    AGENT_TASK_IDS.sessionCompaction,
-    { session: () => ({ model, models, credentials }) }
-  );
+  const compaction = await resolveAgentTask(db, AgentTaskId.SessionCompaction, {
+    session: () => ({ model, models, credentials }),
+  });
 
   const session = new PgSessionRepo(db, definition.kind).open(row);
   const approvedApprovalKeys = new Set(unspentApprovalKeys);
@@ -352,7 +352,9 @@ async function runKindTurn(
       runId: request.runId,
       kind: row.kind,
       credentialsFor: (source) =>
-        source === "compaction" ? compaction.credentials : credentials,
+        source === AgentUsageSource.Compaction
+          ? compaction.credentials
+          : credentials,
     }),
     persistApproval: (approval) =>
       recordAgentApprovalRequest(db, {
@@ -455,7 +457,7 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
 export const completeAgentRunStep = async (
   runId: string,
   abortController: AgentAbortControllerRef,
-  status: Exclude<AgentRunStatus, "active">
+  status: Exclude<AgentRunStatus, typeof AgentRunStatus.Active>
 ): Promise<void> => {
   "use step";
 

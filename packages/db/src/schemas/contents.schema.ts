@@ -1,4 +1,4 @@
-import type { InferSelectModel } from "drizzle-orm";
+import type { InferEnum, InferSelectModel } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
   bigint,
@@ -14,9 +14,9 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { timestamps, softDelete } from "../libs/common.schema.ts";
+import { FeedType, Locale } from "../types.ts";
 
 import { locale, feedType } from "./enums.ts";
-import type { FeedType, Locale } from "./enums.ts";
 import { pgTable } from "./table.ts";
 import { user } from "./user.schema.ts";
 
@@ -48,7 +48,7 @@ const baseFeedsColumns = {
   slug: text("slug").notNull().unique(),
   type: feedType("type").notNull(),
   published: boolean("published").default(false).notNull(),
-  defaultLocale: locale("default_locale").notNull().default("zh-TW"),
+  defaultLocale: locale("default_locale").notNull().default(Locale.ZhTW),
   ...timestamps,
   ...softDelete,
   userId: text("user_id")
@@ -118,8 +118,8 @@ export const feedDrafts = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     /** `null` until an English/ASCII slug is chosen; required to apply a new post. */
     slug: text("slug"),
-    type: feedType("type").notNull().default("post"),
-    defaultLocale: locale("default_locale").notNull().default("zh-TW"),
+    type: feedType("type").notNull().default(FeedType.Post),
+    defaultLocale: locale("default_locale").notNull().default(Locale.ZhTW),
     mainImage: text("main_image"),
     /** Orders writes; bumped under the row lock. `contentHash` is what identifies a version. */
     revision: integer("revision").notNull().default(1),
@@ -159,13 +159,13 @@ export const feedDraftTranslations = pgTable(
   (table) => [primaryKey({ columns: [table.draftId, table.locale] })]
 );
 
-export const FEED_DRAFT_AUTHOR = {
+export const FeedDraftAuthor = {
   Operator: "operator",
   Agent: "agent",
 } as const;
 
 export type FeedDraftAuthor =
-  (typeof FEED_DRAFT_AUTHOR)[keyof typeof FEED_DRAFT_AUTHOR];
+  (typeof FeedDraftAuthor)[keyof typeof FeedDraftAuthor];
 
 /** Which fields one revision touched; `locale` is absent for feed-level fields. */
 export interface FeedDraftChange {
@@ -183,13 +183,13 @@ export interface FeedDraftTranslationSnapshot {
 /** The editable half of a draft, as stored on a revision and restored from it. */
 export interface FeedDraftSnapshot {
   slug: string | null;
-  type: FeedType;
+  type: InferEnum<typeof feedType>;
   defaultLocale: Locale;
   mainImage: string | null;
   translations: Partial<Record<Locale, FeedDraftTranslationSnapshot>>;
 }
 
-export const FEED_DRAFT_REVISION_KIND = {
+export const FeedDraftRevisionKind = {
   /** A version the operator applied to the post. Listed as the draft's history, never pruned. */
   Commit: "commit",
   /** A restore point the write path keeps by itself; pruned unless pinned. */
@@ -197,7 +197,7 @@ export const FEED_DRAFT_REVISION_KIND = {
 } as const;
 
 export type FeedDraftRevisionKind =
-  (typeof FEED_DRAFT_REVISION_KIND)[keyof typeof FEED_DRAFT_REVISION_KIND];
+  (typeof FeedDraftRevisionKind)[keyof typeof FeedDraftRevisionKind];
 
 /**
  * Immutable snapshots of a draft. Between two consecutive rows only one writer wrote, the
@@ -252,6 +252,106 @@ export const feedsToTags = pgTable(
   ]
 );
 
+export const FeedReportCategory = {
+  /** A claim the post gets wrong. */
+  Error: "error",
+  /** Right when written, no longer current. */
+  Outdated: "outdated",
+  Typo: "typo",
+  /** A link, image or code sample that does not work. */
+  Broken: "broken",
+  /** Something the post should cover and does not. */
+  Gap: "gap",
+} as const;
+
+export type FeedReportCategory =
+  (typeof FeedReportCategory)[keyof typeof FeedReportCategory];
+
+export const FeedReportStatus = {
+  Open: "open",
+  /** The operator took it up; applying the post's draft resolves it. */
+  InProgress: "in_progress",
+  Resolved: "resolved",
+  Dismissed: "dismissed",
+} as const;
+
+export type FeedReportStatus =
+  (typeof FeedReportStatus)[keyof typeof FeedReportStatus];
+
+export const FeedReportVerdict = {
+  LikelyValid: "likely_valid",
+  NeedsVerification: "needs_verification",
+  NotValid: "not_valid",
+} as const;
+
+export type FeedReportVerdict =
+  (typeof FeedReportVerdict)[keyof typeof FeedReportVerdict];
+
+/** One suggested replacement; `find` occurred exactly once in the published body when triaged. */
+export interface FeedReportEdit {
+  locale: Locale;
+  find: string;
+  replace: string;
+}
+
+/** The `report.triage` task's reading of a report; model output, reviewed before any use. */
+export interface FeedReportTriage {
+  verdict: FeedReportVerdict;
+  summary: string;
+  edits: FeedReportEdit[];
+  /** Suggestions dropped because their `find` did not match the published body exactly once. */
+  droppedEdits: number;
+}
+
+/**
+ * A reader's correction to a published post, filed by the public agent for the operator.
+ * Every text column is reader-supplied or model-written and is quoted, never followed.
+ */
+export const feedReports = pgTable(
+  "feed_report",
+  {
+    id: serial("id").primaryKey(),
+    feedId: integer("feed_id")
+      .notNull()
+      .references(() => feeds.id, { onDelete: "cascade" }),
+    locale: locale("locale").notNull(),
+    /** Heading trail as the post's sections are addressed, e.g. `"Setup > Install"`. */
+    headingPath: text("heading_path"),
+    /** The passage the report is about, as it read when reported. */
+    quote: text("quote"),
+    category: text("category").$type<FeedReportCategory>().notNull(),
+    /** What the reader says is wrong or missing. */
+    claim: text("claim").notNull(),
+    /** What the public agent found when it checked the claim; not authoritative. */
+    assessment: text("assessment").notNull(),
+    /** The corrected wording as the reader or the agent proposed it; a candidate for the operator, never applied as is. */
+    suggestion: text("suggestion"),
+    reporterId: text("reporter_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    /** The public session it was filed from; kept as text so the report outlives it. */
+    sessionId: text("session_id"),
+    status: text("status")
+      .$type<FeedReportStatus>()
+      .notNull()
+      .default(FeedReportStatus.Open),
+    /** `null` until triage ran, and after a triage that produced nothing usable. */
+    triage: jsonb("triage").$type<FeedReportTriage>(),
+    ...timestamps,
+  },
+  (table) => [
+    index("feed_report_status_created_at_idx").on(
+      table.status,
+      table.createdAt
+    ),
+    index("feed_report_feed_id_idx").on(table.feedId),
+    index("feed_report_reporter_created_at_idx").on(
+      table.reporterId,
+      table.createdAt
+    ),
+  ]
+);
+
 export type Feed = InferSelectModel<typeof feeds>;
 export type FeedTranslation = InferSelectModel<typeof feedTranslations>;
 export type FeedDraft = InferSelectModel<typeof feedDrafts>;
@@ -259,5 +359,6 @@ export type FeedDraftTranslation = InferSelectModel<
   typeof feedDraftTranslations
 >;
 export type FeedDraftRevision = InferSelectModel<typeof feedDraftRevisions>;
+export type FeedReport = InferSelectModel<typeof feedReports>;
 export type Tag = InferSelectModel<typeof tags>;
 export type TagTranslation = InferSelectModel<typeof tagTranslations>;

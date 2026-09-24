@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CallerTier } from "@chia/auth/tier";
-import type { DB } from "@chia/db/client";
+import { AgentCredentialSource } from "@chia/db/schema";
 import type { AgentQuotaConfig } from "@chia/db/schema";
 import { isAppError } from "@chia/service-kit/errors";
+
+import { db } from "./kind.fixture";
 
 /**
  * Quota is a tier policy over the operator's row and the ledger. The week is
@@ -30,9 +32,6 @@ vi.mock("@chia/db/repos/agent", () => ({
   lockAgentUser: repo.lockAgentUser,
   countRunningAgentTurns: repo.countRunningAgentTurns,
 }));
-
-const db =
-  /* SAFETY: the repos are mocked; nothing reads the handle. */ {} as DB;
 
 const row = (overrides: Partial<AgentQuotaConfig> = {}): AgentQuotaConfig => ({
   id: "default",
@@ -167,7 +166,7 @@ describe("assertWithinAgentQuota", () => {
       userId: "user-1",
       from: new Date("2026-08-23T16:00:00Z"),
       to: new Date("2026-08-30T16:00:00Z"),
-      credentialSources: ["house"],
+      credentialSources: [AgentCredentialSource.House],
     });
   });
 

@@ -53,7 +53,7 @@ export interface EntryFormProps {
 }
 
 const LOCALE_LABEL = {
-  [Locale.zhTW]: "中文",
+  [Locale.ZhTW]: "中文",
   [Locale.En]: "English",
 } satisfies Record<Locale, string>;
 
@@ -326,6 +326,10 @@ const KindFields = ({
           <StackInput control={control} isDisabled={isDisabled} />
         </>
       );
+    default: {
+      const _exhaustive: never = kind;
+      return _exhaustive;
+    }
   }
 };
 
@@ -492,7 +496,7 @@ export const EntryForm = ({
       <KindFields control={control} isDisabled={isPending} kind={kind} />
       <AgentNotesInput control={control} isDisabled={isPending} />
 
-      <Tabs defaultSelectedKey={Locale.zhTW}>
+      <Tabs defaultSelectedKey={Locale.ZhTW}>
         <Tabs.ListContainer>
           <Tabs.List aria-label="Locale">
             {LOCALES.map((locale) => (

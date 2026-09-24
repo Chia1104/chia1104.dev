@@ -26,8 +26,8 @@ const DiffEditor = dynamic(
 
 type Snapshot = RouterOutputs["feeds"]["draft:revision"]["snapshot"];
 
-const LOCALES = [Locale.zhTW, Locale.En] as const;
-const LOCALE_LABEL = { [Locale.zhTW]: "中文", [Locale.En]: "English" } as const;
+const LOCALES = [Locale.ZhTW, Locale.En] as const;
+const LOCALE_LABEL = { [Locale.ZhTW]: "中文", [Locale.En]: "English" } as const;
 const FEED_FIELDS = ["slug", "type", "defaultLocale", "mainImage"] as const;
 const LOCALE_FIELDS = ["title", "excerpt", "description"] as const;
 

@@ -25,9 +25,14 @@ import type {
  * - `draft`: reversible staging the blog never sees
  * - `commit`: applies the draft to `feed` / `feed_translation` or publishes; needs approval
  */
-export type WritingToolTier = (typeof WRITING_TOOL_TIERS)[number];
+export const WritingToolTier = {
+  Read: "read",
+  Draft: "draft",
+  Commit: "commit",
+} as const;
 
-export const WRITING_TOOL_TIERS = ["read", "draft", "commit"] as const;
+export type WritingToolTier =
+  (typeof WritingToolTier)[keyof typeof WritingToolTier];
 
 /**
  * Per-turn tool context. Ports, not a DB handle, so tools stay testable without one.
@@ -148,7 +153,15 @@ export interface GitHubRef {
   private: boolean;
 }
 
-export type GitHubEntryType = "file" | "dir" | "symlink" | "submodule";
+export const GitHubEntryType = {
+  File: "file",
+  Dir: "dir",
+  Symlink: "symlink",
+  Submodule: "submodule",
+} as const;
+
+export type GitHubEntryType =
+  (typeof GitHubEntryType)[keyof typeof GitHubEntryType];
 
 export interface GitHubTreeEntry {
   /** Repository-relative, no leading slash. */
@@ -179,11 +192,8 @@ export interface GitHubFile {
   url: string;
 }
 
-export type MemoryKind = AgentMemoryKind;
-export type MemoryStatus = AgentMemoryStatus;
-
 export interface SaveMemoryInput {
-  kind: MemoryKind;
+  kind: AgentMemoryKind;
   title: string;
   content: string;
   sourceUrl?: string;
@@ -193,9 +203,9 @@ export interface SaveMemoryInput {
 
 export interface MemorySummary {
   id: number;
-  kind: MemoryKind;
+  kind: AgentMemoryKind;
   /** A `pending` lesson is a proposal awaiting review, not yet a preference. */
-  status: MemoryStatus;
+  status: AgentMemoryStatus;
   title: string;
   sourceUrl: string | null;
 }
@@ -234,7 +244,7 @@ export interface MemorySearchResult {
 }
 
 export interface MemoryDetail extends MemorySummary, MemoryFreshness {
-  status: MemoryStatus;
+  status: AgentMemoryStatus;
   content: string;
   createdAt: string;
   updatedAt: string;

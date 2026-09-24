@@ -36,11 +36,16 @@ import { Notice } from "./notice.tsx";
 import { orbStateOf } from "./orb-state.ts";
 import type { OrbState } from "./orb-state.ts";
 import { useAgentBusy, useAgentSession } from "./provider.tsx";
-import type { AgentConnection } from "./store.ts";
+import { AgentConnection } from "./store.ts";
 import { ToolCall } from "./tool-call.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
 
-type RowGap = "group" | "none";
+const RowGap = {
+  Group: "group",
+  None: "none",
+} as const;
+
+type RowGap = (typeof RowGap)[keyof typeof RowGap];
 type AssistantItemView = TextMessageView & { kind: "assistant" };
 type AgentItemView = AssistantItemView | NoticeView | ToolCallView;
 type ActivityItemView = AssistantItemView | ToolCallView;
@@ -131,7 +136,7 @@ const buildRows = (
         messageId: item.messageId,
         text: item.text,
         attachments: item.attachments,
-        gapAfter: "group",
+        gapAfter: RowGap.Group,
         at: item.at,
       });
       index++;
@@ -153,7 +158,7 @@ const buildRows = (
       key: `a:${groupStart}`,
       items: group,
       segments: segmentsOf(group, groupStart),
-      gapAfter: "group",
+      gapAfter: RowGap.Group,
       badgeState,
     });
   }
@@ -163,14 +168,14 @@ const buildRows = (
       kind: "pending",
       key: "pending",
       text: pendingPrompt,
-      gapAfter: "group",
+      gapAfter: RowGap.Group,
     });
   }
   if (working)
-    rows.push({ kind: "working", key: "working", gapAfter: "group" });
+    rows.push({ kind: "working", key: "working", gapAfter: RowGap.Group });
 
   const last = rows.at(-1);
-  if (last) last.gapAfter = "none";
+  if (last) last.gapAfter = RowGap.None;
   return rows;
 };
 
@@ -361,7 +366,7 @@ const isAtBottom = (element: HTMLElement) =>
 
 const estimateRowSize = (row: ThreadRow | undefined) => {
   if (!row) return ASSISTANT_ROW_SIZE_PX;
-  const gap = row.gapAfter === "group" ? GROUP_GAP_PX : 0;
+  const gap = row.gapAfter === RowGap.Group ? GROUP_GAP_PX : 0;
   if (row.kind === "working") return 24 + gap;
   if (row.kind === "user" || row.kind === "pending") {
     return USER_ROW_SIZE_PX + gap;
@@ -381,7 +386,8 @@ const estimateRowSize = (row: ThreadRow | undefined) => {
   );
 };
 
-const rowGapClassName = (gap: RowGap) => (gap === "group" ? "pb-6" : undefined);
+const rowGapClassName = (gap: RowGap) =>
+  gap === RowGap.Group ? "pb-6" : undefined;
 
 const latestPromptIndex = (rows: readonly ThreadRow[]) => {
   for (let index = rows.length - 1; index >= 0; index--) {
@@ -516,7 +522,8 @@ const ThreadViewport = ({
     const previous = previousTransitionRef.current;
     const sent = pendingPrompt !== null && previous.pendingPrompt === null;
     const hydrated =
-      previous.connection === "hydrating" && connection !== "hydrating";
+      previous.connection === AgentConnection.Hydrating &&
+      connection !== AgentConnection.Hydrating;
     previousTransitionRef.current = { connection, pendingPrompt };
     if (sent) scroll("bottom");
     else if (hydrated) scroll("latest");
@@ -638,7 +645,7 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
   const last = items.at(-1);
   const streamingMessage =
     last?.kind === "assistant" && last.streaming && Boolean(last.text);
-  const working = connection === "streaming" && !streamingMessage;
+  const working = connection === AgentConnection.Streaming && !streamingMessage;
 
   const rows = useMemo(
     () => buildRows(items, pendingPrompt, working),
@@ -651,7 +658,7 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
       className={className}
       connection={connection}
       fallback={
-        connection === "hydrating" && items.length === 0 ? (
+        connection === AgentConnection.Hydrating && items.length === 0 ? (
           <div className="flex min-h-40 items-center justify-center">
             <Spinner size="sm" />
           </div>

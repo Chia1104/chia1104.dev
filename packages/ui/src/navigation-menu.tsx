@@ -21,7 +21,12 @@ const CLOSE_DELAY = 150;
 /** Reopening within this window after a close skips the open delay. */
 const SKIP_DELAY = 300;
 
-type Motion = "from-start" | "from-end";
+const Motion = {
+  FromStart: "from-start",
+  FromEnd: "from-end",
+} as const;
+
+type Motion = (typeof Motion)[keyof typeof Motion];
 
 interface NavigationMenuContextValue {
   anchorRef: RefObject<HTMLElement | null>;
@@ -100,8 +105,8 @@ const NavigationMenu = ({
         fromElement && toElement
           ? fromElement.compareDocumentPosition(toElement) &
             Node.DOCUMENT_POSITION_FOLLOWING
-            ? "from-end"
-            : "from-start"
+            ? Motion.FromEnd
+            : Motion.FromStart
           : null;
       return { value, isOpen: true, motion };
     });

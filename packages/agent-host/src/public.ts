@@ -17,20 +17,23 @@ import {
   resolvePublicModel,
 } from "@chia/agent-public/models";
 import { publicPolicy } from "@chia/agent-public/policy";
+import type { ReportPort } from "@chia/agent-public/ports";
 import { preparePublicTurn } from "@chia/agent-public/runtime";
+import { publicReportToolSpecs } from "@chia/agent-public/tools/report";
 import { publicWebToolSpecs } from "@chia/agent-public/tools/web";
 import type { GuardProvider } from "@chia/ai/guard/provider";
 import { CallerTier } from "@chia/auth/tier";
 import type { DB } from "@chia/db/client";
 import { getFeedById } from "@chia/db/repos/feeds";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 
 import { toolCapabilities } from "./kind";
 import type { AgentKindDefinition, AgentKindExecutor } from "./kind";
 
 /**
- * Binds `@chia/agent-public` to the host: a `public`-visibility content port and nothing else.
- * It keeps no row beside `agent.session`: a public session is its transcript.
+ * Binds `@chia/agent-public` to the host: a `public`-visibility content port, plus web access
+ * and reporting for a signed-in owner. It keeps no row beside `agent.session`: a public session
+ * is its transcript.
  */
 
 /** No extension row; the loaded state is an empty object so the session stays visible. */
@@ -46,6 +49,12 @@ export interface PublicExecutionHost {
   /** Null runs the kind unguarded, and without web access whatever the config says. */
   guard: GuardProvider | null;
   createWebPort(): WebPort;
+  /** Files reports as `reporterId`; only ever built for a signed-in owner. */
+  createReportPort(options: {
+    db: DB;
+    reporterId: string;
+    sessionId: string;
+  }): ReportPort;
   /** Whether the session's owner is a signed-in person rather than a guest. */
   isSignedIn(options: { db: DB; userId: string }): Promise<boolean>;
 }
@@ -79,7 +88,11 @@ export const createPublicAgentKind = (): PublicAgentKind => ({
   capabilities() {
     return {
       tools: toolCapabilities(
-        [...contentReadToolSpecs, ...publicWebToolSpecs],
+        [
+          ...contentReadToolSpecs,
+          ...publicWebToolSpecs,
+          ...publicReportToolSpecs,
+        ],
         publicPolicy
       ),
       commands: [],
@@ -100,16 +113,16 @@ export const createPublicAgentKind = (): PublicAgentKind => ({
      */
     async attach(_caller, db, _sessionId, attachments) {
       for (const attachment of attachments) {
-        if (attachment.type === "draft") {
-          throw new AppError("BAD_REQUEST", {
-            message: `The public agent takes no "draft" attachments.`,
+        if (attachment.type === "draft" || attachment.type === "report") {
+          throw new AppError(AppErrorCode.BadRequest, {
+            message: `The public agent takes no "${attachment.type}" attachments.`,
           });
         }
         if (
           attachment.type === "selection" &&
           attachment.source.type !== "feed"
         ) {
-          throw new AppError("BAD_REQUEST", {
+          throw new AppError(AppErrorCode.BadRequest, {
             message: `The public agent takes no "${attachment.source.type}" selections.`,
           });
         }
@@ -117,7 +130,7 @@ export const createPublicAgentKind = (): PublicAgentKind => ({
           attachment.type === "feed" ? attachment.id : attachment.source.id;
         const feed = await getFeedById(db, { feedId, published: true });
         if (!feed) {
-          throw new AppError("NOT_FOUND", {
+          throw new AppError(AppErrorCode.NotFound, {
             message: `Unknown post: ${feedId}`,
           });
         }
@@ -132,17 +145,24 @@ export const createPublicAgentExecutor = (
   ...createPublicAgentKind(),
 
   async prepareTurn(context) {
+    const { db, row } = context;
+    const signedIn = await host.isSignedIn({ db, userId: row.userId });
     const web =
-      context.config.webAccess === true &&
-      host.guard !== null &&
-      (await host.isSignedIn({ db: context.db, userId: context.row.userId }));
+      signedIn && context.config.webAccess === true && host.guard !== null;
 
     return preparePublicTurn({
-      content: host.createContentPort({ db: context.db }),
-      profile: host.createProfilePort({ db: context.db }),
+      content: host.createContentPort({ db }),
+      profile: host.createProfilePort({ db }),
       instructions: context.config.instructions,
       guard: host.guard,
       web: web ? host.createWebPort() : undefined,
+      report: signedIn
+        ? host.createReportPort({
+            db,
+            reporterId: row.userId,
+            sessionId: row.id,
+          })
+        : undefined,
     });
   },
 });

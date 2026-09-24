@@ -13,6 +13,8 @@ import type {
 import { uuidv7 } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
+import { AgentUsageSource } from "@chia/db/schema";
+
 import type {
   CompactionEntry,
   NewSessionEntry,
@@ -124,7 +126,7 @@ const compactBranch = async (
   await session.appendEntry(entry);
   if (result.usage) {
     await onUsage?.({
-      source: "compaction",
+      source: AgentUsageSource.Compaction,
       providerId: model.provider,
       modelId: model.id,
       usage: result.usage,

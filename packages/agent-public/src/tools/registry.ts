@@ -1,6 +1,6 @@
 import {
   CONTENT_TOOL_INFO_BY_NAME,
-  CONTENT_TOOL_NAMES,
+  ContentToolName,
 } from "@chia/agent-content/tools/registry";
 import type { AgentToolInfo } from "@chia/agent-runtime/types";
 
@@ -10,21 +10,45 @@ import type { AgentToolInfo } from "@chia/agent-runtime/types";
  */
 
 /** Named like the writing kind's, so clients show the same activity for both. */
-export const WEB_TOOL_NAMES = {
-  webSearch: "web_search",
-  fetchUrl: "fetch_url",
+export const WebToolName = {
+  WebSearch: "web_search",
+  FetchUrl: "fetch_url",
 } as const;
 
-export const WEB_TOOL_INFO_BY_NAME = {
-  [WEB_TOOL_NAMES.webSearch]: { label: "Search the web", tier: "read" },
-  [WEB_TOOL_NAMES.fetchUrl]: { label: "Read page", tier: "read" },
-} as const satisfies Record<string, AgentToolInfo>;
+export type WebToolName = (typeof WebToolName)[keyof typeof WebToolName];
 
-export const TOOL_NAMES = { ...CONTENT_TOOL_NAMES, ...WEB_TOOL_NAMES };
+export const WEB_TOOL_INFO_BY_NAME = {
+  [WebToolName.WebSearch]: { label: "Search the web", tier: "read" },
+  [WebToolName.FetchUrl]: { label: "Read page", tier: "read" },
+} as const satisfies Record<WebToolName, AgentToolInfo>;
+
+export const ReportToolName = {
+  ReportIssue: "report_issue",
+} as const;
+
+export type ReportToolName =
+  (typeof ReportToolName)[keyof typeof ReportToolName];
+
+/** `report` writes a row the operator reviews; nothing the visitor reads changes. */
+export const REPORT_TOOL_INFO_BY_NAME = {
+  [ReportToolName.ReportIssue]: {
+    label: "Report to the author",
+    tier: "report",
+  },
+} as const satisfies Record<ReportToolName, AgentToolInfo>;
+
+export const ToolName = {
+  ...ContentToolName,
+  ...WebToolName,
+  ...ReportToolName,
+} as const;
+
+export type ToolName = (typeof ToolName)[keyof typeof ToolName];
 
 const TOOL_INFO_BY_NAME = {
   ...CONTENT_TOOL_INFO_BY_NAME,
   ...WEB_TOOL_INFO_BY_NAME,
+  ...REPORT_TOOL_INFO_BY_NAME,
 };
 
 const isToolName = (
@@ -32,10 +56,7 @@ const isToolName = (
 ): toolName is keyof typeof TOOL_INFO_BY_NAME =>
   Object.hasOwn(TOOL_INFO_BY_NAME, toolName);
 
-/**
- * Unknown names are `read` too: this kind has no tier that changes anything, so there is no
- * more restrictive fallback.
- */
+/** Unknown names are `read`: no tier of this kind asks for approval, so none is more restrictive. */
 export const toolInfo = (toolName: string): AgentToolInfo =>
   isToolName(toolName)
     ? TOOL_INFO_BY_NAME[toolName]

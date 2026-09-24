@@ -83,7 +83,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
     },
     {
-      url: `${baseUrl}/${localeResolver(Locale.zhTW)}`,
+      url: `${baseUrl}/${localeResolver(Locale.ZhTW)}`,
       lastModified: new Date().toISOString(),
       priority: 0.7,
       changeFrequency: "monthly",
@@ -95,7 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
     },
     {
-      url: `${baseUrl}/${localeResolver(Locale.zhTW)}/notes`,
+      url: `${baseUrl}/${localeResolver(Locale.ZhTW)}/notes`,
       lastModified: new Date().toISOString(),
       priority: 0.8,
       changeFrequency: "weekly",
@@ -109,10 +109,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 function localeResolver(locale: Locale) {
   switch (locale) {
     case Locale.En:
-      return ILocale.EN;
-    case Locale.zhTW:
-      return ILocale.ZH_TW;
-    default:
-      return ILocale.ZH_TW;
+      return ILocale.En;
+    case Locale.ZhTW:
+      return ILocale.ZhTW;
+    default: {
+      const _exhaustive: never = locale;
+      return _exhaustive;
+    }
   }
 }

@@ -2,8 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
 import { listAgentKindConfigs } from "@chia/db/repos/agent/config";
+import { Role } from "@chia/db/types";
 
-import { resolveAccess } from "../src/access";
+import { DashboardAccess, resolveAccess } from "../src/access";
 import { CallerTier, agentKindFloor } from "../src/tier";
 
 vi.mock("@chia/db/repos/agent/config", () => ({
@@ -52,7 +53,7 @@ describe("resolveAccess", () => {
   it("grades a guest with no dashboard and the code floors", async () => {
     const access = await resolveAccess(
       db,
-      { id: "g1", role: "user", isAnonymous: true },
+      { id: "g1", role: Role.User, isAnonymous: true },
       ADMIN_ID,
       options
     );
@@ -67,32 +68,32 @@ describe("resolveAccess", () => {
   it("names a signed-in person a member and the configured admin an operator", async () => {
     const member = await resolveAccess(
       db,
-      { id: "u1", role: "user" },
+      { id: "u1", role: Role.User },
       ADMIN_ID,
       options
     );
     expect(member.tier).toBe(CallerTier.Session);
-    expect(member.dashboard).toBe("member");
+    expect(member.dashboard).toBe(DashboardAccess.Member);
 
     const operator = await resolveAccess(
       db,
-      { id: ADMIN_ID, role: "root" },
+      { id: ADMIN_ID, role: Role.Root },
       ADMIN_ID,
       options
     );
     expect(operator.tier).toBe(CallerTier.Root);
-    expect(operator.dashboard).toBe("operator");
+    expect(operator.dashboard).toBe(DashboardAccess.Operator);
   });
 
   it("a root role without the configured id is still a member", async () => {
     const access = await resolveAccess(
       db,
-      { id: "u2", role: "root" },
+      { id: "u2", role: Role.Root },
       ADMIN_ID,
       options
     );
 
-    expect(access.dashboard).toBe("member");
+    expect(access.dashboard).toBe(DashboardAccess.Member);
   });
 
   it("reports the operator's raised floor for a kind", async () => {
@@ -102,7 +103,7 @@ describe("resolveAccess", () => {
 
     const access = await resolveAccess(
       db,
-      { id: "g1", role: "user", isAnonymous: true },
+      { id: "g1", role: Role.User, isAnonymous: true },
       ADMIN_ID,
       options
     );

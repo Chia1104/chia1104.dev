@@ -80,20 +80,16 @@ const createClipper = () => {
     if (!record) return OMITTED;
     const entries = Object.entries(record);
     const kept: DetailObject = {};
-    let index = 0;
-    for (
-      ;
-      index < entries.length && index < DETAILS_MAX_OBJECT_KEYS;
-      index += 1
-    ) {
+    let keptCount = 0;
+    for (const [key, item] of entries.slice(0, DETAILS_MAX_OBJECT_KEYS)) {
       if (remaining <= 0) break;
-      const [key, item] = entries[index]!;
       // A key is kept whole or not at all; one that does not fit ends the object here.
       if (take(key.length) < key.length) break;
       kept[key] = clipValue(item, depth + 1);
+      keptCount += 1;
     }
-    if (index < entries.length) {
-      kept["…"] = `${entries.length - index} more keys`;
+    if (keptCount < entries.length) {
+      kept["…"] = `${entries.length - keptCount} more keys`;
     }
     return kept;
   };

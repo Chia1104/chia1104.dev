@@ -43,12 +43,18 @@ export const formValuesOf = (item: ApiKeyView): ApiKeyFormInput => ({
   scopes: toApiKeyScopes(item.permissions),
 });
 
-export type ApiKeyState = "active" | "revoked" | "expired";
+export const ApiKeyState = {
+  Active: "active",
+  Revoked: "revoked",
+  Expired: "expired",
+} as const;
+
+export type ApiKeyState = (typeof ApiKeyState)[keyof typeof ApiKeyState];
 
 export const stateOf = (item: ApiKeyView, now = Date.now()): ApiKeyState => {
-  if (item.enabled === false) return "revoked";
+  if (item.enabled === false) return ApiKeyState.Revoked;
   if (item.expiresAt && new Date(item.expiresAt).getTime() <= now) {
-    return "expired";
+    return ApiKeyState.Expired;
   }
-  return "active";
+  return ApiKeyState.Active;
 };

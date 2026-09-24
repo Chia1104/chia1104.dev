@@ -1,10 +1,14 @@
+import { drizzle } from "drizzle-orm/node-postgres";
+import Keyv from "keyv";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { CallerTier } from "@chia/auth/tier";
 import {
   createFakeRuns,
   getRun,
   resetWorkflowMocks,
 } from "@chia/test/mocks/workflow";
+import { createWorkflowControlClient } from "@chia/workflow-control/client";
 
 /**
  * Every turn is its own run. Admission writes the run row under the session lock and
@@ -45,54 +49,64 @@ vi.mock("@chia/agent-host/quota", () => quota);
 vi.mock("../abort", () => abort);
 
 import type { DB } from "@chia/db/client";
-import { AppError } from "@chia/service-kit/errors";
+import {
+  AgentApprovalStatus,
+  AgentRunStatus,
+  relations,
+} from "@chia/db/schema";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 
+import type { AgentServiceHost } from "../agent.factory";
+import type { AgentServiceCaller } from "../agent.service";
 import { createAgentTurnOperations } from "../turn";
 
 /** Whatever the lock callback returns; the mock passes it through untouched. */
 type Admitted = object | null;
 
-const db =
-  /* SAFETY: every repository operation in this suite is mocked. */ {} as never;
+const db = drizzle.mock({ relations });
 
 /** Whether the lock transaction is open; delivery must observe it closed. */
 let lockHeld = false;
 
-const workflow = {
-  cancelRun: vi.fn(),
-  startAgentSession: vi.fn(),
-};
+const workflow = createWorkflowControlClient({
+  url: "http://workflow.test",
+  token: "test",
+  fetch: () => Promise.reject(new Error("unmocked workflow command")),
+});
+const cancelRun = vi.spyOn(workflow, "cancelRun");
+const startAgentSession = vi.spyOn(workflow, "startAgentSession");
 
-const caller =
-  /* SAFETY: admission reads only the user id, the db handle and the workflow client. */ {
-    userId: "user-1",
-    tier: 4,
-    context: { db, workflow, headers: new Headers() },
-  } as never;
+const caller: AgentServiceCaller = {
+  tier: CallerTier.Root,
+  adminId: "user-1",
+  userId: "user-1",
+  context: {
+    headers: new Headers(),
+    clientIP: "127.0.0.1",
+    db,
+    kv: new Keyv(),
+    workflow,
+  },
+};
 
 const loadOwnedSession = vi.fn();
 const undecidedApprovals = vi.fn(async (): Promise<string[]> => []);
 
-const sessions =
-  /* SAFETY: admission uses only these three session operations. */ {
-    withDb: (outer: { context: object }, tx: DB) => ({
-      ...outer,
-      context: { ...outer.context, db: tx },
-    }),
-    loadOwnedSession,
-    undecidedApprovals,
-  } as never;
+const sessions = {
+  withDb: (outer: AgentServiceCaller, tx: DB): AgentServiceCaller => ({
+    ...outer,
+    context: { ...outer.context, db: tx },
+  }),
+  loadOwnedSession,
+  undecidedApprovals,
+};
 
-const definition =
-  /* SAFETY: no test attaches anything, so the kind's state hooks are never read. */ {
-    kind: "writing",
-    state: {},
-  } as never;
-const host =
-  /* SAFETY: admission reads the runs host and the credential reader only. */ {
-    runs,
-    credentials: { read: () => undefined },
-  } as never;
+/** No test attaches anything, so the kind needs no state hooks. */
+const definition = { kind: "writing", state: {} };
+const host: AgentServiceHost = {
+  runs,
+  credentials: { read: () => undefined, decrypt: () => ({}) },
+};
 
 const liveRun = (status: "pending" | "running" | "completed" = "running") => {
   getRun.mockReturnValue({
@@ -149,8 +163,8 @@ beforeEach(() => {
   repo.completeAgentRun.mockResolvedValue(undefined);
   repo.setAgentApprovalRelayRun.mockResolvedValue(undefined);
   undecidedApprovals.mockResolvedValue([]);
-  workflow.startAgentSession.mockResolvedValue("wf-2");
-  workflow.cancelRun.mockResolvedValue(undefined);
+  startAgentSession.mockResolvedValue("wf-2");
+  cancelRun.mockResolvedValue(undefined);
 });
 
 describe("agent turn admission", () => {
@@ -160,9 +174,9 @@ describe("agent turn admission", () => {
 
     await expect(
       turns.prompt(caller, { sessionId: "session-1", text: "next" })
-    ).rejects.toMatchObject({ code: "CONFLICT" });
+    ).rejects.toMatchObject({ code: AppErrorCode.Conflict });
     expect(repo.createAgentRun).not.toHaveBeenCalled();
-    expect(workflow.startAgentSession).not.toHaveBeenCalled();
+    expect(startAgentSession).not.toHaveBeenCalled();
     // The controller was started ahead of the lock; a refusal closes it rather than leaving
     // it parked until its TTL.
     expect(abort.signalAgentAbort).toHaveBeenCalledWith(
@@ -192,14 +206,14 @@ describe("agent turn admission", () => {
 
     await expect(
       turns.prompt(caller, { sessionId: "session-1", text: "next" })
-    ).rejects.toMatchObject({ code: "CONFLICT" });
+    ).rejects.toMatchObject({ code: AppErrorCode.Conflict });
     expect(repo.createAgentRun).not.toHaveBeenCalled();
   });
 
   it("writes the run row as the lease, starts the workflow after the commit and binds the run id", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
-    workflow.startAgentSession.mockImplementation(async () => {
+    startAgentSession.mockImplementation(async () => {
       expect(lockHeld).toBe(false);
       expect(repo.createAgentRun).toHaveBeenCalledOnce();
       return "wf-2";
@@ -216,7 +230,7 @@ describe("agent turn admission", () => {
       deltaStartIndex: 0,
       startedRun: true,
     });
-    expect(workflow.startAgentSession).toHaveBeenCalledWith(
+    expect(startAgentSession).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionId: "session-1",
         runId: createdRunId(),
@@ -236,15 +250,15 @@ describe("agent turn admission", () => {
 
     await turns.prompt(caller, { sessionId: "session-1", text: "next" });
 
-    expect(workflow.cancelRun).toHaveBeenCalledExactlyOnceWith("wf-1");
-    expect(workflow.startAgentSession).toHaveBeenCalledOnce();
+    expect(cancelRun).toHaveBeenCalledExactlyOnceWith("wf-1");
+    expect(startAgentSession).toHaveBeenCalledOnce();
   });
 
   it("fails the lease row and closes its controller when the workflow service refused the start", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
-    workflow.startAgentSession.mockRejectedValue(
-      new AppError("UNAUTHORIZED", { message: "bad control token" })
+    startAgentSession.mockRejectedValue(
+      new AppError(AppErrorCode.Unauthorized, { message: "bad control token" })
     );
 
     await expect(
@@ -254,7 +268,7 @@ describe("agent turn admission", () => {
     expect(repo.completeAgentRun).toHaveBeenCalledWith(
       db,
       createdRunId(),
-      "failed"
+      AgentRunStatus.Failed
     );
     expect(abort.signalAgentAbort).toHaveBeenCalledWith(
       workflow,
@@ -267,8 +281,10 @@ describe("agent turn admission", () => {
   it("keeps the lease when the start's result is unknown, since the workflow may be running", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
-    workflow.startAgentSession.mockRejectedValue(
-      new AppError("INTERNAL_SERVER_ERROR", { message: "socket hang up" })
+    startAgentSession.mockRejectedValue(
+      new AppError(AppErrorCode.InternalServerError, {
+        message: "socket hang up",
+      })
     );
 
     await expect(
@@ -295,11 +311,11 @@ describe("agent turn admission", () => {
       "abort-1",
       expect.any(String)
     );
-    expect(workflow.cancelRun).toHaveBeenCalledExactlyOnceWith("wf-2");
+    expect(cancelRun).toHaveBeenCalledExactlyOnceWith("wf-2");
     expect(repo.completeAgentRun).toHaveBeenCalledWith(
       db,
       createdRunId(),
-      "failed"
+      AgentRunStatus.Failed
     );
   });
 
@@ -314,7 +330,7 @@ describe("agent turn admission", () => {
     ).rejects.toThrow("db gone");
 
     // The executor may still be running: nothing may report the session idle.
-    expect(workflow.cancelRun).not.toHaveBeenCalled();
+    expect(cancelRun).not.toHaveBeenCalled();
     expect(repo.completeAgentRun).not.toHaveBeenCalled();
   });
 
@@ -322,13 +338,15 @@ describe("agent turn admission", () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
     repo.getAgentApproval.mockResolvedValue({
-      status: "pending",
+      status: AgentApprovalStatus.Pending,
       toolCallId: "call-1",
       toolName: "commit_draft",
       comment: null,
     });
-    repo.decideAgentApproval.mockResolvedValue({ status: "approved" });
-    workflow.startAgentSession.mockImplementation(async () => {
+    repo.decideAgentApproval.mockResolvedValue({
+      status: AgentApprovalStatus.Approved,
+    });
+    startAgentSession.mockImplementation(async () => {
       expect(lockHeld).toBe(false);
       return "wf-2";
     });
@@ -349,7 +367,7 @@ describe("agent turn admission", () => {
       db,
       expect.objectContaining({ toolCallId: "call-1", approved: true })
     );
-    expect(workflow.startAgentSession).toHaveBeenCalledWith(
+    expect(startAgentSession).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.objectContaining({
           text: expect.stringContaining("commit_draft"),
@@ -368,12 +386,14 @@ describe("agent turn admission", () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
     repo.getAgentApproval.mockResolvedValue({
-      status: "pending",
+      status: AgentApprovalStatus.Pending,
       toolCallId: "call-1",
       toolName: "commit_draft",
       comment: null,
     });
-    repo.decideAgentApproval.mockResolvedValue({ status: "approved" });
+    repo.decideAgentApproval.mockResolvedValue({
+      status: AgentApprovalStatus.Approved,
+    });
     repo.setAgentApprovalRelayRun.mockImplementation(async () => {
       expect(lockHeld).toBe(true);
     });
@@ -395,7 +415,7 @@ describe("agent turn admission", () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
     repo.getAgentApproval.mockResolvedValue({
-      status: "rejected",
+      status: AgentApprovalStatus.Rejected,
       toolCallId: "call-1",
       toolName: "commit_draft",
       comment: "not yet",
@@ -404,7 +424,7 @@ describe("agent turn admission", () => {
     // Refused before any executor claimed it: the lease marker never became a claim.
     repo.getAgentRun.mockResolvedValue({
       id: "run-refused",
-      status: "failed",
+      status: AgentRunStatus.Failed,
       metadata: {
         turn: {
           seqBefore: 0,
@@ -429,7 +449,7 @@ describe("agent turn admission", () => {
       deltaStartIndex: 0,
     });
     expect(repo.decideAgentApproval).not.toHaveBeenCalled();
-    expect(workflow.startAgentSession).toHaveBeenCalledWith(
+    expect(startAgentSession).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.objectContaining({
           decision: {
@@ -453,7 +473,7 @@ describe("agent turn admission", () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
     repo.getAgentApproval.mockResolvedValue({
-      status: "approved",
+      status: AgentApprovalStatus.Approved,
       toolCallId: "call-1",
       toolName: "commit_draft",
       comment: "go",
@@ -472,10 +492,10 @@ describe("agent turn admission", () => {
     // Completed, still a lease, failed after the executor ran it, aborted while it ran: none
     // may be delivered again, because the model has heard or may yet hear the decision.
     for (const run of [
-      { status: "completed", metadata: claimed },
-      { status: "active", metadata: {} },
-      { status: "failed", metadata: claimed },
-      { status: "cancelled", metadata: claimed },
+      { status: AgentRunStatus.Completed, metadata: claimed },
+      { status: AgentRunStatus.Active, metadata: {} },
+      { status: AgentRunStatus.Failed, metadata: claimed },
+      { status: AgentRunStatus.Cancelled, metadata: claimed },
     ]) {
       repo.getAgentRun.mockResolvedValue({ id: "run-relay", ...run });
       await expect(
@@ -489,6 +509,6 @@ describe("agent turn admission", () => {
 
     expect(repo.decideAgentApproval).not.toHaveBeenCalled();
     expect(repo.createAgentRun).not.toHaveBeenCalled();
-    expect(workflow.startAgentSession).not.toHaveBeenCalled();
+    expect(startAgentSession).not.toHaveBeenCalled();
   });
 });

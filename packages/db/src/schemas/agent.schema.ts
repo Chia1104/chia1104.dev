@@ -76,7 +76,15 @@ export const agentSessions = agentSchema.table(
 
 export type AgentSession = InferSelectModel<typeof agentSessions>;
 
-export type AgentRunStatus = "active" | "completed" | "cancelled" | "failed";
+export const AgentRunStatus = {
+  Active: "active",
+  Completed: "completed",
+  Cancelled: "cancelled",
+  Failed: "failed",
+} as const;
+
+export type AgentRunStatus =
+  (typeof AgentRunStatus)[keyof typeof AgentRunStatus];
 
 /**
  * One harness execution. Separate from the session so retries and sub-runs do not share a row.
@@ -90,7 +98,10 @@ export const agentRuns = agentSchema.table(
       .references(() => agentSessions.id, { onDelete: "cascade" }),
     harnessKind: text("harness_kind").notNull(),
     harnessVersion: integer("harness_version").notNull().default(1),
-    status: text("status").$type<AgentRunStatus>().notNull().default("active"),
+    status: text("status")
+      .$type<AgentRunStatus>()
+      .notNull()
+      .default(AgentRunStatus.Active),
     /** Provider/workflow-owned identifier used to stream, resume or cancel this run. */
     externalRunId: text("external_run_id").notNull(),
     metadata: jsonb("metadata").$type<JsonObject>().notNull().default({}),
@@ -188,7 +199,7 @@ export type WritingAgentSessionDraft = InferSelectModel<
   typeof writingAgentSessionDrafts
 >;
 
-export const AGENT_MEMORY_KIND = {
+export const AgentMemoryKind = {
   /** A page the agent read: URL, title, excerpt. Written automatically by `fetch_url`. */
   Source: "source",
   Fact: "fact",
@@ -197,9 +208,9 @@ export const AGENT_MEMORY_KIND = {
 } as const;
 
 export type AgentMemoryKind =
-  (typeof AGENT_MEMORY_KIND)[keyof typeof AGENT_MEMORY_KIND];
+  (typeof AgentMemoryKind)[keyof typeof AgentMemoryKind];
 
-export const AGENT_MEMORY_STATUS = {
+export const AgentMemoryStatus = {
   Active: "active",
   /** A lesson awaiting the operator's review; never injected into a prompt. */
   Pending: "pending",
@@ -208,7 +219,7 @@ export const AGENT_MEMORY_STATUS = {
 } as const;
 
 export type AgentMemoryStatus =
-  (typeof AGENT_MEMORY_STATUS)[keyof typeof AGENT_MEMORY_STATUS];
+  (typeof AgentMemoryStatus)[keyof typeof AgentMemoryStatus];
 
 /**
  * Long-term memory across sessions. `id` is serial because `resource_chunk.source_id` is an integer.
@@ -222,7 +233,7 @@ export const agentMemories = agentSchema.table(
     status: text("status")
       .$type<AgentMemoryStatus>()
       .notNull()
-      .default(AGENT_MEMORY_STATUS.Active),
+      .default(AgentMemoryStatus.Active),
     /** One line; what the volatile context and the dashboard list show. */
     title: text("title").notNull(),
     /** Markdown. Chunked and embedded like a post body. */
@@ -252,7 +263,7 @@ export const agentMemories = agentSchema.table(
     uniqueIndex("agent_memory_source_url_idx")
       .on(table.sourceUrl)
       .where(
-        sql`${table.kind} = '${sql.raw(AGENT_MEMORY_KIND.Source)}' and ${table.deletedAt} is null`
+        sql`${table.kind} = '${sql.raw(AgentMemoryKind.Source)}' and ${table.deletedAt} is null`
       ),
     index("agent_memory_session_id_idx").on(table.sessionId),
     index("agent_memory_kind_status_idx").on(table.kind, table.status),
@@ -329,7 +340,14 @@ export const agentQuotaConfigs = agentSchema.table("quota_config", {
 
 export type AgentQuotaConfig = InferSelectModel<typeof agentQuotaConfigs>;
 
-export type AgentApprovalStatus = "pending" | "approved" | "rejected";
+export const AgentApprovalStatus = {
+  Pending: "pending",
+  Approved: "approved",
+  Rejected: "rejected",
+} as const;
+
+export type AgentApprovalStatus =
+  (typeof AgentApprovalStatus)[keyof typeof AgentApprovalStatus];
 
 /**
  * Durable commit-tier approval, keyed by the call that raised it. Survives process restart so
@@ -350,7 +368,7 @@ export const agentToolApprovals = agentSchema.table(
     status: text("status")
       .$type<AgentApprovalStatus>()
       .notNull()
-      .default("pending"),
+      .default(AgentApprovalStatus.Pending),
     comment: text("comment"),
     decidedBy: text("decided_by").references(() => user.id, {
       onDelete: "set null",
@@ -375,19 +393,31 @@ export const agentToolApprovals = agentSchema.table(
 export type AgentToolApproval = InferSelectModel<typeof agentToolApprovals>;
 
 /** What produced the row: the turn, or a side job. A kind that adds a task adds its name here. */
+export const AgentUsageSource = {
+  Turn: "turn",
+  Compaction: "compaction",
+  BranchSummary: "branch_summary",
+  Title: "title",
+  Lessons: "lessons",
+  Summary: "summary",
+  Triage: "triage",
+} as const;
+
 export type AgentUsageSource =
-  | "turn"
-  | "compaction"
-  | "branch_summary"
-  | "title"
-  | "lessons"
-  | "summary";
+  (typeof AgentUsageSource)[keyof typeof AgentUsageSource];
 
 /**
  * Whose key paid for a call. `providerId` alone cannot say: the same provider serves the house
  * account and a caller's own gateway key.
  */
-export type AgentCredentialSource = "house" | "byok-gateway" | "byok-native";
+export const AgentCredentialSource = {
+  House: "house",
+  ByokGateway: "byok-gateway",
+  ByokNative: "byok-native",
+} as const;
+
+export type AgentCredentialSource =
+  (typeof AgentCredentialSource)[keyof typeof AgentCredentialSource];
 
 /**
  * One billed provider call, attributed to the user. Entries cascade with the session, so usage lives here; `session_id` is SET NULL when the session goes.

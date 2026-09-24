@@ -18,8 +18,8 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { useTranslations } from "next-intl";
 
 import { CommandDialog, CommandInput } from "@chia/ui/cmd";
-import { Theme, MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
-import useTheme from "@chia/ui/utils/use-theme";
+import { MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
+import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 
 import { FeedSearch } from "@/components/commons/feed-search";
 import { useRouter } from "@/libs/i18n/navigation";
@@ -72,7 +72,7 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
         {query.trim().length >= 2 ? (
           <FeedSearch
             query={query}
-            locale={props.locale ?? Locale.ZH_TW}
+            locale={props.locale ?? Locale.ZhTW}
             onSelect={closeCommand}
           />
         ) : (
@@ -124,9 +124,9 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
                 </Kbd>
               </Header>
               {[
-                { value: Theme.SYSTEM, label: t("theme-system") },
-                { value: Theme.DARK, label: t("theme-dark") },
-                { value: Theme.LIGHT, label: t("theme-light") },
+                { value: Theme.System, label: t("theme-system") },
+                { value: Theme.Dark, label: t("theme-dark") },
+                { value: Theme.Light, label: t("theme-light") },
               ].map(({ value, label }) => (
                 <ListBox.Item
                   key={value}

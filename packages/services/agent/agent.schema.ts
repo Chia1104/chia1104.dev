@@ -1,16 +1,10 @@
 import * as z from "zod";
 
+import { ThinkingLevel } from "@chia/agent-runtime/types";
+
 /** Schemas both the session and the admin contracts build on. */
 
-export const thinkingLevelSchema = z.enum([
-  "off",
-  "minimal",
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-  "max",
-]);
+export const thinkingLevelSchema = z.enum(ThinkingLevel);
 
 /**
  * `(providerId, modelId)` together so a caller cannot send a model id with no provider.
@@ -34,4 +28,15 @@ export const agentModelInfoSchema = z.object({
    * the picker can prompt for a key.
    */
   requiresApiKey: z.boolean(),
+});
+
+/**
+ * Quota refusal is not an oRPC common code; the RPC handler's `errorStatusMap` owns its
+ * HTTP status. `resetAt` is when the week turns over.
+ */
+export const agentQuotaExceededSchema = z.object({
+  limitMicros: z.number(),
+  usedMicros: z.number(),
+  resetAt: z.string(),
+  timeZone: z.string(),
 });

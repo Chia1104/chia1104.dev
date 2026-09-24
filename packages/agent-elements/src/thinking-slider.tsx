@@ -2,20 +2,14 @@
 
 import { Slider } from "@heroui/react";
 
+import { ThinkingLevel } from "@chia/agent-runtime/types";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { useAgentLabels } from "./labels-context.tsx";
 import type { AgentThinkingLevel } from "./types.ts";
 
-export const THINKING_LEVELS: readonly AgentThinkingLevel[] = [
-  "off",
-  "minimal",
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-  "max",
-];
+export const THINKING_LEVELS: readonly AgentThinkingLevel[] =
+  Object.values(ThinkingLevel);
 
 export interface ThinkingSliderProps {
   value: AgentThinkingLevel;
@@ -28,7 +22,7 @@ export interface ThinkingSliderProps {
 
 const levelAt = (index: number): AgentThinkingLevel =>
   THINKING_LEVELS[Math.max(0, Math.min(THINKING_LEVELS.length - 1, index))] ??
-  "off";
+  ThinkingLevel.Off;
 
 export const ThinkingSlider = ({
   className,

@@ -41,6 +41,7 @@
     "hono": "catalog:hono",
     "pino": "catalog:otel",
     "reading-time-estimator": "catalog:unified",
+    "resend": "catalog:email",
     "workflow": "catalog:workflow",
     "zod": "catalog:"
   },

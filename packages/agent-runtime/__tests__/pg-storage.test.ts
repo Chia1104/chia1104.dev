@@ -7,8 +7,10 @@ import {
   getAgentSession,
   getAgentSessionEntries,
 } from "@chia/db/repos/agent";
+import type { AgentSession } from "@chia/db/schema";
 import type { JsonObject } from "@chia/utils/json";
 
+import { buildBranchContext } from "../src/session/context.ts";
 import { computeSessionStats } from "../src/session/entries.ts";
 import type { NewSessionEntry } from "../src/session/entries.ts";
 import { PgSessionStorage } from "../src/session/pg-storage.ts";
@@ -54,7 +56,7 @@ const usage = ({
   }) satisfies Usage;
 
 const db =
-  /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB;
+  /* SAFETY: every repository call in this suite is mocked; nothing reads the handle. */ {} as DB;
 
 const storage = () =>
   new PgSessionStorage(db, {
@@ -111,24 +113,37 @@ describe("PgSessionStorage", () => {
   });
 
   it("reads the leaf from the session row", async () => {
-    getSessionMock.mockResolvedValue(
-      /* SAFETY: This fixture implements the session row members exercised by this case. */ {
-        leafEntryId: "entry-2",
-      } as never
-    );
+    const session: AgentSession = {
+      id: "session-1",
+      kind: "writing",
+      userId: "user-1",
+      title: null,
+      providerId: null,
+      modelId: null,
+      thinkingLevel: "off",
+      activeToolNames: null,
+      autoApprove: [],
+      runtimeConfig: {},
+      configVersion: 1,
+      leafEntryId: "entry-2",
+      forkedFromSessionId: null,
+      forkedFromEntryId: null,
+      createdAt: new Date("2026-07-27T00:00:00.000Z"),
+      updatedAt: new Date("2026-07-27T00:00:00.000Z"),
+      deletedAt: null,
+    };
+    getSessionMock.mockResolvedValue(session);
 
     await expect(storage().getLeafId()).resolves.toBe("entry-2");
   });
 
   it("projects rows back into entries with their seq, a numeric timestamp, and a tail on compactions", async () => {
-    getEntriesMock.mockResolvedValue(
-      /* SAFETY: These rows implement the repository shape exercised by this case. */ [
-        row(1, "entry-1", null, "compaction", {
-          summary: "Summary",
-          tokensBefore: 10,
-        }),
-      ] as never
-    );
+    getEntriesMock.mockResolvedValue([
+      row(1, "entry-1", null, "compaction", {
+        summary: "Summary",
+        tokensBefore: 10,
+      }),
+    ]);
 
     const [entry] = await storage().getEntries();
 
@@ -146,19 +161,52 @@ describe("PgSessionStorage", () => {
 
   it("walks a branch by parent links, not by seq", async () => {
     // entry-3 was appended after a rewind to entry-1: newer by seq, on a different branch.
-    getEntriesMock.mockResolvedValue(
-      /* SAFETY: These rows implement the repository shape exercised by this case. */ [
-        row(1, "entry-1", null, "message", { message: { role: "user" } }),
-        row(2, "entry-2", "entry-1", "message", { message: { role: "user" } }),
-        row(3, "entry-3", "entry-1", "message", { message: { role: "user" } }),
-      ] as never
-    );
+    getEntriesMock.mockResolvedValue([
+      row(1, "entry-1", null, "message", { message: { role: "user" } }),
+      row(2, "entry-2", "entry-1", "message", { message: { role: "user" } }),
+      row(3, "entry-3", "entry-1", "message", { message: { role: "user" } }),
+    ]);
 
     const branch = await storage().getBranch("entry-3");
 
     expect(branch.map((entry) => [entry.id, entry.seq])).toEqual([
       ["entry-1", 1],
       ["entry-3", 3],
+    ]);
+  });
+
+  it("keeps rows of retired entry types in the walk and out of the model's context", async () => {
+    getEntriesMock.mockResolvedValue([
+      row(1, "u1", null, "message", {
+        message: { role: "user", content: "Hi" },
+      }),
+      // A label this runtime no longer writes, then rows only earlier Pi releases wrote.
+      row(2, "l1", "u1", "label", { targetId: "u1", label: "start" }),
+      row(3, "s1", "l1", "session_info", { name: "old" }),
+      row(4, "t1", "s1", "active_tools_change", {
+        activeToolNames: ["read_post"],
+      }),
+      row(5, "a1", "t1", "message", {
+        message: {
+          role: "assistant",
+          content: [{ type: "text", text: "Hello" }],
+          stopReason: "stop",
+        },
+      }),
+    ]);
+
+    const branch = await storage().getBranch("a1");
+
+    expect(branch.map((entry) => entry.id)).toEqual([
+      "u1",
+      "l1",
+      "s1",
+      "t1",
+      "a1",
+    ]);
+    expect(buildBranchContext(branch).map((message) => message.role)).toEqual([
+      "user",
+      "assistant",
     ]);
   });
 

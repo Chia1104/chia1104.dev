@@ -17,7 +17,14 @@ const withReplicas = (
   };
 };
 
-const getCLIOptions = <TOptions extends Record<string, string>>(): TOptions => {
+interface CLIOptions {
+  /** `NODE_ENV` of the database to seed; `local` by default */
+  env?: string;
+  /** `seedPost` or `seedNote` */
+  action?: string;
+}
+
+const getCLIOptions = (): CLIOptions => {
   const args = process.argv.slice(2);
   const options: Record<string, string> = {};
 
@@ -29,7 +36,7 @@ const getCLIOptions = <TOptions extends Record<string, string>>(): TOptions => {
     options[key] = value;
   });
 
-  return /* SAFETY: The producer contract guarantees this value satisfies TOptions. */ options as TOptions;
+  return options;
 };
 
 const CONTENT = `

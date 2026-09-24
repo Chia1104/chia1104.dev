@@ -5,13 +5,13 @@ import {
 } from "@chia/ai/embeddings/utils";
 import { getAgentMemories, getAgentMemory } from "@chia/db/repos/agent/memory";
 import {
-  AGENT_MEMORY_KIND,
-  AGENT_MEMORY_STATUS,
-  RESOURCE_CHUNK_KIND,
+  AgentMemoryKind,
+  AgentMemoryStatus,
+  ResourceChunkKind,
 } from "@chia/db/schema";
 import type { AgentMemory } from "@chia/db/schema";
 
-import { AGENT_MEMORY_SOURCE_TYPE } from "./resource-types";
+import { ResourceType } from "./resource-types";
 import type {
   ChunkableResource,
   ResourceChunkInput,
@@ -25,7 +25,7 @@ import type {
  * `buildChunks` and `hydrate`: the two must agree or a hit is silently dropped.
  */
 const isIndexable = (row: AgentMemory): boolean =>
-  row.deletedAt === null && row.status === AGENT_MEMORY_STATUS.Active;
+  row.deletedAt === null && row.status === AgentMemoryStatus.Active;
 
 /**
  * The card is what the memory is: kind, source, and — for a page — title plus heading
@@ -38,7 +38,7 @@ const buildCard = async (row: AgentMemory): Promise<string> => {
     row.sourceUrl ? `Source: ${row.sourceUrl}` : null,
   ].filter((part): part is string => part !== null);
   const body =
-    row.kind === AGENT_MEMORY_KIND.Source
+    row.kind === AgentMemoryKind.Source
       ? await buildEmbeddingInput({
           title: row.title,
           content: row.content,
@@ -52,7 +52,7 @@ const buildChunkSet = async (row: AgentMemory): Promise<ResourceChunkSet> => {
   const card = await buildCard(row);
   const chunks: ResourceChunkInput[] = [
     {
-      kind: RESOURCE_CHUNK_KIND.Card,
+      kind: ResourceChunkKind.Card,
       chunkIndex: 0,
       content: card,
       contentHash: await hashEmbeddingInput(card),
@@ -64,7 +64,7 @@ const buildChunkSet = async (row: AgentMemory): Promise<ResourceChunkSet> => {
     format: "markdown",
   })) {
     chunks.push({
-      kind: RESOURCE_CHUNK_KIND.Section,
+      kind: ResourceChunkKind.Section,
       chunkIndex: chunk.chunkIndex,
       content: chunk.content,
       headingPath: chunk.headingPath,
@@ -87,7 +87,7 @@ const buildChunkSet = async (row: AgentMemory): Promise<ResourceChunkSet> => {
 };
 
 export const agentMemoryResource: ChunkableResource = {
-  sourceType: AGENT_MEMORY_SOURCE_TYPE,
+  sourceType: ResourceType.AgentMemory,
 
   async buildChunks(db, sourceId) {
     const row = await getAgentMemory(db, sourceId);
@@ -105,7 +105,7 @@ export const agentMemoryResource: ChunkableResource = {
       rows.filter(isIndexable).map((row) => [
         row.id,
         {
-          sourceType: AGENT_MEMORY_SOURCE_TYPE,
+          sourceType: ResourceType.AgentMemory,
           sourceId: row.id,
           title: row.title,
           description: row.sourceUrl,

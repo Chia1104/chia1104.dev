@@ -5,8 +5,8 @@ import {
 } from "drizzle-orm/zod";
 import * as z from "zod";
 
-import { feeds, feedTranslations, locale } from "../../schemas/schema.ts";
-import { FeedOrderBy, FeedType } from "../../types";
+import { feeds, feedTranslations } from "../../schemas/schema.ts";
+import { FeedOrderBy, FeedType, Locale } from "../../types";
 
 import {
   dateSchema,
@@ -17,7 +17,7 @@ export const baseInfiniteSchema = baseInfiniteSchemaShared.extend({
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.UpdatedAt),
   type: z.enum(FeedType).optional(),
   withContent: z.boolean().optional().default(false),
-  locale: z.enum(locale.enumValues).optional(),
+  locale: z.enum(Locale).optional(),
 });
 
 export const infiniteSchema = baseInfiniteSchema.optional().default({

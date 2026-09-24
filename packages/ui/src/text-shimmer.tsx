@@ -28,14 +28,13 @@ const TextShimmer: FC<TextShimmerProps> = ({
       </Tag>
     );
   }
+  const style: CSSProperties & Record<`--${string}`, string> = {
+    "--shimmer-width": `${shimmerWidth}px`,
+    "--shimmer-duration": `${duration}s`,
+  };
   return (
     <Tag
-      style={
-        /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
-          "--shimmer-width": `${shimmerWidth}px`,
-          "--shimmer-duration": `${duration}s`,
-        } as CSSProperties
-      }
+      style={style}
       className={cn(
         "text-neutral-600/50 dark:text-neutral-400/50",
         "animate-cia-shimmer bg-size-[var(--shimmer-width)_100%] bg-clip-text bg-position-[0_0] bg-no-repeat [transition:background-position_1s_cubic-bezier(.6,.6,0,1)_infinite]",

@@ -4,25 +4,46 @@ import { MeshGradient, Saturation, Shader, Spherize } from "shaders/react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
-export type OrbState =
-  | "idle"
-  | "listening"
-  | "thinking"
-  | "speaking"
-  | "asleep";
+export const OrbState = {
+  Idle: "idle",
+  Listening: "listening",
+  Thinking: "thinking",
+  Speaking: "speaking",
+  Asleep: "asleep",
+} as const;
+
+export type OrbState = (typeof OrbState)[keyof typeof OrbState];
 
 const STATES = {
-  idle: { speed: 0.5, drift: 0.7, swirl: 0.5, saturation: 1.5, pulse: false },
-  listening: {
+  [OrbState.Idle]: {
+    speed: 0.5,
+    drift: 0.7,
+    swirl: 0.5,
+    saturation: 1.5,
+    pulse: false,
+  },
+  [OrbState.Listening]: {
     speed: 1.1,
     drift: 0.9,
     swirl: 0.6,
     saturation: 1.6,
     pulse: false,
   },
-  thinking: { speed: 1.8, drift: 1, swirl: 0.9, saturation: 1.5, pulse: false },
-  speaking: { speed: 2.4, drift: 1, swirl: 0.7, saturation: 1.7, pulse: true },
-  asleep: {
+  [OrbState.Thinking]: {
+    speed: 1.8,
+    drift: 1,
+    swirl: 0.9,
+    saturation: 1.5,
+    pulse: false,
+  },
+  [OrbState.Speaking]: {
+    speed: 2.4,
+    drift: 1,
+    swirl: 0.7,
+    saturation: 1.7,
+    pulse: true,
+  },
+  [OrbState.Asleep]: {
     speed: 0.12,
     drift: 0.4,
     swirl: 0.3,
@@ -49,7 +70,7 @@ interface Props {
 }
 
 export const Orb = (props: Props) => {
-  const state = STATES[props.state ?? "idle"];
+  const state = STATES[props.state ?? OrbState.Idle];
   return (
     <Shader className={cn("size-25", props.className)}>
       <MeshGradient

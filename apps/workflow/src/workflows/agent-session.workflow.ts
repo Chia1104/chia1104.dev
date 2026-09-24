@@ -1,6 +1,7 @@
 import "zod/compile";
 import * as z from "zod";
 
+import type { AgentRunStatus } from "@chia/db/schema";
 import {
   agentAbortControllerRefSchema,
   agentMessagePayloadSchema,
@@ -47,7 +48,7 @@ export const agentSessionWorkflow = async (request: Request) => {
    * row. The row records the turn's outcome: `failed` for an error or a thrown step,
    * `cancelled` for an abort, which is also what the service writes when it stops the turn.
    */
-  let status: "completed" | "failed" | "cancelled" = "failed";
+  let status: Exclude<AgentRunStatus, typeof AgentRunStatus.Active> = "failed";
   try {
     const outcome = await runAgentTurnStep({
       sessionId,

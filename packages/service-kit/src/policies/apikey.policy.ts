@@ -1,19 +1,18 @@
-import type { ApiKeyPermissions, ApiKeyScope } from "@chia/auth/apikey";
+import type { ApiKeyScope } from "@chia/auth/apikey";
 import { hasApiKeyScope } from "@chia/auth/apikey";
+import type { Auth } from "@chia/auth/server";
 import { APIError } from "@chia/auth/types";
 import { X_CH_API_KEY } from "@chia/auth/utils";
-import type { ApiKey } from "@chia/db/schema";
 
-import type { AppErrorCode } from "../errors";
-import { AppError, appErrorCodeFromStatus } from "../errors";
+import { AppError, AppErrorCode, appErrorCodeFromStatus } from "../errors";
 
 import type { Policy } from "./types";
 import { allow, deny } from "./types";
 
-/** better-auth returns the key row with `permissions` already parsed. */
-export type VerifiedApiKey = Omit<ApiKey, "key" | "permissions"> & {
-  permissions: ApiKeyPermissions | null;
-};
+type VerifyApiKeyResult = Awaited<ReturnType<Auth["api"]["verifyApiKey"]>>;
+
+/** The key row better-auth verified, with `permissions` and `metadata` already parsed. */
+export type VerifiedApiKey = NonNullable<VerifyApiKeyResult["key"]>;
 
 export interface ApiKeyPolicyOptions {
   /** Every listed scope must be on the key. */
@@ -33,20 +32,31 @@ const invalidKey = (
 const KEY_ERRORS = new Map<string, AppError>([
   [
     "KEY_NOT_FOUND",
-    invalidKey("NOT_FOUND", "API key not found", "KEY_NOT_FOUND"),
+    invalidKey(AppErrorCode.NotFound, "API key not found", "KEY_NOT_FOUND"),
   ],
   [
     "KEY_DISABLED",
-    invalidKey("FORBIDDEN", "API key is disabled", "KEY_DISABLED"),
+    invalidKey(AppErrorCode.Forbidden, "API key is disabled", "KEY_DISABLED"),
   ],
-  ["KEY_EXPIRED", invalidKey("FORBIDDEN", "API key is expired", "KEY_EXPIRED")],
+  [
+    "KEY_EXPIRED",
+    invalidKey(AppErrorCode.Forbidden, "API key is expired", "KEY_EXPIRED"),
+  ],
   [
     "RATE_LIMITED",
-    invalidKey("TOO_MANY_REQUESTS", "API key is rate limited", "RATE_LIMITED"),
+    invalidKey(
+      AppErrorCode.TooManyRequests,
+      "API key is rate limited",
+      "RATE_LIMITED"
+    ),
   ],
   [
     "USAGE_EXCEEDED",
-    invalidKey("FORBIDDEN", "API key usage exceeded", "USAGE_EXCEEDED"),
+    invalidKey(
+      AppErrorCode.Forbidden,
+      "API key usage exceeded",
+      "USAGE_EXCEEDED"
+    ),
   ],
 ]);
 
@@ -62,17 +72,19 @@ export const apiKeyPolicy = (
 
     if (!key) {
       return deny(
-        invalidKey("UNAUTHORIZED", "Missing or invalid API key", undefined)
+        invalidKey(
+          AppErrorCode.Unauthorized,
+          "Missing or invalid API key",
+          undefined
+        )
       );
     }
 
     if (!context.auth) {
-      return deny(new AppError("UNAUTHORIZED"));
+      return deny(new AppError(AppErrorCode.Unauthorized));
     }
 
-    let verified: Awaited<
-      ReturnType<NonNullable<typeof context.auth>["api"]["verifyApiKey"]>
-    >;
+    let verified: VerifyApiKeyResult;
 
     try {
       verified = await context.auth.api.verifyApiKey({
@@ -88,22 +100,22 @@ export const apiKeyPolicy = (
         );
       }
       // Not the caller's doing: the verifier itself failed, so the edge reports it as a 5xx.
-      return deny(new AppError("INTERNAL_SERVER_ERROR", { cause: error }));
+      return deny(
+        new AppError(AppErrorCode.InternalServerError, { cause: error })
+      );
     }
 
     if (verified.error) {
       const mapped = verified.error.code
         ? KEY_ERRORS.get(verified.error.code)
         : undefined;
-      return deny(mapped ?? new AppError("FORBIDDEN"));
+      return deny(mapped ?? new AppError(AppErrorCode.Forbidden));
     }
 
-    if (!verified.valid || !verified.key) {
-      return deny(new AppError("FORBIDDEN"));
+    const apiKey = verified.key;
+    if (!verified.valid || !apiKey) {
+      return deny(new AppError(AppErrorCode.Forbidden));
     }
-
-    const apiKey =
-      /* SAFETY: The producer contract guarantees this value satisfies VerifiedApiKey. */ verified.key as VerifiedApiKey;
 
     const missing = missingApiKeyScope(apiKey, options.scopes);
     if (missing) {
@@ -124,7 +136,7 @@ export const missingApiKeyScope = (
   );
   return missing
     ? invalidKey(
-        "FORBIDDEN",
+        AppErrorCode.Forbidden,
         `API key lacks the ${missing} scope`,
         "SCOPE_MISSING"
       )

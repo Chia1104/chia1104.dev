@@ -18,16 +18,18 @@ import type {
   FeedDraftSnapshot,
   FeedDraftWriter,
 } from "@chia/db/repos/drafts";
-import type {
-  FeedDraftFields,
-  FeedDraftMetaPatch,
-  FeedDraftTranslationPatch,
+import {
+  definedKeys,
+  META_FIELDS,
+  TRANSLATION_FIELDS,
 } from "@chia/db/repos/drafts/patch";
+import type { FeedDraftFields } from "@chia/db/repos/drafts/patch";
+import { resolveFeedReports } from "@chia/db/repos/feed-reports";
 import { getFeedForIndexing } from "@chia/db/repos/feeds";
-import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
-import type { Locale } from "@chia/db/types";
+import { FeedDraftAuthor } from "@chia/db/schema";
+import { Locale } from "@chia/db/types";
 import { reportError } from "@chia/observability/report";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 import { excerptAround } from "@chia/utils/text";
 import type { MatchMode } from "@chia/utils/text";
@@ -35,6 +37,7 @@ import type { MatchMode } from "@chia/utils/text";
 import type { FeedHooks } from "../shared/context";
 
 import { createFeedService, updateFeedService } from "./write.service";
+import type { CreateFeedTranslationInput } from "./write.service";
 
 /**
  * The working draft shared by the dashboard editor and the writing agent. Shared by oRPC
@@ -49,7 +52,7 @@ const requireDraft = async (
 ): Promise<FeedDraftRecord> => {
   const draft = await getFeedDraft(db, draftId, adminId);
   if (!draft) {
-    throw new AppError("NOT_FOUND", {
+    throw new AppError(AppErrorCode.NotFound, {
       message: `Draft ${draftId} not found`,
     });
   }
@@ -63,7 +66,9 @@ const feedSnapshot = async (
 ): Promise<FeedDraftSnapshot> => {
   const feed = await getFeedForIndexing(db, { feedId });
   if (!feed || feed.userId !== adminId || feed.deletedAt) {
-    throw new AppError("NOT_FOUND", { message: `Feed ${feedId} not found` });
+    throw new AppError(AppErrorCode.NotFound, {
+      message: `Feed ${feedId} not found`,
+    });
   }
   const translations: FeedDraftSnapshot["translations"] = {};
   for (const translation of feed.translations) {
@@ -109,7 +114,7 @@ export const openFeedDraftService = async (
   const existing = await getFeedDraftByFeedId(db, input.feedId);
   if (existing) {
     if (existing.userId !== input.adminId) {
-      throw new AppError("NOT_FOUND", {
+      throw new AppError(AppErrorCode.NotFound, {
         message: `Feed ${input.feedId} not found`,
       });
     }
@@ -142,22 +147,18 @@ export interface PatchFeedDraftServiceInput
 /** Fields written without a base, which only `expectedRevision` may guard. */
 const unguardedFields = (input: PatchFeedDraftServiceInput): string[] => {
   const unguarded: string[] = [];
-  for (const [field, value] of Object.entries(input.meta ?? {})) {
-    if (value === undefined) continue;
-    // SAFETY: `field` came from `input.meta`, whose keys `base.meta` shares.
-    if (input.base?.meta?.[field as keyof FeedDraftMetaPatch] === undefined) {
-      unguarded.push(field);
+  if (input.meta) {
+    for (const field of definedKeys(input.meta, META_FIELDS)) {
+      if (input.base?.meta?.[field] === undefined) unguarded.push(field);
     }
   }
-  for (const [locale, patch] of Object.entries(input.translations ?? {})) {
-    for (const [field, value] of Object.entries(patch ?? {})) {
-      if (value === undefined) continue;
-      // SAFETY: `locale` and `field` came from `input.translations`, whose keys `base` shares.
-      const base =
-        input.base?.translations?.[locale as Locale]?.[
-          field as keyof FeedDraftTranslationPatch
-        ];
-      if (base === undefined) unguarded.push(`${locale}.${field}`);
+  for (const locale of Object.values(Locale)) {
+    const patch = input.translations?.[locale];
+    if (!patch) continue;
+    for (const field of definedKeys(patch, TRANSLATION_FIELDS)) {
+      if (input.base?.translations?.[locale]?.[field] === undefined) {
+        unguarded.push(`${locale}.${field}`);
+      }
     }
   }
   return unguarded;
@@ -175,15 +176,15 @@ export const patchFeedDraftService = async (
   if (input.expectedRevision === undefined) {
     const unguarded = unguardedFields(input);
     if (unguarded.length > 0) {
-      throw new AppError("BAD_REQUEST", {
+      throw new AppError(AppErrorCode.BadRequest, {
         message: `Pass what you last saw of ${unguarded.join(", ")} in \`base\`, or the draft's \`expectedRevision\`, so the write cannot bury a change you have not seen.`,
       });
     }
   }
-  for (const locale of Object.keys(input.edits ?? {})) {
-    // SAFETY: `edits` is keyed by Locale.
-    if (input.translations?.[locale as Locale]?.content !== undefined) {
-      throw new AppError("BAD_REQUEST", {
+  for (const locale of Object.values(Locale)) {
+    if (!input.edits || !Object.hasOwn(input.edits, locale)) continue;
+    if (input.translations?.[locale]?.content !== undefined) {
+      throw new AppError(AppErrorCode.BadRequest, {
         message: `Write the "${locale}" body or edit it, not both in one call.`,
       });
     }
@@ -193,7 +194,7 @@ export const patchFeedDraftService = async (
   if (meta.slug !== undefined && meta.slug !== null) {
     const slug = normalizeAsciiSlug(meta.slug);
     if (!slug) {
-      throw new AppError("BAD_REQUEST", {
+      throw new AppError(AppErrorCode.BadRequest, {
         message:
           "Feed slug must be an English/ASCII phrase. Slug normalization does not translate or transliterate titles.",
       });
@@ -277,11 +278,11 @@ export const editFeedDraftContentService = async (
       };
     }
     case "no_body":
-      throw new AppError("BAD_REQUEST", {
+      throw new AppError(AppErrorCode.BadRequest, {
         message: `Draft ${input.draftId} has no "${input.locale}" body yet; write one before editing it.`,
       });
     case "not_applied":
-      throw new AppError("BAD_REQUEST", {
+      throw new AppError(AppErrorCode.BadRequest, {
         message: `Edit ${result.index + 1} of ${input.edits.length} was not applied, so nothing was written. ${result.message}`,
         data: { index: result.index, reason: result.reason },
       });
@@ -303,7 +304,7 @@ const unwrapWrite = (
     case "ok":
       return result.draft;
     case "conflict":
-      throw new AppError("CONFLICT", {
+      throw new AppError(AppErrorCode.Conflict, {
         message: `Draft ${draftId} was changed by someone else; reload it and try again.`,
         data: result.rejected
           ? {
@@ -317,9 +318,13 @@ const unwrapWrite = (
           : conflictData(result.draft),
       });
     case "not_found":
-      throw new AppError("NOT_FOUND", {
+      throw new AppError(AppErrorCode.NotFound, {
         message: `Draft ${draftId} not found`,
       });
+    default: {
+      const _exhaustive: never = result;
+      return _exhaustive;
+    }
   }
 };
 
@@ -339,7 +344,8 @@ export interface ApplyFeedDraftResult {
  *
  * The draft row is locked and its content checked against `expectedHash` in the same
  * transaction that writes the feed, so what lands is the content the caller decided on and
- * nothing written since. Feed hooks run after that transaction commits.
+ * nothing written since. The post's in-progress reader reports resolve in that transaction.
+ * Feed hooks run after it commits.
  */
 export const applyFeedDraftService = async (
   db: DB,
@@ -360,17 +366,19 @@ export const applyFeedDraftService = async (
   const result = await db.transaction(async (tx) => {
     const locked = await getFeedDraftForUpdate(tx, input.draftId);
     if (!locked || locked.userId !== input.adminId) {
-      throw new AppError("NOT_FOUND", {
+      throw new AppError(AppErrorCode.NotFound, {
         message: `Draft ${input.draftId} not found`,
       });
     }
     if (locked.contentHash !== input.expectedHash) {
-      throw new AppError("CONFLICT", {
+      throw new AppError(AppErrorCode.Conflict, {
         message: `Draft ${input.draftId} holds ${locked.contentHash.slice(0, 7)}, not ${input.expectedHash.slice(0, 7)}: it changed after it was decided on. Read it again and decide on what it holds now.`,
         data: conflictData(locked),
       });
     }
-    return applyLockedDraft(tx, locked, input, deferred);
+    const applied = await applyLockedDraft(tx, locked, input, deferred);
+    await resolveFeedReports(tx, applied.feedId);
+    return applied;
   });
   // The feed is committed; a hook that cannot start indexing does not unmake that, so the
   // caller hears the truth and the index catches up on the next apply or publish.
@@ -397,50 +405,44 @@ const applyLockedDraft = async (
   { adminId, message }: { adminId: string; message?: string | null },
   hooks: FeedHooks
 ): Promise<ApplyFeedDraftResult> => {
-  // SAFETY: translations are keyed by Locale.
-  const locales = Object.keys(draft.translations) as Locale[];
+  const locales = Object.values(Locale).filter(
+    (locale) => draft.translations[locale] !== undefined
+  );
 
   if (locales.length === 0) {
-    throw new AppError("BAD_REQUEST", {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: "The draft is empty. Write at least one locale before applying.",
     });
   }
   if (!draft.translations[draft.defaultLocale]) {
-    throw new AppError("BAD_REQUEST", {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: `No draft for the default locale "${draft.defaultLocale}". Either write it or change the default locale.`,
     });
   }
-  const untitled = locales.filter(
-    (locale) => !draft.translations[locale]?.title?.trim()
-  );
-  if (untitled.length > 0) {
-    throw new AppError("BAD_REQUEST", {
-      message: `These locales have no title: ${untitled.join(", ")}. Every translation needs one.`,
-    });
-  }
-
-  const translations: Record<
-    string,
-    {
-      title: string;
-      excerpt: string | null;
-      description: string | null;
-      content: string | null;
-    }
-  > = {};
+  const untitled: Locale[] = [];
+  const translations: Partial<Record<Locale, CreateFeedTranslationInput>> = {};
   for (const locale of locales) {
-    const translation = draft.translations[locale]!;
+    const translation = draft.translations[locale];
+    if (!translation?.title?.trim()) {
+      untitled.push(locale);
+      continue;
+    }
     translations[locale] = {
-      title: translation.title!,
+      title: translation.title,
       excerpt: translation.excerpt,
       description: translation.description,
       content: translation.content,
     };
   }
+  if (untitled.length > 0) {
+    throw new AppError(AppErrorCode.BadRequest, {
+      message: `These locales have no title: ${untitled.join(", ")}. Every translation needs one.`,
+    });
+  }
 
   if (draft.feedId === null) {
     if (!draft.slug) {
-      throw new AppError("BAD_REQUEST", {
+      throw new AppError(AppErrorCode.BadRequest, {
         message:
           "A new post needs an English/ASCII slug before it can be applied.",
       });
@@ -459,7 +461,7 @@ const applyLockedDraft = async (
       hooks
     );
     if (!created) {
-      throw new AppError("INTERNAL_SERVER_ERROR", {
+      throw new AppError(AppErrorCode.InternalServerError, {
         message: "Creating the feed returned no row.",
       });
     }
@@ -518,20 +520,20 @@ export const discardFeedDraftService = async (
   });
   if (deleted.status === "deleted") return;
   if (deleted.status === "not_found") {
-    throw new AppError("NOT_FOUND", {
+    throw new AppError(AppErrorCode.NotFound, {
       message: `Draft ${input.draftId} not found`,
     });
   }
   const { draft } = deleted;
   if (deleted.status === "conflict") {
-    throw new AppError("CONFLICT", {
+    throw new AppError(AppErrorCode.Conflict, {
       message: `Draft ${draft.id} was changed by someone else; reload it and try again.`,
       data: conflictData(draft),
     });
   }
   // Bound to a post: the restore below checks the hash again under its own lock.
   if (draft.appliedRevisionId === null) {
-    throw new AppError("INTERNAL_SERVER_ERROR", {
+    throw new AppError(AppErrorCode.InternalServerError, {
       message: `Draft ${draft.id} is bound to feed ${draft.feedId} without a commit.`,
     });
   }
@@ -561,7 +563,7 @@ export const restoreFeedDraftRevisionService = async (
     userId: input.adminId,
   });
   if (!revision) {
-    throw new AppError("NOT_FOUND", {
+    throw new AppError(AppErrorCode.NotFound, {
       message: `Revision ${input.revisionId} not found`,
     });
   }
@@ -570,7 +572,7 @@ export const restoreFeedDraftRevisionService = async (
     userId: input.adminId,
     expectedHash: input.expectedHash,
     snapshot: snapshotOfRevision(revision),
-    author: FEED_DRAFT_AUTHOR.Operator,
+    author: FeedDraftAuthor.Operator,
   });
   return unwrapWrite(result, input.draftId);
 };

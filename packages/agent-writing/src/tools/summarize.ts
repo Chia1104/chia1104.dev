@@ -6,9 +6,10 @@ import {
   asNumber,
   asString,
 } from "@chia/utils/json";
+import { MatchMode } from "@chia/utils/text";
 import { hostnameOf } from "@chia/utils/url";
 
-import { TOOL_NAMES } from "./registry.ts";
+import { ToolName } from "./registry.ts";
 
 /**
  * One transcript line per tool result. The full payload stays in `details`. `result` is
@@ -28,29 +29,29 @@ export const summarizeToolResult = <TResult>(
   if (!details) return "Done.";
 
   switch (toolName) {
-    case TOOL_NAMES.readSkill: {
+    case ToolName.ReadSkill: {
       const name = asString(details.name);
       return name ? `Read skill \`${name}\`.` : "Read skill.";
     }
-    case TOOL_NAMES.webSearch: {
+    case ToolName.WebSearch: {
       const query = asString(details.query);
       const count = asNumber(details.count);
       return query
         ? `Searched "${query}"${count === undefined ? "" : ` (${count} results)`}.`
         : "Searched the web.";
     }
-    case TOOL_NAMES.fetchUrl: {
+    case ToolName.FetchUrl: {
       const url = asString(details.url);
       return url ? `Fetched ${hostnameOf(url)}.` : "Fetched page.";
     }
-    case TOOL_NAMES.githubResolveRef: {
+    case ToolName.GitHubResolveRef: {
       const repo = asString(details.repo);
       const sha = asString(details.sha);
       return repo && sha
         ? `Resolved ${repo}@${asString(details.ref) ?? "default"} to ${sha.slice(0, 7)}.`
         : "Resolved a GitHub ref.";
     }
-    case TOOL_NAMES.githubListTree: {
+    case ToolName.GitHubListTree: {
       const repo = asString(details.repo);
       const path = asString(details.path);
       const count = asNumber(details.count);
@@ -58,7 +59,7 @@ export const summarizeToolResult = <TResult>(
         ? `Listed ${repo}/${path || ""}${count === undefined ? "" : ` (${count} entries)`}.`
         : "Listed a GitHub tree.";
     }
-    case TOOL_NAMES.githubReadFile: {
+    case ToolName.GitHubReadFile: {
       const repo = asString(details.repo);
       const path = asString(details.path);
       const sha = asString(details.sha);
@@ -66,29 +67,29 @@ export const summarizeToolResult = <TResult>(
         ? `Read ${repo}/${path}${sha ? `@${sha.slice(0, 7)}` : ""}.`
         : "Read a GitHub file.";
     }
-    case TOOL_NAMES.searchMemory: {
+    case ToolName.SearchMemory: {
       const query = asString(details.query);
       const hits = asJsonArray(details.hits);
       return query
         ? `Searched memory for "${query}"${hits ? ` (${hits.length} hits)` : ""}.`
         : "Searched memory.";
     }
-    case TOOL_NAMES.getMemory: {
+    case ToolName.GetMemory: {
       const id = asNumber(details.id);
       return id === undefined ? "Read memory." : `Read memory #${id}.`;
     }
-    case TOOL_NAMES.saveMemory: {
+    case ToolName.SaveMemory: {
       const id = asNumber(details.id);
       return id === undefined ? "Saved memory." : `Saved memory #${id}.`;
     }
-    case TOOL_NAMES.proposeLesson: {
+    case ToolName.ProposeLesson: {
       const id = asNumber(details.id);
       return id === undefined
         ? "Proposed a lesson for review."
         : `Proposed lesson #${id} for review.`;
     }
-    case TOOL_NAMES.newDraft:
-    case TOOL_NAMES.openDraft: {
+    case ToolName.NewDraft:
+    case ToolName.OpenDraft: {
       const draftId = asNumber(details.draftId);
       const feedId = asNumber(details.feedId);
       if (draftId === undefined) return "Opened draft.";
@@ -96,7 +97,7 @@ export const summarizeToolResult = <TResult>(
         ? `Opened draft #${draftId} for a new post.`
         : `Opened draft #${draftId} for feed ${feedId}.`;
     }
-    case TOOL_NAMES.readDraft: {
+    case ToolName.ReadDraft: {
       const locale = asString(details.locale);
       const lineCount = asNumber(details.lineCount);
       const heading = asString(details.heading);
@@ -108,7 +109,7 @@ export const summarizeToolResult = <TResult>(
       }
       return "Read draft metadata.";
     }
-    case TOOL_NAMES.writeDraft: {
+    case ToolName.WriteDraft: {
       const warnings = asJsonArray(details.warnings);
       const written = asJsonObject(details.translations);
       const locales = written ? Object.keys(written) : [];
@@ -118,33 +119,33 @@ export const summarizeToolResult = <TResult>(
         ? `${scope} with ${warnings.length} warning(s).`
         : `${scope}.`;
     }
-    case TOOL_NAMES.editDraftContent: {
+    case ToolName.EditDraftContent: {
       const replacements = asNumber(details.replacements) ?? 0;
       const edits = asJsonArray(details.edits);
       const locale = asString(details.locale);
       const loose =
-        edits?.filter((edit) => asJsonObject(edit)?.match !== "exact").length ??
-        0;
+        edits?.filter((edit) => asJsonObject(edit)?.match !== MatchMode.Exact)
+          .length ?? 0;
       return (
         `${replacements} replacement(s) across ${edits?.length ?? 1} edit(s) in ${locale ?? "draft"}` +
         `${loose > 0 ? `, ${loose} matched loosely` : ""}.`
       );
     }
-    case TOOL_NAMES.replaceSection: {
+    case ToolName.ReplaceSection: {
       const heading = asString(details.heading);
       const locale = asString(details.locale);
       return details.deleted === true
         ? `Deleted section "${heading ?? "?"}" in ${locale ?? "draft"}.`
         : `Replaced section "${heading ?? "?"}" in ${locale ?? "draft"}.`;
     }
-    case TOOL_NAMES.commitDraft: {
+    case ToolName.CommitDraft: {
       const feedId = asNumber(details.feedId);
       const created = details.created === true;
       return feedId === undefined
         ? "Committed."
         : `${created ? "Created" : "Updated"} feed ${feedId}.`;
     }
-    case TOOL_NAMES.setPublished:
+    case ToolName.SetPublished:
       return details.published === true ? "Published." : "Unpublished.";
     default:
       return "Done.";

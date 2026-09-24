@@ -89,6 +89,10 @@
       "types": "./email/index.ts",
       "default": "./email/index.ts"
     },
+    "./email/report": {
+      "types": "./email/report.ts",
+      "default": "./email/report.ts"
+    },
     "./email/env": {
       "types": "./email/env.ts",
       "default": "./email/env.ts"

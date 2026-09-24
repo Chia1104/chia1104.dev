@@ -1,29 +1,26 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
+import { ApiKeyScope } from "@chia/auth/apikey";
 import { CallerTier } from "@chia/auth/tier";
+import { Role } from "@chia/db/types";
 import { serviceContextOf } from "@chia/test/context";
 import { sessionOf } from "@chia/test/session";
 
 import type { ServiceContext } from "../src/context";
+import { AppErrorCode } from "../src/errors";
 import type { Caller } from "../src/policies/caller.policy";
-import { captchaPolicy } from "../src/policies/captcha.policy";
+import {
+  CaptchaErrorCode,
+  captchaPolicy,
+} from "../src/policies/captcha.policy";
 import type { RateLimitContext } from "../src/policies/rate-limit.policy";
 import { rateLimitPolicy } from "../src/policies/rate-limit.policy";
 import { sessionPolicy } from "../src/policies/session.policy";
 
-const session = (role: string, isAnonymous = false) => ({
+const session = (role: Role, isAnonymous = false) => ({
   ...sessionOf("u1", role),
   user: { id: "u1", role, isAnonymous },
 });
-
-const makeContext = (overrides?: Partial<ServiceContext>) =>
-  serviceContextOf<ServiceContext>(overrides);
-
-const withSession = (value: ReturnType<typeof session>) =>
-  makeContext({
-    session:
-      /* SAFETY: This fixture implements the Session members the policies read. */ value as never,
-  });
 
 const makeKv = () => {
   const store = new Map<string, object>();
@@ -36,26 +33,43 @@ const makeKv = () => {
   };
 };
 
+/** Stand-ins for the better-auth, session and Keyv members the policies call. */
+interface Fakes {
+  session?: ReturnType<typeof session>;
+  auth?: {
+    api: {
+      getSession?: () => Promise<object | null>;
+      verifyApiKey?: () => Promise<object>;
+    };
+  };
+  kv?: ReturnType<typeof makeKv>;
+}
+
+const makeContext = <TContext extends ServiceContext = ServiceContext>(
+  fakes: Partial<Omit<TContext, keyof Fakes>> & Fakes = {}
+) =>
+  serviceContextOf<TContext>(
+    /* SAFETY: each fake implements every member the policy under test reads. */ fakes as never
+  );
+
+const withSession = (value: ReturnType<typeof session>) =>
+  makeContext({ session: value });
+
 describe("sessionPolicy", () => {
   it("denies with UNAUTHORIZED when there is no session", async () => {
     const result = await sessionPolicy()(makeContext());
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe("UNAUTHORIZED");
+    expect(result.error.code).toBe(AppErrorCode.Unauthorized);
   });
 
   it("reuses a session already on the context instead of calling better-auth", async () => {
     const getSession = vi.fn();
     const result = await sessionPolicy()(
       makeContext({
-        session:
-          /* SAFETY: This fixture implements the never members exercised by this case. */ session(
-            "admin"
-          ) as never,
-        auth: /* SAFETY: This fixture implements the never members exercised by this case. */ {
-          api: { getSession },
-        } as never,
+        session: session(Role.Admin),
+        auth: { api: { getSession } },
       })
     );
 
@@ -64,11 +78,11 @@ describe("sessionPolicy", () => {
   });
 
   it("treats a guest as not signed in unless the caller admits guests", async () => {
-    const context = withSession(session("user", true));
+    const context = withSession(session(Role.User, true));
 
     const refused = await sessionPolicy()(context);
     expect(refused.ok).toBe(false);
-    expect(!refused.ok && refused.error.code).toBe("UNAUTHORIZED");
+    expect(!refused.ok && refused.error.code).toBe(AppErrorCode.Unauthorized);
 
     const admitted = await sessionPolicy({ allowAnonymous: true })(context);
     expect(admitted.ok).toBe(true);
@@ -76,27 +90,17 @@ describe("sessionPolicy", () => {
 
   it("denies with FORBIDDEN when rootOnly is set and the role is not root", async () => {
     const result = await sessionPolicy({ rootOnly: true })(
-      makeContext({
-        session:
-          /* SAFETY: This fixture implements the never members exercised by this case. */ session(
-            "admin"
-          ) as never,
-      })
+      withSession(session(Role.Admin))
     );
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.code).toBe("FORBIDDEN");
+    expect(result.error.code).toBe(AppErrorCode.Forbidden);
   });
 
   it("allows root when rootOnly is set", async () => {
     const result = await sessionPolicy({ rootOnly: true })(
-      makeContext({
-        session:
-          /* SAFETY: This fixture implements the never members exercised by this case. */ session(
-            "root"
-          ) as never,
-      })
+      withSession(session(Role.Root))
     );
 
     expect(result.ok).toBe(true);
@@ -110,10 +114,7 @@ describe("rateLimitPolicy", () => {
   const budget = { windowMs: 60_000, limit: { [CallerTier.Anonymous]: 2 } };
 
   const contextFor = (caller: Caller, kv?: ReturnType<typeof makeKv>) =>
-    serviceContextOf<RateLimitContext>({
-      caller,
-      kv: /* SAFETY: This fixture implements the never members exercised by this case. */ kv as never,
-    });
+    makeContext<RateLimitContext>({ caller, kv });
 
   const policy = (kv?: ReturnType<typeof makeKv>, caller: Caller = anonymous) =>
     rateLimitPolicy({ ...budget, prefix: "test" })(contextFor(caller, kv));
@@ -157,7 +158,7 @@ describe("rateLimitPolicy", () => {
 
     expect(third.ok).toBe(false);
     if (third.ok) return;
-    expect(third.error.code).toBe("TOO_MANY_REQUESTS");
+    expect(third.error.code).toBe(AppErrorCode.TooManyRequests);
     expect(third.error.status).toBe(429);
     expect(Number(third.error.headers?.["Retry-After"])).toBeGreaterThan(0);
   });
@@ -187,7 +188,7 @@ describe("captchaPolicy", () => {
     expect(verify).not.toHaveBeenCalled();
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.issues?.[0]?.message).toBe("CAPTCHA_REQUIRED");
+    expect(result.error.issues?.[0]?.message).toBe(CaptchaErrorCode.Required);
   });
 
   it("passes the client IP through to the verifier", async () => {
@@ -211,7 +212,7 @@ describe("captchaPolicy", () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.issues?.[0]?.message).toBe("CAPTCHA_FAILED");
+    expect(result.error.issues?.[0]?.message).toBe(CaptchaErrorCode.Failed);
   });
 });
 
@@ -230,35 +231,35 @@ describe("callerPolicy", () => {
 
   it("grades a guest session as Guest — above anonymous, below an API key", async () => {
     const { callerPolicy } = await import("../src/policies/caller.policy");
-    const result = await callerPolicy()(withSession(session("user", true)));
+    const result = await callerPolicy()(withSession(session(Role.User, true)));
 
     expect(result.ok).toBe(true);
-    expect(result.ok && result.patch?.caller.tier).toBe(CallerTier.Guest);
+    expect(result.ok && result.patch.caller.tier).toBe(CallerTier.Guest);
     expect(CallerTier.Guest).toBeGreaterThan(CallerTier.Anonymous);
     expect(CallerTier.Guest).toBeLessThan(CallerTier.ApiKey);
   });
 
   it("grades a signed-in person as Session and the configured admin as Root", async () => {
     const { callerPolicy } = await import("../src/policies/caller.policy");
-    const person = await callerPolicy()(withSession(session("user")));
-    expect(person.ok && person.patch?.caller.tier).toBe(CallerTier.Session);
+    const person = await callerPolicy()(withSession(session(Role.User)));
+    expect(person.ok && person.patch.caller.tier).toBe(CallerTier.Session);
 
     const admin = await callerPolicy()(
       withSession({
         session: { id: "s2", userId: ADMIN_ID },
-        user: { id: ADMIN_ID, role: "root", isAnonymous: false },
-        access: { tier: 4, dashboard: "operator", agent: {} },
+        user: { id: ADMIN_ID, role: Role.Root, isAnonymous: false },
+        access: { tier: CallerTier.Root, dashboard: "operator", agent: {} },
       })
     );
-    expect(admin.ok && admin.patch?.caller.tier).toBe(CallerTier.Root);
+    expect(admin.ok && admin.patch.caller.tier).toBe(CallerTier.Root);
   });
 
   it("refuses a guest below a required Session tier as FORBIDDEN, not UNAUTHORIZED", async () => {
     const { callerPolicy } = await import("../src/policies/caller.policy");
     const result = await callerPolicy({ minTier: CallerTier.Session })(
-      withSession(session("user", true))
+      withSession(session(Role.User, true))
     );
-    expect(!result.ok && result.error.code).toBe("FORBIDDEN");
+    expect(!result.ok && result.error.code).toBe(AppErrorCode.Forbidden);
   });
 
   it("grades a pre-resolved caller without touching credentials", async () => {
@@ -268,18 +269,16 @@ describe("callerPolicy", () => {
     const context = makeContext({
       caller,
       headers: new Headers({ Cookie: "session_token=abc" }),
-      auth: /* SAFETY: This fixture implements the better-auth surface the policy calls. */ {
-        api: { getSession },
-      } as never,
+      auth: { api: { getSession } },
     });
 
     const admitted = await callerPolicy()(context);
-    expect(admitted.ok && admitted.patch?.caller).toBe(caller);
+    expect(admitted.ok && admitted.patch.caller).toBe(caller);
 
     const refused = await callerPolicy({ minTier: CallerTier.Session })(
       context
     );
-    expect(!refused.ok && refused.error.code).toBe("FORBIDDEN");
+    expect(!refused.ok && refused.error.code).toBe(AppErrorCode.Forbidden);
     expect(getSession).not.toHaveBeenCalled();
   });
 });
@@ -301,15 +300,13 @@ describe("apiKeyPolicy", () => {
   ) =>
     makeContext({
       headers: new Headers({ "x-ch-api-key": header }),
-      auth: /* SAFETY: This fixture implements the better-auth surface the policy calls. */ {
-        api: { verifyApiKey },
-      } as never,
+      auth: { api: { verifyApiKey } },
     });
 
   it("denies with UNAUTHORIZED when no key header is sent", async () => {
     const { apiKeyPolicy } = await import("../src/policies/apikey.policy");
     const result = await apiKeyPolicy()(makeContext());
-    expect(!result.ok && result.error.code).toBe("UNAUTHORIZED");
+    expect(!result.ok && result.error.code).toBe(AppErrorCode.Unauthorized);
   });
 
   it("verifies the key with better-auth and hands the parsed row downstream", async () => {
@@ -322,27 +319,27 @@ describe("apiKeyPolicy", () => {
     expect(verifyApiKey).toHaveBeenCalledWith(
       expect.objectContaining({ body: { key: "ch_test" } })
     );
-    expect(result.ok && result.patch?.apiKey.permissions).toEqual({
+    expect(result.ok && result.patch.apiKey.permissions).toEqual({
       feeds: ["read"],
     });
   });
 
   it("refuses a valid key that lacks a required scope as FORBIDDEN", async () => {
     const { apiKeyPolicy } = await import("../src/policies/apikey.policy");
-    const result = await apiKeyPolicy({ scopes: ["feeds:write"] })(
+    const result = await apiKeyPolicy({ scopes: [ApiKeyScope.FeedsWrite] })(
       withKey(() => Promise.resolve(verifiedKey({ feeds: ["read"] })))
     );
 
-    expect(!result.ok && result.error.code).toBe("FORBIDDEN");
+    expect(!result.ok && result.error.code).toBe(AppErrorCode.Forbidden);
     expect(!result.ok && result.error.issues?.[0]?.code).toBe("SCOPE_MISSING");
   });
 
   it("refuses a key created before scopes existed when a scope is required", async () => {
     const { apiKeyPolicy } = await import("../src/policies/apikey.policy");
-    const result = await apiKeyPolicy({ scopes: ["feeds:read"] })(
+    const result = await apiKeyPolicy({ scopes: [ApiKeyScope.FeedsRead] })(
       withKey(() => Promise.resolve(verifiedKey(null)))
     );
-    expect(!result.ok && result.error.code).toBe("FORBIDDEN");
+    expect(!result.ok && result.error.code).toBe(AppErrorCode.Forbidden);
   });
 
   it("maps better-auth's KEY_DISABLED onto FORBIDDEN", async () => {
@@ -356,7 +353,7 @@ describe("apiKeyPolicy", () => {
         })
       )
     );
-    expect(!result.ok && result.error.code).toBe("FORBIDDEN");
+    expect(!result.ok && result.error.code).toBe(AppErrorCode.Forbidden);
   });
 });
 
@@ -379,7 +376,7 @@ describe("callerPolicy with an API key", () => {
   }) =>
     makeContext({
       headers: new Headers({ "x-ch-api-key": "ch_test" }),
-      auth: /* SAFETY: This fixture implements the better-auth surface the policy calls. */ {
+      auth: {
         api: {
           verifyApiKey: () =>
             Promise.resolve({
@@ -388,7 +385,7 @@ describe("callerPolicy with an API key", () => {
               key: { id: "k1", ...key },
             }),
         },
-      } as never,
+      },
     });
 
   it("lifts an admin-owned key carrying operator:root to Root", async () => {
@@ -399,29 +396,27 @@ describe("callerPolicy with an API key", () => {
         permissions: { operator: ["root"] },
       })
     );
-    expect(result.ok && result.patch?.caller.tier).toBe(CallerTier.Root);
-    expect(result.ok && result.patch?.caller.apiKey?.referenceId).toBe(
-      ADMIN_ID
-    );
+    expect(result.ok && result.patch.caller.tier).toBe(CallerTier.Root);
+    expect(result.ok && result.patch.caller.apiKey?.referenceId).toBe(ADMIN_ID);
   });
 
   it("asks no scopes of a key lifted to Root but every scope of a plain key", async () => {
     const { callerPolicy } = await import("../src/policies/caller.policy");
-    const lifted = await callerPolicy({ scopes: ["feeds:write"] })(
+    const lifted = await callerPolicy({ scopes: [ApiKeyScope.FeedsWrite] })(
       withVerifiedKey({
         referenceId: ADMIN_ID,
         permissions: { operator: ["root"] },
       })
     );
-    expect(lifted.ok && lifted.patch?.caller.tier).toBe(CallerTier.Root);
+    expect(lifted.ok && lifted.patch.caller.tier).toBe(CallerTier.Root);
 
-    const plain = await callerPolicy({ scopes: ["feeds:write"] })(
+    const plain = await callerPolicy({ scopes: [ApiKeyScope.FeedsWrite] })(
       withVerifiedKey({
         referenceId: ADMIN_ID,
         permissions: { feeds: ["read"] },
       })
     );
-    expect(!plain.ok && plain.error.code).toBe("FORBIDDEN");
+    expect(!plain.ok && plain.error.code).toBe(AppErrorCode.Forbidden);
   });
 
   it("keeps operator:root at ApiKey when someone else owns the key", async () => {
@@ -432,7 +427,7 @@ describe("callerPolicy with an API key", () => {
         permissions: { operator: ["root"] },
       })
     );
-    expect(result.ok && result.patch?.caller.tier).toBe(CallerTier.ApiKey);
+    expect(result.ok && result.patch.caller.tier).toBe(CallerTier.ApiKey);
   });
 
   it("keeps an admin-owned key without the scope at ApiKey", async () => {
@@ -443,6 +438,6 @@ describe("callerPolicy with an API key", () => {
         permissions: { feeds: ["read"] },
       })
     );
-    expect(result.ok && result.patch?.caller.tier).toBe(CallerTier.ApiKey);
+    expect(result.ok && result.patch.caller.tier).toBe(CallerTier.ApiKey);
   });
 });

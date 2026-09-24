@@ -6,7 +6,7 @@ import { Chip } from "@heroui/react";
 import { FileText } from "lucide-react";
 import * as z from "zod";
 
-import { CONTENT_TOOL_NAMES } from "@chia/agent-content/tools/registry";
+import { ContentToolName } from "@chia/agent-content/tools/registry";
 
 import { DefaultToolBody } from "../tool-call.tsx";
 import type { ToolRenderer, ToolRenderers } from "../tool-call.tsx";
@@ -190,8 +190,8 @@ const ListTags: ToolRenderer = ({ tool }) => {
 };
 
 export const contentToolRenderers: ToolRenderers = {
-  [CONTENT_TOOL_NAMES.searchPosts]: SearchPosts,
-  [CONTENT_TOOL_NAMES.getPost]: GetPost,
-  [CONTENT_TOOL_NAMES.listPosts]: ListPosts,
-  [CONTENT_TOOL_NAMES.listTags]: ListTags,
+  [ContentToolName.SearchPosts]: SearchPosts,
+  [ContentToolName.GetPost]: GetPost,
+  [ContentToolName.ListPosts]: ListPosts,
+  [ContentToolName.ListTags]: ListTags,
 };

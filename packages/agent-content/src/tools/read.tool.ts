@@ -12,10 +12,11 @@ import {
 import type { ToolFactory, ToolSpec } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
 import { RERANK_ANSWERABLE_FLOOR } from "@chia/ai/rerank/provider";
+import { FeedType } from "@chia/db/types";
 
 import type { ContentToolContext } from "../types.ts";
 
-import { CONTENT_TOOL_INFO_BY_NAME, CONTENT_TOOL_NAMES } from "./registry.ts";
+import { CONTENT_TOOL_INFO_BY_NAME, ContentToolName } from "./registry.ts";
 
 /**
  * Read-only content tools. All `executionMode: "parallel"`: they have no side effects.
@@ -36,8 +37,8 @@ export const answerableNote = (answerable: number | null): string =>
     : "";
 
 export const searchPostsSpec = {
-  name: CONTENT_TOOL_NAMES.searchPosts,
-  label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.searchPosts].label,
+  name: ContentToolName.SearchPosts,
+  label: CONTENT_TOOL_INFO_BY_NAME[ContentToolName.SearchPosts].label,
   description:
     "Search posts. `semantic` matches on meaning (best for topics); `keyword` matches " +
     "on literal terms (best for names, APIs, error messages). Each hit's `matches` are the places " +
@@ -101,8 +102,8 @@ export const searchPostsTool = defineTool(
 );
 
 export const getPostSpec = {
-  name: CONTENT_TOOL_NAMES.getPost,
-  label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.getPost].label,
+  name: ContentToolName.GetPost,
+  label: CONTENT_TOOL_INFO_BY_NAME[ContentToolName.GetPost].label,
   description:
     "Read one post in full, including every locale's metadata and MDX body. Pass the `slug` " +
     "returned by `search_posts` or `list_posts`. Long bodies degrade to their matched sections " +
@@ -182,8 +183,8 @@ export const getPostTool = defineTool(
 );
 
 export const listPostsSpec = {
-  name: CONTENT_TOOL_NAMES.listPosts,
-  label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.listPosts].label,
+  name: ContentToolName.ListPosts,
+  label: CONTENT_TOOL_INFO_BY_NAME[ContentToolName.ListPosts].label,
   description:
     "List posts and notes by publication date, newest first, with `total`: how many match in " +
     "all, beyond the `limit` returned. Filter by type, tag or date range to enumerate or count " +
@@ -191,7 +192,7 @@ export const listPostsSpec = {
     "cannot do either. Each post carries the `url` of its page; link with it as given.",
   parameters: Type.Object({
     type: optional(
-      StringEnum(["post", "note"], {
+      StringEnum([FeedType.Post, FeedType.Note], {
         description: "Only posts or only notes. Omit for both.",
       })
     ),
@@ -239,10 +240,7 @@ export const listPostsTool = defineTool(
     const { posts, total } = await context.content.listPosts({
       limit: params.limit ?? 20,
       published: params.published,
-      type:
-        params.type === "post" || params.type === "note"
-          ? params.type
-          : undefined,
+      type: params.type,
       tagSlug: params.tag,
       createdFrom: params.createdFrom,
       createdBefore: params.createdBefore,
@@ -255,8 +253,8 @@ export const listPostsTool = defineTool(
 );
 
 export const listTagsSpec = {
-  name: CONTENT_TOOL_NAMES.listTags,
-  label: CONTENT_TOOL_INFO_BY_NAME[CONTENT_TOOL_NAMES.listTags].label,
+  name: ContentToolName.ListTags,
+  label: CONTENT_TOOL_INFO_BY_NAME[ContentToolName.ListTags].label,
   description: "List every tag with its localised names.",
   parameters: Type.Object({}),
   executionMode: "parallel",

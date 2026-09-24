@@ -36,6 +36,14 @@ export const workflowControlCommandSchema = z.discriminatedUnion("type", [
     request: z.object({ feedID: z.number() }),
   }),
   z.object({
+    type: z.literal("report-triage:start"),
+    request: z.object({
+      reportId: z.number().int().positive(),
+      /** `false` skips the operator email: a triage the operator started by hand. */
+      notify: z.boolean().optional(),
+    }),
+  }),
+  z.object({
     type: z.literal("feed-remove:start"),
     request: z.object({ translationIDs: z.array(z.number()) }),
   }),
@@ -66,15 +74,18 @@ export type WorkflowControlCommand = z.infer<
   typeof workflowControlCommandSchema
 >;
 
-export const workflowRunStatusSchema = z.enum([
-  "pending",
-  "running",
-  "completed",
-  "failed",
-  "cancelled",
-]);
+export const WorkflowRunStatus = {
+  Pending: "pending",
+  Running: "running",
+  Completed: "completed",
+  Failed: "failed",
+  Cancelled: "cancelled",
+} as const;
 
-export type WorkflowRunStatus = z.infer<typeof workflowRunStatusSchema>;
+export type WorkflowRunStatus =
+  (typeof WorkflowRunStatus)[keyof typeof WorkflowRunStatus];
+
+export const workflowRunStatusSchema = z.enum(WorkflowRunStatus);
 
 /**
  * A run as the API process needs it to reconcile records: whether the World
@@ -98,6 +109,16 @@ export const workflowControlResultSchema = z.discriminatedUnion("type", [
 export type WorkflowControlResult = z.infer<typeof workflowControlResultSchema>;
 
 export const workflowControlErrorSchema = z.object({ error: z.string() });
+
+/** What `report-triage:start` leaves as its run output; the statuses are the step's names. */
+export const reportTriageOutputSchema = z.object({
+  reportId: z.number().int(),
+  triage: z.string(),
+  /** Absent when the run stopped before the email step. */
+  notified: z.string().optional(),
+});
+
+export type ReportTriageOutput = z.infer<typeof reportTriageOutputSchema>;
 
 /** What `feed-summary:start` leaves as its run output, per translation. */
 export const feedSummaryOutputSchema = z.object({

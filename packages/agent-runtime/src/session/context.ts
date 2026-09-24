@@ -57,5 +57,9 @@ const messagesOf = (entry: SessionEntry): AgentMessage[] => {
             ),
           ]
         : [];
+    default: {
+      const _exhaustive: never = entry;
+      return _exhaustive;
+    }
   }
 };

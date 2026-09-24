@@ -5,7 +5,10 @@ import {
   agentAbortHook,
   agentAbortToken,
 } from "@chia/workflow-control/agent-hooks";
-import { startedRunId } from "@chia/workflow-control/contract";
+import {
+  WorkflowRunStatus,
+  startedRunId,
+} from "@chia/workflow-control/contract";
 import type {
   WorkflowControlCommand,
   WorkflowControlResult,
@@ -46,6 +49,12 @@ export const executeLocalWorkflowCommand = async (
       const run = await start(feedSummaryWorkflow, [command.request]);
       return { type: "started", runId: run.runId };
     }
+    case "report-triage:start": {
+      const { reportTriageWorkflow } =
+        await import("../workflows/report-triage.workflow");
+      const run = await start(reportTriageWorkflow, [command.request]);
+      return { type: "started", runId: run.runId };
+    }
     case "feed-remove:start": {
       const { removeFeedFromSearchIndexWorkflow } =
         await import("../workflows/feed-removal.workflow");
@@ -84,7 +93,7 @@ export const executeLocalWorkflowCommand = async (
       const status = await run.status;
       // `returnValue` settles only on completion; asking earlier would wait for the run.
       const output =
-        status === "completed"
+        status === WorkflowRunStatus.Completed
           ? await run.returnValue.catch((cause) => {
               reportError(cause, "Workflow run output could not be read", {
                 runId: command.runId,
@@ -93,6 +102,10 @@ export const executeLocalWorkflowCommand = async (
             })
           : undefined;
       return { type: "run", exists: true, status, output };
+    }
+    default: {
+      const _exhaustive: never = command;
+      return _exhaustive;
     }
   }
 };
@@ -105,6 +118,8 @@ export const workflowControl = {
     startRun({ type: "feed-index:start", request: { feedID } }),
   startResourceIndex: (request: { sourceType: string; sourceId: number }) =>
     startRun({ type: "resource-index:start", request }),
+  startReportTriage: (reportId: number) =>
+    startRun({ type: "report-triage:start", request: { reportId } }),
   startMemoryConsolidation: (request: {
     sessionId: string;
     delayMs?: number;

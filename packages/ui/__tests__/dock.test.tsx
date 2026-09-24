@@ -3,12 +3,20 @@ import { useState } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DOCK_WIDTH_VARIABLE, DockActions, DockShell } from "../src/dock";
-import type { DockMode } from "../src/dock";
+import {
+  DOCK_WIDTH_VARIABLE,
+  DockActions,
+  DockMode,
+  DockShell,
+} from "../src/dock";
 
 const STORAGE_KEY = "test.dock.width";
 
-const Harness = ({ initialMode = "open" }: { initialMode?: DockMode }) => {
+const Harness = ({
+  initialMode = DockMode.Open,
+}: {
+  initialMode?: DockMode;
+}) => {
   const [mode, setMode] = useState<DockMode>(initialMode);
   return (
     <DockShell
@@ -40,13 +48,13 @@ describe("DockShell", () => {
 
   it("gives the page the width while open and takes it back when closed", () => {
     render(<Harness />);
-    expect(panel().dataset.mode).toBe("open");
+    expect(panel().dataset.mode).toBe(DockMode.Open);
     expect(
       document.documentElement.style.getPropertyValue(DOCK_WIDTH_VARIABLE)
     ).toContain("400px");
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
-    expect(panel().dataset.mode).toBe("closed");
+    expect(panel().dataset.mode).toBe(DockMode.Closed);
     expect(
       document.documentElement.style.getPropertyValue(DOCK_WIDTH_VARIABLE)
     ).toBe("");
@@ -86,12 +94,12 @@ describe("DockShell", () => {
   it("maximizes over the page and comes back on Escape", () => {
     render(<Harness />);
     fireEvent.click(screen.getByRole("button", { name: "Maximize" }));
-    expect(panel().dataset.mode).toBe("maximized");
+    expect(panel().dataset.mode).toBe(DockMode.Maximized);
     expect(document.documentElement.style.overflow).toBe("hidden");
     expect(screen.queryByRole("separator")).toBeNull();
 
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(panel().dataset.mode).toBe("open");
+    expect(panel().dataset.mode).toBe(DockMode.Open);
     expect(document.documentElement.style.overflow).toBe("");
   });
 });

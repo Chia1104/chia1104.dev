@@ -15,7 +15,7 @@ import {
   getResourceIndexStatus,
   listChunks,
 } from "@chia/db/repos/resources/stats";
-import { RESOURCE_INDEX_RUN_SCOPE } from "@chia/db/schema";
+import { ResourceIndexRunScope } from "@chia/db/schema";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 import type { Caller } from "@chia/service-kit/policies/caller.policy";
 
@@ -66,7 +66,7 @@ export const getRagOverviewRoute = contractOS.rag.overview
         getEmbeddingKeyDistribution(opts.context.db, {}),
         countChunksNeedingEmbedding(opts.context.db, key),
         getActiveResourceIndexRun(opts.context.db, {
-          scope: RESOURCE_INDEX_RUN_SCOPE.All,
+          scope: ResourceIndexRunScope.All,
         }),
       ]);
 
@@ -114,7 +114,7 @@ export const getResourceIndexStatusRoute = contractOS.rag["resource:status"]
     const [status, activeRun] = await Promise.all([
       getResourceIndexStatus(opts.context.db, { ...key, ref: opts.input }),
       getActiveResourceIndexRun(opts.context.db, {
-        scope: RESOURCE_INDEX_RUN_SCOPE.Resource,
+        scope: ResourceIndexRunScope.Resource,
         sourceType: opts.input.sourceType,
         sourceId: opts.input.sourceId,
       }),
@@ -202,7 +202,7 @@ export const indexResourceRoute = contractOS.rag["resource:index"]
         workflow,
         callerOf(opts),
         {
-          scope: RESOURCE_INDEX_RUN_SCOPE.Resource,
+          scope: ResourceIndexRunScope.Resource,
           sourceType: opts.input.sourceType,
           sourceId: opts.input.sourceId,
         },
@@ -222,7 +222,7 @@ export const indexFeedRoute = contractOS.rag["feed:index"]
         db,
         workflow,
         callerOf(opts),
-        { scope: RESOURCE_INDEX_RUN_SCOPE.Feed, feedId: opts.input.feedId },
+        { scope: ResourceIndexRunScope.Feed, feedId: opts.input.feedId },
         () => workflow.startFeedIndex(opts.input.feedId)
       );
 
@@ -240,7 +240,7 @@ export const reindexAllRoute = contractOS.rag["reindex:all"]
         db,
         workflow,
         bulkCallerOf(opts.context.caller),
-        { scope: RESOURCE_INDEX_RUN_SCOPE.All },
+        { scope: ResourceIndexRunScope.All },
         () =>
           workflow.startResourceReindex({ onlyMissing: opts.input.onlyMissing })
       );

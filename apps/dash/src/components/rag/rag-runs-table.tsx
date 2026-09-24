@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { Spinner, Table, TableLayout, Virtualizer } from "@heroui/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
+import { ResourceIndexRunScope } from "@chia/db/schema";
 import DateFormat from "@chia/ui/date-format";
 
 import { orpc } from "@/libs/orpc/client";
@@ -33,14 +34,10 @@ export const RagRunsTable = () => {
     fetchNextPage,
     error,
   } = useInfiniteQuery(
-    orpc.rag["runs:list"].infiniteOptions({
+    orpc.rag["runs:list"].infiniteOptions<string | number | null>({
       input: (pageParam) => ({ cursor: pageParam }),
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? null,
-      initialPageParam:
-        /* SAFETY: The producer contract guarantees this value satisfies string | number | null. */ null as
-          | string
-          | number
-          | null,
+      initialPageParam: null,
       // an in-flight run is the only thing that changes without a user action
       refetchInterval: ({ state }) =>
         state.data?.pages.some((page) =>
@@ -111,7 +108,7 @@ export const RagRunsTable = () => {
                       <Table.Cell>{run.scope}</Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-xs">
-                          {run.scope === "all"
+                          {run.scope === ResourceIndexRunScope.All
                             ? "every resource"
                             : run.sourceType
                               ? `${run.sourceType}:${run.sourceId}`

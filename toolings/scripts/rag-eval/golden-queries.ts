@@ -25,14 +25,18 @@ import type { Locale } from "@chia/db/types";
  * retrieval always returns something and only an agent-level eval can tell
  * whether the model declines.
  */
+export const GoldenQueryKind = {
+  Paraphrase: "paraphrase",
+  Term: "term",
+  Heading: "heading",
+  Confusable: "confusable",
+  Multi: "multi",
+  Cross: "cross",
+  Memory: "memory",
+} as const;
+
 export type GoldenQueryKind =
-  | "paraphrase"
-  | "term"
-  | "heading"
-  | "confusable"
-  | "multi"
-  | "cross"
-  | "memory";
+  (typeof GoldenQueryKind)[keyof typeof GoldenQueryKind];
 
 export interface GoldenQuery {
   /** stable id, used to reference a query in reports and diffs */

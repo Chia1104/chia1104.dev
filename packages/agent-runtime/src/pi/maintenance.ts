@@ -7,6 +7,8 @@ import { uuidv7 } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 import { clampThinkingLevel } from "@earendil-works/pi-ai";
 
+import { AgentUsageSource } from "@chia/db/schema";
+
 import type {
   BranchSummaryEntry,
   NewSessionEntry,
@@ -123,7 +125,7 @@ export const navigatePiSession = async (
     await session.appendEntry(entry);
     if (summary.usage) {
       await onUsage?.({
-        source: "branch_summary",
+        source: AgentUsageSource.BranchSummary,
         providerId: model.provider,
         modelId: model.id,
         usage: summary.usage,

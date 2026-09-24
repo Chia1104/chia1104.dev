@@ -13,9 +13,11 @@ import type { GuardProvider } from "@chia/ai/guard/provider";
 import { Locale } from "@chia/db/types";
 
 import { publicTurnBudget } from "./policy.ts";
+import type { ReportPort } from "./ports.ts";
 import { renderProfileBrief } from "./prompts/profile.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import { createMessageScreen } from "./screen.ts";
+import { createPublicReportTools } from "./tools/report.tool.ts";
 import { createPublicWebTools } from "./tools/web.tool.ts";
 
 export interface PreparePublicTurnOptions {
@@ -28,6 +30,8 @@ export interface PreparePublicTurnOptions {
   guard: GuardProvider | null;
   /** Granted by the host per turn. Ignored without a guard: web text must be checked. */
   web?: WebPort;
+  /** Granted by the host when the session's owner is signed in. */
+  report?: ReportPort;
 }
 
 /** Quoted as a fenced block so the passage reads as the visitor's citation, not their words. */
@@ -116,7 +120,7 @@ export const preparePublicTurn = async (
   options: PreparePublicTurnOptions
 ): Promise<AgentTurnPlan> => {
   const profile = renderProfileBrief(await options.profile.listPublished(), {
-    locale: Locale.zhTW,
+    locale: Locale.ZhTW,
   });
 
   const webTools =
@@ -128,14 +132,16 @@ export const preparePublicTurn = async (
     tools: [
       ...createContentReadTools({ content: options.content }),
       ...webTools,
+      ...(options.report ? createPublicReportTools(options.report) : []),
     ],
     systemPrompt: buildSystemPrompt({
       instructions: options.instructions,
       profile,
       web: webTools.length > 0,
+      report: options.report !== undefined,
     }),
     volatileContext: () =>
-      buildTurnContext({ defaultLocale: Locale.zhTW, now: new Date() }),
+      buildTurnContext({ defaultLocale: Locale.ZhTW, now: new Date() }),
     renderAttachments: (attachments) =>
       renderAttachments(options.content, attachments),
     screen: options.guard ? createMessageScreen(options.guard) : undefined,

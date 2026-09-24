@@ -1,4 +1,4 @@
-import { AGENT_PROVIDERS } from "@chia/agent-runtime/models";
+import { AgentProvider } from "@chia/agent-runtime/models";
 import type { AgentCredentials } from "@chia/agent-runtime/models";
 import type {
   AgentModelUsage,
@@ -6,7 +6,8 @@ import type {
 } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import { insertAgentUsage } from "@chia/db/repos/agent/usage";
-import type { AgentCredentialSource, AgentUsageSource } from "@chia/db/schema";
+import { AgentCredentialSource } from "@chia/db/schema";
+import type { AgentUsageSource } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
 
 /**
@@ -15,6 +16,9 @@ import { reportError } from "@chia/observability/report";
  */
 
 const MICROS_PER_USD = 1_000_000;
+
+/** The ledger's `kind` for a one-shot task on a post (summary, report triage); it belongs to no agent kind. */
+export const FEED_TASK_USAGE_KIND = "feed";
 
 /** pi reports cost in dollars as a float; the ledger keeps an integer so a running sum cannot drift. */
 export const costToMicros = (usd: number): number => {
@@ -39,8 +43,12 @@ export const credentialSourceOf = (
   credentials: AgentCredentials,
   providerId: string
 ): AgentCredentialSource => {
-  if (providerId !== AGENT_PROVIDERS.gateway) return "byok-native";
-  return credentials.gateway ? "byok-gateway" : "house";
+  if (providerId !== AgentProvider.Gateway) {
+    return AgentCredentialSource.ByokNative;
+  }
+  return credentials.gateway
+    ? AgentCredentialSource.ByokGateway
+    : AgentCredentialSource.House;
 };
 
 export interface RecordAgentUsageInput extends AgentModelUsage {

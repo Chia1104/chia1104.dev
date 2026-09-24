@@ -2,6 +2,7 @@ import { getEncoding } from "js-tiktoken";
 import { describe, expect, it } from "vitest";
 
 import {
+  ContextDetail,
   buildDocumentContext,
   buildHeadingAnchors,
 } from "../src/embeddings/context";
@@ -58,7 +59,7 @@ describe("buildDocumentContext", () => {
     const result = await buildDocumentContext([
       { slug: "a", locale: "zh-TW", title: "t", content: SHORT },
     ]);
-    expect(result.documents[0]?.detail).toBe("full");
+    expect(result.documents[0]?.detail).toBe(ContextDetail.Full);
     expect(result.documents[0]?.text).toBe(SHORT);
     expect(result.documents[0]?.anchors.length).toBe(3);
     expect(result.droppedSlugs).toEqual([]);
@@ -88,13 +89,13 @@ describe("buildDocumentContext", () => {
       [{ slug: "a", locale: "zh-TW", title: "a", content }],
       { budget: 100_000 }
     );
-    expect(full.documents[0]?.detail).toBe("full");
+    expect(full.documents[0]?.detail).toBe(ContextDetail.Full);
 
     const degraded = await buildDocumentContext(
       [{ slug: "a", locale: "zh-TW", title: "a", content }],
       { budget: 3000 }
     );
-    expect(degraded.documents[0]?.detail).toBe("sections");
+    expect(degraded.documents[0]?.detail).toBe(ContextDetail.Sections);
 
     const outlineOnly = await buildDocumentContext(
       [
@@ -108,7 +109,7 @@ describe("buildDocumentContext", () => {
       ],
       { budget: 120 }
     );
-    expect(outlineOnly.documents[0]?.detail).toBe("outline");
+    expect(outlineOnly.documents[0]?.detail).toBe(ContextDetail.Outline);
     expect(outlineOnly.documents[0]?.text).toContain("摘要一句。");
   });
 
@@ -133,7 +134,7 @@ describe("buildDocumentContext", () => {
       { budget: 600 }
     );
 
-    expect(result.documents[0]?.detail).toBe("sections");
+    expect(result.documents[0]?.detail).toBe(ContextDetail.Sections);
     expect(result.documents[0]?.text).toContain("這段才是命中的內容");
   });
 
@@ -159,7 +160,7 @@ describe("buildDocumentContext", () => {
       [{ slug: "a", locale: "zh-TW", title: "a", content }],
       { budget }
     );
-    expect(result.documents[0]?.detail).toBe("full");
+    expect(result.documents[0]?.detail).toBe(ContextDetail.Full);
   });
 
   it("caps every document but the last", async () => {
@@ -172,8 +173,8 @@ describe("buildDocumentContext", () => {
       ],
       { budget }
     );
-    expect(result.documents[0]?.detail).toBe("sections");
-    expect(result.documents[1]?.detail).toBe("full");
+    expect(result.documents[0]?.detail).toBe(ContextDetail.Sections);
+    expect(result.documents[1]?.detail).toBe(ContextDetail.Full);
   });
 
   it("reports documents dropped once the budget is exhausted", async () => {

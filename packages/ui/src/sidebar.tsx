@@ -15,6 +15,10 @@ const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "4rem";
 
+const MOBILE_STYLE: React.CSSProperties & Record<`--${string}`, string> = {
+  "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+};
+
 interface SidebarContextProps {
   state: "expanded" | "collapsed";
   open: boolean;
@@ -89,17 +93,17 @@ function SidebarProvider({
     [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
   );
 
+  const wrapperStyle: React.CSSProperties & Record<`--${string}`, string> = {
+    "--sidebar-width": SIDEBAR_WIDTH,
+    "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+    ...style,
+  };
+
   return (
     <SidebarContext.Provider value={contextValue}>
       <div
         data-slot="sidebar-wrapper"
-        style={
-          /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */ {
-            "--sidebar-width": SIDEBAR_WIDTH,
-            "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-            ...style,
-          } as React.CSSProperties
-        }
+        style={wrapperStyle}
         className={cn(
           "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full",
           className
@@ -149,11 +153,7 @@ function Sidebar({
             data-slot="sidebar"
             data-mobile="true"
             className="bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col p-0"
-            style={
-              /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */ {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }>
+            style={MOBILE_STYLE}>
             {children}
           </Drawer.Dialog>
         </Drawer.Content>

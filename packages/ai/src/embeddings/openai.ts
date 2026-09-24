@@ -9,9 +9,13 @@ import {
 } from "./utils.ts";
 
 /** OpenAI's embedding models all share one tokenizer and one request shape. */
+export const TextEmbeddingModel = {
+  TextEmbedding3Small: "text-embedding-3-small",
+  TextEmbedding3Large: "text-embedding-3-large",
+} as const;
+
 export type TextEmbeddingModel =
-  | "text-embedding-3-small"
-  | "text-embedding-3-large";
+  (typeof TextEmbeddingModel)[keyof typeof TextEmbeddingModel];
 
 export interface BatchOptions {
   model?: TextEmbeddingModel;
@@ -70,15 +74,10 @@ export const generateEmbeddings = async (
   if (values.length === 0) {
     return [];
   }
-  const model = options.model ?? "text-embedding-3-small";
+  const model = options.model ?? TextEmbeddingModel.TextEmbedding3Small;
   const provider = createAiSdkOpenAI({
     apiKey: options.apiKey,
-    // SDK types demand fetch.preconnect but never call it; the workflow
-    // runtime's instrumented fetch does not carry it
-    fetch:
-      /* SAFETY: The producer contract guarantees this value satisfies typeof globalThis.fetch | undefined. */ options.fetch as
-        | typeof globalThis.fetch
-        | undefined,
+    fetch: options.fetch,
   });
 
   const guarded = await guardEmbeddingInputs(values, { model });

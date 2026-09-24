@@ -2,14 +2,12 @@ import { and, desc, eq, inArray, isNull, lte } from "drizzle-orm";
 
 import {
   RESOURCE_INDEX_RUN_ACTIVE_STATUSES,
-  RESOURCE_INDEX_RUN_SCOPE,
-  RESOURCE_INDEX_RUN_STATUS,
+  ResourceIndexRunScope,
+  ResourceIndexRunStatus,
 } from "../../schemas/resources.schema.ts";
 import type {
   ResourceIndexRun,
   ResourceIndexRunProgress,
-  ResourceIndexRunScope,
-  ResourceIndexRunStatus,
 } from "../../schemas/resources.schema.ts";
 import * as schema from "../../schemas/schema.ts";
 import { withDTO } from "../index.ts";
@@ -38,7 +36,9 @@ export interface ResourceIndexRunTarget {
 
 export type ResourceIndexRunTerminalStatus = Extract<
   ResourceIndexRunStatus,
-  "completed" | "failed" | "cancelled"
+  | typeof ResourceIndexRunStatus.Completed
+  | typeof ResourceIndexRunStatus.Failed
+  | typeof ResourceIndexRunStatus.Cancelled
 >;
 
 export type ResourceIndexRunIdentifier =
@@ -56,7 +56,7 @@ const identifierFilter = (identifier: ResourceIndexRunIdentifier) =>
  */
 const targetFilter = (target: ResourceIndexRunTarget) => {
   switch (target.scope) {
-    case RESOURCE_INDEX_RUN_SCOPE.Resource:
+    case ResourceIndexRunScope.Resource:
       return and(
         eq(runs.scope, target.scope),
         target.sourceType == null
@@ -66,15 +66,19 @@ const targetFilter = (target: ResourceIndexRunTarget) => {
           ? isNull(runs.sourceId)
           : eq(runs.sourceId, target.sourceId)
       );
-    case RESOURCE_INDEX_RUN_SCOPE.Feed:
+    case ResourceIndexRunScope.Feed:
       return and(
         eq(runs.scope, target.scope),
         target.feedId == null
           ? isNull(runs.feedId)
           : eq(runs.feedId, target.feedId)
       );
-    case RESOURCE_INDEX_RUN_SCOPE.All:
+    case ResourceIndexRunScope.All:
       return eq(runs.scope, target.scope);
+    default: {
+      const _exhaustive: never = target.scope;
+      return _exhaustive;
+    }
   }
 };
 
@@ -207,7 +211,7 @@ export const markResourceIndexRunStarted = withDTO(
     const [row] = await db
       .update(runs)
       .set({
-        status: RESOURCE_INDEX_RUN_STATUS.Running,
+        status: ResourceIndexRunStatus.Running,
         startedAt: new Date(),
       })
       .where(

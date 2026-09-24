@@ -11,11 +11,10 @@ import {
 } from "@chia/db/repos/agent/memory";
 import { isResourceIndexedSince } from "@chia/db/repos/resources/chunk";
 import type { AgentMemory } from "@chia/db/schema";
-import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
-import type { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
-import { AppError } from "@chia/service-kit/errors";
+import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 
-import { AGENT_MEMORY_SOURCE_TYPE } from "../rag/resource-types";
+import { ResourceType } from "../rag/resource-types";
 import type { MemoryHooks } from "../shared/context";
 
 /**
@@ -35,10 +34,12 @@ export const MEMORY_TITLE_MAX_CHARS = 200;
 const assertTitle = (title: string): string => {
   const trimmed = title.trim();
   if (trimmed.length === 0) {
-    throw new AppError("BAD_REQUEST", { message: "A memory needs a title." });
+    throw new AppError(AppErrorCode.BadRequest, {
+      message: "A memory needs a title.",
+    });
   }
   if (trimmed.length > MEMORY_TITLE_MAX_CHARS) {
-    throw new AppError("BAD_REQUEST", {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: `A memory title is at most ${MEMORY_TITLE_MAX_CHARS} characters.`,
     });
   }
@@ -48,10 +49,12 @@ const assertTitle = (title: string): string => {
 const assertContent = (content: string): string => {
   const trimmed = content.trim();
   if (trimmed.length === 0) {
-    throw new AppError("BAD_REQUEST", { message: "A memory needs content." });
+    throw new AppError(AppErrorCode.BadRequest, {
+      message: "A memory needs content.",
+    });
   }
   if (trimmed.length > MEMORY_CONTENT_MAX_CHARS) {
-    throw new AppError("BAD_REQUEST", {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: `Memory content is at most ${MEMORY_CONTENT_MAX_CHARS} characters.`,
     });
   }
@@ -64,12 +67,12 @@ export const normalizeSourceUrl = (input: string): string => {
   try {
     url = new URL(input.trim());
   } catch {
-    throw new AppError("BAD_REQUEST", {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: `"${input}" is not an absolute URL.`,
     });
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new AppError("BAD_REQUEST", {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: "A source URL must be http or https.",
     });
   }
@@ -95,17 +98,17 @@ export interface CreateMemoryServiceInput {
 const resolveSupersedes = async (db: DB, id: number): Promise<AgentMemory> => {
   const target = await getAgentMemory(db, id);
   if (!target || target.deletedAt !== null) {
-    throw new AppError("BAD_REQUEST", {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: `No memory ${id} to revise; propose without \`supersedes\`.`,
     });
   }
-  if (target.kind !== AGENT_MEMORY_KIND.Lesson) {
-    throw new AppError("BAD_REQUEST", {
+  if (target.kind !== AgentMemoryKind.Lesson) {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: `Memory ${id} is a ${target.kind}, not a lesson; propose without \`supersedes\`.`,
     });
   }
-  if (target.status === AGENT_MEMORY_STATUS.Archived) {
-    throw new AppError("BAD_REQUEST", {
+  if (target.status === AgentMemoryStatus.Archived) {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: `Lesson ${id} is archived and no longer applies; propose without \`supersedes\`.`,
     });
   }
@@ -120,10 +123,10 @@ export const createMemoryService = async (
   // activation and the archive of the superseded lesson happen together, in approval only
   if (
     input.supersedesId != null &&
-    (input.kind !== AGENT_MEMORY_KIND.Lesson ||
-      input.status !== AGENT_MEMORY_STATUS.Pending)
+    (input.kind !== AgentMemoryKind.Lesson ||
+      input.status !== AgentMemoryStatus.Pending)
   ) {
-    throw new AppError("BAD_REQUEST", {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: "Only a pending lesson supersedes another.",
     });
   }
@@ -135,7 +138,7 @@ export const createMemoryService = async (
       : await resolveSupersedes(db, input.supersedesId);
 
   let row: AgentMemory;
-  if (target?.status === AGENT_MEMORY_STATUS.Pending) {
+  if (target?.status === AgentMemoryStatus.Pending) {
     const replaced = await replacePendingAgentLesson(db, {
       replacesId: target.id,
       title,
@@ -143,7 +146,7 @@ export const createMemoryService = async (
       sessionId: input.sessionId ?? null,
     });
     if (!replaced) {
-      throw new AppError("CONFLICT", {
+      throw new AppError(AppErrorCode.Conflict, {
         message: `Lesson ${target.id} was reviewed meanwhile; propose again against the current list.`,
       });
     }
@@ -178,28 +181,28 @@ export const approveLessonService = async (
 ): Promise<AgentMemory> => {
   const row = await getAgentMemory(db, input.id);
   if (!row || row.deletedAt !== null) {
-    throw new AppError("NOT_FOUND", {
+    throw new AppError(AppErrorCode.NotFound, {
       message: `Memory ${input.id} not found`,
     });
   }
-  if (row.kind !== AGENT_MEMORY_KIND.Lesson) {
-    throw new AppError("BAD_REQUEST", {
+  if (row.kind !== AgentMemoryKind.Lesson) {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: `Memory ${input.id} is a ${row.kind}, not a lesson.`,
     });
   }
-  if (row.status !== AGENT_MEMORY_STATUS.Pending) {
-    throw new AppError("BAD_REQUEST", {
+  if (row.status !== AgentMemoryStatus.Pending) {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: `Lesson ${input.id} is ${row.status}; only a pending lesson is approved.`,
     });
   }
   const result = await approveAgentLesson(db, row.id);
   if (result.status === "not_pending") {
-    throw new AppError("CONFLICT", {
+    throw new AppError(AppErrorCode.Conflict, {
       message: `Lesson ${input.id} was reviewed by someone else first.`,
     });
   }
   if (result.status === "already_replaced") {
-    throw new AppError("CONFLICT", {
+    throw new AppError(AppErrorCode.Conflict, {
       message: `Lesson ${input.id} revises #${row.supersedesId}, which lesson #${result.by} already replaced. Archive one of the two.`,
     });
   }
@@ -245,7 +248,7 @@ export const recordSourceMemoryService = async (
   if (
     result.changed ||
     !(await isResourceIndexedSince(db, {
-      ref: { sourceType: AGENT_MEMORY_SOURCE_TYPE, sourceId: result.id },
+      ref: { sourceType: ResourceType.AgentMemory, sourceId: result.id },
       since: result.updatedAt,
     }))
   ) {
@@ -282,7 +285,7 @@ export const updateMemoryService = async (
   });
 
   if (!row) {
-    throw new AppError("NOT_FOUND", {
+    throw new AppError(AppErrorCode.NotFound, {
       message: `Memory ${input.id} not found`,
     });
   }
@@ -301,7 +304,7 @@ export const removeMemoryService = async (
 ): Promise<void> => {
   const removed = await softDeleteAgentMemory(db, input.id);
   if (!removed) {
-    throw new AppError("NOT_FOUND", {
+    throw new AppError(AppErrorCode.NotFound, {
       message: `Memory ${input.id} not found`,
     });
   }

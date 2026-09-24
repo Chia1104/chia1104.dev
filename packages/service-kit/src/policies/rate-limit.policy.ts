@@ -4,7 +4,7 @@ import type { CallerTier } from "@chia/auth/tier";
 import { reportError } from "@chia/observability/report";
 
 import type { ServiceContext } from "../context";
-import { AppError } from "../errors";
+import { AppError, AppErrorCode } from "../errors";
 
 import type { Caller } from "./caller.policy";
 import type { Policy } from "./types";
@@ -61,14 +61,14 @@ export const rateLimitPolicy = (
     const limit = budget[context.caller.tier];
 
     if (limit === undefined) {
-      return allow();
+      return allow({});
     }
 
     const kv: Keyv | undefined = context.kv;
 
     // No store — fail open rather than locking every caller out.
     if (!kv) {
-      return allow();
+      return allow({});
     }
 
     const key = `${prefix}:${callerKey(context.caller, context.clientIP)}`;
@@ -92,7 +92,7 @@ export const rateLimitPolicy = (
     } catch (error) {
       // Fails open: a store outage must not lock every caller out.
       reportError(error, "Rate limiter store failed");
-      return allow();
+      return allow({});
     }
 
     const resetSeconds = Math.ceil((entry.resetTime - now) / 1000);
@@ -102,7 +102,7 @@ export const rateLimitPolicy = (
 
     if (entry.totalHits > limit) {
       return deny(
-        new AppError("TOO_MANY_REQUESTS", {
+        new AppError(AppErrorCode.TooManyRequests, {
           headers: {
             ...headers,
             "Retry-After": String(Math.max(resetSeconds, 1)),
@@ -111,6 +111,6 @@ export const rateLimitPolicy = (
       );
     }
 
-    return allow(undefined, headers);
+    return allow({}, headers);
   };
 };

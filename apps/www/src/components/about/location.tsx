@@ -52,7 +52,7 @@ const Location: FC<LocationProps> = ({
   const pointerXInteractionMovement = useRef(0);
   const pointerYInteractionMovement = useRef(0);
   const { width, height } = useResizeObserver({
-    ref: /* SAFETY: The producer contract guarantees this value satisfies RefObject<HTMLCanvasElement>. */ canvasRef as RefObject<HTMLCanvasElement>,
+    ref: /* SAFETY: usehooks-ts types `ref` for React 18; the hook reads `current` only after mount. */ canvasRef as RefObject<HTMLCanvasElement>,
     box: "border-box",
   });
   const x = useMotionValue(0);

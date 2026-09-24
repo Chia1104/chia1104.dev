@@ -1,10 +1,12 @@
 import type { Skill } from "@earendil-works/pi-agent-core";
 
 import type { ToolTier } from "@chia/agent-runtime/types";
+import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 import { oneLine } from "@chia/utils/format";
 
-import { draftTitle } from "../draft/operations.ts";
+import { draftTitle, localesOf } from "../draft/operations.ts";
+import { WritingToolTier } from "../types.ts";
 import type { DraftChange, FeedDraft, MemorySummary } from "../types.ts";
 
 /**
@@ -55,7 +57,7 @@ export interface TurnContextInput {
 const MEMORY_TITLE_MAX_CHARS = 120;
 
 const memoryLabel = (memory: MemorySummary): string => {
-  if (memory.kind === "source" && memory.sourceUrl) {
+  if (memory.kind === AgentMemoryKind.Source && memory.sourceUrl) {
     try {
       const url = new URL(memory.sourceUrl);
       return oneLine(`${url.hostname}${url.pathname}`, MEMORY_TITLE_MAX_CHARS);
@@ -165,8 +167,7 @@ export const buildSystemPrompt = (input: SystemPromptInput): string => {
 };
 
 const draftLines = ({ draft, operatorChanges }: TurnContextDraft): string[] => {
-  // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
-  const locales = Object.keys(draft.translations) as Locale[];
+  const locales = localesOf(draft.translations);
   const title = draftTitle(draft);
   const lines = [
     `  - Draft #${draft.id}${title ? ` "${oneLine(title, MEMORY_TITLE_MAX_CHARS)}"` : ""}: ` +
@@ -231,7 +232,9 @@ export const buildTurnContext = (input: TurnContextInput): string => {
     );
     for (const memory of input.sessionMemories) {
       const kind =
-        memory.status === "pending" ? `${memory.kind}, pending` : memory.kind;
+        memory.status === AgentMemoryStatus.Pending
+          ? `${memory.kind}, pending`
+          : memory.kind;
       lines.push(`  - [${kind}] ${memoryLabel(memory)} (#${memory.id})`);
     }
   }
@@ -305,7 +308,7 @@ const formatGitHubAccess = (repos: readonly string[]): string => {
 };
 
 const formatApprovalPosture = (autoApprove: readonly ToolTier[]): string => {
-  if (autoApprove.includes("commit")) {
+  if (autoApprove.includes(WritingToolTier.Commit)) {
     return [
       "# Approval",
       "",

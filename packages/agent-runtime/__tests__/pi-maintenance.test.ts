@@ -6,6 +6,8 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
+import { AgentUsageSource } from "@chia/db/schema";
+
 import { compactPiSession, navigatePiSession } from "../src/pi/maintenance.ts";
 import type { PiSessionOperationOptions } from "../src/pi/maintenance.ts";
 import type { NewSessionEntry } from "../src/session/entries.ts";
@@ -97,7 +99,7 @@ describe("usage reporting", () => {
     expect(summary?.type).toBe("branch_summary");
     expect(reports).toEqual([
       {
-        source: "branch_summary",
+        source: AgentUsageSource.BranchSummary,
         providerId: "faux",
         modelId: "test-model",
         entryId: summary?.id,
@@ -122,7 +124,7 @@ describe("usage reporting", () => {
     expect(compaction?.type).toBe("compaction");
     expect(reports).toEqual([
       {
-        source: "compaction",
+        source: AgentUsageSource.Compaction,
         providerId: "faux",
         modelId: "test-model",
         entryId: compaction?.id,

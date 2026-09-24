@@ -3,8 +3,9 @@ import * as z from "zod";
 
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import { isOperatorDecisionText } from "@chia/agent-runtime/wire/operator-decision";
-import type { FeedDraftAuthor, FeedDraftSnapshot } from "@chia/db/schema";
-import type { Locale } from "@chia/db/types";
+import { FeedDraftAuthor } from "@chia/db/schema";
+import type { FeedDraftSnapshot } from "@chia/db/schema";
+import { Locale } from "@chia/db/types";
 import { oneLine } from "@chia/utils/format";
 
 /**
@@ -84,20 +85,18 @@ export const branchSince = (
 const textOf = (
   content: string | { type: string; text?: string }[]
 ): string => {
-  if (Array.isArray(content)) {
-    return content
-      .filter((block) => block.type === "text")
-      .map((block) => block.text ?? "")
-      .join("\n");
-  }
-  // SAFETY: Pi's `UserMessage.content` is `string | Block[]`; not an array means the string.
-  return content as string;
+  if (!Array.isArray(content)) return content;
+  return content
+    .filter((block) => block.type === "text")
+    .map((block) => block.text ?? "")
+    .join("\n");
 };
 
 /**
  * Only the operator's own messages and the assistant's prose. Tool results, thinking and tool
- * calls are dropped, so nothing a web page said can become a lesson. Approval relay turns are
- * kept: they carry the operator's rejection comments.
+ * calls are dropped, so nothing a web page said can become a lesson; so is the rendered
+ * attachment block, which quotes drafts and reader reports rather than the operator. Approval
+ * relay turns are kept: they carry the operator's rejection comments.
  */
 export const collectOperatorExchange = (
   entries: readonly SessionEntry[]
@@ -107,7 +106,12 @@ export const collectOperatorExchange = (
     if (entry.type !== "message") continue;
     const message = entry.message;
     if (message.role === "user") {
-      const text = textOf(message.content).trim();
+      // The runtime's `attachedPrompt` persists the rendered block as the first content part.
+      const attached =
+        (entry.attachments?.length ?? 0) > 0 && Array.isArray(message.content);
+      const text = textOf(
+        attached ? message.content.slice(1) : message.content
+      ).trim();
       if (text) turns.push({ role: "operator", text });
     } else if (message.role === "assistant") {
       const text = textOf(message.content).trim();
@@ -186,24 +190,19 @@ export const collectOperatorEdits = (
   revisions: readonly DraftRevisionLike[]
 ): OperatorEdit[] => {
   const edits: OperatorEdit[] = [];
-  for (let index = 1; index < revisions.length; index++) {
-    const current = revisions[index]!;
-    if (current.author !== "operator") continue;
-    const before = revisions[index - 1]!.snapshot;
+  let previous: DraftRevisionLike | undefined;
+  for (const current of revisions) {
+    const prior = previous;
+    previous = current;
+    if (!prior || current.author !== FeedDraftAuthor.Operator) continue;
+    const before = prior.snapshot;
     const after = current.snapshot;
 
     for (const field of META_FIELDS) {
       const diff = scalarDiff(before[field], after[field]);
       if (diff) edits.push({ revision: current.revision, field, diff });
     }
-    // SAFETY: snapshot translations are keyed by Locale.
-    const locales = [
-      ...new Set([
-        ...Object.keys(before.translations),
-        ...Object.keys(after.translations),
-      ]),
-    ] as Locale[];
-    for (const locale of locales) {
+    for (const locale of Object.values(Locale)) {
       const previous = before.translations[locale];
       const next = after.translations[locale];
       for (const field of TRANSLATION_FIELDS) {

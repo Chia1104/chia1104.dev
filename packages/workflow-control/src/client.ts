@@ -116,6 +116,14 @@ export const createWorkflowControlClient = ({
         await execute({ type: "feed-summary:start", request: { feedID } })
       );
     },
+    async startReportTriage(reportId: number, options?: { notify?: boolean }) {
+      return startedRunId(
+        await execute({
+          type: "report-triage:start",
+          request: { reportId, notify: options?.notify },
+        })
+      );
+    },
     async startFeedRemoval(translationIDs: number[]) {
       return startedRunId(
         await execute({

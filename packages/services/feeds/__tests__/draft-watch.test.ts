@@ -1,7 +1,8 @@
+import { drizzle } from "drizzle-orm/node-postgres";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { DB } from "@chia/db/client";
 import { getFeedDraftStatus } from "@chia/db/repos/drafts";
+import { relations } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
 
 import { FeedDraftBus } from "../draft-bus";
@@ -11,8 +12,7 @@ vi.mock("@chia/db/repos/drafts", () => ({
   getFeedDraftStatus: vi.fn(),
 }));
 
-/* SAFETY: all database access is mocked. */
-const db = {} as DB;
+const db = drizzle.mock({ relations });
 const status = {
   userId: "admin",
   feedId: null,

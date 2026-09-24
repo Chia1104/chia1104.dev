@@ -2,7 +2,7 @@ import { search as pdb } from "@paradedb/drizzle-paradedb";
 import { and, cosineDistance, desc, eq, inArray, or, sql } from "drizzle-orm";
 
 import type { Locale } from "../../schemas/enums.ts";
-import type { ResourceChunkKind } from "../../schemas/resources.schema.ts";
+import { ResourceChunkKind } from "../../schemas/resources.schema.ts";
 import * as schema from "../../schemas/schema.ts";
 import { withDTO } from "../index.ts";
 
@@ -269,13 +269,13 @@ export const aggregateChunkHits = (
   limit: number,
   topN = RESOURCE_SCORE_TOP_N
 ): ResourceHit[] => {
-  const byResource = new Map<string, ChunkHit[]>();
+  const byResource = new Map<string, [ChunkHit, ...ChunkHit[]]>();
 
   for (const hit of hits) {
     const key = `${hit.sourceType}:${hit.sourceId}`;
-    const bucket = byResource.get(key) ?? [];
-    bucket.push(hit);
-    byResource.set(key, bucket);
+    const bucket = byResource.get(key);
+    if (bucket) bucket.push(hit);
+    else byResource.set(key, [hit]);
   }
 
   return [...byResource.values()]
@@ -286,7 +286,7 @@ export const aggregateChunkHits = (
         (sum, hit, index) => sum + hit.score * RESOURCE_SCORE_DECAY ** index,
         0
       );
-      const best = bucket[0]!;
+      const [best] = bucket;
       const covered = new Set<string>();
       const kept = bucket.filter((hit, index) => {
         const adds = hit.headingPaths.some((path) => !covered.has(path));
@@ -338,7 +338,7 @@ export const findSimilarResources = withDTO(
           and(
             eq(chunks.sourceType, dto.sourceType),
             eq(chunks.sourceId, dto.sourceId),
-            eq(chunks.kind, "card")
+            eq(chunks.kind, ResourceChunkKind.Card)
           )
         )
         .limit(1)
@@ -354,7 +354,7 @@ export const findSimilarResources = withDTO(
         similarity,
       })
       .from(source)
-      .innerJoin(chunks, eq(chunks.kind, "card"))
+      .innerJoin(chunks, eq(chunks.kind, ResourceChunkKind.Card))
       .innerJoin(
         embeddings,
         and(eq(embeddings.chunkId, chunks.id), eq(embeddings.model, dto.model))

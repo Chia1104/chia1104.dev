@@ -1,6 +1,8 @@
+import { drizzle } from "drizzle-orm/node-postgres";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { DB } from "@chia/db/client";
+import { relations } from "@chia/db/schema";
+import { AppErrorCode } from "@chia/service-kit/errors";
 
 /**
  * Discarding decides on a content hash. An unbound draft is deleted under its row lock, so a
@@ -25,8 +27,7 @@ vi.mock("../write.service", () => ({
 
 import { discardFeedDraftService } from "../draft.service";
 
-// SAFETY: the repositories are mocked; the handle is only passed through.
-const db = {} as DB;
+const db = drizzle.mock({ relations });
 const input = { draftId: 7, adminId: "admin", expectedHash: "seen" };
 interface LockedDraft {
   id: number;
@@ -70,7 +71,7 @@ describe("discardFeedDraftService", () => {
     });
 
     await expect(discardFeedDraftService(db, input)).rejects.toMatchObject({
-      code: "CONFLICT",
+      code: AppErrorCode.Conflict,
       data: { revision: 5, contentHash: "newer" },
     });
   });
@@ -100,7 +101,7 @@ describe("discardFeedDraftService", () => {
     repo.deleteUnboundFeedDraft.mockResolvedValue({ status: "not_found" });
 
     await expect(discardFeedDraftService(db, input)).rejects.toMatchObject({
-      code: "NOT_FOUND",
+      code: AppErrorCode.NotFound,
     });
   });
 });

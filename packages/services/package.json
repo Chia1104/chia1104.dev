@@ -37,6 +37,10 @@
       "types": "./agent/agent.contract.ts",
       "default": "./agent/agent.contract.ts"
     },
+    "./agent/agent.schema": {
+      "types": "./agent/agent.schema.ts",
+      "default": "./agent/agent.schema.ts"
+    },
     "./agent/abort": {
       "types": "./agent/abort.ts",
       "default": "./agent/abort.ts"
@@ -52,6 +56,10 @@
     "./agent/content-read.port": {
       "types": "./agent/content-read.port.ts",
       "default": "./agent/content-read.port.ts"
+    },
+    "./agent/report.port": {
+      "types": "./agent/report.port.ts",
+      "default": "./agent/report.port.ts"
     },
     "./agent/profile-read.port": {
       "types": "./agent/profile-read.port.ts",
@@ -112,6 +120,7 @@
   "dependencies": {
     "@chia/agent-content": "workspace:*",
     "@chia/agent-host": "workspace:*",
+    "@chia/agent-public": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/auth": "workspace:*",

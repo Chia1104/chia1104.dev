@@ -1,7 +1,7 @@
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import {
-  AGENT_PROVIDERS,
+  AgentProvider,
   createAgentCatalog,
   createAgentModels,
   houseModel,
@@ -28,10 +28,10 @@ export const publicModelPolicy =
   (house: AgentModelRef): AgentModelPredicate =>
   (ref, access) => {
     switch (ref.providerId) {
-      case AGENT_PROVIDERS.gateway:
+      case AgentProvider.Gateway:
         return access.gateway || sameModel(ref, house);
-      case AGENT_PROVIDERS.openai:
-      case AGENT_PROVIDERS.anthropic:
+      case AgentProvider.OpenAI:
+      case AgentProvider.Anthropic:
         return true;
       default:
         return false;

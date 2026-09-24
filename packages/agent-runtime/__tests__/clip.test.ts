@@ -21,19 +21,21 @@ describe("clipDetails", () => {
   });
 
   it("shortens long strings with an explicit marker", () => {
-    const clipped =
-      /* SAFETY: This fixture implements the string members exercised by this case. */ clipDetails(
-        "y".repeat(DETAILS_MAX_STRING_CHARS + 5)
-      ) as string;
+    const clipped = z
+      .string()
+      .parse(clipDetails("y".repeat(DETAILS_MAX_STRING_CHARS + 5)));
     expect(clipped.startsWith("y".repeat(DETAILS_MAX_STRING_CHARS))).toBe(true);
     expect(clipped.endsWith("[truncated 5 chars]")).toBe(true);
   });
 
   it("caps arrays and wide objects and notes what was dropped", () => {
-    const array =
-      /* SAFETY: This fixture implements the unknown[] members exercised by this case. */ clipDetails(
-        Array.from({ length: DETAILS_MAX_ARRAY_ITEMS + 3 }, (_, i) => i)
-      ) as unknown[];
+    const array = z
+      .array(z.json())
+      .parse(
+        clipDetails(
+          Array.from({ length: DETAILS_MAX_ARRAY_ITEMS + 3 }, (_, i) => i)
+        )
+      );
     expect(array).toHaveLength(DETAILS_MAX_ARRAY_ITEMS + 1);
     expect(array.at(-1)).toBe("… [3 more items]");
 
@@ -72,10 +74,9 @@ describe("clipDetails", () => {
       })),
     };
 
-    const clipped =
-      /* SAFETY: This fixture implements the { posts: unknown[] } members exercised by this case. */ clipDetails(
-        details
-      ) as { posts: unknown[] };
+    const clipped = z
+      .object({ posts: z.array(z.json()) })
+      .parse(clipDetails(details));
     const serialized = JSON.stringify(clipped);
 
     // Markers and JSON punctuation ride on top of the budget, but not by much.

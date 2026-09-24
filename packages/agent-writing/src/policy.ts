@@ -2,10 +2,11 @@ import type { AgentPolicy, AgentTurnBudget } from "@chia/agent-runtime/types";
 
 import { toolInfo } from "./tools/registry.ts";
 import { summarizeToolResult } from "./tools/summarize.ts";
+import { WritingToolTier } from "./types.ts";
 
 export const writingPolicy: AgentPolicy = {
   toolInfo,
-  requiresApproval: (tier) => tier === "commit",
+  requiresApproval: (tier) => tier === WritingToolTier.Commit,
   summarize: summarizeToolResult,
 };
 

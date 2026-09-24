@@ -2,36 +2,33 @@
 
 import { useEffect } from "react";
 
-import { Theme } from "@chia/ui/theme";
-import useTheme from "@chia/ui/utils/use-theme";
+import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 
 import { COLOR_CSS_VAR_MAP, useSettingsStore } from "@/stores/settings/store";
-import type { ThemeColors } from "@/stores/settings/store";
 
 export function ThemeVarsSync() {
   const { theme, isDarkMode } = useTheme();
   const themeState = useSettingsStore((s) => s.theme);
 
-  const resolvedMode: typeof Theme.DARK | typeof Theme.LIGHT =
-    theme === "system"
+  const resolvedMode: typeof Theme.Dark | typeof Theme.Light =
+    theme === Theme.System
       ? isDarkMode
-        ? Theme.DARK
-        : Theme.LIGHT
-      : theme === Theme.DARK
-        ? Theme.DARK
-        : Theme.LIGHT;
+        ? Theme.Dark
+        : Theme.Light
+      : theme === Theme.Dark
+        ? Theme.Dark
+        : Theme.Light;
 
   useEffect(() => {
-    if (resolvedMode !== Theme.LIGHT && resolvedMode !== Theme.DARK) return;
+    if (resolvedMode !== Theme.Light && resolvedMode !== Theme.Dark) return;
 
-    const colors = themeState[resolvedMode]?.colors;
+    const colors = new Map(
+      Object.entries(themeState[resolvedMode]?.colors ?? {})
+    );
     const root = document.documentElement;
 
-    /* SAFETY: The producer contract guarantees this value satisfies (keyof ThemeColors)[]. */ (
-      Object.keys(COLOR_CSS_VAR_MAP) as (keyof ThemeColors)[]
-    ).forEach((key) => {
-      const value = colors?.[key];
-      const cssVar = COLOR_CSS_VAR_MAP[key];
+    Object.entries(COLOR_CSS_VAR_MAP).forEach(([key, cssVar]) => {
+      const value = colors.get(key);
       if (value) {
         root.style.setProperty(cssVar, value);
       } else {

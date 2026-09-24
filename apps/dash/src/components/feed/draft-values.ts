@@ -17,7 +17,7 @@ export type DraftPatch = Pick<
 export type DraftValues = Omit<DraftFormValues, "activeLocale">;
 type TranslationValues = NonNullable<DraftValues["translations"][LocaleType]>;
 
-const LOCALES = [Locale.zhTW, Locale.En] as const;
+const LOCALES = [Locale.ZhTW, Locale.En] as const;
 const META_FIELDS = ["slug", "type", "defaultLocale", "mainImage"] as const;
 const TRANSLATION_FIELDS = [
   "title",

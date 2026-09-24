@@ -14,15 +14,8 @@ import { alias } from "drizzle-orm/pg-core";
 
 import type { DB } from "../../client.ts";
 import { agentMemories } from "../../schemas/schema.ts";
-import type {
-  AgentMemory,
-  AgentMemoryKind,
-  AgentMemoryStatus,
-} from "../../schemas/schema.ts";
-import {
-  AGENT_MEMORY_KIND,
-  AGENT_MEMORY_STATUS,
-} from "../../schemas/schema.ts";
+import type { AgentMemory } from "../../schemas/schema.ts";
+import { AgentMemoryKind, AgentMemoryStatus } from "../../schemas/schema.ts";
 
 /** Soft-deleted rows are invisible except to `getAgentMemory`, which the RAG adapter uses to see a row go. */
 
@@ -30,7 +23,7 @@ const live = () => isNull(agentMemories.deletedAt);
 
 /** Live, `active` rows. A pending lesson is not yet agent context. */
 const indexable = () =>
-  and(live(), eq(agentMemories.status, AGENT_MEMORY_STATUS.Active));
+  and(live(), eq(agentMemories.status, AgentMemoryStatus.Active));
 
 export interface InsertAgentMemoryDTO {
   kind: AgentMemoryKind;
@@ -50,7 +43,7 @@ export const createAgentMemory = async (
     .insert(agentMemories)
     .values({
       kind: input.kind,
-      status: input.status ?? AGENT_MEMORY_STATUS.Active,
+      status: input.status ?? AgentMemoryStatus.Active,
       title: input.title,
       content: input.content,
       sourceUrl: input.sourceUrl ?? null,
@@ -76,8 +69,8 @@ export const reinforceAgentMemory = async (
     .where(
       and(
         eq(agentMemories.id, id),
-        eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
-        eq(agentMemories.status, AGENT_MEMORY_STATUS.Pending),
+        eq(agentMemories.kind, AgentMemoryKind.Lesson),
+        eq(agentMemories.status, AgentMemoryStatus.Pending),
         live()
       )
     )
@@ -110,8 +103,8 @@ export const replacePendingAgentLesson = async (
       .where(
         and(
           eq(agentMemories.id, input.replacesId),
-          eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
-          eq(agentMemories.status, AGENT_MEMORY_STATUS.Pending),
+          eq(agentMemories.kind, AgentMemoryKind.Lesson),
+          eq(agentMemories.status, AgentMemoryStatus.Pending),
           live()
         )
       )
@@ -121,14 +114,14 @@ export const replacePendingAgentLesson = async (
     const now = new Date();
     const [replaced] = await tx
       .update(agentMemories)
-      .set({ status: AGENT_MEMORY_STATUS.Archived, updatedAt: now })
+      .set({ status: AgentMemoryStatus.Archived, updatedAt: now })
       .where(eq(agentMemories.id, target.id))
       .returning();
     const [row] = await tx
       .insert(agentMemories)
       .values({
-        kind: AGENT_MEMORY_KIND.Lesson,
-        status: AGENT_MEMORY_STATUS.Pending,
+        kind: AgentMemoryKind.Lesson,
+        status: AgentMemoryStatus.Pending,
         title: input.title,
         content: input.content,
         sourceUrl: null,
@@ -171,8 +164,8 @@ export const approveAgentLesson = async (
       .where(
         and(
           eq(agentMemories.id, id),
-          eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
-          eq(agentMemories.status, AGENT_MEMORY_STATUS.Pending),
+          eq(agentMemories.kind, AgentMemoryKind.Lesson),
+          eq(agentMemories.status, AgentMemoryStatus.Pending),
           live()
         )
       )
@@ -184,12 +177,12 @@ export const approveAgentLesson = async (
     if (row.supersedesId !== null) {
       const [target] = await tx
         .update(agentMemories)
-        .set({ status: AGENT_MEMORY_STATUS.Archived, updatedAt: now })
+        .set({ status: AgentMemoryStatus.Archived, updatedAt: now })
         .where(
           and(
             eq(agentMemories.id, row.supersedesId),
-            eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
-            eq(agentMemories.status, AGENT_MEMORY_STATUS.Active),
+            eq(agentMemories.kind, AgentMemoryKind.Lesson),
+            eq(agentMemories.status, AgentMemoryStatus.Active),
             live()
           )
         )
@@ -202,8 +195,8 @@ export const approveAgentLesson = async (
           .where(
             and(
               eq(agentMemories.supersedesId, row.supersedesId),
-              eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
-              eq(agentMemories.status, AGENT_MEMORY_STATUS.Active),
+              eq(agentMemories.kind, AgentMemoryKind.Lesson),
+              eq(agentMemories.status, AgentMemoryStatus.Active),
               live()
             )
           )
@@ -216,7 +209,7 @@ export const approveAgentLesson = async (
 
     const [approved] = await tx
       .update(agentMemories)
-      .set({ status: AGENT_MEMORY_STATUS.Active, updatedAt: now })
+      .set({ status: AgentMemoryStatus.Active, updatedAt: now })
       .where(eq(agentMemories.id, row.id))
       .returning();
     if (!approved) throw new Error(`Lesson ${id} vanished mid-approval.`);
@@ -303,7 +296,7 @@ export const upsertSourceMemory = async (
   const [written] = await db
     .insert(agentMemories)
     .values({
-      kind: AGENT_MEMORY_KIND.Source,
+      kind: AgentMemoryKind.Source,
       title: input.title,
       content: input.content,
       sourceUrl: input.sourceUrl,
@@ -313,7 +306,7 @@ export const upsertSourceMemory = async (
     })
     .onConflictDoUpdate({
       target: agentMemories.sourceUrl,
-      targetWhere: sql`${agentMemories.kind} = '${sql.raw(AGENT_MEMORY_KIND.Source)}' and ${agentMemories.deletedAt} is null`,
+      targetWhere: sql`${agentMemories.kind} = '${sql.raw(AgentMemoryKind.Source)}' and ${agentMemories.deletedAt} is null`,
       // Every fetch is recorded; an identical page keeps its row otherwise, `updated_at` included.
       set: {
         title: sql`excluded.title`,
@@ -348,7 +341,7 @@ export const getChangedFactSources = async (
     .innerJoin(
       source,
       and(
-        eq(source.kind, AGENT_MEMORY_KIND.Source),
+        eq(source.kind, AgentMemoryKind.Source),
         eq(source.sourceUrl, agentMemories.sourceUrl),
         isNull(source.deletedAt),
         gt(source.updatedAt, agentMemories.updatedAt)
@@ -357,7 +350,7 @@ export const getChangedFactSources = async (
     .where(
       and(
         inArray(agentMemories.id, [...ids]),
-        eq(agentMemories.kind, AGENT_MEMORY_KIND.Fact)
+        eq(agentMemories.kind, AgentMemoryKind.Fact)
       )
     );
   return new Map(rows.map((row) => [row.id, row.changedAt]));
@@ -409,7 +402,7 @@ export const listAgentLessons = async (
     .from(agentMemories)
     .where(
       and(
-        eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
+        eq(agentMemories.kind, AgentMemoryKind.Lesson),
         eq(agentMemories.status, input.status),
         live()
       )
@@ -437,8 +430,8 @@ export const listActiveAgentLessons = async (
     .from(agentMemories)
     .where(
       and(
-        eq(agentMemories.kind, AGENT_MEMORY_KIND.Lesson),
-        eq(agentMemories.status, AGENT_MEMORY_STATUS.Active),
+        eq(agentMemories.kind, AgentMemoryKind.Lesson),
+        eq(agentMemories.status, AgentMemoryStatus.Active),
         live()
       )
     )

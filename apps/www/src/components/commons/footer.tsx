@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
-import type { FC } from "react";
+import type { CSSProperties, FC } from "react";
 
 import { Tabs, Button, Link as HeroLink } from "@heroui/react";
 import { motion } from "motion/react";
@@ -17,6 +17,7 @@ import RetroGrid from "@chia/ui/retro-grid";
 import { SwooshText } from "@chia/ui/swoosh-text";
 import ThemeSelector from "@chia/ui/theme";
 import { cn } from "@chia/ui/utils/cn.util";
+import { Theme } from "@chia/ui/utils/use-theme";
 
 import { LoadingSkeleton } from "@/components/commons/current-playing";
 import LocaleSelector from "@/components/commons/locale-selector";
@@ -47,6 +48,14 @@ const Copyright: FC<{ className?: string }> = ({ className }) => {
   );
 };
 
+const LOGO_SHADOW_COLORS: CSSProperties & Record<`--${string}`, string> = {
+  "--swoosh-c-alpha": "#f9c851",
+  "--swoosh-c-beta": "#fbc04d",
+  "--swoosh-c-gamma": "#fba857",
+  "--swoosh-c-delta": "#fc9670",
+  "--swoosh-c-epsilon": "#fca5a5",
+};
+
 const Logo = () => {
   return (
     <SwooshText
@@ -59,16 +68,7 @@ const Logo = () => {
         delta: 22,
         epsilon: 37,
       }}
-      style={
-        /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */ {
-          /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */
-          "--swoosh-c-alpha": "#f9c851",
-          "--swoosh-c-beta": "#fbc04d",
-          "--swoosh-c-gamma": "#fba857",
-          "--swoosh-c-delta": "#fc9670",
-          "--swoosh-c-epsilon": "#fca5a5",
-        } as React.CSSProperties
-      }
+      style={LOGO_SHADOW_COLORS}
     />
   );
 };
@@ -101,9 +101,9 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
                 enableCMD
                 label={t("label")}
                 themeLabel={{
-                  system: t("system"),
-                  dark: t("dark"),
-                  light: t("light"),
+                  [Theme.System]: t("system"),
+                  [Theme.Dark]: t("dark"),
+                  [Theme.Light]: t("light"),
                 }}
                 buttonProps={{
                   variant: "tertiary",
@@ -173,9 +173,9 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
             <ThemeSelector
               label=""
               themeLabel={{
-                system: t("system"),
-                dark: t("dark"),
-                light: t("light"),
+                [Theme.System]: t("system"),
+                [Theme.Dark]: t("dark"),
+                [Theme.Light]: t("light"),
               }}
               buttonProps={{
                 variant: "tertiary",

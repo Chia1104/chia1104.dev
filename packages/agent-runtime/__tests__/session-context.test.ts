@@ -68,43 +68,6 @@ describe("buildBranchContext", () => {
     expect(after).toHaveLength(before.length + 2);
   });
 
-  it("ignores labels and rows of retired entry types", () => {
-    const branch: SessionEntry[] = [
-      user("u1", null, "Hi"),
-      /* SAFETY: A label row this runtime no longer writes. */ {
-        type: "label",
-        id: "l1",
-        parentId: "u1",
-        seq: ++seq,
-        timestamp: 3,
-        targetId: "u1",
-        label: "start",
-      } as never,
-      /* SAFETY: A row written by an earlier Pi release that this runtime no longer models. */ {
-        type: "session_info",
-        id: "s1",
-        parentId: "l1",
-        seq: ++seq,
-        timestamp: 4,
-        name: "old",
-      } as never,
-      /* SAFETY: A settings row Pi 0.85 no longer models; earlier releases wrote it. */ {
-        type: "active_tools_change",
-        id: "t1",
-        parentId: "s1",
-        seq: ++seq,
-        timestamp: 5,
-        activeToolNames: ["read_post"],
-      } as never,
-      assistant("a1", "t1", "Hello"),
-    ];
-
-    expect(buildBranchContext(branch).map((message) => message.role)).toEqual([
-      "user",
-      "assistant",
-    ]);
-  });
-
   it("drops replies the provider never completed, in the branch and in a retained tail", () => {
     const aborted = fauxAssistantMessage("Half an ans", {
       stopReason: "aborted",

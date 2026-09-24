@@ -7,8 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster as ST } from "sonner";
 
-import type { Theme } from "@chia/ui/theme";
-import useTheme from "@chia/ui/utils/use-theme";
+import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 import { getQueryClient } from "@chia/utils/query-client";
 
 import { ImpersonationBanner } from "./impersonation-banner";
@@ -19,15 +18,7 @@ interface Props {
 
 const Toaster = () => {
   const { theme } = useTheme();
-  return (
-    <ST
-      theme={
-        /* SAFETY: The producer contract guarantees this value satisfies Theme. */ theme as Theme
-      }
-      position="bottom-left"
-      richColors
-    />
-  );
+  return <ST theme={theme} position="bottom-left" richColors />;
 };
 
 const RootProvider = ({ children }: Props) => {
@@ -35,7 +26,10 @@ const RootProvider = ({ children }: Props) => {
   return (
     <QueryClientProvider client={queryClient}>
       <NuqsAdapter>
-        <ThemeProvider defaultTheme="system" enableSystem attribute="class">
+        <ThemeProvider
+          defaultTheme={Theme.System}
+          enableSystem
+          attribute="class">
           <Toaster />
           <ImpersonationBanner />
           {children}

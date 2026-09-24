@@ -19,6 +19,7 @@ import {
   Brain,
   SlidersHorizontal,
   Tags,
+  Flag,
   UserRound,
   Users,
 } from "lucide-react";
@@ -35,7 +36,15 @@ interface RouteItem extends NavMainItem {
   items?: RouteItem[];
 }
 
-type RouteGroup = "overview" | "content" | "rag" | "agents" | "settings";
+const RouteGroup = {
+  Overview: "overview",
+  Content: "content",
+  Rag: "rag",
+  Agents: "agents",
+  Settings: "settings",
+} as const;
+
+type RouteGroup = (typeof RouteGroup)[keyof typeof RouteGroup];
 
 const visibleTo = (level: AccessLevel, items: RouteItem[]): NavMainItem[] =>
   items
@@ -97,6 +106,13 @@ export const useRouteItems = (level: AccessLevel) => {
           isActive: segments[0] === "tags",
           icon: <Tags />,
           title: "Tags",
+          operator: true,
+        },
+        {
+          url: "/reports",
+          isActive: segments[0] === "reports",
+          icon: <Flag />,
+          title: "Reader reports",
           operator: true,
         },
         {

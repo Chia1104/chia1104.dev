@@ -4,15 +4,16 @@ import {
   diffFeedDraftSnapshots,
   needsSafetyPoint,
 } from "../src/libs/drafts/index.ts";
+import { FeedDraftAuthor } from "../src/schemas/schema.ts";
 import type { FeedDraftSnapshot } from "../src/schemas/schema.ts";
 
-const operator = { author: "operator", sessionId: null } as const;
-const agent = { author: "agent", sessionId: "s1" } as const;
+const operator = { author: FeedDraftAuthor.Operator, sessionId: null };
+const agent = { author: FeedDraftAuthor.Agent, sessionId: "s1" };
 const at = (minutes: number) => new Date(2026, 8, 17, 10, minutes);
 
 const state = (
   revision: number,
-  last: { author: "operator" | "agent"; sessionId: string | null }
+  last: { author: FeedDraftAuthor; sessionId: string | null }
 ) => ({ revision, lastAuthor: last.author, lastSessionId: last.sessionId });
 
 describe("needsSafetyPoint", () => {
@@ -51,7 +52,7 @@ describe("needsSafetyPoint", () => {
       needsSafetyPoint({
         current: state(5, agent),
         latest,
-        writer: { author: "agent", sessionId: "s2" },
+        writer: { author: FeedDraftAuthor.Agent, sessionId: "s2" },
         now,
       })
     ).toBe(true);

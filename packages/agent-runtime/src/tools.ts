@@ -1,10 +1,17 @@
 import type { AgentTool, AgentToolResult } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 import { IsArray, IsObject, Type } from "typebox";
-import type { TNull, TOptional, TSchema, TUnion } from "typebox";
+import type {
+  Static,
+  TNull,
+  TOptional,
+  TSchema,
+  TUnion,
+  TUnsafe,
+} from "typebox";
 import * as z from "zod";
 
-import { locale } from "@chia/db/schema/enums";
+import { Locale } from "@chia/db/types";
 import { asJsonArray, asJsonObject, asJsonValue } from "@chia/utils/json";
 import type { JsonObject, JsonValue } from "@chia/utils/json";
 
@@ -20,7 +27,7 @@ import type { JsonObject, JsonValue } from "@chia/utils/json";
  * `{ type: "string", enum: [...] }`.
  */
 export const LocaleSchema = (description: string) =>
-  StringEnum([...locale.enumValues], { description });
+  StringEnum(Object.values(Locale), { description });
 
 /**
  * Marks a schema {@link optional} built; `defineTool` drops a `null` argument for it. A `~`
@@ -47,19 +54,21 @@ const schemaOptions = z
  * drops before `execute`. A field where `null` means something, such as clearing it, writes
  * its union by hand instead.
  */
-export const optional = <T extends TSchema>(schema: T): TOptional<T> => {
+export const optional = <T extends TSchema>(
+  schema: T
+): TOptional<TUnsafe<Static<T>>> => {
   const { description, default: fallback } = schemaOptions.parse(schema);
+  // The static type leaves out `null` because `defineTool` drops it before `execute`.
   const nullable = Type.Optional(
-    Type.Union([schema, Type.Null()], {
-      ...(description !== undefined && { description }),
-      ...(fallback !== undefined && { default: fallback }),
-    })
+    Type.Unsafe<Static<T>>(
+      Type.Union([schema, Type.Null()], {
+        ...(description !== undefined && { description }),
+        ...(fallback !== undefined && { default: fallback }),
+      })
+    )
   );
   Object.defineProperty(nullable, OMITS_NULL, { value: true });
-  // SAFETY: `defineTool` removes a `null` before `execute`, so the static type never carries
-  // one; the union's own static type is what the cast discards.
-  // oxlint-disable-next-line anti-slop/no-chained-type-assertions
-  return nullable as unknown as TOptional<T>;
+  return nullable;
 };
 
 /** The arguments without any `null` an {@link optional} parameter received, at any depth. */

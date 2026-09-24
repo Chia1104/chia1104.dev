@@ -1,7 +1,7 @@
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import {
-  AGENT_PROVIDERS,
+  AgentProvider,
   createAgentCatalog,
   createAgentModels,
   houseModel,
@@ -16,7 +16,7 @@ import type {
   AgentModelRef,
 } from "@chia/agent-runtime/models";
 import type { AgentSessionDefaults } from "@chia/agent-runtime/types";
-import { PROVIDER_IDS } from "@chia/ai/provider";
+import { ProviderId } from "@chia/ai/provider";
 
 /**
  * Writing-agent model policy. Gateway is limited to the two vendors the tools were built
@@ -24,12 +24,12 @@ import { PROVIDER_IDS } from "@chia/ai/provider";
  */
 export const isWritingModel: AgentModelPredicate = (ref) => {
   switch (ref.providerId) {
-    case AGENT_PROVIDERS.gateway:
-      return PROVIDER_IDS.some((vendor) =>
+    case AgentProvider.Gateway:
+      return Object.values(ProviderId).some((vendor) =>
         ref.modelId.startsWith(`${vendor}/`)
       );
-    case AGENT_PROVIDERS.openai:
-    case AGENT_PROVIDERS.anthropic:
+    case AgentProvider.OpenAI:
+    case AgentProvider.Anthropic:
       return true;
     default:
       return false;

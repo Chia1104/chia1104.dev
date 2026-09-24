@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { ResourceIndexRunStatus } from "@chia/db/schema";
+
 import { orpc } from "@/libs/orpc/client";
 
 import { IndexKeyLine, RunStatusChip } from "./rag-shared";
@@ -18,24 +20,31 @@ import { useIndexRun } from "./use-index-run";
 import type { IndexRun } from "./use-index-run";
 
 /** Every action is confirmed, including `prune`. Deleted vectors can only come back by paying for embeddings again. */
-type MaintenanceAction = "top-up" | "full" | "prune";
+const MaintenanceAction = {
+  TopUp: "top-up",
+  Full: "full",
+  Prune: "prune",
+} as const;
+
+type MaintenanceAction =
+  (typeof MaintenanceAction)[keyof typeof MaintenanceAction];
 
 const ACTION_COPY = {
-  "top-up": {
+  [MaintenanceAction.TopUp]: {
     title: "Top up missing vectors",
     description:
       "Leaves every chunk's text alone and only embeds the ones with no vector on the current index key. Cost is predictable.",
     confirm: "Top up",
     destructive: false,
   },
-  full: {
+  [MaintenanceAction.Full]: {
     title: "Full reindex",
     description:
       "Rebuilds every chunk before embedding it. This is what a bumped index version needs, and it spends embedding credits for the whole corpus.",
     confirm: "Reindex everything",
     destructive: true,
   },
-  prune: {
+  [MaintenanceAction.Prune]: {
     title: "Prune stale vectors",
     description:
       "Deletes every vector that is not on the current index key. Getting one back means paying for its embedding again.",
@@ -48,8 +57,10 @@ const ACTION_COPY = {
 >;
 
 const settledMessage = (run: IndexRun): string => {
-  if (run.status === "completed") return "Reindex finished";
-  if (run.status === "cancelled") return "Reindex was cancelled";
+  if (run.status === ResourceIndexRunStatus.Completed)
+    return "Reindex finished";
+  if (run.status === ResourceIndexRunStatus.Cancelled)
+    return "Reindex was cancelled";
   return run.error ?? "Reindex failed";
 };
 
@@ -104,7 +115,7 @@ const ConfirmActionModal = ({
               ) : (
                 <>
                   <dl className="grid grid-cols-2 gap-y-1 text-sm">
-                    {action === "prune" ? (
+                    {action === MaintenanceAction.Prune ? (
                       <>
                         <dt className="text-muted">Vectors to drop</dt>
                         <dd className="text-right font-mono tabular-nums">
@@ -141,7 +152,7 @@ const ConfirmActionModal = ({
                 </>
               )}
 
-              {action === "full" && (
+              {action === MaintenanceAction.Full && (
                 <div className="flex items-start gap-3 rounded-2xl bg-amber-500/10 p-3">
                   <AlertTriangleIcon className="text-warning mt-0.5 size-5 shrink-0" />
                   <p className="text-sm">
@@ -157,7 +168,8 @@ const ConfirmActionModal = ({
               </Button>
               <Button
                 isDisabled={
-                  !data || (action === "prune" && leftoverVectors === 0)
+                  !data ||
+                  (action === MaintenanceAction.Prune && leftoverVectors === 0)
                 }
                 isPending={isPending}
                 variant={copy?.destructive ? "danger" : "primary"}
@@ -191,7 +203,7 @@ export const RagMaintenance = () => {
     (run: IndexRun) => {
       setStartedRunId(null);
       invalidate();
-      if (run.status === "completed") {
+      if (run.status === ResourceIndexRunStatus.Completed) {
         toast.success(settledMessage(run));
       } else {
         toast.error(settledMessage(run));
@@ -278,7 +290,7 @@ export const RagMaintenance = () => {
             isDisabled={!canTrigger || isBusy}
             isPending={isBusy}
             variant="primary"
-            onPress={() => setAction("top-up")}>
+            onPress={() => setAction(MaintenanceAction.TopUp)}>
             <RefreshCwIcon className="size-4" />
             Top up missing
           </Button>
@@ -286,7 +298,7 @@ export const RagMaintenance = () => {
             isDisabled={!canTrigger || isBusy}
             isPending={isBusy}
             variant="danger"
-            onPress={() => setAction("full")}>
+            onPress={() => setAction(MaintenanceAction.Full)}>
             <RefreshCwIcon className="size-4" />
             Full reindex
           </Button>
@@ -295,7 +307,7 @@ export const RagMaintenance = () => {
             isDisabled={!canTrigger || isActive || prune.isPending}
             isPending={prune.isPending}
             variant="tertiary"
-            onPress={() => setAction("prune")}>
+            onPress={() => setAction(MaintenanceAction.Prune)}>
             <BrushCleaningIcon className="size-4" />
             Prune stale vectors
           </Button>
@@ -307,10 +319,10 @@ export const RagMaintenance = () => {
         isPending={reindex.isPending || prune.isPending}
         onCancel={() => setAction(null)}
         onConfirm={() => {
-          if (action === "prune") {
+          if (action === MaintenanceAction.Prune) {
             prune.mutate();
           } else if (action) {
-            reindex.mutate({ onlyMissing: action === "top-up" });
+            reindex.mutate({ onlyMissing: action === MaintenanceAction.TopUp });
           }
         }}
       />

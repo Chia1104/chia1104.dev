@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { ContentToolName } from "@chia/agent-content/tools/registry";
+
 import { buildSystemPrompt, buildTurnContext } from "../src/prompts/system.ts";
 
 describe("buildSystemPrompt", () => {
@@ -41,12 +43,7 @@ describe("buildSystemPrompt", () => {
 
   it("names every tool it tells the model to use", () => {
     const prompt = buildSystemPrompt();
-    for (const name of [
-      "search_posts",
-      "get_post",
-      "list_posts",
-      "list_tags",
-    ]) {
+    for (const name of Object.values(ContentToolName)) {
       expect(prompt).toContain(`\`${name}\``);
     }
   });

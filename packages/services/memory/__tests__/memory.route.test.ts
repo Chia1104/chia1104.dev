@@ -3,13 +3,14 @@ import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
 import type { UpdateAgentMemoryDTO } from "@chia/db/repos/agent/memory";
+import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
 import type { AgentMemory } from "@chia/db/schema";
 import { contextOf } from "@chia/test/context";
 import { stubTestEnv } from "@chia/test/env";
 import { it as orpcIt } from "@chia/test/orpc";
 import { ADMIN_ID, sessionOf } from "@chia/test/session";
 import { omitUndefined } from "@chia/utils/object";
-import type { WorkflowControlClient } from "@chia/workflow-control/client";
+import { createWorkflowControlClient } from "@chia/workflow-control/client";
 
 import type { BaseOSContext } from "../../shared/context";
 import type * as memoryRouteModule from "../memory.route";
@@ -32,8 +33,8 @@ const it = orpcIt.extend("context", ({ session }) =>
 
 const row = (overrides: Partial<AgentMemory> = {}): AgentMemory => ({
   id: 7,
-  kind: "lesson",
-  status: "pending",
+  kind: AgentMemoryKind.Lesson,
+  status: AgentMemoryStatus.Pending,
   title: "Prefer short intros",
   content: "The operator cut every long intro.",
   sourceUrl: null,
@@ -76,7 +77,7 @@ describe("memory routes", () => {
     );
     repo.approveAgentLesson.mockImplementation(async (_db: DB, id: number) => ({
       status: "approved",
-      approved: row({ id, status: "active" }),
+      approved: row({ id, status: AgentMemoryStatus.Active }),
       archived: null,
     }));
     repo.softDeleteAgentMemory.mockResolvedValue(true);
@@ -104,12 +105,16 @@ describe("memory routes", () => {
   }) => {
     await call(
       routes.listMemoriesRoute,
-      { kind: "fact", query: "pg" },
+      { kind: AgentMemoryKind.Fact, query: "pg" },
       { context }
     );
     expect(repo.listAgentMemories).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ kind: "fact", query: "pg", cursor: null })
+      expect.objectContaining({
+        kind: AgentMemoryKind.Fact,
+        query: "pg",
+        cursor: null,
+      })
     );
 
     const detail = await call(routes.getMemoryRoute, { id: 7 }, { context });
@@ -137,12 +142,14 @@ describe("memory routes", () => {
       { context }
     );
 
-    expect(approved.memory.status).toBe("active");
+    expect(approved.memory.status).toBe(AgentMemoryStatus.Active);
     expect(onMemoryChanged.mock.calls).toEqual([[7], [7], [7]]);
   });
 
   it("only approves lessons", async ({ context }) => {
-    repo.getAgentMemory.mockResolvedValueOnce(row({ kind: "fact" }));
+    repo.getAgentMemory.mockResolvedValueOnce(
+      row({ kind: AgentMemoryKind.Fact })
+    );
     await expect(
       call(routes.approveLessonRoute, { id: 7 }, { context })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
@@ -152,21 +159,18 @@ describe("memory routes", () => {
   it("starts consolidation through the workflow client", async ({
     session,
   }) => {
+    const workflow = createWorkflowControlClient({
+      url: "http://workflow.test",
+      token: "test",
+      fetch: () => Promise.reject(new Error("unmocked workflow command")),
+    });
     const startMemoryConsolidation = vi
-      .fn<WorkflowControlClient["startMemoryConsolidation"]>()
+      .spyOn(workflow, "startMemoryConsolidation")
       .mockResolvedValue("run-1");
-    const workflow: Partial<WorkflowControlClient> = {
-      startMemoryConsolidation,
-    };
     const started = await call(
       routes.consolidateMemoryRoute,
       { sessionId: "session-1" },
-      {
-        context: contextOf<BaseOSContext>(session, {
-          /* SAFETY: This fixture implements the client member this route exercises. */
-          workflow: workflow as WorkflowControlClient,
-        }),
-      }
+      { context: contextOf<BaseOSContext>(session, { workflow }) }
     );
     expect(started).toEqual({ runId: "run-1" });
     expect(startMemoryConsolidation).toHaveBeenCalledWith("session-1");

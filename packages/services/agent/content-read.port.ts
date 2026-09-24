@@ -18,11 +18,11 @@ import {
   getInfiniteFeeds,
 } from "@chia/db/repos/feeds";
 import { listTags } from "@chia/db/repos/tags";
-import { FeedType } from "@chia/db/types";
-import type { Locale } from "@chia/db/types";
+import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import { feedUrl } from "@chia/utils/config";
 
 import { searchFeedsService } from "../feeds/search.service";
+import { ResourceSearchMode } from "../rag/resource-types";
 import { toSearchMatches } from "../rag/search.service";
 
 /**
@@ -32,7 +32,13 @@ import { toSearchMatches } from "../rag/search.service";
  * when asked.
  */
 
-export type ContentVisibility = "author" | "public";
+export const ContentVisibility = {
+  Author: "author",
+  Public: "public",
+} as const;
+
+export type ContentVisibility =
+  (typeof ContentVisibility)[keyof typeof ContentVisibility];
 
 export interface CreateContentReadPortOptions {
   db: DB;
@@ -46,7 +52,8 @@ export const createContentReadPort = (
 ): ContentReadPort => {
   const { db, authorId, visibility } = options;
   /** `undefined` means "any"; the repositories treat it as no filter. */
-  const publishedScope = visibility === "public" ? true : undefined;
+  const publishedScope =
+    visibility === ContentVisibility.Public ? true : undefined;
 
   return {
     async searchPosts(input: SearchPostsInput): Promise<PostSearchResult> {
@@ -55,7 +62,10 @@ export const createContentReadPort = (
         keyword: input.keyword,
         // `keyword` is in-database BM25; `semantic` fuses dense and lexical because a
         // document vector alone under-recalls exact terms (package names, CLI flags).
-        model: input.mode === "keyword" ? "bm25" : "hybrid",
+        model:
+          input.mode === "keyword"
+            ? ResourceSearchMode.Bm25
+            : ResourceSearchMode.Hybrid,
         locale: input.locale,
         includeUnpublished: publishedScope === undefined,
         limit: input.limit,
@@ -64,9 +74,7 @@ export const createContentReadPort = (
 
       return {
         hits: result.items.slice(0, input.limit).map((item) => {
-          const locale =
-            /* SAFETY: The producer contract guarantees this value satisfies Locale. */ (item
-              .summary.locale ?? "zh-TW") as Locale;
+          const locale = item.summary.locale ?? Locale.ZhTW;
           return {
             slug: item.slug,
             locale,
@@ -121,7 +129,7 @@ export const createContentReadPort = (
       const data = await getInfiniteFeeds(db, {
         limit: input.limit,
         cursor: null,
-        orderBy: "createdAt",
+        orderBy: FeedOrderBy.CreatedAt,
         sortOrder: "desc",
         type,
         tagSlug: input.tagSlug,
@@ -158,10 +166,9 @@ export const createContentReadPort = (
             slug: feed.slug,
             locale: feed.defaultLocale,
           }),
-          type: /* SAFETY: The producer contract guarantees this value satisfies PostFeedType. */ feed.type as PostFeedType,
+          type: feed.type,
           published: feed.published,
-          defaultLocale:
-            /* SAFETY: The producer contract guarantees this value satisfies Locale. */ feed.defaultLocale as Locale,
+          defaultLocale: feed.defaultLocale,
           title: translation?.title ?? "(untitled)",
           createdAt: new Date(feed.createdAt).toISOString(),
           updatedAt: new Date(feed.updatedAt).toISOString(),
@@ -172,16 +179,14 @@ export const createContentReadPort = (
 
     async listTags(): Promise<TagItem[]> {
       const rows = await listTags(db);
-      return rows.map((tag) => ({
-        slug: tag.slug,
-        names:
-          /* SAFETY: `translations` is keyed by Locale, which is what TagItem["names"] is keyed by. */ Object.fromEntries(
-            Object.entries(tag.translations).map(([locale, translation]) => [
-              locale,
-              translation.name,
-            ])
-          ) as TagItem["names"],
-      }));
+      return rows.map((tag) => {
+        const names: TagItem["names"] = {};
+        for (const locale of Object.values(Locale)) {
+          const translation = tag.translations[locale];
+          if (translation) names[locale] = translation.name;
+        }
+        return { slug: tag.slug, names };
+      });
     },
   };
 };
@@ -190,13 +195,13 @@ export const createContentReadPort = (
 const toPostSnapshot = (feed: {
   id: number;
   slug: string;
-  type: string;
+  type: PostFeedType;
   published: boolean;
-  defaultLocale: string;
+  defaultLocale: Locale;
   mainImage?: string | null;
   translations?:
     | {
-        locale: string;
+        locale: Locale;
         title: string;
         excerpt?: string | null;
         description?: string | null;
@@ -213,14 +218,12 @@ const toPostSnapshot = (feed: {
     slug: feed.slug,
     locale: feed.defaultLocale,
   }),
-  type: /* SAFETY: The producer contract guarantees this value satisfies PostFeedType. */ feed.type as PostFeedType,
+  type: feed.type,
   published: feed.published,
-  defaultLocale:
-    /* SAFETY: The producer contract guarantees this value satisfies Locale. */ feed.defaultLocale as Locale,
+  defaultLocale: feed.defaultLocale,
   mainImage: feed.mainImage,
   translations: (feed.translations ?? []).map((translation) => ({
-    locale:
-      /* SAFETY: The producer contract guarantees this value satisfies Locale. */ translation.locale as Locale,
+    locale: translation.locale,
     url: feedUrl({
       type: feed.type,
       slug: feed.slug,

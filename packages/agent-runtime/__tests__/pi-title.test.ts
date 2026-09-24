@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { HOUSE_MODELS } from "@chia/ai/house-models";
 
-import { AGENT_PROVIDERS, createAgentModels } from "../src/models.ts";
+import { AgentProvider, createAgentModels } from "../src/models.ts";
 import {
   SESSION_TITLE_MAX_LENGTH,
   fallbackSessionTitle,
@@ -47,7 +47,7 @@ const modelsWith = (
 
 /** A real catalogue entry; the stub never calls it, the generator only passes it through. */
 const model = createAgentModels().getModel(
-  AGENT_PROVIDERS.gateway,
+  AgentProvider.Gateway,
   HOUSE_MODELS.cheap
 )!;
 

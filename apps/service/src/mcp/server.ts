@@ -4,6 +4,7 @@ import { ORPCError } from "@orpc/server";
 import type { RouterClient } from "@orpc/server";
 import * as z from "zod";
 
+import { FeedDraftRevisionKind } from "@chia/db/schema";
 import { FeedType, Locale } from "@chia/db/types";
 import type { router } from "@chia/services/router";
 
@@ -161,7 +162,7 @@ export const createMcpServer = ({ api, dashBaseUrl }: McpServerOptions) => {
         "Kept states of a draft, newest first. `commit` rows are the versions applied to the post; `safety` rows are restore points kept before another writer, a restore or a discard replaced that state. Each names who last wrote it and which fields differ from the row before. Pass a row's id to restore_draft_revision.",
       inputSchema: {
         draftId: z.number().int(),
-        kind: z.enum(["commit", "safety"]).optional(),
+        kind: z.enum(FeedDraftRevisionKind).optional(),
         limit: z.number().int().min(1).max(100).optional(),
       },
       annotations: { readOnlyHint: true },

@@ -29,6 +29,7 @@ import { DrawerPanel } from "@/components/commons/drawer-panel";
 import { orpc } from "@/libs/orpc/client";
 
 import {
+  ApiKeyState,
   SCOPES,
   SCOPE_HINT,
   apiKeyFormSchema,
@@ -368,7 +369,7 @@ const DetailView = ({
       />
 
       <div className="flex flex-wrap gap-2">
-        {state === "active" ? (
+        {state === ApiKeyState.Active ? (
           <Button
             isDisabled={busy}
             size="sm"

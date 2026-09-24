@@ -253,7 +253,7 @@ export const TagsManager = () => {
                     </Button>
                   </Table.Cell>
                   <Table.Cell>
-                    <span className="text-xs">{nameOf(tag, Locale.zhTW)}</span>
+                    <span className="text-xs">{nameOf(tag, Locale.ZhTW)}</span>
                   </Table.Cell>
                   <Table.Cell>
                     <span className="text-xs">{nameOf(tag, Locale.En)}</span>

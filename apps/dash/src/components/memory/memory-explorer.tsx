@@ -31,6 +31,7 @@ import { parseAsString, parseAsStringLiteral, useQueryStates } from "nuqs";
 import { toast } from "sonner";
 
 import { Markdown } from "@chia/agent-elements/markdown";
+import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
 import { formatDateTime } from "@chia/utils/format";
 import { hostnameOf } from "@chia/utils/url";
 
@@ -41,29 +42,27 @@ import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 /** Client-side oRPC behind `adminGuard()`. Pending lessons sit above the list because their review gates agent behaviour. */
 
 type Query = RouterInputs["memory"]["list"];
-type MemoryKind = NonNullable<Query["kind"]>;
-type MemoryStatus = NonNullable<Query["status"]>;
 type MemoryDetail = RouterOutputs["memory"]["get"]["memory"];
 
 const ANY = "any";
 const SEARCH_DEBOUNCE_MS = 300;
 
-const KIND_VALUES = [ANY, "source", "fact", "lesson"] as const;
-const STATUS_VALUES = [ANY, "active", "pending", "archived"] as const;
+const KIND_VALUES = [ANY, ...Object.values(AgentMemoryKind)] as const;
+const STATUS_VALUES = [ANY, ...Object.values(AgentMemoryStatus)] as const;
 
 const KIND_OPTIONS: { id: (typeof KIND_VALUES)[number]; label: string }[] = [
   { id: ANY, label: "Any kind" },
-  { id: "source", label: "Source" },
-  { id: "fact", label: "Fact" },
-  { id: "lesson", label: "Lesson" },
+  { id: AgentMemoryKind.Source, label: "Source" },
+  { id: AgentMemoryKind.Fact, label: "Fact" },
+  { id: AgentMemoryKind.Lesson, label: "Lesson" },
 ];
 
 const STATUS_OPTIONS: { id: (typeof STATUS_VALUES)[number]; label: string }[] =
   [
     { id: ANY, label: "Any status" },
-    { id: "active", label: "Active" },
-    { id: "pending", label: "Pending" },
-    { id: "archived", label: "Archived" },
+    { id: AgentMemoryStatus.Active, label: "Active" },
+    { id: AgentMemoryStatus.Pending, label: "Pending" },
+    { id: AgentMemoryStatus.Archived, label: "Archived" },
   ];
 
 const COLUMNS = [
@@ -76,18 +75,18 @@ const COLUMNS = [
 ];
 
 const STATUS_COLOR = {
-  active: "success",
-  pending: "warning",
-  archived: "default",
-} satisfies Record<MemoryStatus, "success" | "warning" | "default">;
+  [AgentMemoryStatus.Active]: "success",
+  [AgentMemoryStatus.Pending]: "warning",
+  [AgentMemoryStatus.Archived]: "default",
+} satisfies Record<AgentMemoryStatus, "success" | "warning" | "default">;
 
-const KindChip = ({ kind }: { kind: MemoryKind }) => (
+const KindChip = ({ kind }: { kind: AgentMemoryKind }) => (
   <Chip size="sm" variant="soft">
     <Chip.Label className="font-mono text-xs">{kind}</Chip.Label>
   </Chip>
 );
 
-const StatusChip = ({ status }: { status: MemoryStatus }) => (
+const StatusChip = ({ status }: { status: AgentMemoryStatus }) => (
   <Chip color={STATUS_COLOR[status]} size="sm" variant="soft">
     <Chip.Label className="text-xs">{status}</Chip.Label>
   </Chip>
@@ -107,7 +106,11 @@ const PendingLessons = () => {
   // the list pages by id; the queue is read whole, at the page maximum, and ordered here
   const { data, isLoading } = useQuery(
     orpc.memory.list.queryOptions({
-      input: { kind: "lesson", status: "pending", limit: 100 },
+      input: {
+        kind: AgentMemoryKind.Lesson,
+        status: AgentMemoryStatus.Pending,
+        limit: 100,
+      },
     })
   );
 
@@ -196,7 +199,10 @@ const PendingLessons = () => {
                   size="sm"
                   variant="ghost"
                   onPress={() =>
-                    archive.mutate({ id: lesson.id, status: "archived" })
+                    archive.mutate({
+                      id: lesson.id,
+                      status: AgentMemoryStatus.Archived,
+                    })
                   }>
                   Archive
                 </Button>
@@ -358,7 +364,7 @@ const MemoryEditor = ({
     })
   );
 
-  const setStatus = (status: MemoryStatus) =>
+  const setStatus = (status: AgentMemoryStatus) =>
     update.mutate({ id: memory.id, status });
 
   return (
@@ -452,7 +458,8 @@ const MemoryEditor = ({
               onPress={() => setEditing(true)}>
               Edit
             </Button>
-            {memory.kind === "lesson" && memory.status === "pending" ? (
+            {memory.kind === AgentMemoryKind.Lesson &&
+            memory.status === AgentMemoryStatus.Pending ? (
               <Button
                 isPending={approve.isPending}
                 size="sm"
@@ -461,12 +468,12 @@ const MemoryEditor = ({
                 Approve lesson
               </Button>
             ) : null}
-            {memory.status === "archived" ? (
+            {memory.status === AgentMemoryStatus.Archived ? (
               <Button
                 isPending={update.isPending}
                 size="sm"
                 variant="ghost"
-                onPress={() => setStatus("active")}>
+                onPress={() => setStatus(AgentMemoryStatus.Active)}>
                 Restore
               </Button>
             ) : (
@@ -474,7 +481,7 @@ const MemoryEditor = ({
                 isPending={update.isPending}
                 size="sm"
                 variant="ghost"
-                onPress={() => setStatus("archived")}>
+                onPress={() => setStatus(AgentMemoryStatus.Archived)}>
                 Archive
               </Button>
             )}
@@ -557,11 +564,8 @@ export const MemoryExplorer = () => {
   });
 
   const filters = useMemo<Query>(() => {
-    // SAFETY: The producer contract guarantees this value satisfies MemoryKind.
-    const kind = params.kind === ANY ? undefined : (params.kind as MemoryKind);
-    // SAFETY: The producer contract guarantees this value satisfies MemoryStatus.
-    const status =
-      params.status === ANY ? undefined : (params.status as MemoryStatus);
+    const kind = params.kind === ANY ? undefined : params.kind;
+    const status = params.status === ANY ? undefined : params.status;
     return { query: debouncedSearch || undefined, kind, status };
   }, [debouncedSearch, params.kind, params.status]);
 
@@ -573,13 +577,10 @@ export const MemoryExplorer = () => {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery(
-    orpc.memory.list.infiniteOptions({
+    orpc.memory.list.infiniteOptions<number | null>({
       input: (pageParam) => ({ ...filters, cursor: pageParam }),
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? null,
-      initialPageParam:
-        /* SAFETY: The producer contract guarantees this value satisfies number | null. */ null as
-          | number
-          | null,
+      initialPageParam: null,
     })
   );
 
@@ -607,13 +608,10 @@ export const MemoryExplorer = () => {
         <Select
           aria-label="Memory kind"
           className="w-36"
-          onChange={(key) =>
-            void setParams({
-              kind: /* SAFETY: The producer contract guarantees this value satisfies (typeof KIND_VALUES)[number]. */ String(
-                key
-              ) as (typeof KIND_VALUES)[number],
-            })
-          }
+          onChange={(key) => {
+            const kind = KIND_VALUES.find((value) => value === key);
+            if (kind) void setParams({ kind });
+          }}
           value={params.kind}>
           <Select.Trigger>
             <Select.Value />
@@ -629,14 +627,10 @@ export const MemoryExplorer = () => {
         <Select
           aria-label="Memory status"
           className="w-36"
-          onChange={(key) =>
-            void setParams({
-              status:
-                /* SAFETY: The producer contract guarantees this value satisfies (typeof STATUS_VALUES)[number]. */ String(
-                  key
-                ) as (typeof STATUS_VALUES)[number],
-            })
-          }
+          onChange={(key) => {
+            const status = STATUS_VALUES.find((value) => value === key);
+            if (status) void setParams({ status });
+          }}
           value={params.status}>
           <Select.Trigger>
             <Select.Value />

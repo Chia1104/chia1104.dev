@@ -44,12 +44,14 @@ export interface Meta {
 }
 
 export const getLatestWork = (timeline: Meta["timeline"]) => {
-  return timeline.find((item) => item.type === "work" && item.endTime === 0);
+  return timeline.find(
+    (item) => item.type === TimelineType.Work && item.endTime === 0
+  );
 };
 
 export const getFirstWork = (timeline: Meta["timeline"]) => {
-  const workItems = timeline.filter((item) => item.type === "work");
-  return workItems.reduce(
+  const workItems = timeline.filter((item) => item.type === TimelineType.Work);
+  return workItems.reduce<Meta["timeline"][number] | null>(
     (earliest, current) => {
       if (!earliest) return current;
 
@@ -58,9 +60,7 @@ export const getFirstWork = (timeline: Meta["timeline"]) => {
 
       return earliestTime.isBefore(currentTime) ? earliest : current;
     },
-    /* SAFETY: The producer contract guarantees this value satisfies Meta["timeline"][0] | null. */ null as
-      | Meta["timeline"][0]
-      | null
+    null
   );
 };
 

@@ -4,11 +4,13 @@ import type {
   ContentReadPort,
   ProfileReadPort,
 } from "@chia/agent-content/types";
+import type { PublicConfig } from "@chia/agent-public/config";
 import { PUBLIC_AGENT_KIND } from "@chia/agent-public/models";
 import { CallerTier } from "@chia/auth/tier";
-import type { DB } from "@chia/db/client";
 
-import type { AgentKindCaller } from "../src/kind";
+import type { PublicAgentState } from "../src/public";
+
+import { callerOf, db, turnContextOf } from "./kind.fixture";
 
 const feeds = vi.hoisted(() => ({
   getFeedById: vi.fn(),
@@ -19,14 +21,15 @@ vi.mock("@chia/db/repos/feeds", () => feeds);
 const { createPublicAgentExecutor, createPublicAgentKind } =
   await import("../src/public");
 
-/* SAFETY: the feed lookup is mocked; nothing else in the kind touches the handle. */
-const db = {} as DB;
+const caller = callerOf(CallerTier.Guest, "guest");
 
-const caller: AgentKindCaller =
-  /* SAFETY: `attach` ignores the caller; a guest's selection is scoped by the post's visibility. */ {
-    tier: CallerTier.Guest,
-    userId: "guest",
-  } as AgentKindCaller;
+/** A public session owned by `userId`, under the operator's `config`. */
+const contextOf = (userId: string, config: PublicConfig = {}) =>
+  turnContextOf<PublicAgentState, PublicConfig>({
+    state: {},
+    config,
+    row: { kind: PUBLIC_AGENT_KIND, userId },
+  });
 
 const selectionOf = (feedId: number) => ({
   type: "selection" as const,
@@ -48,7 +51,7 @@ const profile: ProfileReadPort = {
 describe("createPublicAgentKind", () => {
   const kind = createPublicAgentKind();
 
-  it("admits guests and lists only read tools, no commands and no skills", () => {
+  it("admits guests and lists read tools plus the report, no commands and no skills", () => {
     expect(kind.kind).toBe(PUBLIC_AGENT_KIND);
     expect(kind.minTier).toBe(CallerTier.Guest);
 
@@ -60,8 +63,13 @@ describe("createPublicAgentKind", () => {
       "list_tags",
       "web_search",
       "fetch_url",
+      "report_issue",
     ]);
-    expect(capabilities.tools.every((tool) => tool.tier === "read")).toBe(true);
+    expect(
+      capabilities.tools
+        .filter((tool) => tool.name !== "report_issue")
+        .every((tool) => tool.tier === "read")
+    ).toBe(true);
     expect(capabilities.commands).toEqual([]);
     expect(capabilities.skills).toEqual([]);
   });
@@ -111,6 +119,9 @@ describe("createPublicAgentKind", () => {
       kind.state.attach?.(caller, db, "session-1", [{ type: "draft", id: 1 }])
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
+      kind.state.attach?.(caller, db, "session-1", [{ type: "report", id: 1 }])
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
       kind.state.attach?.(caller, db, "session-1", [
         {
           type: "selection",
@@ -128,8 +139,12 @@ describe("createPublicAgentKind", () => {
   });
 });
 
+const reportPort = {
+  submit: () => Promise.resolve({ id: 1 }),
+};
+
 describe("createPublicAgentExecutor", () => {
-  it("prepares read-only tools over the host's ports", async () => {
+  it("prepares read-only tools over the host's ports for a guest", async () => {
     const executor = createPublicAgentExecutor({
       createContentPort: () => port,
       createProfilePort: () => profile,
@@ -137,15 +152,13 @@ describe("createPublicAgentExecutor", () => {
       createWebPort: () => {
         throw new Error("web access is off in this test");
       },
+      createReportPort: () => {
+        throw new Error("a guest cannot report");
+      },
       isSignedIn: () => Promise.resolve(false),
     });
 
-    const turn = await executor.prepareTurn(
-      /* SAFETY: the kind reads only the db handle and config from the context. */ {
-        db,
-        config: {},
-      } as never
-    );
+    const turn = await executor.prepareTurn(contextOf("guest"));
 
     expect(turn.tools.map((tool) => tool.name)).toEqual([
       "search_posts",
@@ -175,14 +188,11 @@ describe("createPublicAgentExecutor", () => {
           search: () => Promise.resolve([]),
           fetchPage: (url) => Promise.resolve({ url, text: "" }),
         }),
+        createReportPort: () => reportPort,
         isSignedIn: () => Promise.resolve(options.signedIn),
       });
       const turn = await executor.prepareTurn(
-        /* SAFETY: the kind reads only the db handle, the owner id and config from the context. */ {
-          db,
-          row: { userId: "user-1" },
-          config: { webAccess: options.webAccess },
-        } as never
+        contextOf("user-1", { webAccess: options.webAccess })
       );
       return turn.tools.map((tool) => tool.name);
     };
@@ -197,5 +207,33 @@ describe("createPublicAgentExecutor", () => {
     ]) {
       await expect(toolNames(denied)).resolves.not.toContain("web_search");
     }
+  });
+
+  it("grants reporting to a signed-in owner, bound to them and the session", async () => {
+    const createReportPort = vi.fn(() => reportPort);
+    const prepare = (signedIn: boolean) =>
+      createPublicAgentExecutor({
+        createContentPort: () => port,
+        createProfilePort: () => profile,
+        guard: null,
+        createWebPort: () => {
+          throw new Error("web access is off in this test");
+        },
+        createReportPort,
+        isSignedIn: () => Promise.resolve(signedIn),
+      }).prepareTurn(contextOf("user-1"));
+
+    const granted = await prepare(true);
+    expect(granted.tools.map((tool) => tool.name)).toContain("report_issue");
+    expect(createReportPort).toHaveBeenCalledWith({
+      db,
+      reporterId: "user-1",
+      sessionId: "session-1",
+    });
+
+    createReportPort.mockClear();
+    const guest = await prepare(false);
+    expect(guest.tools.map((tool) => tool.name)).not.toContain("report_issue");
+    expect(createReportPort).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
+import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
+import {
+  ResourceSearchMode,
+  ResourceType,
+} from "@chia/services/rag/resource-types";
 
 import { createAgentMemoryPort } from "../src/services/agent-memory.port";
 
@@ -50,8 +55,8 @@ const db = {} as DB;
 
 const row = (id: number, overrides: { deletedAt?: Date | null } = {}) => ({
   id,
-  kind: "fact",
-  status: "active",
+  kind: AgentMemoryKind.Fact,
+  status: AgentMemoryStatus.Active,
   title: `Memory ${id}`,
   content: "body",
   sourceUrl: "https://example.com/",
@@ -72,10 +77,10 @@ describe("createAgentMemoryPort", () => {
 
   it("searches only the memory type and asks for unpublished chunks", async () => {
     api.searchResources.mockResolvedValueOnce({
-      mode: "hybrid",
+      mode: ResourceSearchMode.Hybrid,
       items: [
         {
-          sourceType: "agent_memory",
+          sourceType: ResourceType.AgentMemory,
           sourceId: 2,
           score: 1,
           matchedChunks: 1,
@@ -89,7 +94,7 @@ describe("createAgentMemoryPort", () => {
           summary: {},
         },
         {
-          sourceType: "agent_memory",
+          sourceType: ResourceType.AgentMemory,
           sourceId: 1,
           score: 0.5,
           matchedChunks: 1,
@@ -106,8 +111,8 @@ describe("createAgentMemoryPort", () => {
       expect.objectContaining({
         db,
         query: "q",
-        mode: "hybrid",
-        sourceTypes: ["agent_memory"],
+        mode: ResourceSearchMode.Hybrid,
+        sourceTypes: [ResourceType.AgentMemory],
         includeUnpublished: true,
         limit: 5,
         rerank: true,
@@ -125,7 +130,7 @@ describe("createAgentMemoryPort", () => {
       500, 200,
     ]);
     expect(hits[1]).toMatchObject({
-      kind: "fact",
+      kind: AgentMemoryKind.Fact,
       matches: [{ headingPaths: [], snippet: "short" }],
     });
   });
@@ -134,7 +139,7 @@ describe("createAgentMemoryPort", () => {
     api.createMemoryService.mockResolvedValueOnce(row(3));
 
     const saved = await port.save({
-      kind: "fact",
+      kind: AgentMemoryKind.Fact,
       title: "t",
       content: "c",
       sourceUrl: "https://example.com/",
@@ -142,7 +147,10 @@ describe("createAgentMemoryPort", () => {
 
     expect(api.createMemoryService).toHaveBeenCalledWith(
       db,
-      expect.objectContaining({ kind: "fact", sessionId: SESSION_ID }),
+      expect.objectContaining({
+        kind: AgentMemoryKind.Fact,
+        sessionId: SESSION_ID,
+      }),
       hooks.memoryHooks
     );
     expect(saved).toMatchObject({ id: 3, changed: true });
@@ -151,12 +159,12 @@ describe("createAgentMemoryPort", () => {
   it("writes a lesson as a pending proposal that may supersede an active one", async () => {
     api.createMemoryService.mockResolvedValueOnce({
       ...row(6),
-      kind: "lesson",
-      status: "pending",
+      kind: AgentMemoryKind.Lesson,
+      status: AgentMemoryStatus.Pending,
     });
 
     const saved = await port.save({
-      kind: "lesson",
+      kind: AgentMemoryKind.Lesson,
       title: "t",
       content: "c",
       supersedesId: 2,
@@ -165,14 +173,14 @@ describe("createAgentMemoryPort", () => {
     expect(api.createMemoryService).toHaveBeenCalledWith(
       db,
       expect.objectContaining({
-        kind: "lesson",
-        status: "pending",
+        kind: AgentMemoryKind.Lesson,
+        status: AgentMemoryStatus.Pending,
         supersedesId: 2,
         sessionId: SESSION_ID,
       }),
       hooks.memoryHooks
     );
-    expect(saved).toMatchObject({ id: 6, kind: "lesson" });
+    expect(saved).toMatchObject({ id: 6, kind: AgentMemoryKind.Lesson });
   });
 
   it("records sources by URL and reports whether the revisit changed anything", async () => {
@@ -182,7 +190,7 @@ describe("createAgentMemoryPort", () => {
     });
 
     const saved = await port.save({
-      kind: "source",
+      kind: AgentMemoryKind.Source,
       title: "Example",
       content: "excerpt",
       sourceUrl: "https://example.com/",
@@ -196,9 +204,13 @@ describe("createAgentMemoryPort", () => {
       }),
       hooks.memoryHooks
     );
-    expect(saved).toMatchObject({ id: 4, kind: "source", changed: false });
+    expect(saved).toMatchObject({
+      id: 4,
+      kind: AgentMemoryKind.Source,
+      changed: false,
+    });
     await expect(
-      port.save({ kind: "source", title: "t", content: "c" })
+      port.save({ kind: AgentMemoryKind.Source, title: "t", content: "c" })
     ).rejects.toThrow("needs its URL");
   });
 

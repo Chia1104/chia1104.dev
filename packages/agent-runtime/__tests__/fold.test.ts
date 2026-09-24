@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { AgentErrorKind } from "../src/types.ts";
 import { foldEvents } from "../src/wire/fold.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
@@ -95,7 +96,7 @@ describe("approval fold", () => {
       toolStart,
       request,
       refusal,
-      { type: "error", kind: "internal" },
+      { type: "error", kind: AgentErrorKind.Internal },
       { type: "run:end", reason: "error" },
     ]);
     expect(tool.status).toBe("error");

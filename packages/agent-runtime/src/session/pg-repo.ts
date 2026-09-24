@@ -7,15 +7,13 @@ import {
   updateAgentSession,
 } from "@chia/db/repos/agent";
 import type { AgentSession } from "@chia/db/schema";
+import { isEnumValue } from "@chia/utils/is";
 import type { JsonObject } from "@chia/utils/json";
 
 import { modelRefOf } from "../models.ts";
 import type { AgentModelRef } from "../models.ts";
-import type {
-  AgentSessionDefaults,
-  AgentSessionSettings,
-  ThinkingLevel,
-} from "../types.ts";
+import { ThinkingLevel } from "../types.ts";
+import type { AgentSessionDefaults, AgentSessionSettings } from "../types.ts";
 
 import { PgSessionStorage } from "./pg-storage.ts";
 
@@ -238,13 +236,12 @@ export const ownSettingsOf = (
   row: SessionSettingsRow
 ): Omit<AgentSessionSettings, "providerId" | "modelId"> &
   Partial<AgentModelRef> => {
-  if (!row.thinkingLevel) {
+  if (!row.thinkingLevel || !isEnumValue(ThinkingLevel, row.thinkingLevel)) {
     throw new Error(`Agent session ${row.id} has incomplete LLM settings.`);
   }
   return {
     ...modelRefOf(row),
-    thinkingLevel:
-      /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
+    thinkingLevel: row.thinkingLevel,
     activeToolNames: row.activeToolNames,
     autoApprove: row.autoApprove,
   };
