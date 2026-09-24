@@ -23,6 +23,7 @@ import type {
   FeedDraftMetaPatch,
   FeedDraftTranslationPatch,
 } from "@chia/db/repos/drafts/patch";
+import { resolveFeedReports } from "@chia/db/repos/feed-reports";
 import { getFeedForIndexing } from "@chia/db/repos/feeds";
 import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
@@ -339,7 +340,8 @@ export interface ApplyFeedDraftResult {
  *
  * The draft row is locked and its content checked against `expectedHash` in the same
  * transaction that writes the feed, so what lands is the content the caller decided on and
- * nothing written since. Feed hooks run after that transaction commits.
+ * nothing written since. The post's in-progress reader reports resolve in that transaction.
+ * Feed hooks run after it commits.
  */
 export const applyFeedDraftService = async (
   db: DB,
@@ -370,7 +372,9 @@ export const applyFeedDraftService = async (
         data: conflictData(locked),
       });
     }
-    return applyLockedDraft(tx, locked, input, deferred);
+    const applied = await applyLockedDraft(tx, locked, input, deferred);
+    await resolveFeedReports(tx, applied.feedId);
+    return applied;
   });
   // The feed is committed; a hook that cannot start indexing does not unmake that, so the
   // caller hears the truth and the index catches up on the next apply or publish.

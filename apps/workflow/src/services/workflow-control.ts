@@ -46,6 +46,12 @@ export const executeLocalWorkflowCommand = async (
       const run = await start(feedSummaryWorkflow, [command.request]);
       return { type: "started", runId: run.runId };
     }
+    case "report-triage:start": {
+      const { reportTriageWorkflow } =
+        await import("../workflows/report-triage.workflow");
+      const run = await start(reportTriageWorkflow, [command.request]);
+      return { type: "started", runId: run.runId };
+    }
     case "feed-remove:start": {
       const { removeFeedFromSearchIndexWorkflow } =
         await import("../workflows/feed-removal.workflow");
@@ -105,6 +111,8 @@ export const workflowControl = {
     startRun({ type: "feed-index:start", request: { feedID } }),
   startResourceIndex: (request: { sourceType: string; sourceId: number }) =>
     startRun({ type: "resource-index:start", request }),
+  startReportTriage: (reportId: number) =>
+    startRun({ type: "report-triage:start", request: { reportId } }),
   startMemoryConsolidation: (request: {
     sessionId: string;
     delayMs?: number;

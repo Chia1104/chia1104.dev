@@ -17,6 +17,10 @@
       "types": "./src/execution.ts",
       "default": "./src/execution.ts"
     },
+    "./report-triage": {
+      "types": "./src/report-triage.ts",
+      "default": "./src/report-triage.ts"
+    },
     "./feed-summary": {
       "types": "./src/feed-summary.ts",
       "default": "./src/feed-summary.ts"

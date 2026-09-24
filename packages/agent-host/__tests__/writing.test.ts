@@ -27,12 +27,19 @@ const drafts = vi.hoisted(() => ({
   patchFeedDraft: vi.fn(),
 }));
 
+const reports = vi.hoisted(() => ({
+  getFeedReport: vi.fn(),
+  getFeedReportRecord: vi.fn(),
+  setFeedReportStatus: vi.fn(async () => true),
+}));
+
 const runtime = vi.hoisted(() => ({
   prepareWritingTurn: vi.fn(),
 }));
 
 vi.mock("@chia/db/repos/agent", () => repo);
 vi.mock("@chia/db/repos/drafts", () => drafts);
+vi.mock("@chia/db/repos/feed-reports", () => reports);
 vi.mock("@chia/agent-writing/runtime", () => runtime);
 const { createWritingAgentExecutor, createWritingAgentKind } =
   await import("../src/writing");
@@ -156,6 +163,19 @@ describe("createWritingAgentKind state", () => {
       "session-1",
       [{ draftId: 7 }]
     );
+  });
+
+  it("admits a report that exists without touching its status", async () => {
+    reports.getFeedReport.mockResolvedValueOnce({ id: 3, status: "open" });
+    await kind.state.attach?.(caller, db, "session-1", [
+      { type: "report", id: 3 },
+    ]);
+    expect(reports.setFeedReportStatus).not.toHaveBeenCalled();
+
+    reports.getFeedReport.mockResolvedValueOnce(undefined);
+    await expect(
+      kind.state.attach?.(caller, db, "session-1", [{ type: "report", id: 5 }])
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("refuses a selection from a post or from a draft that is not the caller's", async () => {

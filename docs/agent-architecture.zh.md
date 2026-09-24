@@ -2,7 +2,7 @@
 
 > 狀態：as-built
 >
-> 最後更新：2026-09-16
+> 最後更新：2026-09-24
 >
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 >
@@ -62,7 +62,7 @@ oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建�
 | Kind      | Definition floor | 內容可見性                     | 可變 domain state    |
 | --------- | ---------------- | ------------------------------ | -------------------- |
 | `writing` | `Root`           | 設定作者的草稿與已發佈內容     | 共用 draft 與 memory |
-| `public`  | `Guest`          | 設定作者的已發佈內容與 profile | 無                   |
+| `public`  | `Guest`          | 設定作者的已發佈內容與 profile | 讀者回報             |
 
 Better Auth 的 `get-session` 帶有 `access`：session 自身的 tier、dashboard 等級，以及每個 hosted kind 目前的 floor。前端據此決定要渲染什麼；guards 不讀它，每個請求都重新分級 caller。
 
@@ -73,6 +73,8 @@ Public kind 有共用 content-read tools，沒有 approval tier、memory 或 dra
 Kind 可以在 model 執行前 `screen` 使用者輸入的訊息。Public kind 會把訪客的文字與選取內容交給 `GuardProvider` seam（`@chia/ai/guard/provider`，未設定 `GUARD_PROVIDER` 時關閉）評分：注入或不當請求的機率達到 `GUARD_THRESHOLD` 時，該 turn 以 `refused` 結束且訊息不會寫入 session，因此無法從 transcript 影響後續 turn。Screen 在三秒後 fail open；這個 kind 的影響範圍由它的 ports 與額度界定，而不是由 guard 界定。調整門檻或問題措辭前後都要跑一次 `guard-eval`。
 
 Host 只有在 operator 開啟 `webAccess`、已設定 guard provider，且 session 擁有者是已登入帳號（不是 guest）時，才會在該 turn 把 `WebPort` 交給 public kind。它的 `web_search` 與 `fetch_url` 是這個 kind 自己的工具，不是 writing kind 的：只有本 turn 搜尋回傳過的頁面才能讀取，因此訪客或被注入的頁面都無法把 fetch 指向自選的 URL；搜尋與讀取每個 turn 都有上限，因為 Firecrawl 的請求不在 usage ledger 內；搜尋結果與頁面在 model 讀取前先通過 `checkDocument`，被標記或 guard 失敗時一律不提供；通過的內容會以隨機邊界包成不可信文字。聊天 markdown 會把 model 輸出的圖片改成先確認才開啟的連結，否則圖片會在未經同意下載入其 URL。
+
+已登入的 session 擁有者也會在該 turn 取得 `ReportPort`，綁定該擁有者與 session。`report_issue` 每個 turn 針對一篇已發佈文章寫入一筆 `feed_report`：段落、讀者的主張、model 的判斷，以及讀者或 model 能給出的修正文字，全部以引用文字保存，由 operator 審閱。它不會改動訪客讀到的任何內容，每位讀者每天可送出的回報數有上限。Guest 的 prompt 不帶這個工具，改為說明回報需要登入。送出回報會啟動一個 workflow：先執行 `report.triage` task，這是不帶工具、使用 house model 的單次呼叫，儲存判斷與經已發佈內文驗證過的精確替換建議，再以純文字 email 通知 operator。兩個步驟都不會碰 draft；triage 失敗時仍會寄出 email。
 
 ## 3. Durable state 與 session tree
 
@@ -329,7 +331,7 @@ Agent 不綁定任何 draft。每個 draft tool 都帶 `draftId`：`list_drafts`
 
 ### 選取內容
 
-`@chia/agent-runtime/wire/schema` 的 `agentAttachmentInputSchema` 是 prompt 可攜帶內容的唯一定義：以 id 指定的 `draft`、以 id 與 locale 指定的已發布 `feed`，或帶著選取文字（上限 4000 字元）與來源的 `selection`。文章頁在掛載期間持續提供自己的 `feed`，就像編輯器提供 draft 一樣，因此在文章旁送出的每則 prompt 都帶著它，model 會把沒有指明其他對象的問題視為在問這篇文章。來源可以是編輯器裡的 draft（帶 locale 與行號範圍），或公開站上已發布的 feed（帶 locale 與 heading 路徑）。各 kind 的 `attach` 決定接受哪些：writing kind 接受 caller 擁有的 draft 並記錄到 session；public kind 接受已發布的 feed 與其中的選取，未發布的 id 在 turn 入列前就被拒絕。各 kind 的 `renderAttachments` 把文字連同出處引述給 model，writing model 可把它原封不動交給 `edit_draft_content`，public model 可透過 `get_post` 讀取該節。選取文字不會與資料列比對：編輯器送出前先 flush autosave，model 也會重新讀取 draft。
+`@chia/agent-runtime/wire/schema` 的 `agentAttachmentInputSchema` 是 prompt 可攜帶內容的唯一定義：以 id 指定的 `draft`、以 id 與 locale 指定的已發布 `feed`、以 id 指定的讀者 `report`，或帶著選取文字（上限 4000 字元）與來源的 `selection`。文章頁在掛載期間持續提供自己的 `feed`，就像編輯器提供 draft 一樣，因此在文章旁送出的每則 prompt 都帶著它，model 會把沒有指明其他對象的問題視為在問這篇文章。來源可以是編輯器裡的 draft（帶 locale 與行號範圍），或公開站上已發布的 feed（帶 locale 與 heading 路徑）。各 kind 的 `attach` 決定接受哪些：writing kind 接受 caller 擁有的 draft 並記錄到 session，也接受 report，但不改變其狀態，狀態由 operator 決定，向 agent 詢問一份 report 不會讓它在下次套用 draft 時被 resolve；public kind 接受已發布的 feed 與其中的選取，未發布的 id 在 turn 入列前就被拒絕。各 kind 的 `renderAttachments` 把文字連同出處引述給 model，writing model 可把它原封不動交給 `edit_draft_content`，public model 可透過 `get_post` 讀取該節。選取文字不會與資料列比對：編輯器送出前先 flush autosave，model 也會重新讀取 draft。
 
 公開站由 `@chia/agent-elements/selection` 量測 DOM 選取並浮出觸發按鈕與選單；粗指標（觸控）裝置上觸發按鈕改放在視窗底部，避開原生選取工具列。選單只提供固定問題，因為訪客的每週額度很小，段落加上已知的問題就是 model 需要的全部。編輯器則把項目掛在 Monaco 自己的右鍵選單上（precondition `editorHasSelection`），文字上方不再疊任何東西：預設動作直接送出一輪，另一項把選取附加到 composer 讓操作者自行提問。動作要嘛把選取提供為一次性的 context item（`once`，下一則 prompt 帶出後即撤回），要嘛在 context store 登記一筆 `AgentContextRequest`。掛在同一個 `AgentContextProvider` 下的 session 一旦能接受 prompt 就會送出待處理的請求，頁面因此能在 drawer 尚未開啟或 session 仍在 hydrate 時發起 turn。
 
@@ -353,7 +355,7 @@ Fact 與 source 只透過可見的 `search_memory`、`get_memory` tool call 進�
 
 Lesson 有兩個作者、一道閘門。Operator 糾正模型、附理由拒絕 commit 或說出常駐偏好時，模型在 turn 內以 `propose_lesson` 提案；其餘由 `memoryConsolidationWorkflow` 事後提案。兩者都以 `pending` 落地，未經人員審核的 model output 不會成為常駐 prompt instruction。提案可以取代一條 active lesson；核准時在同一個 transaction 裡封存被取代的那條，同一個偏好不會有兩個版本同時進 prompt；若那條已被另一個核准的修訂取代，核准會被拒絕。提案若修訂的是一條 pending lesson，則立即取代：pending 那條封存，新提案繼承它取代的 active lesson 與加強計數，一個偏好只有一個提案待審。`supersedes` 指向其他東西會被拒絕，並告知改怎麼做。之後的 session 若重複回饋到一條 pending lesson，run 會加強它而不是新增一條，待審清單依這個計數排序。
 
-Workflow 是增量的。`agent.writing_session` 記錄上一次 run 讀到的 leaf entry 與時間；一次 run 讀該 leaf 之後的 operator messages 與 assistant prose，加上那個時間之後 operator 在共用 drafts 上的修改（以相鄰保留狀態及 draft 現況之間的 line diff 呈現），排除 tool results；寫入任何 proposal 之前先以 compare-and-set 比對讀到的水位線再推進，所以同一 session 上重疊的兩次 run 只會寫入一組。Host 在每個 writing turn 之後排程一次 run：turn 有 commit 就立即，否則等待閒置延遲，並取消上一個 turn 留下的等待中 run，所以每個 session 只有一個 run 在等。`feeds.draft:apply` 會為每個處理過該 draft 的 session 啟動一次 run，因此從編輯器或 MCP commit 也會閉環。Dashboard 也可以手動啟動。
+Workflow 是增量的。`agent.writing_session` 記錄上一次 run 讀到的 leaf entry 與時間；一次 run 讀該 leaf 之後的 operator messages 與 assistant prose，加上那個時間之後 operator 在共用 drafts 上的修改（以相鄰保留狀態及 draft 現況之間的 line diff 呈現），排除 tool results 與 render 出的 attachment 區塊；寫入任何 proposal 之前先以 compare-and-set 比對讀到的水位線再推進，所以同一 session 上重疊的兩次 run 只會寫入一組。Host 在每個 writing turn 之後排程一次 run：turn 有 commit 就立即，否則等待閒置延遲，並取消上一個 turn 留下的等待中 run，所以每個 session 只有一個 run 在等。`feeds.draft:apply` 會為每個處理過該 draft 的 session 啟動一次 run，因此從編輯器或 MCP commit 也會閉環。Dashboard 也可以手動啟動。
 
 ### 內容可見性
 
@@ -362,7 +364,7 @@ Host 建立 `ContentReadPort` 時就固定 visibility：
 - `author` 可讀設定作者的草稿與已發佈內容。
 - `public` 只能讀已發佈內容，且不能擴大 filter。
 
-Public kind 只收到 public port，不會收到寫入能力；`WebPort` 只會透過 §2 的單一 turn 授權交給它。它的 `ProfileReadPort` 以同樣方式建立：host 只列出設定作者已發佈的 profile rows，kind 將其渲染進 system prompt，而不是開放成工具。
+Public kind 只收到 public port，不會收到內容寫入能力；`WebPort` 與 `ReportPort` 只會透過 §2 的單一 turn 授權交給它。它的 `ProfileReadPort` 以同樣方式建立：host 只列出設定作者已發佈的 profile rows，kind 將其渲染進 system prompt，而不是開放成工具。
 
 ## 10. Operator 設定
 
@@ -376,7 +378,7 @@ Public kind 只收到 public port，不會收到寫入能力；`WebPort` 只會�
 
 Kind defaults 在建立 session 時複製，後續修改不影響既有 session。Kind `config` 每個 turn 重新讀取，因此 preference 在下一個 turn 生效。Tool tier、approval requirement、turn budget 與 model allowlist 等安全邊界保留在 code。
 
-Tasks 包含 title generation、compaction、branch summary 與 lesson extraction。Task 可預設使用 session model 或 house model；operator pinned task model 一律來自 house catalogue。
+Tasks 包含 title generation、compaction、branch summary、lesson extraction、post summary 與 report triage。Task 可預設使用 session model 或 house model；operator pinned task model 一律來自 house catalogue。
 
 Admin write 在持久化前先依 code definition 驗證。API view 回傳 `default`、`override`、`effective`，dashboard 不需要重寫 resolution rules。
 

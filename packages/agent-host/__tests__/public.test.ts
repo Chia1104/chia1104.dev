@@ -48,7 +48,7 @@ const profile: ProfileReadPort = {
 describe("createPublicAgentKind", () => {
   const kind = createPublicAgentKind();
 
-  it("admits guests and lists only read tools, no commands and no skills", () => {
+  it("admits guests and lists read tools plus the report, no commands and no skills", () => {
     expect(kind.kind).toBe(PUBLIC_AGENT_KIND);
     expect(kind.minTier).toBe(CallerTier.Guest);
 
@@ -60,8 +60,13 @@ describe("createPublicAgentKind", () => {
       "list_tags",
       "web_search",
       "fetch_url",
+      "report_issue",
     ]);
-    expect(capabilities.tools.every((tool) => tool.tier === "read")).toBe(true);
+    expect(
+      capabilities.tools
+        .filter((tool) => tool.name !== "report_issue")
+        .every((tool) => tool.tier === "read")
+    ).toBe(true);
     expect(capabilities.commands).toEqual([]);
     expect(capabilities.skills).toEqual([]);
   });
@@ -111,6 +116,9 @@ describe("createPublicAgentKind", () => {
       kind.state.attach?.(caller, db, "session-1", [{ type: "draft", id: 1 }])
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
+      kind.state.attach?.(caller, db, "session-1", [{ type: "report", id: 1 }])
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
       kind.state.attach?.(caller, db, "session-1", [
         {
           type: "selection",
@@ -128,8 +136,12 @@ describe("createPublicAgentKind", () => {
   });
 });
 
+const reportPort = {
+  submit: () => Promise.resolve({ id: 1 }),
+};
+
 describe("createPublicAgentExecutor", () => {
-  it("prepares read-only tools over the host's ports", async () => {
+  it("prepares read-only tools over the host's ports for a guest", async () => {
     const executor = createPublicAgentExecutor({
       createContentPort: () => port,
       createProfilePort: () => profile,
@@ -137,12 +149,16 @@ describe("createPublicAgentExecutor", () => {
       createWebPort: () => {
         throw new Error("web access is off in this test");
       },
+      createReportPort: () => {
+        throw new Error("a guest cannot report");
+      },
       isSignedIn: () => Promise.resolve(false),
     });
 
     const turn = await executor.prepareTurn(
-      /* SAFETY: the kind reads only the db handle and config from the context. */ {
+      /* SAFETY: the kind reads only the db handle, the owner and config from the context. */ {
         db,
+        row: { id: "session-1", userId: "guest" },
         config: {},
       } as never
     );
@@ -175,12 +191,13 @@ describe("createPublicAgentExecutor", () => {
           search: () => Promise.resolve([]),
           fetchPage: (url) => Promise.resolve({ url, text: "" }),
         }),
+        createReportPort: () => reportPort,
         isSignedIn: () => Promise.resolve(options.signedIn),
       });
       const turn = await executor.prepareTurn(
-        /* SAFETY: the kind reads only the db handle, the owner id and config from the context. */ {
+        /* SAFETY: the kind reads only the db handle, the owner and config from the context. */ {
           db,
-          row: { userId: "user-1" },
+          row: { id: "session-1", userId: "user-1" },
           config: { webAccess: options.webAccess },
         } as never
       );
@@ -197,5 +214,39 @@ describe("createPublicAgentExecutor", () => {
     ]) {
       await expect(toolNames(denied)).resolves.not.toContain("web_search");
     }
+  });
+
+  it("grants reporting to a signed-in owner, bound to them and the session", async () => {
+    const createReportPort = vi.fn(() => reportPort);
+    const prepare = (signedIn: boolean) =>
+      createPublicAgentExecutor({
+        createContentPort: () => port,
+        createProfilePort: () => profile,
+        guard: null,
+        createWebPort: () => {
+          throw new Error("web access is off in this test");
+        },
+        createReportPort,
+        isSignedIn: () => Promise.resolve(signedIn),
+      }).prepareTurn(
+        /* SAFETY: the kind reads only the db handle, the owner and config from the context. */ {
+          db,
+          row: { id: "session-1", userId: "user-1" },
+          config: {},
+        } as never
+      );
+
+    const granted = await prepare(true);
+    expect(granted.tools.map((tool) => tool.name)).toContain("report_issue");
+    expect(createReportPort).toHaveBeenCalledWith({
+      db,
+      reporterId: "user-1",
+      sessionId: "session-1",
+    });
+
+    createReportPort.mockClear();
+    const guest = await prepare(false);
+    expect(guest.tools.map((tool) => tool.name)).not.toContain("report_issue");
+    expect(createReportPort).not.toHaveBeenCalled();
   });
 });

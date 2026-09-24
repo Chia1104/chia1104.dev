@@ -1,0 +1,1 @@
+ALTER TABLE "chia_feed_report" ADD COLUMN "triage" jsonb;

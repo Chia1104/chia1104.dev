@@ -381,7 +381,8 @@ export type AgentUsageSource =
   | "branch_summary"
   | "title"
   | "lessons"
-  | "summary";
+  | "summary"
+  | "triage";
 
 /**
  * Whose key paid for a call. `providerId` alone cannot say: the same provider serves the house

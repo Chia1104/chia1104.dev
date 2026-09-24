@@ -168,7 +168,10 @@ export const defaultApprovalKey = (request: ToolCallRequest): string =>
     (request.input ?? null) as JsonValue
   )}`;
 
-/** The operator's message as persisted: rendered attachments first, their own words last. */
+/**
+ * The operator's message as persisted: rendered attachments first, their own words last.
+ * Readers of the transcript (lesson extraction) rely on the block being content part 0.
+ */
 const attachedPrompt = (rendered: string, text: string): AgentMessage => ({
   role: "user",
   content: [

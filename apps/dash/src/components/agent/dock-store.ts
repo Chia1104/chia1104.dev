@@ -42,5 +42,11 @@ export const agentDockStore = createStore<AgentDockState>()(
   )
 );
 
+/** Opens the dock without disturbing a maximized one. */
+export const showAgentDock = () => {
+  const dock = agentDockStore.getState();
+  if (dock.mode === "closed") dock.setMode("open");
+};
+
 export const useAgentDock = <T>(selector: (state: AgentDockState) => T): T =>
   useStore(agentDockStore, selector);

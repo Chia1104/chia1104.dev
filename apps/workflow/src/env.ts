@@ -3,6 +3,7 @@ import * as z from "zod";
 
 import { env as aiEnv } from "@chia/ai/env";
 import { env as dbEnv } from "@chia/db/env";
+import { env as emailEnv } from "@chia/integrations/email/env";
 import { NumericStringSchema } from "@chia/utils/schema";
 
 export const env = createEnv({
@@ -52,5 +53,5 @@ export const env = createEnv({
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [dbEnv, aiEnv],
+  extends: [dbEnv, aiEnv, emailEnv],
 });

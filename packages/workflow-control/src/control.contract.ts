@@ -36,6 +36,14 @@ export const workflowControlCommandSchema = z.discriminatedUnion("type", [
     request: z.object({ feedID: z.number() }),
   }),
   z.object({
+    type: z.literal("report-triage:start"),
+    request: z.object({
+      reportId: z.number().int().positive(),
+      /** `false` skips the operator email: a triage the operator started by hand. */
+      notify: z.boolean().optional(),
+    }),
+  }),
+  z.object({
     type: z.literal("feed-remove:start"),
     request: z.object({ translationIDs: z.array(z.number()) }),
   }),
@@ -98,6 +106,16 @@ export const workflowControlResultSchema = z.discriminatedUnion("type", [
 export type WorkflowControlResult = z.infer<typeof workflowControlResultSchema>;
 
 export const workflowControlErrorSchema = z.object({ error: z.string() });
+
+/** What `report-triage:start` leaves as its run output; the statuses are the step's names. */
+export const reportTriageOutputSchema = z.object({
+  reportId: z.number().int(),
+  triage: z.string(),
+  /** Absent when the run stopped before the email step. */
+  notified: z.string().optional(),
+});
+
+export type ReportTriageOutput = z.infer<typeof reportTriageOutputSchema>;
 
 /** What `feed-summary:start` leaves as its run output, per translation. */
 export const feedSummaryOutputSchema = z.object({

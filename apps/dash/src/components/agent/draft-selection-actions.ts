@@ -7,7 +7,7 @@ import type {
   EditorSelectionAction,
 } from "@/components/feed/markdown-editor";
 
-import { agentDockStore } from "./dock-store";
+import { showAgentDock } from "./dock-store";
 
 const PRESETS = [
   {
@@ -29,12 +29,6 @@ const PRESETS = [
       "Write the selected passage in the draft's other locale and put it in the corresponding place there. Leave this locale unchanged.",
   },
 ];
-
-/** Opens the dock without disturbing a maximized one. */
-const showDock = () => {
-  const dock = agentDockStore.getState();
-  if (dock.mode === "closed") dock.setMode("open");
-};
 
 /**
  * The editor's context-menu entries for selected text: presets that send a turn, and one that
@@ -74,7 +68,7 @@ export const useDraftSelectionActions = ({
         },
       ],
     });
-    showDock();
+    showAgentDock();
   };
 
   const attach = (selection: EditorSelection) => {
@@ -89,7 +83,7 @@ export const useDraftSelectionActions = ({
       label: `Selection · ${locale} · ${range}`,
       once: true,
     });
-    showDock();
+    showAgentDock();
   };
 
   return [

@@ -19,6 +19,7 @@ import {
   Brain,
   SlidersHorizontal,
   Tags,
+  Flag,
   UserRound,
   Users,
 } from "lucide-react";
@@ -97,6 +98,13 @@ export const useRouteItems = (level: AccessLevel) => {
           isActive: segments[0] === "tags",
           icon: <Tags />,
           title: "Tags",
+          operator: true,
+        },
+        {
+          url: "/reports",
+          isActive: segments[0] === "reports",
+          icon: <Flag />,
+          title: "Reader reports",
           operator: true,
         },
         {

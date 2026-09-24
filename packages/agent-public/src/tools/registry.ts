@@ -20,11 +20,28 @@ export const WEB_TOOL_INFO_BY_NAME = {
   [WEB_TOOL_NAMES.fetchUrl]: { label: "Read page", tier: "read" },
 } as const satisfies Record<string, AgentToolInfo>;
 
-export const TOOL_NAMES = { ...CONTENT_TOOL_NAMES, ...WEB_TOOL_NAMES };
+export const REPORT_TOOL_NAMES = {
+  reportIssue: "report_issue",
+} as const;
+
+/** `report` writes a row the operator reviews; nothing the visitor reads changes. */
+export const REPORT_TOOL_INFO_BY_NAME = {
+  [REPORT_TOOL_NAMES.reportIssue]: {
+    label: "Report to the author",
+    tier: "report",
+  },
+} as const satisfies Record<string, AgentToolInfo>;
+
+export const TOOL_NAMES = {
+  ...CONTENT_TOOL_NAMES,
+  ...WEB_TOOL_NAMES,
+  ...REPORT_TOOL_NAMES,
+};
 
 const TOOL_INFO_BY_NAME = {
   ...CONTENT_TOOL_INFO_BY_NAME,
   ...WEB_TOOL_INFO_BY_NAME,
+  ...REPORT_TOOL_INFO_BY_NAME,
 };
 
 const isToolName = (
@@ -32,10 +49,7 @@ const isToolName = (
 ): toolName is keyof typeof TOOL_INFO_BY_NAME =>
   Object.hasOwn(TOOL_INFO_BY_NAME, toolName);
 
-/**
- * Unknown names are `read` too: this kind has no tier that changes anything, so there is no
- * more restrictive fallback.
- */
+/** Unknown names are `read`: no tier of this kind asks for approval, so none is more restrictive. */
 export const toolInfo = (toolName: string): AgentToolInfo =>
   isToolName(toolName)
     ? TOOL_INFO_BY_NAME[toolName]

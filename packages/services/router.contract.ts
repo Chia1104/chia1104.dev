@@ -8,6 +8,7 @@ import { healthContract } from "./health/health.contract";
 import { memoryContract } from "./memory/memory.contract";
 import { profileContract } from "./profile/profile.contract";
 import { ragContract } from "./rag/rag.contract";
+import { reportsContract } from "./reports/reports.contract";
 import { spotifyContract } from "./spotify/spotify.contract";
 import { tagsContract } from "./tags/tags.contract";
 import { toolingsContract } from "./toolings/toolings.contract";
@@ -27,5 +28,6 @@ export const routerContract = {
   memory: memoryContract,
   profile: profileContract,
   spotify: spotifyContract,
+  reports: reportsContract,
   tags: tagsContract,
 };

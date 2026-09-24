@@ -16,6 +16,9 @@ import { reportError } from "@chia/observability/report";
 
 const MICROS_PER_USD = 1_000_000;
 
+/** The ledger's `kind` for a one-shot task on a post (summary, report triage); it belongs to no agent kind. */
+export const FEED_TASK_USAGE_KIND = "feed";
+
 /** pi reports cost in dollars as a float; the ledger keeps an integer so a running sum cannot drift. */
 export const costToMicros = (usd: number): number => {
   if (!Number.isFinite(usd) || usd < 0) {

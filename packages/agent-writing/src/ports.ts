@@ -1,4 +1,5 @@
 import type { ContentReadPort } from "@chia/agent-content/types";
+import type { FeedReportRecord } from "@chia/db/repos/feed-reports";
 import type { Locale } from "@chia/db/types";
 
 import type {
@@ -138,4 +139,12 @@ export interface MemoryPort {
   get(id: number, signal?: AbortSignal): Promise<MemoryDetail | null>;
   listBySession(sessionId: string): Promise<MemorySummary[]>;
   listActiveLessons(limit: number): Promise<MemorySummary[]>;
+}
+
+/** A reader report as the operator hands it over; every text field is unverified. */
+export type ReaderReport = FeedReportRecord;
+
+/** Reads the reports the operator attaches; `null` for an id that is gone. */
+export interface ReportReadPort {
+  get(id: number): Promise<ReaderReport | null>;
 }

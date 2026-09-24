@@ -81,7 +81,9 @@ const AttachmentChip = ({ attachment }: { attachment: AgentAttachment }) => {
       ? `Draft #${attachment.id}`
       : attachment.type === "feed"
         ? `Post #${attachment.id}`
-        : attachmentMetaOf(attachment));
+        : attachment.type === "report"
+          ? `Report #${attachment.id}`
+          : attachmentMetaOf(attachment));
   if (attachment.type !== "selection") {
     return <span className={cn(CHIP_CLASS, "line-clamp-1")}>{label}</span>;
   }

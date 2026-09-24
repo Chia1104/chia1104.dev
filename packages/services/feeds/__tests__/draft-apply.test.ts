@@ -19,12 +19,19 @@ const repo = vi.hoisted(() => ({
   getFeedDraftForUpdate: vi.fn(),
   commitFeedDraft: vi.fn(async () => ({ id: 31, contentHash: "h3" })),
 }));
+const reports = vi.hoisted(() => ({
+  resolveFeedReports: vi.fn(async () => {
+    expect(inTransaction).toBe(true);
+    return 1;
+  }),
+}));
 const write = vi.hoisted(() => ({
   createFeedService: vi.fn(),
   updateFeedService: vi.fn(),
 }));
 
 vi.mock("@chia/db/repos/drafts", () => repo);
+vi.mock("@chia/db/repos/feed-reports", () => reports);
 vi.mock("@chia/db/repos/feeds", () => ({ getFeedForIndexing: vi.fn() }));
 vi.mock("../write.service", () => write);
 
@@ -93,6 +100,7 @@ describe("applyFeedDraftService", () => {
 
     expect(write.updateFeedService).not.toHaveBeenCalled();
     expect(repo.commitFeedDraft).not.toHaveBeenCalled();
+    expect(reports.resolveFeedReports).not.toHaveBeenCalled();
   });
 
   it("applies the decided content under the lock, commits it and fires feed hooks after the transaction", async () => {
@@ -132,6 +140,7 @@ describe("applyFeedDraftService", () => {
       message: "Tighten the intro",
     });
     expect(onFeedChanged).toHaveBeenCalledExactlyOnceWith(5);
+    expect(reports.resolveFeedReports).toHaveBeenCalledExactlyOnceWith(db, 5);
   });
 
   it("reports the committed apply even when the feed hook fails afterwards", async () => {

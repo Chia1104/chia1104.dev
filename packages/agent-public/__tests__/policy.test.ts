@@ -6,10 +6,12 @@ import { publicPolicy, publicTurnBudget } from "../src/policy.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 
 describe("publicPolicy", () => {
-  it("classifies every tool as read and never asks for approval", () => {
+  it("classifies every tool but the report as read and never asks for approval", () => {
     for (const name of [...Object.values(TOOL_NAMES), "not_a_tool"]) {
       const info = publicPolicy.toolInfo(name);
-      expect(info.tier).toBe("read");
+      expect(info.tier).toBe(
+        name === TOOL_NAMES.reportIssue ? "report" : "read"
+      );
       expect(info.changes).toBeUndefined();
       expect(publicPolicy.requiresApproval(info.tier)).toBe(false);
     }

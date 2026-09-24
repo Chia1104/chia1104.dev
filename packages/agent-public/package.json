@@ -17,6 +17,14 @@
       "types": "./src/policy.ts",
       "default": "./src/policy.ts"
     },
+    "./ports": {
+      "types": "./src/ports.ts",
+      "default": "./src/ports.ts"
+    },
+    "./tools/report": {
+      "types": "./src/tools/report.tool.ts",
+      "default": "./src/tools/report.tool.ts"
+    },
     "./tools/web": {
       "types": "./src/tools/web.tool.ts",
       "default": "./src/tools/web.tool.ts"
