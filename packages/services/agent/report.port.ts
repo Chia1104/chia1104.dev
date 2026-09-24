@@ -3,6 +3,7 @@ import type { DB } from "@chia/db/client";
 import {
   countFeedReportsSince,
   createFeedReport,
+  lockFeedReporter,
 } from "@chia/db/repos/feed-reports";
 import { getFeedBySlug } from "@chia/db/repos/feeds";
 import type { FeedReport } from "@chia/db/schema";
@@ -28,38 +29,42 @@ export const createReportPort = (
   options: CreateReportPortOptions
 ): ReportPort => ({
   async submit(input) {
-    const { db } = options;
-    const recent = await countFeedReportsSince(db, {
-      reporterId: options.reporterId,
-      since: new Date(Date.now() - DAY_MS),
-    });
-    if (recent >= FEED_REPORT_DAILY_LIMIT) {
-      throw new AppError("TOO_MANY_REQUESTS", {
-        message: `This visitor already sent ${FEED_REPORT_DAILY_LIMIT} reports today. Tell them to try again tomorrow.`,
+    // Count and insert run under the reporter's lock, so parallel sessions cannot pass the
+    // limit together; the hook runs once the row is committed and visible to a workflow.
+    const report = await options.db.transaction(async (tx) => {
+      await lockFeedReporter(tx, options.reporterId);
+      const recent = await countFeedReportsSince(tx, {
+        reporterId: options.reporterId,
+        since: new Date(Date.now() - DAY_MS),
       });
-    }
+      if (recent >= FEED_REPORT_DAILY_LIMIT) {
+        throw new AppError("TOO_MANY_REQUESTS", {
+          message: `This visitor already sent ${FEED_REPORT_DAILY_LIMIT} reports in the last 24 hours. Tell them to try again later.`,
+        });
+      }
 
-    const feed = await getFeedBySlug(db, {
-      slug: input.slug,
-      userId: options.authorId,
-      published: true,
-    });
-    if (!feed) {
-      throw new AppError("NOT_FOUND", {
-        message: `No published post has the slug "${input.slug}". Use the slug a tool returned.`,
+      const feed = await getFeedBySlug(tx, {
+        slug: input.slug,
+        userId: options.authorId,
+        published: true,
       });
-    }
+      if (!feed) {
+        throw new AppError("NOT_FOUND", {
+          message: `No published post has the slug "${input.slug}". Use the slug a tool returned.`,
+        });
+      }
 
-    const report = await createFeedReport(db, {
-      feedId: feed.id,
-      locale: input.locale,
-      headingPath: input.headingPath ?? null,
-      quote: input.quote ?? null,
-      category: input.category,
-      claim: input.claim,
-      assessment: input.assessment,
-      reporterId: options.reporterId,
-      sessionId: options.sessionId,
+      return createFeedReport(tx, {
+        feedId: feed.id,
+        locale: input.locale,
+        headingPath: input.headingPath ?? null,
+        quote: input.quote ?? null,
+        category: input.category,
+        claim: input.claim,
+        assessment: input.assessment,
+        reporterId: options.reporterId,
+        sessionId: options.sessionId,
+      });
     });
     await options.onReported?.(report);
     return { id: report.id };

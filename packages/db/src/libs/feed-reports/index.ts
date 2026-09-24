@@ -1,4 +1,4 @@
-import { and, count, eq, gte } from "drizzle-orm";
+import { and, count, eq, gte, sql } from "drizzle-orm";
 
 import type { DB } from "../../client.ts";
 import { feedReports } from "../../schemas/schema.ts";
@@ -27,6 +27,19 @@ export const createFeedReport = async (
   const [row] = await db.insert(feedReports).values(input).returning();
   if (!row) throw new Error("feed_report insert returned no row");
   return row;
+};
+
+/**
+ * Takes the reporter's advisory lock on this transaction, so two sessions of one reader cannot
+ * both pass the daily count before either inserts.
+ */
+export const lockFeedReporter = async (
+  tx: DB,
+  reporterId: string
+): Promise<void> => {
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtext(${`feed_report.reporter:${reporterId}`}))`
+  );
 };
 
 /** Reports `reporterId` filed at or after `since`, whatever became of them. */

@@ -5,15 +5,21 @@ import type { DB } from "@chia/db/client";
 import { createReportPort, FEED_REPORT_DAILY_LIMIT } from "../report.port";
 
 const { reports, feeds } = vi.hoisted(() => ({
-  reports: { countFeedReportsSince: vi.fn(), createFeedReport: vi.fn() },
+  reports: {
+    countFeedReportsSince: vi.fn(),
+    createFeedReport: vi.fn(),
+    lockFeedReporter: vi.fn(async () => {}),
+  },
   feeds: { getFeedBySlug: vi.fn() },
 }));
 
 vi.mock("@chia/db/repos/feed-reports", () => reports);
 vi.mock("@chia/db/repos/feeds", () => feeds);
 
-/* SAFETY: the repositories are mocked, so the handle is never used. */
-const db = {} as DB;
+/* SAFETY: the repositories are mocked; the handle only opens the transaction they run in. */
+const db = {
+  transaction: (fn: (tx: DB) => Promise<unknown>) => fn(db),
+} as unknown as DB;
 
 const input = {
   slug: "hello-world",
@@ -61,6 +67,7 @@ describe("createReportPort", () => {
       reporterId: "reader",
       sessionId: "session-1",
     });
+    expect(reports.lockFeedReporter).toHaveBeenCalledWith(db, "reader");
     expect(onReported).toHaveBeenCalledWith(row);
   });
 
