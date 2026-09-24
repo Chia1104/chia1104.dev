@@ -36,6 +36,7 @@ const record = (
   category: "typo",
   claim: "teh",
   assessment: "It says teh.",
+  suggestion: "the",
   reporterId: "reader",
   sessionId: "session-1",
   status,

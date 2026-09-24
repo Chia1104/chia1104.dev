@@ -31,6 +31,8 @@ const feedReportSchema = reportIdSchema.extend({
   category: z.enum(Object.values(FEED_REPORT_CATEGORY)),
   claim: z.string(),
   assessment: z.string(),
+  /** The corrected wording the reader or the reading assistant proposed; a candidate, never applied as is. */
+  suggestion: z.string().nullable(),
   status: feedReportStatusSchema,
   triage: z
     .object({

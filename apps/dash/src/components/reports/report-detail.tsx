@@ -263,6 +263,9 @@ export const ReportDetail = ({ id }: { id: number }) => {
           <Quoted label="Reading assistant's assessment">
             {report.assessment}
           </Quoted>
+          {report.suggestion ? (
+            <Quoted label="Suggested fix">{report.suggestion}</Quoted>
+          ) : null}
         </Card.Content>
       </Card>
 
