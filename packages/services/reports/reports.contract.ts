@@ -94,8 +94,8 @@ export const setReportStatusContract = oc
 /**
  * Writes the triage's suggested edits into the post's draft, opening one from the post when
  * none is open, and marks the report in progress. Nothing is published: the draft is applied
- * from the editor. `BAD_REQUEST` when a suggestion no longer matches the draft; nothing is
- * written then.
+ * from the editor. `BAD_REQUEST` when the report is resolved or dismissed, or when a
+ * suggestion no longer matches the draft; nothing is written then.
  */
 export const applyReportEditsContract = oc
   .errors(errors)

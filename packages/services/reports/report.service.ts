@@ -41,44 +41,54 @@ export const requireFeedReport = async (
  * Writes every suggested edit into the post's draft in one guarded patch, as the operator,
  * then marks the report in progress so applying the draft resolves it. A suggestion matched
  * the published body when triaged; one the draft has since moved away from fails the patch.
+ * All of it is one transaction, so the draft never carries a fix the report does not know of.
  */
 export const applyReportEditsService = async (
   db: DB,
   input: { id: number; adminId: string }
-): Promise<{ record: FeedReportRecord; draftId: number }> => {
-  const record = await requireFeedReport(db, input.id);
-  const edits = record.triage?.edits ?? [];
-  if (edits.length === 0) {
-    throw new AppError("BAD_REQUEST", {
-      message: `Report ${input.id} has no suggested edits.`,
-    });
-  }
+): Promise<{ record: FeedReportRecord; draftId: number }> =>
+  db.transaction(async (tx) => {
+    const record = await requireFeedReport(tx, input.id);
+    if (
+      record.status !== FEED_REPORT_STATUS.Open &&
+      record.status !== FEED_REPORT_STATUS.InProgress
+    ) {
+      throw new AppError("BAD_REQUEST", {
+        message: `Report ${input.id} is ${record.status}; reopen it first.`,
+      });
+    }
+    const edits = record.triage?.edits ?? [];
+    if (edits.length === 0) {
+      throw new AppError("BAD_REQUEST", {
+        message: `Report ${input.id} has no suggested edits.`,
+      });
+    }
 
-  const draft = await openFeedDraftService(db, {
-    adminId: input.adminId,
-    feedId: record.feedId,
-    author: FEED_DRAFT_AUTHOR.Operator,
-  });
-  const byLocale: Partial<
-    Record<Locale, { oldString: string; newString: string }[]>
-  > = {};
-  for (const edit of edits) {
-    (byLocale[edit.locale] ??= []).push({
-      oldString: edit.find,
-      newString: edit.replace,
+    const draft = await openFeedDraftService(tx, {
+      adminId: input.adminId,
+      feedId: record.feedId,
+      author: FEED_DRAFT_AUTHOR.Operator,
     });
-  }
-  await patchFeedDraftService(db, {
-    draftId: draft.id,
-    adminId: input.adminId,
-    expectedRevision: draft.revision,
-    author: FEED_DRAFT_AUTHOR.Operator,
-    edits: byLocale,
-  });
+    const byLocale: Partial<
+      Record<Locale, { oldString: string; newString: string }[]>
+    > = {};
+    for (const edit of edits) {
+      (byLocale[edit.locale] ??= []).push({
+        oldString: edit.find,
+        newString: edit.replace,
+      });
+    }
+    await patchFeedDraftService(tx, {
+      draftId: draft.id,
+      adminId: input.adminId,
+      expectedRevision: draft.revision,
+      author: FEED_DRAFT_AUTHOR.Operator,
+      edits: byLocale,
+    });
 
-  await setFeedReportStatus(db, input.id, FEED_REPORT_STATUS.InProgress);
-  return {
-    record: await requireFeedReport(db, input.id),
-    draftId: draft.id,
-  };
-};
+    await setFeedReportStatus(tx, input.id, FEED_REPORT_STATUS.InProgress);
+    return {
+      record: await requireFeedReport(tx, input.id),
+      draftId: draft.id,
+    };
+  });

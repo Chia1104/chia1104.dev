@@ -19,11 +19,14 @@ vi.mock("../../feeds/draft.service", () => drafts);
 
 const { applyReportEditsService } = await import("../report.service");
 
-/* SAFETY: every repository and service the function reaches is mocked. */
-const db = {} as DB;
+/* SAFETY: every repository and service the function reaches is mocked; the handle only opens their transaction. */
+const db = {
+  transaction: (fn: (tx: DB) => Promise<unknown>) => fn(db),
+} as unknown as DB;
 
 const record = (
-  edits: NonNullable<FeedReportRecord["triage"]>["edits"]
+  edits: NonNullable<FeedReportRecord["triage"]>["edits"],
+  status: FeedReportRecord["status"] = "open"
 ): FeedReportRecord => ({
   id: 1,
   feedId: 5,
@@ -35,7 +38,7 @@ const record = (
   assessment: "It says teh.",
   reporterId: "reader",
   sessionId: "session-1",
-  status: "open",
+  status,
   triage: {
     verdict: "likely_valid",
     summary: "錯字。",
@@ -94,6 +97,17 @@ describe("applyReportEditsService", () => {
 
   it("refuses a report with nothing to apply, before opening a draft", async () => {
     reports.getFeedReportRecord.mockResolvedValue(record([]));
+
+    await expect(
+      applyReportEditsService(db, { id: 1, adminId: "admin" })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(drafts.openFeedDraftService).not.toHaveBeenCalled();
+  });
+
+  it("refuses a settled report rather than reopening it through the draft", async () => {
+    reports.getFeedReportRecord.mockResolvedValue(
+      record([{ locale: "en", find: "teh", replace: "the" }], "dismissed")
+    );
 
     await expect(
       applyReportEditsService(db, { id: 1, adminId: "admin" })
