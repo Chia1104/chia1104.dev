@@ -2,7 +2,10 @@ import "zod/compile";
 import { FatalError, fetch } from "workflow";
 
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
-import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
+import {
+  EMBEDDING_INDEX_VERSION,
+  EmbeddingTask,
+} from "@chia/ai/embeddings/utils";
 import { connectDatabase, invalidateCache } from "@chia/db/client";
 import {
   deleteResourceChunks,
@@ -12,7 +15,7 @@ import {
 } from "@chia/db/repos/resources/chunk";
 import { feedTranslations } from "@chia/db/schema";
 import { getResourceAdapter } from "@chia/services/rag/registry";
-import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/services/rag/resource-types";
+import { ResourceType } from "@chia/services/rag/resource-types";
 
 const EMBED_BATCH_SIZE = 32;
 
@@ -22,7 +25,7 @@ const EMBED_BATCH_SIZE = 32;
  * selects from, never the ones its subquery touches.
  */
 const invalidateSourceReads = async (sourceType: string): Promise<void> => {
-  if (sourceType === FEED_TRANSLATION_SOURCE_TYPE) {
+  if (sourceType === ResourceType.FeedTranslation) {
     await invalidateCache([feedTranslations]);
   }
 };
@@ -86,7 +89,7 @@ export const embedPendingChunksStep = async (request: ResourceIndexRequest) => {
     try {
       vectors = await provider.embed(
         batch.map((chunk) => chunk.content),
-        "search_document"
+        EmbeddingTask.SearchDocument
       );
     } catch (error) {
       const status =

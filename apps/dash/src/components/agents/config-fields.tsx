@@ -103,8 +103,8 @@ const describe = (property: Property, fallback: JsonValue | undefined) => {
 
 export interface ConfigFieldsProps<TValues extends FieldValues> {
   control: Control<TValues>;
-  /** Form path the config object lives under. */
-  name: string;
+  /** Form path of one schema property's value. */
+  pathOf: (key: string) => FieldPath<TValues>;
   schema: JsonObject;
   defaults: JsonObject;
   isDisabled?: boolean;
@@ -114,7 +114,7 @@ export const ConfigFields = <TValues extends FieldValues>({
   control,
   defaults,
   isDisabled,
-  name,
+  pathOf,
   schema,
 }: ConfigFieldsProps<TValues>) => {
   const entries = propertiesOf(schema);
@@ -132,14 +132,11 @@ export const ConfigFields = <TValues extends FieldValues>({
         const label = property.title ?? humanize(key);
         const fallback = defaults[key];
         const type = typeOf(property);
-        /* SAFETY: the form's values put the config object under `name`, keyed by schema property. */
-        const path = `${name}.${key}` as FieldPath<TValues>;
-
         return (
           <Controller
             key={key}
             control={control}
-            name={path}
+            name={pathOf(key)}
             render={({ field }) => {
               const current =
                 configFieldValueSchema.safeParse(field.value).data ?? null;

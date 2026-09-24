@@ -21,11 +21,12 @@ import {
   restoreFeed,
   softDeleteFeed,
 } from "@chia/db/repos/feeds";
-import { FEED_DRAFT_AUTHOR } from "@chia/db/schema";
+import { FeedDraftAuthor } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 import { feedSummaryOutputSchema } from "@chia/workflow-control/contract";
 
+import { ResourceSearchMode } from "../rag/resource-types";
 import { contractOS } from "../shared/context";
 import { sessionGuard } from "../shared/guards/auth.guard";
 import { callerGuard } from "../shared/guards/caller.guard";
@@ -165,7 +166,9 @@ export const searchFeedsAdvancedRoute = contractOS.feeds["search:advanced"]
    * the server's embedding credentials; `bm25` does not.
    */
   .use(
-    sessionGuard.adaptInput((input) => ({ rootOnly: input.model !== "bm25" }))
+    sessionGuard.adaptInput((input) => ({
+      rootOnly: input.model !== ResourceSearchMode.Bm25,
+    }))
   )
   .handler(async (opts) => {
     const { keyword, model, locale } = opts.input;
@@ -295,7 +298,7 @@ export const openFeedDraftRoute = contractOS.feeds["draft:open"]
         await openFeedDraftService(opts.context.db, {
           adminId: opts.context.caller.adminId,
           feedId: opts.input.feedId,
-          author: FEED_DRAFT_AUTHOR.Operator,
+          author: FeedDraftAuthor.Operator,
         })
       )
     )
@@ -338,7 +341,7 @@ export const patchFeedDraftRoute = contractOS.feeds["draft:patch"]
           translations,
           base: base && { meta: baseMeta, translations: baseTranslations },
           edits,
-          author: FEED_DRAFT_AUTHOR.Operator,
+          author: FeedDraftAuthor.Operator,
         })
       );
     })
@@ -353,7 +356,7 @@ export const editFeedDraftRoute = contractOS.feeds["draft:edit"]
         {
           ...opts.input,
           adminId: opts.context.caller.adminId,
-          author: FEED_DRAFT_AUTHOR.Operator,
+          author: FeedDraftAuthor.Operator,
         }
       );
       return {

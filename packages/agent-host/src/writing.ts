@@ -41,7 +41,7 @@ import {
   getFeedReportRecord,
 } from "@chia/db/repos/feed-reports";
 import { reportError } from "@chia/observability/report";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 
 import { toolCapabilities } from "./kind";
 import type {
@@ -199,14 +199,14 @@ export const createWritingAgentKind = (): WritingAgentKind => ({
       for (const attachment of attachments) {
         if (attachment.type === "report") {
           if (!(await getFeedReport(db, attachment.id))) {
-            throw new AppError("NOT_FOUND", {
+            throw new AppError(AppErrorCode.NotFound, {
               message: `Unknown report: ${attachment.id}`,
             });
           }
           continue;
         }
         if (attachment.type === "feed") {
-          throw new AppError("BAD_REQUEST", {
+          throw new AppError(AppErrorCode.BadRequest, {
             message: `The writing agent takes no "feed" attachments.`,
           });
         }
@@ -214,7 +214,7 @@ export const createWritingAgentKind = (): WritingAgentKind => ({
           attachment.type === "selection" &&
           attachment.source.type !== "draft"
         ) {
-          throw new AppError("BAD_REQUEST", {
+          throw new AppError(AppErrorCode.BadRequest, {
             message: `The writing agent takes no "${attachment.source.type}" selections.`,
           });
         }
@@ -222,7 +222,7 @@ export const createWritingAgentKind = (): WritingAgentKind => ({
           attachment.type === "draft" ? attachment.id : attachment.source.id;
         const draft = await getFeedDraft(db, draftId, caller.userId);
         if (!draft) {
-          throw new AppError("NOT_FOUND", {
+          throw new AppError(AppErrorCode.NotFound, {
             message: `Unknown draft: ${draftId}`,
           });
         }

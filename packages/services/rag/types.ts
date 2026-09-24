@@ -4,6 +4,7 @@ import type {
   ResourceRef,
   ResourceVisibility,
 } from "@chia/db/repos/resources/chunk";
+import type { Locale } from "@chia/db/types";
 
 /** Summary a search hit is rendered as, whatever the resource type. */
 export interface ResourceSummary {
@@ -13,7 +14,7 @@ export interface ResourceSummary {
   description: string | null;
   /** deep-linkable path on the site, when the resource has one */
   href: string | null;
-  locale: string | null;
+  locale: Locale | null;
 }
 
 export interface ResourceChunkSet {

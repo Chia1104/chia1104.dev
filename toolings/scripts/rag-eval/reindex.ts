@@ -9,7 +9,7 @@ import {
   saveChunkEmbeddings,
 } from "@chia/db/repos/resources/chunk";
 import { getResourceAdapter } from "@chia/services/rag/registry";
-import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/services/rag/resource-types";
+import { ResourceType } from "@chia/services/rag/resource-types";
 
 /**
  * Full reindex of an evaluation copy of the corpus, without the workflow
@@ -62,13 +62,13 @@ const main = async (): Promise<void> => {
   );
 
   const ids = await listFeedTranslationIds(db, {});
-  const adapter = getResourceAdapter(FEED_TRANSLATION_SOURCE_TYPE);
+  const adapter = getResourceAdapter(ResourceType.FeedTranslation);
 
   let written = 0;
   let unchanged = 0;
   const failed: number[] = [];
   for (const sourceId of ids) {
-    const ref = { sourceType: FEED_TRANSLATION_SOURCE_TYPE, sourceId };
+    const ref = { sourceType: ResourceType.FeedTranslation, sourceId };
     try {
       const chunkSet = await adapter.buildChunks(db, sourceId);
       if (!chunkSet || chunkSet.chunks.length === 0) {

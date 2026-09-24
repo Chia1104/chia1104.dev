@@ -42,14 +42,12 @@ describe("FeedSearch", () => {
   });
 
   it("renders a loading status while searching", () => {
-    mockSearchResult(
-      /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
-        debouncedKeyword: "test",
-        canSearch: true,
-        isPending: true,
-        isFetching: true,
-      }
-    );
+    mockSearchResult({
+      debouncedKeyword: "test",
+      canSearch: true,
+      isPending: true,
+      isFetching: true,
+    });
 
     renderSearch();
 
@@ -57,15 +55,13 @@ describe("FeedSearch", () => {
   });
 
   it("renders an error message when search fails", () => {
-    mockSearchResult(
-      /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
-        debouncedKeyword: "test",
-        canSearch: true,
-        isPending: false,
-        isFetching: false,
-        isError: true,
-      }
-    );
+    mockSearchResult({
+      debouncedKeyword: "test",
+      canSearch: true,
+      isPending: false,
+      isFetching: false,
+      isError: true,
+    });
 
     renderSearch();
 
@@ -73,16 +69,14 @@ describe("FeedSearch", () => {
   });
 
   it("renders an empty state when no feed matches", () => {
-    mockSearchResult(
-      /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
-        debouncedKeyword: "test",
-        canSearch: true,
-        isPending: false,
-        isFetching: false,
-        isError: false,
-        data: { items: [] },
-      }
-    );
+    mockSearchResult({
+      debouncedKeyword: "test",
+      canSearch: true,
+      isPending: false,
+      isFetching: false,
+      isError: false,
+      data: { items: [] },
+    });
 
     renderSearch();
 
@@ -92,28 +86,26 @@ describe("FeedSearch", () => {
   it("navigates to the selected localized feed", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
-    mockSearchResult(
-      /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
-        debouncedKeyword: "test",
-        canSearch: true,
-        isPending: false,
-        isFetching: false,
-        isError: false,
-        data: {
-          items: [
-            {
-              feedId: 1,
-              type: "post",
-              slug: "hello-world",
-              locale: "zh-TW",
-              title: "Hello world",
-              description: "Description",
-              excerpt: "",
-            },
-          ],
-        },
-      }
-    );
+    mockSearchResult({
+      debouncedKeyword: "test",
+      canSearch: true,
+      isPending: false,
+      isFetching: false,
+      isError: false,
+      data: {
+        items: [
+          {
+            feedId: 1,
+            type: "post",
+            slug: "hello-world",
+            locale: "zh-TW",
+            title: "Hello world",
+            description: "Description",
+            excerpt: "",
+          },
+        ],
+      },
+    });
 
     renderWithProviders(
       <FeedSearch query="test" locale="zh-TW" onSelect={onSelect} />

@@ -22,7 +22,7 @@ vi.mock("@chia/db/repos/agent", () => ({
 }));
 
 const db =
-  /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB;
+  /* SAFETY: every repository call in this suite is mocked; nothing reads the handle. */ {} as DB;
 
 const sessionRow: AgentSession = {
   id: "session-1",
@@ -70,14 +70,10 @@ describe("PgSessionRepo.fork", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(appendAgentSessionEntryAsLeaf).mockResolvedValue({ seq: 1 });
-    vi.mocked(getAgentSessionEntries).mockResolvedValue(
-      /* SAFETY: These rows implement the repository shape exercised by this case. */ rows as never
-    );
+    vi.mocked(getAgentSessionEntries).mockResolvedValue(rows);
     vi.mocked(getAgentSessionEntry).mockImplementation(
       async (_db, _sessionId, id) =>
-        /* SAFETY: These rows implement the repository shape exercised by this case. */ rows.find(
-          (candidate) => candidate.id === id
-        ) as never
+        rows.find((candidate) => candidate.id === id)
     );
   });
 

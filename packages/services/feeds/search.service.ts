@@ -9,11 +9,10 @@ import {
 import { getRelatedFeeds } from "@chia/db/repos/feeds/search";
 import type { Locale } from "@chia/db/types";
 
-import { FEED_TRANSLATION_SOURCE_TYPE } from "../rag/resource-types";
+import { ResourceSearchMode, ResourceType } from "../rag/resource-types";
 import { searchResources } from "../rag/search.service";
 import type {
   ResourceSearchHit,
-  ResourceSearchMode,
   ResourceSearchResult,
 } from "../rag/search.service";
 
@@ -63,7 +62,7 @@ export async function searchFeedsService({
     query: keyword ?? "",
     mode: model,
     locale,
-    sourceTypes: [FEED_TRANSLATION_SOURCE_TYPE],
+    sourceTypes: [ResourceType.FeedTranslation],
     includeUnpublished,
     limit: locale ? limit : limit * 2,
     rerank,
@@ -107,9 +106,9 @@ export async function searchPublicFeedsService({
   const { items } = await searchResources({
     db,
     query: keyword,
-    mode: "bm25",
+    mode: ResourceSearchMode.Bm25,
     locale,
-    sourceTypes: [FEED_TRANSLATION_SOURCE_TYPE],
+    sourceTypes: [ResourceType.FeedTranslation],
     limit,
   });
   if (items.length === 0) {

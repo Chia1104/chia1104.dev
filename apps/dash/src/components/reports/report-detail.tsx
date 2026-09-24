@@ -11,6 +11,8 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAgentContext } from "@chia/agent-elements/context";
+import { FeedReportStatus } from "@chia/db/schema";
+import { Locale } from "@chia/db/types";
 import { formatDateTime } from "@chia/utils/format";
 
 import { showAgentDock } from "@/components/agent/dock-store";
@@ -19,7 +21,10 @@ import { orpc } from "@/libs/orpc/client";
 import { CATEGORY_LABEL, STATUS_LABEL, VERDICT } from "./labels";
 import type { ReportStatus, ReportView } from "./labels";
 
-const LOCALE_LABEL = { "zh-TW": "中文", en: "English" } as const;
+const LOCALE_LABEL = {
+  [Locale.ZhTW]: "中文",
+  [Locale.En]: "English",
+} satisfies Record<Locale, string>;
 const TRIAGE_POLL_MS = 2000;
 
 /** Reader and model text is shown as-is inside a block, never rendered as markdown. */
@@ -182,7 +187,9 @@ const Actions = ({ report }: { report: ReportView }) => {
     report.id
   );
   const triageRun = useTriageRun(report.id);
-  const active = report.status === "open" || report.status === "in_progress";
+  const active =
+    report.status === FeedReportStatus.Open ||
+    report.status === FeedReportStatus.InProgress;
   const edits = report.triage?.edits.length ?? 0;
 
   return (
@@ -225,38 +232,38 @@ const Actions = ({ report }: { report: ReportView }) => {
         onPress={triageRun.start}>
         {report.triage ? "Rerun triage" : "Run triage"}
       </Button>
-      {report.status === "open" ? (
+      {report.status === FeedReportStatus.Open ? (
         <Button
-          isPending={settingStatus === "in_progress"}
+          isPending={settingStatus === FeedReportStatus.InProgress}
           size="sm"
           variant="secondary"
-          onPress={() => setStatus("in_progress")}>
+          onPress={() => setStatus(FeedReportStatus.InProgress)}>
           Take up
         </Button>
       ) : null}
       {active ? (
         <>
           <Button
-            isPending={settingStatus === "resolved"}
+            isPending={settingStatus === FeedReportStatus.Resolved}
             size="sm"
             variant="ghost"
-            onPress={() => setStatus("resolved")}>
+            onPress={() => setStatus(FeedReportStatus.Resolved)}>
             Mark resolved
           </Button>
           <Button
-            isPending={settingStatus === "dismissed"}
+            isPending={settingStatus === FeedReportStatus.Dismissed}
             size="sm"
             variant="danger-soft"
-            onPress={() => setStatus("dismissed")}>
+            onPress={() => setStatus(FeedReportStatus.Dismissed)}>
             Dismiss
           </Button>
         </>
       ) : (
         <Button
-          isPending={settingStatus === "open"}
+          isPending={settingStatus === FeedReportStatus.Open}
           size="sm"
           variant="ghost"
-          onPress={() => setStatus("open")}>
+          onPress={() => setStatus(FeedReportStatus.Open)}>
           Reopen
         </Button>
       )}

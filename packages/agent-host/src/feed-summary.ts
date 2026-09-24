@@ -29,7 +29,7 @@ export const FEED_SUMMARY_PARAMS = {
 const BODY_MAX_CHARS = 60_000;
 
 const LANGUAGE_NAMES = {
-  [Locale.zhTW]: "Traditional Chinese (zh-TW)",
+  [Locale.ZhTW]: "Traditional Chinese (zh-TW)",
   [Locale.En]: "English (en)",
 } satisfies Record<Locale, string>;
 

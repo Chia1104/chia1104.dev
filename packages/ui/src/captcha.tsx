@@ -3,7 +3,13 @@
 import { Turnstile } from "@marsidev/react-turnstile";
 import ReCAPTCHA from "react-google-recaptcha";
 
-export type CaptchaProvider = "cloudflare-turnstile" | "google-recaptcha";
+export const CaptchaProvider = {
+  CloudflareTurnstile: "cloudflare-turnstile",
+  GoogleRecaptcha: "google-recaptcha",
+} as const;
+
+export type CaptchaProvider =
+  (typeof CaptchaProvider)[keyof typeof CaptchaProvider];
 
 export interface CaptchaProps {
   provider: CaptchaProvider;
@@ -25,7 +31,7 @@ export const Captcha = ({
   siteKey,
   theme = "light",
 }: CaptchaProps) =>
-  provider === "google-recaptcha" ? (
+  provider === CaptchaProvider.GoogleRecaptcha ? (
     <div className={className}>
       <ReCAPTCHA
         key={theme}

@@ -1,11 +1,13 @@
 import { asyncIteratorObject, oc } from "@orpc/contract";
 import * as z from "zod";
 
+import { FeedDraftAuthor, FeedDraftRevisionKind } from "@chia/db/schema";
 import { locale } from "@chia/db/schema/enums";
 import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import { feedSchema, feedTranslationSchema } from "@chia/db/validator/feeds";
 import { keysetCursorSchema } from "@chia/db/validator/shared";
 import { FEED_TAGS_MAX, tagSlugSchema } from "@chia/db/validator/tags";
+import { MatchMode } from "@chia/utils/text";
 import {
   feedSummaryOutputSchema,
   workflowRunStatusSchema,
@@ -62,7 +64,7 @@ const feedVisibilityFields = {
 };
 
 const localeQueryFields = {
-  locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
+  locale: z.enum(locale.enumValues).optional().default(Locale.ZhTW),
 };
 
 /** `userId` is absent: this is a single-author site, so the author is derived from the caller's tier. */
@@ -363,14 +365,14 @@ export const feedDraftChangeSchema = z.object({
 });
 
 /** `commit` is a version applied to the post; `safety` a restore point kept by the write path. */
-const feedDraftRevisionKindSchema = z.enum(["commit", "safety"]);
+const feedDraftRevisionKindSchema = z.enum(FeedDraftRevisionKind);
 
 export const feedDraftRevisionSchema = z.object({
   id: z.number().int(),
   kind: feedDraftRevisionKindSchema,
   revision: z.number().int(),
   /** Who last wrote the state this row holds. */
-  author: z.enum(["operator", "agent"]),
+  author: z.enum(FeedDraftAuthor),
   sessionId: z.string().nullable(),
   message: z.string().nullable(),
   pinned: z.boolean(),
@@ -460,12 +462,7 @@ export const editFeedDraftContract = oc
       edits: z.array(
         z.object({
           replacements: z.number().int(),
-          match: z.enum([
-            "exact",
-            "trailing_whitespace",
-            "whitespace",
-            "punctuation",
-          ]),
+          match: z.enum(MatchMode),
           line: z.number().int(),
           context: z.string(),
         })

@@ -7,8 +7,8 @@ import {
 } from "@chia/db/repos/feeds";
 import { findTagIds, setFeedTags } from "@chia/db/repos/tags";
 import { Locale } from "@chia/db/types";
-import type { FeedType, Locale as LocaleType } from "@chia/db/types";
-import { AppError } from "@chia/service-kit/errors";
+import type { FeedType } from "@chia/db/types";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 
 import type { FeedHooks } from "../shared/context";
@@ -45,12 +45,12 @@ export interface CreateFeedServiceInput {
   adminId: string;
   slug: string;
   type: StorableFeedType;
-  defaultLocale?: LocaleType;
+  defaultLocale?: Locale;
   mainImage?: string | null;
   published?: boolean;
   createdAt?: number;
   updatedAt?: number;
-  translations: Partial<Record<LocaleType, CreateFeedTranslationInput>>;
+  translations: Partial<Record<Locale, CreateFeedTranslationInput>>;
 }
 
 export const createFeedService = async (
@@ -58,18 +58,18 @@ export const createFeedService = async (
   input: CreateFeedServiceInput,
   hooks: FeedHooks
 ) => {
-  const defaultLocale = input.defaultLocale ?? Locale.zhTW;
+  const defaultLocale = input.defaultLocale ?? Locale.ZhTW;
   const defaultTranslation = input.translations[defaultLocale];
 
   if (!defaultTranslation) {
-    throw new AppError("BAD_REQUEST", {
+    throw new AppError(AppErrorCode.BadRequest, {
       message: `No default translation provided for locale "${defaultLocale}"`,
     });
   }
 
   const slug = normalizeAsciiSlug(input.slug);
   if (!slug) {
-    throw new AppError("BAD_REQUEST", {
+    throw new AppError(AppErrorCode.BadRequest, {
       message:
         "Feed slug must be an English/ASCII phrase. Slug normalization does not translate or transliterate titles.",
     });
@@ -84,14 +84,12 @@ export const createFeedService = async (
     mainImage: input.mainImage ?? null,
     createdAt: input.createdAt,
     updatedAt: input.updatedAt,
-    translations: Object.entries(input.translations).map(
-      ([locale, translation]) => ({
-        ...translation,
-        locale:
-          /* SAFETY: The producer contract guarantees this value satisfies LocaleType. */ locale as LocaleType,
-        content: translation.content ?? null,
-      })
-    ),
+    translations: Object.values(Locale).flatMap((locale) => {
+      const translation = input.translations[locale];
+      return translation
+        ? [{ ...translation, locale, content: translation.content ?? null }]
+        : [];
+    }),
   });
 
   // reading-time, BM25 and embedding indexing
@@ -105,14 +103,14 @@ export const createFeedService = async (
 export interface UpdateFeedServiceInput {
   feedId: number;
   type?: StorableFeedType;
-  defaultLocale?: LocaleType;
+  defaultLocale?: Locale;
   mainImage?: string | null;
   published?: boolean;
   /** The whole tag set; an empty array clears it. */
   tagIds?: number[];
   createdAt?: number;
   updatedAt?: number;
-  translations?: Partial<Record<LocaleType, UpdateFeedTranslationInput>>;
+  translations?: Partial<Record<Locale, UpdateFeedTranslationInput>>;
 }
 
 export const updateFeedService = async (
@@ -131,7 +129,7 @@ export const updateFeedService = async (
   });
 
   if (!feedData) {
-    throw new AppError("NOT_FOUND", {
+    throw new AppError(AppErrorCode.NotFound, {
       message: `Feed ${input.feedId} not found`,
     });
   }
@@ -140,7 +138,7 @@ export const updateFeedService = async (
     const known = new Set(await findTagIds(db, input.tagIds));
     const unknown = input.tagIds.filter((id) => !known.has(id));
     if (unknown.length > 0) {
-      throw new AppError("BAD_REQUEST", {
+      throw new AppError(AppErrorCode.BadRequest, {
         message: `No tag has id ${unknown.join(", ")}`,
       });
     }
@@ -151,11 +149,12 @@ export const updateFeedService = async (
   const contentsData = [];
 
   if (input.translations) {
-    for (const [locale, translation] of Object.entries(input.translations)) {
+    for (const locale of Object.values(Locale)) {
+      const translation = input.translations[locale];
+      if (!translation) continue;
       const translationData = await upsertFeedTranslation(db, {
         feedId: input.feedId,
-        locale:
-          /* SAFETY: The producer contract guarantees this value satisfies LocaleType. */ locale as LocaleType,
+        locale,
         title: translation.title,
         excerpt: translation.excerpt ?? null,
         description: translation.description ?? null,

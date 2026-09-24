@@ -63,7 +63,7 @@ const COLUMNS = [
 ];
 
 const titleOf = (entry: ProfileEntryView): string =>
-  entry.data.translations[Locale.zhTW]?.title ??
+  entry.data.translations[Locale.ZhTW]?.title ??
   entry.data.translations[Locale.En]?.title ??
   "(untitled)";
 
@@ -85,7 +85,7 @@ const detailOf = (entry: ProfileEntryView): string => {
         .join(" · ");
     case ProfileEntryKind.About:
       return (
-        entry.data.translations[Locale.zhTW]?.summary ??
+        entry.data.translations[Locale.ZhTW]?.summary ??
         entry.data.translations[Locale.En]?.summary ??
         ""
       );

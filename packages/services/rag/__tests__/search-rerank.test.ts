@@ -1,24 +1,27 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { RerankProvider } from "@chia/ai/rerank/provider";
+import { ResourceChunkKind } from "@chia/db/schema";
+import { Locale } from "@chia/db/types";
 
 const logger = vi.hoisted(() => ({ warn: vi.fn() }));
 vi.mock("@chia/observability/logger", () => ({ logger }));
 
+import { ResourceType } from "../resource-types";
 import { rerankHits } from "../search.service";
 import type { ResourceSearchHit } from "../search.service";
 
 const hit = (sourceId: number): ResourceSearchHit => ({
-  sourceType: "feed_translation",
+  sourceType: ResourceType.FeedTranslation,
   sourceId,
   score: 1 / sourceId,
   matchedChunks: 1,
   chunks: [
     {
       chunkId: sourceId,
-      sourceType: "feed_translation",
+      sourceType: ResourceType.FeedTranslation,
       sourceId,
-      kind: "section",
+      kind: ResourceChunkKind.Section,
       chunkIndex: 0,
       headingPath: `H${sourceId}`,
       headingPaths: [`H${sourceId}`],
@@ -30,12 +33,12 @@ const hit = (sourceId: number): ResourceSearchHit => ({
     },
   ],
   summary: {
-    sourceType: "feed_translation",
+    sourceType: ResourceType.FeedTranslation,
     sourceId,
     title: `T${sourceId}`,
     description: null,
     href: null,
-    locale: "zh-TW",
+    locale: Locale.ZhTW,
   },
 });
 

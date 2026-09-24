@@ -1,6 +1,7 @@
+import { drizzle } from "drizzle-orm/node-postgres";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { DB } from "@chia/db/client";
+import { AgentMemoryKind, AgentMemoryStatus, relations } from "@chia/db/schema";
 import type { AgentMemory } from "@chia/db/schema";
 
 const { repo } = vi.hoisted(() => ({
@@ -33,13 +34,12 @@ const {
   updateMemoryService,
 } = await import("../write.service.ts");
 
-// SAFETY: every repository call is mocked; nothing reaches the database.
-const db = {} as DB;
+const db = drizzle.mock({ relations });
 
 const row = (id: number) => ({
   id,
-  kind: "fact",
-  status: "active",
+  kind: AgentMemoryKind.Fact,
+  status: AgentMemoryStatus.Active,
   title: "t",
   content: "c",
   sourceUrl: null,
@@ -64,7 +64,7 @@ describe("memory write services", () => {
   it("indexes after every create, update and removal", async () => {
     await createMemoryService(
       db,
-      { kind: "fact", title: " t ", content: " c " },
+      { kind: AgentMemoryKind.Fact, title: " t ", content: " c " },
       { onMemoryChanged }
     );
     expect(repo.createAgentMemory).toHaveBeenCalledWith(
@@ -74,7 +74,7 @@ describe("memory write services", () => {
 
     await updateMemoryService(
       db,
-      { id: 1, status: "archived" },
+      { id: 1, status: AgentMemoryStatus.Archived },
       {
         onMemoryChanged,
       }
@@ -86,12 +86,20 @@ describe("memory write services", () => {
 
   it("rejects empty or oversized content before touching the repository", async () => {
     await expect(
-      createMemoryService(db, { kind: "fact", title: "t", content: "  " }, {})
+      createMemoryService(
+        db,
+        { kind: AgentMemoryKind.Fact, title: "t", content: "  " },
+        {}
+      )
     ).rejects.toThrow("needs content");
     await expect(
       createMemoryService(
         db,
-        { kind: "fact", title: "t", content: "x".repeat(256_001) },
+        {
+          kind: AgentMemoryKind.Fact,
+          title: "t",
+          content: "x".repeat(256_001),
+        },
         {}
       )
     ).rejects.toThrow("at most 256000");
@@ -167,8 +175,8 @@ describe("lesson review services", () => {
   const onMemoryChanged = vi.fn(async () => undefined);
   const lesson = (overrides: Partial<AgentMemory>) => ({
     ...row(7),
-    kind: "lesson",
-    status: "pending",
+    kind: AgentMemoryKind.Lesson,
+    status: AgentMemoryStatus.Pending,
     ...overrides,
   });
 
@@ -177,21 +185,21 @@ describe("lesson review services", () => {
     repo.createAgentMemory.mockImplementation(async () => lesson({}));
     repo.approveAgentLesson.mockImplementation(async (_db, id: number) => ({
       status: "approved",
-      approved: lesson({ id, status: "active" }),
+      approved: lesson({ id, status: AgentMemoryStatus.Active }),
       archived: null,
     }));
   });
 
   it("lets only a pending lesson supersede, and only a live lesson", async () => {
     const proposal = {
-      kind: "lesson",
-      status: "pending",
+      kind: AgentMemoryKind.Lesson,
+      status: AgentMemoryStatus.Pending,
       title: "t",
       content: "c",
       supersedesId: 3,
     } as const;
     repo.getAgentMemory.mockResolvedValueOnce(
-      lesson({ id: 3, status: "active" })
+      lesson({ id: 3, status: AgentMemoryStatus.Active })
     );
     await createMemoryService(db, proposal, { onMemoryChanged });
     expect(repo.createAgentMemory).toHaveBeenCalledWith(
@@ -205,7 +213,7 @@ describe("lesson review services", () => {
       "is a fact, not a lesson; propose without `supersedes`"
     );
     repo.getAgentMemory.mockResolvedValueOnce(
-      lesson({ id: 3, status: "archived" })
+      lesson({ id: 3, status: AgentMemoryStatus.Archived })
     );
     await expect(createMemoryService(db, proposal, {})).rejects.toThrow(
       "archived and no longer applies; propose without `supersedes`"
@@ -219,7 +227,7 @@ describe("lesson review services", () => {
       createMemoryService(db, { ...proposal, status: undefined }, {})
     ).rejects.toThrow("Only a pending lesson supersedes");
     await expect(
-      createMemoryService(db, { ...proposal, kind: "fact" }, {})
+      createMemoryService(db, { ...proposal, kind: AgentMemoryKind.Fact }, {})
     ).rejects.toThrow("Only a pending lesson supersedes");
     expect(repo.createAgentMemory).toHaveBeenCalledTimes(1);
     expect(repo.replacePendingAgentLesson).not.toHaveBeenCalled();
@@ -227,18 +235,22 @@ describe("lesson review services", () => {
 
   it("replaces a pending lesson at once when the proposal revises it", async () => {
     repo.getAgentMemory.mockResolvedValueOnce(
-      lesson({ id: 3, status: "pending", supersedesId: 1 })
+      lesson({ id: 3, status: AgentMemoryStatus.Pending, supersedesId: 1 })
     );
     repo.replacePendingAgentLesson.mockResolvedValueOnce({
       row: lesson({ id: 8, supersedesId: 1 }),
-      replaced: lesson({ id: 3, status: "archived", supersedesId: 1 }),
+      replaced: lesson({
+        id: 3,
+        status: AgentMemoryStatus.Archived,
+        supersedesId: 1,
+      }),
     });
 
     const saved = await createMemoryService(
       db,
       {
-        kind: "lesson",
-        status: "pending",
+        kind: AgentMemoryKind.Lesson,
+        status: AgentMemoryStatus.Pending,
         title: " t ",
         content: "c",
         sessionId: "s",
@@ -266,8 +278,8 @@ describe("lesson review services", () => {
       createMemoryService(
         db,
         {
-          kind: "lesson",
-          status: "pending",
+          kind: AgentMemoryKind.Lesson,
+          status: AgentMemoryStatus.Pending,
           title: "t",
           content: "c",
           supersedesId: 3,
@@ -281,8 +293,8 @@ describe("lesson review services", () => {
     repo.getAgentMemory.mockResolvedValueOnce(lesson({ supersedesId: 3 }));
     repo.approveAgentLesson.mockResolvedValueOnce({
       status: "approved",
-      approved: lesson({ status: "active", supersedesId: 3 }),
-      archived: lesson({ id: 3, status: "archived" }),
+      approved: lesson({ status: AgentMemoryStatus.Active, supersedesId: 3 }),
+      archived: lesson({ id: 3, status: AgentMemoryStatus.Archived }),
     });
 
     const approved = await approveLessonService(
@@ -291,14 +303,16 @@ describe("lesson review services", () => {
       { onMemoryChanged }
     );
 
-    expect(approved.status).toBe("active");
+    expect(approved.status).toBe(AgentMemoryStatus.Active);
     expect(repo.approveAgentLesson).toHaveBeenCalledWith(db, 7);
     expect(repo.updateAgentMemory).not.toHaveBeenCalled();
     expect(onMemoryChanged.mock.calls).toEqual([[3], [7]]);
   });
 
   it("approves only a live pending lesson, once", async () => {
-    repo.getAgentMemory.mockResolvedValueOnce(lesson({ kind: "fact" }));
+    repo.getAgentMemory.mockResolvedValueOnce(
+      lesson({ kind: AgentMemoryKind.Fact })
+    );
     await expect(approveLessonService(db, { id: 7 }, {})).rejects.toThrow(
       "not a lesson"
     );
@@ -308,7 +322,9 @@ describe("lesson review services", () => {
     await expect(approveLessonService(db, { id: 7 }, {})).rejects.toThrow(
       "not found"
     );
-    repo.getAgentMemory.mockResolvedValueOnce(lesson({ status: "archived" }));
+    repo.getAgentMemory.mockResolvedValueOnce(
+      lesson({ status: AgentMemoryStatus.Archived })
+    );
     await expect(approveLessonService(db, { id: 7 }, {})).rejects.toThrow(
       "only a pending lesson"
     );

@@ -73,9 +73,18 @@ export const toEdits = (before: string, after: string): ContentEdit[] => {
   return edits;
 };
 
+/** `Added` and `Modified` cover lines of `after`; `Deleted` marks the line that lines of `before` are gone above. */
+export const LineChangeKind = {
+  Added: "added",
+  Modified: "modified",
+  Deleted: "deleted",
+} as const;
+
+export type LineChangeKind =
+  (typeof LineChangeKind)[keyof typeof LineChangeKind];
+
 export interface LineChange {
-  /** `added` and `modified` cover lines of `after`; `deleted` marks the line that lines of `before` are gone above. */
-  kind: "added" | "modified" | "deleted";
+  kind: LineChangeKind;
   /** 1-based, in `after`. */
   startLine: number;
   endLine: number;
@@ -99,7 +108,7 @@ export const lineChangesOf = (before: string, after: string): LineChange[] => {
     if (part.removed && next?.added) {
       const added = next.count ?? 0;
       changes.push({
-        kind: "modified",
+        kind: LineChangeKind.Modified,
         startLine: line,
         endLine: line + added - 1,
       });
@@ -107,14 +116,18 @@ export const lineChangesOf = (before: string, after: string): LineChange[] => {
       index += 1;
     } else if (part.added) {
       changes.push({
-        kind: "added",
+        kind: LineChangeKind.Added,
         startLine: line,
         endLine: line + count - 1,
       });
       line += count;
     } else {
       const at = Math.min(line, lastLine);
-      changes.push({ kind: "deleted", startLine: at, endLine: at });
+      changes.push({
+        kind: LineChangeKind.Deleted,
+        startLine: at,
+        endLine: at,
+      });
     }
   }
   return changes;

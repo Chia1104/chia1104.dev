@@ -4,16 +4,16 @@ import { Type } from "typebox";
 
 import { defineTool, optional, textResult } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
-import { FEED_REPORT_CATEGORY } from "@chia/db/schema";
+import { FeedReportCategory } from "@chia/db/schema";
 import { Locale } from "@chia/db/types";
 
 import type { ReportPort } from "../ports.ts";
 
-import { REPORT_TOOL_INFO_BY_NAME, REPORT_TOOL_NAMES } from "./registry.ts";
+import { REPORT_TOOL_INFO_BY_NAME, ReportToolName } from "./registry.ts";
 
 export const reportIssueSpec = {
-  name: REPORT_TOOL_NAMES.reportIssue,
-  label: REPORT_TOOL_INFO_BY_NAME[REPORT_TOOL_NAMES.reportIssue].label,
+  name: ReportToolName.ReportIssue,
+  label: REPORT_TOOL_INFO_BY_NAME[ReportToolName.ReportIssue].label,
   description:
     "Send the author a correction to a published post. Call it after you checked the post " +
     "with `get_post` and the visitor agreed to send what you described, or asked you to " +
@@ -40,7 +40,7 @@ export const reportIssueSpec = {
         maxLength: 1000,
       })
     ),
-    category: StringEnum(Object.values(FEED_REPORT_CATEGORY), {
+    category: StringEnum(Object.values(FeedReportCategory), {
       description:
         "error: the post gets something wrong; outdated: it was right and no longer is; " +
         "typo; broken: a link, image or code sample does not work; gap: it leaves out " +

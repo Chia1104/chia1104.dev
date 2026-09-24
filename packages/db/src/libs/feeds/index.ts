@@ -2,7 +2,7 @@ import type { KnownKeysOnly, RelationsFilterColumns, SQL } from "drizzle-orm";
 import { and, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
 
 import type { DB } from "../../client.ts";
-import type { Locale, relations } from "../../schemas/schema.ts";
+import type { relations } from "../../schemas/schema.ts";
 import {
   feeds,
   feedsToTags,
@@ -10,7 +10,7 @@ import {
   tags,
   tagTranslations,
 } from "../../schemas/schema.ts";
-import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types.ts";
+import { FeedOrderBy, FeedType, Locale } from "../../types.ts";
 import {
   keysetCursorValue,
   keysetWhere,
@@ -552,7 +552,7 @@ export const createFeed = withDTO(
           slug: dto.slug,
           type: dto.type,
           published: dto.published,
-          defaultLocale: dto.defaultLocale ?? LocaleEnum.zhTW,
+          defaultLocale: dto.defaultLocale ?? Locale.ZhTW,
           userId: dto.userId,
           mainImage: dto.mainImage,
           createdAt: dto.createdAt ? parseInstant(dto.createdAt) : undefined,

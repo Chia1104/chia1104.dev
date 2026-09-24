@@ -8,7 +8,7 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { Bot } from "lucide-react";
 import { useMediaQuery } from "usehooks-ts";
 
-import { DockActions, DockShell } from "@chia/ui/dock";
+import { DockActions, DockMode, DockShell } from "@chia/ui/dock";
 
 import { DrawerPanel } from "@/components/commons/drawer-panel";
 
@@ -39,7 +39,7 @@ const DOCK_LABELS = {
 };
 
 export const AgentDockTrigger = () => {
-  const isOpen = useAgentDock((state) => state.mode !== "closed");
+  const isOpen = useAgentDock((state) => state.mode !== DockMode.Closed);
   const toggle = useAgentDock((state) => state.toggle);
   return (
     <Button
@@ -63,7 +63,7 @@ export const AgentDock = () => {
   const setMode = useAgentDock((state) => state.setMode);
   const toggle = useAgentDock((state) => state.toggle);
   const isDocked = useMediaQuery(DOCK_QUERY, { initializeWithValue: false });
-  const isOpen = mode !== "closed";
+  const isOpen = mode !== DockMode.Closed;
 
   useEffect(() => {
     void agentDockStore.persist.rehydrate();
@@ -75,7 +75,9 @@ export const AgentDock = () => {
     return (
       <Drawer.Backdrop
         isOpen={isOpen}
-        onOpenChange={(open) => setMode(open ? "open" : "closed")}>
+        onOpenChange={(open) =>
+          setMode(open ? DockMode.Open : DockMode.Closed)
+        }>
         <DrawerPanel
           className="flex flex-col p-0"
           classNames={{

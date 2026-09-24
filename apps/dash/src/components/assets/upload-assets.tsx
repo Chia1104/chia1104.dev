@@ -23,6 +23,37 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { useFormRules } from "@chia/ui/utils/use-form-rules";
 
 import { orpc } from "@/libs/orpc/client";
+import type { RouterInputs } from "@/libs/orpc/types";
+
+type UploadType = RouterInputs["file"]["signed-url:create"]["type"];
+
+/** The MIME types the signed-URL route accepts; the file picker offers the same list. */
+const UPLOAD_TYPES: readonly UploadType[] = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+  "image/svg+xml",
+  "application/pdf",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/x-msvideo",
+  "video/avi",
+];
+
+const isUploadType = (type: string): type is UploadType =>
+  UPLOAD_TYPES.some((uploadType) => uploadType === type);
+
+const UploadStatus = {
+  Pending: "pending",
+  Uploading: "uploading",
+  Success: "success",
+  Error: "error",
+} as const;
+
+type UploadStatus = (typeof UploadStatus)[keyof typeof UploadStatus];
 
 interface FileUploadItem {
   id: string;
@@ -30,7 +61,7 @@ interface FileUploadItem {
   name: string;
   type: string;
   size: number;
-  status: "pending" | "uploading" | "success" | "error";
+  status: UploadStatus;
   progress: number;
   error?: string;
   url?: string;
@@ -118,11 +149,16 @@ export function UploadAssets({
     async (item: FileUploadItem): Promise<void> => {
       setUploadItems((prev) =>
         prev.map((i) =>
-          i.id === item.id ? { ...i, status: "uploading", progress: 0 } : i
+          i.id === item.id
+            ? { ...i, status: UploadStatus.Uploading, progress: 0 }
+            : i
         )
       );
 
       try {
+        if (!isUploadType(item.type)) {
+          throw new Error(`unsupported file type ${item.type || "(none)"}`);
+        }
         const sha256Checksum = await calculateSHA256Checksum(item.file);
         const sha256Hex = sha256ChecksumToHex(sha256Checksum);
         const sha256Base64 = sha256ChecksumToBase64(sha256Checksum);
@@ -131,19 +167,7 @@ export function UploadAssets({
           key: item.name,
           area,
           sha256Checksum: sha256Hex,
-          type: /* SAFETY: The producer contract guarantees this value satisfies the asserted interface. */ item.type as
-            | "image/jpeg"
-            | "image/png"
-            | "image/webp"
-            | "image/heic"
-            | "image/heif"
-            | "image/svg+xml"
-            | "application/pdf"
-            | "video/mp4"
-            | "video/webm"
-            | "video/quicktime"
-            | "video/x-msvideo"
-            | "video/avi",
+          type: item.type,
           size: item.size,
         });
 
@@ -172,7 +196,7 @@ export function UploadAssets({
             i.id === item.id
               ? {
                   ...i,
-                  status: "success",
+                  status: UploadStatus.Success,
                   progress: 100,
                   url: response.url.split("?")[0],
                 }
@@ -196,7 +220,7 @@ export function UploadAssets({
             i.id === item.id
               ? {
                   ...i,
-                  status: "error",
+                  status: UploadStatus.Error,
                   error: errorMessage,
                   progress: 0,
                 }
@@ -224,7 +248,8 @@ export function UploadAssets({
 
       setUploadItems((prev) => {
         const allComplete = prev.every(
-          (i) => i.status === "success" || i.status === "error"
+          (i) =>
+            i.status === UploadStatus.Success || i.status === UploadStatus.Error
         );
         if (allComplete && onUploadComplete) {
           onUploadComplete(prev);
@@ -253,7 +278,7 @@ export function UploadAssets({
         name: file.name,
         type: file.type,
         size: file.size,
-        status: "pending",
+        status: UploadStatus.Pending,
         progress: 0,
       }));
 
@@ -319,12 +344,18 @@ export function UploadAssets({
 
   const stats = useMemo(() => {
     const total = uploadItems.length;
-    const success = uploadItems.filter((i) => i.status === "success").length;
-    const error = uploadItems.filter((i) => i.status === "error").length;
-    const uploading = uploadItems.filter(
-      (i) => i.status === "uploading"
+    const success = uploadItems.filter(
+      (i) => i.status === UploadStatus.Success
     ).length;
-    const pending = uploadItems.filter((i) => i.status === "pending").length;
+    const error = uploadItems.filter(
+      (i) => i.status === UploadStatus.Error
+    ).length;
+    const uploading = uploadItems.filter(
+      (i) => i.status === UploadStatus.Uploading
+    ).length;
+    const pending = uploadItems.filter(
+      (i) => i.status === UploadStatus.Pending
+    ).length;
 
     return { total, success, error, uploading, pending };
   }, [uploadItems]);
@@ -339,11 +370,11 @@ export function UploadAssets({
 
   const getStatusIcon = useCallback((status: FileUploadItem["status"]) => {
     switch (status) {
-      case "success":
+      case UploadStatus.Success:
         return <CheckCircle2 className="text-success size-4" />;
-      case "error":
+      case UploadStatus.Error:
         return <AlertCircle className="text-danger size-4" />;
-      case "uploading":
+      case UploadStatus.Uploading:
         return <Spinner size="sm" />;
       default:
         return null;
@@ -403,7 +434,7 @@ export function UploadAssets({
                       ref={fileInputRef}
                       type="file"
                       multiple
-                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/svg+xml,application/pdf,video/mp4,video/webm,video/quicktime,video/x-msvideo,video/avi"
+                      accept={UPLOAD_TYPES.join(",")}
                       onChange={handleFileSelectWithUpload}
                       className="hidden"
                       id="file-upload"
@@ -462,7 +493,7 @@ export function UploadAssets({
                           key={item.id}
                           className={cn(
                             "border-border rounded-2xl border p-3",
-                            item.status === "error" &&
+                            item.status === UploadStatus.Error &&
                               "border-danger/50 bg-danger/5"
                           )}>
                           <div className="flex items-center gap-3">
@@ -487,14 +518,14 @@ export function UploadAssets({
                               </div>
                               <div className="text-muted mt-1 flex items-center gap-2 text-xs">
                                 <span>{formatFileSize(item.size)}</span>
-                                {item.status === "uploading" && (
+                                {item.status === UploadStatus.Uploading && (
                                   <span>• {item.progress}%</span>
                                 )}
                               </div>
                             </div>
                           </div>
 
-                          {item.status === "uploading" && (
+                          {item.status === UploadStatus.Uploading && (
                             <div className="mt-2">
                               <ProgressBar
                                 aria-label="Upload progress"
@@ -504,7 +535,7 @@ export function UploadAssets({
                             </div>
                           )}
 
-                          {item.status === "error" && item.error && (
+                          {item.status === UploadStatus.Error && item.error && (
                             <p className="text-danger mt-2 text-xs">
                               {item.error}
                             </p>

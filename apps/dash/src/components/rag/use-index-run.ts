@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
+import { ResourceIndexRunStatus } from "@chia/db/schema";
+
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
@@ -11,7 +13,11 @@ import type { RunStatus } from "./rag-shared";
 
 export type IndexRun = RouterOutputs["rag"]["run:get"]["run"];
 
-const TERMINAL_STATUSES: RunStatus[] = ["completed", "failed", "cancelled"];
+const TERMINAL_STATUSES: RunStatus[] = [
+  ResourceIndexRunStatus.Completed,
+  ResourceIndexRunStatus.Failed,
+  ResourceIndexRunStatus.Cancelled,
+];
 
 export const isTerminalRunStatus = (
   status: RunStatus | undefined

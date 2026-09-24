@@ -35,7 +35,12 @@ export interface MessageActionsProps {
   className?: string;
 }
 
-type PendingAction = "rewind" | "fork" | null;
+const PendingAction = {
+  Rewind: "rewind",
+  Fork: "fork",
+} as const;
+
+type PendingAction = (typeof PendingAction)[keyof typeof PendingAction];
 
 /** Offered only while the session can take a prompt; both actions are refused server-side mid-turn. */
 export const MessageActions = ({
@@ -46,7 +51,7 @@ export const MessageActions = ({
 }: MessageActionsProps) => {
   const labels = useAgentLabels();
   const canPrompt = useCanPrompt();
-  const [pending, setPending] = useState<PendingAction>(null);
+  const [pending, setPending] = useState<PendingAction | null>(null);
   if (!canPrompt) return null;
 
   const close = () => setPending(null);
@@ -56,27 +61,29 @@ export const MessageActions = ({
         <ActionButton
           icon={Undo2}
           label={labels.editAndResend}
-          onPress={() => setPending("rewind")}
+          onPress={() => setPending(PendingAction.Rewind)}
         />
       ) : null}
       <ActionButton
         icon={GitFork}
         label={labels.forkFromHere}
-        onPress={() => setPending("fork")}
+        onPress={() => setPending(PendingAction.Fork)}
       />
       {/* Remounted per opening (via `key`) so each dialog starts from its defaults. */}
       {role === "user" ? (
         <RewindDialog
-          key={pending === "rewind" ? "open-rewind" : "closed-rewind"}
-          isOpen={pending === "rewind"}
+          key={
+            pending === PendingAction.Rewind ? "open-rewind" : "closed-rewind"
+          }
+          isOpen={pending === PendingAction.Rewind}
           messageId={messageId}
           onClose={close}
           text={text}
         />
       ) : null}
       <ForkDialog
-        key={pending === "fork" ? "open-fork" : "closed-fork"}
-        isOpen={pending === "fork"}
+        key={pending === PendingAction.Fork ? "open-fork" : "closed-fork"}
+        isOpen={pending === PendingAction.Fork}
         messageId={messageId}
         onClose={close}
         position={role === "user" ? "before" : "at"}

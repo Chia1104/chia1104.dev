@@ -4,6 +4,16 @@ import { listAgentKindConfigs } from "@chia/db/repos/agent/config";
 import type { TieredUser } from "./tier";
 import { CallerTier, agentKindFloor, tierForUser } from "./tier";
 
+/** How much of the dashboard a session opens. */
+export const DashboardAccess = {
+  /** The configured admin. */
+  Operator: "operator",
+  Member: "member",
+} as const;
+
+export type DashboardAccess =
+  (typeof DashboardAccess)[keyof typeof DashboardAccess];
+
 /**
  * What the session's holder may open, projected onto the session for the frontends.
  * Guards never read it: the service decides from the caller's tier on every request.
@@ -11,8 +21,8 @@ import { CallerTier, agentKindFloor, tierForUser } from "./tier";
 export interface Access {
   /** The tier this session grades to on its own, without an API key. */
   tier: CallerTier;
-  /** `operator` is the configured admin; a guest has no dashboard at all. */
-  dashboard: "operator" | "member" | null;
+  /** A guest has no dashboard at all. */
+  dashboard: DashboardAccess | null;
   /** The tier each hosted agent kind admits right now, keyed by kind id. */
   agent: Record<string, CallerTier>;
 }
@@ -43,8 +53,8 @@ export const resolveAccess = async (
       tier === CallerTier.Guest
         ? null
         : tier === CallerTier.Root
-          ? "operator"
-          : "member",
+          ? DashboardAccess.Operator
+          : DashboardAccess.Member,
     agent,
   };
 };

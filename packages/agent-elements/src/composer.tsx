@@ -52,6 +52,7 @@ import {
 } from "./slash-command.ts";
 import type { SlashMenuItem, SlashToken } from "./slash-command.ts";
 import { SlashMenu } from "./slash-menu.tsx";
+import { AgentStatus } from "./store.ts";
 import type { ComposerSeed } from "./store.ts";
 import type { AgentCapabilities } from "./types.ts";
 
@@ -389,7 +390,7 @@ const ComposerEditor = ({
   const compact =
     compactIntent &&
     text.trim().length === 0 &&
-    status !== "awaiting_approval" &&
+    status !== AgentStatus.AwaitingApproval &&
     !failure;
 
   const resolvedLocalCommands = useMemo<readonly ComposerLocalCommand[]>(
@@ -530,7 +531,7 @@ const ComposerEditor = ({
   );
 
   const composerPlaceholder =
-    status === "awaiting_approval"
+    status === AgentStatus.AwaitingApproval
       ? labels.composerPlaceholderApproval
       : busy
         ? labels.composerPlaceholderRunning

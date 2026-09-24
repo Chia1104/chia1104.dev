@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { AppErrorCode } from "@chia/service-kit/errors";
+
 import { createWorkflowControlClient } from "../src/client";
+
 describe("workflow control client", () => {
   it("sends authenticated commands to the workflow service", async () => {
     const fetcher = vi.fn(async () =>
@@ -44,7 +47,7 @@ describe("workflow control client", () => {
     });
 
     await expect(control.cancelRun("wrun_missing")).rejects.toMatchObject({
-      code: "NOT_FOUND",
+      code: AppErrorCode.NotFound,
       message: "Run not found.",
     });
   });

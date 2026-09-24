@@ -33,7 +33,7 @@ const tagTranslationSchema = z.object({
  * without one would be missing from that page's index.
  */
 export const tagTranslationsSchema = z.object({
-  [Locale.zhTW]: tagTranslationSchema,
+  [Locale.ZhTW]: tagTranslationSchema,
   [Locale.En]: tagTranslationSchema,
 });
 

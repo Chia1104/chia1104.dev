@@ -1,7 +1,7 @@
 import "zod/compile";
 import { FatalError } from "workflow";
 
-import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
+import { AgentTaskId, resolveAgentTask } from "@chia/agent-host/tasks";
 import { recordAgentUsage } from "@chia/agent-host/usage";
 import { WRITING_AGENT_KIND } from "@chia/agent-writing/models";
 import { connectDatabase } from "@chia/db/client";
@@ -13,7 +13,12 @@ import {
 } from "@chia/db/repos/agent";
 import { listAgentLessons } from "@chia/db/repos/agent/memory";
 import { listFeedDraftTrailSince } from "@chia/db/repos/drafts";
-import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
+import {
+  AgentCredentialSource,
+  AgentMemoryKind,
+  AgentMemoryStatus,
+  AgentUsageSource,
+} from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 import {
@@ -27,8 +32,17 @@ const LESSON_TIMEOUT_MS = 60_000;
 /** Lessons the model is shown per status; the prompt clips each one's content. */
 const LESSONS_SHOWN_MAX = 50;
 
+export const MemoryConsolidationStatus = {
+  Extracted: "extracted",
+  Nothing: "nothing",
+  Unavailable: "unavailable",
+} as const;
+
+export type MemoryConsolidationStatus =
+  (typeof MemoryConsolidationStatus)[keyof typeof MemoryConsolidationStatus];
+
 export interface MemoryConsolidationResult {
-  status: "extracted" | "nothing" | "unavailable";
+  status: MemoryConsolidationStatus;
   created: number[];
   reinforced: number;
 }
@@ -86,12 +100,16 @@ export const consolidateSessionMemoryStep = async (request: {
    */
   let task: Awaited<ReturnType<typeof resolveAgentTask>>;
   try {
-    task = await resolveAgentTask(db, AGENT_TASK_IDS.writingLessons);
+    task = await resolveAgentTask(db, AgentTaskId.WritingLessons);
   } catch (error) {
     reportError(error, "Lesson extraction task could not be resolved", {
       sessionId: request.sessionId,
     });
-    return { status: "unavailable", created: [], reinforced: 0 };
+    return {
+      status: MemoryConsolidationStatus.Unavailable,
+      created: [],
+      reinforced: 0,
+    };
   }
 
   const startedAt = new Date();
@@ -122,11 +140,11 @@ export const consolidateSessionMemoryStep = async (request: {
 
   const [active, pending] = await Promise.all([
     listAgentLessons(db, {
-      status: AGENT_MEMORY_STATUS.Active,
+      status: AgentMemoryStatus.Active,
       limit: LESSONS_SHOWN_MAX,
     }),
     listAgentLessons(db, {
-      status: AGENT_MEMORY_STATUS.Pending,
+      status: AgentMemoryStatus.Pending,
       limit: LESSONS_SHOWN_MAX,
     }),
   ]);
@@ -148,7 +166,11 @@ export const consolidateSessionMemoryStep = async (request: {
   });
   if (!prompt) {
     await claim();
-    return { status: "nothing", created: [], reinforced: 0 };
+    return {
+      status: MemoryConsolidationStatus.Nothing,
+      created: [],
+      reinforced: 0,
+    };
   }
 
   const reply = await completeText({
@@ -164,13 +186,17 @@ export const consolidateSessionMemoryStep = async (request: {
         userId: row.userId,
         sessionId: row.id,
         kind: row.kind,
-        source: "lessons",
-        credentialSource: "house",
+        source: AgentUsageSource.Lessons,
+        credentialSource: AgentCredentialSource.House,
         ...usage,
       }),
   });
   if (!reply) {
-    return { status: "nothing", created: [], reinforced: 0 };
+    return {
+      status: MemoryConsolidationStatus.Nothing,
+      created: [],
+      reinforced: 0,
+    };
   }
   const proposals = parseLessonProposals(reply);
   if (!(await claim())) {
@@ -178,7 +204,11 @@ export const consolidateSessionMemoryStep = async (request: {
       { sessionId: request.sessionId, dropped: proposals.length },
       "Lesson extraction superseded by a newer run"
     );
-    return { status: "nothing", created: [], reinforced: 0 };
+    return {
+      status: MemoryConsolidationStatus.Nothing,
+      created: [],
+      reinforced: 0,
+    };
   }
 
   const activeIds = new Set(active.map((lesson) => lesson.id));
@@ -206,8 +236,8 @@ export const consolidateSessionMemoryStep = async (request: {
     const saved = await createMemoryService(
       db,
       {
-        kind: AGENT_MEMORY_KIND.Lesson,
-        status: AGENT_MEMORY_STATUS.Pending,
+        kind: AgentMemoryKind.Lesson,
+        status: AgentMemoryStatus.Pending,
         title: proposal.title,
         content: proposal.content,
         sessionId: request.sessionId,
@@ -219,7 +249,10 @@ export const consolidateSessionMemoryStep = async (request: {
   }
 
   return {
-    status: created.length > 0 || reinforced > 0 ? "extracted" : "nothing",
+    status:
+      created.length > 0 || reinforced > 0
+        ? MemoryConsolidationStatus.Extracted
+        : MemoryConsolidationStatus.Nothing,
     created,
     reinforced,
   };

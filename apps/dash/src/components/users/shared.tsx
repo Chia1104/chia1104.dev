@@ -6,6 +6,7 @@ import { Chip } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { Role } from "@chia/db/types";
+import { isEnumValue } from "@chia/utils/is";
 
 import { orpc } from "@/libs/orpc/client";
 
@@ -26,11 +27,7 @@ const ROLE_COLOR = {
 
 export const RoleChip = ({ role }: { role: string }) => (
   <Chip
-    color={
-      ROLE_COLOR[
-        /* SAFETY: The producer contract guarantees this value satisfies Role. */ role as Role
-      ] ?? "default"
-    }
+    color={isEnumValue(Role, role) ? ROLE_COLOR[role] : "default"}
     size="sm"
     variant="soft">
     <Chip.Label>{role}</Chip.Label>

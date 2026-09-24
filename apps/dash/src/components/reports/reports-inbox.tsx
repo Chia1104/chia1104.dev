@@ -6,6 +6,7 @@ import { Card, Chip, Spinner, Tabs } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 
+import { FeedReportStatus } from "@chia/db/schema";
 import { formatDateTime } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
@@ -56,7 +57,7 @@ const ReportRow = ({ report }: { report: ReportView }) => (
 export const ReportsInbox = () => {
   const [status, setStatus] = useQueryState(
     "status",
-    parseAsStringLiteral(STATUSES).withDefault("open")
+    parseAsStringLiteral(STATUSES).withDefault(FeedReportStatus.Open)
   );
   const { data, isLoading } = useQuery(
     orpc.reports.list.queryOptions({ input: { status } })

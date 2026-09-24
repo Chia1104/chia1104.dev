@@ -1,6 +1,7 @@
 import * as z from "zod";
 
-import { FEED_DRAFT_AUTHOR, locale } from "../../schemas/schema.ts";
+import { FeedDraftAuthor } from "../../schemas/schema.ts";
+import { Locale } from "../../types.ts";
 
 /**
  * What a `feed_draft` write announces on the Postgres channel, sent from inside the write's
@@ -11,7 +12,7 @@ import { FEED_DRAFT_AUTHOR, locale } from "../../schemas/schema.ts";
 export const FEED_DRAFT_CHANNEL = "feed_draft";
 
 export const feedDraftNoticeChangeSchema = z.object({
-  locale: z.enum(locale.enumValues).optional(),
+  locale: z.enum(Locale).optional(),
   fields: z.array(z.string()),
 });
 
@@ -20,7 +21,7 @@ export const feedDraftNoticeSchema = z.discriminatedUnion("type", [
     type: z.literal("revision"),
     draftId: z.number().int(),
     revision: z.number().int(),
-    author: z.enum([FEED_DRAFT_AUTHOR.Operator, FEED_DRAFT_AUTHOR.Agent]),
+    author: z.enum(FeedDraftAuthor),
     sessionId: z.string().nullable(),
     /** Fields the write touched; bodies stay in the row, well under NOTIFY's 8 kB payload cap. */
     changes: z.array(feedDraftNoticeChangeSchema),

@@ -1,7 +1,7 @@
 import "zod/compile";
 import * as z from "zod";
 
-import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/services/rag/resource-types";
+import { ResourceType } from "@chia/services/rag/resource-types";
 import type { FeedSummaryOutput } from "@chia/workflow-control/contract";
 
 import { summarizeFeedStep } from "../steps/feed-summary.step";
@@ -35,7 +35,7 @@ export const feedSummaryWorkflow = async (
       }
       try {
         await indexResource({
-          sourceType: FEED_TRANSLATION_SOURCE_TYPE,
+          sourceType: ResourceType.FeedTranslation,
           sourceId: translation.translationID,
         });
         return { locale: translation.locale, status: "ok" };

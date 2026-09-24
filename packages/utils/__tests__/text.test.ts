@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ExactReplaceFailure,
+  MatchMode,
   applyEdits,
   excerptAround,
   lineAt,
@@ -18,7 +20,7 @@ describe("replaceExact", () => {
       replacements: 1,
       offsets: [10],
       matches: [{ start: 10, end: 26 }],
-      match: "exact",
+      match: MatchMode.Exact,
     });
   });
 
@@ -28,14 +30,14 @@ describe("replaceExact", () => {
       {
         ok: true,
         content: "- item\n  one\ntwo",
-        match: "whitespace",
+        match: MatchMode.Whitespace,
         matches: [{ start: 9, end: 27 }],
       }
     );
     expect(replaceExact("a  \nb", "a\nb", "c")).toMatchObject({
       ok: true,
       content: "c",
-      match: "trailing_whitespace",
+      match: MatchMode.TrailingWhitespace,
     });
   });
 
@@ -46,31 +48,31 @@ describe("replaceExact", () => {
     ).toMatchObject({
       ok: true,
       content: "Rewritten.",
-      match: "punctuation",
+      match: MatchMode.Punctuation,
     });
     expect(replaceExact(curly, 'She said "hi" - twice.', "x")).toMatchObject({
       ok: false,
-      reason: "not_found",
+      reason: ExactReplaceFailure.NotFound,
     });
   });
 
   it("never lets whitespace dropped from the target's edges match inside a word", () => {
     expect(replaceExact("foobar", " foo ", "X")).toMatchObject({
       ok: false,
-      reason: "not_found",
+      reason: ExactReplaceFailure.NotFound,
     });
     expect(replaceExact("foobar", "foo ", "X")).toMatchObject({
       ok: false,
-      reason: "not_found",
+      reason: ExactReplaceFailure.NotFound,
     });
     expect(replaceExact("使用foo工具", " foo ", "X")).toMatchObject({
       ok: false,
-      reason: "not_found",
+      reason: ExactReplaceFailure.NotFound,
     });
     expect(replaceExact("**foo** bar", " foo ", "X")).toMatchObject({
       ok: true,
       content: "**X** bar",
-      match: "whitespace",
+      match: MatchMode.Whitespace,
     });
   });
 
@@ -78,11 +80,11 @@ describe("replaceExact", () => {
     expect(replaceExact("x \nx\nx  ", "x", "y", true)).toMatchObject({
       ok: true,
       content: "y \ny\ny  ",
-      match: "exact",
+      match: MatchMode.Exact,
     });
     expect(replaceExact("foo \nfoo \n", "foo\n", "bar\n")).toMatchObject({
       ok: false,
-      reason: "ambiguous",
+      reason: ExactReplaceFailure.Ambiguous,
     });
   });
 
@@ -91,7 +93,7 @@ describe("replaceExact", () => {
     // The message must say how to proceed, since it is fed straight back to whoever typed it.
     expect(result).toMatchObject({
       ok: false,
-      reason: "ambiguous",
+      reason: ExactReplaceFailure.Ambiguous,
       message: expect.stringMatching(/matches 2 places/),
     });
   });
@@ -108,21 +110,21 @@ describe("replaceExact", () => {
         { start: 0, end: 9 },
         { start: 10, end: 19 },
       ],
-      match: "exact",
+      match: MatchMode.Exact,
     });
   });
 
   it("reports a miss instead of silently doing nothing", () => {
     expect(replaceExact(body, "does not exist", "x")).toMatchObject({
       ok: false,
-      reason: "not_found",
+      reason: ExactReplaceFailure.NotFound,
     });
   });
 
   it("rejects an empty target", () => {
     expect(replaceExact(body, "", "x")).toMatchObject({
       ok: false,
-      reason: "empty_target",
+      reason: ExactReplaceFailure.EmptyTarget,
     });
   });
 
@@ -189,8 +191,8 @@ describe("applyEdits", () => {
       ok: true,
       content: "a\nbeta\nGAMMA!",
       edits: [
-        { replacements: 1, offsets: [7], match: "exact" },
-        { replacements: 1, offsets: [0], match: "exact" },
+        { replacements: 1, offsets: [7], match: MatchMode.Exact },
+        { replacements: 1, offsets: [0], match: MatchMode.Exact },
       ],
     });
   });
@@ -204,8 +206,8 @@ describe("applyEdits", () => {
       ok: true,
       content: "1\n2nd",
       edits: [
-        { replacements: 1, offsets: [2], match: "exact" },
-        { replacements: 1, offsets: [0], match: "trailing_whitespace" },
+        { replacements: 1, offsets: [2], match: MatchMode.Exact },
+        { replacements: 1, offsets: [0], match: MatchMode.TrailingWhitespace },
       ],
     });
   });
@@ -220,8 +222,8 @@ describe("applyEdits", () => {
       ok: true,
       content: "q",
       edits: [
-        { replacements: 1, offsets: [0], match: "exact" },
-        { replacements: 1, offsets: [0], match: "exact" },
+        { replacements: 1, offsets: [0], match: MatchMode.Exact },
+        { replacements: 1, offsets: [0], match: MatchMode.Exact },
       ],
     });
   });
@@ -232,6 +234,10 @@ describe("applyEdits", () => {
         { oldString: "x", newString: "1" },
         { oldString: "nope", newString: "2" },
       ])
-    ).toMatchObject({ ok: false, index: 1, reason: "not_found" });
+    ).toMatchObject({
+      ok: false,
+      index: 1,
+      reason: ExactReplaceFailure.NotFound,
+    });
   });
 });

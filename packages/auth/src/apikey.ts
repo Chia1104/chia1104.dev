@@ -26,12 +26,10 @@ export const apiKeyPermissionsSchema: z.ZodType<ApiKeyPermissions> = z.record(
   z.array(z.string())
 );
 
+/** Every scope is `resource:action`. */
 const splitScope = (scope: ApiKeyScope): [resource: string, action: string] => {
-  const [resource, action] =
-    /* SAFETY: Every ApiKeyScope literal is `resource:action`. */ scope.split(
-      ":"
-    ) as [string, string];
-  return [resource, action];
+  const colon = scope.indexOf(":");
+  return [scope.slice(0, colon), scope.slice(colon + 1)];
 };
 
 export const toApiKeyPermissions = (scopes: readonly ApiKeyScope[]) => {

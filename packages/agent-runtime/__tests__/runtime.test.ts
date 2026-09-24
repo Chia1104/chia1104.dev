@@ -10,6 +10,7 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it, vi } from "vitest";
 
+import { AgentErrorKind } from "../src/types.ts";
 import { formatOperatorDecision } from "../src/wire/operator-decision.ts";
 
 import {
@@ -287,11 +288,14 @@ describe("runPiTurn", () => {
 
     expect(result).toEqual({
       status: "error",
-      error: { kind: "internal", message: "Unknown prompt template: nope" },
+      error: {
+        kind: AgentErrorKind.Internal,
+        message: "Unknown prompt template: nope",
+      },
     });
     expect(fixture.faux.state.callCount).toBe(0);
     expect(fixture.events.slice(-2)).toEqual([
-      { type: "error", kind: "internal" },
+      { type: "error", kind: AgentErrorKind.Internal },
       { type: "run:end", reason: "error" },
     ]);
   });
@@ -308,10 +312,13 @@ describe("runPiTurn", () => {
 
     await expect(fixture.run()).resolves.toEqual({
       status: "error",
-      error: { kind: "auth", message: "401 Unauthorized: invalid x-api-key" },
+      error: {
+        kind: AgentErrorKind.Auth,
+        message: "401 Unauthorized: invalid x-api-key",
+      },
     });
     expect(fixture.events.slice(-2)).toEqual([
-      { type: "error", kind: "auth" },
+      { type: "error", kind: AgentErrorKind.Auth },
       { type: "run:end", reason: "error" },
     ]);
     // A failed turn is never compacted.
@@ -386,10 +393,10 @@ describe("runPiTurn", () => {
       })
     ).resolves.toEqual({
       status: "error",
-      error: { kind: "internal", message: "draft store down" },
+      error: { kind: AgentErrorKind.Internal, message: "draft store down" },
     });
     expect(fixture.events.slice(-2)).toEqual([
-      { type: "error", kind: "internal" },
+      { type: "error", kind: AgentErrorKind.Internal },
       { type: "run:end", reason: "error" },
     ]);
   });
@@ -407,7 +414,7 @@ describe("runPiTurn", () => {
 
     await expect(fixture.run({ flushEvents })).resolves.toEqual({
       status: "error",
-      error: { kind: "internal", message: "database unavailable" },
+      error: { kind: AgentErrorKind.Internal, message: "database unavailable" },
     });
     expect(fixture.events).toContainEqual(
       expect.objectContaining({
@@ -416,7 +423,7 @@ describe("runPiTurn", () => {
       })
     );
     expect(fixture.events.slice(-2)).toEqual([
-      { type: "error", kind: "internal" },
+      { type: "error", kind: AgentErrorKind.Internal },
       { type: "run:end", reason: "error" },
     ]);
     expect(flushEvents).toHaveBeenCalledOnce();
@@ -439,12 +446,12 @@ describe("runPiTurn", () => {
     expect(result).toEqual({
       status: "error",
       error: {
-        kind: "internal",
+        kind: AgentErrorKind.Internal,
         message: expect.stringContaining("refused"),
       },
     });
     expect(fixture.events.slice(-2)).toEqual([
-      { type: "error", kind: "internal" },
+      { type: "error", kind: AgentErrorKind.Internal },
       { type: "run:end", reason: "error" },
     ]);
     // The refused reply never reached the wire, and nothing was hung off its lost parent.
@@ -454,7 +461,7 @@ describe("runPiTurn", () => {
     expect(reportError).toHaveBeenCalledWith(
       refused,
       "Agent turn failed",
-      expect.objectContaining({ kind: "internal" })
+      expect.objectContaining({ kind: AgentErrorKind.Internal })
     );
   });
 
@@ -470,7 +477,7 @@ describe("runPiTurn", () => {
 
     await expect(fixture.run()).resolves.toEqual({
       status: "error",
-      error: { kind: "rate_limited", message: "503 overloaded" },
+      error: { kind: AgentErrorKind.RateLimited, message: "503 overloaded" },
     });
     expect(fixture.persistApproval).not.toHaveBeenCalled();
     expect(fixture.events).toContainEqual(

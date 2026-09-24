@@ -30,7 +30,7 @@ const experience: ProfileEntryView = {
     stack: ["TypeScript", "React"],
     agentNotes: "A consultancy.",
     translations: {
-      [Locale.zhTW]: { title: "前端工程師", content: "- 開發多鏈錢包" },
+      [Locale.ZhTW]: { title: "前端工程師", content: "- 開發多鏈錢包" },
     },
   },
 };
@@ -107,7 +107,7 @@ const education: ProfileEntryView = {
     organization: "CGU",
     startDate: "2018-06-01",
     endDate: "2022-06-30",
-    translations: { [Locale.zhTW]: { title: "資訊管理學系" } },
+    translations: { [Locale.ZhTW]: { title: "資訊管理學系" } },
   },
 };
 

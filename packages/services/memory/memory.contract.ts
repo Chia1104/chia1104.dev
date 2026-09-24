@@ -1,7 +1,7 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
+import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
 
 import { withMetaSchema } from "../shared/schema";
 
@@ -15,8 +15,8 @@ import {
  * standing instruction. See `../routes/memory.route.ts`.
  */
 
-export const memoryKindSchema = z.enum(AGENT_MEMORY_KIND);
-export const memoryStatusSchema = z.enum(AGENT_MEMORY_STATUS);
+export const memoryKindSchema = z.enum(AgentMemoryKind);
+export const memoryStatusSchema = z.enum(AgentMemoryStatus);
 
 const memorySummaryFields = {
   id: z.number(),

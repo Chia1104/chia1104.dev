@@ -8,7 +8,7 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { useTranslations } from "next-intl";
 import { useMediaQuery } from "usehooks-ts";
 
-import { DockActions, DockShell } from "@chia/ui/dock";
+import { DockActions, DockMode, DockShell } from "@chia/ui/dock";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { CHBot } from "@/components/commons/ch-bot";
@@ -42,7 +42,7 @@ export const ChatDock = () => {
   const toggle = useChatDockStore((state) => state.toggle);
   const isWide = useMediaQuery(DOCK_QUERY, { initializeWithValue: false });
   const isSheet = useMediaQuery(SHEET_QUERY, { initializeWithValue: false });
-  const isOpen = mode !== "closed";
+  const isOpen = mode !== DockMode.Closed;
 
   useEffect(() => {
     void useChatDockStore.persist.rehydrate();
@@ -55,7 +55,7 @@ export const ChatDock = () => {
   }
 
   // The drawer and the maximized panel cover the launcher; the column leaves it as the way back out.
-  const launcherCovered = isOpen && (!isWide || mode === "maximized");
+  const launcherCovered = isOpen && (!isWide || mode === DockMode.Maximized);
   const docked = isOpen && !launcherCovered;
   const launcherLabel = t(isOpen ? "collapse" : "open");
   const panelActions = (
@@ -83,7 +83,7 @@ export const ChatDock = () => {
         <Button
           aria-label={t("close")}
           isIconOnly
-          onPress={() => setMode("closed")}
+          onPress={() => setMode(DockMode.Closed)}
           size="sm"
           variant="ghost">
           <span aria-hidden="true" className="i-lucide-x size-4" />
@@ -163,7 +163,9 @@ export const ChatDock = () => {
       ) : (
         <Drawer.Backdrop
           isOpen={isOpen}
-          onOpenChange={(open) => setMode(open ? "open" : "closed")}>
+          onOpenChange={(open) =>
+            setMode(open ? DockMode.Open : DockMode.Closed)
+          }>
           <Drawer.Content placement={isSheet ? "bottom" : "right"}>
             <Drawer.Dialog
               className={cn(

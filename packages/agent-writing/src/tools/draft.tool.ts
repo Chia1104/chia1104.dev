@@ -12,11 +12,15 @@ import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { extractSections } from "@chia/ai/embeddings/markdown";
 import type { MarkdownSectionSpan } from "@chia/ai/embeddings/markdown";
 import { FeedType, Locale } from "@chia/db/types";
+import { isEnumValue } from "@chia/utils/is";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
-import { numberLines } from "@chia/utils/text";
-import type { MatchMode } from "@chia/utils/text";
+import { MatchMode, numberLines } from "@chia/utils/text";
 
-import { languageMismatch, noBodyMessage } from "../draft/operations.ts";
+import {
+  languageMismatch,
+  localesOf,
+  noBodyMessage,
+} from "../draft/operations.ts";
 import type {
   DraftFeedMeta,
   DraftTranslation,
@@ -25,7 +29,7 @@ import type {
   WritingToolContext,
 } from "../types.ts";
 
-import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
+import { TOOL_INFO_BY_NAME, ToolName } from "./registry.ts";
 import { DraftIdSchema } from "./schema.ts";
 
 /**
@@ -57,8 +61,8 @@ const feedMetaOf = (draft: FeedDraft): DraftFeedMeta => ({
 });
 
 export const listDraftsSpec = {
-  name: TOOL_NAMES.listDrafts,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.listDrafts].label,
+  name: ToolName.ListDrafts,
+  label: TOOL_INFO_BY_NAME[ToolName.ListDrafts].label,
   description:
     "List the open drafts: new posts not yet committed, and posts edited since their last " +
     "commit. Each row carries the `draftId` the other draft tools take.",
@@ -100,8 +104,8 @@ const openedResult = (draft: FeedDraft) => {
  * nothing.
  */
 export const newDraftSpec = {
-  name: TOOL_NAMES.newDraft,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.newDraft].label,
+  name: ToolName.NewDraft,
+  label: TOOL_INFO_BY_NAME[ToolName.NewDraft].label,
   description:
     "Start an empty draft for a new post that does not exist yet. Takes no arguments: a new " +
     "post has no id. Check `list_drafts` first so an existing empty draft is reused, and use " +
@@ -118,8 +122,8 @@ export const newDraftTool = defineTool(
 );
 
 export const openDraftSpec = {
-  name: TOOL_NAMES.openDraft,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.openDraft].label,
+  name: ToolName.OpenDraft,
+  label: TOOL_INFO_BY_NAME[ToolName.OpenDraft].label,
   description:
     "Open an existing post's working draft, creating it from the post when there is none. A " +
     "post has one draft, shared with the operator. For a post that does not exist yet use " +
@@ -191,8 +195,8 @@ const MATCH_NOTE = {
 } satisfies Record<MatchMode, string>;
 
 export const readDraftSpec = {
-  name: TOOL_NAMES.readDraft,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.readDraft].label,
+  name: ToolName.ReadDraft,
+  label: TOOL_INFO_BY_NAME[ToolName.ReadDraft].label,
   description:
     "Read a draft: feed-level metadata plus, for one locale, its metadata, the outline of its " +
     "headings and its MDX body with line numbers. All of `heading`, `fromLine` and `toLine` " +
@@ -224,8 +228,7 @@ export const readDraftTool = defineTool(
   readDraftSpec,
   (context: WritingToolContext) => async (_toolCallId, params) => {
     const draft = await context.draft.get(params.draftId);
-    // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
-    const locales = Object.keys(draft.translations) as Locale[];
+    const locales = Object.keys(draft.translations);
     const feedMeta = feedMetaOf(draft);
 
     if (!params.locale) {
@@ -352,8 +355,8 @@ const TranslationsWriteSchema = Type.Object(
 );
 
 export const writeDraftSpec = {
-  name: TOOL_NAMES.writeDraft,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.writeDraft].label,
+  name: ToolName.WriteDraft,
+  label: TOOL_INFO_BY_NAME[ToolName.WriteDraft].label,
   description:
     "Write a draft: feed-level fields and any number of locales, each with metadata and/or the " +
     "whole MDX body, as one revision. Use it to create a post in one call (both locales, all " +
@@ -414,13 +417,16 @@ export const writeDraftTool = defineTool(
       ) {
         continue;
       }
-      // SAFETY: TranslationsWriteSchema is keyed by Locale.
-      const key = locale as Locale;
+      if (!isEnumValue(Locale, locale)) {
+        throw new Error(
+          `No locale "${locale}"; key translations by ${Object.values(Locale).join(" or ")}.`
+        );
+      }
       if (patch.content !== undefined) {
-        const mismatch = languageMismatch(key, patch.content);
+        const mismatch = languageMismatch(locale, patch.content);
         if (mismatch) throw new Error(mismatch);
       }
-      writes[key] = patch;
+      writes[locale] = patch;
       if (
         patch.description !== null &&
         patch.description !== undefined &&
@@ -453,20 +459,18 @@ export const writeDraftTool = defineTool(
       locales: Object.keys(draft.translations),
       translations: {},
     };
-    for (const locale of Object.keys(writes)) {
-      // SAFETY: `writes` is keyed by Locale.
-      const key = locale as Locale;
-      const translation = draft.translations[key];
+    for (const locale of localesOf(writes)) {
+      const translation = draft.translations[locale];
       const written: WriteReadback["translations"][Locale] = {
         title: translation?.title,
         excerpt: translation?.excerpt,
         description: translation?.description,
       };
-      const content = writes[key]?.content;
+      const content = writes[locale]?.content;
       if (content !== undefined && content !== null) {
         written.lineCount = content.split("\n").length;
       }
-      readback.translations[key] = written;
+      readback.translations[locale] = written;
     }
 
     return textResult(
@@ -478,8 +482,8 @@ export const writeDraftTool = defineTool(
 );
 
 export const editDraftContentSpec = {
-  name: TOOL_NAMES.editDraftContent,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.editDraftContent].label,
+  name: ToolName.EditDraftContent,
+  label: TOOL_INFO_BY_NAME[ToolName.EditDraftContent].label,
   description:
     "Replace exact strings in a locale's MDX body. Edits apply in order as one revision; each " +
     "`oldString` must match the draft byte for byte, including indentation. A target that " +
@@ -550,7 +554,7 @@ export const editDraftContentTool = defineTool(
           oldString: edit.oldString,
           newString: edit.newString,
           replacements: edits[index]?.replacements ?? 0,
-          match: edits[index]?.match ?? "exact",
+          match: edits[index]?.match ?? MatchMode.Exact,
           line: edits[index]?.line ?? null,
         })),
       }
@@ -561,8 +565,8 @@ export const editDraftContentTool = defineTool(
 const ATX_HEADING = /^ {0,3}#{1,6}[ \t]/;
 
 export const replaceSectionSpec = {
-  name: TOOL_NAMES.replaceSection,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.replaceSection].label,
+  name: ToolName.ReplaceSection,
+  label: TOOL_INFO_BY_NAME[ToolName.ReplaceSection].label,
   description:
     "Replace one section of a locale's MDX body: the heading line through the last line before " +
     "the next heading of the same or a shallower level, subsections included. `heading` is a " +
@@ -638,7 +642,7 @@ export const replaceSectionTool = defineTool(
             oldString,
             newString: deleted ? "" : content,
             replacements: landed?.replacements ?? 0,
-            match: landed?.match ?? "exact",
+            match: landed?.match ?? MatchMode.Exact,
             line: landed?.line ?? null,
           },
         ],

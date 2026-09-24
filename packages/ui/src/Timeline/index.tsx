@@ -42,7 +42,7 @@ const groupTimelineData = (
   groupTemplate: string,
   timezone?: string
 ): TimelineGroupData[] => {
-  return data.reduce((acc, curr) => {
+  return data.reduce<TimelineGroupData[]>((acc, curr) => {
     const groupName = getGroupName(curr, groupTemplate, timezone);
     const lastGroup = acc[acc.length - 1];
 
@@ -56,7 +56,7 @@ const groupTimelineData = (
     }
 
     return acc;
-  }, /* SAFETY: The producer contract guarantees this value satisfies TimelineGroupData[]. */ [] as TimelineGroupData[]);
+  }, []);
 };
 
 const Timeline: FC<TimelineProps> = ({

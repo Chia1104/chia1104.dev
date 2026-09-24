@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
 import type { ProfileEntry } from "@chia/db/schema";
+import { ProfileEntryKind } from "@chia/db/types";
 import { contextOf } from "@chia/test/context";
 import { stubTestEnv } from "@chia/test/env";
 import { it as orpcIt } from "@chia/test/orpc";
@@ -36,7 +37,7 @@ const experienceData = {
 
 const row = (overrides: Partial<ProfileEntry> = {}): ProfileEntry => ({
   id: 3,
-  kind: "experience",
+  kind: ProfileEntryKind.Experience,
   published: true,
   sortOrder: 0,
   data: experienceData,
@@ -98,16 +99,17 @@ describe("profile routes", () => {
   }) => {
     const listed = await call(
       routes.listProfileEntriesRoute,
-      { kind: "experience" },
+      { kind: ProfileEntryKind.Experience },
       { context }
     );
     expect(repo.listProfileEntries).toHaveBeenCalledWith(expect.anything(), {
       userId: ADMIN_ID,
-      kind: "experience",
+      kind: ProfileEntryKind.Experience,
     });
     const [entry] = listed.items;
-    expect(entry?.kind).toBe("experience");
-    if (entry?.kind !== "experience") throw new Error("kind mismatch");
+    expect(entry?.kind).toBe(ProfileEntryKind.Experience);
+    if (entry?.kind !== ProfileEntryKind.Experience)
+      throw new Error("kind mismatch");
     expect(entry.data.organization).toBe("LeadBest");
   });
 
@@ -117,7 +119,7 @@ describe("profile routes", () => {
     const created = await call(
       routes.createProfileEntryRoute,
       {
-        kind: "experience",
+        kind: ProfileEntryKind.Experience,
         data: experienceData,
         published: false,
         sortOrder: 2,
@@ -126,7 +128,7 @@ describe("profile routes", () => {
     );
     expect(repo.createProfileEntry).toHaveBeenCalledWith(expect.anything(), {
       userId: ADMIN_ID,
-      kind: "experience",
+      kind: ProfileEntryKind.Experience,
       data: experienceData,
       published: false,
       sortOrder: 2,
@@ -137,9 +139,9 @@ describe("profile routes", () => {
       call(
         routes.createProfileEntryRoute,
         {
-          kind: "about",
-          // SAFETY: deliberately wrong for the kind; the contract must refuse it.
-          data: { translations: {} } as never,
+          kind: ProfileEntryKind.About,
+          // No locale at all; the contract must refuse it.
+          data: { translations: {} },
           published: false,
           sortOrder: 0,
         },
@@ -160,7 +162,7 @@ describe("profile routes", () => {
         routes.updateProfileEntryRoute,
         {
           id: 3,
-          kind: "experience",
+          kind: ProfileEntryKind.Experience,
           data: experienceData,
           published: true,
           sortOrder: 0,
@@ -179,15 +181,15 @@ describe("profile routes", () => {
     context,
   }) => {
     repo.getProfileEntry.mockResolvedValueOnce(
-      row({ kind: "project", data: experienceData })
+      row({ kind: ProfileEntryKind.Project, data: experienceData })
     );
     await expect(
       call(routes.getProfileEntryRoute, { id: 3 }, { context })
-    ).resolves.toMatchObject({ entry: { kind: "project" } });
+    ).resolves.toMatchObject({ entry: { kind: ProfileEntryKind.Project } });
 
     repo.getProfileEntry.mockResolvedValueOnce(
-      // SAFETY: simulates a row written under an older shape.
-      row({ kind: "experience", data: { translations: {} } as never })
+      // A row written under an older shape.
+      row({ kind: ProfileEntryKind.Experience, data: { translations: {} } })
     );
     await expect(
       call(routes.getProfileEntryRoute, { id: 3 }, { context })

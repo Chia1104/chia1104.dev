@@ -10,7 +10,13 @@ import { useLocalStorage } from "usehooks-ts";
 import { cn } from "../utils/cn.util";
 import useIsomorphicLayoutEffect from "../utils/use-isomorphic-layout-effect";
 
-export type DockMode = "closed" | "open" | "maximized";
+export const DockMode = {
+  Closed: "closed",
+  Open: "open",
+  Maximized: "maximized",
+} as const;
+
+export type DockMode = (typeof DockMode)[keyof typeof DockMode];
 
 /**
  * Set on the root while the dock is open, so the page can give up the width without subscribing
@@ -93,7 +99,7 @@ export const DockShell = ({
   const bounds: WidthBounds = { minWidth, maxWidth, pageMinWidth };
 
   useIsomorphicLayoutEffect(() => {
-    if (mode === "closed") return;
+    if (mode === DockMode.Closed) return;
     const root = document.documentElement;
     root.style.setProperty(DOCK_WIDTH_VARIABLE, widthExpression(width, bounds));
     return () => {
@@ -104,13 +110,13 @@ export const DockShell = ({
   // The maximized panel covers the page, so it borrows a modal's manners: no scrolling underneath,
   // and Escape brings the column back. An overlay inside the panel claims Escape first.
   useEffect(() => {
-    if (mode !== "maximized") return;
+    if (mode !== DockMode.Maximized) return;
     const root = document.documentElement;
     const overflow = root.style.overflow;
     root.style.overflow = "hidden";
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape" && !event.defaultPrevented) {
-        onModeChange("open");
+        onModeChange(DockMode.Open);
       }
     };
     document.addEventListener("keydown", onKeyDown);
@@ -182,19 +188,24 @@ export const DockShell = ({
         // `bg-overlay` is the drawer's own surface, so the panel reads the same either way.
         "bg-overlay fixed inset-y-0 right-0 z-20 overflow-hidden",
         transition,
-        mode === "open" ? "border-border border-l" : null,
+        mode === DockMode.Open ? "border-border border-l" : null,
         className
       )}
       data-mode={mode}
       style={{
-        width: mode === "closed" ? 0 : mode === "open" ? columnWidth : "100%",
+        width:
+          mode === DockMode.Closed
+            ? 0
+            : mode === DockMode.Open
+              ? columnWidth
+              : "100%",
       }}>
       <div
         className={cn("flex h-full flex-col", transition)}
-        style={{ width: mode === "maximized" ? "100%" : columnWidth }}>
+        style={{ width: mode === DockMode.Maximized ? "100%" : columnWidth }}>
         {children}
       </div>
-      {mode === "open" ? (
+      {mode === DockMode.Open ? (
         <div
           aria-label={resizeLabel}
           aria-orientation="vertical"
@@ -232,14 +243,16 @@ export const DockActions = ({
   onModeChange: (mode: DockMode) => void;
   labels: DockActionsLabels;
 }) => {
-  const maximized = mode === "maximized";
+  const maximized = mode === DockMode.Maximized;
   return (
     <div className="flex shrink-0 items-center gap-1">
       <Button
         aria-label={maximized ? labels.restore : labels.maximize}
         aria-pressed={maximized}
         isIconOnly
-        onPress={() => onModeChange(maximized ? "open" : "maximized")}
+        onPress={() =>
+          onModeChange(maximized ? DockMode.Open : DockMode.Maximized)
+        }
         size="sm"
         variant="ghost"
         className="size-6 shrink-0">
@@ -252,7 +265,7 @@ export const DockActions = ({
       <Button
         aria-label={labels.close}
         isIconOnly
-        onPress={() => onModeChange("closed")}
+        onPress={() => onModeChange(DockMode.Closed)}
         size="sm"
         variant="ghost"
         className="size-6 shrink-0">

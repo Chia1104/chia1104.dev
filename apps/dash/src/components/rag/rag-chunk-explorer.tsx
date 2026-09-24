@@ -20,6 +20,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { SearchIcon } from "lucide-react";
 import { parseAsString, parseAsStringLiteral, useQueryStates } from "nuqs";
 
+import { ChunkEmbeddingState, ResourceChunkKind } from "@chia/db/schema";
 import { Locale } from "@chia/db/types";
 
 import { DrawerPanel } from "@/components/commons/drawer-panel";
@@ -27,34 +28,33 @@ import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs } from "@/libs/orpc/types";
 
 import { IndexKeyLine, StateDot } from "./rag-shared";
-import type { ChunkState } from "./rag-shared";
 
 type Query = RouterInputs["rag"]["chunks:list"];
 
 const ANY = "any";
 const SEARCH_DEBOUNCE_MS = 300;
 
-const STATE_VALUES = [ANY, "current", "stale", "missing"] as const;
-const KIND_VALUES = [ANY, "card", "section"] as const;
-const LOCALE_VALUES = [ANY, Locale.zhTW, Locale.En] as const;
+const STATE_VALUES = [ANY, ...Object.values(ChunkEmbeddingState)] as const;
+const KIND_VALUES = [ANY, ...Object.values(ResourceChunkKind)] as const;
+const LOCALE_VALUES = [ANY, ...Object.values(Locale)] as const;
 
 const STATE_OPTIONS: { id: (typeof STATE_VALUES)[number]; label: string }[] = [
   { id: ANY, label: "Any state" },
-  { id: "current", label: "Current" },
-  { id: "stale", label: "Stale" },
-  { id: "missing", label: "Missing" },
+  { id: ChunkEmbeddingState.Current, label: "Current" },
+  { id: ChunkEmbeddingState.Stale, label: "Stale" },
+  { id: ChunkEmbeddingState.Missing, label: "Missing" },
 ];
 
 const KIND_OPTIONS: { id: (typeof KIND_VALUES)[number]; label: string }[] = [
   { id: ANY, label: "Any kind" },
-  { id: "card", label: "Card" },
-  { id: "section", label: "Section" },
+  { id: ResourceChunkKind.Card, label: "Card" },
+  { id: ResourceChunkKind.Section, label: "Section" },
 ];
 
 const LOCALE_OPTIONS: { id: (typeof LOCALE_VALUES)[number]; label: string }[] =
   [
     { id: ANY, label: "Any locale" },
-    { id: Locale.zhTW, label: "zh-TW" },
+    { id: Locale.ZhTW, label: "zh-TW" },
     { id: Locale.En, label: "EN" },
   ];
 
@@ -168,22 +168,12 @@ export const RagChunkExplorer = () => {
     wait: SEARCH_DEBOUNCE_MS,
   });
 
-  // SAFETY: each non-sentinel value originates from its corresponding typed filter option.
   const filters = useMemo<Query>(
     () => ({
       query: debouncedSearch || undefined,
-      state:
-        params.state === ANY
-          ? undefined
-          : /* SAFETY: The producer contract guarantees this value satisfies ChunkState. */ (params.state as ChunkState),
-      kind:
-        params.kind === ANY
-          ? undefined
-          : /* SAFETY: The producer contract guarantees this value satisfies Query["kind"]. */ (params.kind as Query["kind"]),
-      locale:
-        params.locale === ANY
-          ? undefined
-          : /* SAFETY: The producer contract guarantees this value satisfies Locale. */ (params.locale as Locale),
+      state: params.state === ANY ? undefined : params.state,
+      kind: params.kind === ANY ? undefined : params.kind,
+      locale: params.locale === ANY ? undefined : params.locale,
     }),
     [debouncedSearch, params.state, params.kind, params.locale]
   );
@@ -196,13 +186,10 @@ export const RagChunkExplorer = () => {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery(
-    orpc.rag["chunks:list"].infiniteOptions({
+    orpc.rag["chunks:list"].infiniteOptions<number | null>({
       input: (pageParam) => ({ ...filters, cursor: pageParam }),
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? null,
-      initialPageParam:
-        /* SAFETY: The producer contract guarantees this value satisfies number | null. */ null as
-          | number
-          | null,
+      initialPageParam: null,
     })
   );
 
@@ -237,14 +224,10 @@ export const RagChunkExplorer = () => {
         <Select
           aria-label="Embedding state"
           className="w-40"
-          onChange={(key) =>
-            void setParams({
-              state:
-                /* SAFETY: The producer contract guarantees this value satisfies (typeof STATE_VALUES)[number]. */ String(
-                  key
-                ) as (typeof STATE_VALUES)[number],
-            })
-          }
+          onChange={(key) => {
+            const state = STATE_VALUES.find((value) => value === key);
+            if (state) void setParams({ state });
+          }}
           value={params.state}>
           <Select.Trigger>
             <Select.Value />
@@ -260,13 +243,10 @@ export const RagChunkExplorer = () => {
         <Select
           aria-label="Chunk kind"
           className="w-36"
-          onChange={(key) =>
-            void setParams({
-              kind: /* SAFETY: The producer contract guarantees this value satisfies (typeof KIND_VALUES)[number]. */ String(
-                key
-              ) as (typeof KIND_VALUES)[number],
-            })
-          }
+          onChange={(key) => {
+            const kind = KIND_VALUES.find((value) => value === key);
+            if (kind) void setParams({ kind });
+          }}
           value={params.kind}>
           <Select.Trigger>
             <Select.Value />
@@ -282,14 +262,10 @@ export const RagChunkExplorer = () => {
         <Select
           aria-label="Locale"
           className="w-36"
-          onChange={(key) =>
-            void setParams({
-              locale:
-                /* SAFETY: The producer contract guarantees this value satisfies (typeof LOCALE_VALUES)[number]. */ String(
-                  key
-                ) as (typeof LOCALE_VALUES)[number],
-            })
-          }
+          onChange={(key) => {
+            const locale = LOCALE_VALUES.find((value) => value === key);
+            if (locale) void setParams({ locale });
+          }}
           value={params.locale}>
           <Select.Trigger>
             <Select.Value />

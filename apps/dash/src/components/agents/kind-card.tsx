@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 import { ThinkingSlider } from "@chia/agent-elements/thinking-slider";
+import { ThinkingLevel } from "@chia/services/agent/agent.schema";
 import { formatDateTime } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
@@ -43,21 +44,11 @@ import {
 } from "./shared";
 import type { KindAdmin } from "./shared";
 
-const THINKING_LEVELS = [
-  "off",
-  "minimal",
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-  "max",
-] as const;
-
 /** Null on a field means the code default. */
 const kindFormSchema = z.object({
   minTier: z.number().int().nullable(),
   model: modelRefSchema.nullable(),
-  thinkingLevel: z.enum(THINKING_LEVELS).nullable(),
+  thinkingLevel: z.enum(ThinkingLevel).nullable(),
   autoApprove: z.array(z.string()).nullable(),
   config: z.record(z.string(), configFieldValueSchema),
 });
@@ -313,7 +304,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
               control={control}
               defaults={kind.config.defaults}
               isDisabled={busy}
-              name="config"
+              pathOf={(key) => `config.${key}` as const}
               schema={kind.config.schema}
             />
           </section>

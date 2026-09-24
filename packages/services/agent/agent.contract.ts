@@ -5,6 +5,7 @@ import {
   agentAttachmentInputSchema,
   agentWireEventSchema,
 } from "@chia/agent-runtime/wire/schema";
+import { AgentApprovalStatus } from "@chia/db/schema";
 
 import { feedDraftSchema } from "../feeds/feeds.contract";
 import { withMetaSchema } from "../shared/schema";
@@ -67,6 +68,17 @@ export type AgentUsageStanding = z.infer<typeof agentUsageStandingSchema>;
  */
 const toolTierSchema = z.string();
 
+/**
+ * A live durable run: `Running` is a turn executing; `Waiting` is a run whose turn ended and
+ * whose row is about to close.
+ */
+export const AgentRunState = {
+  Running: "running",
+  Waiting: "waiting",
+} as const;
+
+export type AgentRunState = (typeof AgentRunState)[keyof typeof AgentRunState];
+
 export const agentSessionSummarySchema = z.object({
   id: z.string(),
   title: z.string().nullable(),
@@ -102,14 +114,11 @@ export const agentSessionDetailSchema = z.object({
   state: z.unknown().optional(),
   /** Writing-agent state: the shared drafts this session has worked on, most recent first. */
   drafts: z.array(feedDraftSchema).optional(),
-  /**
-   * Live durable run, or `null`. `running` is a turn executing; `waiting` is a run whose
-   * turn ended and whose row is about to close.
-   */
+  /** Live durable run, or `null`. */
   run: z
     .object({
       id: z.string(),
-      status: z.enum(["running", "waiting"]),
+      status: z.enum(AgentRunState),
     })
     .nullable(),
   /**
@@ -126,7 +135,7 @@ export const agentSessionDetailSchema = z.object({
       toolCallId: z.string(),
       toolName: z.string(),
       args: z.unknown().optional(),
-      status: z.enum(["pending", "approved", "rejected"]),
+      status: z.enum(AgentApprovalStatus),
       comment: z.string().optional(),
     })
   ),

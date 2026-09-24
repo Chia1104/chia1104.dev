@@ -7,7 +7,6 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster as ST } from "sonner";
 
 import Cursor from "@chia/ui/cursor";
-import type { Theme } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
 
 import { WebVitals } from "@/components/commons/web-vitals";
@@ -16,15 +15,7 @@ import { useSettingsStore } from "@/stores/settings/store";
 
 const Toaster = () => {
   const { theme } = useTheme();
-  return (
-    <ST
-      theme={
-        /* SAFETY: The producer contract guarantees this value satisfies Theme. */ theme as Theme
-      }
-      position="bottom-left"
-      richColors
-    />
-  );
+  return <ST theme={theme} position="bottom-left" richColors />;
 };
 
 const AppPlugins = () => {

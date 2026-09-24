@@ -9,7 +9,10 @@ import {
   GitHubApiError,
   createGitHubClient,
 } from "@chia/integrations/github/client";
-import { createGitHubSource } from "@chia/integrations/github/source";
+import {
+  GitHubContentType,
+  createGitHubSource,
+} from "@chia/integrations/github/source";
 import type { GitHubSource } from "@chia/integrations/github/source";
 
 import { env } from "../env";
@@ -184,7 +187,7 @@ export const createAgentGitHubPort = (
           entries: contents.entries.map((entry) => ({
             path: entry.path,
             type: entry.type,
-            size: entry.type === "dir" ? undefined : entry.size,
+            size: entry.type === GitHubContentType.Dir ? undefined : entry.size,
           })),
         };
       } catch (error) {

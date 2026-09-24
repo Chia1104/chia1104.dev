@@ -8,10 +8,10 @@ import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 export type TagView = RouterOutputs["tags"]["list"]["items"][number];
 export type TagWrite = RouterInputs["tags"]["create"];
 
-export const LOCALES: readonly Locale[] = [Locale.zhTW, Locale.En];
+export const LOCALES: readonly Locale[] = [Locale.ZhTW, Locale.En];
 
 export const LOCALE_LABEL = {
-  [Locale.zhTW]: "中文",
+  [Locale.ZhTW]: "中文",
   [Locale.En]: "English",
 } satisfies Record<Locale, string>;
 
@@ -26,7 +26,7 @@ const emptyTranslation = () => ({ name: "", description: "" });
 export const emptyFormValues = (): TagFormInput => ({
   slug: "",
   translations: {
-    [Locale.zhTW]: emptyTranslation(),
+    [Locale.ZhTW]: emptyTranslation(),
     [Locale.En]: emptyTranslation(),
   },
 });
@@ -34,9 +34,9 @@ export const emptyFormValues = (): TagFormInput => ({
 export const formValuesOf = (tag: TagView): TagFormInput => ({
   slug: tag.slug,
   translations: {
-    [Locale.zhTW]: {
-      name: tag.translations[Locale.zhTW]?.name ?? "",
-      description: tag.translations[Locale.zhTW]?.description ?? "",
+    [Locale.ZhTW]: {
+      name: tag.translations[Locale.ZhTW]?.name ?? "",
+      description: tag.translations[Locale.ZhTW]?.description ?? "",
     },
     [Locale.En]: {
       name: tag.translations[Locale.En]?.name ?? "",
@@ -45,5 +45,5 @@ export const formValuesOf = (tag: TagView): TagFormInput => ({
   },
 });
 
-export const nameOf = (tag: TagView, locale: Locale = Locale.zhTW): string =>
+export const nameOf = (tag: TagView, locale: Locale = Locale.ZhTW): string =>
   tag.translations[locale]?.name ?? tag.slug;

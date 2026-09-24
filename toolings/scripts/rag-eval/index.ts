@@ -12,7 +12,7 @@ import { connectDatabase, getConnection } from "@chia/db/client";
 import * as schema from "@chia/db/schema";
 import { searchFeedsService } from "@chia/services/feeds/search.service";
 import type { SearchFeedsProvider } from "@chia/services/feeds/search.service";
-import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/services/rag/resource-types";
+import { ResourceType } from "@chia/services/rag/resource-types";
 import { searchResources } from "@chia/services/rag/search.service";
 import type { ResourceSearchHit } from "@chia/services/rag/search.service";
 
@@ -105,9 +105,10 @@ interface ModeReport {
   mode: EvalMode;
   results: QueryResult[];
   recall: Record<number, number>;
-  recallByKind: Record<GoldenQueryKind, number>;
+  /** Only the kinds the run's queries cover. */
+  recallByKind: Partial<Record<GoldenQueryKind, number>>;
   /** R@1 per kind: R@5 cannot tell a `confusable` query's neighbours from its answer */
-  topRankByKind: Record<GoldenQueryKind, number>;
+  topRankByKind: Partial<Record<GoldenQueryKind, number>>;
   mrr: number;
   /** share of `expectedHeading` queries whose best chunk is the right section */
   citationAccuracy: number | null;
@@ -199,7 +200,7 @@ const runQuery = async (
         db,
         query: golden.query,
         mode: searchMode,
-        sourceTypes: [AGENT_MEMORY_SOURCE_TYPE],
+        sourceTypes: [ResourceType.AgentMemory],
         includeUnpublished: true,
         limit: MAX_K,
         rerank,
@@ -303,17 +304,17 @@ const buildModeReport = (
   results: QueryResult[]
 ): ModeReport => {
   const kinds = [...new Set(results.map((result) => result.kind))];
-  const recallByKindAt = (k: number) =>
-    /* SAFETY: The producer contract guarantees this value satisfies Record<GoldenQueryKind, number>. */ Object.fromEntries(
-      kinds.map((kind) => [
-        kind,
-        mean(
-          results
-            .filter((result) => result.kind === kind)
-            .map((result) => result.recall[k]!)
-        ),
-      ])
-    ) as Record<GoldenQueryKind, number>;
+  const recallByKindAt = (k: number) => {
+    const byKind: Partial<Record<GoldenQueryKind, number>> = {};
+    for (const kind of kinds) {
+      byKind[kind] = mean(
+        results
+          .filter((result) => result.kind === kind)
+          .map((result) => result.recall[k]!)
+      );
+    }
+    return byKind;
+  };
   return {
     mode,
     results,

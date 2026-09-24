@@ -17,20 +17,23 @@ interface ProviderInfo {
   icon: React.ReactNode;
 }
 
-type Provider =
-  | "github"
-  | "scira"
-  | "chatgpt"
-  | "claude"
-  | "t3"
-  | "v0"
-  | "cursor"
-  | "perplexity"
-  | "markdown"
-  | "gemini";
+export const Provider = {
+  GitHub: "github",
+  Scira: "scira",
+  ChatGPT: "chatgpt",
+  Claude: "claude",
+  T3: "t3",
+  V0: "v0",
+  Cursor: "cursor",
+  Perplexity: "perplexity",
+  Markdown: "markdown",
+  Gemini: "gemini",
+} as const;
+
+export type Provider = (typeof Provider)[keyof typeof Provider];
 
 export const providers = {
-  github: {
+  [Provider.GitHub]: {
     title: "Open in GitHub",
     createUrl: (url) => url,
     icon: (
@@ -40,7 +43,7 @@ export const providers = {
       </svg>
     ),
   },
-  scira: {
+  [Provider.Scira]: {
     title: "Open in Scira",
     createUrl: (q) =>
       `https://scira.ai/?${new URLSearchParams({
@@ -103,7 +106,7 @@ export const providers = {
       </svg>
     ),
   },
-  chatgpt: {
+  [Provider.ChatGPT]: {
     title: "Open in ChatGPT",
     createUrl: (prompt) =>
       `https://chatgpt.com/?${new URLSearchParams({
@@ -122,7 +125,7 @@ export const providers = {
       </svg>
     ),
   },
-  claude: {
+  [Provider.Claude]: {
     title: "Open in Claude",
     createUrl: (q) =>
       `https://claude.ai/new?${new URLSearchParams({
@@ -144,7 +147,7 @@ export const providers = {
       </svg>
     ),
   },
-  t3: {
+  [Provider.T3]: {
     title: "Open in T3 Chat",
     createUrl: (q) =>
       `https://t3.chat/new?${new URLSearchParams({
@@ -152,7 +155,7 @@ export const providers = {
       })}`,
     icon: <MessageCircleIcon className="size-4" />,
   },
-  v0: {
+  [Provider.V0]: {
     title: "Open in v0",
     createUrl: (q) =>
       `https://v0.app?${new URLSearchParams({
@@ -170,7 +173,7 @@ export const providers = {
       </svg>
     ),
   },
-  cursor: {
+  [Provider.Cursor]: {
     title: "Open in Cursor",
     createUrl: (text) => {
       const url = new URL("https://cursor.com/link/prompt");
@@ -191,7 +194,7 @@ export const providers = {
       </svg>
     ),
   },
-  perplexity: {
+  [Provider.Perplexity]: {
     title: "Open in Perplexity",
     createUrl: (q) =>
       `https://www.perplexity.ai/search?${new URLSearchParams({
@@ -212,7 +215,7 @@ export const providers = {
       </svg>
     ),
   },
-  markdown: {
+  [Provider.Markdown]: {
     title: "View as Markdown",
     createUrl: () => "/",
     icon: (
@@ -228,7 +231,7 @@ export const providers = {
       </svg>
     ),
   },
-  gemini: {
+  [Provider.Gemini]: {
     title: "Open in Gemini",
     createUrl: (q) =>
       `https://www.google.com/search?${new URLSearchParams({
@@ -485,11 +488,13 @@ export const OpenInChatGPT = (props: OpenInChatGPTProps) => {
     <Dropdown.Item {...props}>
       <Link
         className="flex w-full items-center gap-2"
-        href={providers.chatgpt.createUrl(query)}
+        href={providers[Provider.ChatGPT].createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="size-4 shrink-0">{providers.chatgpt.icon}</span>
-        <span className="flex-1">{providers.chatgpt.title}</span>
+        <span className="size-4 shrink-0">
+          {providers[Provider.ChatGPT].icon}
+        </span>
+        <span className="flex-1">{providers[Provider.ChatGPT].title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>
@@ -504,11 +509,13 @@ export const OpenInClaude = (props: OpenInClaudeProps) => {
     <Dropdown.Item {...props}>
       <Link
         className="flex w-full items-center gap-2"
-        href={providers.claude.createUrl(query)}
+        href={providers[Provider.Claude].createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="size-4 shrink-0">{providers.claude.icon}</span>
-        <span className="flex-1">{providers.claude.title}</span>
+        <span className="size-4 shrink-0">
+          {providers[Provider.Claude].icon}
+        </span>
+        <span className="flex-1">{providers[Provider.Claude].title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>
@@ -523,11 +530,11 @@ export const OpenInT3 = (props: OpenInT3Props) => {
     <Dropdown.Item {...props}>
       <Link
         className="flex w-full items-center gap-2"
-        href={providers.t3.createUrl(query)}
+        href={providers[Provider.T3].createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="size-4 shrink-0">{providers.t3.icon}</span>
-        <span className="flex-1">{providers.t3.title}</span>
+        <span className="size-4 shrink-0">{providers[Provider.T3].icon}</span>
+        <span className="flex-1">{providers[Provider.T3].title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>
@@ -542,11 +549,13 @@ export const OpenInScira = (props: OpenInSciraProps) => {
     <Dropdown.Item {...props}>
       <Link
         className="flex w-full items-center gap-2"
-        href={providers.scira.createUrl(query)}
+        href={providers[Provider.Scira].createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="size-4 shrink-0">{providers.scira.icon}</span>
-        <span className="flex-1">{providers.scira.title}</span>
+        <span className="size-4 shrink-0">
+          {providers[Provider.Scira].icon}
+        </span>
+        <span className="flex-1">{providers[Provider.Scira].title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>
@@ -561,11 +570,11 @@ export const OpenInv0 = (props: OpenInv0Props) => {
     <Dropdown.Item {...props}>
       <Link
         className="flex w-full items-center gap-2"
-        href={providers.v0.createUrl(query)}
+        href={providers[Provider.V0].createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="size-4 shrink-0">{providers.v0.icon}</span>
-        <span className="flex-1">{providers.v0.title}</span>
+        <span className="size-4 shrink-0">{providers[Provider.V0].icon}</span>
+        <span className="flex-1">{providers[Provider.V0].title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>
@@ -580,11 +589,13 @@ export const OpenInCursor = (props: OpenInCursorProps) => {
     <Dropdown.Item {...props}>
       <Link
         className="flex w-full items-center gap-2"
-        href={providers.cursor.createUrl(query)}
+        href={providers[Provider.Cursor].createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="size-4 shrink-0">{providers.cursor.icon}</span>
-        <span className="flex-1">{providers.cursor.title}</span>
+        <span className="size-4 shrink-0">
+          {providers[Provider.Cursor].icon}
+        </span>
+        <span className="flex-1">{providers[Provider.Cursor].title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>
@@ -599,11 +610,13 @@ export const OpenInPerplexity = (props: OpenInPerplexityProps) => {
     <Dropdown.Item {...props}>
       <Link
         className="flex w-full items-center gap-2"
-        href={providers.perplexity.createUrl(query)}
+        href={providers[Provider.Perplexity].createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="size-4 shrink-0">{providers.perplexity.icon}</span>
-        <span className="flex-1">{providers.perplexity.title}</span>
+        <span className="size-4 shrink-0">
+          {providers[Provider.Perplexity].icon}
+        </span>
+        <span className="flex-1">{providers[Provider.Perplexity].title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>
@@ -618,11 +631,13 @@ export const OpenInMarkdown = (props: OpenInMarkdownProps) => {
     <Dropdown.Item {...props}>
       <Link
         className="flex w-full items-center gap-2"
-        href={providers.markdown.createUrl(query)}
+        href={providers[Provider.Markdown].createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="size-4 shrink-0">{providers.markdown.icon}</span>
-        <span className="flex-1">{providers.markdown.title}</span>
+        <span className="size-4 shrink-0">
+          {providers[Provider.Markdown].icon}
+        </span>
+        <span className="flex-1">{providers[Provider.Markdown].title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>
@@ -637,11 +652,13 @@ export const OpenInGemini = (props: OpenInGeminiProps) => {
     <Dropdown.Item {...props}>
       <Link
         className="flex w-full items-center gap-2"
-        href={providers.gemini.createUrl(query)}
+        href={providers[Provider.Gemini].createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="size-4 shrink-0">{providers.gemini.icon}</span>
-        <span className="flex-1">{providers.gemini.title}</span>
+        <span className="size-4 shrink-0">
+          {providers[Provider.Gemini].icon}
+        </span>
+        <span className="flex-1">{providers[Provider.Gemini].title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>

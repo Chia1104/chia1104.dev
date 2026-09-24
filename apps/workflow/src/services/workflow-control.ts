@@ -5,7 +5,10 @@ import {
   agentAbortHook,
   agentAbortToken,
 } from "@chia/workflow-control/agent-hooks";
-import { startedRunId } from "@chia/workflow-control/contract";
+import {
+  WorkflowRunStatus,
+  startedRunId,
+} from "@chia/workflow-control/contract";
 import type {
   WorkflowControlCommand,
   WorkflowControlResult,
@@ -90,7 +93,7 @@ export const executeLocalWorkflowCommand = async (
       const status = await run.status;
       // `returnValue` settles only on completion; asking earlier would wait for the run.
       const output =
-        status === "completed"
+        status === WorkflowRunStatus.Completed
           ? await run.returnValue.catch((cause) => {
               reportError(cause, "Workflow run output could not be read", {
                 runId: command.runId,

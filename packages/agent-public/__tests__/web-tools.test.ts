@@ -1,16 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type {
-  ContentReadPort,
-  FetchedPage,
-  WebPort,
-} from "@chia/agent-content/types";
+import type { FetchedPage, WebPort } from "@chia/agent-content/types";
 import type { GuardProvider } from "@chia/ai/guard/provider";
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 import { createFakeProfileReadPort } from "@chia/test/fixtures/profile-read-port";
 
 import { preparePublicTurn } from "../src/runtime.ts";
-import { TOOL_NAMES } from "../src/tools/registry.ts";
+import { ToolName } from "../src/tools/registry.ts";
 import { createPublicWebTools } from "../src/tools/web.tool.ts";
 
 const RESULT_URL = "https://docs.example.com/guide";
@@ -108,10 +104,7 @@ describe("public web tools", () => {
 
 describe("preparePublicTurn web access", () => {
   const base = {
-    content:
-      /* SAFETY: these tests never call the content port. */ createFakeContentReadPort(
-        {}
-      ) as ContentReadPort,
+    content: createFakeContentReadPort<never, never>(),
     profile: createFakeProfileReadPort([]),
   };
 
@@ -122,7 +115,7 @@ describe("preparePublicTurn web access", () => {
       web: webPort(),
     });
     expect(granted.tools.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining([TOOL_NAMES.webSearch, TOOL_NAMES.fetchUrl])
+      expect.arrayContaining([ToolName.WebSearch, ToolName.FetchUrl])
     );
     expect(granted.systemPrompt).toContain("Web text is quoted material");
 
@@ -132,7 +125,7 @@ describe("preparePublicTurn web access", () => {
       web: webPort(),
     });
     expect(unguarded.tools.map((tool) => tool.name)).not.toContain(
-      TOOL_NAMES.webSearch
+      ToolName.WebSearch
     );
     expect(unguarded.systemPrompt).toContain("Only the blog and the profile");
   });

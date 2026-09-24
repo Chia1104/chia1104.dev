@@ -12,6 +12,8 @@ vi.mock("../src/steps/agent-turn.step", () => ({
   runAgentTurnStep: mocks.runTurn,
 }));
 
+import { AgentRunStatus } from "@chia/db/schema";
+
 import { agentSessionWorkflow } from "../src/workflows/agent-session.workflow";
 
 const abortController = { id: "abort-1", runId: "abort-run-1" };
@@ -54,7 +56,7 @@ describe("agentSessionWorkflow", () => {
     expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
       "run-1",
       abortController,
-      "completed"
+      AgentRunStatus.Completed
     );
     expect(mocks.closeStreams).toHaveBeenCalledOnce();
   });
@@ -82,7 +84,7 @@ describe("agentSessionWorkflow", () => {
     expect(mocks.completeRun).toHaveBeenCalledWith(
       "run-1",
       abortController,
-      "completed"
+      AgentRunStatus.Completed
     );
 
     // The relay is a fresh run carrying the recorded decision; nothing is parked between.
@@ -119,8 +121,8 @@ describe("agentSessionWorkflow", () => {
 
   it("records the turn's outcome on the run row: failed for an error, cancelled for an abort", async () => {
     for (const [outcome, status] of [
-      ["error", "failed"],
-      ["aborted", "cancelled"],
+      ["error", AgentRunStatus.Failed],
+      ["aborted", AgentRunStatus.Cancelled],
     ] as const) {
       mocks.completeRun.mockClear();
       mocks.runTurn.mockResolvedValueOnce({
@@ -160,7 +162,7 @@ describe("agentSessionWorkflow", () => {
     expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
       "run-1",
       abortController,
-      "failed"
+      AgentRunStatus.Failed
     );
     expect(mocks.closeStreams).toHaveBeenCalledOnce();
   });

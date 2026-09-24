@@ -1,7 +1,9 @@
+import { drizzle } from "drizzle-orm/node-postgres";
 import { describe, expect, it, vi } from "vitest";
 
-import type { DB } from "@chia/db/client";
+import { relations } from "@chia/db/schema";
 import type { ProfileEntry } from "@chia/db/schema";
+import { ProfileEntryKind } from "@chia/db/types";
 
 import { createProfileReadPort } from "../profile-read.port";
 
@@ -11,12 +13,11 @@ const { repo } = vi.hoisted(() => ({
 
 vi.mock("@chia/db/repos/profile", () => repo);
 
-/* SAFETY: the repository is mocked, so the handle is never used. */
-const db = {} as DB;
+const db = drizzle.mock({ relations });
 
 const row = (overrides: Partial<ProfileEntry> = {}): ProfileEntry => ({
   id: 1,
-  kind: "education",
+  kind: ProfileEntryKind.Education,
   published: true,
   sortOrder: 0,
   data: {
@@ -43,13 +44,15 @@ describe("createProfileReadPort", () => {
       userId: "author",
       published: true,
     });
-    expect(entries).toEqual([{ kind: "education", data: row().data }]);
+    expect(entries).toEqual([
+      { kind: ProfileEntryKind.Education, data: row().data },
+    ]);
   });
 
   it("fails on a row whose data no longer matches its kind", async () => {
     repo.listProfileEntries.mockResolvedValueOnce([
-      // SAFETY: simulates a row written under an older shape.
-      row({ data: { translations: {} } as never }),
+      // A row written under an older shape.
+      row({ data: { translations: {} } }),
     ]);
     const port = createProfileReadPort({ db, authorId: "author" });
     await expect(port.listPublished()).rejects.toThrow();

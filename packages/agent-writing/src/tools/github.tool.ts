@@ -8,6 +8,7 @@ import {
 } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 
+import { GitHubEntryType } from "../types.ts";
 import type {
   GitHubFile,
   GitHubRef,
@@ -15,7 +16,7 @@ import type {
   WritingToolContext,
 } from "../types.ts";
 
-import { TOOL_INFO_BY_NAME, TOOL_NAMES } from "./registry.ts";
+import { TOOL_INFO_BY_NAME, ToolName } from "./registry.ts";
 
 /**
  * Reads of the repositories the operator allowed. Every result names the commit sha the
@@ -69,8 +70,8 @@ const describeRef = (ref: GitHubRef): string =>
   (ref.private ? ", private" : "");
 
 export const githubResolveRefSpec = {
-  name: TOOL_NAMES.githubResolveRef,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.githubResolveRef].label,
+  name: ToolName.GitHubResolveRef,
+  label: TOOL_INFO_BY_NAME[ToolName.GitHubResolveRef].label,
   description:
     "Look up an allowed repository and pin a branch, tag or sha to its commit. Returns the " +
     "default branch, description and the commit sha to cite. Call it once per repository " +
@@ -104,9 +105,9 @@ export const githubResolveRefTool = defineTool(
 
 const formatEntry = (entry: GitHubTreeEntry): string => {
   switch (entry.type) {
-    case "dir":
+    case GitHubEntryType.Dir:
       return `${entry.path}/`;
-    case "file":
+    case GitHubEntryType.File:
       return entry.size === undefined
         ? entry.path
         : `${entry.path} (${entry.size} B)`;
@@ -116,8 +117,8 @@ const formatEntry = (entry: GitHubTreeEntry): string => {
 };
 
 export const githubListTreeSpec = {
-  name: TOOL_NAMES.githubListTree,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.githubListTree].label,
+  name: ToolName.GitHubListTree,
+  label: TOOL_INFO_BY_NAME[ToolName.GitHubListTree].label,
   description:
     "List a directory of an allowed repository at a ref: one level by default, the whole " +
     "subtree with `recursive`. Use it to find the file that implements what the post " +
@@ -219,8 +220,8 @@ const formatFile = (
 };
 
 export const githubReadFileSpec = {
-  name: TOOL_NAMES.githubReadFile,
-  label: TOOL_INFO_BY_NAME[TOOL_NAMES.githubReadFile].label,
+  name: ToolName.GitHubReadFile,
+  label: TOOL_INFO_BY_NAME[ToolName.GitHubReadFile].label,
   description:
     "Read a text file from an allowed repository at a ref, optionally a line range. Returns " +
     "the content with its permalink at the resolved commit. Quote code from here, never from " +

@@ -1,12 +1,13 @@
 import { call } from "@orpc/server";
 import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest";
 
+import { ResourceIndexRunScope, ResourceIndexRunStatus } from "@chia/db/schema";
 import type { ResourceIndexRun } from "@chia/db/schema";
 import { contextOf } from "@chia/test/context";
 import { stubTestEnv } from "@chia/test/env";
 import { it as orpcIt } from "@chia/test/orpc";
 import { ADMIN_ID, sessionOf } from "@chia/test/session";
-import type { WorkflowControlClient } from "@chia/workflow-control/client";
+import { createWorkflowControlClient } from "@chia/workflow-control/client";
 
 import type { BaseOSContext } from "../../shared/context";
 import type * as dashboardRouteModule from "../dashboard.route";
@@ -30,11 +31,11 @@ vi.mock("@chia/db/repos/resources/index-run", () => ({
 const completedRun: ResourceIndexRun = {
   id: 3,
   externalRunId: "run-3",
-  scope: "all",
+  scope: ResourceIndexRunScope.All,
   sourceType: null,
   sourceId: null,
   feedId: null,
-  status: "completed",
+  status: ResourceIndexRunStatus.Completed,
   triggeredBy: ADMIN_ID,
   model: "text-embedding-3-small",
   indexVersion: "v1",
@@ -47,8 +48,12 @@ const completedRun: ResourceIndexRun = {
   updatedAt: new Date("2026-08-30T00:01:00Z"),
 };
 
-/* SAFETY: a completed run is never reconciled, so the client is not called. */
-const workflow = {} as WorkflowControlClient;
+/** A completed run is never reconciled, so the client is not called. */
+const workflow = createWorkflowControlClient({
+  url: "http://workflow.test",
+  token: "test",
+  fetch: () => Promise.reject(new Error("the workflow client is not called")),
+});
 
 const it = orpcIt.extend("context", ({ session }) =>
   contextOf<BaseOSContext>(session, { workflow })
@@ -112,7 +117,7 @@ describe("dashboard overview route", () => {
     expect(overview.content).toEqual({ posts: 8, notes: 3, drafts: 2 });
     expect(overview.latestIndexRun).toMatchObject({
       runId: "run-3",
-      status: "completed",
+      status: ResourceIndexRunStatus.Completed,
     });
     expect(repos.listResourceIndexRuns).toHaveBeenCalledWith(
       expect.anything(),

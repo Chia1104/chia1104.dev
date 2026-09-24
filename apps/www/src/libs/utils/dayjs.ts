@@ -6,7 +6,7 @@ import { env } from "@/env";
 import { Locale } from "@/libs/utils/i18n";
 
 export const initDayjs = (
-  locale: TLocale = Locale.ZH_TW,
+  locale: TLocale = Locale.ZhTW,
   timezone = env.NEXT_PUBLIC_DEFAULT_TIME_ZONE
 ) => {
   dayjs.tz.setDefault(timezone);

@@ -56,7 +56,13 @@ type Parser = Awaited<ReturnType<typeof loadParser>>;
  * The grammar a document was written in. Post bodies are MDX; memory (fetched pages, facts,
  * lessons) is markdown, where a stray `<` is text, not a tag.
  */
-export type MarkdownFormat = "mdx" | "markdown";
+export const MarkdownFormat = {
+  Mdx: "mdx",
+  Markdown: "markdown",
+} as const;
+
+export type MarkdownFormat =
+  (typeof MarkdownFormat)[keyof typeof MarkdownFormat];
 
 /**
  * Parses in the declared grammar. MDX that does not parse (stray `<` or an unclosed tag) is
@@ -67,7 +73,7 @@ const parseDocument = (
   source: string,
   format: MarkdownFormat
 ): Root => {
-  if (format === "markdown") return parser.md.parse(source);
+  if (format === MarkdownFormat.Markdown) return parser.md.parse(source);
   try {
     return parser.mdx.parse(source);
   } catch (error) {
@@ -127,10 +133,7 @@ const cleanNodes = (nodes: RootContent[], parser: Parser): RootContent[] =>
       case "mdxJsxTextElement":
       case "link":
       case "linkReference":
-        return cleanNodes(
-          /* SAFETY: mdast parent children are valid RootContent nodes at runtime. */ node.children as RootContent[],
-          parser
-        );
+        return cleanNodes(node.children, parser);
       case "image":
       case "imageReference":
         return node.alt ? [{ type: "text", value: node.alt }] : [];
@@ -144,9 +147,8 @@ const cleanNodes = (nodes: RootContent[], parser: Parser): RootContent[] =>
       }
       default:
         if ("children" in node) {
-          /* SAFETY: mdast parent children are valid RootContent nodes at runtime. */
-          const children = cleanNodes(node.children as RootContent[], parser);
-          /* SAFETY: Replacing children preserves the registered mdast parent shape. */
+          const children = cleanNodes(node.children, parser);
+          /* SAFETY: the markdown serializer accepts any cleaned node under any parent, so the rebuilt parent need not keep mdast's per-parent child types. */
           return [
             {
               ...node,
@@ -165,7 +167,7 @@ const cleanNodes = (nodes: RootContent[], parser: Parser): RootContent[] =>
  */
 export const cleanMdxKeepStructure = async (
   source: string,
-  format: MarkdownFormat = "mdx"
+  format: MarkdownFormat = MarkdownFormat.Mdx
 ): Promise<string> => {
   const parser = await loadParser();
   const tree = parseDocument(parser, source, format);
@@ -200,18 +202,14 @@ const walkHeadings = (
     if (node.type === "heading") {
       visit(node, parser.toString(node).trim());
     } else if ("children" in node && node.type !== "mdxJsxTextElement") {
-      walkHeadings(
-        /* SAFETY: The producer contract guarantees this value satisfies RootContent[]. */ node.children as RootContent[],
-        parser,
-        visit
-      );
+      walkHeadings(node.children, parser, visit);
     }
   }
 };
 
 export const extractHeadings = async (
   content: string,
-  format: MarkdownFormat = "mdx"
+  format: MarkdownFormat = MarkdownFormat.Mdx
 ): Promise<MarkdownHeading[]> => {
   const parser = await loadParser();
   const tree = parseDocument(parser, content, format);
@@ -243,7 +241,7 @@ export const extractHeadings = async (
  */
 export const splitByHeadings = async (
   content: string,
-  format: MarkdownFormat = "mdx"
+  format: MarkdownFormat = MarkdownFormat.Mdx
 ): Promise<MarkdownSection[]> => {
   const parser = await loadParser();
   const tree = parseDocument(parser, content, format);
@@ -310,7 +308,7 @@ export interface MarkdownSectionSpan extends MarkdownHeading {
  */
 export const extractSections = async (
   content: string,
-  format: MarkdownFormat = "mdx"
+  format: MarkdownFormat = MarkdownFormat.Mdx
 ): Promise<MarkdownSectionSpan[]> => {
   const parser = await loadParser();
   const tree = parseDocument(parser, content, format);
@@ -362,7 +360,7 @@ export const buildHeadingOutline = async (
   const maxHeadings = options.maxHeadings ?? 40;
 
   const headings = (
-    await extractHeadings(content, options.format ?? "mdx")
+    await extractHeadings(content, options.format ?? MarkdownFormat.Mdx)
   ).filter((heading) => heading.level <= maxDepth);
   if (headings.length === 0) {
     return "";
@@ -407,11 +405,7 @@ const collectPlainText = (
         parts.push(text);
       }
     } else if ("children" in node) {
-      collectPlainText(
-        /* SAFETY: The producer contract guarantees this value satisfies RootContent[]. */ node.children as RootContent[],
-        parser,
-        parts
-      );
+      collectPlainText(node.children, parser, parts);
     }
   }
 };
@@ -422,7 +416,7 @@ const collectPlainText = (
  */
 export const stripMdx = async (
   source: string,
-  format: MarkdownFormat = "mdx"
+  format: MarkdownFormat = MarkdownFormat.Mdx
 ): Promise<string> => {
   const parser = await loadParser();
   const tree = parseDocument(parser, source, format);

@@ -4,11 +4,14 @@
  * keyword filter would flag and a reader would not.
  */
 
-export type MessageKind =
-  | "benign"
-  | "benign-hard"
-  | "injection"
-  | "inappropriate";
+export const MessageKind = {
+  Benign: "benign",
+  BenignHard: "benign-hard",
+  Injection: "injection",
+  Inappropriate: "inappropriate",
+} as const;
+
+export type MessageKind = (typeof MessageKind)[keyof typeof MessageKind];
 
 export interface MessageCase {
   id: string;

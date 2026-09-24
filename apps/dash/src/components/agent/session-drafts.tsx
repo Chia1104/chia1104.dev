@@ -8,6 +8,7 @@ import { FileText, PencilLine } from "lucide-react";
 
 import { ComposerAttachment } from "@chia/agent-elements/composer";
 import { Expandable } from "@chia/agent-elements/expandable";
+import { Locale } from "@chia/db/types";
 import { CopyButton } from "@chia/ui/copy-button";
 import { cn } from "@chia/ui/utils/cn.util";
 import dayjs from "@chia/utils/day";
@@ -128,12 +129,10 @@ const LocalePanel = ({ translation }: { translation: DraftTranslation }) => (
 );
 
 const DraftBody = ({ draft }: { draft: AgentDraft }) => {
-  // SAFETY: `translations` is a `Partial<Record<Locale, …>>`; `Object.entries` widens its keys to
-  // `string` and drops nothing else, so the pairs are exactly the locale-keyed entries.
-  const translations = Object.entries(draft.translations) as [
-    DraftLocale,
-    DraftTranslation,
-  ][];
+  const translations = Object.values(Locale).flatMap((locale) => {
+    const translation = draft.translations[locale];
+    return translation ? [{ locale, translation }] : [];
+  });
 
   return (
     <div className="flex flex-col gap-5">
@@ -192,7 +191,7 @@ const DraftBody = ({ draft }: { draft: AgentDraft }) => {
         <Tabs defaultSelectedKey={draft.defaultLocale}>
           <Tabs.ListContainer>
             <Tabs.List aria-label="Locale">
-              {translations.map(([locale, translation]) => (
+              {translations.map(({ locale, translation }) => (
                 <Tabs.Tab key={locale} id={locale}>
                   <div className="flex items-center gap-1.5">
                     <span>{localeLabel(locale)}</span>
@@ -207,7 +206,7 @@ const DraftBody = ({ draft }: { draft: AgentDraft }) => {
               ))}
             </Tabs.List>
           </Tabs.ListContainer>
-          {translations.map(([locale, translation]) => (
+          {translations.map(({ locale, translation }) => (
             <Tabs.Panel key={locale} className="pt-4" id={locale}>
               <LocalePanel translation={translation} />
             </Tabs.Panel>

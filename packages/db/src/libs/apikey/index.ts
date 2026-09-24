@@ -1,4 +1,5 @@
 import type { SQLWrapper } from "drizzle-orm";
+import * as z from "zod";
 
 import { FeedOrderBy } from "../../types";
 import {
@@ -11,12 +12,11 @@ import type { InfiniteDTO } from "../validator/apikey";
 
 const toISO = (date: Date | null) => date?.toISOString() ?? null;
 
+const permissionsSchema = z.record(z.string(), z.array(z.string()));
+
 /** better-auth stores permissions as JSON text; its own endpoints hand back the object. */
-const parsePermissions = (raw: string | null) => {
-  if (!raw) return null;
-  // SAFETY: better-auth writes this column with JSON.stringify of a permissions record.
-  return JSON.parse(raw) as Record<string, string[]>;
-};
+const parsePermissions = (raw: string | null) =>
+  raw ? permissionsSchema.parse(JSON.parse(raw)) : null;
 
 export const getInfiniteApiKeys = withDTO(
   async (

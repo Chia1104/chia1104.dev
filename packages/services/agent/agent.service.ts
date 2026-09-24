@@ -8,14 +8,13 @@ import type {
 } from "@chia/agent-runtime/wire/schema";
 import type { CallerTier } from "@chia/auth/tier";
 import { agentKindFloor } from "@chia/auth/tier";
-import type { DB } from "@chia/db/client";
 import {
   getAgentKindConfig,
   listAgentKindConfigs,
 } from "@chia/db/repos/agent/config";
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import type { ServiceContext } from "@chia/service-kit/context";
-import { AppError } from "@chia/service-kit/errors";
+import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 import type { JsonObject } from "@chia/utils/json";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
@@ -23,6 +22,7 @@ import type { BaseOSContext } from "../shared/context";
 
 import type * as agentContracts from "./agent.contract";
 import type { AgentFactory } from "./agent.factory";
+import type { ThinkingLevel } from "./agent.schema";
 
 /**
  * The oRPC package owns session, durable-run and maintenance. The host supplies a typed
@@ -75,7 +75,7 @@ export interface AgentKindService {
     input: {
       title?: string;
       model?: AgentModelRef;
-      thinkingLevel?: string;
+      thinkingLevel?: ThinkingLevel;
       autoApprove?: string[];
       runtimeConfig?: JsonObject;
     }
@@ -98,7 +98,7 @@ export interface AgentKindService {
       title?: string;
       /** `null` unpins the session so it follows the kind default again. */
       model?: AgentModelRef | null;
-      thinkingLevel?: string;
+      thinkingLevel?: ThinkingLevel;
       activeToolNames?: string[] | null;
       autoApprove?: string[];
       runtimeConfig?: JsonObject;
@@ -222,7 +222,7 @@ export interface AgentKindService {
 export const requireAgentFactory = (context: BaseOSContext): AgentFactory => {
   if (!context.agentFactory) {
     throw toORPCError(
-      new AppError("SERVICE_UNAVAILABLE", {
+      new AppError(AppErrorCode.ServiceUnavailable, {
         message: "Agents are not available in this process.",
       })
     );
@@ -238,7 +238,7 @@ const requireAgentKindCodeFloor = (
   const minTier = requireAgentFactory(context).minTierOf(kind);
   if (minTier === undefined) {
     throw toORPCError(
-      new AppError("SERVICE_UNAVAILABLE", {
+      new AppError(AppErrorCode.ServiceUnavailable, {
         message: `Agent kind "${kind}" is not available in this process.`,
       })
     );
@@ -255,10 +255,7 @@ export const resolveAgentKindFloor = async (
   kind: string
 ): Promise<CallerTier> => {
   const code = requireAgentKindCodeFloor(context, kind);
-  const row = await getAgentKindConfig(
-    /* SAFETY: The producer contract guarantees this value satisfies DB. */ context.db as DB,
-    kind
-  );
+  const row = await getAgentKindConfig(context.db, kind);
   return agentKindFloor(code, row?.minTier);
 };
 
@@ -266,9 +263,7 @@ export const resolveAgentKindFloor = async (
 export const resolveAgentKindFloors = async (
   context: BaseOSContext
 ): Promise<Map<string, CallerTier>> => {
-  const rows = await listAgentKindConfigs(
-    /* SAFETY: The producer contract guarantees this value satisfies DB. */ context.db as DB
-  );
+  const rows = await listAgentKindConfigs(context.db);
   return new Map(
     availableAgentKinds(context).map((kind) => [
       kind,
@@ -288,7 +283,7 @@ export const requireAgentKind = async (
   const service = await requireAgentFactory(context).create(kind);
   if (!service) {
     throw toORPCError(
-      new AppError("SERVICE_UNAVAILABLE", {
+      new AppError(AppErrorCode.ServiceUnavailable, {
         message: `Agent kind "${kind}" is not available in this process.`,
       })
     );

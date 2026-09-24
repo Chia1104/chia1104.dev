@@ -1,20 +1,21 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { ContentReadPort } from "@chia/agent-content/types";
+import { FeedReportCategory } from "@chia/db/schema";
+import { Locale } from "@chia/db/types";
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 import { createFakeProfileReadPort } from "@chia/test/fixtures/profile-read-port";
 
 import type { ReportIssueInput, ReportPort } from "../src/ports.ts";
 import { preparePublicTurn } from "../src/runtime.ts";
-import { TOOL_NAMES } from "../src/tools/registry.ts";
+import { ToolName } from "../src/tools/registry.ts";
 import { createPublicReportTools } from "../src/tools/report.tool.ts";
 
 const input: ReportIssueInput = {
   slug: "hello-world",
-  locale: "en",
+  locale: Locale.En,
   headingPath: "Setup > Install",
   quote: "Run npm i foo@1.",
-  category: "outdated",
+  category: FeedReportCategory.Outdated,
   claim: "foo 2 changed the install command.",
   assessment: "The post pins foo 1; the claim is plausible but unchecked.",
 };
@@ -55,10 +56,7 @@ describe("report_issue", () => {
 
 describe("preparePublicTurn reporting", () => {
   const base = {
-    content:
-      /* SAFETY: these tests never call the content port. */ createFakeContentReadPort(
-        {}
-      ) as ContentReadPort,
+    content: createFakeContentReadPort<never, never>(),
     profile: createFakeProfileReadPort([]),
     guard: null,
   };
@@ -69,13 +67,13 @@ describe("preparePublicTurn reporting", () => {
       report: { submit: () => Promise.resolve({ id: 1 }) },
     });
     expect(granted.tools.map((tool) => tool.name)).toContain(
-      TOOL_NAMES.reportIssue
+      ToolName.ReportIssue
     );
     expect(granted.systemPrompt).toContain("`report_issue`");
 
     const guest = await preparePublicTurn(base);
     expect(guest.tools.map((tool) => tool.name)).not.toContain(
-      TOOL_NAMES.reportIssue
+      ToolName.ReportIssue
     );
     expect(guest.systemPrompt).not.toContain("report_issue");
     expect(guest.systemPrompt).toContain(

@@ -3,7 +3,7 @@ import { toolErrorText, toolResultDetails } from "@chia/agent-runtime/tools";
 import { asNumber, asString } from "@chia/utils/json";
 import { hostnameOf } from "@chia/utils/url";
 
-import { REPORT_TOOL_NAMES, WEB_TOOL_NAMES } from "./registry.ts";
+import { ReportToolName, WebToolName } from "./registry.ts";
 
 const summarizeKindToolResult = <TResult>(
   toolName: string,
@@ -11,17 +11,17 @@ const summarizeKindToolResult = <TResult>(
 ): string | undefined => {
   const details = toolResultDetails(result);
   switch (toolName) {
-    case WEB_TOOL_NAMES.webSearch: {
+    case WebToolName.WebSearch: {
       const count = asNumber(details?.count);
       return count === undefined
         ? "Searched the web."
         : `${count} web result(s).`;
     }
-    case WEB_TOOL_NAMES.fetchUrl: {
+    case WebToolName.FetchUrl: {
       const url = asString(details?.url);
       return url ? `Read ${hostnameOf(url)}.` : "Read page.";
     }
-    case REPORT_TOOL_NAMES.reportIssue:
+    case ReportToolName.ReportIssue:
       return "Sent to the author.";
     default:
       return undefined;

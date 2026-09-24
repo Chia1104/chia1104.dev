@@ -15,6 +15,7 @@ import {
   useDomSelection,
 } from "@chia/agent-elements/selection";
 import type { DomSelection } from "@chia/agent-elements/selection";
+import { DockMode } from "@chia/ui/dock";
 
 import { useChatDockStore } from "@/stores/chat-dock/store";
 import { useSettingsStore } from "@/stores/settings/store";
@@ -31,7 +32,7 @@ const QUESTIONS = ["explain", "example", "related"] as const;
 /** Opens the chat without disturbing a maximized one. */
 const showChat = () => {
   const dock = useChatDockStore.getState();
-  if (dock.mode === "closed") dock.setMode("open");
+  if (dock.mode === DockMode.Closed) dock.setMode(DockMode.Open);
 };
 
 /**

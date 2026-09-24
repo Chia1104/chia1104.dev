@@ -23,7 +23,15 @@ export interface GitHubRepositoryRef {
   sha: string;
 }
 
-export type GitHubContentType = "file" | "dir" | "symlink" | "submodule";
+export const GitHubContentType = {
+  File: "file",
+  Dir: "dir",
+  Symlink: "symlink",
+  Submodule: "submodule",
+} as const;
+
+export type GitHubContentType =
+  (typeof GitHubContentType)[keyof typeof GitHubContentType];
 
 export interface GitHubContentEntry {
   name: string;
@@ -48,7 +56,13 @@ export interface GitHubFileContent {
 export type GitHubContents =
   | { kind: "file"; file: GitHubFileContent }
   | { kind: "dir"; entries: GitHubContentEntry[] }
-  | { kind: "other"; type: "symlink" | "submodule"; path: string };
+  | {
+      kind: "other";
+      type:
+        | typeof GitHubContentType.Symlink
+        | typeof GitHubContentType.Submodule;
+      path: string;
+    };
 
 export interface GitHubTreeEntry {
   path: string;
@@ -146,7 +160,7 @@ const toContents = (data: ContentsData): GitHubContents => {
       })),
     };
   }
-  if (data.type !== "file") {
+  if (data.type !== GitHubContentType.File) {
     return { kind: "other", type: data.type, path: data.path };
   }
   return {

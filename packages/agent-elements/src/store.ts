@@ -31,7 +31,14 @@ import type {
   AgentSessionDetail,
 } from "./types.ts";
 
-export type AgentConnection = "hydrating" | "idle" | "streaming";
+export const AgentConnection = {
+  Hydrating: "hydrating",
+  Idle: "idle",
+  Streaming: "streaming",
+} as const;
+
+export type AgentConnection =
+  (typeof AgentConnection)[keyof typeof AgentConnection];
 
 export type AgentRunStatus = AgentViewState["runStatus"];
 
@@ -303,14 +310,14 @@ export const createAgentSessionStore = ({
       const own = new AbortController();
       controller = own;
       const mine = ++generation;
-      set({ connection: "streaming", failure: null });
+      set({ connection: AgentConnection.Streaming, failure: null });
 
       let iterable: AsyncIterable<AgentWireEvent>;
       try {
         iterable = await start(own.signal);
       } catch (cause) {
         if (controller === own) controller = null;
-        if (mine === generation) set({ connection: "idle" });
+        if (mine === generation) set({ connection: AgentConnection.Idle });
         throw cause;
       }
       onAccepted?.();
@@ -379,7 +386,7 @@ export const createAgentSessionStore = ({
       }
       if (own.signal.aborted || mine !== generation) return;
 
-      set({ connection: "idle", pendingPrompt: null });
+      set({ connection: AgentConnection.Idle, pendingPrompt: null });
       if (ended) {
         reconnects = 0;
         await settle(mine);
@@ -411,7 +418,7 @@ export const createAgentSessionStore = ({
       kind,
       labels: mergeLabels(labels),
       view: emptyViewState(),
-      connection: "idle",
+      connection: AgentConnection.Idle,
       pendingPrompt: null,
       composerSeed: null,
       failure: null,
@@ -423,7 +430,7 @@ export const createAgentSessionStore = ({
         stopStream();
         set({
           view: foldDetail(detail),
-          connection: "idle",
+          connection: AgentConnection.Idle,
           pendingPrompt: null,
           failure: null,
         });
@@ -437,21 +444,21 @@ export const createAgentSessionStore = ({
       hydrate: async () => {
         const mine = ++generation;
         stopStream();
-        set({ connection: "hydrating" });
+        set({ connection: AgentConnection.Hydrating });
         let detail: AgentSessionDetail;
         try {
           detail = await fetchDetail();
         } catch (cause) {
           if (mine === generation) {
             set({
-              connection: "idle",
+              connection: AgentConnection.Idle,
               failure: failureOf(cause, get().labels),
             });
           }
           return;
         }
         if (mine !== generation) return;
-        set({ view: foldDetail(detail), connection: "idle" });
+        set({ view: foldDetail(detail), connection: AgentConnection.Idle });
         if (detail.run?.status === "running") {
           try {
             await attach();
@@ -551,7 +558,14 @@ export const createAgentSessionStore = ({
 
 export type AgentSessionStoreApi = ReturnType<typeof createAgentSessionStore>;
 
-export type AgentStatus = "awaiting_approval" | "error" | "idle" | "running";
+export const AgentStatus = {
+  AwaitingApproval: "awaiting_approval",
+  Error: "error",
+  Idle: "idle",
+  Running: "running",
+} as const;
+
+export type AgentStatus = (typeof AgentStatus)[keyof typeof AgentStatus];
 
 type RunInfo = Pick<AgentSessionDetail, "run"> | undefined;
 
@@ -560,19 +574,24 @@ export const statusOf = (
   state: AgentSessionState,
   detail: RunInfo
 ): AgentStatus => {
-  if (state.connection === "streaming") return "running";
-  if (state.view.pendingApprovals.length > 0) return "awaiting_approval";
-  if (detail?.run?.status === "running") return "running";
-  return state.view.runStatus === "error" ? "error" : "idle";
+  if (state.connection === AgentConnection.Streaming)
+    return AgentStatus.Running;
+  if (state.view.pendingApprovals.length > 0)
+    return AgentStatus.AwaitingApproval;
+  if (detail?.run?.status === "running") return AgentStatus.Running;
+  return state.view.runStatus === "error"
+    ? AgentStatus.Error
+    : AgentStatus.Idle;
 };
 
 /** True while a turn is running here or elsewhere. */
 export const isBusy = (state: AgentSessionState, detail: RunInfo): boolean =>
-  state.connection === "streaming" || detail?.run?.status === "running";
+  state.connection === AgentConnection.Streaming ||
+  detail?.run?.status === "running";
 
 export const canPrompt = (state: AgentSessionState, detail: RunInfo): boolean =>
   detail !== undefined &&
-  state.connection === "idle" &&
+  state.connection === AgentConnection.Idle &&
   detail.run?.status !== "running" &&
   state.view.pendingApprovals.length === 0;
 

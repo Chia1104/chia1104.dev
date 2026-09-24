@@ -102,11 +102,8 @@ export const applyEvent = (
         (item) =>
           item.kind === "assistant" && item.messageId === event.messageId
       );
-      if (index === -1) return { ...state, items };
-      const message =
-        /* SAFETY: The producer contract guarantees this value satisfies TextMessageView. */ items[
-          index
-        ] as TextMessageView;
+      const message = items[index];
+      if (message?.kind !== "assistant") return { ...state, items };
       items[index] =
         event.channel === "text"
           ? { ...message, text: message.text + event.delta }
@@ -147,21 +144,16 @@ export const applyEvent = (
 
     case "tool:update": {
       const index = findTool(event.toolCallId);
-      if (index === -1) return { ...state, items };
-      // SAFETY: findTool only returns indices for ToolCallView items.
-      items[index] = {
-        ...(items[index] as ToolCallView),
-        summary: event.summary,
-      };
+      const existing = items[index];
+      if (existing?.kind !== "tool") return { ...state, items };
+      items[index] = { ...existing, summary: event.summary };
       return { ...state, items };
     }
 
     case "tool:end": {
       const index = findTool(event.toolCallId);
-      const existing =
-        /* SAFETY: The producer contract guarantees this value satisfies ToolCallView | undefined. */ items[
-          index
-        ] as ToolCallView | undefined;
+      const found = items[index];
+      const existing = found?.kind === "tool" ? found : undefined;
 
       /**
        * A gated call still produces a `tool:end`: the permission gate refuses it, and pi turns
@@ -207,19 +199,19 @@ export const applyEvent = (
 
     case "approval:request": {
       const index = findTool(event.toolCallId);
-      // SAFETY: an existing index comes from tool:start; otherwise the fallback creates the view.
+      const found = items[index];
       const view: ToolCallView = {
-        .../* SAFETY: The producer contract guarantees this value satisfies ToolCallView | undefined. */ ((items[
-          index
-        ] as ToolCallView | undefined) ?? {
-          kind: "tool",
-          toolCallId: event.toolCallId,
-          toolName: event.toolName,
-          label: event.toolName,
-          tier: event.tier,
-          args: event.args,
-          status: "running",
-        }),
+        ...(found?.kind === "tool"
+          ? found
+          : {
+              kind: "tool",
+              toolCallId: event.toolCallId,
+              toolName: event.toolName,
+              label: event.toolName,
+              tier: event.tier,
+              args: event.args,
+              status: "running",
+            }),
         status: "awaiting_approval",
       };
       if (index === -1) items.push(view);
@@ -236,9 +228,8 @@ export const applyEvent = (
 
     case "approval:resolved": {
       const index = findTool(event.toolCallId);
-      if (index !== -1) {
-        // SAFETY: approval events can only target tool items created by tool:start.
-        const existing = items[index] as ToolCallView;
+      const existing = items[index];
+      if (existing?.kind === "tool") {
         items[index] = {
           ...existing,
           // The gated call itself never ran. A decision closes the card, and the re-issued call

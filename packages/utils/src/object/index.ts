@@ -1,9 +1,11 @@
 export const omitUndefined = <T extends object>(value: T): Partial<T> => {
-  const entries = Object.entries(value).filter(
-    ([, entry]) => entry !== undefined
-  );
-  // SAFETY: filtering entries removes values but never changes a surviving key or value.
-  return Object.fromEntries(entries) as Partial<T>;
+  const defined: Partial<T> = {};
+  for (const key in value) {
+    if (Object.hasOwn(value, key) && value[key] !== undefined) {
+      defined[key] = value[key];
+    }
+  }
+  return defined;
 };
 
 /** Applies a patch; `undefined` means leave unchanged. */

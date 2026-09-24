@@ -34,7 +34,7 @@ const SECTION_HEADING = {
 } satisfies Record<(typeof SECTION_ORDER)[number], string>;
 
 const otherLocale = (locale: Locale): Locale =>
-  locale === Locale.zhTW ? Locale.En : Locale.zhTW;
+  locale === Locale.ZhTW ? Locale.En : Locale.ZhTW;
 
 const translationOf = (
   translations: Translations,

@@ -1,7 +1,7 @@
 import type { Session } from "@chia/auth/types";
 import { Role } from "@chia/db/types";
 
-import { AppError } from "../errors";
+import { AppError, AppErrorCode } from "../errors";
 
 import type { Policy } from "./types";
 import { allow, deny } from "./types";
@@ -29,16 +29,16 @@ export const sessionPolicy = (
       (await context.auth?.api.getSession({ headers: context.headers }));
 
     if (!session?.session || !session.user) {
-      return deny(new AppError("UNAUTHORIZED"));
+      return deny(new AppError(AppErrorCode.Unauthorized));
     }
 
     // A guest is "not signed in" to everything that did not opt in.
     if (session.user.isAnonymous === true && !options.allowAnonymous) {
-      return deny(new AppError("UNAUTHORIZED"));
+      return deny(new AppError(AppErrorCode.Unauthorized));
     }
 
     if (options.rootOnly && session.user.role !== Role.Root) {
-      return deny(new AppError("FORBIDDEN"));
+      return deny(new AppError(AppErrorCode.Forbidden));
     }
 
     return allow({ session });

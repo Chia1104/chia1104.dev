@@ -11,43 +11,31 @@ export const ProviderId = {
 
 export type ProviderId = (typeof ProviderId)[keyof typeof ProviderId];
 
-export const PROVIDER_IDS = [
-  ProviderId.OpenAI,
-  ProviderId.Anthropic,
-] as const satisfies readonly ProviderId[];
-
-export const providerIdSchema = z.enum(PROVIDER_IDS);
+export const providerIdSchema = z.enum(ProviderId);
 
 export const isProviderId = (value: string): value is ProviderId =>
-  /* SAFETY: The producer contract guarantees this value satisfies readonly string[]. */ (
-    PROVIDER_IDS as readonly string[]
-  ).includes(value);
+  Object.values(ProviderId).some((providerId) => providerId === value);
 
 /**
- * The Vercel AI Gateway reaches every vendor with one key. Not a vendor: a gateway key never
- * appears in a model ref, only in a credential set.
+ * Everything a caller may bring a key for: each vendor natively, or the Vercel AI Gateway for
+ * all. The gateway is not a vendor: its key never appears in a model ref, only in a credential set.
  */
-export const GATEWAY_KEY_ID = "gateway";
+export const KeyId = {
+  ...ProviderId,
+  Gateway: "gateway",
+} as const;
 
-/** Everything a caller may bring a key for: each vendor natively, or the gateway for all. */
-export const KEY_IDS = [
-  ...PROVIDER_IDS,
-  GATEWAY_KEY_ID,
-] as const satisfies readonly string[];
+export type KeyId = (typeof KeyId)[keyof typeof KeyId];
 
-export type KeyId = (typeof KEY_IDS)[number];
-
-export const keyIdSchema = z.enum(KEY_IDS);
+export const keyIdSchema = z.enum(KeyId);
 
 export const isKeyId = (value: string): value is KeyId =>
-  /* SAFETY: The producer contract guarantees this value satisfies readonly string[]. */ (
-    KEY_IDS as readonly string[]
-  ).includes(value);
+  Object.values(KeyId).some((keyId) => keyId === value);
 
 export const KEY_LABELS = {
-  openai: "OpenAI",
-  anthropic: "Anthropic",
-  gateway: "Vercel AI Gateway",
+  [KeyId.OpenAI]: "OpenAI",
+  [KeyId.Anthropic]: "Anthropic",
+  [KeyId.Gateway]: "Vercel AI Gateway",
 } as const satisfies Readonly<Record<KeyId, string>>;
 
 /**
@@ -55,7 +43,7 @@ export const KEY_LABELS = {
  * table and are kept so registered browsers stay registered.
  */
 export const KEY_COOKIE_NAMES = {
-  openai: "OPENAI_API_KEY",
-  anthropic: "ANTHROPIC_API_KEY",
-  gateway: "AI_GATEWAY_API_KEY",
+  [KeyId.OpenAI]: "OPENAI_API_KEY",
+  [KeyId.Anthropic]: "ANTHROPIC_API_KEY",
+  [KeyId.Gateway]: "AI_GATEWAY_API_KEY",
 } as const satisfies Readonly<Record<KeyId, string>>;

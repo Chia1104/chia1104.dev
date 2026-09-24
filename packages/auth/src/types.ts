@@ -4,9 +4,9 @@ import * as z from "zod";
 import type { Auth } from "./server.ts";
 
 export const Provider = {
-  google: "google",
-  github: "github",
-  resend: "resend",
+  Google: "google",
+  GitHub: "github",
+  Resend: "resend",
 } as const;
 
 export type Provider = (typeof Provider)[keyof typeof Provider];

@@ -7,6 +7,7 @@ vi.mock("@chia/observability/logger", () => ({ logger }));
 import { describe, expect, it, vi } from "vitest";
 import * as z from "zod";
 
+import { AgentProvider } from "@chia/agent-runtime/models";
 import type { AgentKindConfig } from "@chia/db/schema";
 
 import { effectiveKindConfig, effectiveKindDefaults } from "../src/config";
@@ -19,7 +20,7 @@ import { effectiveKindConfig, effectiveKindDefaults } from "../src/config";
 const definition = {
   kind: "writing",
   defaults: {
-    providerId: "vercel-ai-gateway",
+    providerId: AgentProvider.Gateway,
     modelId: "anthropic/claude-sonnet-5",
     thinkingLevel: "off" as const,
   },
@@ -44,7 +45,7 @@ const row = (overrides: Partial<AgentKindConfig> = {}): AgentKindConfig => ({
 describe("effectiveKindDefaults", () => {
   it("is the code's values without a row", () => {
     expect(effectiveKindDefaults(definition, undefined)).toEqual({
-      providerId: "vercel-ai-gateway",
+      providerId: AgentProvider.Gateway,
       modelId: "anthropic/claude-sonnet-5",
       thinkingLevel: "off",
       autoApprove: undefined,
@@ -65,7 +66,7 @@ describe("effectiveKindDefaults", () => {
     expect(
       effectiveKindDefaults(
         definition,
-        row({ providerId: "vercel-ai-gateway", modelId: "openai/gpt-5.4" })
+        row({ providerId: AgentProvider.Gateway, modelId: "openai/gpt-5.4" })
       )
     ).toMatchObject({ modelId: "openai/gpt-5.4", thinkingLevel: "off" });
     // Half a pair is no pair: the write sets both or neither, and a read never mixes them.

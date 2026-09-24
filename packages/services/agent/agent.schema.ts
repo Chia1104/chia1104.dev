@@ -2,15 +2,20 @@ import * as z from "zod";
 
 /** Schemas both the session and the admin contracts build on. */
 
-export const thinkingLevelSchema = z.enum([
-  "off",
-  "minimal",
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-  "max",
-]);
+/** Ordered from no reasoning to the most. */
+export const ThinkingLevel = {
+  Off: "off",
+  Minimal: "minimal",
+  Low: "low",
+  Medium: "medium",
+  High: "high",
+  XHigh: "xhigh",
+  Max: "max",
+} as const;
+
+export type ThinkingLevel = (typeof ThinkingLevel)[keyof typeof ThinkingLevel];
+
+export const thinkingLevelSchema = z.enum(ThinkingLevel);
 
 /**
  * `(providerId, modelId)` together so a caller cannot send a model id with no provider.

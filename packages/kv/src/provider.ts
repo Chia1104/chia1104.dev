@@ -3,7 +3,14 @@ import { isUrl } from "@chia/utils/is";
 import { env } from "./env.ts";
 
 /** `upstash` is REST-only. */
-export type CacheProvider = "redis" | "valkey" | "postgres" | "upstash";
+export const CacheProvider = {
+  Redis: "redis",
+  Valkey: "valkey",
+  Postgres: "postgres",
+  Upstash: "upstash",
+} as const;
+
+export type CacheProvider = (typeof CacheProvider)[keyof typeof CacheProvider];
 
 const ALLOWED_PROTOCOLS = ["redis", "rediss", "valkey", "valkeys", "postgres"];
 
@@ -33,12 +40,12 @@ export const resolveCacheProvider = (): CacheProvider => {
   switch (protocol) {
     case "rediss":
     case "redis":
-      return "redis";
+      return CacheProvider.Redis;
     case "valkeys":
     case "valkey":
-      return "valkey";
+      return CacheProvider.Valkey;
     case "postgres":
-      return "postgres";
+      return CacheProvider.Postgres;
     default:
       throw new Error(`Unsupported protocol: ${protocol}`);
   }

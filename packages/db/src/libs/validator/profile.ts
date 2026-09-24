@@ -29,7 +29,7 @@ const translationSchema = z.object({
 
 const translationsSchema = z
   .object({
-    [Locale.zhTW]: translationSchema.optional(),
+    [Locale.ZhTW]: translationSchema.optional(),
     [Locale.En]: translationSchema.optional(),
   })
   .refine((value) => Object.values(value).some(Boolean), {

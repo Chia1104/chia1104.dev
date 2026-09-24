@@ -2,7 +2,7 @@ import { search as pdb } from "@paradedb/drizzle-paradedb";
 import { and, cosineDistance, desc, eq, inArray, or, sql } from "drizzle-orm";
 
 import type { Locale } from "../../schemas/enums.ts";
-import type { ResourceChunkKind } from "../../schemas/resources.schema.ts";
+import { ResourceChunkKind } from "../../schemas/resources.schema.ts";
 import * as schema from "../../schemas/schema.ts";
 import { withDTO } from "../index.ts";
 
@@ -338,7 +338,7 @@ export const findSimilarResources = withDTO(
           and(
             eq(chunks.sourceType, dto.sourceType),
             eq(chunks.sourceId, dto.sourceId),
-            eq(chunks.kind, "card")
+            eq(chunks.kind, ResourceChunkKind.Card)
           )
         )
         .limit(1)
@@ -354,7 +354,7 @@ export const findSimilarResources = withDTO(
         similarity,
       })
       .from(source)
-      .innerJoin(chunks, eq(chunks.kind, "card"))
+      .innerJoin(chunks, eq(chunks.kind, ResourceChunkKind.Card))
       .innerJoin(
         embeddings,
         and(eq(embeddings.chunkId, chunks.id), eq(embeddings.model, dto.model))

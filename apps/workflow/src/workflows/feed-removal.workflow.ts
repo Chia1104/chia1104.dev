@@ -1,7 +1,7 @@
 import "zod/compile";
 import * as z from "zod";
 
-import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/services/rag/resource-types";
+import { ResourceType } from "@chia/services/rag/resource-types";
 
 import { clearResourceChunksStep } from "../steps/resource-index.step";
 
@@ -23,7 +23,7 @@ export const removeFeedFromSearchIndexWorkflow = async (
   const results = await Promise.all(
     translationIDs.map(async (translationID) => {
       const { deletedCount } = await clearResourceChunksStep({
-        sourceType: FEED_TRANSLATION_SOURCE_TYPE,
+        sourceType: ResourceType.FeedTranslation,
         sourceId: translationID,
       });
       return { translationID, deletedCount };

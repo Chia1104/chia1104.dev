@@ -1,8 +1,10 @@
 import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
+import * as z from "zod";
 
 import { createPiWireEventMapper } from "../src/pi/events.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
+import { AgentErrorKind } from "../src/types.ts";
 import { DETAILS_MAX_STRING_CHARS } from "../src/wire/clip.ts";
 import { foldEvents } from "../src/wire/fold.ts";
 import { entriesToWireEvents } from "../src/wire/replay.ts";
@@ -234,11 +236,14 @@ describe("foldEvents", () => {
       "assistant:end",
       "error",
     ]);
-    expect(events[1]).toEqual({ type: "error", kind: "rate_limited" });
+    expect(events[1]).toEqual({
+      type: "error",
+      kind: AgentErrorKind.RateLimited,
+    });
     expect(foldEvents(events).items.at(-1)).toEqual({
       kind: "notice",
       variant: "error",
-      code: "rate_limited",
+      code: AgentErrorKind.RateLimited,
     });
   });
 
@@ -345,10 +350,13 @@ describe("foldEvents", () => {
     });
 
     expect(event?.type).toBe("tool:end");
-    const details =
-      /* SAFETY: This fixture implements the { details: { post: { slug: string; content: string } } } members exercised by this case. */ (
-        event as { details: { post: { slug: string; content: string } } }
-      ).details;
+    const { details } = z
+      .object({
+        details: z.object({
+          post: z.object({ slug: z.string(), content: z.string() }),
+        }),
+      })
+      .parse(event);
     expect(details.post.slug).toBe("hello");
     expect(details.post.content.length).toBeLessThan(body.length);
     expect(details.post.content).toContain("[truncated 100 chars]");

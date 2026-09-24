@@ -1,4 +1,6 @@
-import type { Usage } from "@earendil-works/pi-ai";
+import type { AgentMessage } from "@earendil-works/pi-agent-core";
+import type { AssistantMessage, Usage } from "@earendil-works/pi-ai";
+import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -25,51 +27,50 @@ const usage = (totalTokens: number): Usage => ({
   cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 });
 
+const TIMESTAMP = 1_767_225_600_000;
+
 let seq = 0;
-const entry = <TMessage>(message: TMessage): SessionEntry => {
+const entry = (message: AgentMessage): SessionEntry => {
   seq += 1;
-  return /* SAFETY: This fixture implements the SessionEntry members exercised by this case. */ {
+  return {
     type: "message",
     id: `e${seq}`,
     parentId: seq === 1 ? null : `e${seq - 1}`,
     seq,
-    timestamp: 1_767_225_600_000,
+    timestamp: TIMESTAMP,
     message,
-  } as SessionEntry;
+  };
 };
 
-const userEntry = (text: string) => entry({ role: "user", content: text });
+const userEntry = (text: string) =>
+  entry({ role: "user", content: text, timestamp: TIMESTAMP });
+
+const assistantMessage = (
+  text: string,
+  totalTokens?: number
+): AssistantMessage => ({
+  ...fauxAssistantMessage(text, { timestamp: TIMESTAMP }),
+  ...(totalTokens !== undefined && { usage: usage(totalTokens) }),
+});
 
 const assistantEntry = (text: string, totalTokens?: number) =>
-  entry({
-    role: "assistant",
-    content: [{ type: "text", text }],
-    stopReason: "stop",
-    usage: totalTokens === undefined ? undefined : usage(totalTokens),
-  });
+  entry(assistantMessage(text, totalTokens));
 
 const compactionEntry = (retainedUsage?: number): SessionEntry => {
   seq += 1;
-  return /* SAFETY: This fixture implements the SessionEntry members exercised by this case. */ {
+  return {
     type: "compaction",
     id: `e${seq}`,
     parentId: `e${seq - 1}`,
     seq,
-    timestamp: 1_767_225_600_000,
+    timestamp: TIMESTAMP,
     summary: "Everything so far, condensed.",
     tokensBefore: 95_000,
     retainedTail:
       retainedUsage === undefined
         ? []
-        : [
-            {
-              role: "assistant",
-              content: [{ type: "text", text: "Recent answer" }],
-              stopReason: "stop",
-              usage: usage(retainedUsage),
-            },
-          ],
-  } as SessionEntry;
+        : [assistantMessage("Recent answer", retainedUsage)],
+  };
 };
 
 describe("estimateBranchContextTokens", () => {

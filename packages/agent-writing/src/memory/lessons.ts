@@ -3,8 +3,9 @@ import * as z from "zod";
 
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import { isOperatorDecisionText } from "@chia/agent-runtime/wire/operator-decision";
-import type { FeedDraftAuthor, FeedDraftSnapshot } from "@chia/db/schema";
-import type { Locale } from "@chia/db/types";
+import { FeedDraftAuthor } from "@chia/db/schema";
+import type { FeedDraftSnapshot } from "@chia/db/schema";
+import { Locale } from "@chia/db/types";
 import { oneLine } from "@chia/utils/format";
 
 /**
@@ -84,14 +85,11 @@ export const branchSince = (
 const textOf = (
   content: string | { type: string; text?: string }[]
 ): string => {
-  if (Array.isArray(content)) {
-    return content
-      .filter((block) => block.type === "text")
-      .map((block) => block.text ?? "")
-      .join("\n");
-  }
-  // SAFETY: Pi's `UserMessage.content` is `string | Block[]`; not an array means the string.
-  return content as string;
+  if (!Array.isArray(content)) return content;
+  return content
+    .filter((block) => block.type === "text")
+    .map((block) => block.text ?? "")
+    .join("\n");
 };
 
 /**
@@ -194,7 +192,7 @@ export const collectOperatorEdits = (
   const edits: OperatorEdit[] = [];
   for (let index = 1; index < revisions.length; index++) {
     const current = revisions[index]!;
-    if (current.author !== "operator") continue;
+    if (current.author !== FeedDraftAuthor.Operator) continue;
     const before = revisions[index - 1]!.snapshot;
     const after = current.snapshot;
 
@@ -202,14 +200,7 @@ export const collectOperatorEdits = (
       const diff = scalarDiff(before[field], after[field]);
       if (diff) edits.push({ revision: current.revision, field, diff });
     }
-    // SAFETY: snapshot translations are keyed by Locale.
-    const locales = [
-      ...new Set([
-        ...Object.keys(before.translations),
-        ...Object.keys(after.translations),
-      ]),
-    ] as Locale[];
-    for (const locale of locales) {
+    for (const locale of Object.values(Locale)) {
       const previous = before.translations[locale];
       const next = after.translations[locale];
       for (const field of TRANSLATION_FIELDS) {

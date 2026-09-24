@@ -39,10 +39,7 @@ export interface FakeContentPort extends ContentPort {
 export const createFakeContentPort = (
   options: FakeContentPortOptions = {}
 ): FakeContentPort => {
-  const read =
-    /* SAFETY: This fixture implements the ContentReadPort methods these tests exercise. */ createFakeContentReadPort(
-      options
-    ) as ContentReadPort;
+  const read: ContentReadPort = createFakeContentReadPort(options);
   const commits: FakeContentPort["commits"] = [];
   const publishes: { feedId: number; published: boolean }[] = [];
   let nextFeedId = 100;

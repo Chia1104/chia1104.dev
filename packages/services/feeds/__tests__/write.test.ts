@@ -1,6 +1,7 @@
+import { drizzle } from "drizzle-orm/node-postgres";
 import { describe, expect, it } from "vitest";
 
-import type { DB } from "@chia/db/client";
+import { relations } from "@chia/db/schema";
 import { FeedType, Locale } from "@chia/db/types";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 
@@ -15,8 +16,7 @@ describe("feed slug invariant", () => {
   });
 
   it("rejects a non-ASCII slug before touching the repository", async () => {
-    // SAFETY: Slug validation rejects before the service can access the database.
-    const unreachableDb = {} as DB;
+    const unreachableDb = drizzle.mock({ relations });
     await expect(
       createFeedService(
         unreachableDb,
@@ -24,9 +24,9 @@ describe("feed slug invariant", () => {
           adminId: "author-1",
           slug: "Embedding 與 RAG 架構",
           type: FeedType.Post,
-          defaultLocale: Locale.zhTW,
+          defaultLocale: Locale.ZhTW,
           translations: {
-            [Locale.zhTW]: { title: "RAG 架構" },
+            [Locale.ZhTW]: { title: "RAG 架構" },
           },
         },
         {}

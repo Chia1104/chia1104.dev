@@ -15,7 +15,9 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { RefreshCwIcon, ScanSearchIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { ResourceIndexRunStatus } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
+import { ResourceType } from "@chia/services/rag/resource-types";
 
 import { DrawerPanel } from "@/components/commons/drawer-panel";
 import { orpc } from "@/libs/orpc/client";
@@ -24,7 +26,6 @@ import type { RouterOutputs } from "@/libs/orpc/types";
 import {
   CountsSummary,
   CoverageBar,
-  FEED_TRANSLATION_SOURCE_TYPE,
   IndexKeyLine,
   RunStatusChip,
   StateDot,
@@ -54,8 +55,10 @@ const CHUNK_COLUMNS = [
 ];
 
 const settledMessage = (run: IndexRun): string => {
-  if (run.status === "completed") return "Embedding finished";
-  if (run.status === "cancelled") return "Embedding run was cancelled";
+  if (run.status === ResourceIndexRunStatus.Completed)
+    return "Embedding finished";
+  if (run.status === ResourceIndexRunStatus.Cancelled)
+    return "Embedding run was cancelled";
   return run.error ?? "Embedding run failed";
 };
 
@@ -131,7 +134,7 @@ const ResourceSection = ({
     (run: IndexRun) => {
       setStartedRunId(null);
       onInvalidate();
-      if (run.status === "completed") {
+      if (run.status === ResourceIndexRunStatus.Completed) {
         toast.success(settledMessage(run));
       } else {
         toast.error(settledMessage(run));
@@ -177,7 +180,7 @@ const ResourceSection = ({
           variant="tertiary"
           onPress={() =>
             trigger.mutate({
-              sourceType: FEED_TRANSLATION_SOURCE_TYPE,
+              sourceType: ResourceType.FeedTranslation,
               sourceId: resource.sourceId,
             })
           }>
@@ -216,7 +219,7 @@ export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
     queries: resources.map((resource) =>
       orpc.rag["resource:status"].queryOptions({
         input: {
-          sourceType: FEED_TRANSLATION_SOURCE_TYPE,
+          sourceType: ResourceType.FeedTranslation,
           sourceId: resource.sourceId,
         },
         enabled: isOpen,
@@ -234,7 +237,7 @@ export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
     (run: IndexRun) => {
       setFeedRunId(null);
       invalidateStatuses();
-      if (run.status === "completed") {
+      if (run.status === ResourceIndexRunStatus.Completed) {
         toast.success(settledMessage(run));
       } else {
         toast.error(settledMessage(run));

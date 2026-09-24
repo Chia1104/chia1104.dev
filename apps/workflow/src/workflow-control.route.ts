@@ -2,7 +2,6 @@ import { timingSafeEqual } from "node:crypto";
 
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import { reportError } from "@chia/observability/report";
 import { isAppError } from "@chia/service-kit/errors";
@@ -37,11 +36,7 @@ const api = new Hono().post(
         });
       }
       if (isAppError(error)) {
-        // SAFETY: `AppError.status` is always one of `APP_ERROR_STATUS`, all 4xx/5xx codes with a body.
-        return c.json(
-          { error: error.message },
-          error.status as ContentfulStatusCode
-        );
+        return c.json({ error: error.message }, error.status);
       }
       return c.json({ error: "Workflow command failed." }, 503);
     }

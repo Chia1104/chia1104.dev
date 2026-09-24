@@ -244,7 +244,7 @@ export const ownSettingsOf = (
   return {
     ...modelRefOf(row),
     thinkingLevel:
-      /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
+      /* SAFETY: Every writer of `thinking_level` validates it against the session contract's enum. */ row.thinkingLevel as ThinkingLevel,
     activeToolNames: row.activeToolNames,
     autoApprove: row.autoApprove,
   };

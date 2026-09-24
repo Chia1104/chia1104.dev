@@ -7,6 +7,7 @@ vi.mock("@chia/observability/logger", () => ({ logger }));
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  MarkdownFormat,
   buildHeadingOutline,
   cleanMdxKeepStructure,
   stripMdx,
@@ -179,9 +180,9 @@ describe("declared markdown", () => {
     const warn = logger.warn;
     warn.mockClear();
 
-    const cleaned = await cleanMdxKeepStructure(PROSE, "markdown");
+    const cleaned = await cleanMdxKeepStructure(PROSE, MarkdownFormat.Markdown);
     const outline = await buildHeadingOutline(`# Title\n\n${PROSE}`, {
-      format: "markdown",
+      format: MarkdownFormat.Markdown,
     });
 
     expect(cleaned).toContain("my_tool");

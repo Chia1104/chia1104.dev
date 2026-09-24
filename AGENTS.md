@@ -36,6 +36,8 @@ Both frontends call `service` through the contract-first oRPC client. `service` 
 - Import a symbol at the call site. Do not rename or re-export it through a local wrapper; wrap only when adding behavior.
 - Validate env with one `@t3-oss/env-*` `env.ts` per app or package. Variables belong to their owner; global variables also belong in `turbo.json`.
 - Use oxlint, oxfmt and Vitest. End-to-end tests live in `tests/www-e2e` and use Playwright.
+- An enum is a PascalCase const object with PascalCase keys plus a same-named type, `export type Foo = (typeof Foo)[keyof typeof Foo]`; no TS `enum`, bare string-literal unions or `as const` arrays. Schemas derive from it (`z.enum(Foo)`) and untyped input narrows with `isEnumValue` from `@chia/utils/is`.
+- A type assertion needs a `SAFETY:` comment; prefer narrowing, `satisfies` or a parser at the boundary so the assertion is not needed.
 - Domain code throws `AppError`; transport edges convert it with `toORPCError` or `isAppError`.
 - Server code logs through `@chia/observability/logger`. The boundary that handles a failure this system caused calls `reportError` once; caller failures are logged at most.
 - Resolve service URLs with `withServiceEndpoint` from `@chia/utils/config`.

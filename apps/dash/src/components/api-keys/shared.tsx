@@ -9,12 +9,13 @@ import { toApiKeyScopes } from "@chia/auth/apikey";
 
 import { orpc } from "@/libs/orpc/client";
 
-import type { ApiKeyState, ApiKeyView } from "./form";
+import { ApiKeyState } from "./form";
+import type { ApiKeyView } from "./form";
 
 const STATE_CHIP = {
-  active: { color: "success", label: "Active" },
-  revoked: { color: "danger", label: "Revoked" },
-  expired: { color: "warning", label: "Expired" },
+  [ApiKeyState.Active]: { color: "success", label: "Active" },
+  [ApiKeyState.Revoked]: { color: "danger", label: "Revoked" },
+  [ApiKeyState.Expired]: { color: "warning", label: "Expired" },
 } as const satisfies Record<ApiKeyState, { color: string; label: string }>;
 
 export const KeyStateChip = ({ state }: { state: ApiKeyState }) => (

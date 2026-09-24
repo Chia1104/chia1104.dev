@@ -1,6 +1,7 @@
 import { and, desc, eq, ilike, ne, not, or, sql } from "drizzle-orm";
 
 import type { Locale } from "../../schemas/enums.ts";
+import { ChunkEmbeddingState } from "../../schemas/resources.schema.ts";
 import type { ResourceChunkKind } from "../../schemas/resources.schema.ts";
 import * as schema from "../../schemas/schema.ts";
 import { withDTO } from "../index.ts";
@@ -24,8 +25,6 @@ const listLimit = (limit: number | undefined, fallback: number): number =>
     Math.max(Math.trunc(limit ?? fallback) || fallback, 1),
     MAX_LIST_LIMIT
   );
-
-export type ChunkEmbeddingState = "current" | "stale" | "missing";
 
 /** The `(model, index_version)` pair a vector must match to count as current. */
 export interface ResourceIndexKey {
@@ -108,11 +107,11 @@ end`;
 
 const stateFilter = (key: ResourceIndexKey, state: ChunkEmbeddingState) => {
   switch (state) {
-    case "current":
+    case ChunkEmbeddingState.Current:
       return hasCurrentVector(key);
-    case "stale":
+    case ChunkEmbeddingState.Stale:
       return sql`${hasAnyVector} and not ${hasCurrentVector(key)}`;
-    case "missing":
+    case ChunkEmbeddingState.Missing:
       return sql`not ${hasAnyVector}`;
   }
 };
@@ -156,9 +155,11 @@ const tally = (
   rows: { state: ChunkEmbeddingState }[]
 ): ResourceIndexCounts => ({
   total: rows.length,
-  current: rows.filter((row) => row.state === "current").length,
-  stale: rows.filter((row) => row.state === "stale").length,
-  missing: rows.filter((row) => row.state === "missing").length,
+  current: rows.filter((row) => row.state === ChunkEmbeddingState.Current)
+    .length,
+  stale: rows.filter((row) => row.state === ChunkEmbeddingState.Stale).length,
+  missing: rows.filter((row) => row.state === ChunkEmbeddingState.Missing)
+    .length,
 });
 
 export const getResourceIndexStatus = withDTO(

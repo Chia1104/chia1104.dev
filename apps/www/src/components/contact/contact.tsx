@@ -19,6 +19,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 
 import { ErrorCode as CaptchaErrorCode } from "@chia/integrations/captcha/constants";
 import meta from "@chia/meta";
@@ -30,6 +31,11 @@ import { FeatureCard } from "@/components/commons/feature-card";
 import { orpc } from "@/libs/orpc/client";
 import type { Contact as ContactInput } from "@/shared/validator";
 import { contactSchema } from "@/shared/validator";
+
+/** The `issues` an `AppError` carries on the wire; the first message is the captcha code. */
+const errorIssuesSchema = z.object({
+  errors: z.array(z.object({ message: z.string().optional() })).optional(),
+});
 
 export const ContactForm = ({
   className,
@@ -79,10 +85,7 @@ export const ContactForm = ({
         }
         // Captcha codes live in AppError `issues` on both REST and RPC.
         if (error instanceof ORPCError) {
-          const issues =
-            /* SAFETY: The producer contract guarantees this value satisfies the asserted interface. */ error.data as
-              | { errors?: { message?: string }[] }
-              | undefined;
+          const issues = errorIssuesSchema.safeParse(error.data).data;
 
           switch (issues?.errors?.[0]?.message) {
             case CaptchaErrorCode.CaptchaFailed:
