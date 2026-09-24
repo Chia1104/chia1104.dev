@@ -173,7 +173,7 @@ const useTriageRun = (id: number) => {
 };
 
 const FIX_PROMPT =
-  "Look into this reader report. Check the claim against the post and its sources; if it holds, fix the post's draft and ask me before committing.";
+  "Look into this reader report. Check the claim against the post and its sources. If it holds, fix the post's draft and ask me before committing; if not, say why. I mark the report afterwards.";
 
 const Actions = ({ report }: { report: ReportView }) => {
   const router = useRouter();

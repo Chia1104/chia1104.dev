@@ -165,21 +165,10 @@ describe("createWritingAgentKind state", () => {
     );
   });
 
-  it("takes up an open report it is handed and leaves a settled one alone", async () => {
+  it("admits a report that exists without touching its status", async () => {
     reports.getFeedReport.mockResolvedValueOnce({ id: 3, status: "open" });
     await kind.state.attach?.(caller, db, "session-1", [
       { type: "report", id: 3 },
-    ]);
-    expect(reports.setFeedReportStatus).toHaveBeenCalledWith(
-      db,
-      3,
-      "in_progress"
-    );
-
-    reports.setFeedReportStatus.mockClear();
-    reports.getFeedReport.mockResolvedValueOnce({ id: 4, status: "resolved" });
-    await kind.state.attach?.(caller, db, "session-1", [
-      { type: "report", id: 4 },
     ]);
     expect(reports.setFeedReportStatus).not.toHaveBeenCalled();
 

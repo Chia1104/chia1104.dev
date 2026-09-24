@@ -108,6 +108,7 @@ export const collectOperatorExchange = (
     if (entry.type !== "message") continue;
     const message = entry.message;
     if (message.role === "user") {
+      // The runtime's `attachedPrompt` persists the rendered block as the first content part.
       const attached =
         (entry.attachments?.length ?? 0) > 0 && Array.isArray(message.content);
       const text = textOf(

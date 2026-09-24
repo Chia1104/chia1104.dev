@@ -39,9 +39,7 @@ import type { FeedDraftListItem, FeedDraftRecord } from "@chia/db/repos/drafts";
 import {
   getFeedReport,
   getFeedReportRecord,
-  setFeedReportStatus,
 } from "@chia/db/repos/feed-reports";
-import { FEED_REPORT_STATUS } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
 import { AppError } from "@chia/service-kit/errors";
 
@@ -193,25 +191,17 @@ export const createWritingAgentKind = (): WritingAgentKind => ({
     /**
      * A draft by reference, a selection from one, or a reader report. The selection's text is
      * not checked against the row: the editor sends it before its autosave lands, and the model
-     * re-reads the draft anyway. Handing an open report to the agent takes it up, so applying
-     * the post's draft resolves it.
+     * re-reads the draft anyway. A report's status stays the operator's: asking the agent about
+     * one must not queue it for resolution by the next draft apply.
      */
     async attach(caller, db, sessionId, attachments) {
       const draftIds = new Set<number>();
       for (const attachment of attachments) {
         if (attachment.type === "report") {
-          const report = await getFeedReport(db, attachment.id);
-          if (!report) {
+          if (!(await getFeedReport(db, attachment.id))) {
             throw new AppError("NOT_FOUND", {
               message: `Unknown report: ${attachment.id}`,
             });
-          }
-          if (report.status === FEED_REPORT_STATUS.Open) {
-            await setFeedReportStatus(
-              db,
-              report.id,
-              FEED_REPORT_STATUS.InProgress
-            );
           }
           continue;
         }
