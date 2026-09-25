@@ -90,14 +90,25 @@ export interface ToolCallRefusal {
   reason: string;
 }
 
+/**
+ * How a gated call was answered: approved by the operator or the session's pre-approved tiers,
+ * declined by the operator, or refused by the turn's own checks before the operator saw it.
+ */
+export const ApprovalVerdict = {
+  Approved: "approved",
+  Declined: "declined",
+  Refused: "refused",
+} as const;
+
+export type ApprovalVerdict =
+  (typeof ApprovalVerdict)[keyof typeof ApprovalVerdict];
+
 /** The answer to one gated call. */
 export interface ApprovalDecision {
   toolCallId: string;
-  approved: boolean;
+  verdict: ApprovalVerdict;
   /** The operator's words, or the check's reason when `refused`. */
   comment?: string;
-  /** The turn's own checks refused the call; the operator never saw it. */
-  refused?: true;
 }
 
 /**

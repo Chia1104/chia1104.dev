@@ -1,5 +1,6 @@
 import * as z from "zod";
 
+import { ApprovalVerdict } from "@chia/agent-runtime/types";
 import { agentAttachmentInputSchema } from "@chia/agent-runtime/wire/schema";
 import type { KeyId } from "@chia/ai/provider";
 
@@ -34,17 +35,17 @@ export const agentTurnResumeSchema = z.object({
     .array(
       z.object({
         toolCallId: z.string(),
-        approved: z.boolean(),
+        verdict: z.enum(ApprovalVerdict),
         comment: z.string().optional(),
-        refused: z.literal(true).optional(),
       })
     )
     .min(1),
 });
 
 /** One turn's input: an operator prompt, or the answers that resume a stopped turn. */
-export const agentMessagePayloadSchema = z.union([
+export const agentMessagePayloadSchema = z.discriminatedUnion("type", [
   z.object({
+    type: z.literal("prompt"),
     text: z.string(),
     template: z
       .object({ name: z.string(), args: z.array(z.string()).optional() })
@@ -53,6 +54,7 @@ export const agentMessagePayloadSchema = z.union([
     credentials: encryptedAgentCredentialsSchema.optional(),
   }),
   z.object({
+    type: z.literal("resume"),
     resume: agentTurnResumeSchema,
     credentials: encryptedAgentCredentialsSchema.optional(),
   }),

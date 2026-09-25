@@ -30,7 +30,7 @@ import { createTurnBudget } from "./turn/budget.ts";
 import { createTurnControl } from "./turn/control.ts";
 import type { TurnControl, TurnFailure } from "./turn/control.ts";
 import { createTurnTranscript } from "./turn/transcript.ts";
-import { AgentErrorKind } from "./types.ts";
+import { AgentErrorKind, ApprovalVerdict } from "./types.ts";
 import type {
   AgentPolicy,
   AgentSessionSettings,
@@ -363,7 +363,7 @@ const executeTurn = async (
         onEvent({
           type: "approval:resolved",
           toolCallId: decision.toolCallId,
-          approved: decision.approved,
+          approved: decision.verdict === ApprovalVerdict.Approved,
           comment: decision.comment,
         });
       }

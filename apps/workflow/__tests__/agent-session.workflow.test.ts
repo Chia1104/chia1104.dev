@@ -12,6 +12,7 @@ vi.mock("../src/steps/agent-turn.step", () => ({
   runAgentTurnStep: mocks.runTurn,
 }));
 
+import { ApprovalVerdict } from "@chia/agent-runtime/types";
 import { AgentRunStatus } from "@chia/db/schema";
 
 import { agentSessionWorkflow } from "../src/workflows/agent-session.workflow";
@@ -34,6 +35,7 @@ describe("agentSessionWorkflow", () => {
         userId: "user-1",
         abortController,
         message: {
+          type: "prompt",
           text: "/translate zh-TW",
           template: { name: "translate", args: ["zh-TW"] },
           attachments: [{ type: "draft", id: 7 }],
@@ -48,6 +50,7 @@ describe("agentSessionWorkflow", () => {
       userId: "user-1",
       abortController,
       message: {
+        type: "prompt",
         text: "/translate zh-TW",
         template: { name: "translate", args: ["zh-TW"] },
         attachments: [{ type: "draft", id: 7 }],
@@ -71,7 +74,7 @@ describe("agentSessionWorkflow", () => {
         runId: "run-1",
         userId: "user-1",
         abortController,
-        message: { text: "commit it" },
+        message: { type: "prompt", text: "commit it" },
       })
     ).resolves.toEqual({ sessionId: "session-1", status: "awaiting_approval" });
     expect(mocks.completeRun).toHaveBeenCalledWith(
@@ -83,20 +86,26 @@ describe("agentSessionWorkflow", () => {
     // The resume is a fresh run carrying the recorded answers; nothing is parked between.
     const resume = {
       interruptedRunId: "run-1",
-      decisions: [{ toolCallId: "call-1", approved: true, comment: "go" }],
+      decisions: [
+        {
+          toolCallId: "call-1",
+          verdict: ApprovalVerdict.Approved,
+          comment: "go",
+        },
+      ],
     };
     await agentSessionWorkflow({
       sessionId: "session-1",
       runId: "run-2",
       userId: "user-1",
       abortController: { id: "abort-2", runId: "abort-run-2" },
-      message: { resume, credentials: { openai: "fresh" } },
+      message: { type: "resume", resume, credentials: { openai: "fresh" } },
     });
 
     expect(mocks.runTurn).toHaveBeenLastCalledWith(
       expect.objectContaining({
         runId: "run-2",
-        message: { resume, credentials: { openai: "fresh" } },
+        message: { type: "resume", resume, credentials: { openai: "fresh" } },
       })
     );
   });
@@ -117,7 +126,7 @@ describe("agentSessionWorkflow", () => {
         runId: "run-1",
         userId: "user-1",
         abortController,
-        message: { text: "first" },
+        message: { type: "prompt", text: "first" },
       });
 
       expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
@@ -137,7 +146,7 @@ describe("agentSessionWorkflow", () => {
         runId: "run-1",
         userId: "user-1",
         abortController,
-        message: { text: "first" },
+        message: { type: "prompt", text: "first" },
       })
     ).rejects.toThrow("process died mid-step");
 

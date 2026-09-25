@@ -12,6 +12,7 @@ import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import { runTurn } from "@chia/agent-runtime/turn";
 import type { AgentTurnInput } from "@chia/agent-runtime/turn";
+import { ApprovalVerdict } from "@chia/agent-runtime/types";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
@@ -218,7 +219,8 @@ const build = async (
         .filter((request) =>
           decisions.some(
             (decision) =>
-              decision.toolCallId === request.toolCallId && decision.approved
+              decision.toolCallId === request.toolCallId &&
+              decision.verdict === ApprovalVerdict.Approved
           )
         )
         .map((request) => ({
@@ -494,7 +496,7 @@ describe("prepareWritingTurn", () => {
 
     fixture.setResponses([fauxAssistantMessage("Committed.")]);
     const resumed = await fixture.resume([
-      { toolCallId: "call-commit", approved: true },
+      { toolCallId: "call-commit", verdict: ApprovalVerdict.Approved },
     ]);
 
     expect(resumed.status).toBe("done");
@@ -519,7 +521,9 @@ describe("prepareWritingTurn", () => {
       content: "## Post\n\nEdited.",
     });
     fixture.setResponses([fauxAssistantMessage("Committed.")]);
-    await fixture.resume([{ toolCallId: "call-commit", approved: true }]);
+    await fixture.resume([
+      { toolCallId: "call-commit", verdict: ApprovalVerdict.Approved },
+    ]);
 
     // The apply is pinned to the approved content, not what the tool read afterwards;
     // the apply service refuses it when the row no longer matches.
@@ -556,7 +560,7 @@ describe("prepareWritingTurn", () => {
       commit("call-recommit", "Committing again."),
     ]);
     const result = await fixture.resume([
-      { toolCallId: "call-commit", approved: true },
+      { toolCallId: "call-commit", verdict: ApprovalVerdict.Approved },
     ]);
 
     expect(fixture.content.commits).toEqual([

@@ -10,7 +10,7 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it, vi } from "vitest";
 
-import { AgentErrorKind } from "../src/types.ts";
+import { AgentErrorKind, ApprovalVerdict } from "../src/types.ts";
 
 import {
   build,
@@ -186,7 +186,7 @@ describe("runTurn", () => {
     fixture.faux.setResponses([fauxAssistantMessage("Published.")]);
     const result = await fixture.resume({
       interruptedRunId: "run-1",
-      decisions: [{ toolCallId: "call-2", approved: true }],
+      decisions: [{ toolCallId: "call-2", verdict: ApprovalVerdict.Approved }],
     });
 
     expect(result).toEqual({ status: "done" });
@@ -221,7 +221,7 @@ describe("runTurn", () => {
     fixture.faux.setResponses([fauxAssistantMessage("Published.")]);
     await fixture.resume({
       interruptedRunId: "run-1",
-      decisions: [{ toolCallId: "call-2", approved: true }],
+      decisions: [{ toolCallId: "call-2", verdict: ApprovalVerdict.Approved }],
     });
 
     const results = (await fixture.branch())
@@ -245,7 +245,13 @@ describe("runTurn", () => {
     fixture.faux.setResponses([fauxAssistantMessage("Published.")]);
     const result = await fixture.resume({
       interruptedRunId: "run-1",
-      decisions: [{ toolCallId: "call-1", approved: true, comment: "go" }],
+      decisions: [
+        {
+          toolCallId: "call-1",
+          verdict: ApprovalVerdict.Approved,
+          comment: "go",
+        },
+      ],
     });
 
     expect(result).toEqual({ status: "done" });
@@ -290,7 +296,11 @@ describe("runTurn", () => {
     await fixture.resume({
       interruptedRunId: "run-1",
       decisions: [
-        { toolCallId: "call-1", approved: false, comment: "fix the title" },
+        {
+          toolCallId: "call-1",
+          verdict: ApprovalVerdict.Declined,
+          comment: "fix the title",
+        },
       ],
     });
 
@@ -432,7 +442,9 @@ describe("runTurn", () => {
     const result = await fixture.resume(
       {
         interruptedRunId: "run-1",
-        decisions: [{ toolCallId: "call-1", approved: true }],
+        decisions: [
+          { toolCallId: "call-1", verdict: ApprovalVerdict.Approved },
+        ],
       },
       { settings: { ...fixture.options.settings, autoApprove: ["commit"] } }
     );
@@ -466,7 +478,9 @@ describe("runTurn", () => {
     await expect(
       fixture.resume({
         interruptedRunId: "run-1",
-        decisions: [{ toolCallId: "call-1", approved: true }],
+        decisions: [
+          { toolCallId: "call-1", verdict: ApprovalVerdict.Approved },
+        ],
       })
     ).resolves.toMatchObject({
       status: "error",
