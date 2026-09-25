@@ -10,6 +10,7 @@ import { getQueryClient } from "@chia/utils/query-client";
 
 import FeedList from "@/components/blog/feed-list";
 import AppLoading from "@/components/commons/app-loading";
+import { PageTitle } from "@/components/commons/ruled";
 import { orpc } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
@@ -84,10 +85,10 @@ const Page = async (
   const t = await getTranslations(`blog.${type}`);
   return (
     <ViewTransition>
-      <div className="w-full">
-        <h1>{t("doc-title")}</h1>
+      <div className="flex w-full flex-col">
+        <PageTitle>{t("doc-title")}</PageTitle>
         <ErrorBoundary>
-          <Suspense fallback={<AppLoading />}>
+          <Suspense fallback={<AppLoading className="py-12" spinnerOnly />}>
             <CacheFeeds type={type} limit={10} locale={locale} />
           </Suspense>
         </ErrorBoundary>

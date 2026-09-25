@@ -82,6 +82,7 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
     <NavigationMenuItem value={type}>
       <NavigationMenuTrigger
         onPress={() => router.push(getLinkPrefix())}
+        variant="ghost"
         size="lg">
         {getTranslations().title}
       </NavigationMenuTrigger>

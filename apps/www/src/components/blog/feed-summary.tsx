@@ -14,10 +14,10 @@ export const FeedSummary = ({
     variant="surface"
     defaultExpandedKeys={["summary"]}
     hideSeparator
-    className="not-prose mb-8 w-full">
+    className="mb-6 w-full">
     <Accordion.Item id="summary">
       <Accordion.Heading>
-        <Accordion.Trigger className="text-muted text-xs font-medium tracking-wide uppercase">
+        <Accordion.Trigger className="text-muted text-xs font-medium">
           {label}
           <Accordion.Indicator />
         </Accordion.Trigger>

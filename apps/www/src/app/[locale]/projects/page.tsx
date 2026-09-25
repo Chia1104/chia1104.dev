@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import { Band, Panel } from "@/components/commons/ruled";
 import { ContributionsChart } from "@/containers/projects/contributions-chart";
 import { RepoList } from "@/containers/projects/repo-list";
 
@@ -13,9 +14,12 @@ export const revalidate = 14400; // 4 hours
 const Page = () => {
   return (
     <>
-      <Suspense fallback={<ContributionsChartFallback />}>
-        <ContributionsChart />
-      </Suspense>
+      <Panel>
+        <Suspense fallback={<ContributionsChartFallback />}>
+          <ContributionsChart />
+        </Suspense>
+      </Panel>
+      <Band />
       <Suspense fallback={<RepoListFallback />}>
         <RepoList />
       </Suspense>

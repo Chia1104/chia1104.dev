@@ -1,17 +1,15 @@
 import type { LinkProps } from "next/link";
-import type {
-  ReactNode,
-  ComponentPropsWithoutRef,
-  ComponentProps,
-} from "react";
+import type { ReactNode, ComponentPropsWithoutRef } from "react";
 
 import type { Dayjs } from "dayjs";
-import type { HTMLMotionProps, ForwardRefComponent } from "motion/react";
 
 export interface TimelineItemData {
   id: number;
   title: ReactNode;
   subtitle?: ReactNode;
+  /** Always shown under the subtitle. */
+  description?: ReactNode;
+  /** Folded behind a "More" toggle. */
   content?: ReactNode;
   startDate: Dayjs | string | number | Date | null;
   link?: string;
@@ -47,17 +45,13 @@ export interface TimelineProps extends ComponentPropsWithoutRef<"div"> {
   tz?: string;
 }
 
-export interface TimelineItemProps extends ComponentProps<
-  ForwardRefComponent<HTMLDivElement, HTMLMotionProps<"div">>
-> {
+export interface TimelineItemProps extends ComponentPropsWithoutRef<"div"> {
   data: TimelineItemData;
   isLastItem: boolean;
   refTarget?: (node: HTMLDivElement) => void;
 }
 
-export type TimelineListProps = ComponentPropsWithoutRef<
-  ForwardRefComponent<"ul", HTMLMotionProps<"ul">>
-> &
+export type TimelineListProps = ComponentPropsWithoutRef<"section"> &
   TimelineGroupData & {
     isLastGroup: boolean;
     refTarget?: (node: HTMLDivElement) => void;

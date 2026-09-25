@@ -84,8 +84,12 @@ function FloatingTOCNavigation({
 
   return (
     <div
-      /* `--dock-width` is 0 until an agent dock opens; the rail then moves in with the page. */
-      className="fixed top-1/2 right-[calc(var(--dock-width,0px)+max(4px,env(safe-area-inset-right)))] z-40 hidden -translate-y-1/2 transition-[right] duration-200 ease-out motion-reduce:transition-none sm:right-[calc(var(--dock-width,0px)+max(12px,env(safe-area-inset-right)))] sm:block [html[data-dock-resizing]_&]:transition-none"
+      /*
+       * `--dock-width` is 0 until an agent dock opens; the rail then moves in with the page. A host
+       * that frames its content places the rail with `--floating-toc-right` (from the viewport's
+       * right edge) and `--floating-toc-align: start` to grow the marks away from a frame on their left.
+       */
+      className="fixed top-1/2 z-40 hidden -translate-y-1/2 transition-[right] duration-200 ease-out motion-reduce:transition-none sm:right-[var(--floating-toc-right,calc(var(--dock-width,0px)+max(12px,env(safe-area-inset-right))))] sm:block [html[data-dock-resizing]_&]:transition-none"
       onPointerEnter={(event) => {
         if (event.pointerType === "mouse") {
           setInteraction((current) => current ?? "hover");
@@ -110,7 +114,7 @@ function FloatingTOCNavigation({
           aria-label={label}
           className="flex min-h-8 w-9 items-center justify-end rounded-2xl p-2">
           <span
-            className="grid max-h-[40dvh] w-full auto-rows-[8px] items-center justify-items-end overflow-hidden"
+            className="justify-items-[var(--floating-toc-align,end)] grid max-h-[40dvh] w-full auto-rows-[8px] items-center overflow-hidden"
             aria-hidden="true">
             {toc.map((item) => (
               <span

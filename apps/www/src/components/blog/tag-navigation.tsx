@@ -32,7 +32,10 @@ const TagNavigation: FC<Props> = ({ tags: promisedTags, locale }) => {
   // The content renders in a popover outside the `page` container, so it sizes by the viewport.
   return (
     <NavigationMenuItem value="tags">
-      <NavigationMenuTrigger onPress={() => router.push("/tags")} size="lg">
+      <NavigationMenuTrigger
+        onPress={() => router.push("/tags")}
+        variant="ghost"
+        size="lg">
         {t("doc-title")}
       </NavigationMenuTrigger>
       <NavigationMenuContent>

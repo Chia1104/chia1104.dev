@@ -5,6 +5,7 @@ import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
 import FeedNavigation from "@/components/blog/feed-navigation";
 import TagNavigation from "@/components/blog/tag-navigation";
+import { Band } from "@/components/commons/ruled";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
@@ -14,7 +15,7 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
   const dbLocale = dbLocaleResolver(locale);
 
   return (
-    <div className="not-prose page-md:mb-10 z-20 mb-5 flex items-center gap-4">
+    <div className="rule-t rule-b flex items-center px-2 py-1.5">
       <NavigationMenu>
         <NavigationMenuList className="gap-3">
           <FeedNavigation
@@ -49,10 +50,9 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
 const Layout = async ({ children }: LayoutProps<"/[locale]">) => {
   const locale = await getLocale();
   return (
-    <section className="prose dark:prose-invert page-md:mt-20 mt-10 flex min-h-[calc(100vh-140px)] w-full min-w-full flex-col items-start justify-start">
-      <div className="z-30">
-        <Navigation locale={locale} />
-      </div>
+    <section className="flex w-full flex-1 flex-col">
+      <Navigation locale={locale} />
+      <Band />
       {children}
     </section>
   );

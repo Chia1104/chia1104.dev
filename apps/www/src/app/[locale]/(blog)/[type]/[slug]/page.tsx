@@ -27,6 +27,12 @@ import {
 } from "@/components/blog/related-feeds";
 import { Tweet } from "@/components/blog/tweet";
 import WrittenBy from "@/components/blog/written-by";
+import {
+  Band,
+  PageDescription,
+  PageTitle,
+  Panel,
+} from "@/components/commons/ruled";
 import { client } from "@/libs/orpc/client.rsc";
 import { reportServiceError } from "@/libs/orpc/report";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
@@ -132,101 +138,104 @@ const Page = async ({
 
   return (
     <ViewTransition>
-      <div className="flex w-full flex-col items-center">
-        <header className="mt-5 mb-5 w-full self-center">
-          <div>
+      <article className="flex w-full flex-col">
+        <header className="flex flex-col">
+          <PageTitle>
             <ViewTransition name={`view-transition-link-${feed.id}`}>
-              <h1
+              <span
                 className="inline-block"
                 style={{
                   viewTransitionName: `view-transition-link-${feed.id}`,
                 }}>
-                {feed.translations[0]?.title}
-              </h1>
+                {translation.title}
+              </span>
             </ViewTransition>
-          </div>
-          <p>{feed.translations[0]?.description}</p>
-          <FeedTags className="mt-3" tags={feed.tags} />
-          <div className="mt-5 flex items-center justify-between ">
-            <div className="not-prose flex items-center gap-2">
-              <Avatar>
+          </PageTitle>
+          {translation.description ? (
+            <PageDescription>{translation.description}</PageDescription>
+          ) : null}
+          <FeedTags className="rule-b px-4 py-3" tags={feed.tags} />
+          <div className="rule-b page-sm:flex-row flex flex-col">
+            <div className="border-separator page-sm:border-b-0 flex items-center gap-2 border-b px-4 py-2">
+              <Avatar size="sm">
                 <Avatar.Image src={Meta.avatar} />
                 <Avatar.Fallback>
                   <span>{Meta.name.charAt(0)}</span>
                 </Avatar.Fallback>
               </Avatar>
-              <span className="page-sm:block hidden">{Meta.name}</span>
+              <span className="text-sm font-medium">{Meta.name}</span>
             </div>
-            <div
+            <ul
               id="feed-meta"
-              className="text-foreground-700 flex flex-col items-end sm:flex-row sm:items-center">
-              <div className="flex items-center">
+              className="border-separator divide-separator text-muted page-sm:ml-auto page-sm:border-l flex divide-x text-sm tabular-nums">
+              <li className="flex items-center px-4 py-2">
                 <ViewTransition>
                   <DateFormat
                     date={feed.createdAt}
-                    format="MMMM D, YYYY"
+                    format="MMM D, YYYY"
                     locale={locale}
                   />
                 </ViewTransition>
-                <i className="i-mdi-dot hidden sm:block" />
-              </div>
-              <div className="flex items-center">
-                <span>{t(`${feed.type}s.doc-title`)}</span>
-                {feed.translations[0]?.readTime ? (
-                  <>
-                    <i className="i-mdi-dot" />
-                    <span>
-                      {t("read-with-minutes", {
-                        minutes: feed.translations[0]?.readTime,
-                      })}
-                    </span>
-                  </>
-                ) : null}
-              </div>
-            </div>
+              </li>
+              <li className="flex items-center px-4 py-2">
+                {t(`${feed.type}s.doc-title`)}
+              </li>
+              {translation.readTime ? (
+                <li className="flex items-center px-4 py-2">
+                  {t("read-with-minutes", {
+                    minutes: translation.readTime,
+                  })}
+                </li>
+              ) : null}
+            </ul>
           </div>
         </header>
-        {translation.summary ? (
-          <FeedSummary label={t("summary")} summary={translation.summary} />
-        ) : null}
-        <ArticleAgentContext
-          feedId={feed.id}
-          locale={dbLocale}
-          title={translation.title}>
-          <Content
-            content={getContentProps({
-              content: translation.content,
-              components: { Tweet },
-            })}
-            context={{
-              updatedAt: feed.updatedAt,
-              tocContents: {
-                label: t("otp"),
-                updated: t("last-updated"),
-              },
-              locale,
-              slot: {
-                actions: (
-                  <ActionGroup
-                    content={feed.translations[0]?.content}
-                    articleUrl={articleUrl}
-                    className="mb-5 ml-auto flex justify-self-end"
-                  />
-                ),
-              },
-            }}
-          />
-        </ArticleAgentContext>
+        <div className="rule-b px-4 pt-6 pb-12">
+          {translation.summary ? (
+            <FeedSummary label={t("summary")} summary={translation.summary} />
+          ) : null}
+          <ArticleAgentContext
+            feedId={feed.id}
+            locale={dbLocale}
+            title={translation.title}>
+            <Content
+              content={getContentProps({
+                content: translation.content,
+                components: { Tweet },
+              })}
+              context={{
+                updatedAt: feed.updatedAt,
+                tocContents: {
+                  label: t("otp"),
+                  updated: t("last-updated"),
+                },
+                locale,
+                slot: {
+                  actions: (
+                    <ActionGroup
+                      content={translation.content}
+                      articleUrl={articleUrl}
+                      className="mb-5 ml-auto flex justify-self-end"
+                    />
+                  ),
+                },
+              }}
+            />
+          </ArticleAgentContext>
+        </div>
+        <Band />
         <ErrorBoundary>
           <Suspense fallback={<RelatedFeedsSkeleton />}>
             <RelatedFeeds locale={locale} slug={slug} />
           </Suspense>
         </ErrorBoundary>
-        <WrittenBy
-          className="relative mt-10 flex w-full justify-start self-start"
-          author="Chia1104"
-        />
-      </div>
+        <Panel className="px-4 py-6">
+          <WrittenBy
+            className="relative flex w-full justify-start self-start"
+            author="Chia1104"
+          />
+        </Panel>
+      </article>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

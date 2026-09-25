@@ -38,11 +38,7 @@ const ImageItem: FC<{
   className?: string;
 }> = ({ src, alt, className }) => (
   <ImageZoom>
-    <div
-      className={cn(
-        "not-prose relative w-full overflow-hidden rounded-3xl",
-        className
-      )}>
+    <div className={cn("relative w-full overflow-hidden", className)}>
       <Image
         src={src}
         alt={alt}
@@ -54,9 +50,10 @@ const ImageItem: FC<{
   </ImageZoom>
 );
 
+/** Photos set in a ruled grid: the 1px gaps show the rule colour, so every cell is framed once. */
 const Gallery = () => {
   return (
-    <div className="not-prose grid w-full grid-cols-2 gap-2">
+    <div className="rule-b bg-separator grid w-full grid-cols-2 gap-px pb-px">
       <span className="page-sm:col-span-1 col-span-2">
         <ImageItem
           src={images[4].src}
@@ -64,7 +61,7 @@ const Gallery = () => {
           className="page-sm:aspect-square aspect-2/1"
         />
       </span>
-      <div className="page-sm:col-span-1 col-span-2 grid w-full grid-cols-2 gap-2">
+      <div className="page-sm:col-span-1 col-span-2 grid w-full grid-cols-2 gap-px">
         <span>
           <ImageItem
             src={images[0].src}

@@ -162,8 +162,6 @@ export interface SettingsState {
   /** The public agent conversation to reopen; validated against the server's list on mount. */
   agentSessionId: string | null;
   theme: ThemeState;
-  backgroundEnabled: boolean;
-  cursorEnabled: boolean;
 }
 
 const themeConfigSchema = z.object({
@@ -181,8 +179,6 @@ const persistedSettingsSchema = z
       [Theme.Light]: themeConfigSchema,
       [Theme.Dark]: themeConfigSchema,
     }),
-    backgroundEnabled: z.boolean(),
-    cursorEnabled: z.boolean(),
   })
   .partial();
 
@@ -206,8 +202,6 @@ export interface SettingsActions {
     typography: Partial<ThemeTypography>
   ) => void;
   resetTheme: (mode?: typeof Theme.Dark | typeof Theme.Light) => void;
-  setBackgroundEnabled: (enabled: boolean) => void;
-  setCursorEnabled: (enabled: boolean) => void;
 }
 
 export type SettingsStore = SettingsState & SettingsActions;
@@ -216,8 +210,6 @@ const defaultState: SettingsState = {
   aiEnabled: true,
   agentSessionId: null,
   theme: emptyThemeState,
-  backgroundEnabled: true,
-  cursorEnabled: true,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -227,8 +219,6 @@ export const useSettingsStore = create<SettingsStore>()(
 
       setAiEnabled: (enabled) => set({ aiEnabled: enabled }),
       setAgentSessionId: (sessionId) => set({ agentSessionId: sessionId }),
-      setBackgroundEnabled: (enabled) => set({ backgroundEnabled: enabled }),
-      setCursorEnabled: (enabled) => set({ cursorEnabled: enabled }),
       setThemeConfig: (mode, config) =>
         set((state) => ({
           theme: {
@@ -330,8 +320,6 @@ export const useSettingsStore = create<SettingsStore>()(
         aiEnabled: state.aiEnabled,
         agentSessionId: state.agentSessionId,
         theme: state.theme,
-        backgroundEnabled: state.backgroundEnabled,
-        cursorEnabled: state.cursorEnabled,
       }),
     }
   )

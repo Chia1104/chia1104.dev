@@ -2,24 +2,20 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useSelectedLayoutSegments } from "next/navigation";
-import type { CSSProperties, FC } from "react";
+import type { FC, ReactNode } from "react";
 
-import { Tabs, Button, Link as HeroLink } from "@heroui/react";
-import { motion } from "motion/react";
 import type { Locale } from "next-intl";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 
 import meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";
-import RetroGrid from "@chia/ui/retro-grid";
-import { SwooshText } from "@chia/ui/swoosh-text";
 import ThemeSelector from "@chia/ui/theme";
 import { cn } from "@chia/ui/utils/cn.util";
 import { Theme } from "@chia/ui/utils/use-theme";
 
 import { LoadingSkeleton } from "@/components/commons/current-playing";
+import { FooterLogotype } from "@/components/commons/footer-logotype";
 import LocaleSelector from "@/components/commons/locale-selector";
 import { Settings } from "@/components/commons/settings";
 import contact from "@/shared/contact";
@@ -48,55 +44,70 @@ const Copyright: FC<{ className?: string }> = ({ className }) => {
   );
 };
 
-const LOGO_SHADOW_COLORS: CSSProperties & Record<`--${string}`, string> = {
-  "--swoosh-c-alpha": "#f9c851",
-  "--swoosh-c-beta": "#fbc04d",
-  "--swoosh-c-gamma": "#fba857",
-  "--swoosh-c-delta": "#fc9670",
-  "--swoosh-c-epsilon": "#fca5a5",
-};
+const FooterCell = ({
+  label,
+  className,
+  children,
+}: {
+  label: string;
+  className?: string;
+  children: ReactNode;
+}) => (
+  <div className={cn("border-separator flex flex-col gap-3 p-4", className)}>
+    <p className="text-muted text-xs font-medium">{label}</p>
+    {children}
+  </div>
+);
 
-const Logo = () => {
-  return (
-    <SwooshText
-      text="Chia1104"
-      className="page-md:text-xl w-fit text-start text-base"
-      distance={{
-        alpha: 7,
-        beta: 12,
-        gamma: 17,
-        delta: 22,
-        epsilon: 37,
-      }}
-      style={LOGO_SHADOW_COLORS}
-    />
-  );
-};
-
+/** Laid out as the title block of a drawing: labelled cells split by hairlines. */
 const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
-  const selectedLayoutSegments = useSelectedLayoutSegments();
   const t = useTranslations("theme");
   const tNav = useTranslations("nav");
   const tRoutes = useTranslations("routes");
   return (
-    <RetroGrid
-      data-testid="footer"
-      className="c-bg-third relative flex min-h-[400px] flex-col items-center justify-center overflow-hidden py-20">
-      <div className="z-40 container mb-10 flex w-full justify-between px-10">
-        <CurrentPlaying
-          experimental={{
-            displayBackgroundColorFromImage: true,
-          }}
-        />
-        <div className="page-md:w-1/3 page-md:justify-start flex justify-end">
-          <HugeThanks />
+    <footer data-testid="footer" className="overflow-x-clip px-2">
+      <div className="border-separator mx-auto max-w-3xl border-x">
+        <div className="rule-t rule-b">
+          <div aria-hidden className="hatch-band h-12" />
         </div>
-      </div>
-      <div className="z-20 container flex w-full px-10">
-        <div className="page-md:flex hidden min-h-full w-1/3 flex-col items-start justify-between">
-          <Logo />
-          <div className="flex flex-col gap-5">
-            <div className="page-md:flex mt-auto hidden items-center gap-2">
+        <div className="rule-b page-sm:grid-cols-3 grid grid-cols-2">
+          <FooterCell
+            label={tNav("pages")}
+            className="page-sm:border-b-0 border-r border-b">
+            <ul className="flex flex-col gap-2 text-sm">
+              {Object.entries(navItems).map(([path, { nameKey }]) => (
+                <li key={path}>
+                  <Link
+                    href={path}
+                    className="hover:text-foreground text-muted transition-colors">
+                    {tRoutes(nameKey)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </FooterCell>
+          <FooterCell
+            label={tNav("contact")}
+            className="page-sm:border-r page-sm:border-b-0 border-b">
+            <ul className="flex flex-col gap-2 text-sm">
+              {Object.values(contact).map(({ name, icon, link }) => (
+                <li key={link}>
+                  <Link
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-foreground text-muted flex items-center gap-2 transition-colors">
+                    {icon}
+                    {name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </FooterCell>
+          <FooterCell
+            label={t("label")}
+            className="page-sm:col-span-1 col-span-2">
+            <div className="flex flex-wrap items-center gap-2">
               <ThemeSelector
                 enableCMD
                 label={t("label")}
@@ -117,97 +128,22 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
               <LocaleSelector />
               <Settings />
             </div>
-            <Copyright />
-          </div>
+          </FooterCell>
         </div>
-        <div className="page-md:w-1/3 flex w-1/2 flex-col items-start">
-          <p className="mb-3 ml-2 text-base font-semibold">{tNav("pages")}</p>
-          <Tabs
-            aria-label={tNav("pages")}
-            className="w-fit"
-            orientation="vertical"
-            selectedKey={
-              selectedLayoutSegments[0] === "(blog)"
-                ? "posts"
-                : (selectedLayoutSegments[0] ?? "/")
-            }>
-            <Tabs.ListContainer className="bg-transparent">
-              <Tabs.List aria-label={tNav("pages")} className="gap-2">
-                {Object.entries(navItems).map(([path, { nameKey }]) => {
-                  return (
-                    <Tabs.Tab
-                      key={path}
-                      className="w-fit justify-start pl-1 before:h-0"
-                      id={path.replace(/^\//, "")}>
-                      <Link key={path} href={path}>
-                        {tRoutes(nameKey)}
-                      </Link>
-                    </Tabs.Tab>
-                  );
-                })}
-              </Tabs.List>
-            </Tabs.ListContainer>
-          </Tabs>
+        <div className="rule-b flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <CurrentPlaying
+            experimental={{
+              displayBackgroundColorFromImage: true,
+            }}
+          />
+          <HugeThanks />
         </div>
-        <div className="page-md:w-1/3 flex w-1/2 flex-col items-start gap-1">
-          <p className="mb-3 ml-2 text-base font-semibold">{tNav("contact")}</p>
-          <div className="flex flex-col items-start gap-2">
-            {Object.entries(contact).map(([_key, { name, icon, link }]) => (
-              <Button key={link} variant="ghost" size="sm">
-                <Link
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-start">
-                  {icon} {name} <HeroLink.Icon />
-                </Link>
-              </Button>
-            ))}
-          </div>
+        <div className="rule-b px-4 py-3">
+          <Copyright className="text-muted text-sm" />
         </div>
+        <FooterLogotype />
       </div>
-      <div className="page-md:hidden z-20 container mt-5 flex w-full items-center justify-between px-10">
-        <Logo />
-        <div className="page-sm:flex-row page-sm:items-center flex flex-col items-end gap-2">
-          <div className="page-md:hidden flex items-center gap-2">
-            <ThemeSelector
-              label=""
-              themeLabel={{
-                [Theme.System]: t("system"),
-                [Theme.Dark]: t("dark"),
-                [Theme.Light]: t("light"),
-              }}
-              buttonProps={{
-                variant: "tertiary",
-              }}
-              dropdownProps={{
-                popover: {
-                  className: "min-w-40",
-                },
-              }}
-            />
-            <LocaleSelector />
-            <Settings />
-          </div>
-          <Copyright />
-        </div>
-      </div>
-      <motion.div
-        whileInView={{
-          opacity: "50%",
-        }}
-        initial={{
-          opacity: "0%",
-        }}
-        transition={{
-          delay: 0.3,
-          duration: 0.7,
-        }}
-        className={cn(
-          "dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -bottom-[300px] -z-40 h-[450px] w-full max-w-[850px] rounded-full blur-3xl"
-        )}
-      />
-    </RetroGrid>
+    </footer>
   );
 };
 

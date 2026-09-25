@@ -6,7 +6,6 @@ import { memo } from "react";
 import { ViewTransition } from "react";
 
 import { Disclosure, Spinner } from "@heroui/react";
-import { motion } from "motion/react";
 
 import dayjs from "@chia/utils/day";
 
@@ -20,22 +19,7 @@ import type {
   TimelineGroupListProps,
 } from "./types";
 
-const ANIMATION_CONFIG = {
-  whileInView: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5 },
-  },
-  initial: {
-    opacity: 0,
-    y: 20,
-  },
-} as const;
-
-const YEAR_CLASSNAME = "text-[5em] font-bold leading-3 opacity-20";
-const TITLE_CLASSNAME = "text-lg font-semibold";
-const SUBTITLE_CLASSNAME = "text-muted text-sm";
-const MORE_TEXT = "MORE";
+const MORE_TEXT = "More";
 
 interface TimelineYearProps {
   year: string | number | dayjs.Dayjs;
@@ -47,7 +31,11 @@ export const TimelineYear: FC<TimelineYearProps> = memo(
     const { groupTemplate } = useTimeline();
 
     return (
-      <span className={cn(YEAR_CLASSNAME, className)}>
+      <span
+        className={cn(
+          "text-muted/60 block text-4xl leading-none font-semibold tracking-tight tabular-nums",
+          className
+        )}>
         {dayjs(year).format(groupTemplate)}
       </span>
     );
@@ -75,7 +63,7 @@ const TimelineItemLink: FC<TimelineItemLinkProps> = memo(
             viewTransitionName: transitionName,
             ...linkProps?.style,
           }}
-          className={cn("inline-block", linkProps?.className)}>
+          className={cn("link inline-block", linkProps?.className)}>
           {title}
         </Link>
       </ViewTransition>
@@ -90,16 +78,15 @@ interface TimelineItemContentProps {
 
 const TimelineItemContent: FC<TimelineItemContentProps> = memo(
   ({ content, defaultOpen }) => (
-    <Disclosure
-      defaultExpanded={defaultOpen}
-      className="prose-h3:m-1 prose-h3:w-fit w-full">
+    <Disclosure defaultExpanded={defaultOpen} className="w-full">
       <Disclosure.Heading className="flex">
-        <Disclosure.Trigger className="flex w-fit p-0 text-xs font-medium text-gray-500 dark:text-gray-300">
+        <Disclosure.Trigger className="text-muted hover:text-foreground flex w-fit items-center gap-1 p-0 text-xs font-medium">
           {MORE_TEXT}
+          <Disclosure.Indicator className="size-3" />
         </Disclosure.Trigger>
       </Disclosure.Heading>
-      <Disclosure.Content className="text-sm">
-        <div className="pt-0 pb-4">{content}</div>
+      <Disclosure.Content className="text-sm leading-relaxed">
+        <div className="pt-2">{content}</div>
       </Disclosure.Content>
     </Disclosure>
   )
@@ -111,6 +98,7 @@ export const TimelineItem: FC<TimelineItemProps> = memo(
       id,
       title,
       subtitle,
+      description,
       content,
       link,
       defaultOpen = true,
@@ -120,15 +108,16 @@ export const TimelineItem: FC<TimelineItemProps> = memo(
     } = data;
 
     return (
-      <motion.div
+      <div
         ref={isLastItem ? refTarget : undefined}
-        whileInView={ANIMATION_CONFIG.whileInView}
-        initial={ANIMATION_CONFIG.initial}
-        className={cn("z-10 my-1 flex flex-col text-start", className)}
+        className={cn("flex flex-col gap-1 px-4 py-3 text-start", className)}
         {...props}>
         <span
           {...titleProps}
-          className={cn(TITLE_CLASSNAME, titleProps?.className)}>
+          className={cn(
+            "text-base leading-snug font-semibold",
+            titleProps?.className
+          )}>
           {link ? (
             <TimelineItemLink
               id={id}
@@ -144,56 +133,63 @@ export const TimelineItem: FC<TimelineItemProps> = memo(
         {subtitle && (
           <span
             {...subtitleProps}
-            className={cn(SUBTITLE_CLASSNAME, subtitleProps?.className)}>
+            className={cn("text-muted text-sm", subtitleProps?.className)}>
             {subtitle}
           </span>
+        )}
+
+        {description && (
+          <p className="text-sm leading-relaxed text-pretty">{description}</p>
         )}
 
         {content && (
           <TimelineItemContent content={content} defaultOpen={defaultOpen} />
         )}
-      </motion.div>
+      </div>
     );
   }
 );
 
+/**
+ * One year of the ledger: the year holds a gutter column and stays pinned while its rows scroll,
+ * rows are split by hairlines. In a narrow container the year becomes the group's header row.
+ */
 export const TimelineList: FC<TimelineListProps> = memo(
   ({ year, data, className, isLastGroup, refTarget, ...props }) => {
     const lastIndex = data.length - 1;
 
     return (
-      <motion.ul {...props}>
-        <li className={cn("relative flex flex-col gap-1", className)}>
-          <TimelineYear year={year} className="absolute -top-4 left-0" />
+      <section
+        className={cn(
+          "border-separator border-b last:border-b-0 @lg:grid @lg:grid-cols-[8rem_minmax(0,1fr)]",
+          className
+        )}
+        {...props}>
+        <div className="border-separator border-b px-4 py-3 @lg:border-r @lg:border-b-0">
+          <TimelineYear
+            year={year}
+            className="text-3xl @lg:sticky @lg:top-[calc(var(--header-height,0px)+0.75rem)] @lg:text-4xl"
+          />
+        </div>
+        <ul className="divide-separator divide-y">
           {data.map((item, index) => {
             const isLastItemInGroup = isLastGroup && index === lastIndex;
 
             return (
-              <TimelineItem
-                key={item.id}
-                data={item}
-                isLastItem={isLastItemInGroup}
-                refTarget={isLastItemInGroup ? refTarget : undefined}
-              />
+              <li key={item.id}>
+                <TimelineItem
+                  data={item}
+                  isLastItem={isLastItemInGroup}
+                  refTarget={isLastItemInGroup ? refTarget : undefined}
+                />
+              </li>
             );
           })}
-        </li>
-      </motion.ul>
+        </ul>
+      </section>
     );
   }
 );
-
-export const TimelineLoadingSkeletons: FC = memo(() => (
-  <div className="relative flex animate-pulse flex-col gap-5 p-5">
-    <span className="c-bg-secondary absolute -top-10 left-0 h-14 w-1/4 rounded" />
-    {[1, 2, 3].map((i) => (
-      <div key={i} className="flex flex-col gap-2">
-        <div className="c-bg-secondary h-4 w-full rounded-full" />
-        <div className="c-bg-secondary h-4 w-2/3 rounded-full" />
-      </div>
-    ))}
-  </div>
-));
 
 export const TimelineGroupList: FC<TimelineGroupListProps> = memo(
   ({ data, onEndReached, asyncDataStatus }) => {
@@ -224,7 +220,7 @@ export const TimelineGroupList: FC<TimelineGroupListProps> = memo(
         })}
 
         {isLoading && (
-          <div className="flex w-full justify-center">
+          <div className="flex w-full justify-center py-4">
             <Spinner aria-label="Loading more items" />
           </div>
         )}

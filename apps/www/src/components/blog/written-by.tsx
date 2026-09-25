@@ -39,7 +39,7 @@ const WrittenBy = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
-                  className="text-foreground-700 flex items-center gap-1 text-xs">
+                  className="link flex items-center gap-1 text-xs">
                   <span className="i-simple-icons-creativecommons size-3" /> CC
                   BY-NC-SA 4.0
                 </Link>

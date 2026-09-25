@@ -14,7 +14,7 @@ import {
 export default function NotFound() {
   return (
     <ViewTransition>
-      <div className="main not-prose container">
+      <div className="flex w-full flex-1 flex-col items-center justify-center px-4 py-16">
         <TextRevealCard text="404 Not Found" revealText="出事拉，阿北！">
           <TextRevealCardTitle>Not Found</TextRevealCardTitle>
           <TextRevealCardDescription>
