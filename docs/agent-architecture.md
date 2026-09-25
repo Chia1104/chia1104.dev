@@ -397,7 +397,7 @@ Do not add an engine adapter, capability plugin system or provider-neutral handl
 
 | Concern                            | Location                                                                                              |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Turn, approval, budget, compaction | `packages/agent-runtime/src/` (`turn.ts`, `turn-budget.ts`, `compaction.ts`, `maintenance.ts`)        |
+| Turn, approval, budget, compaction | `packages/agent-runtime/src/` (`turn.ts`, `turn/`, `compaction.ts`, `maintenance.ts`)                 |
 | Models and catalogue               | `packages/agent-runtime/src/models.ts`, `packages/ai/src/gateway.ts`                                  |
 | Session tree and Postgres storage  | `packages/agent-runtime/src/session/`                                                                 |
 | Wire schema, replay and fold       | `packages/agent-runtime/src/wire/`                                                                    |

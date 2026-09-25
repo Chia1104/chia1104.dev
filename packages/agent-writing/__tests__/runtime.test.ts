@@ -10,7 +10,8 @@ import type {
   ScriptedReply,
 } from "@chia/agent-runtime/testing";
 import { runTurn } from "@chia/agent-runtime/turn";
-import type { AgentTurnInput, ApprovalBatch } from "@chia/agent-runtime/turn";
+import type { AgentTurnInput } from "@chia/agent-runtime/turn";
+import type { ApprovalBatch } from "@chia/agent-runtime/types";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,

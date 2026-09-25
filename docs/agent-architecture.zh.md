@@ -395,7 +395,7 @@ Admin write 在持久化前先依 code definition 驗證。API view 回傳 `defa
 
 | Concern                            | Location                                                                                              |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Turn、approval、budget、compaction | `packages/agent-runtime/src/`（`turn.ts`、`turn-budget.ts`、`compaction.ts`、`maintenance.ts`）       |
+| Turn、approval、budget、compaction | `packages/agent-runtime/src/`（`turn.ts`、`turn/`、`compaction.ts`、`maintenance.ts`）                |
 | Models 與 catalogue                | `packages/agent-runtime/src/models.ts`、`packages/ai/src/gateway.ts`                                  |
 | Session tree 與 Postgres storage   | `packages/agent-runtime/src/session/`                                                                 |
 | Wire schema、replay、fold          | `packages/agent-runtime/src/wire/`                                                                    |

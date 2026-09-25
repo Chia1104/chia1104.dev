@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { JsonObject } from "@chia/utils/json";
 
-import { createTurnBudget } from "../src/turn-budget.ts";
+import { createTurnBudget } from "../src/turn/budget.ts";
 import type { AgentTurnBudget, ToolCallRequest } from "../src/types.ts";
 
 /**

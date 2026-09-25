@@ -12,7 +12,8 @@ import { bindingOf, scriptedAdapter } from "../src/testing.ts";
 import type { ScriptedReply } from "../src/testing.ts";
 import { defineTool } from "../src/tools.ts";
 import { runTurn } from "../src/turn.ts";
-import type { ApprovalBatch, RunTurnOptions } from "../src/turn.ts";
+import type { RunTurnOptions } from "../src/turn.ts";
+import type { ApprovalBatch } from "../src/types.ts";
 import type { AgentPolicy, AgentTurnBudget } from "../src/types.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 

@@ -4,7 +4,7 @@ import type {
   AgentTurnBudget,
   ToolCallRefusal,
   ToolCallRequest,
-} from "./types.ts";
+} from "../types.ts";
 
 /**
  * Per-turn tool-call budget: the only bound on a turn whose model keeps emitting tool calls. Two

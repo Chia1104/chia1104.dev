@@ -62,6 +62,28 @@ export interface ApprovalRequest {
   key: string;
 }
 
+/**
+ * A gated call the turn answered itself: approved because the session pre-approved its tier, or
+ * refused by the turn's own checks with `reason`.
+ */
+export interface SettledCall {
+  toolCallId: string;
+  toolName: string;
+  args: unknown;
+  key: string;
+  approved: boolean;
+  reason?: string;
+}
+
+/**
+ * The gated calls a turn stopped on. The operator answers `requests`; `settled` calls ride along,
+ * because the engine resumes a batch only once every call in it is answered.
+ */
+export interface ApprovalBatch {
+  requests: ApprovalRequest[];
+  settled: SettledCall[];
+}
+
 /** Refuses a call. The reason returns to the model as the tool's error result. */
 export interface ToolCallRefusal {
   reason: string;
