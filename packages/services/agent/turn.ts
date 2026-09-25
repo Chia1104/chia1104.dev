@@ -14,6 +14,7 @@ import {
   assertBelowRunningTurnCap,
   assertWithinAgentQuota,
 } from "@chia/agent-host/quota";
+import { ApprovalVerdict } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import {
   bindAgentRunExternalId,
@@ -111,6 +112,19 @@ const relayNeverRan = (run: {
   (run.status === AgentRunStatus.Failed ||
     run.status === AgentRunStatus.Cancelled) &&
   readAgentTurnMarker(run.metadata)?.claimed !== true;
+
+/** A rejected call nobody decided was refused by the turn's own checks, not by the operator. */
+const verdictOf = (row: {
+  status: AgentApprovalStatus;
+  decidedBy: string | null;
+}): ApprovalVerdict => {
+  if (row.status === AgentApprovalStatus.Approved) {
+    return ApprovalVerdict.Approved;
+  }
+  return row.decidedBy === null
+    ? ApprovalVerdict.Refused
+    : ApprovalVerdict.Declined;
+};
 
 /**
  * Whether the workflow service rejected the command before executing it. Only then is it
@@ -394,6 +408,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
 
           return {
             message: {
+              type: "prompt",
               text: input.text,
               template: input.template,
               attachments: input.attachments,
@@ -506,11 +521,16 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
               decidedBy: caller.userId,
             });
             if (!decided) return null;
-          } else {
-            const relay = existing.relayRunId
-              ? await getAgentRun(tx, existing.relayRunId)
-              : null;
+          } else if (existing.relayRunId) {
+            const relay = await getAgentRun(tx, existing.relayRunId);
             if (!relay || !relayNeverRan(relay)) return null;
+          } else if (
+            (existing.status === AgentApprovalStatus.Approved) !==
+            input.approved
+          ) {
+            // Decided the other way while the rest of its batch waits; a repeat of the same
+            // answer is already recorded.
+            return null;
           }
           recorded = true;
 
@@ -527,17 +547,13 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
 
           return {
             message: {
+              type: "resume",
               resume: {
                 interruptedRunId,
                 decisions: batch.map((row) => ({
                   toolCallId: row.toolCallId,
-                  approved: row.status === AgentApprovalStatus.Approved,
+                  verdict: verdictOf(row),
                   ...(row.comment !== null && { comment: row.comment }),
-                  // Refused by the turn's own checks, not by the operator.
-                  ...(row.decidedBy === null &&
-                    row.status === AgentApprovalStatus.Rejected && {
-                      refused: true as const,
-                    }),
                 })),
               },
               credentials: host.credentials.read(caller.context.headers),

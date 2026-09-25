@@ -49,6 +49,7 @@ vi.mock("@chia/db/repos/agent", () => repo);
 vi.mock("@chia/agent-host/quota", () => quota);
 vi.mock("../abort", () => abort);
 
+import { ApprovalVerdict } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import {
   AgentApprovalStatus,
@@ -236,7 +237,7 @@ describe("agent turn admission", () => {
       expect.objectContaining({
         sessionId: "session-1",
         runId: createdRunId(),
-        message: expect.objectContaining({ text: "first" }),
+        message: expect.objectContaining({ type: "prompt", text: "first" }),
       })
     );
     expect(repo.bindAgentRunExternalId).toHaveBeenCalledWith(
@@ -385,10 +386,15 @@ describe("agent turn admission", () => {
     expect(startAgentSession).toHaveBeenCalledWith(
       expect.objectContaining({
         message: {
+          type: "resume",
           resume: {
             interruptedRunId: "run-0",
             decisions: [
-              { toolCallId: "call-1", approved: true, comment: "go" },
+              {
+                toolCallId: "call-1",
+                verdict: ApprovalVerdict.Approved,
+                comment: "go",
+              },
             ],
           },
           credentials: undefined,
@@ -421,6 +427,40 @@ describe("agent turn admission", () => {
     ).resolves.toEqual({ cursor: null });
 
     expect(repo.decideAgentApproval).toHaveBeenCalledOnce();
+    expect(repo.createAgentRun).not.toHaveBeenCalled();
+    expect(startAgentSession).not.toHaveBeenCalled();
+  });
+
+  it("reports a repeated decision as recorded while the rest of its batch waits", async () => {
+    liveRun("completed");
+    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
+    const decided = approvalRow({
+      status: AgentApprovalStatus.Approved,
+      decidedBy: "user-1",
+    });
+    repo.getAgentApproval.mockResolvedValue(decided);
+    repo.getAgentApprovalBatch.mockResolvedValue([
+      decided,
+      approvalRow({ toolCallId: "call-2" }),
+    ]);
+
+    await expect(
+      turns.approve(caller, {
+        sessionId: "session-1",
+        toolCallId: "call-1",
+        approved: true,
+      })
+    ).resolves.toEqual({ cursor: null });
+    // The other answer is not what was recorded.
+    await expect(
+      turns.approve(caller, {
+        sessionId: "session-1",
+        toolCallId: "call-1",
+        approved: false,
+      })
+    ).resolves.toBeNull();
+
+    expect(repo.decideAgentApproval).not.toHaveBeenCalled();
     expect(repo.createAgentRun).not.toHaveBeenCalled();
     expect(startAgentSession).not.toHaveBeenCalled();
   });
@@ -513,14 +553,17 @@ describe("agent turn admission", () => {
           resume: {
             interruptedRunId: "run-0",
             decisions: [
-              { toolCallId: "call-1", approved: false, comment: "not yet" },
+              {
+                toolCallId: "call-1",
+                verdict: ApprovalVerdict.Declined,
+                comment: "not yet",
+              },
               {
                 toolCallId: "call-2",
-                approved: false,
+                verdict: ApprovalVerdict.Refused,
                 comment: "The draft is empty.",
-                refused: true,
               },
-              { toolCallId: "call-3", approved: true },
+              { toolCallId: "call-3", verdict: ApprovalVerdict.Approved },
             ],
           },
         }),

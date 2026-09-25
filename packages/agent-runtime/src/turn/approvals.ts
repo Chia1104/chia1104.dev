@@ -1,3 +1,4 @@
+import { ApprovalVerdict } from "../types.ts";
 import type {
   AgentPolicy,
   ApprovalBatch,
@@ -38,7 +39,8 @@ export interface ToolCallApprovals {
    * Answers a call of `batch`, its reply's calls in order. The first call asked about triages
    * the batch's gated calls: one the checks refuse is answered with the refusal, one whose tier
    * the session pre-approved runs, and if any is left for the operator the whole batch is held,
-   * so none of its calls runs before they answer. Throws what a check or a key throws.
+   * so none of its calls runs before they answer. Throws what a check or a key throws; once a
+   * batch's triage has thrown, every call of that batch throws it too.
    */
   answer: (
     call: ToolCallRequest,
@@ -55,7 +57,7 @@ export interface ToolCallApprovals {
 
 /** What the model reads for a call it may not run. */
 const refusalText = (decision: ApprovalDecision): string =>
-  decision.refused
+  decision.verdict === ApprovalVerdict.Refused
     ? (decision.comment ?? "The call was refused.")
     : decision.comment
       ? `The operator declined this call: ${decision.comment}`
@@ -71,20 +73,20 @@ export const createToolCallApprovals = (
   const answers = new Map<string, CallAnswer>();
   const approved = new Set<string>();
   for (const decision of options.resume?.decisions ?? []) {
-    if (decision.approved) {
+    if (decision.verdict === ApprovalVerdict.Approved) {
       approved.add(decision.toolCallId);
     } else {
       answers.set(decision.toolCallId, {
         type: "refuse",
         reason: refusalText(decision),
-        ...(!decision.refused && {
+        ...(decision.verdict === ApprovalVerdict.Declined && {
           declined:
             decision.comment === undefined ? {} : { comment: decision.comment },
         }),
       });
     }
   }
-  const triaged = new Set<string>();
+  const triages = new Map<string, Promise<void>>();
   let interrupted: ApprovalBatch | undefined;
 
   const triage = async (batch: readonly ToolCallRequest[]) => {
@@ -140,10 +142,12 @@ export const createToolCallApprovals = (
     answerOf: (toolCallId) => answers.get(toolCallId),
     answer: async (call, batch) => {
       const batchId = batch[0]?.toolCallId ?? call.toolCallId;
-      if (!triaged.has(batchId)) {
-        triaged.add(batchId);
-        await triage(batch);
+      let triaged = triages.get(batchId);
+      if (!triaged) {
+        triaged = triage(batch);
+        triages.set(batchId, triaged);
       }
+      await triaged;
       const known = answers.get(call.toolCallId);
       if (known) return known;
       const refusal = await options.check(call);

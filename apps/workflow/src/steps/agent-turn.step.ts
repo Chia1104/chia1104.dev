@@ -81,7 +81,7 @@ type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
 const SESSION_TITLE_TIMEOUT_MS = 8_000;
 
 const needsTitle = (row: AgentSessionRow, request: AgentTurnRequest) =>
-  row.title === null && "text" in request.message;
+  row.title === null && request.message.type === "prompt";
 
 /**
  * Names the session from its first prompt, started before the turn and awaited before `run:end`.
@@ -93,7 +93,7 @@ const titleSession = async (
   row: AgentSessionRow,
   request: AgentTurnRequest
 ): Promise<void> => {
-  if (!("text" in request.message)) return;
+  if (request.message.type !== "prompt") return;
   const { text } = request.message;
   try {
     const { fallbackSessionTitle, generateSessionTitle } =
@@ -249,7 +249,7 @@ async function runKindTurn(
   ]);
 
   const { credentials: encrypted, ...input } = request.message;
-  const resume = "resume" in input ? input.resume : undefined;
+  const resume = input.type === "resume" ? input.resume : undefined;
 
   // Independent reads on the pooled client, not a lock transaction, so they go out together.
   const [state, { config, defaults }, batch] = await Promise.all([
@@ -334,7 +334,7 @@ async function runKindTurn(
   });
   const execution = await runTurn({
     ...plan,
-    ...("resume" in input
+    ...(input.type === "resume"
       ? { resume: input.resume }
       : {
           message: {
