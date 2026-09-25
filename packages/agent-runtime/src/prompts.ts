@@ -24,7 +24,7 @@ export const xmlField = (
   attributes: XmlAttributes = {}
 ): string => `${openTag(tag, attributes)}${value}</${tag}>`;
 
-/** A slash command's text; `$1`, `$2`, … take its arguments in order and `$ARGUMENTS` all of them. */
+/** A slash command's text; Pi's `formatPromptTemplateInvocation` fills its `$1`, `$ARGUMENTS` and other placeholders. */
 export interface PromptTemplate {
   name: string;
   description?: string;
@@ -39,14 +39,3 @@ export interface Skill {
   description: string;
   content: string;
 }
-
-export const formatPromptTemplateInvocation = (
-  template: PromptTemplate,
-  args: readonly string[] = []
-): string =>
-  template.content
-    .replace(
-      /\$(\d+)/g,
-      (_, index: string) => args[Number.parseInt(index, 10) - 1] ?? ""
-    )
-    .replaceAll("$ARGUMENTS", args.join(" "));

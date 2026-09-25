@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { formatPromptTemplateInvocation } from "@earendil-works/pi-agent-core";
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import { clampThinkingLevel } from "@earendil-works/pi-ai";
 import type {
@@ -20,7 +21,6 @@ import {
 } from "./compaction.ts";
 import { errorOfAssistantMessage, errorOfThrown } from "./pi/errors.ts";
 import { runPiAgent } from "./pi/run.ts";
-import { formatPromptTemplateInvocation } from "./prompts.ts";
 import type { PromptTemplate } from "./prompts.ts";
 import { buildBranchContext } from "./session/context.ts";
 import type { SessionEntry } from "./session/entries.ts";
