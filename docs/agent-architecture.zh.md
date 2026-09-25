@@ -2,7 +2,7 @@
 
 > 狀態：as-built
 >
-> 最後更新：2026-09-24
+> 最後更新：2026-09-25
 >
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 >
@@ -12,7 +12,7 @@
 
 ## 1. 系統總覽
 
-目前 stack 採 Pi-first。Pi 的 `Agent` 執行 provider 與 tool loop；`@chia/agent-runtime` 在外層提供 durable session tree、context projection、compaction、navigation 與 client event contract。系統沒有 engine-neutral adapter。
+TanStack AI 的 `chat()` 執行 provider 與 tool loop；`@chia/agent-runtime` 在外層提供 durable session tree、context projection、approvals、compaction、navigation 與 client event contract。系統沒有 engine-neutral adapter。
 
 目前有兩個 agent kind：
 
@@ -26,20 +26,20 @@ flowchart TB
     SVC --> WF[apps/workflow<br/>durable turn executor]
     WF --> KIND[agent-writing 或 agent-public]
     KIND --> CONTENT[agent-content<br/>共用 read tools]
-    KIND --> RUNTIME[agent-runtime<br/>Pi lifecycle、session、wire events]
-    RUNTIME --> PI[Pi Agent]
+    KIND --> RUNTIME[agent-runtime<br/>turn lifecycle、session、wire events]
+    RUNTIME --> ENGINE[TanStack AI chat]
     RUNTIME --> PG[(Postgres agent schema)]
 ```
 
-| 層                         | 擁有者                                               | 責任                                                        |
-| -------------------------- | ---------------------------------------------------- | ----------------------------------------------------------- |
-| Transport 與 orchestration | `packages/services`、`apps/service`、`apps/workflow` | Auth、oRPC、workflow control、streams 與 host ports         |
-| Execution                  | `@chia/agent-runtime`                                | Pi lifecycle、persistence、approvals、models 與 wire events |
-| Shared content             | `@chia/agent-content`                                | 唯讀部落格 tools、`ContentReadPort` 與 `ProfileReadPort`    |
-| Domain                     | `@chia/agent-writing`、`@chia/agent-public`          | Prompts、tools、policy、model allowlist 與 domain ports     |
-| Client                     | `@chia/agent-elements`                               | Session store、queries 與共用 chat UI                       |
+| 層                         | 擁有者                                               | 責任                                                          |
+| -------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
+| Transport 與 orchestration | `packages/services`、`apps/service`、`apps/workflow` | Auth、oRPC、workflow control、streams 與 host ports           |
+| Execution                  | `@chia/agent-runtime`                                | Turn lifecycle、persistence、approvals、models 與 wire events |
+| Shared content             | `@chia/agent-content`                                | 唯讀部落格 tools、`ContentReadPort` 與 `ProfileReadPort`      |
+| Domain                     | `@chia/agent-writing`、`@chia/agent-public`          | Prompts、tools、policy、model allowlist 與 domain ports       |
+| Client                     | `@chia/agent-elements`                               | Session store、queries 與共用 chat UI                         |
 
-穩定的 client 邊界是 `AgentWireEvent`，不是可替換的 model engine。Runtime 內部保留明確的 Pi 命名與型別。
+穩定的 client 邊界是 `AgentWireEvent`，不是可替換的 model engine。Engine 自己的型別只留在 runtime 內；kind 用 zod 宣告 tools，不直接 import engine。
 
 ## 2. Agent kind 與 host 邊界
 
@@ -48,7 +48,7 @@ flowchart TB
 每個 host 提供 `AgentKindDefinition`：
 
 - `apps/service/src/agents/` 綁定 API 階段的 capabilities、state 與 credentials。
-- `apps/workflow/src/agents/` 綁定執行階段的 ports，提供 `AgentKindExecutor`，也就是 definition 加上 `prepareTurn`。`prepareTurn` 回傳 kind 的 tools、prompts、budget、preflight、approval key，以及 turn 結束後執行的 `settle`（可省略）；model 由 step 解析，session、events、usage 與 approval 持久化也由 step 直接交給 `runPiTurn`。
+- `apps/workflow/src/agents/` 綁定執行階段的 ports，提供 `AgentKindExecutor`，也就是 definition 加上 `prepareTurn`。`prepareTurn` 回傳 kind 的 tools、prompts、budget、preflight、approval key，以及 turn 結束後執行的 `settle`（可省略）；model 由 step 解析，session、events、usage 與 approval 持久化也由 step 直接交給 `runTurn`。
 - `packages/services/agent/` 擁有共用的 session、run、approval、maintenance、usage 與 admin 行為。
 
 oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建立的 `agentFactory`。Guard 能在載入 domain package 或 provider SDK 前拒絕呼叫；dynamic import 已提供 module cache，factory 不另外保存 definition registry 或 service cache。
@@ -80,7 +80,7 @@ Host 只有在 operator 開啟 `webAccess`、已設定 guard provider，且 sess
 
 Transcript 是一棵樹。`agent.session_entry.parentId` 連接 branch，`agent.session.leafEntryId` 選擇 active leaf。`seq` 記錄所有 branch 的持久化順序；每個 session 同時只有一個 writer，因此此順序可靠。
 
-`PgSessionStorage` 實作 runtime 的 `SessionTree`，測試使用 `InMemorySessionTree`。Entry type 與 context projection 由 runtime 自己持有，兩者都鏡射 Pi 的定義，因此 branch 讀起來與在 Pi harness 下完全一致。Session entry 以 opaque JSON 保存；已淘汰的 entry type 直接忽略，不做資料 migration。Kind-specific state 使用 extension table，不在共用 session row 增加大量 nullable columns。
+`PgSessionStorage` 實作 runtime 的 `SessionTree`，測試使用 `InMemorySessionTree`。Entry 與 message 型別由 runtime 自己持有（`messages.ts`，tree 裡每一筆 row 都是同一種形狀），每次 request 再把 branch 投影成 engine 的 messages。Reasoning signature 只送回簽發它的那條 wire；沒有結果的 call 會被視為已中止，除非它正在等 operator 決定。Session entry 以 opaque JSON 保存；已淘汰的 entry type 直接忽略，不做資料 migration。Kind-specific state 使用 extension table，不在共用 session row 增加大量 nullable columns。
 
 ```text
 agent.session            kind、settings、active leaf
@@ -116,7 +116,7 @@ sequenceDiagram
     participant SVC as apps/service
     participant WF as agentSessionWorkflow
     participant STEP as runAgentTurnStep
-    participant RT as runPiTurn
+    participant RT as runTurn
     participant PG as Postgres
 
     UI->>API: prompt 或 approve
@@ -125,7 +125,7 @@ sequenceDiagram
     SVC->>WF: start workflow
     SVC-->>UI: run id 與 stream cursor
     WF->>STEP: execute the turn
-    STEP->>RT: kind.prepareTurn，再 runPiTurn
+    STEP->>RT: kind.prepareTurn，再 runTurn
     RT->>PG: append session entries
     RT-->>UI: durable AgentWireEvents
     STEP-->>WF: done、aborted、error 或 awaiting approval
@@ -133,13 +133,13 @@ sequenceDiagram
 
 ### Durable driver
 
-每個 turn 都是自己的 workflow run。Prompt 與 operator 對 gated call 的決定各自啟動一個 run，執行一次 `runAgentTurnStep` 後結束；turn 之間沒有任何東西停等，run 的 journal 只有一個 turn 長，session 的對話完整存在 Postgres。
+每個 turn 都是自己的 workflow run。Prompt 與 operator 對停下的 calls 所做的回答各自啟動一個 run，執行一次 `runAgentTurnStep` 後結束；turn 之間沒有任何東西停等，run 的 journal 只有一個 turn 長，session 的對話完整存在 Postgres。
 
 一次只跑一個 turn。Turn 執行中送入的 prompt 會被拒絕：admission 在此檢查 quota 與 running cap，排在後面的 turn 會在前一個 turn 費用入帳後才執行，卻不會再被檢查。Approval 未決時同樣拒絕。
 
 Acceptance 先 commit，再通知 workflow。新的 run row 就是紀錄，在 session lock 下寫入作為 session 的 lease；交付在 lock transaction 之外進行，因為 workflow command 無法 rollback。`createAgentRun` 會關閉 session 前一個 run row，World 裡仍存活的前一個 run 也會被 cancel。Workflow service 在執行前拒絕的 start 會把 row 標為 failed；結果不明的 start 保留 lease，因為 workflow 可能已在執行。接著 step 在 session lock 下 claim 自己的 run：row 必須仍是 session 的 active run，marker 寫入與 workflow run id 綁定在同一個交易完成，所以 service 寫不進去的綁定由 executor 修復，abort 與 reconcile 都能找到該 run。中途被 cancel、failed 或取代的 run 不會執行任何東西。Reconcile 只在 run 仍帶著判斷當時讀到的 workflow run id 時才關閉它，所以 executor 在這之間 claim 走的 lease 不會被誤關。Step 拋錯時 marker 保持 running，因為 run 會結束並關閉 row。Row 記錄的是 turn 的結果：error 或 step 拋錯為 `failed`、abort 為 `cancelled`、其餘為 `completed`；executor 的 claim 也記在 marker 上，所以已關閉的 row 也能說出模型有沒有跑過。綁定失敗後會用只有該請求持有的 id 送出 abort；只有確認 turn 已結束才把 row 標為 failed，否則 lease 繼續擋住 session。
 
-Workflow function 只負責 orchestration；DB、provider、timer 與 network 操作留在 steps。`runAgentTurnStep` 設 `maxRetries = 0`，因為 turn 可能已寫入 entry 或執行核准過的 side effect。Provider retry 留在 Pi；失敗的 turn 只能由新訊息重新嘗試。
+Workflow function 只負責 orchestration；DB、provider、timer 與 network 操作留在 steps。`runAgentTurnStep` 設 `maxRetries = 0`，因為 turn 可能已寫入 entry 或執行核准過的 side effect。Provider retry 留在 provider SDK 內；失敗的 turn 只能由新訊息重新嘗試。
 
 Start、abort resume 與 cancel 透過 authenticated `WorkflowControl` contract 從 `service` 送到單一 workflow process。Status 與 stream read 直接使用共用 World storage。詳見 [Workflow deployment](./workflow-deployment.md)。
 
@@ -148,18 +148,18 @@ Start、abort resume 與 cancel 透過 authenticated `WorkflowControl` contract 
 Production execution path：
 
 ```text
-runAgentTurnStep → kind.prepareTurn → runPiTurn → new Agent
+runAgentTurnStep → kind.prepareTurn → runTurn → chat()
 ```
 
-Tools 直接是 Pi 的 `AgentTool`，由 kind 每個 turn 建立，`execute` 以 closure 取得該 turn 的 ports。Tool spec（name、label、description、parameters）不需要 ports 就能匯入，capabilities 清單讀的是它。Label、tier，以及成功呼叫會改變哪個 kind state，由 policy 的 `toolInfo` 宣告；`state:changed` 依這個宣告發出，不從 tier 推測。
+Tools 是 runtime 的 `AgentTool`：一份 zod schema 加上以 closure 取得該 turn ports 的 `execute`，由 kind 每個 turn 建立，再由 `runTurn` 綁到 engine。`execute` 回傳模型讀的 text 與 client 渲染的 `details`，只有 text 會送進模型。Tool spec（name、description、parameters）不需要 ports 就能匯入，capabilities 清單讀的是它。Engine 會在 `execute` 執行前依 schema 驗證參數。OpenAI 系列的 tools 以 strict mode 送出，每個欄位都會被送：adapter 會把 zod 的 `.optional()` 參數以 nullable 提供給模型，並在驗證前移除 `null`，所以它以 `undefined` 抵達；可清除的欄位則用明確的值代表清除，而不是 `null`。Label、tier，以及成功呼叫會改變哪個 kind state，由 policy 的 `toolInfo` 宣告；`state:changed` 依這個宣告發出，不從 tier 推測。
 
-`runPiTurn`：
+`runTurn`：
 
-1. 將 active branch 投影為 model messages。
-2. 安裝 turn budget、approval gate、volatile context、state-change hook、abort signal 與 event mapper。
+1. 將 active branch 投影為 engine messages。
+2. 綁定 tools（tier 需要核准時標為 gated），並以 engine middleware 安裝 turn budget、preflight、volatile context、state-change hook、abort signal 與 event mapping。
 3. 每個完整的 user、assistant、tool-result message 都先持久化，再發出 wire event。
-4. 執行 Pi，並分類 provider、host、abort 與 budget failure。
-5. Provider turn 成功後，原子持久化 approval requests。
+4. 執行 engine，並分類 provider、host、abort 與 budget failure。
+5. Provider turn 成功後，記錄 engine 停下的 gated calls。
 6. 只在成功且沒有 pending approval 時 auto-compact。
 7. 發出 terminal events，最後 flush durable writer。
 
@@ -167,13 +167,13 @@ Host hook 失敗會記為 internal error 並中止 turn。缺少 volatile contex
 
 ### Prompt 分層
 
-System prompt 只放穩定的規則、skill index 與 approval posture。Public kind 另外把作者已發佈的 profile 以單一 locale、字元上限內渲染進去，因為 profile 有界且只在 operator 編輯時改變。時鐘、draft state 和已存 memory 等 turn-specific 資料，透過 Pi context hook 加在最後一則 volatile user message；每次 provider request 都重新計算，且不持久化。
+System prompt 只放穩定的規則、skill index 與 approval posture。Public kind 另外把作者已發佈的 profile 以單一 locale、字元上限內渲染進去，因為 profile 有界且只在 operator 編輯時改變。時鐘、draft state 和已存 memory 等 turn-specific 資料，只以最後一則 volatile user message 加在 provider request 上，engine 的 history 從不持有它；每次 provider request 都重新計算，且不持久化。
 
 這能維持 provider cached prefix 穩定，也避免變動資料累積進 transcript。
 
 ### Turn budget
 
-Pi 會在模型持續發出 tool call 時繼續 loop，因此每個 kind 都必須提供 `AgentTurnBudget`。
+Engine 會在模型持續發出 tool call 時繼續 loop，因此每個 kind 都必須提供 `AgentTurnBudget`。
 
 | Limit              | 超過時的行為                              |
 | ------------------ | ----------------------------------------- |
@@ -182,44 +182,43 @@ Pi 會在模型持續發出 tool call 時繼續 loop，因此每個 kind 都必�
 | `hardMaxToolCalls` | Abort 並回報 `budget_exhausted`。         |
 | `maxDurationMs`    | Deadline 到期時中止 provider generation。 |
 
-Budget check 在 approval check 前執行，因此被 budget 拒絕的呼叫不會建立 approval request。
+Budget check 與 kind 的 preflight 在呼叫執行或送到 operator 之前進行，因此被拒絕的呼叫不會建立 approval request。
 
 ## 5. Approval 與 abort
 
 ### Durable approval handshake
 
-Approval 不依賴 in-memory promise，也不停在 run 上。需要核准的呼叫會結束該 turn 與它的 run；operator 的決定會啟動自己的 run。
+Approval 不依賴 in-memory promise，也不停在 run 上。Engine 停在 gated calls 上，該 turn 的 run 隨之結束；operator 的回答會啟動自己的 run，按原本的請求執行被核准的 calls。
 
 ```mermaid
 sequenceDiagram
     participant M as Model
-    participant G as Tool gate
+    participant E as Engine
     participant DB as Approval table
     participant WF as Workflow
     participant U as Operator
 
-    M->>G: gated tool call
-    G-->>M: blocked tool result
-    G->>DB: turn 成功結束時持久化 request
+    M->>E: gated tool calls
+    E-->>E: interrupt，什麼都不執行
+    E->>DB: turn 成功結束時記錄整批
     WF->>WF: run 結束
-    U->>DB: persist decision
-    U->>WF: start relay run
-    WF->>M: operator-decision relay turn
-    M->>G: reissue call
-    G-->>M: allow，並花掉這筆 approval
+    U->>DB: 逐筆決定
+    U->>WF: 整批都決定後啟動 resume run
+    WF->>E: 帶著所有回答 resume
+    E-->>M: 核准 calls 的結果，其餘為拒絕
 ```
 
-以下情況可放行：tier 不需核准、session auto-approves 該 tier，或該呼叫的 approval key 有一筆尚未花掉的 approval。Key 是 kind 定義的呼叫身分，不是 call id，因為重發的呼叫會帶新的 id。Writing kind 把 `commit_draft` 綁到 operator 看到的 draft 內容 hash，把 `set_published` 綁到 feed 與目標狀態，所以換一份 draft，或 draft 在決定後被改過，都會重新被 gate。Approval 在呼叫執行前先持久化為已花掉，且只能用於一次呼叫。批准時綁定的 hash 會跟著該呼叫走：`commit_draft` 提交的就是那份內容，apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對 hash，決定與寫入之間被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的內容，同樣在該鎖之下。
+Tier 需要核准的 tool 會被 gate；session 的 auto-approve 可能在呼叫等待時改變，因此在 engine 停下時逐一套用。Engine 以整個回覆的 batch 為單位 gate：batch 裡每個 gated call 都得到回答前，其中任何呼叫都不會執行。每個 gated call 都先經過 turn budget 與 kind 的 preflight；被其中任一拒絕的呼叫直接以拒絕理由作答，tier 已被 session auto-approve 的呼叫則不經詢問直接核准。Turn 自己答完整批時就地 resume；否則它答過的呼叫會和 requests 一起記錄為已決定（沒有 `decided_by`），並隨它們一起作答。
 
-Decision 只寫一次，寫在 pending row 上，與 relay run 的 row 在同一個交易，並把該 run 記在 decision 上。對已決定的 row 再呼叫 `approve`，只有在 relay run 關閉時 marker 仍未被 claim（從未執行）才會重送紀錄中的 decision；executor claim 過的 relay 不論結果如何，以及結果不明的 relay，都不會啟動任何東西。Reject 也會建立 relay turn，讓模型回應 operator comment。
+Request 會和它的 run 以及 approval key 一起記錄：key 是 kind 定義的呼叫身分，包含 tool、目標以及 operator 看到的狀態。Writing kind 把 `commit_draft` 綁到請求當下 draft 的內容 hash，把 `set_published` 綁到 feed 與目標狀態。Resume 的 turn 會把已核准呼叫的 key 交給 kind，`commit_draft` 就套用 key 裡記錄的 hash：apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對該 hash，請求之後被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的內容，同樣在該鎖之下。
 
-每個 turn 只有一筆 request：同一 turn 的第二個 gated call 會被拒絕且不記錄，一個決定只回答一筆 request。Request 只在 provider turn 成功後持久化；失敗的 turn 不留下 undecided rows。Relay message 帶有 operator-decision marker，client 會顯示為 notice，而不是使用者輸入。
+Decision 只寫一次，寫在 pending row 上。讓整批完成的那個 decision 會在同一個交易寫入 resume run 的 row，並把該 run 記在整批每一筆 row 上；較早的 decision 只記錄自己，不啟動任何東西。對已決定的 row 再呼叫 `approve`，只有在 resume run 關閉時 marker 仍未被 claim（從未執行）才會重送整批；executor claim 過的 run 不論結果如何，以及結果不明的 run，都不會啟動任何東西。被拒絕的呼叫不會執行：模型把 operator 的 comment 當成它的結果來讀，transcript 也會把它標為 declined，lesson extraction 從這裡讀取拒絕理由。
 
-Live stream 可以在持久化前先公告 request，讓 UI 及早顯示；但 approval card 必須等 `run:end{awaiting_approval}` 或重新載入的 pending row 確認後才能操作。其他 terminal state 會撤回這筆暫時 request。
+Requests 只在 provider turn 成功後記錄；失敗的 turn 不留下 undecided rows。記錄完成後 stream 才公告它們，緊接著是 `run:end{awaiting_approval}`，approval card 從此才能操作；重新載入的 pending row 也一樣。
 
 ### Abort 路徑
 
-取消 workflow run 無法中斷已執行的 step，因此每個 turn run 另有一個停在 hook 上的小型 durable abort-controller workflow。Turn step 訂閱它的 stream，將 `AbortSignal` 傳給 Pi 與 host ports。
+取消 workflow run 無法中斷已執行的 step，因此每個 turn run 另有一個停在 hook 上的小型 durable abort-controller workflow。Turn step 訂閱它的 stream，將 `AbortSignal` 傳給 engine 與 host ports。
 
 Abort 先 resume controller，在 deadline 內等待該 turn 的 `run:end`，再取消 run 並更新 row。部分 assistant output 會以 aborted 狀態持久化；approval 與 compaction 不執行。
 
@@ -265,7 +264,7 @@ Maintenance 直接操作 session tree，不建立 `Agent`。
 
 | Operation | 行為                                                                                 |
 | --------- | ------------------------------------------------------------------------------------ |
-| Compact   | 將 Pi 產生的 summary 與 retained tail 寫成新 leaf；無內容可壓縮時不呼叫模型。        |
+| Compact   | 將結構化 summary 與 retained tail 寫成新 leaf；無內容可壓縮時不呼叫模型。            |
 | Navigate  | 原地移動 active leaf，並可摘要被捨棄的 branch。                                      |
 | Fork      | 將 branch 複製到新 session，來源不變；kind state 透過 `definition.state.fork` 複製。 |
 
@@ -287,13 +286,13 @@ Better Auth anonymous plugin 會替 guest 建立真正的 user row，因此 gues
 
 ### Models 與 credentials
 
-`Models` 依 caller 與 turn 建立。只有 caller 提供 key 時才註冊 BYOK provider。Selected model 與 Pi stream function 使用同一個 credential-bearing collection；禁止使用 process-wide default model function。
+Catalogue 是 Vercel AI Gateway 的公開 model 清單，每個 process 最多每小時抓一次：context window、reasoning 控制與價格都來自它，而不是套件版本。Native model 借用 gateway 對同一個 model 的描述。Policy 判斷只拿到 key 是否存在（`AgentModelAccess`）；model 依 caller 與 turn、用 request 的 credentials 綁到 adapter，caller 沒有 key 的 native model 無法綁定。沒有任何 adapter 讀 ambient vendor key；house key 只通往 gateway。
 
 每個 domain 擁有自己的 model allowlist。One-shot task 可使用 session model 或 pinned house model，但不能借用無關的 ambient credentials。
 
 ### Usage ledger 與 quota
 
-每次被計費的 provider call 都建立一筆 `agent.usage_ledger`，包含 turns、compaction、branch summary、title 與 lesson extraction。成本以整數 micro-dollar 與 provider ID 保存；house spend 與 BYOK spend 共用一本 ledger，以 filter 區分。Session 刪除後 ledger 仍保留。
+每次被計費的 provider call 都建立一筆 `agent.usage_ledger`，包含 turns、compaction、branch summary、title 與 lesson extraction。成本依 catalogue 逐次計價，以整數 micro-dollar 與 provider ID 保存；house spend 與 BYOK spend 共用一本 ledger，以 filter 區分。Session 刪除後 ledger 仍保留。
 
 Usage 記錄採 best-effort，不在 response critical path。Insert 失敗會寫 log，最多漏記一次 call，且對使用者有利。
 
@@ -388,47 +387,22 @@ Admin write 在持久化前先依 code definition 驗證。API view 回傳 `defa
 2. 只有 kind 需要持久化 state 時才新增 extension table。
 3. 加入 service 與 workflow bindings，使用一致的 `minTier` 與 dynamic loaders。
 4. 讓 `prepareTurn` 呼叫 domain 的 `prepare<Kind>Turn`；one-shot tasks 註冊到 `AGENT_TASKS`。
-5. 共用 `runPiTurn`、wire events、approval、session storage 與 durable workflow plumbing。
+5. 共用 `runTurn`、wire events、approval、session storage 與 durable workflow plumbing。
 
 在第二種 execution engine 形成具體需求前，不新增 engine adapter、capability plugin system 或 provider-neutral handle。
 
-## 12. Pi 的 durable harness
+## 12. 參考位置
 
-Pi 0.85 在 `Agent` class 之外另有一條執行路徑：`createAgentHarness`，一個建立在自有 storage contract 上的 durable operation runtime。本 runtime 沒有採用。這裡記下原因與整合的樣貌，讓下一次升 Pi 時能直接重新評估，不必重推一遍。
-
-Harness 本身就是為 host 排程設計的。Lane API 收斂成四個 durable primitive，每一個都對得上本 runtime 既有的 seam：
-
-| Harness primitive  | 本 runtime                                 |
-| ------------------ | ------------------------------------------ |
-| `accept`           | 在 lock 下建立 `agent.run` 並啟動 workflow |
-| `drive`            | `runAgentTurnStep`                         |
-| `requestAbort`     | 每個 run 的 abort-controller workflow      |
-| `inspectExecution` | 對 Workflow World 做 turn-marker reconcile |
-
-`drive` 回傳 `settled`、帶 `notBefore` 的 `waiting: retry`，或帶 poll 間隔的 `waiting: deferred`，因此 provider retry 與 deferred response 會變成 workflow sleep，而不是 process 內的等待。
-
-整合會改變的事：
-
-- 每次 transition 都重寫完整的 operation state，turn step 因此可以續跑，`maxRetries = 0` 可以拿掉。
-- Tool call 有 intent、effect、settlement 三段 commit，可宣告 `replay: "safe" | "never"` 與 invocation-scoped memo；assistant 串流 frame 會落地，供 partial 回復。
-- `message_end` 直接帶 entry id，取代 `runPiTurn` 裡預留 id 的對齊手法；`LaneSnapshot` 配合 `reduceLaneSnapshot` 取代 coarse 與 delta stream cursor 的 reconnect 機制。
-- Approval handshake 不變：`before_tool` hook 的 `block` 加 `terminate` 與現在的 tool gate 完全相同。
-- 必須自寫 Postgres 的 `Storage` 與 `SessionRepo`；上游只出貨 Memory、JSONL 與 SQLite。`@earendil-works/pi-agent-core/harness/session/testing` 匯出 conformance suite 可用來驗證。Entry 已與 Pi 的 union 一致；values、lists 與 harness 自己的 usage ledger 是新表。
-- `packages/agent-runtime/src/pi/` 大半被 lane 呼叫取代。`AgentWireEvent` 仍是 client 邊界，只是 mapper 改吃 `HarnessEvent`。
-
-以下條件在上游全部成立之前不要啟動：storage format 宣告穩定並具備 migration 機制（規格目前標記 format 4 為 pre-stabilization，可原地改形狀）、`Storage` 介面變更開始進 changelog、未完成的 harness work package（fork、`watchSession`、remote mutation transport）收尾。屆時先依 conformance suite 寫 Postgres backend，再把 `runAgentTurnStep` 換成 `accept` 加 `drive`。
-
-## 13. 參考位置
-
-| Concern                               | Location                                                                                              |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Pi turn、approval、budget、compaction | `packages/agent-runtime/src/pi/`                                                                      |
-| Session tree 與 Postgres storage      | `packages/agent-runtime/src/session/`                                                                 |
-| Wire schema、replay、fold             | `packages/agent-runtime/src/wire/`                                                                    |
-| 共用 content tools                    | `packages/agent-content/src/`                                                                         |
-| Writing 與 public domains             | `packages/agent-writing/src/`、`packages/agent-public/src/`                                           |
-| Kind bindings 與 tasks                | `packages/agent-host/src/`、`apps/service/src/agents/`、`apps/workflow/src/agents/`                   |
-| Generic oRPC agent service            | `packages/services/agent/`                                                                            |
-| Workflow 與 turn step                 | `apps/workflow/src/workflows/agent-session.workflow.ts`、`apps/workflow/src/steps/agent-turn.step.ts` |
-| Database schema                       | `packages/db/src/schemas/agent.schema.ts`                                                             |
-| 共用 client                           | `packages/agent-elements/src/`                                                                        |
+| Concern                            | Location                                                                                              |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Turn、approval、budget、compaction | `packages/agent-runtime/src/`（`turn.ts`、`turn-budget.ts`、`compaction.ts`、`maintenance.ts`）       |
+| Models 與 catalogue                | `packages/agent-runtime/src/models.ts`、`packages/ai/src/gateway.ts`                                  |
+| Session tree 與 Postgres storage   | `packages/agent-runtime/src/session/`                                                                 |
+| Wire schema、replay、fold          | `packages/agent-runtime/src/wire/`                                                                    |
+| 共用 content tools                 | `packages/agent-content/src/`                                                                         |
+| Writing 與 public domains          | `packages/agent-writing/src/`、`packages/agent-public/src/`                                           |
+| Kind bindings 與 tasks             | `packages/agent-host/src/`、`apps/service/src/agents/`、`apps/workflow/src/agents/`                   |
+| Generic oRPC agent service         | `packages/services/agent/`                                                                            |
+| Workflow 與 turn step              | `apps/workflow/src/workflows/agent-session.workflow.ts`、`apps/workflow/src/steps/agent-turn.step.ts` |
+| Database schema                    | `packages/db/src/schemas/agent.schema.ts`                                                             |
+| 共用 client                        | `packages/agent-elements/src/`                                                                        |

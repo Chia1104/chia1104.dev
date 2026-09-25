@@ -2,7 +2,7 @@
 
 > Status: as-built
 >
-> Last updated: 2026-09-24
+> Last updated: 2026-09-25
 >
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 >
@@ -12,7 +12,7 @@ This document starts with the system boundaries, then follows one turn through d
 
 ## 1. System overview
 
-The stack is Pi-first. Pi's `Agent` runs provider and tool loops; `@chia/agent-runtime` adds the durable session tree, context projection, compaction, navigation and client event contract. There is no engine-neutral adapter.
+TanStack AI's `chat()` runs the provider and tool loop; `@chia/agent-runtime` adds the durable session tree, context projection, approvals, compaction, navigation and the client event contract. There is no engine-neutral adapter.
 
 Two agent kinds ship:
 
@@ -26,20 +26,20 @@ flowchart TB
     SVC --> WF[apps/workflow<br/>durable turn executor]
     WF --> KIND[agent-writing or agent-public]
     KIND --> CONTENT[agent-content<br/>shared read tools]
-    KIND --> RUNTIME[agent-runtime<br/>Pi lifecycle, session, wire events]
-    RUNTIME --> PI[Pi Agent]
+    KIND --> RUNTIME[agent-runtime<br/>turn lifecycle, session, wire events]
+    RUNTIME --> ENGINE[TanStack AI chat]
     RUNTIME --> PG[(Postgres agent schema)]
 ```
 
-| Layer                       | Owner                                                | Responsibility                                                |
-| --------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
-| Transport and orchestration | `packages/services`, `apps/service`, `apps/workflow` | Auth, oRPC, workflow control, streams and host ports          |
-| Execution                   | `@chia/agent-runtime`                                | Pi lifecycle, persistence, approvals, models and wire events  |
-| Shared content              | `@chia/agent-content`                                | Read-only blog tools, `ContentReadPort` and `ProfileReadPort` |
-| Domain                      | `@chia/agent-writing`, `@chia/agent-public`          | Prompts, tools, policy, model policy and domain ports         |
-| Client                      | `@chia/agent-elements`                               | Session store, queries and shared chat UI                     |
+| Layer                       | Owner                                                | Responsibility                                                 |
+| --------------------------- | ---------------------------------------------------- | -------------------------------------------------------------- |
+| Transport and orchestration | `packages/services`, `apps/service`, `apps/workflow` | Auth, oRPC, workflow control, streams and host ports           |
+| Execution                   | `@chia/agent-runtime`                                | Turn lifecycle, persistence, approvals, models and wire events |
+| Shared content              | `@chia/agent-content`                                | Read-only blog tools, `ContentReadPort` and `ProfileReadPort`  |
+| Domain                      | `@chia/agent-writing`, `@chia/agent-public`          | Prompts, tools, policy, model policy and domain ports          |
+| Client                      | `@chia/agent-elements`                               | Session store, queries and shared chat UI                      |
 
-The stable client boundary is `AgentWireEvent`, not an interchangeable model engine. Pi-specific names and types remain explicit inside the runtime.
+The stable client boundary is `AgentWireEvent`, not an interchangeable model engine. The engine's own types stay inside the runtime; kinds declare tools with zod and never import the engine.
 
 ## 2. Agent kinds and host boundaries
 
@@ -48,7 +48,7 @@ The stable client boundary is `AgentWireEvent`, not an interchangeable model eng
 `apps/service` hosts an `AgentKindDefinition`; `apps/workflow` hosts an `AgentKindExecutor`, the same definition plus `prepareTurn`:
 
 - `apps/service/src/agents/` binds API-time capabilities, state and credentials.
-- `apps/workflow/src/agents/` binds execution-time ports. `prepareTurn` returns the kind's tools, prompts, budget, preflight and approval key, and an optional `settle` that runs after the turn; the step resolves the model and supplies the session, events, usage and approval persistence to `runPiTurn` itself.
+- `apps/workflow/src/agents/` binds execution-time ports. `prepareTurn` returns the kind's tools, prompts, budget, preflight and approval key, and an optional `settle` that runs after the turn; the step resolves the model and supplies the session, events, usage and approval persistence to `runTurn` itself.
 - `packages/services/agent/` owns generic session, run, approval, maintenance, usage and admin behavior.
 
 The oRPC context receives an `agentFactory` built from eager `minTier` values and dynamic definition loaders. Guards can reject callers before loading a domain package or provider SDK. Dynamic imports provide module caching; the factory keeps no definition registry or service cache.
@@ -80,7 +80,7 @@ A signed-in owner also gets `ReportPort` for the turn, bound to that owner and s
 
 The transcript is a tree. `agent.session_entry.parentId` links a branch and `agent.session.leafEntryId` selects the active leaf. `seq` records persistence order across all branches and is safe because each session has one writer at a time.
 
-`PgSessionStorage` implements the runtime's `SessionTree`; tests use `InMemorySessionTree`. The runtime owns the entry types and the context projection; both mirror Pi's so a branch reads exactly as it would under Pi's harness. Session entries are stored as opaque JSON, and retired entry types are ignored rather than migrated. Kind-specific state uses extension tables instead of nullable columns on the shared session row.
+`PgSessionStorage` implements the runtime's `SessionTree`; tests use `InMemorySessionTree`. The runtime owns the entry and message types (`messages.ts`, one shape for every row the tree holds) and projects a branch into the engine's messages for each request. A reasoning signature goes back only to the wire that issued it, and a call left without a result reads as stopped unless it is waiting on the operator. Session entries are stored as opaque JSON, and retired entry types are ignored rather than migrated. Kind-specific state uses extension tables instead of nullable columns on the shared session row.
 
 ```text
 agent.session            kind, settings and active leaf
@@ -116,7 +116,7 @@ sequenceDiagram
     participant SVC as apps/service
     participant WF as agentSessionWorkflow
     participant STEP as runAgentTurnStep
-    participant RT as runPiTurn
+    participant RT as runTurn
     participant PG as Postgres
 
     UI->>API: prompt or approve
@@ -125,7 +125,7 @@ sequenceDiagram
     SVC->>WF: start workflow
     SVC-->>UI: run id and stream cursor
     WF->>STEP: execute the turn
-    STEP->>RT: kind.prepareTurn, then runPiTurn
+    STEP->>RT: kind.prepareTurn, then runTurn
     RT->>PG: append session entries
     RT-->>UI: durable AgentWireEvents
     STEP-->>WF: done, aborted, error or awaiting approval
@@ -133,7 +133,7 @@ sequenceDiagram
 
 ### Durable driver
 
-Every turn is its own workflow run. A prompt and an operator's decision on a gated call each start a run that executes one `runAgentTurnStep` and ends; nothing parks between turns, a run's journal is one turn long, and the session's conversation lives entirely in Postgres. Workflow functions handle orchestration only; database, provider, timer and network operations stay inside steps. `runAgentTurnStep` has `maxRetries = 0` because a turn may already have appended entries or performed an approved side effect. Provider retries stay inside Pi; retrying a failed turn requires a new user message.
+Every turn is its own workflow run. A prompt and the operator's answers to the calls a turn stopped on each start a run that executes one `runAgentTurnStep` and ends; nothing parks between turns, a run's journal is one turn long, and the session's conversation lives entirely in Postgres. Workflow functions handle orchestration only; database, provider, timer and network operations stay inside steps. `runAgentTurnStep` has `maxRetries = 0` because a turn may already have appended entries or performed an approved side effect. Provider retries stay inside the provider SDK; retrying a failed turn requires a new user message.
 
 One turn at a time. A prompt is refused while a turn is running: admission checks quota and the running cap, and a turn run behind this one would execute after its cost landed without being checked again. It is also refused while an approval is undecided.
 
@@ -146,18 +146,18 @@ Starts, abort resumes and cancellations cross the authenticated `WorkflowControl
 The production path is:
 
 ```text
-runAgentTurnStep → kind.prepareTurn → runPiTurn → new Agent
+runAgentTurnStep → kind.prepareTurn → runTurn → chat()
 ```
 
-Tools are Pi's own `AgentTool`, built per turn by the kind with `execute` closed over that turn's ports. A tool's spec (name, label, description, parameters) is importable without ports, which is what capability listings read. Label, tier and the kind state a successful call changes are the policy's `toolInfo`; `state:changed` follows that declaration, never the tier.
+Tools are the runtime's `AgentTool`: a zod schema and an `execute` closed over that turn's ports, built per turn by the kind and bound to the engine by `runTurn`. `execute` returns the text the model reads and the `details` clients render; only the text reaches the model. A tool's spec (name, description, parameters) is importable without ports, which is what capability listings read. The engine validates arguments against the schema before `execute` runs. OpenAI-family tools go out in strict mode, so every field is sent: the adapter offers a zod `.optional()` parameter as nullable and drops the `null` before validation, so it arrives as `undefined`; a field that can be cleared takes an explicit value for that rather than `null`. Label, tier and the kind state a successful call changes are the policy's `toolInfo`; `state:changed` follows that declaration, never the tier.
 
-`runPiTurn`:
+`runTurn`:
 
-1. Projects the active branch into model messages.
-2. Installs the turn budget, approval gate, volatile context, state-change hook, abort signal and event mapper.
+1. Projects the active branch into engine messages.
+2. Binds the tools, marking a tool as gated when its tier needs approval, and installs the turn budget, preflight, volatile context, state-change hook, abort signal and event mapping as engine middleware.
 3. Persists each completed user, assistant and tool-result message before emitting its wire event.
-4. Runs Pi and classifies provider, host, abort and budget failures.
-5. Persists approval requests atomically after a successful provider turn.
+4. Runs the engine and classifies provider, host, abort and budget failures.
+5. Records the gated calls the engine stopped on, after a successful provider turn.
 6. Auto-compacts only successful turns with no pending approval.
 7. Emits terminal events and flushes the durable writer.
 
@@ -165,13 +165,13 @@ Host hook failures are recorded as internal errors and abort the turn. The model
 
 ### Prompt layering
 
-The system prompt contains stable rules, skill indexes and approval posture. The public kind also renders the author's published profile into it, one locale under a character cap, because the profile is bounded and changes only when the operator edits it. Turn-specific data such as the clock, draft state and saved memories enters through Pi's context hook as a final volatile user message. It is recomputed for every provider request and never persisted.
+The system prompt contains stable rules, skill indexes and approval posture. The public kind also renders the author's published profile into it, one locale under a character cap, because the profile is bounded and changes only when the operator edits it. Turn-specific data such as the clock, draft state and saved memories enters as a final volatile user message on the provider request only; the engine's history never holds it. It is recomputed for every provider request and never persisted.
 
 This keeps the provider's cached prefix stable and prevents changing context from accumulating in the transcript.
 
 ### Turn budget
 
-Every kind supplies an `AgentTurnBudget` because Pi continues while the model emits tool calls.
+Every kind supplies an `AgentTurnBudget` because the engine continues while the model emits tool calls.
 
 | Limit              | Result when crossed                                                   |
 | ------------------ | --------------------------------------------------------------------- |
@@ -180,44 +180,43 @@ Every kind supplies an `AgentTurnBudget` because Pi continues while the model em
 | `hardMaxToolCalls` | Abort with `budget_exhausted`.                                        |
 | `maxDurationMs`    | Abort provider generation when the deadline expires.                  |
 
-Budget checks run before approval checks, so a refused call cannot create an approval request.
+Budget checks and the kind's preflight run before a call runs or reaches the operator, so a refused call never creates an approval request.
 
 ## 5. Approval and abort
 
 ### Durable approval handshake
 
-Approval never waits on an in-memory promise or a parked run. A gated call ends the turn and its run; the operator's decision starts a run of its own.
+Approval never waits on an in-memory promise or a parked run. The engine stops on gated calls and the turn's run ends; the operator's answers start a run of their own, which runs the approved calls exactly as they were requested.
 
 ```mermaid
 sequenceDiagram
     participant M as Model
-    participant G as Tool gate
+    participant E as Engine
     participant DB as Approval table
     participant WF as Workflow
     participant U as Operator
 
-    M->>G: gated tool call
-    G-->>M: blocked tool result
-    G->>DB: persist request at successful turn end
+    M->>E: gated tool calls
+    E-->>E: interrupt, nothing runs
+    E->>DB: record the batch at successful turn end
     WF->>WF: run ends
-    U->>DB: persist decision
-    U->>WF: start relay run
-    WF->>M: operator-decision relay turn
-    M->>G: reissue call
-    G-->>M: allow, spending the approval
+    U->>DB: decide each request
+    U->>WF: start the resuming run once the batch is decided
+    WF->>E: resume with every answer
+    E-->>M: approved calls' results, refusals for the rest
 ```
 
-A call is allowed when its tier needs no approval, the session auto-approves that tier, or an unspent approval exists for its approval key. The key is the kind's identity for the call, never the call id, because the re-issued call carries a new one. The writing kind pins `commit_draft` to the content hash of the draft the operator saw and `set_published` to the feed and target state, so a call for another draft, or for a draft edited after the decision, is gated again. An approval is spent durably before the call runs and is good for exactly one call. The hash it was granted for travels with the call: `commit_draft` applies that content and the apply service locks the draft row and checks its hash in the transaction that writes the feed, so a draft that changed between the decision and the write is refused with `CONFLICT`. Under session auto-approve the call commits the content it read itself, under the same lock.
+A tool is gated when its tier needs approval; the session's auto-approval, which may change while a call waits, is applied per call when the engine stops. The engine gates a reply's whole batch: nothing in it runs until every gated call is answered. Each gated call first passes the turn budget and the kind's preflight; a call either refuses is answered with the refusal, and one whose tier the session auto-approves is approved without asking. When the turn answers the whole batch itself it resumes in place; otherwise the calls it answered are recorded beside the requests as decided, with no `decided_by`, and are answered with them.
 
-A decision is written once, on a pending row, in the transaction that writes the relay run's row and names that run on the decision. `approve` on a decided row delivers the recorded decision again only when its relay run never executed, that is the row closed with the marker still unclaimed; a relay the executor claimed, whatever it ended as, or whose fate is still unknown, starts nothing. Rejections also create a relay turn so the model can respond to the operator's comment.
+A request is recorded with its run and an approval key: the kind's identity for the call, the tool, its target and the state the operator is shown. The writing kind keys `commit_draft` to the content hash of the draft at the time of the request and `set_published` to the feed and target state. The resumed turn hands the kind the keys of the calls that were approved, and `commit_draft` applies the hash its key names: the apply service locks the draft row and checks that hash in the transaction that writes the feed, so a draft that changed after the request is refused with `CONFLICT`. Under session auto-approve the call commits the content it read itself, under the same lock.
 
-One request per turn: a second gated call in the same turn is refused without being recorded, so one decision answers one request. The request is persisted only after the provider turn succeeds; a failed turn leaves no undecided rows. Relay messages are marked as operator decisions so clients render them as notices rather than user-authored prompts.
+A decision is written once, on a pending row. The decision that completes a batch writes the resuming run's row in the same transaction and names that run on every row of the batch; an earlier decision records itself and starts nothing. `approve` on a decided row delivers the batch again only when its resuming run never executed, that is the row closed with the marker still unclaimed; a run the executor claimed, whatever it ended as, or whose fate is still unknown, starts nothing. A declined call never runs: the model reads the operator's comment as its result, and the transcript marks it declined, which is where lesson extraction reads rejection comments.
 
-The live stream may announce a request before persistence so the UI can render it promptly, but the card remains locked until `run:end{awaiting_approval}` or a reloaded pending row confirms it. Any other terminal state retracts the tentative request.
+Requests are recorded only after the provider turn succeeds; a failed turn leaves no undecided rows. The stream announces them once they are recorded, right before `run:end{awaiting_approval}`, which is what makes a card decidable; a reloaded pending row does the same.
 
 ### Abort path
 
-Cancelling a workflow run does not interrupt a step already executing. Each turn run therefore has a small durable abort-controller workflow parked on a hook. The turn step subscribes to its stream and passes the resulting `AbortSignal` to Pi and host ports.
+Cancelling a workflow run does not interrupt a step already executing. Each turn run therefore has a small durable abort-controller workflow parked on a hook. The turn step subscribes to its stream and passes the resulting `AbortSignal` to the engine and host ports.
 
 Abort resumes the controller, waits for the turn's `run:end` within a deadline, then cancels the run and marks its row. Partial assistant output is persisted as aborted; approvals and compaction do not run.
 
@@ -263,7 +262,7 @@ Maintenance operates on the session tree without constructing an `Agent`.
 
 | Operation | Behavior                                                                                                                   |
 | --------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Compact   | Appends Pi's summary and retained tail as the new leaf. No-op branches are rejected without a model call.                  |
+| Compact   | Appends a structured summary and the retained tail as the new leaf. No-op branches are rejected without a model call.      |
 | Navigate  | Moves the active leaf in place and may summarize the abandoned branch.                                                     |
 | Fork      | Copies a branch into a new session and preserves the source session. Kind state is copied through `definition.state.fork`. |
 
@@ -287,7 +286,7 @@ Routes using the normal session guard still require a signed-in account. Agent r
 
 A model ref names a provider and that provider's id (`vercel-ai-gateway` + `anthropic/claude-sonnet-5`, or `anthropic` + `claude-sonnet-5`), so it also names who pays. The gateway runs on the house key or, when the caller brought one, on their gateway key; a native provider exists only on the caller's own key. Nothing is inferred from which keys happen to be present.
 
-`Models` is created per caller and turn from the request's credentials, and every policy decision receives the same credentials as key presence (`AgentModelAccess`). Native providers are registered only when that caller supplies the key. The selected model and Pi stream function use the same credential-bearing collection; process-wide default model functions are forbidden.
+The catalogue is the Vercel AI Gateway's public model list, fetched at most once an hour per process: context windows, reasoning controls and prices come from it rather than from a package release. A native model borrows the gateway's description of the same model. Policy decisions receive only key presence (`AgentModelAccess`); the model is bound to an adapter per caller and turn from the request's credentials, and a native model the caller holds no key for cannot be bound. No adapter reads an ambient vendor key; the house key reaches only the gateway.
 
 Each domain owns its model policy, decided per ref and caller. One-shot tasks run on the house gateway key, never on a caller's key.
 
@@ -295,7 +294,7 @@ A session row names a model only when the caller chose one. `null` columns mean 
 
 ### Usage ledger and quota
 
-Every billed provider call creates one `agent.usage_ledger` row, including turns, compaction, branch summaries, titles and lesson extraction. Cost is stored in integer micro-dollars with the provider ID and a `credential_source` (`house`, `byok-gateway`, `byok-native`), so house spend and BYOK spend remain one ledger with different filters. Quota counts `house` rows only; the provider ID never decides who paid. Ledger rows survive session deletion.
+Every billed provider call creates one `agent.usage_ledger` row, including turns, compaction, branch summaries, titles and lesson extraction. Cost is priced from the catalogue per call and stored in integer micro-dollars with the provider ID and a `credential_source` (`house`, `byok-gateway`, `byok-native`), so house spend and BYOK spend remain one ledger with different filters. Quota counts `house` rows only; the provider ID never decides who paid. Ledger rows survive session deletion.
 
 Usage recording is best-effort and outside the response critical path. A failed ledger insert is logged and loses at most one call in the user's favor.
 
@@ -390,49 +389,22 @@ Admin writes are validated against their code definition before persistence. API
 2. Add an extension table only when the kind has persisted state.
 3. Add service and workflow bindings with matching `minTier` values and dynamic loaders.
 4. Implement `prepareTurn` through the domain's `prepare<Kind>Turn`; register any one-shot tasks in `AGENT_TASKS`.
-5. Reuse `runPiTurn`, wire events, approvals, session storage and durable workflow plumbing.
+5. Reuse `runTurn`, wire events, approvals, session storage and durable workflow plumbing.
 
 Do not add an engine adapter, capability plugin system or provider-neutral handle until a second execution engine creates a concrete requirement.
 
-## 12. Pi's durable harness
+## 12. Reference map
 
-Pi 0.85 ships a second execution path beside the `Agent` class: `createAgentHarness`, a durable operation runtime over its own storage contract. This runtime does not use it. The note below records why, and what an integration would look like, so the next Pi upgrade can re-evaluate instead of re-deriving.
-
-The harness is designed to be host-scheduled. Its lane API reduces to four durable primitives, and each maps onto a seam this runtime already has:
-
-| Harness primitive  | This runtime                                               |
-| ------------------ | ---------------------------------------------------------- |
-| `accept`           | `agent.run` creation under the lock and the workflow start |
-| `drive`            | `runAgentTurnStep`                                         |
-| `requestAbort`     | The per-run abort-controller workflow                      |
-| `inspectExecution` | Turn-marker reconciliation against the Workflow World      |
-
-`drive` returns `settled`, `waiting: retry` with `notBefore`, or `waiting: deferred` with a poll interval, so provider retries and deferred responses become workflow sleeps rather than in-process waits.
-
-What an integration would change:
-
-- Every transition rewrites the complete operation state, so a turn step becomes resumable and `maxRetries = 0` can go.
-- Tool calls get intent, effect and settlement commits, `replay: "safe" | "never"` and invocation-scoped memos; assistant stream frames are persisted for partial recovery.
-- `message_end` carries the entry id, replacing the reserved-id handshake in `runPiTurn`; `LaneSnapshot` with `reduceLaneSnapshot` replaces the coarse and delta stream cursor for reconnect.
-- The approval handshake is unchanged: the `before_tool` hook blocks with `terminate` exactly as the tool gate does now.
-- A Postgres `Storage` and `SessionRepo` must be written; upstream ships only Memory, JSONL and SQLite. `@earendil-works/pi-agent-core/harness/session/testing` exports the conformance suites to validate one. Entries already match Pi's union; values, lists and the harness usage ledger are new tables.
-- Most of `packages/agent-runtime/src/pi/` is replaced by lane calls. `AgentWireEvent` stays the client boundary with a mapper over `HarnessEvent`.
-
-Do not start until all of these hold upstream: the storage format is declared stable with a migration mechanism (its spec marks format 4 as pre-stabilization, changeable in place), `Storage` interface changes appear in the changelog, the open harness work packages (forks, `watchSession`, remote mutation transport) are closed, and `experimental/pico3`, a task-scheduler design that may replace the lane runtime, is either promoted or dropped. Then write the Postgres backend against the conformance suite first and swap `runAgentTurnStep` to `accept` plus `drive` second.
-
-As of Pi 0.87.1 none of these hold: format 4 is still pre-stabilization with R11 migrations unimplemented, harness session code changes without changelog entries, WP08 forks are in progress, `watchSession` throws `SliceNotImplemented`, the RemoteSession transport (C1) is undecided, and pico3 is a design under discussion.
-
-## 13. Reference map
-
-| Concern                               | Location                                                                                              |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Pi turn, approval, budget, compaction | `packages/agent-runtime/src/pi/`                                                                      |
-| Session tree and Postgres storage     | `packages/agent-runtime/src/session/`                                                                 |
-| Wire schema, replay and fold          | `packages/agent-runtime/src/wire/`                                                                    |
-| Shared content tools                  | `packages/agent-content/src/`                                                                         |
-| Writing and public domains            | `packages/agent-writing/src/`, `packages/agent-public/src/`                                           |
-| Kind bindings and tasks               | `packages/agent-host/src/`, `apps/service/src/agents/`, `apps/workflow/src/agents/`                   |
-| Generic oRPC agent service            | `packages/services/agent/`                                                                            |
-| Workflow and turn step                | `apps/workflow/src/workflows/agent-session.workflow.ts`, `apps/workflow/src/steps/agent-turn.step.ts` |
-| Database schema                       | `packages/db/src/schemas/agent.schema.ts`                                                             |
-| Shared client                         | `packages/agent-elements/src/`                                                                        |
+| Concern                            | Location                                                                                              |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Turn, approval, budget, compaction | `packages/agent-runtime/src/` (`turn.ts`, `turn-budget.ts`, `compaction.ts`, `maintenance.ts`)        |
+| Models and catalogue               | `packages/agent-runtime/src/models.ts`, `packages/ai/src/gateway.ts`                                  |
+| Session tree and Postgres storage  | `packages/agent-runtime/src/session/`                                                                 |
+| Wire schema, replay and fold       | `packages/agent-runtime/src/wire/`                                                                    |
+| Shared content tools               | `packages/agent-content/src/`                                                                         |
+| Writing and public domains         | `packages/agent-writing/src/`, `packages/agent-public/src/`                                           |
+| Kind bindings and tasks            | `packages/agent-host/src/`, `apps/service/src/agents/`, `apps/workflow/src/agents/`                   |
+| Generic oRPC agent service         | `packages/services/agent/`                                                                            |
+| Workflow and turn step             | `apps/workflow/src/workflows/agent-session.workflow.ts`, `apps/workflow/src/steps/agent-turn.step.ts` |
+| Database schema                    | `packages/db/src/schemas/agent.schema.ts`                                                             |
+| Shared client                      | `packages/agent-elements/src/`                                                                        |
