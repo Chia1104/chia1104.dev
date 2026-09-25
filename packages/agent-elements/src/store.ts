@@ -197,7 +197,9 @@ export const failureOf = (cause: unknown, labels: AgentLabels): string => {
 
 /**
  * The persisted transcript never replays approval events, so the server lists the approval rows
- * separately; they are re-applied here so a reload shows each card as the live stream left it.
+ * separately. A call with no result yet reopens its card, pending or decided while the rest of
+ * its batch waits; a decided row then annotates its call, whose own result the transcript carries
+ * once it ran.
  */
 export const foldDetail = (detail: AgentSessionDetail): AgentViewState => {
   let view = foldEvents(detail.events);
@@ -207,13 +209,15 @@ export const foldDetail = (detail: AgentSessionDetail): AgentViewState => {
     );
     // A row for a call that is not on this branch (a rewound session) has nothing to attach to.
     if (tool?.kind !== "tool") continue;
-    view = applyEvent(view, {
-      type: "approval:request",
-      toolCallId: approval.toolCallId,
-      toolName: approval.toolName,
-      tier: tool.tier,
-      args: approval.args ?? tool.args,
-    });
+    if (approval.status === "pending" || tool.status === "aborted") {
+      view = applyEvent(view, {
+        type: "approval:request",
+        toolCallId: approval.toolCallId,
+        toolName: approval.toolName,
+        tier: tool.tier,
+        args: approval.args ?? tool.args,
+      });
+    }
     if (approval.status === "pending") continue;
     view = applyEvent(view, {
       type: "approval:resolved",

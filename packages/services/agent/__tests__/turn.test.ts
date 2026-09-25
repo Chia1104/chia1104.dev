@@ -24,6 +24,7 @@ const repo = vi.hoisted(() => ({
   createAgentRun: vi.fn(),
   decideAgentApproval: vi.fn(),
   getAgentApproval: vi.fn(),
+  getAgentApprovalBatch: vi.fn(),
   getAgentRun: vi.fn(),
   getAgentSessionLastSeq: vi.fn(async () => 4),
   listRunningAgentRuns: vi.fn(async () => []),
@@ -48,12 +49,14 @@ vi.mock("@chia/db/repos/agent", () => repo);
 vi.mock("@chia/agent-host/quota", () => quota);
 vi.mock("../abort", () => abort);
 
+import { ApprovalVerdict } from "@chia/agent-runtime/types";
 import type { DB } from "@chia/db/client";
 import {
   AgentApprovalStatus,
   AgentRunStatus,
   relations,
 } from "@chia/db/schema";
+import type { AgentToolApproval } from "@chia/db/schema";
 import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 
 import type { AgentServiceHost } from "../agent.factory";
@@ -234,7 +237,7 @@ describe("agent turn admission", () => {
       expect.objectContaining({
         sessionId: "session-1",
         runId: createdRunId(),
-        message: expect.objectContaining({ text: "first" }),
+        message: expect.objectContaining({ type: "prompt", text: "first" }),
       })
     );
     expect(repo.bindAgentRunExternalId).toHaveBeenCalledWith(
@@ -334,34 +337,47 @@ describe("agent turn admission", () => {
     expect(repo.completeAgentRun).not.toHaveBeenCalled();
   });
 
-  it("records a pending decision once and starts the run that relays it", async () => {
+  /** A recorded request of run `run-0`, as the approval row stores it. */
+  const approvalRow = (fields: Partial<AgentToolApproval> = {}) => ({
+    status: AgentApprovalStatus.Pending,
+    toolCallId: "call-1",
+    toolName: "commit_draft",
+    approvalKey: "commit_draft:7@hash",
+    comment: null,
+    decidedBy: null,
+    runId: "run-0",
+    relayRunId: null,
+    ...fields,
+  });
+
+  it("records a pending decision and starts the run that resumes its batch", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
-    repo.getAgentApproval.mockResolvedValue({
-      status: AgentApprovalStatus.Pending,
-      toolCallId: "call-1",
-      toolName: "commit_draft",
-      comment: null,
-    });
-    repo.decideAgentApproval.mockResolvedValue({
-      status: AgentApprovalStatus.Approved,
-    });
+    repo.getAgentApproval.mockResolvedValue(approvalRow());
+    repo.decideAgentApproval.mockResolvedValue(
+      approvalRow({ status: AgentApprovalStatus.Approved })
+    );
+    repo.getAgentApprovalBatch.mockResolvedValue([
+      approvalRow({
+        status: AgentApprovalStatus.Approved,
+        comment: "go",
+        decidedBy: "user-1",
+      }),
+    ]);
     startAgentSession.mockImplementation(async () => {
       expect(lockHeld).toBe(false);
       return "wf-2";
     });
 
-    const cursor = await turns.approve(caller, {
+    const result = await turns.approve(caller, {
       sessionId: "session-1",
       toolCallId: "call-1",
       approved: true,
       comment: "go",
     });
 
-    expect(cursor).toEqual({
-      runId: "wf-2",
-      startIndex: 0,
-      deltaStartIndex: 0,
+    expect(result).toEqual({
+      cursor: { runId: "wf-2", startIndex: 0, deltaStartIndex: 0 },
     });
     expect(repo.decideAgentApproval).toHaveBeenCalledExactlyOnceWith(
       db,
@@ -369,31 +385,99 @@ describe("agent turn admission", () => {
     );
     expect(startAgentSession).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: expect.objectContaining({
-          text: expect.stringContaining("commit_draft"),
-          decision: {
-            toolCallId: "call-1",
-            toolName: "commit_draft",
-            approved: true,
-            comment: "go",
+        message: {
+          type: "resume",
+          resume: {
+            interruptedRunId: "run-0",
+            decisions: [
+              {
+                toolCallId: "call-1",
+                verdict: ApprovalVerdict.Approved,
+                comment: "go",
+              },
+            ],
           },
-        }),
+          credentials: undefined,
+        },
       })
     );
   });
 
-  it("names the relay run on the decision in the same transaction", async () => {
+  it("records a decision and starts nothing while the rest of its batch waits", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
-    repo.getAgentApproval.mockResolvedValue({
-      status: AgentApprovalStatus.Pending,
-      toolCallId: "call-1",
-      toolName: "commit_draft",
-      comment: null,
-    });
-    repo.decideAgentApproval.mockResolvedValue({
+    repo.getAgentApproval.mockResolvedValue(approvalRow());
+    repo.decideAgentApproval.mockResolvedValue(
+      approvalRow({ status: AgentApprovalStatus.Approved })
+    );
+    repo.getAgentApprovalBatch.mockResolvedValue([
+      approvalRow({
+        status: AgentApprovalStatus.Approved,
+        decidedBy: "user-1",
+      }),
+      approvalRow({ toolCallId: "call-2" }),
+    ]);
+
+    await expect(
+      turns.approve(caller, {
+        sessionId: "session-1",
+        toolCallId: "call-1",
+        approved: true,
+      })
+    ).resolves.toEqual({ cursor: null });
+
+    expect(repo.decideAgentApproval).toHaveBeenCalledOnce();
+    expect(repo.createAgentRun).not.toHaveBeenCalled();
+    expect(startAgentSession).not.toHaveBeenCalled();
+  });
+
+  it("reports a repeated decision as recorded while the rest of its batch waits", async () => {
+    liveRun("completed");
+    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
+    const decided = approvalRow({
       status: AgentApprovalStatus.Approved,
+      decidedBy: "user-1",
     });
+    repo.getAgentApproval.mockResolvedValue(decided);
+    repo.getAgentApprovalBatch.mockResolvedValue([
+      decided,
+      approvalRow({ toolCallId: "call-2" }),
+    ]);
+
+    await expect(
+      turns.approve(caller, {
+        sessionId: "session-1",
+        toolCallId: "call-1",
+        approved: true,
+      })
+    ).resolves.toEqual({ cursor: null });
+    // The other answer is not what was recorded.
+    await expect(
+      turns.approve(caller, {
+        sessionId: "session-1",
+        toolCallId: "call-1",
+        approved: false,
+      })
+    ).resolves.toBeNull();
+
+    expect(repo.decideAgentApproval).not.toHaveBeenCalled();
+    expect(repo.createAgentRun).not.toHaveBeenCalled();
+    expect(startAgentSession).not.toHaveBeenCalled();
+  });
+
+  it("names the resuming run on its batch in the same transaction", async () => {
+    liveRun("completed");
+    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
+    repo.getAgentApproval.mockResolvedValue(approvalRow());
+    repo.decideAgentApproval.mockResolvedValue(
+      approvalRow({ status: AgentApprovalStatus.Approved })
+    );
+    repo.getAgentApprovalBatch.mockResolvedValue([
+      approvalRow({
+        status: AgentApprovalStatus.Approved,
+        decidedBy: "user-1",
+      }),
+    ]);
     repo.setAgentApprovalRelayRun.mockImplementation(async () => {
       expect(lockHeld).toBe(true);
     });
@@ -406,21 +490,37 @@ describe("agent turn admission", () => {
 
     expect(repo.setAgentApprovalRelayRun).toHaveBeenCalledExactlyOnceWith(db, {
       sessionId: "session-1",
-      toolCallId: "call-1",
+      runId: "run-0",
       relayRunId: createdRunId(),
     });
   });
 
-  it("delivers a recorded decision again when its relay run was refused, without rewriting it", async () => {
+  it("delivers a decided batch again when its resuming run was refused, without rewriting it", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
-    repo.getAgentApproval.mockResolvedValue({
+    const decided = approvalRow({
       status: AgentApprovalStatus.Rejected,
-      toolCallId: "call-1",
-      toolName: "commit_draft",
       comment: "not yet",
+      decidedBy: "user-1",
       relayRunId: "run-refused",
     });
+    repo.getAgentApproval.mockResolvedValue(decided);
+    repo.getAgentApprovalBatch.mockResolvedValue([
+      decided,
+      // Refused by the turn's own checks: decided, and by nobody.
+      approvalRow({
+        toolCallId: "call-2",
+        status: AgentApprovalStatus.Rejected,
+        comment: "The draft is empty.",
+        relayRunId: "run-refused",
+      }),
+      // Approved because the session pre-approved its tier: also decided by nobody.
+      approvalRow({
+        toolCallId: "call-3",
+        status: AgentApprovalStatus.Approved,
+        relayRunId: "run-refused",
+      }),
+    ]);
     // Refused before any executor claimed it: the lease marker never became a claim.
     repo.getAgentRun.mockResolvedValue({
       id: "run-refused",
@@ -437,48 +537,57 @@ describe("agent turn admission", () => {
     });
 
     // The retry says "approve"; the row says "rejected" and the row wins.
-    const cursor = await turns.approve(caller, {
+    const result = await turns.approve(caller, {
       sessionId: "session-1",
       toolCallId: "call-1",
       approved: true,
     });
 
-    expect(cursor).toEqual({
-      runId: "wf-2",
-      startIndex: 0,
-      deltaStartIndex: 0,
+    expect(result).toEqual({
+      cursor: { runId: "wf-2", startIndex: 0, deltaStartIndex: 0 },
     });
     expect(repo.decideAgentApproval).not.toHaveBeenCalled();
     expect(startAgentSession).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.objectContaining({
-          decision: {
-            toolCallId: "call-1",
-            toolName: "commit_draft",
-            approved: false,
-            comment: "not yet",
+          resume: {
+            interruptedRunId: "run-0",
+            decisions: [
+              {
+                toolCallId: "call-1",
+                verdict: ApprovalVerdict.Declined,
+                comment: "not yet",
+              },
+              {
+                toolCallId: "call-2",
+                verdict: ApprovalVerdict.Refused,
+                comment: "The draft is empty.",
+              },
+              { toolCallId: "call-3", verdict: ApprovalVerdict.Approved },
+            ],
           },
         }),
       })
     );
-    // The new relay run replaces the refused one on the row.
+    // The new resuming run replaces the refused one on the batch.
     expect(repo.setAgentApprovalRelayRun).toHaveBeenCalledWith(db, {
       sessionId: "session-1",
-      toolCallId: "call-1",
+      runId: "run-0",
       relayRunId: createdRunId(),
     });
   });
 
-  it("starts nothing for a decision whose relay run executed or is still unresolved", async () => {
+  it("starts nothing for a batch whose resuming run executed or is still unresolved", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
-    repo.getAgentApproval.mockResolvedValue({
-      status: AgentApprovalStatus.Approved,
-      toolCallId: "call-1",
-      toolName: "commit_draft",
-      comment: "go",
-      relayRunId: "run-relay",
-    });
+    repo.getAgentApproval.mockResolvedValue(
+      approvalRow({
+        status: AgentApprovalStatus.Approved,
+        comment: "go",
+        decidedBy: "user-1",
+        relayRunId: "run-relay",
+      })
+    );
     const claimed = {
       turn: {
         seqBefore: 0,
@@ -490,7 +599,7 @@ describe("agent turn admission", () => {
     };
 
     // Completed, still a lease, failed after the executor ran it, aborted while it ran: none
-    // may be delivered again, because the model has heard or may yet hear the decision.
+    // may be delivered again, because the engine has run or may yet run the batch.
     for (const run of [
       { status: AgentRunStatus.Completed, metadata: claimed },
       { status: AgentRunStatus.Active, metadata: {} },
@@ -509,6 +618,23 @@ describe("agent turn admission", () => {
 
     expect(repo.decideAgentApproval).not.toHaveBeenCalled();
     expect(repo.createAgentRun).not.toHaveBeenCalled();
+    expect(startAgentSession).not.toHaveBeenCalled();
+  });
+
+  it("starts nothing for a request recorded before turns became resumable", async () => {
+    liveRun("completed");
+    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
+    repo.getAgentApproval.mockResolvedValue(approvalRow({ runId: null }));
+
+    await expect(
+      turns.approve(caller, {
+        sessionId: "session-1",
+        toolCallId: "call-1",
+        approved: true,
+      })
+    ).resolves.toBeNull();
+
+    expect(repo.decideAgentApproval).not.toHaveBeenCalled();
     expect(startAgentSession).not.toHaveBeenCalled();
   });
 });

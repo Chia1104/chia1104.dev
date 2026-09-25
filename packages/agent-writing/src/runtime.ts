@@ -49,19 +49,18 @@ export interface PrepareWritingTurnOptions {
   instructions?: string;
   /** The session's pre-approved tiers, which the system prompt describes. */
   autoApprove: readonly ToolTier[];
+  /** The gated calls the operator approved, which this turn runs, with the keys they were recorded under. */
+  approvedCalls?: readonly { toolCallId: string; key: string }[];
 }
 
 /**
  * What the operator approves when they approve a commit-tier call. `commit_draft` is pinned to
- * the draft content they looked at, so a draft edited after the decision, by them or by the
- * model on its way back, is gated again instead of committed unseen. A discarded draft still
- * keys, and the call itself reports it missing.
- *
- * The content the key was read from is also the content that call may commit, so its hash is
- * recorded in `approvedDraftHashes` under the call's id for `commit_draft` to apply.
+ * the draft content they are shown, so the call commits that content or nothing: the apply
+ * checks the hash under the draft's lock and refuses a draft edited after the decision. A
+ * discarded draft still keys, and the call itself reports it missing.
  */
 export const writingApprovalKeyOf =
-  (store: DraftStore, approvedDraftHashes: Map<string, string>) =>
+  (store: DraftStore) =>
   async (request: ToolCallRequest): Promise<string> => {
     const args = commitArgsSchema.safeParse(request.input).data ?? {};
     switch (request.toolName) {
@@ -69,7 +68,6 @@ export const writingApprovalKeyOf =
         const draftId = args.draftId;
         try {
           const draft = await store.get(draftId ?? Number.NaN);
-          approvedDraftHashes.set(request.toolCallId, draft.contentHash);
           return `${request.toolName}:${draftId}@${draft.contentHash}`;
         } catch (error) {
           if (error instanceof DraftNotFoundError) {
@@ -84,6 +82,14 @@ export const writingApprovalKeyOf =
         return defaultApprovalKey(request);
     }
   };
+
+const COMMIT_KEY = new RegExp(`^${ToolName.CommitDraft}:\\d+@(.+)$`);
+
+/** The content hash a `commit_draft` approval was granted for, read back from its key. */
+const approvedDraftHashOf = (key: string): string | undefined => {
+  const hash = COMMIT_KEY.exec(key)?.[1];
+  return hash === "missing" ? undefined : hash;
+};
 
 /** The arguments the approval key reads; `confirmation` is prose for the operator and does not identify the call. */
 const commitArgsSchema = z.object({
@@ -261,6 +267,10 @@ export const prepareWritingTurn = (
   options: PrepareWritingTurnOptions
 ): AgentTurnPlan => {
   const approvedDraftHashes = new Map<string, string>();
+  for (const call of options.approvedCalls ?? []) {
+    const hash = approvedDraftHashOf(call.key);
+    if (hash) approvedDraftHashes.set(call.toolCallId, hash);
+  }
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
     content: options.content,
@@ -298,6 +308,6 @@ export const prepareWritingTurn = (
       renderAttachments(options.draft, options.reports, attachments),
     promptTemplates: writingPromptTemplates,
     budget: writingTurnBudget,
-    approvalKeyOf: writingApprovalKeyOf(options.draft, approvedDraftHashes),
+    approvalKeyOf: writingApprovalKeyOf(options.draft),
   };
 };

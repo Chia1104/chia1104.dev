@@ -133,7 +133,7 @@ sequenceDiagram
 
 ### Durable driver
 
-Every turn is its own workflow run. A prompt and an operator's decision on a gated call each start a run that executes one `runAgentTurnStep` and ends; nothing parks between turns, a run's journal is one turn long, and the session's conversation lives entirely in Postgres. Workflow functions handle orchestration only; database, provider, timer and network operations stay inside steps. `runAgentTurnStep` has `maxRetries = 0` because a turn may already have appended entries or performed an approved side effect. Provider retries stay inside Pi; retrying a failed turn requires a new user message.
+Every turn is its own workflow run. A prompt and the operator's answers to the calls a turn stopped on each start a run that executes one `runAgentTurnStep` and ends; nothing parks between turns, a run's journal is one turn long, and the session's conversation lives entirely in Postgres. Workflow functions handle orchestration only; database, provider, timer and network operations stay inside steps. `runAgentTurnStep` has `maxRetries = 0` because a turn may already have appended entries or performed an approved side effect. Provider retries stay inside Pi; retrying a failed turn requires a new user message.
 
 One turn at a time. A prompt is refused while a turn is running: admission checks quota and the running cap, and a turn run behind this one would execute after its cost landed without being checked again. It is also refused while an approval is undecided.
 
@@ -153,11 +153,11 @@ A kind declares its tools with `defineTool` from `@chia/agent-runtime/tools`: a 
 
 `runTurn`:
 
-1. Appends the operator's message to the tree, then projects the active branch into model messages.
+1. Appends the operator's message to the tree, or takes the stopped reply a resume answers, then projects the active branch into model messages.
 2. Installs the turn budget, approval gate, volatile context, state-change hook and abort signal.
 3. Persists each completed assistant and tool-result message before emitting its wire event.
 4. Continues Pi's `Agent` from the branch and classifies provider, host, abort and budget failures.
-5. Persists approval requests atomically after a successful provider turn.
+5. Records a held batch of approval requests after a successful provider turn.
 6. Auto-compacts only successful turns with no pending approval.
 7. Emits terminal events and flushes the durable writer.
 
@@ -165,9 +165,9 @@ Host hook failures are recorded as internal errors and abort the turn. The model
 
 ### Prompt layering
 
-The system prompt contains stable rules, skill indexes and approval posture. The public kind also renders the author's published profile into it, one locale under a character cap, because the profile is bounded and changes only when the operator edits it. Turn-specific data such as the clock, draft state and saved memories enters through Pi's context hook as a final volatile user message. It is recomputed for every provider request and never persisted.
+The system prompt contains stable rules, skill indexes and approval posture. The public kind also renders the author's published profile into it, one locale under a character cap, because the profile is bounded and changes only when the operator edits it. Turn-specific data such as the clock, draft state and saved memories enters through Pi's context hook as a volatile user message. It is read once per turn, placed right after the message that started the turn (or before the reply a resumed turn continues), kept there for every provider request of that turn, and never persisted. Changes the turn makes itself reach the model through its tool results.
 
-This keeps the provider's cached prefix stable and prevents changing context from accumulating in the transcript.
+The gateway caches a prompt only as a prefix of the next request: a request hits when the previous request's whole prompt is its prefix, and otherwise reads back no more than the system prompt. A fresh volatile message at the end of every request therefore left only the system prompt cached. With the snapshot fixed in place, every request of a turn after the first extends the one before it. Keeping it out of the transcript prevents changing context from accumulating, at the cost of a cache miss on each turn's first request.
 
 ### Turn budget
 
@@ -186,34 +186,35 @@ Budget checks run before approval checks, so a refused call cannot create an app
 
 ### Durable approval handshake
 
-Approval never waits on an in-memory promise or a parked run. A gated call ends the turn and its run; the operator's decision starts a run of its own.
+Approval never waits on an in-memory promise or a parked run. A reply with gated calls ends the turn and its run; the operator's answers start a run of their own, which runs the approved calls exactly as they were requested.
 
 ```mermaid
 sequenceDiagram
     participant M as Model
-    participant G as Tool gate
+    participant T as Turn
     participant DB as Approval table
     participant WF as Workflow
     participant U as Operator
 
-    M->>G: gated tool call
-    G-->>M: blocked tool result
-    G->>DB: persist request at successful turn end
+    M->>T: reply with gated calls
+    T-->>T: hold the batch, nothing runs
+    T->>DB: record the batch at successful turn end
     WF->>WF: run ends
-    U->>DB: persist decision
-    U->>WF: start relay run
-    WF->>M: operator-decision relay turn
-    M->>G: reissue call
-    G-->>M: allow, spending the approval
+    U->>DB: decide each request
+    U->>WF: start the resuming run once the batch is decided
+    WF->>T: replay the stopped reply with every answer
+    T-->>M: approved calls' results, refusals for the rest
 ```
 
-A call is allowed when its tier needs no approval, the session auto-approves that tier, or an unspent approval exists for its approval key. The key is the kind's identity for the call, never the call id, because the re-issued call carries a new one. The writing kind pins `commit_draft` to the content hash of the draft the operator saw and `set_published` to the feed and target state, so a call for another draft, or for a draft edited after the decision, is gated again. An approval is spent durably before the call runs and is good for exactly one call. The hash it was granted for travels with the call: `commit_draft` applies that content and the apply service locks the draft row and checks its hash in the transaction that writes the feed, so a draft that changed between the decision and the write is refused with `CONFLICT`. Under session auto-approve the call commits the content it read itself, under the same lock.
+A tool is gated when its tier needs approval; the session's auto-approval, which may change while a call waits, is applied per call when the reply arrives. A reply's whole batch is held: nothing in it runs until every gated call is answered, and the held calls stay open in the tree with no result. Each gated call first passes the turn budget and the kind's preflight; a call either refuses is answered with the refusal, and one whose tier the session auto-approves is approved without asking. When the turn answers the whole batch itself the calls run in place; otherwise the calls it answered are recorded beside the requests as decided, with no `decided_by`, and are answered with them.
 
-A decision is written once, on a pending row, in the transaction that writes the relay run's row and names that run on the decision. `approve` on a decided row delivers the recorded decision again only when its relay run never executed, that is the row closed with the marker still unclaimed; a relay the executor claimed, whatever it ended as, or whose fate is still unknown, starts nothing. Rejections also create a relay turn so the model can respond to the operator's comment.
+The resuming run streams the stopped reply to Pi again in place of the first provider request, so Pi runs its calls through the same tool path as any other reply: approved calls pass the budget and preflight once more and run with their recorded arguments, other calls in the batch run as they would have, and declined or refused calls return their refusal. The replayed reply is neither billed nor persisted again. The answers bind to that reply itself, not to call ids: a later reply in the same run that reuses an answered call id is gated like any other.
 
-One request per turn: a second gated call in the same turn is refused without being recorded, so one decision answers one request. The request is persisted only after the provider turn succeeds; a failed turn leaves no undecided rows. Relay messages are marked as operator decisions so clients render them as notices rather than user-authored prompts.
+A request is recorded with its run and an approval key: the kind's identity for the call, the tool, its target and the state the operator is shown. The writing kind keys `commit_draft` to the content hash of the draft at the time of the request and `set_published` to the feed and target state. The resumed turn hands the kind the keys of the calls that were approved, and `commit_draft` applies the hash its key names: the apply service locks the draft row and checks that hash in the transaction that writes the feed, so a draft that changed after the request is refused with `CONFLICT`. Under session auto-approve the call commits the content it read itself, under the same lock.
 
-The live stream may announce a request before persistence so the UI can render it promptly, but the card remains locked until `run:end{awaiting_approval}` or a reloaded pending row confirms it. Any other terminal state retracts the tentative request.
+A decision is written once, on a pending row. The decision that completes a batch writes the resuming run's row in the same transaction and names that run on every row of the batch; an earlier decision records itself and starts nothing. `approve` on a decided row delivers the batch again only when its resuming run never executed, that is the row closed with the marker still unclaimed; a run the executor claimed, whatever it ended as, or whose fate is still unknown, starts nothing. A declined call never runs: the model reads the operator's comment as its result, and the transcript marks it `declined`, which is where lesson extraction reads rejection comments.
+
+Requests are recorded only after the provider turn succeeds; a failed turn leaves no undecided rows. The stream announces them once they are recorded, right before `run:end{awaiting_approval}`, which is what makes a card decidable; a reloaded pending row does the same.
 
 ### Abort path
 
@@ -414,7 +415,7 @@ What an integration would change:
 - Every transition rewrites the complete operation state, so a turn step becomes resumable and `maxRetries = 0` can go.
 - Tool calls get intent, effect and settlement commits, `replay: "safe" | "never"` and invocation-scoped memos; assistant stream frames are persisted for partial recovery.
 - `message_end` carries the entry id, replacing the id `runTurn` picks at `message_start`; `LaneSnapshot` with `reduceLaneSnapshot` replaces the coarse and delta stream cursor for reconnect.
-- The approval handshake is unchanged: the `before_tool` hook blocks with `terminate` exactly as the tool gate does now.
+- The approval handshake maps onto the `before_tool` hook: a held batch blocks with `terminate`, and the resuming run answers the open calls.
 - A Postgres `Storage` and `SessionRepo` must be written; upstream ships only Memory, JSONL and SQLite. `@earendil-works/pi-agent-core/harness/session/testing` exports the conformance suites to validate one. Entries already match Pi's union; values, lists and the harness usage ledger are new tables.
 - Most of `packages/agent-runtime/src/turn.ts` and `src/pi/` is replaced by lane calls. `AgentWireEvent` stays the client boundary with a mapper over `HarnessEvent`.
 

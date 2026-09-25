@@ -633,30 +633,80 @@ export const copyWritingSessionDrafts = async (
     .onConflictDoNothing();
 };
 
-export const recordAgentApprovalRequest = async (
+/**
+ * Records the gated calls one run stopped on, in one statement: the calls the operator decides
+ * wait `pending`; the calls the turn answered itself (auto-approved, or refused by its checks)
+ * land decided with no `decided_by`, so the batch resumes once the operator has answered the rest.
+ */
+export const recordAgentApprovalBatch = async (
   db: DB,
   input: {
     sessionId: string;
-    toolCallId: string;
-    toolName: string;
-    approvalKey: string;
-    args?: JsonObject;
+    runId: string;
+    requests: readonly {
+      toolCallId: string;
+      toolName: string;
+      approvalKey: string;
+      args?: JsonObject;
+    }[];
+    settled: readonly {
+      toolCallId: string;
+      toolName: string;
+      approvalKey: string;
+      args?: JsonObject;
+      approved: boolean;
+      reason?: string;
+    }[];
   }
 ) => {
+  const decidedAt = new Date();
   await db
     .insert(agentToolApprovals)
-    .values({
-      sessionId: input.sessionId,
-      toolCallId: input.toolCallId,
-      toolName: input.toolName,
-      approvalKey: input.approvalKey,
-      args: input.args ?? null,
-    })
-    // First request wins; a re-issued gated call must not overwrite an existing decision.
+    .values([
+      ...input.requests.map((request) => ({
+        sessionId: input.sessionId,
+        runId: input.runId,
+        toolCallId: request.toolCallId,
+        toolName: request.toolName,
+        approvalKey: request.approvalKey,
+        args: request.args ?? null,
+      })),
+      ...input.settled.map((call) => ({
+        sessionId: input.sessionId,
+        runId: input.runId,
+        toolCallId: call.toolCallId,
+        toolName: call.toolName,
+        approvalKey: call.approvalKey,
+        args: call.args ?? null,
+        status: call.approved
+          ? AgentApprovalStatus.Approved
+          : AgentApprovalStatus.Rejected,
+        comment: call.reason ?? null,
+        decidedAt,
+      })),
+    ])
+    // A call id is recorded once; a repeated write must not overwrite a decision.
     .onConflictDoNothing({
       target: [agentToolApprovals.sessionId, agentToolApprovals.toolCallId],
     });
 };
+
+/** Every call one run stopped on, in the order they were recorded. */
+export const getAgentApprovalBatch = async (
+  db: DB,
+  sessionId: string,
+  runId: string
+) =>
+  await db
+    .select()
+    .from(agentToolApprovals)
+    .where(
+      and(
+        eq(agentToolApprovals.sessionId, sessionId),
+        eq(agentToolApprovals.runId, runId)
+      )
+    )
+    .orderBy(asc(agentToolApprovals.createdAt));
 
 export const getAgentApproval = async (
   db: DB,
@@ -699,10 +749,10 @@ export const decideAgentApproval = async (
   return row;
 };
 
-/** Names the run that relays a decision; written in the transaction that records the decision. */
+/** Names the run that resumes a batch; written in the transaction that completes the batch. */
 export const setAgentApprovalRelayRun = async (
   db: DB,
-  input: { sessionId: string; toolCallId: string; relayRunId: string }
+  input: { sessionId: string; runId: string; relayRunId: string }
 ) => {
   await db
     .update(agentToolApprovals)
@@ -710,56 +760,13 @@ export const setAgentApprovalRelayRun = async (
     .where(
       and(
         eq(agentToolApprovals.sessionId, input.sessionId),
-        eq(agentToolApprovals.toolCallId, input.toolCallId)
+        eq(agentToolApprovals.runId, input.runId)
       )
     );
 };
 
 export const getAgentRun = async (db: DB, runId: string) =>
   await db.query.agentRuns.findFirst({ where: { id: runId } });
-
-/** Approval keys granted on this session that no call has spent; seeds the permission gate. */
-export const listUnspentAgentApprovalKeys = async (
-  db: DB,
-  sessionId: string
-) => {
-  const rows = await db
-    .select({ approvalKey: agentToolApprovals.approvalKey })
-    .from(agentToolApprovals)
-    .where(
-      and(
-        eq(agentToolApprovals.sessionId, sessionId),
-        eq(agentToolApprovals.status, AgentApprovalStatus.Approved),
-        isNull(agentToolApprovals.consumedAt)
-      )
-    );
-  return rows.map((row) => row.approvalKey);
-};
-
-/** Spends every unspent approval for `approvalKey`; throws when there is none, so the call stays blocked. */
-export const consumeAgentApproval = async (
-  db: DB,
-  sessionId: string,
-  approvalKey: string
-) => {
-  const rows = await db
-    .update(agentToolApprovals)
-    .set({ consumedAt: new Date() })
-    .where(
-      and(
-        eq(agentToolApprovals.sessionId, sessionId),
-        eq(agentToolApprovals.approvalKey, approvalKey),
-        eq(agentToolApprovals.status, AgentApprovalStatus.Approved),
-        isNull(agentToolApprovals.consumedAt)
-      )
-    )
-    .returning({ toolCallId: agentToolApprovals.toolCallId });
-  if (rows.length === 0) {
-    throw new Error(
-      `No unspent approval for "${approvalKey}" on agent session ${sessionId}.`
-    );
-  }
-};
 
 export const getAgentApprovals = async (db: DB, sessionId: string) =>
   await db

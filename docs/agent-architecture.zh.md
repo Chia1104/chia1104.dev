@@ -133,7 +133,7 @@ sequenceDiagram
 
 ### Durable driver
 
-每個 turn 都是自己的 workflow run。Prompt 與 operator 對 gated call 的決定各自啟動一個 run，執行一次 `runAgentTurnStep` 後結束；turn 之間沒有任何東西停等，run 的 journal 只有一個 turn 長，session 的對話完整存在 Postgres。
+每個 turn 都是自己的 workflow run。Prompt 與 operator 對 turn 停下的那批呼叫的回答各自啟動一個 run，執行一次 `runAgentTurnStep` 後結束；turn 之間沒有任何東西停等，run 的 journal 只有一個 turn 長，session 的對話完整存在 Postgres。
 
 一次只跑一個 turn。Turn 執行中送入的 prompt 會被拒絕：admission 在此檢查 quota 與 running cap，排在後面的 turn 會在前一個 turn 費用入帳後才執行，卻不會再被檢查。Approval 未決時同樣拒絕。
 
@@ -155,11 +155,11 @@ Kind 以 `@chia/agent-runtime/tools` 的 `defineTool` 宣告 tools：parameters 
 
 `runTurn`：
 
-1. 先把 operator 的訊息寫進 tree，再將 active branch 投影為 model messages。
+1. 先把 operator 的訊息寫進 tree，或取出 resume 要回答的那則停下的 reply，再將 active branch 投影為 model messages。
 2. 安裝 turn budget、approval gate、volatile context、state-change hook 與 abort signal。
 3. 每個完整的 assistant、tool-result message 都先持久化，再發出 wire event。
 4. 從 branch 接續執行 Pi 的 `Agent`，並分類 provider、host、abort 與 budget failure。
-5. Provider turn 成功後，原子持久化 approval requests。
+5. Provider turn 成功後，記錄被 hold 住的整批 approval requests。
 6. 只在成功且沒有 pending approval 時 auto-compact。
 7. 發出 terminal events，最後 flush durable writer。
 
@@ -167,9 +167,9 @@ Host hook 失敗會記為 internal error 並中止 turn。缺少 volatile contex
 
 ### Prompt 分層
 
-System prompt 只放穩定的規則、skill index 與 approval posture。Public kind 另外把作者已發佈的 profile 以單一 locale、字元上限內渲染進去，因為 profile 有界且只在 operator 編輯時改變。時鐘、draft state 和已存 memory 等 turn-specific 資料，透過 Pi context hook 加在最後一則 volatile user message；每次 provider request 都重新計算，且不持久化。
+System prompt 只放穩定的規則、skill index 與 approval posture。Public kind 另外把作者已發佈的 profile 以單一 locale、字元上限內渲染進去，因為 profile 有界且只在 operator 編輯時改變。時鐘、draft state 和已存 memory 等 turn-specific 資料，透過 Pi context hook 以一則 volatile user message 提供：每個 turn 只讀一次，放在開啟該 turn 的訊息之後（resume 的 turn 則放在它接續的 reply 之前），該 turn 的每次 provider request 都放在同一位置，且不持久化。Turn 自己造成的變化透過 tool 結果讓模型得知。
 
-這能維持 provider cached prefix 穩定，也避免變動資料累積進 transcript。
+Gateway 只把一次 prompt 當作下一次請求的前綴來快取：上一次請求的完整 prompt 是這次的前綴才會命中，否則最多只讀回 system prompt。每次請求都在最後加一則新的 volatile message，因此只有 system prompt 被快取。Snapshot 固定位置後，turn 內第一次之後的每次請求都延伸前一次。不寫進 transcript 可避免變動資料累積，代價是每個 turn 的第一次請求無法命中快取。
 
 ### Turn budget
 
@@ -188,34 +188,35 @@ Budget check 在 approval check 前執行，因此被 budget 拒絕的呼叫不�
 
 ### Durable approval handshake
 
-Approval 不依賴 in-memory promise，也不停在 run 上。需要核准的呼叫會結束該 turn 與它的 run；operator 的決定會啟動自己的 run。
+Approval 不依賴 in-memory promise，也不停在 run 上。帶有需要核准呼叫的 reply 會結束該 turn 與它的 run；operator 的回答會啟動自己的 run，照原本請求的參數執行被核准的呼叫。
 
 ```mermaid
 sequenceDiagram
     participant M as Model
-    participant G as Tool gate
+    participant T as Turn
     participant DB as Approval table
     participant WF as Workflow
     participant U as Operator
 
-    M->>G: gated tool call
-    G-->>M: blocked tool result
-    G->>DB: turn 成功結束時持久化 request
+    M->>T: 帶有 gated calls 的 reply
+    T-->>T: hold 住整批，什麼都不執行
+    T->>DB: turn 成功結束時記錄這一批
     WF->>WF: run 結束
-    U->>DB: persist decision
-    U->>WF: start relay run
-    WF->>M: operator-decision relay turn
-    M->>G: reissue call
-    G-->>M: allow，並花掉這筆 approval
+    U->>DB: 逐一決定 request
+    U->>WF: 整批決定完才啟動 resume run
+    WF->>T: 帶著所有回答重播停下的 reply
+    T-->>M: 核准呼叫的結果，其餘為拒絕
 ```
 
-以下情況可放行：tier 不需核准、session auto-approves 該 tier，或該呼叫的 approval key 有一筆尚未花掉的 approval。Key 是 kind 定義的呼叫身分，不是 call id，因為重發的呼叫會帶新的 id。Writing kind 把 `commit_draft` 綁到 operator 看到的 draft 內容 hash，把 `set_published` 綁到 feed 與目標狀態，所以換一份 draft，或 draft 在決定後被改過，都會重新被 gate。Approval 在呼叫執行前先持久化為已花掉，且只能用於一次呼叫。批准時綁定的 hash 會跟著該呼叫走：`commit_draft` 提交的就是那份內容，apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對 hash，決定與寫入之間被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的內容，同樣在該鎖之下。
+Tool 的 tier 需要核准就會被 gate；session 的 auto-approve 可能在呼叫等待期間改變，所以在 reply 抵達時逐一套用。一個 reply 的整批呼叫會一起被 hold：每個 gated call 都得到回答前，批內什麼都不執行，被 hold 的呼叫在 tree 裡保持沒有結果。每個 gated call 先經過 turn budget 與 kind 的 preflight；被任一拒絕的呼叫以該拒絕作答，tier 被 session auto-approve 的呼叫直接核准。整批都能由 turn 自行作答時，呼叫就地執行；否則 turn 已作答的呼叫會與 requests 一起記錄為已決定（`decided_by` 為空），並跟著一起回答。
 
-Decision 只寫一次，寫在 pending row 上，與 relay run 的 row 在同一個交易，並把該 run 記在 decision 上。對已決定的 row 再呼叫 `approve`，只有在 relay run 關閉時 marker 仍未被 claim（從未執行）才會重送紀錄中的 decision；executor claim 過的 relay 不論結果如何，以及結果不明的 relay，都不會啟動任何東西。Reject 也會建立 relay turn，讓模型回應 operator comment。
+Resume run 會把停下的 reply 重新串流給 Pi，取代第一次 provider 請求，所以 Pi 用與其他 reply 相同的 tool 路徑執行這批呼叫：核准的呼叫再經過一次 budget 與 preflight，以記錄的參數執行；批內其他呼叫照常執行；被拒絕或被檢查擋下的呼叫回傳拒絕內容。重播的 reply 不會再計費，也不會再寫入一次。這些回答綁定的是這個 reply 本身，而不是 call id：同一個 run 後續的 reply 即使重用已回答過的 call id，也會像其他呼叫一樣經過審核。
 
-每個 turn 只有一筆 request：同一 turn 的第二個 gated call 會被拒絕且不記錄，一個決定只回答一筆 request。Request 只在 provider turn 成功後持久化；失敗的 turn 不留下 undecided rows。Relay message 帶有 operator-decision marker，client 會顯示為 notice，而不是使用者輸入。
+Request 會連同它的 run 與 approval key 一起記錄；key 是 kind 定義的呼叫身分：tool、目標，以及 operator 被展示的狀態。Writing kind 把 `commit_draft` 綁到 request 當下的 draft 內容 hash，把 `set_published` 綁到 feed 與目標狀態。Resume 的 turn 會把已核准呼叫的 key 交給 kind，`commit_draft` 提交 key 裡的那份 hash：apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對 hash，request 之後被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的內容，同樣在該鎖之下。
 
-Live stream 可以在持久化前先公告 request，讓 UI 及早顯示；但 approval card 必須等 `run:end{awaiting_approval}` 或重新載入的 pending row 確認後才能操作。其他 terminal state 會撤回這筆暫時 request。
+Decision 只寫一次，寫在 pending row 上。完成一整批的那個 decision 會在同一個交易裡寫入 resume run 的 row，並把該 run 記在整批每一列上；較早的 decision 只記錄自己，不啟動任何東西。對已決定的 row 再呼叫 `approve`，只有在 resume run 關閉時 marker 仍未被 claim（從未執行）才會重送這一批；executor claim 過的 run 不論結果如何，以及結果不明的 run，都不會啟動任何東西。被拒絕的呼叫永遠不會執行：模型讀到的結果是 operator 的留言，transcript 會標記為 `declined`，lesson extraction 從這裡讀取拒絕留言。
+
+Request 只在 provider turn 成功後記錄；失敗的 turn 不留下 undecided rows。記錄完成後 stream 才公告它們，緊接在 `run:end{awaiting_approval}` 之前，卡片從這時起才能操作；重新載入的 pending row 效果相同。
 
 ### Abort 路徑
 
@@ -412,7 +413,7 @@ Harness 本身就是為 host 排程設計的。Lane API 收斂成四個 durable 
 - 每次 transition 都重寫完整的 operation state，turn step 因此可以續跑，`maxRetries = 0` 可以拿掉。
 - Tool call 有 intent、effect、settlement 三段 commit，可宣告 `replay: "safe" | "never"` 與 invocation-scoped memo；assistant 串流 frame 會落地，供 partial 回復。
 - `message_end` 直接帶 entry id，取代 `runTurn` 在 `message_start` 選定 id 的做法；`LaneSnapshot` 配合 `reduceLaneSnapshot` 取代 coarse 與 delta stream cursor 的 reconnect 機制。
-- Approval handshake 不變：`before_tool` hook 的 `block` 加 `terminate` 與現在的 tool gate 完全相同。
+- Approval handshake 對應到 `before_tool` hook：被 hold 的一批以 `block` 加 `terminate` 擋下，resume run 回答那些未完成的呼叫。
 - 必須自寫 Postgres 的 `Storage` 與 `SessionRepo`；上游只出貨 Memory、JSONL 與 SQLite。`@earendil-works/pi-agent-core/harness/session/testing` 匯出 conformance suite 可用來驗證。Entry 已與 Pi 的 union 一致；values、lists 與 harness 自己的 usage ledger 是新表。
 - `packages/agent-runtime/src/turn.ts` 與 `src/pi/` 大半被 lane 呼叫取代。`AgentWireEvent` 仍是 client 邊界，只是 mapper 改吃 `HarnessEvent`。
 

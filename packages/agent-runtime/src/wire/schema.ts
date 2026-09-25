@@ -92,11 +92,6 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     attachments: z.array(agentAttachmentSchema).optional(),
     /** Epoch ms. Optional only so streams written before it existed still parse. */
     at: z.number().optional(),
-    /**
-     * Set when the turn was synthesised by the session's workflow rather than typed by the
-     * operator. Today only the relayed approval decision. Clients render these as notices.
-     */
-    origin: z.enum(["operator-decision"]).optional(),
   }),
   z.object({ type: z.literal("assistant:start"), messageId: z.string() }),
   z.object({

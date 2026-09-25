@@ -24,16 +24,19 @@ import { connectDatabase } from "@chia/db/client";
 import {
   claimAgentRunTurn,
   completeAgentRun,
-  consumeAgentApproval,
+  getAgentApprovalBatch,
   getAgentSession,
   getAgentSessionLastSeq,
-  listUnspentAgentApprovalKeys,
   patchAgentRunMetadata,
-  recordAgentApprovalRequest,
+  recordAgentApprovalBatch,
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
-import { AgentCredentialSource, AgentUsageSource } from "@chia/db/schema";
+import {
+  AgentApprovalStatus,
+  AgentCredentialSource,
+  AgentUsageSource,
+} from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 import { signalAgentAbort } from "@chia/services/agent/abort";
@@ -64,7 +67,7 @@ export interface AgentTurnRequest {
   userId: string;
   /** Subscribed for the turn's `AbortSignal`. */
   abortController: AgentAbortControllerRef;
-  /** The turn's input; credentials omitted run on the house gateway. */
+  /** A prompt, or the answers that resume a stopped turn; credentials omitted run on the house gateway. */
   message: AgentMessagePayload;
 }
 
@@ -78,7 +81,7 @@ type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
 const SESSION_TITLE_TIMEOUT_MS = 8_000;
 
 const needsTitle = (row: AgentSessionRow, request: AgentTurnRequest) =>
-  row.title === null && request.message.decision === undefined;
+  row.title === null && request.message.type === "prompt";
 
 /**
  * Names the session from its first prompt, started before the turn and awaited before `run:end`.
@@ -90,6 +93,8 @@ const titleSession = async (
   row: AgentSessionRow,
   request: AgentTurnRequest
 ): Promise<void> => {
+  if (request.message.type !== "prompt") return;
+  const { text } = request.message;
   try {
     const { fallbackSessionTitle, generateSessionTitle } =
       await import("@chia/agent-runtime/title");
@@ -97,7 +102,7 @@ const titleSession = async (
     const generated = await generateSessionTitle({
       models: task.models,
       model: task.model,
-      text: request.message.text,
+      text,
       systemPrompt: task.systemPrompt,
       ...task.params,
       signal: AbortSignal.timeout(SESSION_TITLE_TIMEOUT_MS),
@@ -112,7 +117,7 @@ const titleSession = async (
           ...usage,
         }),
     });
-    const title = generated ?? fallbackSessionTitle(request.message.text);
+    const title = generated ?? fallbackSessionTitle(text);
     if (title) await setAgentSessionTitleIfUnset(db, row.id, title);
   } catch (error) {
     // Cosmetic; the turn must not fail for it.
@@ -243,12 +248,17 @@ async function runKindTurn(
     import("@chia/agent-runtime/turn"),
   ]);
 
+  const { credentials: encrypted, ...input } = request.message;
+  const resume = input.type === "resume" ? input.resume : undefined;
+
   // Independent reads on the pooled client, not a lock transaction, so they go out together.
-  const [state, { config, defaults }, unspentApprovalKeys] = await Promise.all([
+  const [state, { config, defaults }, batch] = await Promise.all([
     definition.state.load(db, request.sessionId),
     // Read per turn, not per session: an edit in the dashboard reaches the next turn.
     loadKindConfig(db, definition),
-    listUnspentAgentApprovalKeys(db, request.sessionId),
+    resume
+      ? getAgentApprovalBatch(db, request.sessionId, resume.interruptedRunId)
+      : Promise.resolve([]),
   ]);
   if (state === null) {
     throw new FatalError(
@@ -270,7 +280,6 @@ async function runKindTurn(
    * Providers without a credential are unregistered, so a missing key fails as "unknown model"
    * instead of billing the house gateway.
    */
-  const { credentials: encrypted, ...message } = request.message;
   const credentials = decryptAgentCredentials(
     encrypted,
     env.AI_AUTH_PRIVATE_KEY
@@ -309,7 +318,6 @@ async function runKindTurn(
   });
 
   const session = new PgSessionRepo(db, definition.kind).open(row);
-  const approvedApprovalKeys = new Set(unspentApprovalKeys);
 
   const { settle, ...plan } = await definition.prepareTurn({
     db,
@@ -317,9 +325,24 @@ async function runKindTurn(
     state,
     config,
     settings,
+    approvedCalls: batch
+      .filter((approval) => approval.status === AgentApprovalStatus.Approved)
+      .map((approval) => ({
+        toolCallId: approval.toolCallId,
+        key: approval.approvalKey,
+      })),
   });
   const execution = await runTurn({
     ...plan,
+    ...(input.type === "resume"
+      ? { resume: input.resume }
+      : {
+          message: {
+            text: input.text,
+            template: input.template,
+            attachments: input.attachments,
+          },
+        }),
     agentSessionId: row.id,
     agentRunId: request.runId,
     session,
@@ -328,10 +351,7 @@ async function runKindTurn(
     models,
     compaction: { model: compaction.model, models: compaction.models },
     policy: definition.policy,
-    message,
     signal,
-    approvedApprovalKeys,
-    consumeApproval: (key) => consumeAgentApproval(db, request.sessionId, key),
     onEvent: writer.push,
     flushEvents: writer.flush,
     onUsage: sessionUsageListener(db, {
@@ -344,13 +364,24 @@ async function runKindTurn(
           ? compaction.credentials
           : credentials,
     }),
-    persistApproval: (approval) =>
-      recordAgentApprovalRequest(db, {
+    persistApprovals: (approvals) =>
+      recordAgentApprovalBatch(db, {
         sessionId: request.sessionId,
-        toolCallId: approval.toolCallId,
-        toolName: approval.toolName,
-        approvalKey: approval.key,
-        args: asJsonObject(approval.args),
+        runId: request.runId,
+        requests: approvals.requests.map((approval) => ({
+          toolCallId: approval.toolCallId,
+          toolName: approval.toolName,
+          approvalKey: approval.key,
+          args: asJsonObject(approval.args),
+        })),
+        settled: approvals.settled.map((call) => ({
+          toolCallId: call.toolCallId,
+          toolName: call.toolName,
+          approvalKey: call.key,
+          args: asJsonObject(call.args),
+          approved: call.approved,
+          reason: call.reason,
+        })),
       }),
   });
   await settle?.(execution);

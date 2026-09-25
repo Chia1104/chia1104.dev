@@ -56,40 +56,6 @@ describe("foldEvents", () => {
     expect(tool).toMatchObject({ tier: "send", status: "running" });
   });
 
-  it("keeps a gated call pending across the refusal that the gate produces", () => {
-    // The gate refuses, and pi turns that refusal into an error tool result. That error is the
-    // mechanism working, not a failure, so the approval prompt must survive it.
-    const events: AgentWireEvent[] = [
-      {
-        type: "tool:start",
-        toolCallId: "c1",
-        toolName: "commit",
-        label: "Commit",
-        tier: "commit",
-        args: {},
-      },
-      {
-        type: "approval:request",
-        toolCallId: "c1",
-        toolName: "commit",
-        tier: "commit",
-        args: {},
-      },
-      {
-        type: "tool:end",
-        toolCallId: "c1",
-        toolName: "commit",
-        isError: true,
-        summary: "needs approval",
-      },
-    ];
-
-    const state = foldEvents(events);
-    expect(state.pendingApprovals.map((p) => p.toolCallId)).toEqual(["c1"]);
-    const tool = state.items.find((item) => item.kind === "tool");
-    expect(tool).toMatchObject({ status: "awaiting_approval" });
-  });
-
   it("clears the approval once a decision arrives", () => {
     const state = foldEvents([
       {

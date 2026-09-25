@@ -1,6 +1,13 @@
 import { formatPromptTemplateInvocation } from "@earendil-works/pi-agent-core";
+import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import { clampThinkingLevel, uuidv7 } from "@earendil-works/pi-ai";
-import type { Api, Model, Models, UserMessage } from "@earendil-works/pi-ai";
+import type {
+  Api,
+  AssistantMessage,
+  Model,
+  Models,
+  UserMessage,
+} from "@earendil-works/pi-ai";
 
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
@@ -14,29 +21,32 @@ import { errorOfAssistantMessage, errorOfThrown } from "./pi/errors.ts";
 import { runPiAgent } from "./pi/run.ts";
 import type { PromptTemplate } from "./prompts.ts";
 import { buildBranchContext } from "./session/context.ts";
+import type { SessionEntry } from "./session/entries.ts";
 import type { SessionTree } from "./session/tree.ts";
 import { traceAgentTurn } from "./telemetry.ts";
 import type { AgentTool } from "./tools.ts";
+import { createToolCallApprovals } from "./turn/approvals.ts";
 import { createTurnBudget } from "./turn/budget.ts";
 import { createTurnControl } from "./turn/control.ts";
 import type { TurnControl, TurnFailure } from "./turn/control.ts";
-import { createToolCallGate } from "./turn/gate.ts";
 import { createTurnTranscript } from "./turn/transcript.ts";
-import { AgentErrorKind } from "./types.ts";
+import { AgentErrorKind, ApprovalVerdict } from "./types.ts";
 import type {
   AgentPolicy,
   AgentSessionSettings,
   AgentTurnBudget,
   AgentTurnExecution,
   AgentTurnMessage,
+  AgentTurnResume,
   AgentUsageListener,
+  ApprovalBatch,
   ApprovalRequest,
   ToolCallRefusal,
   ToolCallRequest,
 } from "./types.ts";
 import type { AgentAttachment, AgentWireEvent } from "./wire/schema.ts";
 
-export interface RunTurnOptions {
+export interface RunTurnBase {
   agentSessionId: string;
   /** The durable run this turn belongs to; logged beside failures so a stall can be traced. */
   agentRunId?: string;
@@ -61,9 +71,10 @@ export interface RunTurnOptions {
    */
   systemPrompt: string;
   /**
-   * Current state the model should see on every provider request: draft status, clock, anything
-   * that would be stale by the next hop.
-   * Appended as the last message of the request and never persisted. Undefined omits it.
+   * Current state the model should see: draft status, clock, anything that changes between
+   * turns. Read once per turn and sent as a message right after the one that started it, on every
+   * provider request of the turn, so each request still extends the previous one's cached
+   * prompt. Never persisted; undefined omits it.
    */
   volatileContext?: () => string | undefined | Promise<string | undefined>;
   /**
@@ -76,22 +87,18 @@ export interface RunTurnOptions {
   /** See {@link AgentTurnBudget}; crossing it ends the turn as `budget_exhausted`. */
   budget: AgentTurnBudget;
   /**
-   * Kind-specific checks a call must pass before the gate sees it, so a call that would fail
-   * anyway never raises an approval. Runs after the budget; a refusal reads like a tool error.
+   * Kind-specific checks a call must pass before it runs or reaches the operator, so a call that
+   * would fail anyway never raises an approval. Runs after the budget; a refusal reads like a
+   * tool error.
    */
   preflight?: (
     request: ToolCallRequest
   ) => Promise<ToolCallRefusal | undefined> | ToolCallRefusal | undefined;
   /**
-   * What an approval is granted for, as the tool gate defines it. Defaults to the tool name
-   * and its exact arguments.
+   * What an approval request is recorded as: the tool, its target and the state the operator is
+   * shown. Defaults to the tool name and its exact arguments.
    */
   approvalKeyOf?: (request: ToolCallRequest) => string | Promise<string>;
-  /** Approval keys the operator granted and no call has spent. */
-  approvedApprovalKeys?: ReadonlySet<string>;
-  /** Spends one of `approvedApprovalKeys` durably before the call runs. */
-  consumeApproval?: (key: string) => Promise<void>;
-  message: AgentTurnMessage;
   /**
    * Turns the message's attachments into the text block the model reads ahead of the
    * operator's words, and labels them for clients. Required when a message carries any.
@@ -108,16 +115,23 @@ export interface RunTurnOptions {
     signal?: AbortSignal
   ) => Promise<MessageRefusal | undefined>;
   onEvent: (event: AgentWireEvent) => void;
-  /** Persists the request after a successful turn, or rejects without leaving a row. */
-  persistApproval: (approval: ApprovalRequest) => Promise<void>;
+  /** Records the calls a turn stopped on, or rejects without leaving a row. */
+  persistApprovals: (batch: ApprovalBatch) => Promise<void>;
   flushEvents?: () => Promise<void>;
   /** Every provider call of the turn, its auto-compaction included; see {@link AgentUsageListener}. */
   onUsage?: AgentUsageListener;
 }
 
+/** A turn starts from the operator's message, or resumes the calls an earlier turn stopped on. */
+export type AgentTurnInput =
+  | { message: AgentTurnMessage; resume?: never }
+  | { resume: AgentTurnResume; message?: never };
+
+export type RunTurnOptions = RunTurnBase & AgentTurnInput;
+
 /** What a kind contributes to a turn; the host supplies the session, model, events and approvals. */
 export type AgentTurnPlan = Pick<
-  RunTurnOptions,
+  RunTurnBase,
   | "tools"
   | "systemPrompt"
   | "volatileContext"
@@ -140,8 +154,8 @@ export interface RenderedAttachments {
 }
 
 /**
- * The tool and its exact arguments: an approval is good for that call and nothing else.
- * Arguments that are not JSON have no stable identity, so such an approval covers only its own call.
+ * The tool and its exact arguments: an approval request is recorded as that call and nothing else.
+ * Arguments that are not JSON have no stable identity, so such a request names only its call.
  */
 export const defaultApprovalKey = (request: ToolCallRequest): string => {
   const input = asJsonValue(request.input ?? null);
@@ -192,7 +206,7 @@ const admitMessage = async (
     renderAttachments,
     screen,
     signal,
-  }: Pick<RunTurnOptions, "renderAttachments" | "screen" | "signal">,
+  }: Pick<RunTurnBase, "renderAttachments" | "screen" | "signal">,
   control: TurnControl
 ): Promise<RenderedAttachments | undefined> => {
   let rendered: RenderedAttachments | undefined;
@@ -212,8 +226,7 @@ const admitMessage = async (
       );
     }
   }
-  // A relayed decision is the host's text, not something the caller typed.
-  if (screen && !control.failure && !message.decision) {
+  if (screen && !control.failure) {
     try {
       const refusal = await screen(message, signal);
       if (refusal) {
@@ -276,6 +289,19 @@ const reportTurnFailure = (
   }
 };
 
+/**
+ * The reply a resumed turn continues from: the tree's last entry, the reply whose calls the
+ * interrupted turn left open.
+ */
+const stoppedReplyOf = (
+  branch: readonly SessionEntry[]
+): AssistantMessage | undefined => {
+  const last = branch.at(-1);
+  return last?.type === "message" && last.message.role === "assistant"
+    ? last.message
+    : undefined;
+};
+
 const executeTurn = async (
   options: RunTurnOptions
 ): Promise<AgentTurnExecution> => {
@@ -295,11 +321,10 @@ const executeTurn = async (
     budget,
     preflight,
     approvalKeyOf = defaultApprovalKey,
-    approvedApprovalKeys,
-    consumeApproval,
     message,
+    resume,
     onEvent,
-    persistApproval,
+    persistApprovals,
     flushEvents,
     onUsage,
   } = options;
@@ -317,24 +342,9 @@ const executeTurn = async (
           message: `The model issued more than ${budget.hardMaxToolCalls} tool calls in one turn.`,
         }),
     });
-    const gate = createToolCallGate({
-      policy,
-      autoApprove: settings.autoApprove,
-      approvalKeyOf,
-      approvedKeys: approvedApprovalKeys,
-      consumeApproval,
-      // Announced at once so the approval card replaces the tool card while the model is still
-      // writing its hand-back.
-      onRequest: (request) =>
-        onEvent({
-          type: "approval:request",
-          toolCallId: request.toolCallId,
-          toolName: request.toolName,
-          tier: request.tier,
-          args: request.args,
-        }),
-    });
-    const rendered = await admitMessage(message, options, control);
+    const rendered = message
+      ? await admitMessage(message, options, control)
+      : undefined;
 
     onEvent({ type: "run:start", sessionId: agentSessionId });
     const transcript = await createTurnTranscript({
@@ -342,48 +352,81 @@ const executeTurn = async (
       onEvent,
       fail: control.fail,
     });
-    if (message.decision) {
-      // The decision was persisted by the host before this turn was woken, so announcing it
-      // here is a replay of fact, not a new state; it closes the approval card on the live
-      // view.
-      onEvent({
-        type: "approval:resolved",
-        toolCallId: message.decision.toolCallId,
-        approved: message.decision.approved,
-        comment: message.decision.comment,
-      });
-    }
-    const userEntryId = uuidv7();
-    onEvent({
-      type: "user",
-      messageId: userEntryId,
-      text: message.text,
-      attachments: rendered?.attachments,
-      at: Date.now(),
-      origin: message.decision ? "operator-decision" : undefined,
-    });
 
-    // A failure raised before the model (unrenderable attachments, a refused message) keeps the
-    // message out of the tree.
-    let admitted = false;
-    if (!control.failure && !control.aborted) {
-      let text: string | undefined;
-      try {
-        text = promptText(message, promptTemplates);
-      } catch (error) {
-        control.fail(errorOfThrown(error), error);
-      }
-      if (text !== undefined) {
-        admitted = await transcript.append({
-          id: userEntryId,
-          message: userMessageOf(text, rendered),
-          attachments: rendered?.attachments,
+    /** The branch the run continues from; unset when the model must not run. */
+    let context:
+      | { messages: AgentMessage[]; replay?: AssistantMessage }
+      | undefined;
+    if (resume) {
+      // The decisions were persisted before this turn started; announcing them closes the
+      // approval cards on a live view.
+      for (const decision of resume.decisions) {
+        onEvent({
+          type: "approval:resolved",
+          toolCallId: decision.toolCallId,
+          approved: decision.verdict === ApprovalVerdict.Approved,
+          comment: decision.comment,
         });
       }
+      const branch = await session.getBranch(transcript.leafId);
+      const replay = stoppedReplyOf(branch);
+      if (!replay) {
+        control.fail({
+          kind: AgentErrorKind.Internal,
+          message: "The session does not end on the reply this turn resumes.",
+        });
+      } else if (!control.aborted) {
+        context = {
+          messages: buildBranchContext(branch.slice(0, -1)),
+          replay,
+        };
+      }
+    } else {
+      const id = uuidv7();
+      onEvent({
+        type: "user",
+        messageId: id,
+        text: message.text,
+        attachments: rendered?.attachments,
+        at: Date.now(),
+      });
+      // A failure raised before the model (unrenderable attachments, a refused message) keeps
+      // the message out of the tree.
+      if (!control.failure && !control.aborted) {
+        let text: string | undefined;
+        try {
+          text = promptText(message, promptTemplates);
+        } catch (error) {
+          control.fail(errorOfThrown(error), error);
+        }
+        if (
+          text !== undefined &&
+          (await transcript.append({
+            id,
+            message: userMessageOf(text, rendered),
+            attachments: rendered?.attachments,
+          }))
+        ) {
+          context = {
+            messages: buildBranchContext(
+              await session.getBranch(transcript.leafId)
+            ),
+          };
+        }
+      }
     }
 
-    let reply: Awaited<ReturnType<typeof runPiAgent>>;
-    if (admitted) {
+    const approvals = createToolCallApprovals({
+      policy,
+      autoApprove: settings.autoApprove,
+      approvalKeyOf,
+      check: async (request) =>
+        turnBudget.handle(request) ?? (await preflight?.(request)),
+      decisions: resume?.decisions,
+    });
+
+    let reply: AssistantMessage | undefined;
+    if (context && !control.failure) {
       try {
         reply = await runPiAgent(
           {
@@ -396,16 +439,14 @@ const executeTurn = async (
             tools,
             volatileContext,
             policy,
-            check: async (request) =>
-              turnBudget.handle(request) ??
-              (await preflight?.(request)) ??
-              (await gate.handle(request)),
+            approvals,
             control,
             transcript,
             onEvent,
             onUsage,
           },
-          buildBranchContext(await session.getBranch(transcript.leafId))
+          context.messages,
+          context.replay
         );
       } catch (error) {
         control.fail(errorOfThrown(error), error);
@@ -414,39 +455,49 @@ const executeTurn = async (
     control.endGeneration();
 
     // Pi resolves provider failures as an assistant message rather than throwing: `error`
-    // carries the provider's text (post-retry), `aborted` means the run's controller fired.
+    // carries the provider's text (post-retry), `aborted` means the run's controller fired. A
+    // resumed turn whose calls were all held again has no new reply of its own.
     let failure: TurnFailure | undefined = control.failure;
-    if (!failure && admitted && !control.aborted) {
-      if (!reply) {
+    if (!failure && context && !control.aborted) {
+      if (!reply && !approvals.interrupted) {
         failure = {
           error: {
             kind: AgentErrorKind.Internal,
             message: "The turn completed without an assistant message.",
           },
         };
-      } else if (reply.stopReason === "error") {
+      } else if (reply?.stopReason === "error") {
         failure = {
           error: errorOfAssistantMessage(reply, model.contextWindow),
         };
       }
     }
-    // An abort that lands after the reply resolved must still keep the turn from persisting
-    // approvals or compacting: the run is being cancelled, and rows written now would outlive
-    // it.
+    // An abort that lands after the reply resolved must still keep the turn from recording
+    // approvals or compacting: the run is being cancelled, and rows written now would outlive it.
     const stopped =
       !failure && (control.aborted || reply?.stopReason === "aborted");
 
-    let approval: ApprovalRequest | undefined;
-    if (!failure && !stopped && gate.request) {
+    let awaiting: ApprovalRequest[] | undefined;
+    const batch = approvals.interrupted;
+    if (!failure && !stopped && batch) {
       try {
-        await persistApproval(gate.request);
-        approval = gate.request;
+        await persistApprovals(batch);
+        awaiting = batch.requests;
+        for (const request of batch.requests) {
+          onEvent({
+            type: "approval:request",
+            toolCallId: request.toolCallId,
+            toolName: request.toolName,
+            tier: request.tier,
+            args: request.args,
+          });
+        }
       } catch (error) {
         failure = { error: errorOfThrown(error), cause: error };
       }
     }
 
-    if (!failure && !stopped && approval === undefined) {
+    if (!failure && !stopped && awaiting === undefined) {
       await compactAfterTurn(options);
     }
 
@@ -462,8 +513,8 @@ const executeTurn = async (
       ? { status: "error", error: failure.error }
       : stopped
         ? { status: "aborted" }
-        : approval
-          ? { status: "awaiting_approval", approval }
+        : awaiting
+          ? { status: "awaiting_approval", approvals: awaiting }
           : { status: "done" };
 
     onEvent({ type: "run:end", reason: execution.status });
@@ -480,9 +531,9 @@ const executeTurn = async (
 
 /**
  * Executes one turn on Pi, traced as one `invoke_agent` span. The operator's message is appended
- * to the session tree, then Pi's `Agent` continues from the branch projected into messages;
- * every finished message is appended before its event reaches the wire. Nothing about the run
- * outlives the call.
+ * to the session tree, or a stopped reply's calls are resumed, then Pi's `Agent` continues from
+ * the branch projected into messages; every finished message is appended before its event
+ * reaches the wire. Nothing about the run outlives the call.
  */
 export const runTurn = (options: RunTurnOptions): Promise<AgentTurnExecution> =>
   traceAgentTurn(

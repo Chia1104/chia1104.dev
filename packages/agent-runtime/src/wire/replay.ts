@@ -12,7 +12,6 @@ import type { SessionEntry } from "../session/entries.ts";
 import type { AgentEventPresentation } from "../types.ts";
 
 import { clipDetails } from "./clip.ts";
-import { isOperatorDecisionText } from "./operator-decision.ts";
 import type { AgentWireEvent } from "./schema.ts";
 
 /** A finished assistant message as its terminal wire event, live and replayed alike. */
@@ -85,9 +84,10 @@ export const toolEndEvent = (
  * A message's wire id is its entry id, live and replayed alike, so a client can name the entry
  * behind any message it shows (rewind and fork targets).
  *
- * Pi appends a call's result right after the assistant message that issued it, so a call whose
- * result is not the next thing on the branch never got one. Those are closed as `aborted` here:
- * a `tool:start` with no end would read as still running forever.
+ * A call's result follows the reply that issued it, so a call whose result is not among the
+ * entries right after that reply never got one. Those are closed as `aborted` here: a
+ * `tool:start` with no end would read as still running forever. A call still waiting on the
+ * operator is reopened by its approval row on the client.
  */
 export const entriesToWireEvents = (
   entries: readonly SessionEntry[],
@@ -140,7 +140,6 @@ export const entriesToWireEvents = (
         text,
         attachments: entry.attachments,
         at: message.timestamp,
-        origin: isOperatorDecisionText(text) ? "operator-decision" : undefined,
       });
       continue;
     }

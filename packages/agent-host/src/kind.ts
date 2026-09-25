@@ -200,6 +200,11 @@ export interface AgentTurnContext<TState, TConfig extends object> {
   state: TState;
   config: TConfig;
   settings: AgentSessionSettings;
+  /**
+   * The gated calls the operator approved that this turn runs, with the keys they were recorded
+   * under; empty for a turn started by a message.
+   */
+  approvedCalls: readonly { toolCallId: string; key: string }[];
 }
 
 export interface AgentPreparedTurn extends AgentTurnPlan {

@@ -33,9 +33,8 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
   const sessionId = useAgentSession((state) => state.sessionId);
   const kind = useAgentSession((state) => state.kind);
   const autoApprove = useSessionDetail().data?.settings?.autoApprove;
-  // Decidable only once the turn has handed back: the request is announced while the model is
-  // still writing and before the server has persisted it, and a decision sent in that window
-  // has no row to land on. `run:end{awaiting_approval}` and a reloaded pending row both set this.
+  // Decidable only once the turn has handed back and the request is recorded:
+  // `run:end{awaiting_approval}` and a reloaded pending row both set this.
   const decidable = useAgentSession(
     (state) => state.view.runStatus === "awaiting_approval"
   );
