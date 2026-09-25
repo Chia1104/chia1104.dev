@@ -1,22 +1,22 @@
-import { toolResultDetails } from "@chia/agent-runtime/tools";
 import {
   asJsonArray,
   asJsonObject,
   asNumber,
   asString,
 } from "@chia/utils/json";
+import type { JsonValue } from "@chia/utils/json";
 
 import { ContentToolName } from "./registry.ts";
 
 /**
- * One transcript line for a content read tool's result, or `undefined` for a tool that is not
- * one of these. Errors are handled by the kind's summarizer before dispatch.
+ * One transcript line for a content read tool's successful result, or `undefined` for a tool
+ * that is not one of these.
  */
-export const summarizeContentToolResult = <TResult>(
+export const summarizeContentToolResult = (
   toolName: string,
-  result: TResult
+  value: JsonValue | undefined
 ): string | undefined => {
-  const details = toolResultDetails(result);
+  const details = asJsonObject(value);
 
   switch (toolName) {
     case ContentToolName.SearchPosts: {

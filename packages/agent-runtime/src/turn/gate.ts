@@ -9,18 +9,17 @@ import type {
 } from "../types.ts";
 
 /**
- * Tier-based permission gate, composed into Pi's `beforeToolCall` hook.
- *
- * Pi's hook contract is "return `{ block: true, reason }` to refuse", and the refusal comes
- * back to the model as an error tool result. Used as the approval handshake rather than
- * blocking the harness on a promise: a turn parked on an in-memory deferred cannot survive a
- * deploy, whereas a refused tool call leaves the session tree consistent and resumable. The
- * operator approves, and the next turn re-issues the call with the approval on record.
+ * Tier-based permission gate, run before every tool call after the budget and the kind's
+ * preflight. A refusal comes back to the model as an error tool result. Used as the approval
+ * handshake rather than blocking the turn on a promise: a turn parked on an in-memory deferred
+ * cannot survive a deploy, whereas a refused tool call leaves the session tree consistent and
+ * resumable. The operator approves, and the next turn re-issues the call with the approval on
+ * record.
  *
  * Classification is injected via {@link AgentPolicy}.
  */
 
-export interface PiToolCallGateOptions {
+export interface ToolCallGateOptions {
   policy: AgentPolicy;
   /** Tiers the operator pre-approved for the whole session. */
   autoApprove: readonly ToolTier[];
@@ -46,7 +45,7 @@ export interface PiToolCallGateOptions {
   onRequest?: (request: ApprovalRequest) => void;
 }
 
-export interface PiToolCallGate {
+export interface ToolCallGate {
   handle: (event: ToolCallRequest) => Promise<ToolCallRefusal | undefined>;
   /**
    * The request this turn raised, if any. One per turn: the workflow parks on exactly one
@@ -55,9 +54,9 @@ export interface PiToolCallGate {
   readonly request: ApprovalRequest | undefined;
 }
 
-export const createPiToolCallGate = (
-  options: PiToolCallGateOptions
-): PiToolCallGate => {
+export const createToolCallGate = (
+  options: ToolCallGateOptions
+): ToolCallGate => {
   let request: ApprovalRequest | undefined;
   const approved = new Set(options.approvedKeys);
 
@@ -85,7 +84,6 @@ export const createPiToolCallGate = (
             tool: toolName,
           });
           return {
-            block: true,
             reason:
               `\`${toolName}\` was approved but the approval could not be recorded as used. ` +
               `Stop here and tell the operator; do not retry this tool.`,
@@ -95,7 +93,6 @@ export const createPiToolCallGate = (
 
       if (request) {
         return {
-          block: true,
           reason:
             `\`${toolName}\` needs human approval, and \`${request.toolName}\` is already waiting for the operator's decision. ` +
             `Only one request can wait at a time. Stop here and summarise what you are about to do; ` +
@@ -113,7 +110,6 @@ export const createPiToolCallGate = (
       options.onRequest?.(request);
 
       return {
-        block: true,
         // Phrased for the model: it must stop and wait, not retry or work around the gate.
         reason:
           `\`${toolName}\` needs human approval before it can run. ` +

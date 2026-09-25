@@ -9,7 +9,7 @@ import {
   fallbackSessionTitle,
   generateSessionTitle,
   normalizeSessionTitle,
-} from "../src/pi/title.ts";
+} from "../src/title.ts";
 
 /**
  * The title generator's contract is "a short line or nothing, never a throw". The model is

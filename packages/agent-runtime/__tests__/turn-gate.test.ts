@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createPiToolCallGate } from "../src/pi/tool-gate.ts";
+import { createToolCallGate } from "../src/turn/gate.ts";
 import type { AgentPolicy, ToolCallRequest } from "../src/types.ts";
 
 /**
@@ -32,9 +32,9 @@ const call = (
 const keyOf = (request: ToolCallRequest) =>
   `${request.toolName}:${JSON.stringify(request.input)}`;
 
-describe("createPiToolCallGate", () => {
+describe("createToolCallGate", () => {
   it("lets a tier through when the policy does not gate it", async () => {
-    const gate = createPiToolCallGate({
+    const gate = createToolCallGate({
       policy: policy(),
       autoApprove: [],
       approvalKeyOf: keyOf,
@@ -45,7 +45,7 @@ describe("createPiToolCallGate", () => {
   });
 
   it("blocks a gated tier and records the request under its key", async () => {
-    const gate = createPiToolCallGate({
+    const gate = createToolCallGate({
       policy: policy(),
       autoApprove: [],
       approvalKeyOf: keyOf,
@@ -53,7 +53,7 @@ describe("createPiToolCallGate", () => {
 
     const result = await gate.handle(call("write_thing"));
 
-    expect(result?.block).toBe(true);
+    expect(result?.reason).toBeDefined();
     // The reason is fed straight back to the model, so it must tell it to stop rather than
     // retry.
     expect(result?.reason).toMatch(/do not retry/i);
@@ -68,7 +68,7 @@ describe("createPiToolCallGate", () => {
 
   it("records one request per turn and refuses later gated calls without recording them", async () => {
     const onRequest = vi.fn();
-    const gate = createPiToolCallGate({
+    const gate = createToolCallGate({
       policy: policy(),
       autoApprove: [],
       approvalKeyOf: keyOf,
@@ -78,14 +78,14 @@ describe("createPiToolCallGate", () => {
     await gate.handle(call("write_thing", "call-1"));
     const second = await gate.handle(call("write_other", "call-2"));
 
-    expect(second?.block).toBe(true);
+    expect(second?.reason).toBeDefined();
     expect(second?.reason).toMatch(/already waiting/);
     expect(gate.request?.toolCallId).toBe("call-1");
     expect(onRequest).toHaveBeenCalledOnce();
   });
 
   it("lets a tier through when the session pre-approved it", async () => {
-    const gate = createPiToolCallGate({
+    const gate = createToolCallGate({
       policy: policy(),
       autoApprove: ["write"],
       approvalKeyOf: keyOf,
@@ -97,7 +97,7 @@ describe("createPiToolCallGate", () => {
 
   it("spends an approved key on one call, by key rather than call id, and gates the next", async () => {
     const consumeApproval = vi.fn(async () => undefined);
-    const gate = createPiToolCallGate({
+    const gate = createToolCallGate({
       policy: policy(),
       autoApprove: [],
       approvalKeyOf: keyOf,
@@ -113,12 +113,12 @@ describe("createPiToolCallGate", () => {
 
     // Same key again in the same turn: the approval is spent.
     const again = await gate.handle(call("write_thing", "call-10"));
-    expect(again?.block).toBe(true);
+    expect(again?.reason).toBeDefined();
     expect(gate.request?.toolCallId).toBe("call-10");
   });
 
   it("does not let an approval through for a different target", async () => {
-    const gate = createPiToolCallGate({
+    const gate = createToolCallGate({
       policy: policy(),
       autoApprove: [],
       approvalKeyOf: keyOf,
@@ -129,12 +129,12 @@ describe("createPiToolCallGate", () => {
       call("write_thing", "call-2", { some: "other" })
     );
 
-    expect(result?.block).toBe(true);
+    expect(result?.reason).toBeDefined();
     expect(gate.request?.key).toBe('write_thing:{"some":"other"}');
   });
 
   it("keeps the call blocked, without a new request, when the approval cannot be spent", async () => {
-    const gate = createPiToolCallGate({
+    const gate = createToolCallGate({
       policy: policy(),
       autoApprove: [],
       approvalKeyOf: keyOf,
@@ -146,14 +146,14 @@ describe("createPiToolCallGate", () => {
 
     const result = await gate.handle(call("write_thing"));
 
-    expect(result?.block).toBe(true);
+    expect(result?.reason).toBeDefined();
     expect(result?.reason).toMatch(/could not be recorded/);
     expect(gate.request).toBeUndefined();
   });
 
   it("uses the injected policy rather than any built-in tool table", async () => {
     // A kind that gates nothing at all: every tool runs unsupervised.
-    const gate = createPiToolCallGate({
+    const gate = createToolCallGate({
       policy: policy({ requiresApproval: () => false }),
       autoApprove: [],
       approvalKeyOf: keyOf,
@@ -165,7 +165,7 @@ describe("createPiToolCallGate", () => {
 
   it("does not leak one kind's tier names into another's decisions", async () => {
     // `commit` means nothing to this policy; it must not be treated as gated by accident.
-    const gate = createPiToolCallGate({
+    const gate = createToolCallGate({
       policy: policy({
         toolInfo: (name) => ({ label: name, tier: "commit" }),
         requiresApproval: (t) => t === "write",

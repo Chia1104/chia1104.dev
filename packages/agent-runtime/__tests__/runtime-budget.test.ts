@@ -11,7 +11,7 @@ import {
   toolCallTurn,
 } from "./runtime.fixture.ts";
 
-describe("runPiTurn budget", () => {
+describe("runTurn budget", () => {
   it("refuses tool calls past the soft budget and the gate never sees them", async () => {
     const fixture = build();
     fixture.faux.setResponses([

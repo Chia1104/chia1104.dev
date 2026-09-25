@@ -1,9 +1,9 @@
 import { loadKindConfig } from "@chia/agent-host/config";
 import { readAgentTurnMarker } from "@chia/agent-host/execution";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
+import { canCompactBranch } from "@chia/agent-runtime/compaction";
 import { modelRefOf } from "@chia/agent-runtime/models";
 import type { AgentModelRef } from "@chia/agent-runtime/models";
-import { canCompactBranch } from "@chia/agent-runtime/pi/compaction";
 import {
   computeSessionStats,
   entriesUpToSeq,

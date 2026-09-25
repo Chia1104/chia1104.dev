@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import {
   BACKGROUND_CONTEXT,
   compact,
@@ -10,7 +12,6 @@ import type {
   CompactionPreparation,
   ThinkingLevel,
 } from "@earendil-works/pi-agent-core";
-import { uuidv7 } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import { AgentUsageSource } from "@chia/db/schema";
@@ -19,11 +20,11 @@ import type {
   CompactionEntry,
   NewSessionEntry,
   SessionEntry,
-} from "../session/entries.ts";
-import { toPiEntries } from "../session/entries.ts";
-import type { SessionTree } from "../session/tree.ts";
-import { estimateBranchContextTokens } from "../session/usage.ts";
-import type { AgentCompactionResult, AgentUsageListener } from "../types.ts";
+} from "./session/entries.ts";
+import { toPiEntries } from "./session/entries.ts";
+import type { SessionTree } from "./session/tree.ts";
+import { estimateBranchContextTokens } from "./session/usage.ts";
+import type { AgentCompactionResult, AgentUsageListener } from "./types.ts";
 
 /**
  * Window the compaction threshold is measured against when the summariser is not the session's
@@ -114,7 +115,7 @@ const compactBranch = async (
   // the compaction's ancestors must be exactly what its summary covers.
   const entry: NewSessionEntry<CompactionEntry> = {
     type: "compaction",
-    id: uuidv7(),
+    id: randomUUID(),
     parentId: branch.at(-1)?.id ?? null,
     timestamp: Date.now(),
     summary: result.summary,

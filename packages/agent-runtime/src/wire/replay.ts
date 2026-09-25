@@ -1,5 +1,10 @@
-import type { AssistantMessage } from "@earendil-works/pi-ai";
+import type {
+  AssistantMessage,
+  ToolResultMessage,
+} from "@earendil-works/pi-ai";
 import * as z from "zod";
+
+import { asJsonValue } from "@chia/utils/json";
 
 import { errorOfAssistantMessage } from "../pi/errors.ts";
 import type { SessionEntry } from "../session/entries.ts";
@@ -48,26 +53,31 @@ export const toolStartEvent = (
   return { type: "tool:start", ...call, label, tier };
 };
 
-/**
- * `result` is the live tool result or the persisted tool-result message; both carry `details`.
- * Pi types the live result as `any`, so a tool that resolved nothing must not throw here.
- */
-export const toolEndEvent = <TResult extends { details?: unknown } | undefined>(
-  call: {
-    toolCallId: string;
-    toolName: string;
-    isError: boolean;
-    result: TResult;
-  },
+/** The first line of a failed call's text, capped so the transcript stays one line. */
+const failureSummary = (result: ToolResultMessage): string => {
+  const [line] = contentToText(result.content).split("\n");
+  if (!line) return "Failed.";
+  return line.length > 160 ? `${line.slice(0, 160)}…` : line;
+};
+
+/** A persisted tool result as its wire event, live and replayed alike; `details` is what clients render. */
+export const toolEndEvent = (
+  result: ToolResultMessage,
   presentation: AgentEventPresentation
-): AgentWireEvent => ({
-  type: "tool:end",
-  toolCallId: call.toolCallId,
-  toolName: call.toolName,
-  isError: call.isError,
-  summary: presentation.summarize(call.toolName, call.result, call.isError),
-  details: clipDetails(call.result?.details),
-});
+): AgentWireEvent => {
+  // Pi types a result's details as `any`; only JSON is persisted.
+  const details = asJsonValue(result.details);
+  return {
+    type: "tool:end",
+    toolCallId: result.toolCallId,
+    toolName: result.toolName,
+    isError: result.isError,
+    summary: result.isError
+      ? failureSummary(result)
+      : presentation.summarize(result.toolName, details),
+    details: clipDetails(details),
+  };
+};
 
 /**
  * Rebuilds wire events from a persisted branch so a reconnecting client renders through the
@@ -169,17 +179,7 @@ export const entriesToWireEvents = (
 
     if (message.role === "toolResult") {
       open.delete(message.toolCallId);
-      events.push(
-        toolEndEvent(
-          {
-            toolCallId: message.toolCallId,
-            toolName: message.toolName,
-            isError: message.isError,
-            result: message,
-          },
-          options
-        )
-      );
+      events.push(toolEndEvent(message, options));
     }
   }
   closeOpen();

@@ -3,11 +3,11 @@ import { randomUUID } from "node:crypto";
 import * as z from "zod";
 
 import type { WebPort } from "@chia/agent-content/types";
-import { defaultApprovalKey } from "@chia/agent-runtime/pi/turn";
+import { defaultApprovalKey } from "@chia/agent-runtime/turn";
 import type {
   AgentTurnPlan,
   RenderedAttachments,
-} from "@chia/agent-runtime/pi/turn";
+} from "@chia/agent-runtime/turn";
 import type { ToolCallRequest, ToolTier } from "@chia/agent-runtime/types";
 import type { AgentAttachment } from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";

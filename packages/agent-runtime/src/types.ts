@@ -1,6 +1,7 @@
 import type { Usage } from "@earendil-works/pi-ai";
 
 import type { AgentUsageSource } from "@chia/db/schema";
+import type { JsonValue } from "@chia/utils/json";
 
 import type { OperatorDecision } from "./wire/operator-decision.ts";
 import type { AgentAttachment } from "./wire/schema.ts";
@@ -32,20 +33,17 @@ export interface AgentPolicy {
   /** Resolves unknown names too, to the kind's most restrictive tier. */
   toolInfo: (toolName: string) => AgentToolInfo;
   requiresApproval: (tier: ToolTier) => boolean;
-  summarize: <TResult>(
-    toolName: string,
-    result: TResult,
-    isError: boolean
-  ) => string;
+  /** One transcript line for a call that succeeded, from the `details` it persisted. */
+  summarize: (toolName: string, details: JsonValue | undefined) => string;
 }
 
-/** Presentation policy shared by live Pi events and persisted transcript replay. */
+/** Presentation policy shared by live events and persisted transcript replay. */
 export type AgentEventPresentation = Pick<
   AgentPolicy,
   "toolInfo" | "summarize"
 >;
 
-/** A tool call as the turn's hooks see it before execution. */
+/** A tool call as the turn's checks see it before execution. */
 export interface ToolCallRequest {
   toolCallId: string;
   toolName: string;
@@ -59,16 +57,13 @@ export interface ApprovalRequest {
   toolName: string;
   tier: ToolTier;
   args: unknown;
-  /** What an approval of this request is good for; see `PiToolCallGateOptions.approvalKeyOf`. */
+  /** What an approval of this request is good for; see `ToolCallGateOptions.approvalKeyOf`. */
   key: string;
 }
 
 /** Refuses a call. The reason returns to the model as the tool's error result. */
 export interface ToolCallRefusal {
-  block: true;
   reason: string;
-  /** Asks Pi to end the run after this tool batch instead of letting the model continue. */
-  terminate?: true;
 }
 
 /** What a turn runs with. The model is the session's own or, when it names none, the kind's effective default. */

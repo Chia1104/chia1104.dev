@@ -104,7 +104,7 @@ export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
 
 /**
  * The durable stream stays open for the run's whole life; a chat request ends at that turn's
- * `run:end`, which `runPiTurn` always emits after any `error`.
+ * `run:end`, which `runTurn` always emits after any `error`.
  */
 const oneTurn = async function* (
   events: AsyncIterable<AgentWireEvent>

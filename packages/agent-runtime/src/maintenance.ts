@@ -1,31 +1,31 @@
+import { randomUUID } from "node:crypto";
+
 import {
   BACKGROUND_CONTEXT,
   generateBranchSummary,
   withAbortSignal,
 } from "@earendil-works/pi-agent-core";
-import { uuidv7 } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 import { clampThinkingLevel } from "@earendil-works/pi-ai";
 
 import { AgentUsageSource } from "@chia/db/schema";
 
+import { compactSession } from "./compaction.ts";
 import type {
   BranchSummaryEntry,
   NewSessionEntry,
   SessionEntry,
-} from "../session/entries.ts";
-import { toPiEntries } from "../session/entries.ts";
-import type { SessionTree } from "../session/tree.ts";
-import type { AgentSessionSettings, AgentUsageListener } from "../types.ts";
+} from "./session/entries.ts";
+import { toPiEntries } from "./session/entries.ts";
+import type { SessionTree } from "./session/tree.ts";
+import type { AgentSessionSettings, AgentUsageListener } from "./types.ts";
 import type {
   AgentCompactionResult,
   AgentNavigationOptions,
   AgentNavigationResult,
-} from "../types.ts";
+} from "./types.ts";
 
-import { compactSession } from "./compaction.ts";
-
-export interface PiSessionOperationOptions {
+export interface SessionOperationOptions {
   session: SessionTree;
   settings: AgentSessionSettings;
   model: Model<Api>;
@@ -39,7 +39,7 @@ export interface PiSessionOperationOptions {
  * Runs Pi's compaction over the session tree; no tools, prompts or subscriptions are built.
  * `null` when the branch has nothing to condense (see `compactSession`).
  */
-export const compactPiSession = (
+export const compactOnRequest = (
   {
     session,
     settings,
@@ -47,7 +47,7 @@ export const compactPiSession = (
     models,
     signal,
     onUsage,
-  }: PiSessionOperationOptions,
+  }: SessionOperationOptions,
   customInstructions?: string
 ): Promise<AgentCompactionResult | null> =>
   compactSession({
@@ -64,8 +64,8 @@ export const compactPiSession = (
  * Moves the leaf to `entryId`, optionally summarising the branch left behind into a
  * `branch_summary` entry under the new leaf.
  */
-export const navigatePiSession = async (
-  { session, model, models, signal, onUsage }: PiSessionOperationOptions,
+export const navigateSession = async (
+  { session, model, models, signal, onUsage }: SessionOperationOptions,
   entryId: string,
   options: AgentNavigationOptions
 ): Promise<AgentNavigationResult> => {
@@ -116,7 +116,7 @@ export const navigatePiSession = async (
   if (summary) {
     const entry: NewSessionEntry<BranchSummaryEntry> = {
       type: "branch_summary",
-      id: uuidv7(),
+      id: randomUUID(),
       parentId: newLeafId,
       timestamp: Date.now(),
       fromId: newLeafId,

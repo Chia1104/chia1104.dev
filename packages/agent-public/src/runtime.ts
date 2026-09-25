@@ -7,7 +7,7 @@ import type {
 import type {
   AgentTurnPlan,
   RenderedAttachments,
-} from "@chia/agent-runtime/pi/turn";
+} from "@chia/agent-runtime/turn";
 import type { AgentAttachment } from "@chia/agent-runtime/wire/schema";
 import type { GuardProvider } from "@chia/ai/guard/provider";
 import { Locale } from "@chia/db/types";

@@ -8,7 +8,7 @@ import {
   toolCallTurn,
 } from "./runtime.fixture.ts";
 
-describe("runPiTurn abort", () => {
+describe("runTurn abort", () => {
   it("ends an aborted turn without approvals, compaction or an error", async () => {
     const fixture = build();
     await seedOversizedBranch(fixture.session);
@@ -78,7 +78,7 @@ describe("runPiTurn abort", () => {
     const controller = new AbortController();
     const getBranch = fixture.session.getBranch.bind(fixture.session);
     // The abort lands while the turn is still reading the tree, before any run exists to
-    // cancel.
+    // cancel. The operator's message was accepted before it and stays in the tree.
     fixture.session.getBranch = async (fromId) => {
       controller.abort();
       return getBranch(fromId);
@@ -89,7 +89,9 @@ describe("runPiTurn abort", () => {
 
     expect(result.status).toBe("aborted");
     expect(fixture.faux.state.callCount).toBe(0);
-    expect(await fixture.branch()).toEqual([]);
+    expect((await getBranch()).map((entry) => messageOf(entry)?.role)).toEqual([
+      "user",
+    ]);
   });
 
   it("skips the provider entirely when the signal is already aborted", async () => {

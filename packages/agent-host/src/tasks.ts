@@ -20,7 +20,7 @@ import type {
 import {
   SESSION_TITLE_PARAMS,
   SESSION_TITLE_SYSTEM_PROMPT,
-} from "@chia/agent-runtime/pi/title";
+} from "@chia/agent-runtime/title";
 import {
   LESSON_EXTRACTION_PARAMS,
   LESSON_EXTRACTION_SYSTEM_PROMPT,

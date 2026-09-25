@@ -12,7 +12,7 @@ import {
   toolCallTurn,
 } from "./runtime.fixture.ts";
 
-describe("runPiTurn compaction", () => {
+describe("runTurn compaction", () => {
   it("does not compact a successful turn that requests approval", async () => {
     const fixture = build();
     await seedOversizedBranch(fixture.session);

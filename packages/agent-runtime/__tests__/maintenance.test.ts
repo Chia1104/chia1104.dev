@@ -8,8 +8,8 @@ import { describe, expect, it } from "vitest";
 
 import { AgentUsageSource } from "@chia/db/schema";
 
-import { compactPiSession, navigatePiSession } from "../src/pi/maintenance.ts";
-import type { PiSessionOperationOptions } from "../src/pi/maintenance.ts";
+import { compactOnRequest, navigateSession } from "../src/maintenance.ts";
+import type { SessionOperationOptions } from "../src/maintenance.ts";
 import type { NewSessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
 import type { AgentUsageReport } from "../src/types.ts";
@@ -54,7 +54,7 @@ const build = async () => {
   ]) {
     await session.appendEntry(entry);
   }
-  const options: PiSessionOperationOptions = {
+  const options: SessionOperationOptions = {
     session,
     models,
     model: faux.getModel(),
@@ -89,7 +89,7 @@ describe("usage reporting", () => {
     const reports: AgentUsageReport[] = [];
     faux.setResponses([fauxAssistantMessage("They asked twice.")]);
 
-    await navigatePiSession(
+    await navigateSession(
       { ...options, onUsage: (report) => void reports.push(report) },
       "u2",
       { summarize: true }
@@ -115,7 +115,7 @@ describe("usage reporting", () => {
     const reports: AgentUsageReport[] = [];
     faux.setResponses([fauxAssistantMessage("Condensed.")]);
 
-    await compactPiSession({
+    await compactOnRequest({
       ...options,
       onUsage: (report) => void reports.push(report),
     });
@@ -135,11 +135,11 @@ describe("usage reporting", () => {
   });
 });
 
-describe("navigatePiSession", () => {
+describe("navigateSession", () => {
   it("rewinds to a user message by making its parent the leaf", async () => {
     const { session, options } = await build();
 
-    const result = await navigatePiSession(options, "u2", {});
+    const result = await navigateSession(options, "u2", {});
 
     expect(result).toEqual({ cancelled: false });
     await expect(session.getLeafId()).resolves.toBe("a1");
@@ -149,7 +149,7 @@ describe("navigatePiSession", () => {
   it("rewinds to an assistant message by making it the leaf", async () => {
     const { session, options } = await build();
 
-    await navigatePiSession(options, "a1", {});
+    await navigateSession(options, "a1", {});
 
     await expect(session.getLeafId()).resolves.toBe("a1");
   });
@@ -157,7 +157,7 @@ describe("navigatePiSession", () => {
   it("is a no-op when already at the target", async () => {
     const { session, options } = await build();
 
-    await navigatePiSession(options, "a2", {});
+    await navigateSession(options, "a2", {});
 
     await expect(session.getLeafId()).resolves.toBe("a2");
     expect(await session.getEntries()).toHaveLength(4);
@@ -167,7 +167,7 @@ describe("navigatePiSession", () => {
     const { faux, session, options } = await build();
     faux.setResponses([fauxAssistantMessage("They asked twice.")]);
 
-    await navigatePiSession(options, "u2", { summarize: true });
+    await navigateSession(options, "u2", { summarize: true });
 
     const branch = await session.getBranch();
     const summary = branch.at(-1);
@@ -192,7 +192,7 @@ describe("navigatePiSession", () => {
       },
     ]);
 
-    const result = await navigatePiSession(
+    const result = await navigateSession(
       { ...options, signal: controller.signal },
       "u2",
       { summarize: true }
@@ -206,7 +206,7 @@ describe("navigatePiSession", () => {
   it("finds the common ancestor across a compaction so shared history is not summarised", async () => {
     const { faux, session, options } = await build();
     // u1 → a1 → c1 (compaction) → u3 → a3, then rewind to u1 with a summary.
-    await navigatePiSession(options, "a1", {});
+    await navigateSession(options, "a1", {});
     await session.appendEntry({
       type: "compaction",
       id: "c1",
@@ -226,7 +226,7 @@ describe("navigatePiSession", () => {
       },
     ]);
 
-    await navigatePiSession(options, "u1", { summarize: true });
+    await navigateSession(options, "u1", { summarize: true });
 
     const summarised = JSON.stringify(seen[0]?.messages);
     expect(summarised).toContain("Third answer");
@@ -244,19 +244,19 @@ describe("navigatePiSession", () => {
   it("rejects an unknown target", async () => {
     const { options } = await build();
 
-    await expect(navigatePiSession(options, "nope", {})).rejects.toThrow(
+    await expect(navigateSession(options, "nope", {})).rejects.toThrow(
       "Entry nope not found"
     );
   });
 });
 
-describe("compactPiSession", () => {
+describe("compactOnRequest", () => {
   it("appends a compaction entry as the new leaf", async () => {
     const { faux, session, options } = await build();
     await growPastRetainedTail(session);
     faux.setResponses([fauxAssistantMessage("Two questions, two answers.")]);
 
-    const result = await compactPiSession(options);
+    const result = await compactOnRequest(options);
 
     expect(result).toMatchObject({ summary: "Two questions, two answers." });
     const leaf = (await session.getBranch()).at(-1);
@@ -273,7 +273,7 @@ describe("compactPiSession", () => {
     const empty = new InMemorySessionTree("empty");
 
     await expect(
-      compactPiSession({ ...options, session: empty })
+      compactOnRequest({ ...options, session: empty })
     ).resolves.toBeNull();
   });
 
@@ -289,7 +289,7 @@ describe("compactPiSession", () => {
     ]);
 
     await expect(
-      compactPiSession({ ...options, signal: controller.signal })
+      compactOnRequest({ ...options, signal: controller.signal })
     ).rejects.toMatchObject({ code: "aborted" });
 
     await expect(session.getLeafId()).resolves.toBe("a3");
@@ -301,7 +301,7 @@ describe("compactPiSession", () => {
     faux.setResponses([fauxAssistantMessage("Never asked for.")]);
     const before = await session.getLeafId();
 
-    await expect(compactPiSession(options)).resolves.toBeNull();
+    await expect(compactOnRequest(options)).resolves.toBeNull();
 
     await expect(session.getLeafId()).resolves.toBe(before);
     expect(faux.getPendingResponseCount()).toBe(1);

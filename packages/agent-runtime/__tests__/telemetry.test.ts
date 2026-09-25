@@ -7,7 +7,6 @@ import {
   InMemorySpanExporter,
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
-import { Type } from "typebox";
 import {
   afterAll,
   beforeAll,
@@ -17,6 +16,7 @@ import {
   it,
   vi,
 } from "vitest";
+import * as z from "zod";
 
 import { traceModelStream, withModelSpans } from "../src/telemetry.ts";
 import { defineTool } from "../src/tools.ts";
@@ -125,9 +125,8 @@ describe("agent turn telemetry", () => {
     const leak = defineTool(
       {
         name: "leak",
-        label: "Leak",
         description: "Fails with the operator's text.",
-        parameters: Type.Object({}),
+        parameters: z.object({}),
       },
       () => () => Promise.reject(new TypeError("draft: my private note"))
     )({});

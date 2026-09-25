@@ -92,7 +92,7 @@ const titleSession = async (
 ): Promise<void> => {
   try {
     const { fallbackSessionTitle, generateSessionTitle } =
-      await import("@chia/agent-runtime/pi/title");
+      await import("@chia/agent-runtime/title");
     const task = await resolveAgentTask(db, AgentTaskId.SessionTitle);
     const generated = await generateSessionTitle({
       models: task.models,
@@ -236,11 +236,11 @@ async function runKindTurn(
   const [
     { accessOf, createAgentModels, UnknownAgentModelError },
     { PgSessionRepo, settingsFromRow },
-    { runPiTurn },
+    { runTurn },
   ] = await Promise.all([
     import("@chia/agent-runtime/models"),
     import("@chia/agent-runtime/session/pg-repo"),
-    import("@chia/agent-runtime/pi/turn"),
+    import("@chia/agent-runtime/turn"),
   ]);
 
   // Independent reads on the pooled client, not a lock transaction, so they go out together.
@@ -318,7 +318,7 @@ async function runKindTurn(
     config,
     settings,
   });
-  const execution = await runPiTurn({
+  const execution = await runTurn({
     ...plan,
     agentSessionId: row.id,
     agentRunId: request.runId,
