@@ -1846,9 +1846,6 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
-      '@earendil-works/pi-ai':
-        specifier: catalog:agent
-        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1862,6 +1859,9 @@ importers:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
+      '@earendil-works/pi-ai':
+        specifier: catalog:agent
+        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.2
@@ -1947,9 +1947,6 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
-      '@earendil-works/pi-ai':
-        specifier: catalog:agent
-        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
       diff:
         specifier: 'catalog:'
         version: 9.0.0
@@ -1966,6 +1963,9 @@ importers:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
+      '@earendil-works/pi-ai':
+        specifier: catalog:agent
+        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.2

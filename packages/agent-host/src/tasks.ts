@@ -5,6 +5,7 @@ import {
   HOUSE_ACCESS,
   houseModel,
   listModels,
+  loadGatewayPrices,
   modelRefOf,
   NO_ACCESS,
   resolveModel,
@@ -13,9 +14,11 @@ import {
 import type {
   AgentCredentials,
   AgentModel,
+  AgentModels,
   AgentModelInfo,
   AgentModelPredicate,
   AgentModelRef,
+  GatewayPrices,
 } from "@chia/agent-runtime/models";
 import {
   SESSION_TITLE_PARAMS,
@@ -35,7 +38,6 @@ import {
   FEED_SUMMARY_PARAMS,
   FEED_SUMMARY_SYSTEM_PROMPT,
 } from "./feed-summary";
-import type { AgentModels } from "./kind";
 import {
   REPORT_TRIAGE_PARAMS,
   REPORT_TRIAGE_SYSTEM_PROMPT,
@@ -207,10 +209,16 @@ export const resolveAgentTask = async (
   const row = await getAgentTaskConfig(db, taskId);
 
   const pinned = modelRefOf(row);
+  // A task on a house model is billed at the gateway's prices; one on the session model is
+  // priced by the session's own collection.
+  const prices =
+    pinned || definition.defaultModel !== "session"
+      ? await loadGatewayPrices()
+      : undefined;
   const resolved =
-    (pinned && resolveFixed(pinned)) ??
+    (pinned && resolveFixed(pinned, prices)) ??
     (pinned && warnStale(taskId, pinned)) ??
-    resolveDefault(definition, options);
+    resolveDefault(definition, options, prices);
 
   return {
     ...resolved,
@@ -224,9 +232,10 @@ export const resolveAgentTask = async (
 };
 
 const resolveFixed = (
-  ref: AgentModelRef
+  ref: AgentModelRef,
+  prices: GatewayPrices | undefined
 ): Pick<ResolvedAgentTask, "model" | "models" | "credentials"> | null => {
-  const models = createAgentModels();
+  const models = createAgentModels({}, prices);
   try {
     return {
       model: resolveModel(ref, isAgentTaskModel, models, NO_ACCESS),
@@ -249,7 +258,8 @@ const warnStale = (taskId: string, ref: AgentModelRef): null => {
 
 const resolveDefault = (
   definition: AgentTaskDefinition,
-  options: ResolveAgentTaskOptions
+  options: ResolveAgentTaskOptions,
+  prices: GatewayPrices | undefined
 ): Pick<ResolvedAgentTask, "model" | "models" | "credentials"> => {
   if (definition.defaultModel === "session") {
     if (!options.session) {
@@ -259,7 +269,7 @@ const resolveDefault = (
     }
     return options.session();
   }
-  const fixed = resolveFixed(definition.defaultModel);
+  const fixed = resolveFixed(definition.defaultModel, prices);
   if (!fixed) throw new UnknownAgentModelError(definition.defaultModel);
   return fixed;
 };

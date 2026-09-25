@@ -1,5 +1,3 @@
-import type { Api, Model, Models } from "@earendil-works/pi-ai";
-
 import {
   AgentProvider,
   createAgentCatalog,
@@ -11,10 +9,12 @@ import {
   sameModel,
 } from "@chia/agent-runtime/models";
 import type {
+  AgentModel,
   AgentModelAccess,
   AgentModelInfo,
   AgentModelPredicate,
   AgentModelRef,
+  AgentModels,
 } from "@chia/agent-runtime/models";
 import type { AgentSessionDefaults } from "@chia/agent-runtime/types";
 
@@ -46,10 +46,10 @@ export const DEFAULT_PUBLIC_MODEL: AgentModelRef = houseModel("public");
  */
 export const resolvePublicModel = (
   ref: AgentModelRef,
-  models: Models = createAgentModels(),
+  models: AgentModels = createAgentModels(),
   access: AgentModelAccess = NO_ACCESS,
   house: AgentModelRef = DEFAULT_PUBLIC_MODEL
-): Model<Api> => resolveModel(ref, publicModelPolicy(house), models, access);
+): AgentModel => resolveModel(ref, publicModelPolicy(house), models, access);
 
 /**
  * Validates a selection against the catalogue, not a credential-bearing collection, so

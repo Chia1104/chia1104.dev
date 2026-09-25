@@ -1,10 +1,10 @@
 import type * as z from "zod";
 
 import type { PostFeedType } from "@chia/agent-content/types";
-import type { createAgentModels } from "@chia/agent-runtime/models";
 import type {
   AgentModel,
   AgentModelAccess,
+  AgentModels,
   AgentModelInfo,
   AgentModelRef,
 } from "@chia/agent-runtime/models";
@@ -192,8 +192,6 @@ export interface AgentKindState<TState> {
     attachments: readonly AgentAttachmentInput[]
   ): Promise<void>;
 }
-
-export type AgentModels = ReturnType<typeof createAgentModels>;
 
 /** What the turn step has resolved before the kind prepares the turn. */
 export interface AgentTurnContext<TState, TConfig extends object> {

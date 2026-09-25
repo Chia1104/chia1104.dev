@@ -289,6 +289,8 @@ Better Auth anonymous plugin 會替 guest 建立真正的 user row，因此 gues
 
 `Models` 依 caller 與 turn 建立。只有 caller 提供 key 時才註冊 BYOK provider。Selected model 與 Pi stream function 使用同一個 credential-bearing collection；禁止使用 process-wide default model function。
 
+模型本身、它的上限與請求上的 quirk 來自 Pi 的 catalogue；gateway call 的價格則以 gateway 為準：凡是會計費的呼叫（turn、maintenance 與 house task），都以 gateway 的公開 catalogue（`@chia/ai/gateway`，每小時最多讀一次）取代 Pi 已知 gateway 模型的費率，包含 Pi catalogue 沒有列的分段計價。Gateway 有但 Pi 不認得的模型不會開放；catalogue 讀不到時沿用 Pi 的費率。
+
 每個 domain 擁有自己的 model allowlist。One-shot task 可使用 session model 或 pinned house model，但不能借用無關的 ambient credentials。
 
 ### Usage ledger 與 quota

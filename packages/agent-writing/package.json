@@ -64,7 +64,6 @@
     "@chia/db": "workspace:*",
     "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@earendil-works/pi-ai": "catalog:agent",
     "diff": "catalog:",
     "es-toolkit": "catalog:",
     "zod": "catalog:"
@@ -72,6 +71,7 @@
   "devDependencies": {
     "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
+    "@earendil-works/pi-ai": "catalog:agent",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
