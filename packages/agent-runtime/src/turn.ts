@@ -1,7 +1,5 @@
-import { randomUUID } from "node:crypto";
-
 import { formatPromptTemplateInvocation } from "@earendil-works/pi-agent-core";
-import { clampThinkingLevel } from "@earendil-works/pi-ai";
+import { clampThinkingLevel, uuidv7 } from "@earendil-works/pi-ai";
 import type { Api, Model, Models, UserMessage } from "@earendil-works/pi-ai";
 
 import { logger } from "@chia/observability/logger";
@@ -355,7 +353,7 @@ const executeTurn = async (
         comment: message.decision.comment,
       });
     }
-    const userEntryId = randomUUID();
+    const userEntryId = uuidv7();
     onEvent({
       type: "user",
       messageId: userEntryId,

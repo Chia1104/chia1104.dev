@@ -1,8 +1,9 @@
+import { contentText } from "@earendil-works/pi-ai";
 import type {
   AssistantMessage,
   ToolResultMessage,
+  UserMessage,
 } from "@earendil-works/pi-ai";
-import * as z from "zod";
 
 import { asJsonValue } from "@chia/utils/json";
 
@@ -26,10 +27,7 @@ export const assistantEndEvent = (
   return {
     type: "assistant:end",
     messageId,
-    text: message.content
-      .filter((part) => part.type === "text")
-      .map((part) => part.text)
-      .join(""),
+    text: contentText(message.content, ""),
     thinking: thinking || undefined,
     stopReason: message.stopReason,
     at: message.timestamp,
@@ -55,7 +53,7 @@ export const toolStartEvent = (
 
 /** The first line of a failed call's text, capped so the transcript stays one line. */
 const failureSummary = (result: ToolResultMessage): string => {
-  const [line] = contentToText(result.content).split("\n");
+  const [line] = contentText(result.content).split("\n");
   if (!line) return "Failed.";
   return line.length > 160 ? `${line.slice(0, 160)}…` : line;
 };
@@ -134,8 +132,8 @@ export const entriesToWireEvents = (
     if (message.role === "user") {
       // With attachments the first text block is their rendering; the operator's words are last.
       const text = entry.attachments?.length
-        ? (textParts(message.content).at(-1) ?? "")
-        : contentToText(message.content);
+        ? lastTextOf(message.content)
+        : contentText(message.content, "");
       events.push({
         type: "user",
         messageId: entry.id,
@@ -187,18 +185,8 @@ export const entriesToWireEvents = (
   return events;
 };
 
-const textParts = (
-  content: string | readonly { type: string; text?: string }[]
-): string[] => {
-  const text = z.string().safeParse(content).data;
-  if (text !== undefined) return [text];
-  return z
-    .array(z.object({ type: z.string(), text: z.string().optional() }))
-    .parse(content)
-    .filter((part) => part.type === "text")
-    .map((part) => part.text ?? "");
-};
-
-const contentToText = (
-  content: string | readonly { type: string; text?: string }[]
-): string => textParts(content).join("");
+/** The last text part: with attachments, the operator's words follow the rendered block. */
+const lastTextOf = (content: UserMessage["content"]): string =>
+  Array.isArray(content)
+    ? (content.findLast((part) => part.type === "text")?.text ?? "")
+    : contentText(content);

@@ -1,12 +1,10 @@
-import { randomUUID } from "node:crypto";
-
 import {
   BACKGROUND_CONTEXT,
   generateBranchSummary,
   withAbortSignal,
 } from "@earendil-works/pi-agent-core";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
-import { clampThinkingLevel } from "@earendil-works/pi-ai";
+import { clampThinkingLevel, uuidv7 } from "@earendil-works/pi-ai";
 
 import { AgentUsageSource } from "@chia/db/schema";
 
@@ -116,7 +114,7 @@ export const navigateSession = async (
   if (summary) {
     const entry: NewSessionEntry<BranchSummaryEntry> = {
       type: "branch_summary",
-      id: randomUUID(),
+      id: uuidv7(),
       parentId: newLeafId,
       timestamp: Date.now(),
       fromId: newLeafId,

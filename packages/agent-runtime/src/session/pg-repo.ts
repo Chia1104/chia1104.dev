@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { uuidv7 } from "@earendil-works/pi-ai";
 
 import type { DB } from "@chia/db/client";
 import {
@@ -72,7 +72,7 @@ export class PgSessionRepo {
   ) {}
 
   async create(options: PgSessionCreateOptions): Promise<PgSessionStorage> {
-    const id = options.id ?? randomUUID();
+    const id = options.id ?? uuidv7();
     const { kind } = this;
     const { defaults } = options;
     const settings = options.settings ?? {};
