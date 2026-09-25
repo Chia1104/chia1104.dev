@@ -6,26 +6,24 @@ import { useTranslations } from "next-intl";
 import { withError } from "@chia/ui/hoc/with-error";
 import Image from "@chia/ui/image";
 
+import { Panel } from "@/components/commons/ruled";
+
 const ErrorContent = () => {
   const t = useTranslations("common");
   return (
-    <main className="main prose dark:prose-invert container">
-      <div className="c-bg-third relative flex min-h-[320px] w-full max-w-[700px] flex-col items-center justify-center overflow-hidden rounded-3xl p-3 px-5">
-        <h3 className="my-2">{t("error")}</h3>
-        <div>
-          <div className="not-prose relative aspect-square w-[200px]">
-            <Image
-              src="https://storage.chia1104.dev/memo.png"
-              alt="memo"
-              className="object-cover"
-              fill
-              loading="lazy"
-            />
-          </div>
-        </div>
-        <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 size-full opacity-50 blur-3xl" />
+    <Panel className="flex flex-col items-center gap-4 px-4 py-16 text-center">
+      <h2 className="text-xl font-semibold">{t("error")}</h2>
+      <div className="relative aspect-square w-[200px]">
+        <Image
+          src="https://storage.chia1104.dev/memo.png"
+          alt="memo"
+          className="object-cover"
+          fill
+          sizes="200px"
+          loading="lazy"
+        />
       </div>
-    </main>
+    </Panel>
   );
 };
 

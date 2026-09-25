@@ -20,12 +20,6 @@ type LinkPreviewResponse = RouterOutputs["toolings"]["link-preview"];
 
 const linkPreview = orpc.toolings["link-preview"];
 
-const PREVIEW_STYLES = {
-  base: "border-accent/50 shadow-glow z-20 w-80 border p-4 text-sm break-normal transition-all",
-  error:
-    "border-danger/50 shadow-[0_0_25px_4px_color-mix(in_oklab,var(--danger)_30%,transparent)]",
-};
-
 type InternalLinkProps = NextLinkProps &
   Omit<ComponentPropsWithoutRef<"a">, "href">;
 
@@ -198,11 +192,7 @@ const PreviewLink = ({
           </Link>
         )}
       />
-      <Tooltip.Content
-        className={cn(
-          PREVIEW_STYLES.base,
-          result.isError && PREVIEW_STYLES.error
-        )}>
+      <Tooltip.Content className="bg-surface/(--popover-opacity) text-overlay-foreground z-20 w-80 p-4 text-sm break-normal backdrop-blur-sm">
         {renderPreviewContent()}
       </Tooltip.Content>
     </Tooltip>

@@ -12,7 +12,6 @@
   --animate-cia-spin-around: cia-spin-around calc(var(--speed) * 2) infinite
     linear;
   --animate-cia-slide: cia-slide var(--speed) ease-in-out infinite alternate;
-  --animate-cia-spotlight: cia-spotlight 2s ease 0.75s 1 forwards;
   --animate-cia-background-position-spin: cia-background-position-spin 3000ms
     infinite alternate;
   --animate-cia-waving-hand: cia-waving-hand 3.5s ease 1s infinite;
@@ -105,18 +104,6 @@
   @keyframes cia-slide {
     to {
       transform: translate(calc(100cqw - 100%), 0);
-    }
-  }
-
-  @keyframes cia-spotlight {
-    0% {
-      opacity: 0;
-      transform: translate(-72%, -62%) scale(0.5);
-    }
-
-    100% {
-      opacity: 1;
-      transform: translate(-50%, -40%) scale(1);
     }
   }
 

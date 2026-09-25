@@ -5,23 +5,21 @@ import { startTransition } from "react";
 import { Button, Description, Label, Modal, Switch } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
+import { PaletteSettings } from "@/components/commons/palette-settings";
 import { useSettingsStore } from "@/stores/settings/store";
 
 export const Settings = () => {
   const t = useTranslations("settings");
   const aiEnabled = useSettingsStore((s) => s.aiEnabled);
   const setAiEnabled = useSettingsStore((s) => s.setAiEnabled);
-  const backgroundEnabled = useSettingsStore((s) => s.backgroundEnabled);
-  const setBackgroundEnabled = useSettingsStore((s) => s.setBackgroundEnabled);
-  const cursorEnabled = useSettingsStore((s) => s.cursorEnabled);
-  const setCursorEnabled = useSettingsStore((s) => s.setCursorEnabled);
 
   return (
     <Modal>
       <Button size="sm" variant="tertiary" aria-label={t("open")} isIconOnly>
         <span className="i-mdi-cog-outline size-4" aria-hidden />
       </Button>
-      <Modal.Backdrop>
+      {/* The page stays visible so a colour change can be judged against it. */}
+      <Modal.Backdrop variant="transparent">
         <Modal.Container placement="center">
           <Modal.Dialog className="sm:max-w-[400px]">
             <Modal.CloseTrigger />
@@ -46,42 +44,9 @@ export const Settings = () => {
                   </div>
                 </Switch.Content>
               </Switch>
-              <Switch
-                size="sm"
-                isSelected={backgroundEnabled}
-                onChange={(isSelected) =>
-                  startTransition(() => setBackgroundEnabled(isSelected))
-                }
-                aria-label={t("backgroundEnabled")}>
-                <Switch.Content>
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                  <div className="-mt-0.5 flex flex-col gap-1">
-                    <Label className="text-sm">{t("backgroundEnabled")}</Label>
-                    <Description>
-                      {t("backgroundEnabledDescription")}
-                    </Description>
-                  </div>
-                </Switch.Content>
-              </Switch>
-              <Switch
-                size="sm"
-                isSelected={cursorEnabled}
-                onChange={(isSelected) =>
-                  startTransition(() => setCursorEnabled(isSelected))
-                }
-                aria-label={t("cursorEnabled")}>
-                <Switch.Content>
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                  <div className="-mt-0.5 flex flex-col gap-1">
-                    <Label className="text-sm">{t("cursorEnabled")}</Label>
-                    <Description>{t("cursorEnabledDescription")}</Description>
-                  </div>
-                </Switch.Content>
-              </Switch>
+              <div className="border-separator border-t pt-4">
+                <PaletteSettings />
+              </div>
             </Modal.Body>
           </Modal.Dialog>
         </Modal.Container>

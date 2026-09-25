@@ -8,6 +8,8 @@ import meta, { TimelineType, Company } from "@chia/meta";
 import Timeline from "@chia/ui/timeline";
 import type { TimelineItemData } from "@chia/ui/timeline/types";
 
+import { Panel, PanelHeader, PanelTitle } from "@/components/commons/ruled";
+
 const TimelineTitle = memo(
   ({ type, duration }: { type: TimelineType; duration: string }) => {
     const t = useTranslations("profile");
@@ -27,6 +29,8 @@ const TimelineTitle = memo(
   (prev, next) => prev.type === next.type && prev.duration === next.duration
 );
 
+const DETAILS_CLASS_NAME = "marker:text-muted list-disc space-y-1 pl-5";
+
 const WorkDetails = memo(
   ({ company }: { company?: Company }) => {
     const tProfile = useTranslations("profile");
@@ -35,7 +39,7 @@ const WorkDetails = memo(
     switch (company) {
       case Company.LeadBest:
         return (
-          <ul>
+          <ul className={DETAILS_CLASS_NAME}>
             <li>{tProfile("timeline.leadbest.detail.1")}</li>
             <li>{tProfile("timeline.leadbest.detail.2")}</li>
             <li>{tProfile("timeline.leadbest.detail.3")}</li>
@@ -46,7 +50,7 @@ const WorkDetails = memo(
         );
       case Company.Wanin:
         return (
-          <ul>
+          <ul className={DETAILS_CLASS_NAME}>
             <li>{tProfile("timeline.wanin.detail.1")}</li>
             <li>{tProfile("timeline.wanin.detail.2")}</li>
             <li>{tProfile("timeline.wanin.detail.3")}</li>
@@ -85,9 +89,11 @@ export function TimelineHero() {
     };
   }) satisfies TimelineItemData[];
   return (
-    <>
-      <h2>{t("timeline")}</h2>
+    <Panel>
+      <PanelHeader>
+        <PanelTitle>{t("timeline")}</PanelTitle>
+      </PanelHeader>
       <Timeline data={transformData} />
-    </>
+    </Panel>
   );
 }

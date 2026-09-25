@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
 
-import { Button, Drawer, Spinner, Tooltip } from "@heroui/react";
+import { Button, Drawer, Spinner } from "@heroui/react";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useTranslations } from "next-intl";
 import { useMediaQuery } from "usehooks-ts";
@@ -54,10 +54,8 @@ export const ChatDock = () => {
     return null;
   }
 
-  // The drawer and the maximized panel cover the launcher; the column leaves it as the way back out.
-  const launcherCovered = isOpen && (!isWide || mode === DockMode.Maximized);
-  const docked = isOpen && !launcherCovered;
-  const launcherLabel = t(isOpen ? "collapse" : "open");
+  // The drawer and the maximized panel cover the page and its header launcher, so they carry their own close.
+  const pageCovered = isOpen && (!isWide || mode === DockMode.Maximized);
   const panelActions = (
     <DockActions
       labels={{
@@ -69,7 +67,7 @@ export const ChatDock = () => {
       onModeChange={setMode}
     />
   );
-  const compactHeader = launcherCovered ? (
+  const compactHeader = pageCovered ? (
     <div className="border-border hidden shrink-0 items-center gap-2 border-b px-4 py-3 sm:flex">
       <span aria-hidden="true" className="flex shrink-0">
         <CHBot className="size-6 rounded-full" resting />
@@ -94,56 +92,6 @@ export const ChatDock = () => {
 
   return (
     <>
-      <div
-        className={cn(
-          "fixed bottom-6 z-60 grid size-16 place-items-center transition-[right] duration-200 ease-out motion-reduce:transition-none [html[data-dock-resizing]_&]:transition-none",
-          docked
-            ? "right-[calc(var(--dock-width,0px)-2rem)]"
-            : "right-[calc(var(--dock-width,0px)+1.5rem)]",
-          launcherCovered ? "invisible" : null
-        )}
-        data-docked={docked}>
-        <span
-          aria-hidden="true"
-          className={cn(
-            "border-border bg-background pointer-events-none absolute inset-1 rounded-full border transition-[opacity,transform] duration-200 ease-out [clip-path:inset(0_0_0_50%)] motion-reduce:transition-none",
-            docked ? "scale-100 opacity-100" : "scale-70 opacity-0"
-          )}
-        />
-        <Tooltip delay={300} isDisabled={launcherCovered}>
-          <Button
-            aria-expanded={isOpen}
-            aria-label={launcherLabel}
-            className={cn(
-              "group/chbot focus-visible:outline-focus relative min-w-0 overflow-visible rounded-full bg-transparent p-0 transition-[width,height] duration-200 ease-out hover:bg-transparent focus-visible:outline-2 focus-visible:outline-offset-3 data-[hovered=true]:bg-transparent data-[pressed=true]:bg-transparent motion-reduce:transition-none",
-              docked ? "size-12" : "size-16"
-            )}
-            isIconOnly
-            onPress={toggle}
-            variant="ghost">
-            <span
-              aria-hidden="true"
-              className={cn(
-                "pointer-events-none absolute flex size-16 rounded-full transition-[transform,box-shadow] duration-200 ease-out motion-reduce:transition-none",
-                docked ? "scale-[0.625] shadow-none" : "shadow-glow"
-              )}>
-              <CHBot className="size-16 rounded-full" resting={docked} />
-            </span>
-            <span
-              aria-hidden="true"
-              className={cn(
-                "bg-overlay/85 text-foreground pointer-events-none absolute grid size-10 place-items-center rounded-full opacity-0 transition-opacity duration-150 ease-out motion-reduce:transition-none",
-                docked
-                  ? "group-hover/chbot:opacity-100 group-focus-visible/chbot:opacity-100 group-data-[focus-visible=true]/chbot:opacity-100"
-                  : null
-              )}>
-              <span className="i-lucide-chevron-right size-5" />
-            </span>
-          </Button>
-          <Tooltip.Content placement="left">{launcherLabel}</Tooltip.Content>
-        </Tooltip>
-      </div>
-
       {isWide ? (
         <DockShell
           className="z-50"
@@ -156,7 +104,7 @@ export const ChatDock = () => {
           {compactHeader}
           {isOpen ? (
             <PublicChat
-              headerActions={launcherCovered ? undefined : panelActions}
+              headerActions={pageCovered ? undefined : panelActions}
             />
           ) : null}
         </DockShell>

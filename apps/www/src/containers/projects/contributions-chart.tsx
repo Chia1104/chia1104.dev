@@ -28,7 +28,7 @@ export const ContributionsChart = async () => {
     <ScrollShadow
       orientation="horizontal"
       className={cn(
-        "my-6 flex w-full justify-center",
+        "flex w-full justify-center p-4",
         "[--activity-0:#ebedf0] [--activity-1:#9be9a8] [--activity-2:#40c463] [--activity-3:#30a14e] [--activity-4:#216e39]",
         "dark:[--activity-0:#252525] dark:[--activity-1:#033a16] dark:[--activity-2:#196c2e] dark:[--activity-3:#2ea043] dark:[--activity-4:#56d364]"
       )}>
