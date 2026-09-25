@@ -1,7 +1,7 @@
 import type { PromptTemplate } from "@chia/agent-runtime/prompts";
 
 /**
- * Dashboard slash commands. `$1`, `$2`, `$ARGUMENTS` are substituted by
+ * Dashboard slash commands. `$1`, `$2`, `$ARGUMENTS` are substituted by Pi's
  * `formatPromptTemplateInvocation`; argument order is the UI contract.
  */
 
