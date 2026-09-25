@@ -1,5 +1,3 @@
-import { randomUUID } from "node:crypto";
-
 import {
   BACKGROUND_CONTEXT,
   compact,
@@ -12,6 +10,7 @@ import type {
   CompactionPreparation,
   ThinkingLevel,
 } from "@earendil-works/pi-agent-core";
+import { uuidv7 } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import { AgentUsageSource } from "@chia/db/schema";
@@ -115,7 +114,7 @@ const compactBranch = async (
   // the compaction's ancestors must be exactly what its summary covers.
   const entry: NewSessionEntry<CompactionEntry> = {
     type: "compaction",
-    id: randomUUID(),
+    id: uuidv7(),
     parentId: branch.at(-1)?.id ?? null,
     timestamp: Date.now(),
     summary: result.summary,

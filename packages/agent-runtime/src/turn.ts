@@ -1,8 +1,6 @@
-import { randomUUID } from "node:crypto";
-
 import { formatPromptTemplateInvocation } from "@earendil-works/pi-agent-core";
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
-import { clampThinkingLevel } from "@earendil-works/pi-ai";
+import { clampThinkingLevel, uuidv7 } from "@earendil-works/pi-ai";
 import type {
   Api,
   AssistantMessage,
@@ -383,7 +381,7 @@ const executeTurn = async (
         };
       }
     } else {
-      const id = randomUUID();
+      const id = uuidv7();
       onEvent({
         type: "user",
         messageId: id,

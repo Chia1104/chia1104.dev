@@ -28,7 +28,7 @@ import { user } from "./user.schema.ts";
  */
 
 /**
- * Application-generated UUID; ids travel through model context and the event stream, so they must be opaque.
+ * Application-generated uuidv7; ids travel through model context and the event stream, so they must be opaque.
  */
 export const agentSessions = agentSchema.table(
   "session",
