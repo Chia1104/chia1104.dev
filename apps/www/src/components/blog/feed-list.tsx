@@ -63,7 +63,7 @@ const FeedList: FC<Props> = ({ nextCursor, query = {} }) => {
             className: "flex flex-wrap items-center gap-x-3 gap-y-1",
           },
           startDate: createdAt ?? null,
-          content: translations[0]?.description,
+          description: translations[0]?.description,
           link: `/${item.type}s/${slug}`,
         } satisfies TimelineItemData;
       })
@@ -72,26 +72,27 @@ const FeedList: FC<Props> = ({ nextCursor, query = {} }) => {
 
   if (isSuccess && transformData.length === 0) {
     return (
-      <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-3xl px-5 py-10">
+      <div className="rule-b hatch border-separator text-muted flex flex-col items-center gap-3 border-b px-4 py-12">
         <p>{t("no-content")}</p>
         <ImageZoom>
-          <div className="not-prose relative aspect-square w-[100px]">
+          <div className="relative aspect-square w-[100px]">
             <Image
               src="https://storage.chia1104.dev/memo.png"
               alt="memo"
               className="object-cover"
               fill
+              sizes="100px"
               loading="lazy"
             />
           </div>
         </ImageZoom>
-        <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 size-full opacity-50 blur-3xl" />
       </div>
     );
   }
 
   return (
     <Timeline
+      className="rule-b"
       data={transformData}
       enableSort={false}
       asyncDataStatus={{

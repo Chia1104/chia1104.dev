@@ -73,7 +73,7 @@
   /* HeroUI Theme */
   --accent: oklch(72.16% 0.1767 305.5);
   --accent-foreground: oklch(15% 0.03 305.5);
-  --background: oklch(12% 0.01 305.5);
+  --background: oklch(16.5% 0.012 305.5);
   --border: oklch(28% 0.01 305.5);
   --danger: oklch(59.4% 0.2006 30.83);
   --danger-foreground: oklch(99.11% 0 0);

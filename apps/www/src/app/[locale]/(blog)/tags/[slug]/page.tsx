@@ -12,6 +12,8 @@ import { getQueryClient } from "@chia/utils/query-client";
 
 import FeedList from "@/components/blog/feed-list";
 import AppLoading from "@/components/commons/app-loading";
+import { PageDescription } from "@/components/commons/ruled";
+import { Link } from "@/libs/i18n/navigation";
 import { client, orpc } from "@/libs/orpc/client.rsc";
 import type { RouterInputs } from "@/libs/orpc/types";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
@@ -87,12 +89,20 @@ const Page = async ({
 
   return (
     <ViewTransition>
-      <div className="w-full">
-        <p className="text-muted mb-0">{t("doc-title")}</p>
-        <h1 className="mt-0">{tag.name}</h1>
-        {tag.description ? <p>{tag.description}</p> : null}
+      <div className="flex w-full flex-col">
+        <div className="rule-t rule-b flex items-baseline justify-between gap-4 px-4 py-2">
+          <h1 className="text-3xl leading-tight font-semibold tracking-tight text-balance">
+            {tag.name}
+          </h1>
+          <Link href="/tags" className="link shrink-0 text-sm">
+            {t("view-all")}
+          </Link>
+        </div>
+        {tag.description ? (
+          <PageDescription>{tag.description}</PageDescription>
+        ) : null}
         <ErrorBoundary>
-          <Suspense fallback={<AppLoading />}>
+          <Suspense fallback={<AppLoading className="py-12" spinnerOnly />}>
             <CacheFeeds
               query={{
                 limit: LIMIT,

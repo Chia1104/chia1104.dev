@@ -2,19 +2,21 @@
 
 import { useTranslations } from "next-intl";
 
+import { PageDescription, PageTitle } from "@/components/commons/ruled";
+
 const ContactHeader = () => {
   const t = useTranslations("contact");
 
   return (
-    <>
-      <h1>
+    <header className="flex flex-col">
+      <PageTitle>
         {t("title")}{" "}
         <span className="animate-cia-waving-hand inline-block origin-[70%_70%]">
           👋
         </span>
-      </h1>
-      <p>{t("description")}</p>
-    </>
+      </PageTitle>
+      <PageDescription>{t("description")}</PageDescription>
+    </header>
   );
 };
 

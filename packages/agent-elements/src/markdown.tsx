@@ -237,6 +237,9 @@ export const markdownComponents: Components = {
       </Alert.Content>
     </Alert>
   ),
+  strong: ({ className, node: _node, ...props }) => (
+    <strong className={cn("highlight", className)} {...props} />
+  ),
   hr: ({ className, node: _node, ...props }) => (
     <hr className={cn("border-border my-6", className)} {...props} />
   ),

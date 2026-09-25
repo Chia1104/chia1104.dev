@@ -3,6 +3,7 @@ import { ViewTransition } from "react";
 
 import { getTranslations } from "next-intl/server";
 
+import { Band } from "@/components/commons/ruled";
 import Contact from "@/components/contact/contact";
 import ContactHeader from "@/components/contact/contact-header";
 
@@ -16,8 +17,9 @@ export async function generateMetadata(): Promise<Metadata> {
 const ContactPage = () => {
   return (
     <ViewTransition>
-      <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
+      <article className="flex w-full flex-col">
         <ContactHeader />
+        <Band />
         <Contact />
       </article>
     </ViewTransition>

@@ -3,6 +3,16 @@ import { ViewTransition } from "react";
 
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { cn } from "@chia/ui/utils/cn.util";
+
+import {
+  CELL_LINK_CLASS_NAME,
+  LinkHatch,
+  PageDescription,
+  PageTitle,
+  RULED_CELL_CLASS_NAME,
+  RuledGridFiller,
+} from "@/components/commons/ruled";
 import { Link } from "@/libs/i18n/navigation";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
@@ -34,21 +44,24 @@ const Page = async () => {
 
   return (
     <ViewTransition>
-      <div className="w-full">
-        <h1>{t("doc-title")}</h1>
-        <p>{t("description")}</p>
+      <div className="flex w-full flex-col">
+        <PageTitle>{t("doc-title")}</PageTitle>
+        <PageDescription>{t("description")}</PageDescription>
         {tags.length === 0 ? (
-          <p className="text-muted">{t("no-content")}</p>
+          <p className="rule-b hatch border-separator text-muted border-b px-4 py-12 text-center">
+            {t("no-content")}
+          </p>
         ) : (
-          <ul className="not-prose page-md:grid-cols-2 m-0 grid list-none gap-3 p-0">
+          <ul className="rule-b page-md:grid-cols-2 grid">
             {tags.map((tag) => (
-              <li key={tag.id} className="m-0 p-0">
+              <li key={tag.id} className={RULED_CELL_CLASS_NAME}>
                 <Link
                   href={`/tags/${tag.slug}`}
-                  className="c-bg-third hover:bg-default block rounded-2xl p-4 no-underline transition-colors">
+                  className={cn(CELL_LINK_CLASS_NAME, "block px-4 py-3")}>
+                  <LinkHatch />
                   <span className="flex items-baseline justify-between gap-3">
                     <span className="text-base font-medium">{tag.name}</span>
-                    <span className="text-muted shrink-0 text-xs">
+                    <span className="text-muted shrink-0 text-xs tabular-nums">
                       {t("count", { count: tag.feedCount })}
                     </span>
                   </span>
@@ -60,6 +73,7 @@ const Page = async () => {
                 </Link>
               </li>
             ))}
+            <RuledGridFiller count={tags.length} />
           </ul>
         )}
       </div>

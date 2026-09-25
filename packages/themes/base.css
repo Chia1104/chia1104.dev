@@ -14,18 +14,23 @@
   --popover-opacity: 75%;
 }
 
-/* HeroUI's opaque and blur backdrops (modal, drawer, alert dialog) paint `--backdrop`. */
+/*
+ * HeroUI's opaque and blur backdrops (modal, drawer, alert dialog) paint `--backdrop`. The `highlight`
+ * band is thinner in dark mode so light text stays legible over it.
+ */
 :root,
 .light,
 .default,
 [data-theme="light"],
 [data-theme="default"] {
   --backdrop: rgba(255, 255, 255, 0.8);
+  --accent-highlight: var(--accent);
 }
 
 .dark,
 [data-theme="dark"] {
   --backdrop: rgba(0, 0, 0, 0.8);
+  --accent-highlight: color-mix(in oklab, var(--accent) 40%, transparent);
 }
 
 /* Fumadocs reads its own `--color-fd-*` tokens; they resolve to the HeroUI tokens here. */
@@ -253,6 +258,21 @@
   @apply text-foreground decoration-muted font-medium underline decoration-[1.5px] underline-offset-[3.5px] transition-opacity duration-200 hover:opacity-80;
 }
 
+/*
+ * The one bold style, shared the same way as `link`: a highlighter band over the lower half of the
+ * glyphs. `clone` repeats the band on every line a phrase wraps onto.
+ */
+@utility highlight {
+  font-weight: 600;
+  background-image: linear-gradient(
+    transparent 50%,
+    var(--accent-highlight) 50%,
+    var(--accent-highlight) 90%,
+    transparent 90%
+  );
+  box-decoration-break: clone;
+}
+
 @layer utilities {
   /*
    * Reading scale. Fumadocs emits its prose rules in the utilities layer, so the override has to
@@ -286,6 +306,10 @@
       :where([class~="not-prose"], [class~="not-prose"] *)
     ) {
       @apply link;
+    }
+
+    :where(strong):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+      @apply highlight;
     }
   }
 }

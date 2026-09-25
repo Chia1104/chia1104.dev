@@ -21,6 +21,7 @@ import { CommandDialog, CommandInput } from "@chia/ui/cmd";
 import { MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
 import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 
+import { ChatLauncher } from "@/components/agent/chat-launcher";
 import { FeedSearch } from "@/components/commons/feed-search";
 import { useRouter } from "@/libs/i18n/navigation";
 import { Locale } from "@/libs/utils/i18n";
@@ -110,7 +111,9 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
                     window.open(link, "_blank");
                     closeCommand();
                   }}>
-                  {icon}
+                  <span className="flex size-5 items-center justify-center">
+                    {icon}
+                  </span>
                   {name}
                 </ListBox.Item>
               ))}
@@ -156,22 +159,20 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   const tRoutes = useTranslations("routes");
   return (
-    <nav
-      data-testid="nav-menu"
-      className="c-bg-third fixed top-0 right-(--dock-width,0px) left-0 z-50 flex h-15.75 items-center justify-center transition-[right] duration-200 ease-out motion-reduce:transition-none [html[data-dock-resizing]_&]:transition-none">
-      <div className="container flex w-full justify-between px-5">
-        <div className="flex w-1/5 items-center text-xl font-semibold tracking-tight">
-          <Link
-            href="/"
-            scroll
-            className="subtitle hover:c-text-green-to-purple ml-3 transition ease-in-out">
-            Chia1104
-          </Link>
-        </div>
-        <div className="flex w-fit items-center">
+    <header className="bg-background/80 sticky top-0 z-50 overflow-x-clip px-2 backdrop-blur-md">
+      <nav
+        data-testid="nav-menu"
+        className="rule-b border-separator mx-auto flex h-(--header-height) w-full max-w-3xl items-center justify-between gap-2 border-x pr-2 pl-4">
+        <Link
+          href="/"
+          scroll
+          className="hover:c-text-green-to-purple text-lg font-semibold tracking-tight transition ease-in-out">
+          Chia1104
+        </Link>
+        <div className="flex items-center gap-2">
           <Tabs
             aria-label="nav bar"
-            className="mx-4 w-fit"
+            className="w-fit"
             selectedKey={
               selectedLayoutSegments[0] === "(blog)"
                 ? "posts"
@@ -208,10 +209,12 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
               </Tabs.List>
             </Tabs.ListContainer>
           </Tabs>
+          <span aria-hidden className="bg-separator h-5 w-px" />
+          <ChatLauncher />
           <CMDK locale={props.locale} />
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 };
 

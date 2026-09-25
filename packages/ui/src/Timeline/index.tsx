@@ -81,7 +81,7 @@ const Timeline: FC<TimelineProps> = ({
 
   return (
     <TimelineProvider groupTemplate={groupTemplate} tz={tz}>
-      <div className={cn("my-2 flex flex-col gap-5", className)} {...restProps}>
+      <div className={cn("@container flex flex-col", className)} {...restProps}>
         <TimelineGroupList
           data={groupedData}
           onEndReached={onEndReached}

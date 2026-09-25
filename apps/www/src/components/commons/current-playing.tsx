@@ -242,7 +242,6 @@ const Card = ({
   data,
   isLoading,
   isSuccess,
-  isError,
   isFetching,
   refetch,
   className,
@@ -305,12 +304,9 @@ const Card = ({
         <Tooltip.Content
           style={{ backgroundColor }}
           className={cn(
-            "border-accent/50 not-prose shadow-glow z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 transition-all",
-            isError &&
-              "border-danger/50 shadow-[0_0_25px_4px_color-mix(in_oklab,var(--danger)_30%,transparent)]",
-            enableColorExtraction && !isPending
-              ? "backdrop-blur-lg"
-              : "c-bg-third",
+            "text-overlay-foreground not-prose z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 backdrop-blur-sm",
+            (!enableColorExtraction || isPending) &&
+              "bg-surface/(--popover-opacity)",
             tooltipContentClassName
           )}>
           <div className="flex items-center gap-5">

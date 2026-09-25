@@ -71,12 +71,112 @@
   }
 }
 
+/*
+ * The page is a ruled sheet: one column between `border-separator` rails, with hairlines that run
+ * past the rails to the viewport edges. A rule is 200vw wide, so every ruled section needs an
+ * `overflow-x-clip` ancestor. Rules sit at `z-index: -1` inside the page's `isolate` root, behind
+ * in-flow content; an ancestor that paints its own background hides them.
+ */
+@utility rule-t {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100vw;
+    z-index: -1;
+    width: 200vw;
+    height: 1px;
+    background-color: var(--separator);
+  }
+}
+
+@utility rule-b {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: -100vw;
+    z-index: -1;
+    width: 200vw;
+    height: 1px;
+    background-color: var(--separator);
+  }
+}
+
+/* Section hatching: 1px strokes on a 10px repeat. `--hatch-color` recolours it. */
+@utility hatch {
+  background-image: repeating-linear-gradient(
+    315deg,
+    var(--hatch-color, var(--separator)) 0 1px,
+    transparent 0 50%
+  );
+  background-size: 10px 10px;
+}
+
+/* A hatched break between two sections, bled to the viewport edges like a rule. */
+@utility hatch-band {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: -100vw;
+    z-index: -1;
+    width: 200vw;
+    @apply hatch;
+  }
+}
+
+:root {
+  --header-height: 3.5rem;
+  --accent-gradient-from: var(--accent);
+  --accent-gradient-to: var(--accent);
+}
+
+/*
+ * The site gradient (scroll progress, playlist shader) derives both stops from `--accent`, so a
+ * reader's accent recolours it too. The chroma floor keeps a pale accent from washing it out.
+ */
+@supports (color: oklch(from red l c h)) {
+  :root {
+    --accent-gradient-from: oklch(from var(--accent) l max(c, 0.15) h);
+    --accent-gradient-to: oklch(from var(--accent) l max(c, 0.15) calc(h + 45));
+  }
+}
+
+@utility bg-accent-gradient {
+  background-image: linear-gradient(
+    to right,
+    var(--accent-gradient-from),
+    var(--accent-gradient-to)
+  );
+}
+
+/*
+ * Once the gutter beside the column fits it, the article TOC from `@chia/contents` hangs off the
+ * right rail with its marks growing outward; narrower pages keep it at the viewport edge. The TOC
+ * is 2.25rem wide with 0.5rem of padding, so its marks start 1rem clear of the rail.
+ */
+@container page (width >= 54rem) {
+  main {
+    --floating-toc-right: calc(
+      var(--dock-width, 0px) + (100cqw - var(--container-3xl)) / 2 - 2.75rem
+    );
+    --floating-toc-align: start;
+  }
+}
+
 html,
 body {
   padding: 0;
   margin: 0;
   scroll-behavior: smooth;
-  scroll-padding-top: 10px;
+  scroll-padding-top: calc(var(--header-height) + 1rem);
 }
 
 ::selection {
@@ -96,13 +196,12 @@ body {
 }
 
 [data-rmiz-modal-img] {
-  border: 1px solid hsl(var(--border));
+  border: 1px solid var(--border);
   border-radius: var(--radius-3xl);
 }
 
 :root {
   --color-fd-background: unset;
-  --color-heroui-background: #dddddd;
 }
 
 .recaptcha-style {

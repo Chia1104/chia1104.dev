@@ -27,7 +27,7 @@ import SubmitForm from "@chia/ui/submit-form";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { SiteCaptcha } from "@/components/commons/captcha";
-import { FeatureCard } from "@/components/commons/feature-card";
+import { Panel } from "@/components/commons/ruled";
 import { orpc } from "@/libs/orpc/client";
 import type { client } from "@/libs/orpc/client";
 import type { Contact as ContactInput } from "@/shared/validator";
@@ -196,9 +196,9 @@ export const ContactForm = ({
           data-testid="contact-submit">
           {t("send")}
         </SubmitForm>
-        <span className="flex gap-1">
+        <span className="text-muted flex gap-1 text-sm">
           {tContact("or-via")}
-          <Link href={`mailto:${meta.email}`} className="flex w-fit">
+          <Link href={`mailto:${meta.email}`} className="link flex w-fit">
             {t("email")}
           </Link>
         </span>
@@ -209,13 +209,9 @@ export const ContactForm = ({
 
 const Contact = () => {
   return (
-    <FeatureCard
-      classNames={{
-        root: "w-full max-w-[600px] justify-self-center",
-      }}
-      className="page-md:p-10 flex flex-col items-center justify-start px-5 py-10">
+    <Panel className="page-md:px-10 px-4 py-8">
       <ContactForm />
-    </FeatureCard>
+    </Panel>
   );
 };
 

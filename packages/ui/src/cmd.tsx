@@ -33,7 +33,7 @@ const CommandDialog = ({
       <Modal.Dialog
         aria-label={ariaLabel}
         className={cn(
-          "c-bg-third border-accent/50 shadow-glow overflow-hidden border p-0 sm:max-w-lg",
+          "bg-surface/(--popover-opacity) text-overlay-foreground overflow-hidden p-0 backdrop-blur-sm sm:max-w-lg",
           className
         )}>
         <Autocomplete inputValue={inputValue} onInputChange={onInputChange}>
