@@ -1,23 +1,18 @@
-import { StringEnum } from "@earendil-works/pi-ai";
-import { Type } from "typebox";
+import * as z from "zod";
 
 import { WebSearchRecency } from "@chia/agent-content/types";
 import type { FetchedPage, WebSearchResult } from "@chia/agent-content/types";
-import {
-  defineTool,
-  optional,
-  textResult,
-  truncate,
-} from "@chia/agent-runtime/tools";
+import { defineTool, truncate } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import { MarkdownFormat, splitByHeadings } from "@chia/ai/embeddings/markdown";
 import { AgentMemoryKind } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
+import { hostnameOf } from "@chia/utils/url";
 
 import { closeOpenFence } from "../markdown/fences.ts";
 import type { WritingToolContext } from "../types.ts";
 
-import { TOOL_INFO_BY_NAME, ToolName } from "./registry.ts";
+import { ToolName } from "./registry.ts";
 
 /**
  * Shared content reads plus outbound web. Search and fetch are a cost and an SSRF surface,
@@ -40,12 +35,8 @@ const MAX_SEARCH_DOMAINS = 5;
 
 const normalizeSearchDomain = (input: string): string => {
   const domain = input.trim().toLowerCase().replace(/\.$/, "");
-  let parsed: URL;
-  try {
-    parsed = new URL(`https://${domain}`);
-  } catch {
-    throw new Error(`"${input}" is not a valid hostname.`);
-  }
+  const parsed = URL.parse(`https://${domain}`);
+  if (!parsed) throw new Error(`"${input}" is not a valid hostname.`);
   if (
     domain.length === 0 ||
     parsed.hostname !== domain ||
@@ -62,74 +53,77 @@ const normalizeSearchDomain = (input: string): string => {
 
 export const webSearchSpec = {
   name: ToolName.WebSearch,
-  label: TOOL_INFO_BY_NAME[ToolName.WebSearch].label,
   description:
     "Search the web and return result titles, URLs and snippets. Use it to discover a primary " +
     "source (official docs, release notes, the repository) before reading it with `fetch_url`; " +
     "snippets alone are not enough to verify a claim.",
-  parameters: Type.Object({
-    query: Type.String({
-      description:
-        "Topic or phrase to search for. Use `includeDomains` instead of embedding `site:` when restricting domains.",
-      minLength: 1,
-    }),
-    limit: optional(
-      Type.Integer({
+  parameters: z.object({
+    query: z
+      .string()
+      .min(1)
+      .describe(
+        "Topic or phrase to search for. Use `includeDomains` instead of embedding `site:` when restricting domains."
+      ),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_SEARCH_RESULTS)
+      .meta({
         description: `Maximum results (1-${MAX_SEARCH_RESULTS}).`,
-        minimum: 1,
-        maximum: MAX_SEARCH_RESULTS,
         default: DEFAULT_SEARCH_RESULTS,
       })
-    ),
-    recency: optional(
-      StringEnum(Object.values(WebSearchRecency), {
-        description:
-          "Only results published within this window. Omit for no time filter.",
-      })
-    ),
-    includeDomains: optional(
-      Type.Array(Type.String(), {
-        description:
-          "Restrict results to these bare hostnames, without protocol or path. Prefer this over writing `site:` in the query.",
-        minItems: 1,
-        maxItems: MAX_SEARCH_DOMAINS,
-      })
-    ),
+      .optional(),
+    recency: z
+      .enum(WebSearchRecency)
+      .describe(
+        "Only results published within this window. Omit for no time filter."
+      )
+      .optional(),
+    includeDomains: z
+      .array(z.string())
+      .min(1)
+      .max(MAX_SEARCH_DOMAINS)
+      .describe(
+        "Restrict results to these bare hostnames, without protocol or path. Prefer this over writing `site:` in the query."
+      )
+      .optional(),
   }),
-  executionMode: "parallel",
 } satisfies ToolSpec;
 
 export const webSearchTool = defineTool(
   webSearchSpec,
-  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
-    const includeDomains = params.includeDomains?.map(normalizeSearchDomain);
-    const results = await context.web.search(
-      {
-        query: params.query,
-        limit: params.limit ?? DEFAULT_SEARCH_RESULTS,
-        recency: params.recency,
-        includeDomains,
-      },
-      signal
-    );
+  (context: WritingToolContext) =>
+    async (params, { signal }) => {
+      const includeDomains = params.includeDomains?.map(normalizeSearchDomain);
+      const results = await context.web.search(
+        {
+          query: params.query,
+          limit: params.limit ?? DEFAULT_SEARCH_RESULTS,
+          recency: params.recency,
+          includeDomains,
+        },
+        signal
+      );
 
-    return textResult(
-      results.length === 0
-        ? `No results for "${params.query}"${
-            includeDomains ? ` within ${includeDomains.join(", ")}` : ""
-          }. If you know the official URL, call \`fetch_url\` directly. Otherwise retry once with a broader query${
-            includeDomains ? " without the domain restriction" : ""
-          }; do not repeat the same search.`
-        : `${results.length} result(s) for "${params.query}":\n\n${results.map(formatResult).join("\n\n")}`,
-      {
-        query: params.query,
-        count: results.length,
-        results,
-        includeDomains,
-        recency: params.recency,
-      }
-    );
-  }
+      return {
+        text:
+          results.length === 0
+            ? `No results for "${params.query}"${
+                includeDomains ? ` within ${includeDomains.join(", ")}` : ""
+              }. If you know the official URL, call \`fetch_url\` directly. Otherwise retry once with a broader query${
+                includeDomains ? " without the domain restriction" : ""
+              }; do not repeat the same search.`
+            : `${results.length} result(s) for "${params.query}":\n\n${results.map(formatResult).join("\n\n")}`,
+        details: {
+          query: params.query,
+          count: results.length,
+          results,
+          includeDomains,
+          recency: params.recency,
+        },
+      };
+    }
 );
 
 const formatResult = (result: WebSearchResult, index: number): string => {
@@ -139,56 +133,50 @@ const formatResult = (result: WebSearchResult, index: number): string => {
 
 export const fetchUrlSpec = {
   name: ToolName.FetchUrl,
-  label: TOOL_INFO_BY_NAME[ToolName.FetchUrl].label,
   description:
     "Fetch a public web page (or PDF) and return its main content as markdown. Use it to " +
     "check a fact or read a reference the operator linked. A long page is cut; the result then " +
     "names the memory that holds the page and the sections past the cut. Read those with " +
     "`get_memory`, not by fetching the URL again.",
-  parameters: Type.Object({
-    url: Type.String({
-      description: "Absolute http(s) URL.",
-      format: "uri",
-    }),
+  parameters: z.object({
+    url: z.url().describe("Absolute http(s) URL."),
   }),
-  executionMode: "parallel",
 } satisfies ToolSpec;
 
 export const fetchUrlTool = defineTool(
   fetchUrlSpec,
-  (context: WritingToolContext) => async (_toolCallId, params, signal) => {
-    let parsed: URL;
-    try {
-      parsed = new URL(params.url);
-    } catch {
-      throw new Error(`"${params.url}" is not a valid absolute URL.`);
-    }
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      throw new Error("Only http and https URLs can be fetched.");
-    }
-
-    const page = await context.web.fetchPage(parsed.toString(), signal);
-    const body = truncate(page.text, MAX_PAGE_CHARS);
-
-    const source = await recordSource(context, page, signal);
-    const unread =
-      body.truncated && source
-        ? await unreadHeadings(source.text, MAX_PAGE_CHARS)
-        : [];
-
-    return textResult(
-      `# ${page.title ?? parsed.hostname}\n<${page.url}>\n\n${body.text}${
-        body.truncated && source ? continuationNote(source.id, unread) : ""
-      }`,
-      {
-        url: page.url,
-        title: page.title,
-        truncated: body.truncated,
-        memoryId: source?.id,
-        unreadHeadings: unread,
+  (context: WritingToolContext) =>
+    async (params, { signal }) => {
+      const parsed = URL.parse(params.url);
+      if (!parsed) {
+        throw new Error(`"${params.url}" is not a valid absolute URL.`);
       }
-    );
-  }
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        throw new Error("Only http and https URLs can be fetched.");
+      }
+
+      const page = await context.web.fetchPage(parsed.toString(), signal);
+      const body = truncate(page.text, MAX_PAGE_CHARS);
+
+      const source = await recordSource(context, page, signal);
+      const unread =
+        body.truncated && source
+          ? await unreadHeadings(source.text, MAX_PAGE_CHARS)
+          : [];
+
+      return {
+        text: `# ${page.title ?? parsed.hostname}\n<${page.url}>\n\n${body.text}${
+          body.truncated && source ? continuationNote(source.id, unread) : ""
+        }`,
+        details: {
+          url: page.url,
+          title: page.title,
+          truncated: body.truncated,
+          memoryId: source?.id,
+          unreadHeadings: unread,
+        },
+      };
+    }
 );
 
 /**
@@ -264,19 +252,7 @@ const cutWithinFences = (text: string, maxChars: number): string => {
     : closed;
 };
 
-const hostnameOf = (url: string): string => {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return url;
-  }
-};
-
 const pageLocationOf = (url: string): string => {
-  try {
-    const parsed = new URL(url);
-    return `${parsed.origin}${parsed.pathname}`;
-  } catch {
-    return "(unparseable url)";
-  }
+  const parsed = URL.parse(url);
+  return parsed ? `${parsed.origin}${parsed.pathname}` : "(unparseable url)";
 };

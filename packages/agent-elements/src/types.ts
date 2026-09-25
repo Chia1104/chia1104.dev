@@ -69,9 +69,8 @@ export type AgentModel = Awaited<
 export type AgentCapabilities = Awaited<
   ReturnType<CapabilityProcedures["list"]>
 >;
-export type AgentThinkingLevel = NonNullable<
-  AgentSessionDetail["settings"]
->["thinkingLevel"];
+export type AgentThinkingLevel =
+  AgentSessionDetail["settings"]["thinkingLevel"];
 export interface AgentModelRef {
   providerId: string;
   modelId: string;

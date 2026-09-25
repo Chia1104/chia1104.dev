@@ -48,7 +48,6 @@
   "alwaysAllow": "本次對話接下來都允許 {tier} 類工具",
   "compacted": "對話已壓縮",
   "rewound": "已回溯。被捨棄內容的摘要",
-  "decisionRelayed": "決定已轉達給 agent",
   "editAndResend": "編輯並重送",
   "forkFromHere": "從這裡分支",
   "rewindTitle": "要回到這則訊息嗎？",

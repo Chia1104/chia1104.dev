@@ -40,13 +40,11 @@ const guard = (
 const tools = (context: Parameters<typeof createPublicWebTools>[0]) => {
   const [search, fetch] = createPublicWebTools(context);
   if (!search || !fetch) throw new Error("expected two web tools");
-  const textOf = (result: Awaited<ReturnType<typeof search.execute>>) =>
-    result.content.map((part) => ("text" in part ? part.text : "")).join("");
   return {
     search: async (query: string) =>
-      textOf(await search.execute("call", { query }, undefined)),
+      (await search.execute({ query }, { toolCallId: "call" })).text,
     fetch: async (url: string) =>
-      textOf(await fetch.execute("call", { url }, undefined)),
+      (await fetch.execute({ url }, { toolCallId: "call" })).text,
   };
 };
 

@@ -1,5 +1,6 @@
 import * as z from "zod";
 
+import { ApprovalVerdict } from "@chia/agent-runtime/types";
 import { agentAttachmentInputSchema } from "@chia/agent-runtime/wire/schema";
 import type { KeyId } from "@chia/ai/provider";
 
@@ -27,24 +28,39 @@ export type EncryptedAgentCredentials = z.infer<
   typeof encryptedAgentCredentialsSchema
 >;
 
-/** The operator's decision on a gated call, relayed to the model as this turn's message. */
-export const agentOperatorDecisionSchema = z.object({
-  toolCallId: z.string(),
-  toolName: z.string(),
-  approved: z.boolean(),
-  comment: z.string().optional(),
+/** The answers to the gated calls a turn stopped on, which the next turn resumes. */
+export const agentTurnResumeSchema = z.object({
+  interruptedRunId: z.string(),
+  decisions: z
+    .array(
+      z.object({
+        toolCallId: z.string(),
+        verdict: z.enum(ApprovalVerdict),
+        comment: z.string().optional(),
+      })
+    )
+    .min(1),
 });
 
-/** One turn's input: an operator prompt, or the decision the turn relays. */
-export const agentMessagePayloadSchema = z.object({
-  text: z.string(),
-  template: z
-    .object({ name: z.string(), args: z.array(z.string()).optional() })
-    .optional(),
-  attachments: z.array(agentAttachmentInputSchema).optional(),
-  decision: agentOperatorDecisionSchema.optional(),
-  credentials: encryptedAgentCredentialsSchema.optional(),
-});
+/** One turn's input: an operator prompt, or the answers that resume a stopped turn. */
+export const agentMessagePayloadSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("prompt"),
+    text: z.string(),
+    template: z
+      .object({ name: z.string(), args: z.array(z.string()).optional() })
+      .optional(),
+    attachments: z.array(agentAttachmentInputSchema).optional(),
+    credentials: encryptedAgentCredentialsSchema.optional(),
+  }),
+  z.object({
+    type: z.literal("resume"),
+    resume: agentTurnResumeSchema,
+    credentials: encryptedAgentCredentialsSchema.optional(),
+  }),
+]);
+
+export type AgentMessagePayload = z.infer<typeof agentMessagePayloadSchema>;
 
 /**
  * Aborts the turn a run is executing. Keyed by the controller's own id,

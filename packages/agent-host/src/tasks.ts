@@ -13,6 +13,7 @@ import {
 import type {
   AgentCredentials,
   AgentModel,
+  AgentModels,
   AgentModelInfo,
   AgentModelPredicate,
   AgentModelRef,
@@ -20,7 +21,7 @@ import type {
 import {
   SESSION_TITLE_PARAMS,
   SESSION_TITLE_SYSTEM_PROMPT,
-} from "@chia/agent-runtime/pi/title";
+} from "@chia/agent-runtime/title";
 import {
   LESSON_EXTRACTION_PARAMS,
   LESSON_EXTRACTION_SYSTEM_PROMPT,
@@ -35,7 +36,6 @@ import {
   FEED_SUMMARY_PARAMS,
   FEED_SUMMARY_SYSTEM_PROMPT,
 } from "./feed-summary";
-import type { AgentModels } from "./kind";
 import {
   REPORT_TRIAGE_PARAMS,
   REPORT_TRIAGE_SYSTEM_PROMPT,

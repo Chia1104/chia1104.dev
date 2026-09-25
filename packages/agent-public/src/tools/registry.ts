@@ -17,7 +17,7 @@ export const WebToolName = {
 
 export type WebToolName = (typeof WebToolName)[keyof typeof WebToolName];
 
-export const WEB_TOOL_INFO_BY_NAME = {
+const WEB_TOOL_INFO_BY_NAME = {
   [WebToolName.WebSearch]: { label: "Search the web", tier: "read" },
   [WebToolName.FetchUrl]: { label: "Read page", tier: "read" },
 } as const satisfies Record<WebToolName, AgentToolInfo>;
@@ -30,7 +30,7 @@ export type ReportToolName =
   (typeof ReportToolName)[keyof typeof ReportToolName];
 
 /** `report` writes a row the operator reviews; nothing the visitor reads changes. */
-export const REPORT_TOOL_INFO_BY_NAME = {
+const REPORT_TOOL_INFO_BY_NAME = {
   [ReportToolName.ReportIssue]: {
     label: "Report to the author",
     tier: "report",

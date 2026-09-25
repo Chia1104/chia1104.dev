@@ -15,6 +15,7 @@ import type {
   AgentWireEvent,
 } from "@chia/agent-runtime/wire/schema";
 import { agentQuotaExceededSchema } from "@chia/services/agent/agent.schema";
+import { delay } from "@chia/utils/delay";
 import { messageOf } from "@chia/utils/error-helper";
 import { createQueryInvalidator } from "@chia/utils/query-client";
 
@@ -196,7 +197,9 @@ export const failureOf = (cause: unknown, labels: AgentLabels): string => {
 
 /**
  * The persisted transcript never replays approval events, so the server lists the approval rows
- * separately; they are re-applied here so a reload shows each card as the live stream left it.
+ * separately. A call with no result yet reopens its card, pending or decided while the rest of
+ * its batch waits; a decided row then annotates its call, whose own result the transcript carries
+ * once it ran.
  */
 export const foldDetail = (detail: AgentSessionDetail): AgentViewState => {
   let view = foldEvents(detail.events);
@@ -206,13 +209,15 @@ export const foldDetail = (detail: AgentSessionDetail): AgentViewState => {
     );
     // A row for a call that is not on this branch (a rewound session) has nothing to attach to.
     if (tool?.kind !== "tool") continue;
-    view = applyEvent(view, {
-      type: "approval:request",
-      toolCallId: approval.toolCallId,
-      toolName: approval.toolName,
-      tier: tool.tier,
-      args: approval.args ?? tool.args,
-    });
+    if (approval.status === "pending" || tool.status === "aborted") {
+      view = applyEvent(view, {
+        type: "approval:request",
+        toolCallId: approval.toolCallId,
+        toolName: approval.toolName,
+        tier: tool.tier,
+        args: approval.args ?? tool.args,
+      });
+    }
     if (approval.status === "pending") continue;
     view = applyEvent(view, {
       type: "approval:resolved",
@@ -261,9 +266,6 @@ export const createAgentSessionStore = ({
     const fetchDetail = () =>
       queryClient.query({ ...detailQuery, staleTime: 0 });
 
-    const sleep = (ms: number) =>
-      new Promise<void>((resolve) => setTimeout(resolve, ms));
-
     /**
      * Re-syncs the detail after `run:end`, keeping the view the stream built.
      *
@@ -283,7 +285,7 @@ export const createAgentSessionStore = ({
         }
         if (mine !== generation) return;
         if (detail.run?.status !== "running") return;
-        await sleep(200 * (attempt + 1));
+        await delay(200 * (attempt + 1));
         if (mine !== generation) return;
       }
       await get().hydrate();
@@ -398,7 +400,7 @@ export const createAgentSessionStore = ({
           set({ failure: get().labels.connectionLost });
           return;
         }
-        await sleep(Math.min(500 * 2 ** (reconnects - 1), 10_000));
+        await delay(Math.min(500 * 2 ** (reconnects - 1), 10_000));
         if (mine !== generation) return;
         await get().hydrate();
       }
@@ -610,7 +612,7 @@ export const findAgentModel = (
  * both the detail and the model list have loaded.
  */
 export const pinnedModelUnavailable = (
-  settings: AgentSessionDetail["settings"],
+  settings: AgentSessionDetail["settings"] | undefined,
   models: readonly AgentModel[] | undefined
 ): boolean => {
   if (!settings?.modelPinned || !models) return false;

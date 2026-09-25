@@ -19,28 +19,33 @@ const request: AgentWireEvent = {
   tier: "commit",
   args: {},
 };
-const refusal: AgentWireEvent = {
+const awaiting: AgentWireEvent = {
+  type: "run:end",
+  reason: "awaiting_approval",
+};
+const toolEnd = (isError: boolean): AgentWireEvent => ({
   type: "tool:end",
   toolCallId: "call-1",
   toolName: "commit_draft",
-  isError: true,
-  summary: "needs approval",
-};
+  isError,
+  summary: isError ? "declined" : "committed",
+});
 
 const toolOf = (events: AgentWireEvent[]) => {
   const view = foldEvents(events);
-  const tool = view.items.find((item) => item.kind === "tool");
+  const tools = view.items.filter((item) => item.kind === "tool");
+  const [tool] = tools;
   if (tool?.kind !== "tool") throw new Error("no tool item");
-  return { view, tool };
+  return { view, tool, tools };
 };
 
 describe("approval fold", () => {
-  it("keeps the card awaiting when the gate's refusal lands after the announcement", () => {
+  it("parks the card on the recorded request once the turn hands back", () => {
     const { view, tool } = toolOf([
+      { type: "run:start", sessionId: "s" },
       toolStart,
       request,
-      refusal,
-      { type: "run:end", reason: "awaiting_approval" },
+      awaiting,
     ]);
     expect(tool.status).toBe("awaiting_approval");
     expect(view.pendingApprovals.map((pending) => pending.toolCallId)).toEqual([
@@ -49,24 +54,21 @@ describe("approval fold", () => {
     expect(view.runStatus).toBe("awaiting_approval");
   });
 
-  it("does not make the request decidable before the turn has handed back", () => {
+  it("leaves the run status to the turn's end, not the announcement", () => {
     const { view, tool } = toolOf([
       { type: "run:start", sessionId: "s" },
       toolStart,
       request,
-      refusal,
     ]);
-    // Announced and visible, but the row is not persisted yet: the card must stay locked.
     expect(tool.status).toBe("awaiting_approval");
     expect(view.runStatus).toBe("running");
   });
 
-  it("closes the card on the relayed decision and renders the relay as a notice", () => {
+  it("records the decision and leaves the card for the resumed call's result", () => {
     const { view, tool } = toolOf([
       toolStart,
       request,
-      refusal,
-      { type: "run:end", reason: "awaiting_approval" },
+      awaiting,
       { type: "run:start", sessionId: "s" },
       {
         type: "approval:resolved",
@@ -74,28 +76,64 @@ describe("approval fold", () => {
         approved: true,
         comment: "go",
       },
-      {
-        type: "user",
-        messageId: "u:2",
-        text: "Operator decision: approved `commit_draft`. Run it now.",
-        origin: "operator-decision",
-      },
     ]);
-    expect(tool.status).toBe("ok");
+    // Decided, not yet run.
+    expect(tool.status).toBe("awaiting_approval");
     expect(tool.approval).toEqual({ approved: true, comment: "go" });
     expect(view.pendingApprovals).toEqual([]);
-    expect(view.items.at(-1)).toMatchObject({
-      kind: "notice",
-      variant: "decision",
-    });
-    expect(view.items.some((item) => item.kind === "user")).toBe(false);
+    expect(view.runStatus).toBe("running");
   });
 
-  it("retracts an announced request when the turn ends any other way", () => {
+  it("settles an approved call on its result, under the id it was requested with", () => {
+    const { view, tool, tools } = toolOf([
+      toolStart,
+      request,
+      awaiting,
+      { type: "run:start", sessionId: "s" },
+      {
+        type: "approval:resolved",
+        toolCallId: "call-1",
+        approved: true,
+        comment: "go",
+      },
+      toolEnd(false),
+      { type: "run:end", reason: "done" },
+    ]);
+    expect(tools).toHaveLength(1);
+    expect(tool).toMatchObject({
+      status: "ok",
+      summary: "committed",
+      approval: { approved: true, comment: "go" },
+    });
+    expect(view.pendingApprovals).toEqual([]);
+    expect(view.runStatus).toBe("idle");
+  });
+
+  it("settles a declined call on the refusal the model read", () => {
+    const { tool } = toolOf([
+      toolStart,
+      request,
+      awaiting,
+      { type: "run:start", sessionId: "s" },
+      {
+        type: "approval:resolved",
+        toolCallId: "call-1",
+        approved: false,
+        comment: "not yet",
+      },
+      toolEnd(true),
+      { type: "run:end", reason: "done" },
+    ]);
+    expect(tool).toMatchObject({
+      status: "error",
+      approval: { approved: false, comment: "not yet" },
+    });
+  });
+
+  it("retracts a request still open when the turn ends any other way", () => {
     const { view, tool } = toolOf([
       toolStart,
       request,
-      refusal,
       { type: "error", kind: AgentErrorKind.Internal },
       { type: "run:end", reason: "error" },
     ]);

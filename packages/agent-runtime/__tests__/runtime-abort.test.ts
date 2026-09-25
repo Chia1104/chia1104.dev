@@ -8,24 +8,24 @@ import {
   toolCallTurn,
 } from "./runtime.fixture.ts";
 
-describe("runPiTurn abort", () => {
+describe("runTurn abort", () => {
   it("ends an aborted turn without approvals, compaction or an error", async () => {
     const fixture = build();
     await seedOversizedBranch(fixture.session);
     const controller = new AbortController();
-    fixture.faux.setResponses([
-      toolCallTurn("publish", {}, "call-1"),
-      () => {
-        controller.abort();
-        return fauxAssistantMessage("", { stopReason: "aborted" });
-      },
-    ]);
+    fixture.faux.setResponses([toolCallTurn("publish", {}, "call-1")]);
 
-    await expect(fixture.run({ signal: controller.signal })).resolves.toEqual({
-      status: "aborted",
-      error: undefined,
-    });
-    expect(fixture.persistApproval).not.toHaveBeenCalled();
+    await expect(
+      fixture.run({
+        signal: controller.signal,
+        onEvent: (event) => {
+          fixture.events.push(event);
+          // Stopped while the gated call is being answered.
+          if (event.type === "tool:start") controller.abort();
+        },
+      })
+    ).resolves.toEqual({ status: "aborted" });
+    expect(fixture.persistApprovals).not.toHaveBeenCalled();
     expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
       false
     );
@@ -78,7 +78,7 @@ describe("runPiTurn abort", () => {
     const controller = new AbortController();
     const getBranch = fixture.session.getBranch.bind(fixture.session);
     // The abort lands while the turn is still reading the tree, before any run exists to
-    // cancel.
+    // cancel. The operator's message was accepted before it and stays in the tree.
     fixture.session.getBranch = async (fromId) => {
       controller.abort();
       return getBranch(fromId);
@@ -89,7 +89,9 @@ describe("runPiTurn abort", () => {
 
     expect(result.status).toBe("aborted");
     expect(fixture.faux.state.callCount).toBe(0);
-    expect(await fixture.branch()).toEqual([]);
+    expect((await getBranch()).map((entry) => messageOf(entry)?.role)).toEqual([
+      "user",
+    ]);
   });
 
   it("skips the provider entirely when the signal is already aborted", async () => {
@@ -108,37 +110,24 @@ describe("runPiTurn abort", () => {
     const fixture = build();
     await seedOversizedBranch(fixture.session);
     const controller = new AbortController();
-    fixture.faux.setResponses([
-      toolCallTurn("publish", {}, "call-1"),
-      fauxAssistantMessage("Waiting."),
-    ]);
+    fixture.faux.setResponses([toolCallTurn("publish", {}, "call-1")]);
 
     const result = await fixture.run({
       signal: controller.signal,
       onEvent: (event) => {
         fixture.events.push(event);
-        // The provider turn completes normally; the operator stops in the same instant.
-        if (event.type === "assistant:end" && event.text === "Waiting.") {
-          controller.abort();
-        }
+        // The reply completes normally; the operator stops in the same instant.
+        if (event.type === "assistant:end") controller.abort();
       },
     });
 
-    expect(result).toEqual({
-      status: "aborted",
-      error: undefined,
-    });
-    expect(fixture.persistApproval).not.toHaveBeenCalled();
+    expect(result).toEqual({ status: "aborted" });
+    expect(fixture.persistApprovals).not.toHaveBeenCalled();
     expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
       false
     );
-    // Announced live when refused; the client retracts it on `run:end{aborted}`.
-    expect(fixture.events).toContainEqual(
-      expect.objectContaining({
-        type: "approval:request",
-        toolCallId: "call-1",
-      })
-    );
+    // A batch is announced only once it is recorded.
+    expect(fixture.types()).not.toContain("approval:request");
     expect(fixture.events.at(-1)).toEqual({
       type: "run:end",
       reason: "aborted",

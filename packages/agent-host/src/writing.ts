@@ -149,12 +149,10 @@ export const createWritingAgentKind = (): WritingAgentKind => ({
         description: template.description ?? template.name,
         argumentHint: template.argumentHint,
       })),
-      skills: writingSkills
-        .filter((skill) => !skill.disableModelInvocation)
-        .map((skill) => ({
-          name: skill.name,
-          description: skill.description,
-        })),
+      skills: writingSkills.map((skill) => ({
+        name: skill.name,
+        description: skill.description,
+      })),
     };
   },
 
@@ -283,6 +281,7 @@ export const createWritingAgentExecutor = (
       },
       instructions: context.config.instructions,
       autoApprove: context.settings.autoApprove,
+      approvedCalls: context.approvedCalls,
     });
 
     return Promise.resolve({

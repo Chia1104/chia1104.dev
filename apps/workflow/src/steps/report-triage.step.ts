@@ -58,7 +58,7 @@ const runTriage = async (
   report: FeedReport,
   feed: TriageFeed
 ): Promise<ReportTriageStatus> => {
-  const { completeText } = await import("@chia/agent-runtime/pi/complete");
+  const { completeText } = await import("@chia/agent-runtime/complete");
   const task = await resolveAgentTask(db, AgentTaskId.ReportTriage);
 
   const reply = await completeText({

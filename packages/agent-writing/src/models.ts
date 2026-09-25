@@ -1,5 +1,3 @@
-import type { Api, Model, Models } from "@earendil-works/pi-ai";
-
 import {
   AgentProvider,
   createAgentCatalog,
@@ -10,10 +8,12 @@ import {
   resolveModel,
 } from "@chia/agent-runtime/models";
 import type {
+  AgentModel,
   AgentModelAccess,
   AgentModelInfo,
   AgentModelPredicate,
   AgentModelRef,
+  AgentModels,
 } from "@chia/agent-runtime/models";
 import type { AgentSessionDefaults } from "@chia/agent-runtime/types";
 import { ProviderId } from "@chia/ai/provider";
@@ -44,9 +44,9 @@ export const DEFAULT_WRITING_MODEL: AgentModelRef = houseModel("writing");
  */
 export const resolveWritingModel = (
   ref: AgentModelRef,
-  models: Models = createAgentModels(),
+  models: AgentModels = createAgentModels(),
   access: AgentModelAccess = NO_ACCESS
-): Model<Api> => resolveModel(ref, isWritingModel, models, access);
+): AgentModel => resolveModel(ref, isWritingModel, models, access);
 
 /**
  * Validates a selection against the catalogue, not a credential-bearing collection.

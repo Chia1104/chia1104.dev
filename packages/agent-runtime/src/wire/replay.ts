@@ -1,12 +1,17 @@
-import type { AssistantMessage } from "@earendil-works/pi-ai";
-import * as z from "zod";
+import { contentText } from "@earendil-works/pi-ai";
+import type {
+  AssistantMessage,
+  ToolResultMessage,
+  UserMessage,
+} from "@earendil-works/pi-ai";
+
+import { asJsonValue } from "@chia/utils/json";
 
 import { errorOfAssistantMessage } from "../pi/errors.ts";
 import type { SessionEntry } from "../session/entries.ts";
 import type { AgentEventPresentation } from "../types.ts";
 
 import { clipDetails } from "./clip.ts";
-import { isOperatorDecisionText } from "./operator-decision.ts";
 import type { AgentWireEvent } from "./schema.ts";
 
 /** A finished assistant message as its terminal wire event, live and replayed alike. */
@@ -21,10 +26,7 @@ export const assistantEndEvent = (
   return {
     type: "assistant:end",
     messageId,
-    text: message.content
-      .filter((part) => part.type === "text")
-      .map((part) => part.text)
-      .join(""),
+    text: contentText(message.content, ""),
     thinking: thinking || undefined,
     stopReason: message.stopReason,
     at: message.timestamp,
@@ -48,26 +50,31 @@ export const toolStartEvent = (
   return { type: "tool:start", ...call, label, tier };
 };
 
-/**
- * `result` is the live tool result or the persisted tool-result message; both carry `details`.
- * Pi types the live result as `any`, so a tool that resolved nothing must not throw here.
- */
-export const toolEndEvent = <TResult extends { details?: unknown } | undefined>(
-  call: {
-    toolCallId: string;
-    toolName: string;
-    isError: boolean;
-    result: TResult;
-  },
+/** The first line of a failed call's text, capped so the transcript stays one line. */
+const failureSummary = (result: ToolResultMessage): string => {
+  const [line] = contentText(result.content).split("\n");
+  if (!line) return "Failed.";
+  return line.length > 160 ? `${line.slice(0, 160)}…` : line;
+};
+
+/** A persisted tool result as its wire event, live and replayed alike; `details` is what clients render. */
+export const toolEndEvent = (
+  result: ToolResultMessage,
   presentation: AgentEventPresentation
-): AgentWireEvent => ({
-  type: "tool:end",
-  toolCallId: call.toolCallId,
-  toolName: call.toolName,
-  isError: call.isError,
-  summary: presentation.summarize(call.toolName, call.result, call.isError),
-  details: clipDetails(call.result?.details),
-});
+): AgentWireEvent => {
+  // Pi types a result's details as `any`; only JSON is persisted.
+  const details = asJsonValue(result.details);
+  return {
+    type: "tool:end",
+    toolCallId: result.toolCallId,
+    toolName: result.toolName,
+    isError: result.isError,
+    summary: result.isError
+      ? failureSummary(result)
+      : presentation.summarize(result.toolName, details),
+    details: clipDetails(details),
+  };
+};
 
 /**
  * Rebuilds wire events from a persisted branch so a reconnecting client renders through the
@@ -77,9 +84,10 @@ export const toolEndEvent = <TResult extends { details?: unknown } | undefined>(
  * A message's wire id is its entry id, live and replayed alike, so a client can name the entry
  * behind any message it shows (rewind and fork targets).
  *
- * Pi appends a call's result right after the assistant message that issued it, so a call whose
- * result is not the next thing on the branch never got one. Those are closed as `aborted` here:
- * a `tool:start` with no end would read as still running forever.
+ * A call's result follows the reply that issued it, so a call whose result is not among the
+ * entries right after that reply never got one. Those are closed as `aborted` here: a
+ * `tool:start` with no end would read as still running forever. A call still waiting on the
+ * operator is reopened by its approval row on the client.
  */
 export const entriesToWireEvents = (
   entries: readonly SessionEntry[],
@@ -124,15 +132,14 @@ export const entriesToWireEvents = (
     if (message.role === "user") {
       // With attachments the first text block is their rendering; the operator's words are last.
       const text = entry.attachments?.length
-        ? (textParts(message.content).at(-1) ?? "")
-        : contentToText(message.content);
+        ? lastTextOf(message.content)
+        : contentText(message.content, "");
       events.push({
         type: "user",
         messageId: entry.id,
         text,
         attachments: entry.attachments,
         at: message.timestamp,
-        origin: isOperatorDecisionText(text) ? "operator-decision" : undefined,
       });
       continue;
     }
@@ -169,17 +176,7 @@ export const entriesToWireEvents = (
 
     if (message.role === "toolResult") {
       open.delete(message.toolCallId);
-      events.push(
-        toolEndEvent(
-          {
-            toolCallId: message.toolCallId,
-            toolName: message.toolName,
-            isError: message.isError,
-            result: message,
-          },
-          options
-        )
-      );
+      events.push(toolEndEvent(message, options));
     }
   }
   closeOpen();
@@ -187,18 +184,8 @@ export const entriesToWireEvents = (
   return events;
 };
 
-const textParts = (
-  content: string | readonly { type: string; text?: string }[]
-): string[] => {
-  const text = z.string().safeParse(content).data;
-  if (text !== undefined) return [text];
-  return z
-    .array(z.object({ type: z.string(), text: z.string().optional() }))
-    .parse(content)
-    .filter((part) => part.type === "text")
-    .map((part) => part.text ?? "");
-};
-
-const contentToText = (
-  content: string | readonly { type: string; text?: string }[]
-): string => textParts(content).join("");
+/** The last text part: with attachments, the operator's words follow the rendered block. */
+const lastTextOf = (content: UserMessage["content"]): string =>
+  Array.isArray(content)
+    ? (content.findLast((part) => part.type === "text")?.text ?? "")
+    : contentText(content);

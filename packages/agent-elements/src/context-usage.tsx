@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Popover, ProgressBar } from "@heroui/react";
+import { clamp } from "es-toolkit";
 import { Archive } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
@@ -54,7 +55,7 @@ export const ContextUsage = () => {
 
   const { compactable, contextTokens } = detail.stats;
   const percentage = Math.round((contextTokens / current.contextWindow) * 100);
-  const visualPercentage = Math.min(100, Math.max(0, percentage));
+  const visualPercentage = clamp(percentage, 0, 100);
   const tone =
     percentage >= 90 ? "danger" : percentage >= 75 ? "warning" : "default";
   const ringClassName =

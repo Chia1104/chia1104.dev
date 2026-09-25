@@ -6,14 +6,18 @@ import {
   fauxText,
   fauxToolCall,
 } from "@earendil-works/pi-ai/providers/faux";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import { runPiTurn } from "@chia/agent-runtime/pi/turn";
 import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
+import { runTurn } from "@chia/agent-runtime/turn";
+import type { AgentTurnInput } from "@chia/agent-runtime/turn";
+import { ApprovalVerdict } from "@chia/agent-runtime/types";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
+  ApprovalBatch,
+  ApprovalDecision,
 } from "@chia/agent-runtime/types";
 import { foldEvents } from "@chia/agent-runtime/wire/fold";
 import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
@@ -77,20 +81,22 @@ interface Fixture {
   setResponses: (
     responses: Parameters<ReturnType<typeof fauxProvider>["setResponses"]>[0]
   ) => void;
-  run: (
-    text: string,
-    options?: {
-      signal?: AbortSignal;
-      onEvent?: (event: AgentWireEvent) => void;
-      attachments?: AgentAttachmentInput[];
-      approvedApprovalKeys?: ReadonlySet<string>;
-      consumeApproval?: (key: string) => Promise<void>;
-    }
+  run: (text: string, options?: RunOptions) => Promise<AgentTurnExecution>;
+  /** Resumes the calls the last run stopped on, as the step does with the recorded batch. */
+  resume: (
+    decisions: ApprovalDecision[],
+    options?: RunOptions
   ) => Promise<AgentTurnExecution>;
 }
 
-const approvalOf = (execution: AgentTurnExecution) =>
-  execution.status === "awaiting_approval" ? execution.approval : undefined;
+interface RunOptions {
+  signal?: AbortSignal;
+  onEvent?: (event: AgentWireEvent) => void;
+  attachments?: AgentAttachmentInput[];
+}
+
+const approvalsOf = (execution: AgentTurnExecution) =>
+  execution.status === "awaiting_approval" ? execution.approvals : [];
 
 const errorOf = (execution: AgentTurnExecution) =>
   execution.status === "error" ? execution.error : undefined;
@@ -155,6 +161,49 @@ const build = async (
     ...settings,
   };
 
+  const batches: ApprovalBatch[] = [];
+  let runs = 0;
+  const turn = (
+    input: AgentTurnInput,
+    options: RunOptions = {},
+    approvedCalls: { toolCallId: string; key: string }[] = []
+  ) => {
+    runs += 1;
+    return runTurn({
+      ...prepareWritingTurn({
+        agentSessionId: SESSION_ID,
+        content,
+        web,
+        github: createFakeGitHubPort(),
+        draft,
+        sessionDrafts: [{ draftId: DRAFT_ID, lastSeenRevision: 0 }],
+        memory,
+        reports: {
+          get: (id) =>
+            Promise.resolve(id === READER_REPORT.id ? READER_REPORT : null),
+        },
+        autoApprove: sessionSettings.autoApprove,
+        approvedCalls,
+      }),
+      ...input,
+      policy: writingPolicy,
+      session,
+      settings: sessionSettings,
+      agentSessionId: SESSION_ID,
+      agentRunId: `run-${runs}`,
+      model: resolveWritingModel(sessionSettings, models),
+      models,
+      onEvent: (event) => {
+        events.push(event);
+        options.onEvent?.(event);
+      },
+      persistApprovals: async (batch) => {
+        batches.push(batch);
+      },
+      signal: options.signal,
+    });
+  };
+
   return {
     events,
     content,
@@ -163,39 +212,59 @@ const build = async (
     session,
     setResponses: faux.setResponses,
     run: (text, options) =>
-      runPiTurn({
-        ...prepareWritingTurn({
-          agentSessionId: SESSION_ID,
-          content,
-          web,
-          github: createFakeGitHubPort(),
-          draft,
-          sessionDrafts: [{ draftId: DRAFT_ID, lastSeenRevision: 0 }],
-          memory,
-          reports: {
-            get: (id) =>
-              Promise.resolve(id === READER_REPORT.id ? READER_REPORT : null),
-          },
-          autoApprove: sessionSettings.autoApprove,
-        }),
-        policy: writingPolicy,
-        session,
-        settings: sessionSettings,
-        agentSessionId: SESSION_ID,
-        model: resolveWritingModel(sessionSettings, models),
-        models,
-        message: { text, attachments: options?.attachments },
-        onEvent: (event) => {
-          events.push(event);
-          options?.onEvent?.(event);
-        },
-        persistApproval: async () => undefined,
-        approvedApprovalKeys: options?.approvedApprovalKeys,
-        consumeApproval: options?.consumeApproval,
-        signal: options?.signal,
-      }),
+      turn({ message: { text, attachments: options?.attachments } }, options),
+    resume: (decisions, options) => {
+      const requests = batches.at(-1)?.requests ?? [];
+      const approvedCalls = requests
+        .filter((request) =>
+          decisions.some(
+            (decision) =>
+              decision.toolCallId === request.toolCallId &&
+              decision.verdict === ApprovalVerdict.Approved
+          )
+        )
+        .map((request) => ({
+          toolCallId: request.toolCallId,
+          key: request.key,
+        }));
+      return turn(
+        { resume: { interruptedRunId: `run-${runs}`, decisions } },
+        options,
+        approvedCalls
+      );
+    },
   };
 };
+
+/** Two writes that leave the draft committable: an English post with a title and a body. */
+const stagePost = () =>
+  fauxAssistantMessage(
+    [
+      fauxToolCall(ToolName.WriteDraft, {
+        draftId: DRAFT_ID,
+        slug: "a-post",
+        defaultLocale: "en",
+        translations: { en: { title: "A post" } },
+      }),
+      fauxToolCall(ToolName.WriteDraft, {
+        draftId: DRAFT_ID,
+        translations: { en: { content: "## Post\n\nBody." } },
+      }),
+    ],
+    { stopReason: "toolUse" }
+  );
+
+const commit = (id: string, confirmation = "Committing the English post.") =>
+  fauxAssistantMessage(
+    [
+      fauxToolCall(
+        ToolName.CommitDraft,
+        { draftId: DRAFT_ID, allowEmptyMetadata: true, confirmation },
+        { id }
+      ),
+    ],
+    { stopReason: "toolUse" }
+  );
 
 describe("prepareWritingTurn", () => {
   let fixture: Fixture;
@@ -372,40 +441,15 @@ describe("prepareWritingTurn", () => {
     expect(fixture.events.some((e) => e.type === "state:changed")).toBe(true);
   });
 
-  it("blocks a commit without approval and tells the model to stop", async () => {
-    fixture.setResponses([
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.WriteDraft, {
-            draftId: DRAFT_ID,
-            translations: { en: { content: "## Post\n\nBody." } },
-          }),
-          fauxToolCall(ToolName.WriteDraft, {
-            draftId: DRAFT_ID,
-            slug: "a-post",
-            defaultLocale: "en",
-            translations: { en: { title: "A post" } },
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.CommitDraft, {
-            draftId: DRAFT_ID,
-            allowEmptyMetadata: true,
-            confirmation: "Committing the English post.",
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage("Waiting for your approval."),
-    ]);
+  it("stops on a commit until the operator decides, without asking the model again", async () => {
+    fixture.setResponses([stagePost(), commit("call-commit")]);
 
     const result = await fixture.run("Write and commit a post");
 
     expect(fixture.content.commits).toHaveLength(0);
-    expect(approvalOf(result)?.toolName).toBe(ToolName.CommitDraft);
+    expect(approvalsOf(result).map((approval) => approval.toolName)).toEqual([
+      ToolName.CommitDraft,
+    ]);
 
     const request = fixture.events.find((e) => e.type === "approval:request");
     expect(request).toMatchObject({
@@ -422,31 +466,8 @@ describe("prepareWritingTurn", () => {
   it("lets a commit through once the tier is pre-approved", async () => {
     const approved = await build({ autoApprove: [WritingToolTier.Commit] });
     approved.setResponses([
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.WriteDraft, {
-            draftId: DRAFT_ID,
-            translations: { en: { content: "## Post\n\nBody." } },
-          }),
-          fauxToolCall(ToolName.WriteDraft, {
-            draftId: DRAFT_ID,
-            slug: "a-post",
-            defaultLocale: "en",
-            translations: { en: { title: "A post" } },
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.CommitDraft, {
-            draftId: DRAFT_ID,
-            allowEmptyMetadata: true,
-            confirmation: "Committing the English post.",
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
+      stagePost(),
+      commit("call-commit"),
       fauxAssistantMessage("Committed."),
     ]);
 
@@ -462,126 +483,51 @@ describe("prepareWritingTurn", () => {
     );
   });
 
-  it("keys a commit approval to the draft revision the operator saw and spends it on the re-issued call", async () => {
-    fixture.setResponses([
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.WriteDraft, {
-            draftId: DRAFT_ID,
-            translations: { en: { content: "## Post\n\nBody." } },
-          }),
-          fauxToolCall(ToolName.WriteDraft, {
-            draftId: DRAFT_ID,
-            slug: "a-post",
-            defaultLocale: "en",
-            translations: { en: { title: "A post" } },
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.CommitDraft, {
-            draftId: DRAFT_ID,
-            allowEmptyMetadata: true,
-            confirmation: "Committing the English post.",
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage("Waiting for your approval."),
-    ]);
+  it("keys a commit approval to the draft content the operator saw and commits it when approved", async () => {
+    fixture.setResponses([stagePost(), commit("call-commit")]);
     const gated = await fixture.run("Write and commit a post");
     const { contentHash } = await fixture.draft.get(DRAFT_ID);
-    expect(approvalOf(gated)?.key).toBe(
-      `${ToolName.CommitDraft}:${DRAFT_ID}@${contentHash}`
-    );
-
-    // The relay turn re-issues the call under a new id; the key is what the approval matches.
-    const consumeApproval = vi.fn(async () => undefined);
-    fixture.setResponses([
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.CommitDraft, {
-            draftId: DRAFT_ID,
-            allowEmptyMetadata: true,
-            confirmation: "Committing as approved.",
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage("Committed."),
+    expect(approvalsOf(gated)).toMatchObject([
+      {
+        toolCallId: "call-commit",
+        key: `${ToolName.CommitDraft}:${DRAFT_ID}@${contentHash}`,
+      },
     ]);
-    const relayed = await fixture.run("Approved.", {
-      approvedApprovalKeys: new Set([approvalOf(gated)!.key]),
-      consumeApproval,
-    });
 
-    expect(relayed.status).toBe("done");
-    expect(fixture.content.commits).toHaveLength(1);
-    expect(consumeApproval).toHaveBeenCalledExactlyOnceWith(
-      approvalOf(gated)!.key
-    );
+    fixture.setResponses([fauxAssistantMessage("Committed.")]);
+    const resumed = await fixture.resume([
+      { toolCallId: "call-commit", verdict: ApprovalVerdict.Approved },
+    ]);
+
+    expect(resumed.status).toBe("done");
+    expect(fixture.content.commits).toEqual([
+      {
+        draftId: DRAFT_ID,
+        expectedHash: contentHash,
+        message: "Committing the English post.",
+      },
+    ]);
   });
 
-  it("commits the approved revision even when the editor saves between the gate and the apply", async () => {
+  it("commits the approved content even when the editor saves between the gate and the apply", async () => {
     fixture.setResponses([
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.WriteDraft, {
-            draftId: DRAFT_ID,
-            slug: "a-post",
-            defaultLocale: "en",
-            translations: { en: { title: "A post" } },
-          }),
-          fauxToolCall(ToolName.WriteDraft, {
-            draftId: DRAFT_ID,
-            translations: { en: { content: "## Post\n\nBody." } },
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage("Staged."),
+      stagePost(),
+      commit("call-commit", "Committing as approved."),
     ]);
-    await fixture.run("Stage a post");
+    await fixture.run("Stage and commit a post");
     const approved = await fixture.draft.get(DRAFT_ID);
 
-    // Reads in order: the volatile context, the preflight, the gate's key, then the tool. The
-    // editor saves right after the gate read the content it matched.
-    const store = fixture.draft;
-    const originalGet = store.get.bind(store);
-    let reads = 0;
-    store.get = async (draftId) => {
-      const draft = await originalGet(draftId);
-      reads += 1;
-      if (reads === 3) {
-        store.operatorEdit(DRAFT_ID, "en", { content: "## Post\n\nEdited." });
-      }
-      return draft;
-    };
-    fixture.setResponses([
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.CommitDraft, {
-            draftId: DRAFT_ID,
-            allowEmptyMetadata: true,
-            confirmation: "Committing as approved.",
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage("Committed."),
-    ]);
-    await fixture.run("Approved.", {
-      approvedApprovalKeys: new Set([
-        `${ToolName.CommitDraft}:${DRAFT_ID}@${approved.contentHash}`,
-      ]),
-      consumeApproval: async () => undefined,
+    fixture.draft.operatorEdit(DRAFT_ID, "en", {
+      content: "## Post\n\nEdited.",
     });
+    fixture.setResponses([fauxAssistantMessage("Committed.")]);
+    await fixture.resume([
+      { toolCallId: "call-commit", verdict: ApprovalVerdict.Approved },
+    ]);
 
     // The apply is pinned to the approved content, not what the tool read afterwards;
     // the apply service refuses it when the row no longer matches.
-    expect((await originalGet(DRAFT_ID)).contentHash).not.toBe(
+    expect((await fixture.draft.get(DRAFT_ID)).contentHash).not.toBe(
       approved.contentHash
     );
     expect(fixture.content.commits).toEqual([
@@ -593,30 +539,12 @@ describe("prepareWritingTurn", () => {
     ]);
   });
 
-  it("gates a commit again when the draft no longer holds the approved content", async () => {
-    fixture.setResponses([
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.WriteDraft, {
-            draftId: DRAFT_ID,
-            slug: "a-post",
-            defaultLocale: "en",
-            translations: { en: { title: "A post" } },
-          }),
-          fauxToolCall(ToolName.WriteDraft, {
-            draftId: DRAFT_ID,
-            translations: { en: { content: "## Post\n\nBody." } },
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage("Staged."),
-    ]);
-    await fixture.run("Stage a post");
+  it("gates a later commit again, keyed to the content the draft holds by then", async () => {
+    fixture.setResponses([stagePost(), commit("call-commit")]);
+    await fixture.run("Stage and commit a post");
     const approved = await fixture.draft.get(DRAFT_ID);
 
-    // The model "improves" the draft on its way back to the approved commit.
-    const consumeApproval = vi.fn(async () => undefined);
+    // The model "improves" the draft after the approved commit and commits again.
     fixture.setResponses([
       fauxAssistantMessage(
         [
@@ -629,31 +557,23 @@ describe("prepareWritingTurn", () => {
         ],
         { stopReason: "toolUse" }
       ),
-      fauxAssistantMessage(
-        [
-          fauxToolCall(ToolName.CommitDraft, {
-            draftId: DRAFT_ID,
-            allowEmptyMetadata: true,
-            confirmation: "Committing.",
-          }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage("Waiting again."),
+      commit("call-recommit", "Committing again."),
     ]);
-    const result = await fixture.run("Approved.", {
-      approvedApprovalKeys: new Set([
-        `${ToolName.CommitDraft}:${DRAFT_ID}@${approved.contentHash}`,
-      ]),
-      consumeApproval,
-    });
+    const result = await fixture.resume([
+      { toolCallId: "call-commit", verdict: ApprovalVerdict.Approved },
+    ]);
 
-    expect(fixture.content.commits).toHaveLength(0);
-    expect(consumeApproval).not.toHaveBeenCalled();
-    expect(result.status).toBe("awaiting_approval");
-    expect(approvalOf(result)?.key).toBe(
-      `${ToolName.CommitDraft}:${DRAFT_ID}@${(await fixture.draft.get(DRAFT_ID)).contentHash}`
-    );
+    expect(fixture.content.commits).toEqual([
+      expect.objectContaining({ expectedHash: approved.contentHash }),
+    ]);
+    const { contentHash } = await fixture.draft.get(DRAFT_ID);
+    expect(contentHash).not.toBe(approved.contentHash);
+    expect(approvalsOf(result)).toMatchObject([
+      {
+        toolCallId: "call-recommit",
+        key: `${ToolName.CommitDraft}:${DRAFT_ID}@${contentHash}`,
+      },
+    ]);
   });
 
   it("refuses to commit a draft whose default locale has no title", async () => {
@@ -729,18 +649,18 @@ describe("prepareWritingTurn", () => {
     expect(new Set(assistants.map((item) => item.messageId)).size).toBe(2);
   });
 
-  it("sends the draft state as a volatile last message, not in the system prompt or transcript", async () => {
+  it("sends the draft state once per turn after the operator's message, not in the system prompt or transcript", async () => {
     await fixture.draft.patchFeedMeta(DRAFT_ID, { slug: "hello-world" });
     const seen: TranscriptContext[] = [];
     fixture.setResponses([
       (context) => {
-        seen.push(context);
+        seen.push(structuredClone(context));
         return fauxAssistantMessage([
           fauxToolCall(ToolName.ListTags, {}, { id: "call-tags" }),
         ]);
       },
       (context) => {
-        seen.push(context);
+        seen.push(structuredClone(context));
         return fauxAssistantMessage("Done.");
       },
     ]);
@@ -748,21 +668,21 @@ describe("prepareWritingTurn", () => {
     await fixture.run("What is the draft slug?");
 
     expect(seen).toHaveLength(2);
-    for (const context of seen) {
-      expect(getCurrentSystemPrompt(context.messages)).not.toContain(
+    const [first, second] = seen.map((context) => context.messages);
+    for (const messages of [first ?? [], second ?? []]) {
+      expect(getCurrentSystemPrompt(messages)).not.toContain(
         "# Current session"
       );
-      const last = context.messages.at(-1);
-      expect(last?.role).toBe("user");
-      const text = JSON.stringify(last?.content);
-      expect(text).toContain("# Current session");
-      expect(text).toContain("slug hello-world");
-      expect(text).toMatch(/Current time: \d{4}-\d{2}-\d{2}T/);
     }
-    // Both requests share one system prompt: the cacheable prefix is stable across hops.
-    expect(getCurrentSystemPrompt(seen[0]?.messages ?? [])).toBe(
-      getCurrentSystemPrompt(seen[1]?.messages ?? [])
-    );
+    const snapshot = first?.at(-1);
+    expect(snapshot?.role).toBe("user");
+    const text = JSON.stringify(snapshot?.content);
+    expect(text).toContain("# Current session");
+    expect(text).toContain("slug hello-world");
+    expect(text).toMatch(/Current time: \d{4}-\d{2}-\d{2}T/);
+    // The second request extends the first, snapshot included, so the provider's cache covers it.
+    expect(second?.slice(0, first?.length)).toEqual(first);
+    expect(second?.at(-1)?.role).toBe("toolResult");
 
     const persisted = JSON.stringify(await fixture.session.getBranch());
     expect(persisted).not.toContain("# Current session");

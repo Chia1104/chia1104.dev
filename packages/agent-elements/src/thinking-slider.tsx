@@ -1,6 +1,7 @@
 "use client";
 
 import { Slider } from "@heroui/react";
+import { clamp } from "es-toolkit";
 
 import { ThinkingLevel } from "@chia/agent-runtime/types";
 import { cn } from "@chia/ui/utils/cn.util";
@@ -21,7 +22,7 @@ export interface ThinkingSliderProps {
 }
 
 const levelAt = (index: number): AgentThinkingLevel =>
-  THINKING_LEVELS[Math.max(0, Math.min(THINKING_LEVELS.length - 1, index))] ??
+  THINKING_LEVELS[clamp(index, 0, THINKING_LEVELS.length - 1)] ??
   ThinkingLevel.Off;
 
 export const ThinkingSlider = ({

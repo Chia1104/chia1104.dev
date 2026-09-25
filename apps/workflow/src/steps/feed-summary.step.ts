@@ -50,7 +50,7 @@ export const summarizeFeedStep = async (
   });
   const refs = feed.translations.map(refOf);
 
-  const { completeText } = await import("@chia/agent-runtime/pi/complete");
+  const { completeText } = await import("@chia/agent-runtime/complete");
   let task: Awaited<ReturnType<typeof resolveAgentTask>>;
   try {
     task = await resolveAgentTask(db, AgentTaskId.FeedSummary);

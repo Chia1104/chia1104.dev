@@ -7,7 +7,7 @@ import {
   canCompactBranch,
   compactionContextWindow,
   shouldCompactBranch,
-} from "../src/pi/compaction.ts";
+} from "../src/compaction.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { estimateBranchContextTokens } from "../src/session/usage.ts";
 

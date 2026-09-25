@@ -15,21 +15,13 @@ describe("publicPolicy", () => {
     }
   });
 
-  it("summarises a content read and an error", () => {
+  it("summarises a content read by its details", () => {
     expect(
-      publicPolicy.summarize(
-        ToolName.SearchPosts,
-        { content: [], details: { hits: [{}, {}] } },
-        false
-      )
+      publicPolicy.summarize(ToolName.SearchPosts, { hits: [{}, {}] })
     ).toBe("2 match(es).");
-    expect(
-      publicPolicy.summarize(
-        ToolName.GetPost,
-        { content: [{ type: "text", text: "boom" }] },
-        true
-      )
-    ).toBe("boom");
+    expect(publicPolicy.summarize(ToolName.GetPost, undefined)).toBe(
+      "Read post."
+    );
   });
 });
 

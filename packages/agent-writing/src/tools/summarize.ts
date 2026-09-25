@@ -1,31 +1,25 @@
 import { summarizeContentToolResult } from "@chia/agent-content/tools/summarize";
-import { toolErrorText, toolResultDetails } from "@chia/agent-runtime/tools";
 import {
   asJsonArray,
   asJsonObject,
   asNumber,
   asString,
 } from "@chia/utils/json";
+import type { JsonValue } from "@chia/utils/json";
 import { MatchMode } from "@chia/utils/text";
 import { hostnameOf } from "@chia/utils/url";
 
 import { ToolName } from "./registry.ts";
 
-/**
- * One transcript line per tool result. The full payload stays in `details`. `result` is
- * `unknown` because it arrives from pi as `any`.
- */
-export const summarizeToolResult = <TResult>(
+/** One transcript line per successful tool result. The full payload stays in `details`. */
+export const summarizeToolResult = (
   toolName: string,
-  result: TResult,
-  isError: boolean
+  value: JsonValue | undefined
 ): string => {
-  if (isError) return toolErrorText(result) ?? "Failed.";
-
-  const shared = summarizeContentToolResult(toolName, result);
+  const shared = summarizeContentToolResult(toolName, value);
   if (shared !== undefined) return shared;
 
-  const details = toolResultDetails(result);
+  const details = asJsonObject(value);
   if (!details) return "Done.";
 
   switch (toolName) {

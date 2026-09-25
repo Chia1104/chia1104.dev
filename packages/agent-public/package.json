@@ -48,16 +48,13 @@
     "@chia/db": "workspace:*",
     "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@earendil-works/pi-agent-core": "catalog:agent",
-    "@earendil-works/pi-ai": "catalog:agent",
-    "es-toolkit": "catalog:",
-    "typebox": "catalog:agent",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@chia/agent-writing": "workspace:*",
     "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
+    "@earendil-works/pi-ai": "catalog:agent",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"

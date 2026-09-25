@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { ContextDetail } from "@chia/ai/embeddings/context";
 import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
+import { asJsonValue } from "@chia/utils/json";
 
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
@@ -45,19 +46,23 @@ describe("memory tools", () => {
   it("saves a fact and finds it again by search, then reads it by id", async () => {
     const context = createContext();
 
-    const saved = await saveMemoryTool(context).execute("call-1", {
-      title: "pgvector 0.8 adds iterative index scans",
-      content: "Set `hnsw.iterative_scan = relaxed_order` on pgvector 0.8+.",
-      sourceUrl: "https://github.com/pgvector/pgvector#iterative-index-scans",
-    });
-    expect(saved.details).toMatchObject({ id: 1, kind: AgentMemoryKind.Fact });
-    expect(summarizeToolResult(ToolName.SaveMemory, saved, false)).toBe(
-      "Saved memory #1."
+    const saved = await saveMemoryTool(context).execute(
+      {
+        title: "pgvector 0.8 adds iterative index scans",
+        content: "Set `hnsw.iterative_scan = relaxed_order` on pgvector 0.8+.",
+        sourceUrl: "https://github.com/pgvector/pgvector#iterative-index-scans",
+      },
+      { toolCallId: "call-1" }
     );
+    expect(saved.details).toMatchObject({ id: 1, kind: AgentMemoryKind.Fact });
+    expect(
+      summarizeToolResult(ToolName.SaveMemory, asJsonValue(saved.details))
+    ).toBe("Saved memory #1.");
 
-    const found = await searchMemoryTool(context).execute("call-2", {
-      query: "iterative_scan",
-    });
+    const found = await searchMemoryTool(context).execute(
+      { query: "iterative_scan" },
+      { toolCallId: "call-2" }
+    );
     expect(found.details).toMatchObject({
       query: "iterative_scan",
       hits: [
@@ -68,15 +73,18 @@ describe("memory tools", () => {
         },
       ],
     });
-    expect(found.content[0]).toMatchObject({
+    expect(found).toMatchObject({
       text: expect.stringContaining("(#1)"),
     });
-    expect(summarizeToolResult(ToolName.SearchMemory, found, false)).toBe(
-      'Searched memory for "iterative_scan" (1 hits).'
-    );
+    expect(
+      summarizeToolResult(ToolName.SearchMemory, asJsonValue(found.details))
+    ).toBe('Searched memory for "iterative_scan" (1 hits).');
 
-    const read = await getMemoryTool(context).execute("call-3", { id: 1 });
-    expect(read.content[0]).toMatchObject({
+    const read = await getMemoryTool(context).execute(
+      { id: 1 },
+      { toolCallId: "call-3" }
+    );
+    expect(read).toMatchObject({
       text: expect.stringContaining("relaxed_order"),
     });
     expect(read.details).toMatchObject({
@@ -89,29 +97,33 @@ describe("memory tools", () => {
   it("tells the model to research when nothing matches, and rejects an unknown id", async () => {
     const context = createContext();
 
-    const found = await searchMemoryTool(context).execute("call-1", {
-      query: "nothing",
-    });
+    const found = await searchMemoryTool(context).execute(
+      { query: "nothing" },
+      { toolCallId: "call-1" }
+    );
     expect(found.details).toEqual({
       query: "nothing",
       hits: [],
       answerable: null,
     });
-    expect(found.content[0]).toMatchObject({
+    expect(found).toMatchObject({
       text: expect.stringContaining("web_search"),
     });
 
     await expect(
-      getMemoryTool(context).execute("call-2", { id: 42 })
+      getMemoryTool(context).execute({ id: 42 }, { toolCallId: "call-2" })
     ).rejects.toThrow("No memory #42");
   });
 
   it("save_memory only ever writes facts; sources have another author", async () => {
     const context = createContext();
-    await saveMemoryTool(context).execute("call-1", {
-      title: "A decision",
-      content: "Use tabs.",
-    });
+    await saveMemoryTool(context).execute(
+      {
+        title: "A decision",
+        content: "Use tabs.",
+      },
+      { toolCallId: "call-1" }
+    );
     expect(context.memory.all.map((row) => row.kind)).toEqual([
       AgentMemoryKind.Fact,
     ]);
@@ -121,11 +133,14 @@ describe("memory tools", () => {
   it("propose_lesson writes a pending lesson that may supersede an active one", async () => {
     const context = createContext();
 
-    const proposed = await proposeLessonTool(context).execute("call-1", {
-      title: "Open with the problem, not the tool",
-      content: "The first paragraph names the problem the post solves.",
-      supersedes: 3,
-    });
+    const proposed = await proposeLessonTool(context).execute(
+      {
+        title: "Open with the problem, not the tool",
+        content: "The first paragraph names the problem the post solves.",
+        supersedes: 3,
+      },
+      { toolCallId: "call-1" }
+    );
 
     expect(proposed.details).toEqual({
       id: 1,
@@ -133,7 +148,7 @@ describe("memory tools", () => {
       title: "Open with the problem, not the tool",
       supersedes: 3,
     });
-    expect(proposed.content[0]).toMatchObject({
+    expect(proposed).toMatchObject({
       text: expect.stringContaining("waiting for review"),
     });
     expect(context.memory.all[0]).toMatchObject({
@@ -143,25 +158,31 @@ describe("memory tools", () => {
       sessionId: SESSION_ID,
     });
     await expect(context.memory.listActiveLessons(10)).resolves.toEqual([]);
-    expect(summarizeToolResult(ToolName.ProposeLesson, proposed, false)).toBe(
-      "Proposed lesson #1 for review."
-    );
+    expect(
+      summarizeToolResult(ToolName.ProposeLesson, asJsonValue(proposed.details))
+    ).toBe("Proposed lesson #1 for review.");
   });
 
   it("propose_lesson revising this session's pending proposal replaces it and keeps its chain", async () => {
     const context = createContext();
-    await proposeLessonTool(context).execute("call-1", {
-      title: "Open with the problem",
-      content: "The first paragraph names the problem.",
-      supersedes: 3,
-    });
+    await proposeLessonTool(context).execute(
+      {
+        title: "Open with the problem",
+        content: "The first paragraph names the problem.",
+        supersedes: 3,
+      },
+      { toolCallId: "call-1" }
+    );
     // the first proposal is #1; the port numbers rows from 1. Two other sessions backed it.
     for (const row of context.memory.all) row.reinforcements = 2;
-    const revised = await proposeLessonTool(context).execute("call-2", {
-      title: "Open with the problem, not the tool",
-      content: "The first paragraph names the problem the post solves.",
-      supersedes: 1,
-    });
+    const revised = await proposeLessonTool(context).execute(
+      {
+        title: "Open with the problem, not the tool",
+        content: "The first paragraph names the problem the post solves.",
+        supersedes: 1,
+      },
+      { toolCallId: "call-2" }
+    );
 
     expect(revised.details).toMatchObject({
       id: 2,
@@ -255,13 +276,16 @@ describe("InMemoryMemoryPort", () => {
     const read = await getMemoryTool({
       ...createContext(),
       memory: port,
-    }).execute("call-1", { id: 1, focusHeadings: ["Section 37"] });
+    }).execute(
+      { id: 1, focusHeadings: ["Section 37"] },
+      { toolCallId: "call-1" }
+    );
 
     expect(read.details).toMatchObject({
       id: 1,
       detail: ContextDetail.Sections,
     });
-    expect(read.content[0]).toMatchObject({
+    expect(read).toMatchObject({
       text: expect.stringContaining("Section 37"),
     });
   });

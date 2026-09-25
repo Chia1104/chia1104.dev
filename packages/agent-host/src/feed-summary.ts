@@ -1,3 +1,4 @@
+import { xmlBlock, xmlField } from "@chia/agent-runtime/prompts";
 import { Locale } from "@chia/db/types";
 
 /**
@@ -49,9 +50,9 @@ export const buildFeedSummaryPrompt = ({
       ? `${content.slice(0, BODY_MAX_CHARS)}\n[body clipped here]`
       : content;
   return [
-    `<language>${LANGUAGE_NAMES[locale]}</language>`,
-    `<title>${title}</title>`,
-    `<post>\n${body}\n</post>`,
+    xmlField("language", LANGUAGE_NAMES[locale]),
+    xmlField("title", title),
+    xmlBlock("post", body),
   ].join("\n");
 };
 

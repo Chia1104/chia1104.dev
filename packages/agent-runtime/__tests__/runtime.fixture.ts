@@ -1,27 +1,29 @@
-import type { AgentToolResult } from "@earendil-works/pi-agent-core";
 import { createModels } from "@earendil-works/pi-ai";
 import {
   fauxAssistantMessage,
   fauxProvider,
   fauxToolCall,
 } from "@earendil-works/pi-ai/providers/faux";
-import { Type } from "typebox";
 import { vi } from "vitest";
+import * as z from "zod";
 
-import { runPiTurn } from "../src/pi/turn.ts";
-import type { RunPiTurnOptions } from "../src/pi/turn.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
-import { defineTool, textResult } from "../src/tools.ts";
+import { defineTool } from "../src/tools.ts";
+import type { ToolResult } from "../src/tools.ts";
+import { runTurn } from "../src/turn.ts";
+import type { RunTurnBase } from "../src/turn.ts";
 import type {
   AgentPolicy,
   AgentTurnBudget,
-  ApprovalRequest,
+  AgentTurnMessage,
+  AgentTurnResume,
+  ApprovalBatch,
 } from "../src/types.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 /**
- * `runPiTurn` against the real `Agent`, scripted through pi-ai's faux provider, over an
+ * `runTurn` against the real `Agent`, scripted through pi-ai's faux provider, over an
  * in-memory session tree.
  * Pins the host's side of the turn: hook composition, persistence order, abort semantics,
  * approval and compaction gating, and the wire lifecycle.
@@ -31,41 +33,39 @@ export const createTools = (calls: string[]) => [
   defineTool(
     {
       name: "search",
-      label: "Search",
       description: "Search posts.",
-      parameters: Type.Object({ q: Type.String() }),
+      parameters: z.object({ q: z.string() }),
     },
-    () => async (_toolCallId, params) => {
+    () => async (params) => {
       calls.push(params.q);
-      return textResult(`results for ${params.q}`, { q: params.q });
+      return { text: `results for ${params.q}`, details: { q: params.q } };
     }
   )({}),
   defineTool(
     {
       name: "publish",
-      label: "Publish",
       description: "Publish a post.",
-      parameters: Type.Object({ slug: Type.Optional(Type.String()) }),
+      parameters: z.object({ slug: z.string().optional() }),
     },
     () => async () => {
       calls.push("publish");
-      return textResult("published", {});
+      return { text: "published", details: {} };
     }
   )({}),
   /** Blocks until the run is aborted, so a deadline can fire mid-tool. */
   defineTool(
     {
       name: "wait",
-      label: "Wait",
       description: "Wait forever.",
-      parameters: Type.Object({}),
+      parameters: z.object({}),
     },
-    () => (_toolCallId, _params, signal) =>
-      new Promise<AgentToolResult<unknown>>((_resolve, reject) => {
-        const fail = () => reject(new Error("aborted"));
-        if (signal?.aborted) fail();
-        signal?.addEventListener("abort", fail, { once: true });
-      })
+    () =>
+      (_params, { signal }) =>
+        new Promise<ToolResult>((_resolve, reject) => {
+          const fail = () => reject(new Error("aborted"));
+          if (signal?.aborted) fail();
+          signal?.addEventListener("abort", fail, { once: true });
+        })
   )({}),
 ];
 
@@ -138,12 +138,13 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
   const session = new InMemorySessionTree("session-1");
   const events: AgentWireEvent[] = [];
   const calls: string[] = [];
-  const persistApproval = vi.fn(
-    async (_approval: ApprovalRequest): Promise<void> => undefined
+  const persistApprovals = vi.fn(
+    async (_batch: ApprovalBatch): Promise<void> => undefined
   );
 
-  const options: RunPiTurnOptions = {
+  const options: RunTurnBase = {
     agentSessionId: "session-1",
+    agentRunId: "run-1",
     session,
     settings: {
       providerId: "faux",
@@ -158,9 +159,8 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
     systemPrompt: "You are a test.",
     policy,
     budget,
-    message: { text: "Hello" },
     onEvent: (event) => events.push(event),
-    persistApproval,
+    persistApprovals,
   };
 
   return {
@@ -168,15 +168,24 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
     session,
     events,
     calls,
-    persistApproval,
+    persistApprovals,
     options,
     types: () =>
       events
         .map((event) => event.type)
         .filter((type) => type !== "assistant:delta"),
     branch: () => session.getBranch(),
-    run: (overrides: Partial<RunPiTurnOptions> = {}) =>
-      runPiTurn({ ...options, ...overrides }),
+    run: (
+      overrides: Partial<RunTurnBase> & { message?: AgentTurnMessage } = {}
+    ) =>
+      runTurn({
+        ...options,
+        ...overrides,
+        message: overrides.message ?? { text: "Hello" },
+      }),
+    /** Resumes the calls the run `interruptedRunId` stopped on, as the next run. */
+    resume: (resume: AgentTurnResume, overrides: Partial<RunTurnBase> = {}) =>
+      runTurn({ ...options, agentRunId: "run-2", ...overrides, resume }),
   };
 };
 
