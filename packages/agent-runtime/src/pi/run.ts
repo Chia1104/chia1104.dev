@@ -1,8 +1,6 @@
-import { randomUUID } from "node:crypto";
-
 import { Agent } from "@earendil-works/pi-agent-core";
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
-import { clampThinkingLevel } from "@earendil-works/pi-ai";
+import { clampThinkingLevel, uuidv7 } from "@earendil-works/pi-ai";
 import type {
   Api,
   AssistantMessage,
@@ -142,7 +140,7 @@ export const runPiAgent = async (
     switch (event.type) {
       case "message_start": {
         if (event.message.role !== "assistant") return;
-        replyId = randomUUID();
+        replyId = uuidv7();
         onEvent({ type: "assistant:start", messageId: replyId });
         return;
       }
@@ -163,7 +161,7 @@ export const runPiAgent = async (
       case "message_end": {
         const { message } = event;
         if (message.role === "assistant") {
-          const id = replyId ?? randomUUID();
+          const id = replyId ?? uuidv7();
           replyId = undefined;
           if (
             !(await transcript.append({ id, message }, [
@@ -183,7 +181,7 @@ export const runPiAgent = async (
             entryId: id,
           });
         } else if (message.role === "toolResult") {
-          await transcript.append({ id: randomUUID(), message }, [
+          await transcript.append({ id: uuidv7(), message }, [
             toolEndEvent(message, policy),
           ]);
         }
