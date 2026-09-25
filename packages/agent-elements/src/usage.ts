@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { clamp } from "es-toolkit";
 
 import { agentUsageQuery } from "./queries.ts";
 import type { AgentSessionClient, AgentUsageStanding } from "./types.ts";
@@ -17,7 +18,7 @@ export const usageFractionOf = (
   standing: Pick<AgentUsageStanding, "limitMicros" | "usedMicros">
 ): number | null => {
   if (standing.limitMicros === null || standing.limitMicros <= 0) return null;
-  return Math.min(1, Math.max(0, standing.usedMicros / standing.limitMicros));
+  return clamp(standing.usedMicros / standing.limitMicros, 0, 1);
 };
 
 export const isQuotaExhausted = (

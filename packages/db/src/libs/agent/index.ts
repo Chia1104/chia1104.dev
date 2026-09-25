@@ -190,8 +190,6 @@ export const createAgentRun = async (
   input: {
     id: string;
     sessionId: string;
-    harnessKind: string;
-    harnessVersion?: number;
     externalRunId: string;
     metadata?: JsonObject;
   }
@@ -211,7 +209,6 @@ export const createAgentRun = async (
       .insert(agentRuns)
       .values({
         ...input,
-        harnessVersion: input.harnessVersion ?? 1,
         metadata: input.metadata ?? {},
       })
       .returning();

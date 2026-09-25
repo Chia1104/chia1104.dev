@@ -89,7 +89,7 @@ export const consolidateSessionMemoryStep = async (request: {
       wholeBranch,
     },
   ] = await Promise.all([
-    import("@chia/agent-runtime/pi/complete"),
+    import("@chia/agent-runtime/complete"),
     import("@chia/agent-runtime/session/pg-repo"),
     import("@chia/agent-writing/memory/lessons"),
   ]);

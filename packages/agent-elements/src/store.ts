@@ -15,6 +15,7 @@ import type {
   AgentWireEvent,
 } from "@chia/agent-runtime/wire/schema";
 import { agentQuotaExceededSchema } from "@chia/services/agent/agent.schema";
+import { delay } from "@chia/utils/delay";
 import { messageOf } from "@chia/utils/error-helper";
 import { createQueryInvalidator } from "@chia/utils/query-client";
 
@@ -261,9 +262,6 @@ export const createAgentSessionStore = ({
     const fetchDetail = () =>
       queryClient.query({ ...detailQuery, staleTime: 0 });
 
-    const sleep = (ms: number) =>
-      new Promise<void>((resolve) => setTimeout(resolve, ms));
-
     /**
      * Re-syncs the detail after `run:end`, keeping the view the stream built.
      *
@@ -283,7 +281,7 @@ export const createAgentSessionStore = ({
         }
         if (mine !== generation) return;
         if (detail.run?.status !== "running") return;
-        await sleep(200 * (attempt + 1));
+        await delay(200 * (attempt + 1));
         if (mine !== generation) return;
       }
       await get().hydrate();
@@ -398,7 +396,7 @@ export const createAgentSessionStore = ({
           set({ failure: get().labels.connectionLost });
           return;
         }
-        await sleep(Math.min(500 * 2 ** (reconnects - 1), 10_000));
+        await delay(Math.min(500 * 2 ** (reconnects - 1), 10_000));
         if (mine !== generation) return;
         await get().hydrate();
       }
@@ -610,7 +608,7 @@ export const findAgentModel = (
  * both the detail and the model list have loaded.
  */
 export const pinnedModelUnavailable = (
-  settings: AgentSessionDetail["settings"],
+  settings: AgentSessionDetail["settings"] | undefined,
   models: readonly AgentModel[] | undefined
 ): boolean => {
   if (!settings?.modelPinned || !models) return false;

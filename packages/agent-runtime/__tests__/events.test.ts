@@ -2,12 +2,13 @@ import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 import * as z from "zod";
 
-import { createPiWireEventMapper } from "../src/pi/events.ts";
+import type { JsonValue } from "@chia/utils/json";
+
 import type { SessionEntry } from "../src/session/entries.ts";
 import { AgentErrorKind } from "../src/types.ts";
 import { DETAILS_MAX_STRING_CHARS } from "../src/wire/clip.ts";
 import { foldEvents } from "../src/wire/fold.ts";
-import { entriesToWireEvents } from "../src/wire/replay.ts";
+import { entriesToWireEvents, toolEndEvent } from "../src/wire/replay.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 /**
@@ -297,30 +298,44 @@ describe("foldEvents", () => {
     expect(events.map((event) => event.type)).toEqual(["assistant:end"]);
   });
 
-  it("ends a live tool call whose result carries nothing", () => {
-    const map = createPiWireEventMapper({
-      ...presentation,
-      messageIdOf: () => "entry-1",
-    });
-
-    const events = map({
-      type: "tool_execution_end",
+  it("summarises a failed call by its first line and a successful one from its details", () => {
+    const summarize = (toolName: string, details: JsonValue | undefined) =>
+      `${toolName}: ${JSON.stringify(details)}`;
+    const result = {
+      role: "toolResult" as const,
       toolCallId: "call-1",
       toolName: "get_post",
-      result: undefined,
-      isError: false,
-    });
+      timestamp: 1,
+    };
 
-    expect(events).toEqual([
-      {
-        type: "tool:end",
-        toolCallId: "call-1",
-        toolName: "get_post",
-        isError: false,
-        summary: "",
-        details: undefined,
-      },
-    ]);
+    expect(
+      toolEndEvent(
+        {
+          ...result,
+          content: [
+            { type: "text", text: "Post 9 not found.\nTry list_posts." },
+          ],
+          details: {},
+          isError: true,
+        },
+        { ...presentation, summarize }
+      )
+    ).toMatchObject({ isError: true, summary: "Post 9 not found." });
+    expect(
+      toolEndEvent(
+        {
+          ...result,
+          content: [{ type: "text", text: "ok" }],
+          details: { slug: "hello" },
+          isError: false,
+        },
+        { ...presentation, summarize }
+      )
+    ).toMatchObject({
+      isError: false,
+      summary: 'get_post: {"slug":"hello"}',
+      details: { slug: "hello" },
+    });
   });
 
   it("clips oversized tool details on replay while keeping their shape", () => {

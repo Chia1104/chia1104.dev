@@ -17,9 +17,9 @@ import {
   AgentProvider,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
-import { runPiTurn } from "@chia/agent-runtime/pi/turn";
 import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
+import { runTurn } from "@chia/agent-runtime/turn";
 import { AgentErrorKind } from "@chia/agent-runtime/types";
 import type {
   AgentSessionSettings,
@@ -128,7 +128,7 @@ const build = (
     run: async (text, attachments) => {
       // The host resolves the model before the kind reads anything.
       const model = resolvePublicModel(sessionSettings, models);
-      return runPiTurn({
+      return runTurn({
         ...(await preparePublicTurn({
           content,
           profile: createFakeProfileReadPort(PROFILE),

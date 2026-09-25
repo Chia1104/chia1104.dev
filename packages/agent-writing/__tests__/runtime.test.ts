@@ -8,9 +8,9 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { runPiTurn } from "@chia/agent-runtime/pi/turn";
 import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
+import { runTurn } from "@chia/agent-runtime/turn";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
@@ -163,7 +163,7 @@ const build = async (
     session,
     setResponses: faux.setResponses,
     run: (text, options) =>
-      runPiTurn({
+      runTurn({
         ...prepareWritingTurn({
           agentSessionId: SESSION_ID,
           content,

@@ -87,7 +87,7 @@ export type AgentRunStatus =
   (typeof AgentRunStatus)[keyof typeof AgentRunStatus];
 
 /**
- * One harness execution. Separate from the session so retries and sub-runs do not share a row.
+ * One turn's durable workflow run. Separate from the session so retries do not share a row.
  */
 export const agentRuns = agentSchema.table(
   "run",
@@ -96,8 +96,6 @@ export const agentRuns = agentSchema.table(
     sessionId: text("session_id")
       .notNull()
       .references(() => agentSessions.id, { onDelete: "cascade" }),
-    harnessKind: text("harness_kind").notNull(),
-    harnessVersion: integer("harness_version").notNull().default(1),
     status: text("status")
       .$type<AgentRunStatus>()
       .notNull()
@@ -122,7 +120,7 @@ export const agentRuns = agentSchema.table(
 export type AgentRun = InferSelectModel<typeof agentRuns>;
 
 /**
- * One tree node. `type`/`payload` stay opaque so harnesses can add entry types without a migration.
+ * One tree node. `type`/`payload` stay opaque so the runtime can add entry types without a migration.
  * `seq` is a table-wide `bigserial` taken at insert; under one writer per session, `seq <= n` is everything persisted before this point.
  */
 export const agentSessionEntries = agentSchema.table(

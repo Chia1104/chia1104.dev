@@ -32,11 +32,11 @@ import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 import { AppError, AppErrorCode, isAppError } from "@chia/service-kit/errors";
 import type { JsonObject } from "@chia/utils/json";
-import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-schema";
 import type {
+  AgentAbortControllerRef,
   AgentMessagePayload,
-  WorkflowControlClient,
-} from "@chia/workflow-control/client";
+} from "@chia/workflow-control/agent-schema";
+import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import {
   AGENT_ABORT_CONTROLLER_KEY,
@@ -253,7 +253,6 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         await createAgentRun(tx, {
           id: runId,
           sessionId,
-          harnessKind: "workflow",
           externalRunId: runId,
           metadata: {
             agentKind: definition.kind,

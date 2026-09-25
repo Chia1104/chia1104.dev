@@ -1651,18 +1651,9 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
-      '@earendil-works/pi-agent-core':
-        specifier: catalog:agent
-        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
-      '@earendil-works/pi-ai':
-        specifier: catalog:agent
-        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
-      es-toolkit:
+      zod:
         specifier: 'catalog:'
-        version: 1.52.0
-      typebox:
-        specifier: catalog:agent
-        version: 1.3.34
+        version: 4.6.5
     devDependencies:
       '@chia/test':
         specifier: workspace:*
@@ -1815,9 +1806,6 @@ importers:
       '@chia/workflow-control':
         specifier: workspace:*
         version: link:../workflow-control
-      es-toolkit:
-        specifier: 'catalog:'
-        version: 1.52.0
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1858,18 +1846,6 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
-      '@earendil-works/pi-agent-core':
-        specifier: catalog:agent
-        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
-      '@earendil-works/pi-ai':
-        specifier: catalog:agent
-        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
-      es-toolkit:
-        specifier: 'catalog:'
-        version: 1.52.0
-      typebox:
-        specifier: catalog:agent
-        version: 1.3.34
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1883,6 +1859,9 @@ importers:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
+      '@earendil-works/pi-ai':
+        specifier: catalog:agent
+        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.2
@@ -1968,21 +1947,12 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
-      '@earendil-works/pi-agent-core':
-        specifier: catalog:agent
-        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
-      '@earendil-works/pi-ai':
-        specifier: catalog:agent
-        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
       diff:
         specifier: 'catalog:'
         version: 9.0.0
       es-toolkit:
         specifier: 'catalog:'
         version: 1.52.0
-      typebox:
-        specifier: catalog:agent
-        version: 1.3.34
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1993,6 +1963,9 @@ importers:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
+      '@earendil-works/pi-ai':
+        specifier: catalog:agent
+        version: 0.87.1(@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.6.5))(supports-color@10.2.2)(ws@8.21.3)(zod@4.6.5)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.2

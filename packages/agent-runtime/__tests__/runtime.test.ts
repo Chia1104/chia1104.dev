@@ -20,7 +20,7 @@ import {
   toolCallTurn,
 } from "./runtime.fixture.ts";
 
-describe("runPiTurn", () => {
+describe("runTurn", () => {
   it("runs a prompt, persists both messages and owns the wire event lifecycle", async () => {
     const fixture = build();
     const flushEvents = vi.fn(async () => undefined);
@@ -71,10 +71,8 @@ describe("runPiTurn", () => {
       "toolResult",
       "assistant",
     ]);
-    // Each assistant:end saw its own entry already in the tree; Pi announces a tool's end
-    // before it emits the tool-result message, so that one lands with the next assistant
-    // message.
-    expect(seenAtEvent).toEqual([2, 2, 4]);
+    // Each assistant:end and tool:end saw its own entry already in the tree.
+    expect(seenAtEvent).toEqual([2, 3, 4]);
     expect(fixture.types()).toEqual([
       "run:start",
       "user",

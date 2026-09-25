@@ -39,7 +39,7 @@ flowchart TB
 | Domain                     | `@chia/agent-writing`、`@chia/agent-public`          | Prompts、tools、policy、model allowlist 與 domain ports     |
 | Client                     | `@chia/agent-elements`                               | Session store、queries 與共用 chat UI                       |
 
-穩定的 client 邊界是 `AgentWireEvent`，不是可替換的 model engine。Runtime 內部保留明確的 Pi 命名與型別。
+穩定的 client 邊界是 `AgentWireEvent`，不是可替換的 model engine。Runtime 內部保留明確的 Pi 命名與型別；kind 用 runtime 自己的詞彙宣告 tools 與 prompts，不 import Pi。
 
 ## 2. Agent kind 與 host 邊界
 
@@ -48,7 +48,7 @@ flowchart TB
 每個 host 提供 `AgentKindDefinition`：
 
 - `apps/service/src/agents/` 綁定 API 階段的 capabilities、state 與 credentials。
-- `apps/workflow/src/agents/` 綁定執行階段的 ports，提供 `AgentKindExecutor`，也就是 definition 加上 `prepareTurn`。`prepareTurn` 回傳 kind 的 tools、prompts、budget、preflight、approval key，以及 turn 結束後執行的 `settle`（可省略）；model 由 step 解析，session、events、usage 與 approval 持久化也由 step 直接交給 `runPiTurn`。
+- `apps/workflow/src/agents/` 綁定執行階段的 ports，提供 `AgentKindExecutor`，也就是 definition 加上 `prepareTurn`。`prepareTurn` 回傳 kind 的 tools、prompts、budget、preflight、approval key，以及 turn 結束後執行的 `settle`（可省略）；model 由 step 解析，session、events、usage 與 approval 持久化也由 step 直接交給 `runTurn`。
 - `packages/services/agent/` 擁有共用的 session、run、approval、maintenance、usage 與 admin 行為。
 
 oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建立的 `agentFactory`。Guard 能在載入 domain package 或 provider SDK 前拒絕呼叫；dynamic import 已提供 module cache，factory 不另外保存 definition registry 或 service cache。
@@ -116,7 +116,7 @@ sequenceDiagram
     participant SVC as apps/service
     participant WF as agentSessionWorkflow
     participant STEP as runAgentTurnStep
-    participant RT as runPiTurn
+    participant RT as runTurn
     participant PG as Postgres
 
     UI->>API: prompt 或 approve
@@ -125,7 +125,7 @@ sequenceDiagram
     SVC->>WF: start workflow
     SVC-->>UI: run id 與 stream cursor
     WF->>STEP: execute the turn
-    STEP->>RT: kind.prepareTurn，再 runPiTurn
+    STEP->>RT: kind.prepareTurn，再 runTurn
     RT->>PG: append session entries
     RT-->>UI: durable AgentWireEvents
     STEP-->>WF: done、aborted、error 或 awaiting approval
@@ -148,17 +148,17 @@ Start、abort resume 與 cancel 透過 authenticated `WorkflowControl` contract 
 Production execution path：
 
 ```text
-runAgentTurnStep → kind.prepareTurn → runPiTurn → new Agent
+runAgentTurnStep → kind.prepareTurn → runTurn → new Agent
 ```
 
-Tools 直接是 Pi 的 `AgentTool`，由 kind 每個 turn 建立，`execute` 以 closure 取得該 turn 的 ports。Tool spec（name、label、description、parameters）不需要 ports 就能匯入，capabilities 清單讀的是它。Label、tier，以及成功呼叫會改變哪個 kind state，由 policy 的 `toolInfo` 宣告；`state:changed` 依這個宣告發出，不從 tier 推測。
+Kind 以 `@chia/agent-runtime/tools` 的 `defineTool` 宣告 tools：parameters 是 zod schema，`execute` 以 closure 取得該 turn 的 ports，回傳模型讀的文字與 client 顯示用的 `details`。Tool spec（name、description、parameters）不需要 ports 就能匯入，capabilities 清單讀的是它。Label、tier，以及成功呼叫會改變哪個 kind state，由 policy 的 `toolInfo` 宣告；`state:changed` 依這個宣告發出，不從 tier 推測。Runtime 每個 turn 把 tool 綁成 Pi 的 `AgentTool`：zod schema 轉成 Pi 用來驗證與 coerce 的 JSON Schema，optional 參數對模型呈現為 nullable、模型送來的 `null` 會被丟掉，參數在 `execute` 前再以 zod parse。
 
-`runPiTurn`：
+`runTurn`：
 
-1. 將 active branch 投影為 model messages。
-2. 安裝 turn budget、approval gate、volatile context、state-change hook、abort signal 與 event mapper。
-3. 每個完整的 user、assistant、tool-result message 都先持久化，再發出 wire event。
-4. 執行 Pi，並分類 provider、host、abort 與 budget failure。
+1. 先把 operator 的訊息寫進 tree，再將 active branch 投影為 model messages。
+2. 安裝 turn budget、approval gate、volatile context、state-change hook 與 abort signal。
+3. 每個完整的 assistant、tool-result message 都先持久化，再發出 wire event。
+4. 從 branch 接續執行 Pi 的 `Agent`，並分類 provider、host、abort 與 budget failure。
 5. Provider turn 成功後，原子持久化 approval requests。
 6. 只在成功且沒有 pending approval 時 auto-compact。
 7. 發出 terminal events，最後 flush durable writer。
@@ -388,7 +388,7 @@ Admin write 在持久化前先依 code definition 驗證。API view 回傳 `defa
 2. 只有 kind 需要持久化 state 時才新增 extension table。
 3. 加入 service 與 workflow bindings，使用一致的 `minTier` 與 dynamic loaders。
 4. 讓 `prepareTurn` 呼叫 domain 的 `prepare<Kind>Turn`；one-shot tasks 註冊到 `AGENT_TASKS`。
-5. 共用 `runPiTurn`、wire events、approval、session storage 與 durable workflow plumbing。
+5. 共用 `runTurn`、wire events、approval、session storage 與 durable workflow plumbing。
 
 在第二種 execution engine 形成具體需求前，不新增 engine adapter、capability plugin system 或 provider-neutral handle。
 
@@ -411,24 +411,25 @@ Harness 本身就是為 host 排程設計的。Lane API 收斂成四個 durable 
 
 - 每次 transition 都重寫完整的 operation state，turn step 因此可以續跑，`maxRetries = 0` 可以拿掉。
 - Tool call 有 intent、effect、settlement 三段 commit，可宣告 `replay: "safe" | "never"` 與 invocation-scoped memo；assistant 串流 frame 會落地，供 partial 回復。
-- `message_end` 直接帶 entry id，取代 `runPiTurn` 裡預留 id 的對齊手法；`LaneSnapshot` 配合 `reduceLaneSnapshot` 取代 coarse 與 delta stream cursor 的 reconnect 機制。
+- `message_end` 直接帶 entry id，取代 `runTurn` 在 `message_start` 選定 id 的做法；`LaneSnapshot` 配合 `reduceLaneSnapshot` 取代 coarse 與 delta stream cursor 的 reconnect 機制。
 - Approval handshake 不變：`before_tool` hook 的 `block` 加 `terminate` 與現在的 tool gate 完全相同。
 - 必須自寫 Postgres 的 `Storage` 與 `SessionRepo`；上游只出貨 Memory、JSONL 與 SQLite。`@earendil-works/pi-agent-core/harness/session/testing` 匯出 conformance suite 可用來驗證。Entry 已與 Pi 的 union 一致；values、lists 與 harness 自己的 usage ledger 是新表。
-- `packages/agent-runtime/src/pi/` 大半被 lane 呼叫取代。`AgentWireEvent` 仍是 client 邊界，只是 mapper 改吃 `HarnessEvent`。
+- `packages/agent-runtime/src/turn.ts` 與 `src/pi/` 大半被 lane 呼叫取代。`AgentWireEvent` 仍是 client 邊界，只是 mapper 改吃 `HarnessEvent`。
 
 以下條件在上游全部成立之前不要啟動：storage format 宣告穩定並具備 migration 機制（規格目前標記 format 4 為 pre-stabilization，可原地改形狀）、`Storage` 介面變更開始進 changelog、未完成的 harness work package（fork、`watchSession`、remote mutation transport）收尾。屆時先依 conformance suite 寫 Postgres backend，再把 `runAgentTurnStep` 換成 `accept` 加 `drive`。
 
 ## 13. 參考位置
 
-| Concern                               | Location                                                                                              |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Pi turn、approval、budget、compaction | `packages/agent-runtime/src/pi/`                                                                      |
-| Session tree 與 Postgres storage      | `packages/agent-runtime/src/session/`                                                                 |
-| Wire schema、replay、fold             | `packages/agent-runtime/src/wire/`                                                                    |
-| 共用 content tools                    | `packages/agent-content/src/`                                                                         |
-| Writing 與 public domains             | `packages/agent-writing/src/`、`packages/agent-public/src/`                                           |
-| Kind bindings 與 tasks                | `packages/agent-host/src/`、`apps/service/src/agents/`、`apps/workflow/src/agents/`                   |
-| Generic oRPC agent service            | `packages/services/agent/`                                                                            |
-| Workflow 與 turn step                 | `apps/workflow/src/workflows/agent-session.workflow.ts`、`apps/workflow/src/steps/agent-turn.step.ts` |
-| Database schema                       | `packages/db/src/schemas/agent.schema.ts`                                                             |
-| 共用 client                           | `packages/agent-elements/src/`                                                                        |
+| Concern                            | Location                                                                                              |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Turn、approval、budget、compaction | `packages/agent-runtime/src/turn.ts`、`src/turn/`、`src/compaction.ts`                                |
+| Turn 與 tools 的 Pi binding        | `packages/agent-runtime/src/pi/`                                                                      |
+| Session tree 與 Postgres storage   | `packages/agent-runtime/src/session/`                                                                 |
+| Wire schema、replay、fold          | `packages/agent-runtime/src/wire/`                                                                    |
+| 共用 content tools                 | `packages/agent-content/src/`                                                                         |
+| Writing 與 public domains          | `packages/agent-writing/src/`、`packages/agent-public/src/`                                           |
+| Kind bindings 與 tasks             | `packages/agent-host/src/`、`apps/service/src/agents/`、`apps/workflow/src/agents/`                   |
+| Generic oRPC agent service         | `packages/services/agent/`                                                                            |
+| Workflow 與 turn step              | `apps/workflow/src/workflows/agent-session.workflow.ts`、`apps/workflow/src/steps/agent-turn.step.ts` |
+| Database schema                    | `packages/db/src/schemas/agent.schema.ts`                                                             |
+| 共用 client                        | `packages/agent-elements/src/`                                                                        |

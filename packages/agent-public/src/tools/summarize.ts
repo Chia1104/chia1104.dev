@@ -1,15 +1,15 @@
 import { summarizeContentToolResult } from "@chia/agent-content/tools/summarize";
-import { toolErrorText, toolResultDetails } from "@chia/agent-runtime/tools";
-import { asNumber, asString } from "@chia/utils/json";
+import { asJsonObject, asNumber, asString } from "@chia/utils/json";
+import type { JsonValue } from "@chia/utils/json";
 import { hostnameOf } from "@chia/utils/url";
 
 import { ReportToolName, WebToolName } from "./registry.ts";
 
-const summarizeKindToolResult = <TResult>(
+const summarizeKindToolResult = (
   toolName: string,
-  result: TResult
+  value: JsonValue | undefined
 ): string | undefined => {
-  const details = toolResultDetails(result);
+  const details = asJsonObject(value);
   switch (toolName) {
     case WebToolName.WebSearch: {
       const count = asNumber(details?.count);
@@ -28,16 +28,11 @@ const summarizeKindToolResult = <TResult>(
   }
 };
 
-/** One transcript line per tool result; the content tools bring their own wording. */
-export const summarizeToolResult = <TResult>(
+/** One transcript line per successful tool result; the content tools bring their own wording. */
+export const summarizeToolResult = (
   toolName: string,
-  result: TResult,
-  isError: boolean
-): string => {
-  if (isError) return toolErrorText(result) ?? "Failed.";
-  return (
-    summarizeContentToolResult(toolName, result) ??
-    summarizeKindToolResult(toolName, result) ??
-    "Done."
-  );
-};
+  value: JsonValue | undefined
+): string =>
+  summarizeContentToolResult(toolName, value) ??
+  summarizeKindToolResult(toolName, value) ??
+  "Done.";

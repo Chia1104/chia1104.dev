@@ -19,11 +19,11 @@ import type {
   CompactionEntry,
   NewSessionEntry,
   SessionEntry,
-} from "../session/entries.ts";
-import { toPiEntries } from "../session/entries.ts";
-import type { SessionTree } from "../session/tree.ts";
-import { estimateBranchContextTokens } from "../session/usage.ts";
-import type { AgentCompactionResult, AgentUsageListener } from "../types.ts";
+} from "./session/entries.ts";
+import { toPiEntries } from "./session/entries.ts";
+import type { SessionTree } from "./session/tree.ts";
+import { estimateBranchContextTokens } from "./session/usage.ts";
+import type { AgentCompactionResult, AgentUsageListener } from "./types.ts";
 
 /**
  * Window the compaction threshold is measured against when the summariser is not the session's

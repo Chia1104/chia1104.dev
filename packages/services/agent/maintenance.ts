@@ -3,12 +3,12 @@ import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { assertWithinAgentQuota } from "@chia/agent-host/quota";
 import { AgentTaskId, resolveAgentTask } from "@chia/agent-host/tasks";
 import { sessionUsageListener } from "@chia/agent-host/usage";
-import { accessOf, createAgentModels } from "@chia/agent-runtime/models";
-import { canCompactBranch } from "@chia/agent-runtime/pi/compaction";
+import { canCompactBranch } from "@chia/agent-runtime/compaction";
 import {
-  compactPiSession,
-  navigatePiSession,
-} from "@chia/agent-runtime/pi/maintenance";
+  compactOnRequest,
+  navigateSession,
+} from "@chia/agent-runtime/maintenance";
+import { accessOf, createAgentModels } from "@chia/agent-runtime/models";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import { settingsFromRow } from "@chia/agent-runtime/session/pg-repo";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
@@ -152,12 +152,12 @@ export const createAgentMaintenanceOperations = <
     return {
       session,
       compact: async (customInstructions?: string) =>
-        compactPiSession(
+        compactOnRequest(
           await operationFor(AgentTaskId.SessionCompaction),
           customInstructions
         ),
       navigate: async (entryId: string, options: AgentNavigationOptions) =>
-        navigatePiSession(
+        navigateSession(
           await operationFor(AgentTaskId.SessionBranchSummary),
           entryId,
           options

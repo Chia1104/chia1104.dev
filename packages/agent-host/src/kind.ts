@@ -1,15 +1,15 @@
 import type * as z from "zod";
 
 import type { PostFeedType } from "@chia/agent-content/types";
-import type { createAgentModels } from "@chia/agent-runtime/models";
 import type {
   AgentModel,
   AgentModelAccess,
+  AgentModels,
   AgentModelInfo,
   AgentModelRef,
 } from "@chia/agent-runtime/models";
-import type { AgentTurnPlan } from "@chia/agent-runtime/pi/turn";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
+import type { AgentTurnPlan } from "@chia/agent-runtime/turn";
 import type {
   AgentPolicy,
   AgentSessionDefaults,
@@ -107,12 +107,10 @@ export const toolCapabilities = (
   specs: readonly ToolSpec[],
   policy: AgentPolicy
 ): AgentKindCapabilities["tools"] =>
-  specs.map((spec) => ({
-    name: spec.name,
-    label: spec.label,
-    tier: policy.toolInfo(spec.name).tier,
-    description: spec.description,
-  }));
+  specs.map((spec) => {
+    const { label, tier } = policy.toolInfo(spec.name);
+    return { name: spec.name, label, tier, description: spec.description };
+  });
 
 export interface AgentKindCaller extends Caller {
   userId: string;
@@ -194,8 +192,6 @@ export interface AgentKindState<TState> {
     attachments: readonly AgentAttachmentInput[]
   ): Promise<void>;
 }
-
-export type AgentModels = ReturnType<typeof createAgentModels>;
 
 /** What the turn step has resolved before the kind prepares the turn. */
 export interface AgentTurnContext<TState, TConfig extends object> {

@@ -3,7 +3,7 @@ import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import { logger } from "@chia/observability/logger";
 
-import type { AgentModelUsage } from "../types.ts";
+import type { AgentModelUsage } from "./types.ts";
 
 /**
  * A short handle condensed from the operator's first prompt.

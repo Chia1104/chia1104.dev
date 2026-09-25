@@ -74,6 +74,9 @@ export const accessOf = (
 /** A resolved Pi model, as hosts that do not depend on pi-ai directly name it. */
 export type AgentModel = Model<Api>;
 
+/** The credential-bearing collection a turn resolves and runs its models on. */
+export type AgentModels = ReturnType<typeof createAgentModels>;
+
 /** Identifies a model. Both halves are required. See {@link resolveModel}. */
 export interface AgentModelRef {
   providerId: string;
