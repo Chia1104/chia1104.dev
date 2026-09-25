@@ -422,16 +422,7 @@ const executeTurn = async (
       approvalKeyOf,
       check: async (request) =>
         turnBudget.handle(request) ?? (await preflight?.(request)),
-      ...(context?.replay && {
-        resume: {
-          decisions: resume?.decisions ?? [],
-          callIds: new Set(
-            context.replay.content.flatMap((part) =>
-              part.type === "toolCall" ? [part.id] : []
-            )
-          ),
-        },
-      }),
+      decisions: resume?.decisions,
     });
 
     let reply: AssistantMessage | undefined;

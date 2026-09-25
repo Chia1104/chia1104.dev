@@ -234,6 +234,71 @@ describe("runTurn", () => {
     expect(fixture.calls).toEqual(["publish"]);
   });
 
+  it("keeps a held batch's invalid call open when its calls run one at a time", async () => {
+    const fixture = build();
+    const tools = fixture.options.tools.map((tool) =>
+      tool.name === "publish"
+        ? { ...tool, executionMode: "sequential" as const }
+        : tool
+    );
+    fixture.faux.setResponses([
+      fauxAssistantMessage(
+        [
+          // Answered by Pi before the gated call after it is ever asked about.
+          fauxToolCall("search", {}, { id: "call-1" }),
+          fauxToolCall("publish", { slug: "hello" }, { id: "call-2" }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+    ]);
+    await fixture.run({ tools });
+    expect(
+      (await fixture.branch()).map((entry) => messageOf(entry)?.role)
+    ).toEqual(["user", "assistant"]);
+
+    fixture.faux.setResponses([fauxAssistantMessage("Published.")]);
+    const result = await fixture.resume(
+      {
+        interruptedRunId: "run-1",
+        decisions: [
+          { toolCallId: "call-2", verdict: ApprovalVerdict.Approved },
+        ],
+      },
+      { tools }
+    );
+
+    expect(result).toEqual({ status: "done" });
+    expect(fixture.calls).toEqual(["publish"]);
+  });
+
+  it("does not grant an approval to a later call that reuses the approved call's id", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "hello" }, "call-1"),
+    ]);
+    await fixture.run();
+
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "other" }, "call-1"),
+    ]);
+    const result = await fixture.resume({
+      interruptedRunId: "run-1",
+      decisions: [{ toolCallId: "call-1", verdict: ApprovalVerdict.Approved }],
+    });
+
+    expect(fixture.calls).toEqual(["publish"]);
+    expect(result).toMatchObject({ status: "awaiting_approval" });
+    expect(fixture.persistApprovals).toHaveBeenLastCalledWith({
+      requests: [
+        expect.objectContaining({
+          toolCallId: "call-1",
+          args: { slug: "other" },
+        }),
+      ],
+      settled: [],
+    });
+  });
+
   it("runs an approved call exactly as requested when the turn resumes", async () => {
     const fixture = build();
     fixture.faux.setResponses([

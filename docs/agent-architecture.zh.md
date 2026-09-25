@@ -210,7 +210,7 @@ sequenceDiagram
 
 Tool 的 tier 需要核准就會被 gate；session 的 auto-approve 可能在呼叫等待期間改變，所以在 reply 抵達時逐一套用。一個 reply 的整批呼叫會一起被 hold：每個 gated call 都得到回答前，批內什麼都不執行，被 hold 的呼叫在 tree 裡保持沒有結果。每個 gated call 先經過 turn budget 與 kind 的 preflight；被任一拒絕的呼叫以該拒絕作答，tier 被 session auto-approve 的呼叫直接核准。整批都能由 turn 自行作答時，呼叫就地執行；否則 turn 已作答的呼叫會與 requests 一起記錄為已決定（`decided_by` 為空），並跟著一起回答。
 
-Resume run 會把停下的 reply 重新串流給 Pi，取代第一次 provider 請求，所以 Pi 用與其他 reply 相同的 tool 路徑執行這批呼叫：核准的呼叫再經過一次 budget 與 preflight，以記錄的參數執行；批內其他呼叫照常執行；被拒絕或被檢查擋下的呼叫回傳拒絕內容。重播的 reply 不會再計費，也不會再寫入一次。
+Resume run 會把停下的 reply 重新串流給 Pi，取代第一次 provider 請求，所以 Pi 用與其他 reply 相同的 tool 路徑執行這批呼叫：核准的呼叫再經過一次 budget 與 preflight，以記錄的參數執行；批內其他呼叫照常執行；被拒絕或被檢查擋下的呼叫回傳拒絕內容。重播的 reply 不會再計費，也不會再寫入一次。這些回答綁定的是這個 reply 本身，而不是 call id：同一個 run 後續的 reply 即使重用已回答過的 call id，也會像其他呼叫一樣經過審核。
 
 Request 會連同它的 run 與 approval key 一起記錄；key 是 kind 定義的呼叫身分：tool、目標，以及 operator 被展示的狀態。Writing kind 把 `commit_draft` 綁到 request 當下的 draft 內容 hash，把 `set_published` 綁到 feed 與目標狀態。Resume 的 turn 會把已核准呼叫的 key 交給 kind，`commit_draft` 提交 key 裡的那份 hash：apply service 在寫入 feed 的同一個交易裡鎖住 draft row 並核對 hash，request 之後被改過的 draft 會以 `CONFLICT` 拒絕。Session auto-approve 時，呼叫提交的是它自己讀到的內容，同樣在該鎖之下。
 
