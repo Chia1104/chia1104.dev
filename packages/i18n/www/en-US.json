@@ -305,8 +305,42 @@
     "open": "Open settings",
     "aiEnabled": "Enable AI features",
     "aiEnabledDescription": "Allow AI-powered features on this site.",
-    "accentColor": "Accent color",
-    "accentColorDescription": "Primary accent used for links and highlights.",
-    "done": "Done"
+    "done": "Done",
+    "palette": {
+      "title": "Colors",
+      "editing-light": "Changes apply to light mode.",
+      "editing-dark": "Changes apply to dark mode.",
+      "reset": "Reset {name}",
+      "reset-all": "Reset all",
+      "hue": "Hue",
+      "opacity": "Opacity",
+      "hex": "Hex color",
+      "tokens": {
+        "accent": {
+          "label": "Accent",
+          "description": "Links, bold text, hatching and the site gradient."
+        },
+        "background": {
+          "label": "Background",
+          "description": "The page behind everything."
+        },
+        "foreground": {
+          "label": "Text",
+          "description": "Body text and headings."
+        },
+        "surface": {
+          "label": "Surface",
+          "description": "Popovers, code blocks and panels."
+        },
+        "separator": {
+          "label": "Lines",
+          "description": "Rails, rules and hatching."
+        },
+        "muted": {
+          "label": "Muted text",
+          "description": "Descriptions, dates and labels."
+        }
+      }
+    }
   }
 }

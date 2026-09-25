@@ -134,6 +134,27 @@
 
 :root {
   --header-height: 3.5rem;
+  --accent-gradient-from: var(--accent);
+  --accent-gradient-to: var(--accent);
+}
+
+/*
+ * The site gradient (scroll progress, playlist shader) derives both stops from `--accent`, so a
+ * reader's accent recolours it too. The chroma floor keeps a pale accent from washing it out.
+ */
+@supports (color: oklch(from red l c h)) {
+  :root {
+    --accent-gradient-from: oklch(from var(--accent) l max(c, 0.15) h);
+    --accent-gradient-to: oklch(from var(--accent) l max(c, 0.15) calc(h + 45));
+  }
+}
+
+@utility bg-accent-gradient {
+  background-image: linear-gradient(
+    to right,
+    var(--accent-gradient-from),
+    var(--accent-gradient-to)
+  );
 }
 
 /*

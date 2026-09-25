@@ -17,6 +17,7 @@ import { WWW_BASE_URL } from "@chia/utils/config";
 
 import AppLayout from "@/components/commons/app-layout";
 import AppPlugins from "@/components/commons/app-plugins";
+import { PaletteScript } from "@/components/commons/palette-script";
 import RootLayout from "@/components/commons/root-layout";
 import RootProvider from "@/components/commons/root-provider";
 import { routing } from "@/libs/i18n/routing";
@@ -76,6 +77,7 @@ const Layout = async ({
 
   return (
     <RootLayout locale={locale}>
+      <PaletteScript />
       <RootProvider messages={messages} timeZone={timeZone} locale={locale}>
         <AppLayout locale={locale}>{children}</AppLayout>
         <AppPlugins />

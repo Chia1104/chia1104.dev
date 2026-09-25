@@ -2,10 +2,10 @@ import Link from "next/link";
 import type { FC } from "react";
 
 import type { PlayList } from "@chia/integrations/spotify/types";
-import { NoiseBackground } from "@chia/shaders/noise-background";
 import Image from "@chia/ui/image";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { AccentNoiseBackground } from "@/components/commons/accent-noise-background";
 import PreviewLink from "@/components/commons/preview-link";
 import { env } from "@/env";
 import { client } from "@/libs/orpc/client.rsc";
@@ -117,12 +117,7 @@ export async function SpotifyPlaylist() {
 
   return (
     <div className="rule-t">
-      <NoiseBackground
-        gradientColors={{
-          light: ["#F9C851", "#FCA5A5"],
-          // Tailwind purple-400 and pink-400; the shader needs concrete colors.
-          dark: ["oklch(71.4% 0.203 305.504)", "oklch(71.8% 0.202 349.761)"],
-        }}
+      <AccentNoiseBackground
         containerClassName="border-separator rounded-none border-t"
         className="page-sm:grid-cols-2 page-sm:py-4 grid w-full grid-cols-1 gap-2 px-4 py-6">
         <div className="flex w-full items-center">
@@ -133,7 +128,7 @@ export async function SpotifyPlaylist() {
           {third && <Item data={third} />}
           {fourth && <Item data={fourth} />}
         </div>
-      </NoiseBackground>
+      </AccentNoiseBackground>
       <p className="rule-t flex items-center gap-2 px-4 py-3 text-sm">
         <span className="i-mdi-spotify size-5 shrink-0 text-[#1DB954]" />
         <span>

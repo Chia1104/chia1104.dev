@@ -5,6 +5,7 @@ import { startTransition } from "react";
 import { Button, Description, Label, Modal, Switch } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
+import { PaletteSettings } from "@/components/commons/palette-settings";
 import { useSettingsStore } from "@/stores/settings/store";
 
 export const Settings = () => {
@@ -17,7 +18,8 @@ export const Settings = () => {
       <Button size="sm" variant="tertiary" aria-label={t("open")} isIconOnly>
         <span className="i-mdi-cog-outline size-4" aria-hidden />
       </Button>
-      <Modal.Backdrop>
+      {/* The page stays visible so a colour change can be judged against it. */}
+      <Modal.Backdrop variant="transparent">
         <Modal.Container placement="center">
           <Modal.Dialog className="sm:max-w-[400px]">
             <Modal.CloseTrigger />
@@ -42,6 +44,9 @@ export const Settings = () => {
                   </div>
                 </Switch.Content>
               </Switch>
+              <div className="border-separator border-t pt-4">
+                <PaletteSettings />
+              </div>
             </Modal.Body>
           </Modal.Dialog>
         </Modal.Container>

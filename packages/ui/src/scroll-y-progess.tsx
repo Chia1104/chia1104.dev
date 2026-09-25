@@ -20,10 +20,7 @@ const ScrollYProgress: FC<
   return (
     <motion.div
       {...rest}
-      className={cn(
-        "dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink w-full",
-        className
-      )}
+      className={cn("bg-accent w-full", className)}
       style={{
         scaleX,
         height: "5px",
