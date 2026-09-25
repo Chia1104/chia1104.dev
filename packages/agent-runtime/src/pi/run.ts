@@ -21,7 +21,7 @@ import { asJsonObject } from "@chia/utils/json";
 
 import type { DeclinedToolResult } from "../session/entries.ts";
 import type { AgentTool } from "../tools.ts";
-import type { ToolCallApprovals } from "../turn/approvals.ts";
+import type { ToolCallApprovals, ToolCallBatch } from "../turn/approvals.ts";
 import type { TurnControl } from "../turn/control.ts";
 import type { TurnTranscript } from "../turn/transcript.ts";
 import type {
@@ -108,6 +108,13 @@ const callsOf = (
     return [{ toolCallId: part.id, toolName: part.name, input }];
   });
 
+/** Whether Pi runs a reply's calls: it skips those of a failed or stopped reply and fails a truncated one's. */
+const runsCalls = (message: AssistantMessage): boolean =>
+  message.stopReason !== "error" &&
+  message.stopReason !== "aborted" &&
+  message.stopReason !== "length" &&
+  message.content.some((part) => part.type === "toolCall");
+
 /**
  * Runs Pi's `Agent` from `messages`, which must end with a user or tool-result message. Each
  * finished reply and tool result is appended to the transcript before its events reach the
@@ -134,12 +141,27 @@ export const runPiAgent = async (
     : context.tools;
   let stateRevision = 0;
   const volatileContext = context.volatileContext;
-  const batches = new WeakMap<AssistantMessage, ToolCallRequest[]>();
-  const replayedCalls = new Set(
-    replay?.content.flatMap((part) =>
-      part.type === "toolCall" ? [part.id] : []
-    )
+  const piTools = tools.map((tool) =>
+    toPiTool(tool, {
+      policy,
+      log: { sessionId: context.sessionId, runId: context.runId },
+    })
   );
+  const batches = new WeakMap<AssistantMessage, ToolCallBatch>();
+  const batchOf = (message: AssistantMessage): ToolCallBatch => {
+    let batch = batches.get(message);
+    if (!batch) {
+      batch = {
+        calls: callsOf(message, piTools),
+        // By identity, not call ids: only the replayed reply carries the operator's answers.
+        replayed: message === replay,
+      };
+      batches.set(message, batch);
+    }
+    return batch;
+  };
+  /** The reply whose calls Pi is running; the tool events that follow it are its calls'. */
+  let running: AssistantMessage | undefined;
   let pendingReplay = replay;
   let replaying = false;
 
@@ -148,12 +170,7 @@ export const runPiAgent = async (
       systemPrompt: context.systemPrompt,
       model,
       thinkingLevel: clampThinkingLevel(model, context.settings.thinkingLevel),
-      tools: tools.map((tool) =>
-        toPiTool(tool, {
-          policy,
-          log: { sessionId: context.sessionId, runId: context.runId },
-        })
-      ),
+      tools: piTools,
       messages,
     },
     // Bound to this turn's collection rather than a process-wide default: the collection
@@ -180,21 +197,11 @@ export const runPiAgent = async (
           }
         }
       : undefined,
-    beforeToolCall: async ({
-      assistantMessage,
-      toolCall,
-      args,
-      context: loop,
-    }) => {
+    beforeToolCall: async ({ assistantMessage, toolCall, args }) => {
       try {
-        let batch = batches.get(assistantMessage);
-        if (!batch) {
-          batch = callsOf(assistantMessage, loop.tools ?? []);
-          batches.set(assistantMessage, batch);
-        }
         const answer = await approvals.answer(
           { toolCallId: toolCall.id, toolName: toolCall.name, input: args },
-          batch
+          batchOf(assistantMessage)
         );
         switch (answer.type) {
           case "run":
@@ -257,11 +264,22 @@ export const runPiAgent = async (
       }
       case "message_end": {
         const { message } = event;
-        if (message.role === "assistant" && replaying) {
-          replaying = false;
-          return;
-        }
         if (message.role === "assistant") {
+          running = message;
+          // Before Pi runs any of its calls: one Pi answers without asking, like an invalid
+          // call, must already know whether its batch is held.
+          if (runsCalls(message)) {
+            try {
+              await approvals.triage(batchOf(message));
+            } catch (error) {
+              control.fail(errorOfThrown(error), error);
+            }
+          }
+          if (replaying) {
+            replaying = false;
+            return;
+          }
+
           const id = replyId ?? uuidv7();
           replyId = undefined;
           if (
@@ -282,7 +300,8 @@ export const runPiAgent = async (
             entryId: id,
           });
         } else if (message.role === "toolResult") {
-          const answer = approvals.answerOf(message.toolCallId);
+          const batch = running && batches.get(running);
+          const answer = batch && approvals.answerOf(batch, message.toolCallId);
           // A held call stays open in the tree, so the turn that resumes it can run it.
           if (answer?.type === "hold") return;
           const result: DeclinedToolResult | typeof message =
@@ -297,7 +316,7 @@ export const runPiAgent = async (
       }
       case "tool_execution_start": {
         // A resumed call's card was announced by the turn that stopped on it.
-        if (replayedCalls.has(event.toolCallId)) return;
+        if (replay && running === replay) return;
         onEvent(
           toolStartEvent(
             {
