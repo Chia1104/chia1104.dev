@@ -142,7 +142,7 @@ const build = (
         models,
         message: { text, attachments },
         onEvent: (event) => events.push(event),
-        persistApproval: async () => undefined,
+        persistApprovals: async () => undefined,
       });
     },
   };
