@@ -289,8 +289,6 @@ A model ref names a provider and that provider's id (`vercel-ai-gateway` + `anth
 
 `Models` is created per caller and turn from the request's credentials, and every policy decision receives the same credentials as key presence (`AgentModelAccess`). Native providers are registered only when that caller supplies the key. The selected model and Pi stream function use the same credential-bearing collection; process-wide default model functions are forbidden.
 
-Models, their limits and their request quirks come from Pi's catalogue. What a gateway call costs comes from the gateway: wherever a call is billed (turns, maintenance and house tasks), its public catalogue (`@chia/ai/gateway`, read at most once an hour) replaces the rates of the gateway models Pi knows, price tiers included, which Pi's catalogue does not list. A model the gateway serves but Pi does not know is not offered; when the catalogue cannot be read, Pi's rates apply.
-
 Each domain owns its model policy, decided per ref and caller. One-shot tasks run on the house gateway key, never on a caller's key.
 
 A session row names a model only when the caller chose one. `null` columns mean the session follows the kind's effective default, read per turn, so a default is never copied onto a row and an operator's change reaches every unpinned session on its next turn. A pinned model the catalogue or the caller's keys no longer serve refuses the turn as `model_unavailable`, and the client offers another choice.

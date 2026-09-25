@@ -234,7 +234,7 @@ async function runKindTurn(
   writer: EventWriter
 ): Promise<AgentTurnOutcome> {
   const [
-    { accessOf, createAgentModels, loadGatewayPrices, UnknownAgentModelError },
+    { accessOf, createAgentModels, UnknownAgentModelError },
     { PgSessionRepo, settingsFromRow },
     { runTurn },
   ] = await Promise.all([
@@ -244,14 +244,12 @@ async function runKindTurn(
   ]);
 
   // Independent reads on the pooled client, not a lock transaction, so they go out together.
-  const [state, { config, defaults }, unspentApprovalKeys, prices] =
-    await Promise.all([
-      definition.state.load(db, request.sessionId),
-      // Read per turn, not per session: an edit in the dashboard reaches the next turn.
-      loadKindConfig(db, definition),
-      listUnspentAgentApprovalKeys(db, request.sessionId),
-      loadGatewayPrices(),
-    ]);
+  const [state, { config, defaults }, unspentApprovalKeys] = await Promise.all([
+    definition.state.load(db, request.sessionId),
+    // Read per turn, not per session: an edit in the dashboard reaches the next turn.
+    loadKindConfig(db, definition),
+    listUnspentAgentApprovalKeys(db, request.sessionId),
+  ]);
   if (state === null) {
     throw new FatalError(
       `Kind state is missing for agent session ${request.sessionId}.`
@@ -277,7 +275,7 @@ async function runKindTurn(
     encrypted,
     env.AI_AUTH_PRIVATE_KEY
   );
-  const models = createAgentModels(credentials, prices);
+  const models = createAgentModels(credentials);
   // Before the kind prepares the turn: a model the caller may not run costs no further query.
   let model: AgentModel;
   try {
