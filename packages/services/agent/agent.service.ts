@@ -142,6 +142,10 @@ export interface AgentKindService {
     input: { sessionId: string }
   ): Promise<boolean>;
 
+  /**
+   * `null` when the session has no such request. `cursor` is `null` while other calls of the
+   * batch still wait on the operator: the decision is recorded and nothing runs yet.
+   */
   approve(
     caller: AgentServiceCaller,
     input: {
@@ -150,7 +154,7 @@ export interface AgentKindService {
       approved: boolean;
       comment?: string;
     }
-  ): Promise<AgentStreamCursor | null>;
+  ): Promise<{ cursor: AgentStreamCursor | null } | null>;
 
   /**
    * Compacts the active branch and returns the rebuilt detail. `CONFLICT` while a turn runs,

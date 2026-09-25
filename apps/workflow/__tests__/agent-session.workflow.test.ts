@@ -62,16 +62,8 @@ describe("agentSessionWorkflow", () => {
     expect(mocks.closeStreams).toHaveBeenCalledOnce();
   });
 
-  it("ends the run when the turn stops on a gated call; the decision arrives as its own run", async () => {
-    mocks.runTurn.mockResolvedValue({
-      status: "awaiting_approval",
-      approval: {
-        toolCallId: "call-1",
-        toolName: "commit_draft",
-        approvalKey: "commit_draft:7@3",
-      },
-      error: undefined,
-    });
+  it("ends the run when the turn stops on gated calls; the answers resume it as a run of their own", async () => {
+    mocks.runTurn.mockResolvedValue({ status: "awaiting_approval" });
 
     await expect(
       agentSessionWorkflow({
@@ -88,37 +80,23 @@ describe("agentSessionWorkflow", () => {
       AgentRunStatus.Completed
     );
 
-    // The relay is a fresh run carrying the recorded decision; nothing is parked between.
+    // The resume is a fresh run carrying the recorded answers; nothing is parked between.
+    const resume = {
+      interruptedRunId: "run-1",
+      decisions: [{ toolCallId: "call-1", approved: true, comment: "go" }],
+    };
     await agentSessionWorkflow({
       sessionId: "session-1",
       runId: "run-2",
       userId: "user-1",
       abortController: { id: "abort-2", runId: "abort-run-2" },
-      message: {
-        text: "Operator decision: approved commit_draft",
-        decision: {
-          toolCallId: "call-1",
-          toolName: "commit_draft",
-          approved: true,
-          comment: "go",
-        },
-        credentials: { openai: "fresh" },
-      },
+      message: { resume, credentials: { openai: "fresh" } },
     });
 
     expect(mocks.runTurn).toHaveBeenLastCalledWith(
       expect.objectContaining({
         runId: "run-2",
-        message: {
-          text: "Operator decision: approved commit_draft",
-          decision: {
-            toolCallId: "call-1",
-            toolName: "commit_draft",
-            approved: true,
-            comment: "go",
-          },
-          credentials: { openai: "fresh" },
-        },
+        message: { resume, credentials: { openai: "fresh" } },
       })
     );
   });

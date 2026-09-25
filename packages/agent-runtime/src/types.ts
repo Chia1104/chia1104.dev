@@ -3,7 +3,6 @@ import type { Usage } from "@earendil-works/pi-ai";
 import type { AgentUsageSource } from "@chia/db/schema";
 import type { JsonValue } from "@chia/utils/json";
 
-import type { OperatorDecision } from "./wire/operator-decision.ts";
 import type { AgentAttachment } from "./wire/schema.ts";
 
 /** Pi's reasoning levels, from none to the most; the compiler checks them wherever a level reaches Pi. */
@@ -57,13 +56,59 @@ export interface ApprovalRequest {
   toolName: string;
   tier: ToolTier;
   args: unknown;
-  /** What an approval of this request is good for; see `ToolCallGateOptions.approvalKeyOf`. */
+  /**
+   * The kind's identity for the call: the tool, its target and the state the operator is shown.
+   * Recorded with the request; a kind reads its own pins back from it when the call runs.
+   */
   key: string;
+}
+
+/**
+ * A gated call the turn answered itself: approved because the session pre-approved its tier, or
+ * refused by the turn's own checks with `reason`.
+ */
+export interface SettledCall {
+  toolCallId: string;
+  toolName: string;
+  args: unknown;
+  key: string;
+  approved: boolean;
+  reason?: string;
+}
+
+/**
+ * The gated calls a turn stopped on. The operator answers `requests`; `settled` calls ride along,
+ * because the batch resumes only once every call in it is answered.
+ */
+export interface ApprovalBatch {
+  requests: ApprovalRequest[];
+  settled: SettledCall[];
 }
 
 /** Refuses a call. The reason returns to the model as the tool's error result. */
 export interface ToolCallRefusal {
   reason: string;
+}
+
+/** The answer to one gated call. */
+export interface ApprovalDecision {
+  toolCallId: string;
+  approved: boolean;
+  /** The operator's words, or the check's reason when `refused`. */
+  comment?: string;
+  /** The turn's own checks refused the call; the operator never saw it. */
+  refused?: true;
+}
+
+/**
+ * Continues a turn that stopped on gated calls. Every call the stopped turn left waiting is
+ * answered at once: approved calls run exactly as requested and the model reads a refusal for
+ * the rest.
+ */
+export interface AgentTurnResume {
+  /** The agent run whose turn stopped on the calls. */
+  interruptedRunId: string;
+  decisions: ApprovalDecision[];
 }
 
 /** What a turn runs with. The model is the session's own or, when it names none, the kind's effective default. */
@@ -100,12 +145,6 @@ export interface AgentTurnMessage {
   text: string;
   template?: { name: string; args?: string[] };
   attachments?: AgentAttachment[];
-  /**
-   * Operator decision this turn relays after an approval.
-   * Announced on the wire before the model runs; the user message is marked as not
-   * operator-typed.
-   */
-  decision?: OperatorDecision;
 }
 
 /**
@@ -159,7 +198,7 @@ export interface AgentTurnBudget {
 export type AgentTurnExecution =
   | { status: "done" }
   | { status: "aborted" }
-  | { status: "awaiting_approval"; approval: ApprovalRequest }
+  | { status: "awaiting_approval"; approvals: ApprovalRequest[] }
   | { status: "error"; error: AgentTurnError };
 
 /** The model that answered and what it charged. */

@@ -281,6 +281,7 @@ export const createWritingAgentExecutor = (
       },
       instructions: context.config.instructions,
       autoApprove: context.settings.autoApprove,
+      approvedCalls: context.approvedCalls,
     });
 
     return Promise.resolve({

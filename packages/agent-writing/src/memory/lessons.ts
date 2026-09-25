@@ -3,7 +3,6 @@ import * as z from "zod";
 
 import { xmlBlock } from "@chia/agent-runtime/prompts";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
-import { isOperatorDecisionText } from "@chia/agent-runtime/wire/operator-decision";
 import { FeedDraftAuthor } from "@chia/db/schema";
 import type { FeedDraftSnapshot } from "@chia/db/schema";
 import { Locale } from "@chia/db/types";
@@ -94,10 +93,10 @@ const textOf = (
 };
 
 /**
- * Only the operator's own messages and the assistant's prose. Tool results, thinking and tool
- * calls are dropped, so nothing a web page said can become a lesson; so is the rendered
- * attachment block, which quotes drafts and reader reports rather than the operator. Approval
- * relay turns are kept: they carry the operator's rejection comments.
+ * Only the operator's own messages, their comments on the calls they declined, and the
+ * assistant's prose. Tool results, thinking and tool calls are dropped, so nothing a web page
+ * said can become a lesson; so is the rendered attachment block, which quotes drafts and reader
+ * reports rather than the operator.
  */
 export const collectOperatorExchange = (
   entries: readonly SessionEntry[]
@@ -117,19 +116,22 @@ export const collectOperatorExchange = (
     } else if (message.role === "assistant") {
       const text = textOf(message.content).trim();
       if (text) turns.push({ role: "assistant", text });
+    } else if (
+      message.role === "toolResult" &&
+      "declined" in message &&
+      message.declined.comment
+    ) {
+      turns.push({
+        role: "operator",
+        text: `Declined \`${message.toolName}\`: ${message.declined.comment}`,
+      });
     }
   }
   return turns;
 };
 
-/** A decision relay counts as input only when the operator wrote a comment on it. */
-const isOperatorInput = (text: string) =>
-  !isOperatorDecisionText(text) || text.includes(" They said: ");
-
 const hasOperatorInput = (exchange: readonly OperatorExchangeTurn[]) =>
-  exchange.some(
-    (turn) => turn.role === "operator" && isOperatorInput(turn.text)
-  );
+  exchange.some((turn) => turn.role === "operator");
 
 /** What the operator changed by hand, one entry per field of one revision. */
 export interface OperatorEdit {

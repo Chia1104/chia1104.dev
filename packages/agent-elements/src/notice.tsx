@@ -1,7 +1,7 @@
 "use client";
 
 import { Alert } from "@heroui/react";
-import { Archive, CircleAlert, ShieldCheck, Undo2 } from "lucide-react";
+import { Archive, CircleAlert, Undo2 } from "lucide-react";
 
 import type { NoticeView } from "@chia/agent-runtime/wire/fold";
 import { cn } from "@chia/ui/utils/cn.util";
@@ -22,7 +22,6 @@ export const Notice = ({ className, notice }: NoticeProps) => {
 
   if (notice.variant !== "error") {
     const meta = {
-      decision: { icon: ShieldCheck, label: labels.decisionRelayed },
       compacted: { icon: Archive, label: labels.compacted },
       rewound: { icon: Undo2, label: labels.rewound },
     }[notice.variant];

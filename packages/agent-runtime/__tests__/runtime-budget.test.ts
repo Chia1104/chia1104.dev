@@ -37,7 +37,7 @@ describe("runTurn budget", () => {
     expect(JSON.stringify(toolResults[3]?.content)).toMatch(/budget/i);
     // The fourth call was a gated `publish`; the budget refused it first, so no approval
     // exists.
-    expect(fixture.persistApproval).not.toHaveBeenCalled();
+    expect(fixture.persistApprovals).not.toHaveBeenCalled();
     expect(result.status).toBe("done");
   });
 
@@ -87,7 +87,7 @@ describe("runTurn budget", () => {
       toolCallTurn("publish", {}, "call-1"),
       fauxAssistantMessage("Waiting."),
     ]);
-    fixture.persistApproval.mockImplementation(async () => {
+    fixture.persistApprovals.mockImplementation(async () => {
       // The model already stopped; only host work is left when the deadline would fire.
       await sleep(80);
     });
@@ -98,7 +98,7 @@ describe("runTurn budget", () => {
 
     expect(result).toMatchObject({
       status: "awaiting_approval",
-      approval: expect.objectContaining({ toolCallId: "call-1" }),
+      approvals: [expect.objectContaining({ toolCallId: "call-1" })],
     });
   });
 

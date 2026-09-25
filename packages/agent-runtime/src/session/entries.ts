@@ -3,7 +3,7 @@ import type {
   Entry,
   JsonValue,
 } from "@earendil-works/pi-agent-core";
-import type { Usage } from "@earendil-works/pi-ai";
+import type { ToolResultMessage, Usage } from "@earendil-works/pi-ai";
 
 import type { AgentAttachment } from "../wire/schema.ts";
 
@@ -28,9 +28,14 @@ export interface SessionEntryBase {
   timestamp: number;
 }
 
+/** The result of a call the operator declined: it never ran, and `comment` is what they said. */
+export interface DeclinedToolResult extends ToolResultMessage {
+  declined: { comment?: string };
+}
+
 export interface MessageEntry extends SessionEntryBase {
   type: "message";
-  message: AgentMessage;
+  message: AgentMessage | DeclinedToolResult;
   /**
    * User messages only. The rendered attachments are the first text block of `message`, the
    * operator's own words the last; replay shows the words and these as chips.

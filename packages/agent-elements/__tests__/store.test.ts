@@ -220,7 +220,7 @@ describe("foldDetail", () => {
     expect(view.runStatus).toBe("awaiting_approval");
   });
 
-  it("closes a decided approval's card on reload the way the live stream did", () => {
+  it("annotates an approved call that ran with the decision beside its own result", () => {
     const view = foldDetail(
       detailOf({
         events: [
@@ -237,8 +237,8 @@ describe("foldDetail", () => {
             type: "tool:end",
             toolCallId: "t1",
             toolName: "commit_post",
-            isError: true,
-            summary: "blocked",
+            isError: false,
+            summary: "published",
           },
         ],
         approvals: [
@@ -256,9 +256,69 @@ describe("foldDetail", () => {
     const tool = view.items.find((item) => item.kind === "tool");
     expect(tool).toMatchObject({
       status: "ok",
+      summary: "published",
       approval: { approved: true, comment: "ship it" },
     });
     expect(view.runStatus).toBe("idle");
+  });
+
+  it("keeps a decided call waiting on reload while the rest of its batch is undecided", () => {
+    const start = (toolCallId: string): AgentWireEvent => ({
+      type: "tool:start",
+      toolCallId,
+      toolName: "commit_post",
+      label: "Commit post",
+      tier: "commit",
+      args: {},
+    });
+    // Replay closes both unanswered calls as stopped; their approval rows reopen them.
+    const stopped = (toolCallId: string): AgentWireEvent => ({
+      type: "tool:end",
+      toolCallId,
+      toolName: "commit_post",
+      isError: false,
+      aborted: true,
+      summary: "",
+    });
+    const view = foldDetail(
+      detailOf({
+        events: [
+          { type: "user", messageId: "u1", text: "publish both" },
+          start("t1"),
+          start("t2"),
+          stopped("t1"),
+          stopped("t2"),
+        ],
+        approvals: [
+          {
+            toolCallId: "t1",
+            toolName: "commit_post",
+            args: {},
+            status: "approved",
+          },
+          {
+            toolCallId: "t2",
+            toolName: "commit_post",
+            args: {},
+            status: "pending",
+          },
+        ],
+      })
+    );
+    const tools = view.items.filter((item) => item.kind === "tool");
+    expect(tools).toMatchObject([
+      {
+        toolCallId: "t1",
+        status: "awaiting_approval",
+        approval: { approved: true },
+      },
+      { toolCallId: "t2", status: "awaiting_approval" },
+    ]);
+    expect(tools[1]).not.toHaveProperty("approval");
+    expect(view.pendingApprovals.map((pending) => pending.toolCallId)).toEqual([
+      "t2",
+    ]);
+    expect(view.runStatus).toBe("awaiting_approval");
   });
 
   it("derives the run status from the server run, not the last replayed event", () => {

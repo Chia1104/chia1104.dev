@@ -62,4 +62,5 @@ export const turnContextOf = <TState, TConfig extends object>(options: {
   state: options.state,
   config: options.config,
   settings,
+  approvedCalls: [],
 });

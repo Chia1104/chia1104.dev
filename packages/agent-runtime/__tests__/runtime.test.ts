@@ -11,7 +11,6 @@ import {
 import { describe, expect, it, vi } from "vitest";
 
 import { AgentErrorKind } from "../src/types.ts";
-import { formatOperatorDecision } from "../src/wire/operator-decision.ts";
 
 import {
   build,
@@ -110,14 +109,13 @@ describe("runTurn", () => {
     expect(startIds).toEqual([branch[1]?.id, branch[3]?.id]);
   });
 
-  it("announces the first gated call, refuses a second without recording it, and persists one request at the end", async () => {
+  it("stops on gated calls, records the batch, then announces it", async () => {
     const fixture = build();
-    fixture.persistApproval.mockImplementation(async () => {
-      // The client has already been told, so the card can replace the tool while the model is
-      // still writing; the durable request is the one thing that waits for the turn to succeed.
+    fixture.persistApprovals.mockImplementation(async () => {
+      // Nothing is announced until the batch is on record.
       expect(
-        fixture.events.filter((event) => event.type === "approval:request")
-      ).toHaveLength(1);
+        fixture.events.some((event) => event.type === "approval:request")
+      ).toBe(false);
     });
     fixture.faux.setResponses([
       fauxAssistantMessage(
@@ -127,126 +125,353 @@ describe("runTurn", () => {
         ],
         { stopReason: "toolUse" }
       ),
-      fauxAssistantMessage("Waiting for approval."),
+      fauxAssistantMessage("Never requested."),
     ]);
 
     const result = await fixture.run();
 
     expect(fixture.calls).toEqual([]);
-    expect(fixture.persistApproval).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ toolCallId: "call-1", toolName: "publish" })
-    );
-    expect(result).toEqual({
+    expect(fixture.faux.state.callCount).toBe(1);
+    expect(result).toMatchObject({
       status: "awaiting_approval",
-      approval: expect.objectContaining({ toolCallId: "call-1" }),
-      error: undefined,
+      approvals: [
+        expect.objectContaining({ toolCallId: "call-1", tier: "commit" }),
+        expect.objectContaining({ toolCallId: "call-2", tier: "commit" }),
+      ],
     });
-    // The workflow parks on one hook, so only the first request may exist as a durable row.
-    expect(
-      fixture.events
-        .filter((event) => event.type === "approval:request")
-        .map((event) => event.toolCallId)
-    ).toEqual(["call-1"]);
-    // Both refusals reach the model as error tool results; the second says why it was not sent.
-    const refusals = (await fixture.branch())
-      .map(messageOf)
-      .filter((message) => message?.role === "toolResult");
-    expect(refusals).toHaveLength(2);
-    expect(refusals.every((message) => message?.isError)).toBe(true);
-    expect(JSON.stringify(refusals[1]?.content)).toMatch(/already waiting/);
+    expect(fixture.persistApprovals).toHaveBeenCalledExactlyOnceWith({
+      requests: [
+        expect.objectContaining({
+          toolCallId: "call-1",
+          key: 'publish:{"slug":"hello"}',
+        }),
+        expect.objectContaining({
+          toolCallId: "call-2",
+          key: 'publish:{"slug":"second"}',
+        }),
+      ],
+      settled: [],
+    });
+    expect(fixture.types().slice(-3)).toEqual([
+      "approval:request",
+      "approval:request",
+      "run:end",
+    ]);
+    expect(fixture.events.at(-1)).toEqual({
+      type: "run:end",
+      reason: "awaiting_approval",
+    });
+    // The calls wait with no result, so the turn that resumes them can run them.
+    const branch = await fixture.branch();
+    expect(branch.map((entry) => messageOf(entry)?.role)).toEqual([
+      "user",
+      "assistant",
+    ]);
   });
 
-  it("spends an approval on exactly one matching call and gates the next", async () => {
+  it("holds a batch's other calls with its gated ones and runs them all on resume", async () => {
     const fixture = build();
-    const consumeApproval = vi.fn(async () => undefined);
     fixture.faux.setResponses([
       fauxAssistantMessage(
         [
-          fauxToolCall("publish", { slug: "hello" }, { id: "call-1" }),
+          fauxToolCall("search", { q: "draft" }, { id: "call-1" }),
           fauxToolCall("publish", { slug: "hello" }, { id: "call-2" }),
         ],
         { stopReason: "toolUse" }
       ),
-      fauxAssistantMessage("Published once."),
     ]);
+    await fixture.run();
+    expect(fixture.calls).toEqual([]);
 
-    const result = await fixture.run({
-      approvedApprovalKeys: new Set(['publish:{"slug":"hello"}']),
-      consumeApproval,
+    fixture.faux.setResponses([fauxAssistantMessage("Published.")]);
+    const result = await fixture.resume({
+      interruptedRunId: "run-1",
+      decisions: [{ toolCallId: "call-2", approved: true }],
     });
 
-    // The first call ran on the approval and spent it; the identical second call is gated.
-    expect(fixture.calls).toEqual(["publish"]);
-    expect(consumeApproval).toHaveBeenCalledExactlyOnceWith(
-      'publish:{"slug":"hello"}'
-    );
-    expect(result).toMatchObject({
-      status: "awaiting_approval",
-      approval: expect.objectContaining({ toolCallId: "call-2" }),
-    });
+    expect(result).toEqual({ status: "done" });
+    expect(fixture.calls).toEqual(["draft", "publish"]);
+    const branch = await fixture.branch();
+    expect(branch.map((entry) => messageOf(entry)?.role)).toEqual([
+      "user",
+      "assistant",
+      "toolResult",
+      "toolResult",
+      "assistant",
+    ]);
   });
 
-  it("keeps a call blocked when its approval cannot be spent", async () => {
+  it("keeps a held batch's invalid call open too, and answers it with its error on resume", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      fauxAssistantMessage(
+        [
+          // `search` requires `q`: Pi answers it without asking the turn.
+          fauxToolCall("search", {}, { id: "call-1" }),
+          fauxToolCall("publish", { slug: "hello" }, { id: "call-2" }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+    ]);
+    await fixture.run();
+    expect(
+      (await fixture.branch()).map((entry) => messageOf(entry)?.role)
+    ).toEqual(["user", "assistant"]);
+
+    fixture.faux.setResponses([fauxAssistantMessage("Published.")]);
+    await fixture.resume({
+      interruptedRunId: "run-1",
+      decisions: [{ toolCallId: "call-2", approved: true }],
+    });
+
+    const results = (await fixture.branch())
+      .map(messageOf)
+      .filter((message) => message?.role === "toolResult");
+    expect(results).toMatchObject([
+      { toolCallId: "call-1", isError: true },
+      { toolCallId: "call-2", isError: false },
+    ]);
+    expect(fixture.calls).toEqual(["publish"]);
+  });
+
+  it("runs an approved call exactly as requested when the turn resumes", async () => {
     const fixture = build();
     fixture.faux.setResponses([
       toolCallTurn("publish", { slug: "hello" }, "call-1"),
-      fauxAssistantMessage("Could not publish."),
     ]);
+    await fixture.run();
+    fixture.events.length = 0;
 
-    const result = await fixture.run({
-      approvedApprovalKeys: new Set(['publish:{"slug":"hello"}']),
-      consumeApproval: async () => {
-        throw new Error("database unavailable");
-      },
+    fixture.faux.setResponses([fauxAssistantMessage("Published.")]);
+    const result = await fixture.resume({
+      interruptedRunId: "run-1",
+      decisions: [{ toolCallId: "call-1", approved: true, comment: "go" }],
     });
 
-    expect(fixture.calls).toEqual([]);
-    // Not a new request either: the approval still stands for the next turn.
     expect(result).toEqual({ status: "done" });
-    expect(
-      fixture.events.some((event) => event.type === "approval:request")
-    ).toBe(false);
-  });
-
-  it("relays an operator decision before the model runs and marks its own message as synthesised", async () => {
-    const fixture = build();
-    const text = formatOperatorDecision({
-      toolName: "publish",
+    expect(fixture.calls).toEqual(["publish"]);
+    // The resumed reply is not sent to the provider again: only the answer to the result is.
+    expect(fixture.faux.state.callCount).toBe(2);
+    expect(fixture.types()).toEqual([
+      "run:start",
+      "approval:resolved",
+      "tool:end",
+      "assistant:start",
+      "assistant:end",
+      "run:end",
+    ]);
+    expect(fixture.events[1]).toEqual({
+      type: "approval:resolved",
+      toolCallId: "call-1",
       approved: true,
       comment: "go",
     });
-    fixture.faux.setResponses([fauxAssistantMessage("Publishing.")]);
+    const branch = await fixture.branch();
+    expect(branch.map((entry) => messageOf(entry)?.role)).toEqual([
+      "user",
+      "assistant",
+      "toolResult",
+      "assistant",
+    ]);
+    expect(messageOf(branch[2])).toMatchObject({
+      toolCallId: "call-1",
+      isError: false,
+    });
+  });
 
-    await fixture.run({
-      message: {
-        text,
-        decision: {
-          toolCallId: "call-1",
-          toolName: "publish",
-          approved: true,
-          comment: "go",
-        },
-      },
+  it("answers a declined call with the operator's words and records the decline", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "hello" }, "call-1"),
+    ]);
+    await fixture.run();
+
+    fixture.faux.setResponses([fauxAssistantMessage("Understood.")]);
+    await fixture.resume({
+      interruptedRunId: "run-1",
+      decisions: [
+        { toolCallId: "call-1", approved: false, comment: "fix the title" },
+      ],
     });
 
-    expect(fixture.events.slice(0, 3)).toEqual([
-      { type: "run:start", sessionId: "session-1" },
+    expect(fixture.calls).toEqual([]);
+    expect(messageOf((await fixture.branch())[2])).toMatchObject({
+      role: "toolResult",
+      toolCallId: "call-1",
+      isError: true,
+      declined: { comment: "fix the title" },
+      content: [
+        {
+          type: "text",
+          text: "The operator declined this call: fix the title",
+        },
+      ],
+    });
+  });
+
+  it("answers a gated call the preflight refuses without reaching the operator", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "hello" }, "call-1"),
+      fauxAssistantMessage("The draft is not ready."),
+    ]);
+
+    const result = await fixture.run({
+      preflight: (request) =>
+        request.toolName === "publish"
+          ? { reason: "The draft is empty." }
+          : undefined,
+    });
+
+    expect(result).toEqual({ status: "done" });
+    expect(fixture.persistApprovals).not.toHaveBeenCalled();
+    expect(fixture.types()).not.toContain("approval:request");
+    const branch = await fixture.branch();
+    expect(messageOf(branch[2])).toMatchObject({
+      role: "toolResult",
+      isError: true,
+      content: [{ type: "text", text: "The draft is empty." }],
+    });
+    expect(messageOf(branch[2])).not.toHaveProperty("declined");
+  });
+
+  it("records the calls it refused beside the ones that reach the operator", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall("publish", { slug: "ready" }, { id: "call-1" }),
+          fauxToolCall("publish", { slug: "empty" }, { id: "call-2" }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+    ]);
+
+    const result = await fixture.run({
+      preflight: (request) =>
+        JSON.stringify(request.input).includes("empty")
+          ? { reason: "The draft is empty." }
+          : undefined,
+    });
+
+    expect(result).toMatchObject({
+      status: "awaiting_approval",
+      approvals: [expect.objectContaining({ toolCallId: "call-1" })],
+    });
+    expect(fixture.persistApprovals).toHaveBeenCalledExactlyOnceWith({
+      requests: [expect.objectContaining({ toolCallId: "call-1" })],
+      settled: [
+        expect.objectContaining({
+          toolCallId: "call-2",
+          approved: false,
+          reason: "The draft is empty.",
+        }),
+      ],
+    });
+  });
+
+  it("records a request under the kind's approval key, never the call id", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "hello" }, "call-1"),
+    ]);
+
+    const result = await fixture.run({
+      approvalKeyOf: (request) => `feed:${JSON.stringify(request.input)}`,
+    });
+
+    expect(result).toMatchObject({
+      status: "awaiting_approval",
+      approvals: [{ toolCallId: "call-1", key: 'feed:{"slug":"hello"}' }],
+    });
+  });
+
+  it("asks the kind's policy, not a built-in tier table, whether a call is gated", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "hello" }, "call-1"),
+      fauxAssistantMessage("Published."),
+    ]);
+
+    // A kind that gates nothing: `commit` means nothing to its policy.
+    const result = await fixture.run({
+      policy: { ...fixture.options.policy, requiresApproval: () => false },
+    });
+
+    expect(result).toEqual({ status: "done" });
+    expect(fixture.calls).toEqual(["publish"]);
+    expect(fixture.persistApprovals).not.toHaveBeenCalled();
+  });
+
+  it("runs a gated tool without asking when the session pre-approved its tier", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "hello" }, "call-1"),
+      fauxAssistantMessage("Published."),
+    ]);
+
+    const result = await fixture.run({
+      settings: { ...fixture.options.settings, autoApprove: ["commit"] },
+    });
+
+    expect(result).toEqual({ status: "done" });
+    expect(fixture.calls).toEqual(["publish"]);
+    expect(fixture.persistApprovals).not.toHaveBeenCalled();
+    expect(fixture.types()).not.toContain("approval:request");
+  });
+
+  it("resumes an approved call after the operator pre-approved its tier while it waited", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "hello" }, "call-1"),
+    ]);
+    await fixture.run();
+
+    // "Always approve" lands on the session before the decision resumes the turn.
+    fixture.faux.setResponses([fauxAssistantMessage("Published.")]);
+    const result = await fixture.resume(
       {
-        type: "approval:resolved",
-        toolCallId: "call-1",
-        approved: true,
-        comment: "go",
+        interruptedRunId: "run-1",
+        decisions: [{ toolCallId: "call-1", approved: true }],
       },
-      expect.objectContaining({
-        type: "user",
-        text,
-        origin: "operator-decision",
-      }),
+      { settings: { ...fixture.options.settings, autoApprove: ["commit"] } }
+    );
+
+    expect(result).toEqual({ status: "done" });
+    expect(fixture.calls).toEqual(["publish"]);
+  });
+
+  it("counts a gated call it checked once, not again when it runs", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "hello" }, "call-1"),
+      fauxAssistantMessage("Published."),
     ]);
-    const first = messageOf((await fixture.branch())[0]);
-    expect(first?.role === "user" ? first.content : undefined).toEqual([
-      { type: "text", text },
-    ]);
+    const preflight = vi.fn(() => undefined);
+
+    await fixture.run({
+      preflight,
+      settings: { ...fixture.options.settings, autoApprove: ["commit"] },
+    });
+
+    expect(preflight).toHaveBeenCalledOnce();
+    expect(fixture.calls).toEqual(["publish"]);
+  });
+
+  it("fails as internal when there is no stopped reply to resume", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([fauxAssistantMessage("Hello.")]);
+    await fixture.run();
+
+    await expect(
+      fixture.resume({
+        interruptedRunId: "run-1",
+        decisions: [{ toolCallId: "call-1", approved: true }],
+      })
+    ).resolves.toMatchObject({
+      status: "error",
+      error: { kind: AgentErrorKind.Internal },
+    });
   });
 
   it("expands a prompt template into the persisted user message", async () => {
@@ -399,27 +624,20 @@ describe("runTurn", () => {
     ]);
   });
 
-  it("terminalizes and flushes when approval persistence fails", async () => {
+  it("terminalizes and flushes when the batch cannot be recorded", async () => {
     const fixture = build();
     const flushEvents = vi.fn(async () => undefined);
-    fixture.persistApproval.mockRejectedValue(
+    fixture.persistApprovals.mockRejectedValue(
       new Error("database unavailable")
     );
-    fixture.faux.setResponses([
-      toolCallTurn("publish", {}, "call-1"),
-      fauxAssistantMessage("Waiting."),
-    ]);
+    fixture.faux.setResponses([toolCallTurn("publish", {}, "call-1")]);
 
     await expect(fixture.run({ flushEvents })).resolves.toEqual({
       status: "error",
       error: { kind: AgentErrorKind.Internal, message: "database unavailable" },
     });
-    expect(fixture.events).toContainEqual(
-      expect.objectContaining({
-        type: "approval:request",
-        toolCallId: "call-1",
-      })
-    );
+    // A batch that could not be recorded is never announced.
+    expect(fixture.types()).not.toContain("approval:request");
     expect(fixture.events.slice(-2)).toEqual([
       { type: "error", kind: AgentErrorKind.Internal },
       { type: "run:end", reason: "error" },
@@ -461,30 +679,6 @@ describe("runTurn", () => {
       "Agent turn failed",
       expect.objectContaining({ kind: AgentErrorKind.Internal })
     );
-  });
-
-  it("does not persist approvals raised by a failed provider turn", async () => {
-    const fixture = build();
-    fixture.faux.setResponses([
-      toolCallTurn("publish", {}, "call-1"),
-      fauxAssistantMessage("", {
-        stopReason: "error",
-        errorMessage: "503 overloaded",
-      }),
-    ]);
-
-    await expect(fixture.run()).resolves.toEqual({
-      status: "error",
-      error: { kind: AgentErrorKind.RateLimited, message: "503 overloaded" },
-    });
-    expect(fixture.persistApproval).not.toHaveBeenCalled();
-    expect(fixture.events).toContainEqual(
-      expect.objectContaining({
-        type: "approval:request",
-        toolCallId: "call-1",
-      })
-    );
-    expect(fixture.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
   });
 
   it("flushes the event sink when the turn cannot be set up", async () => {

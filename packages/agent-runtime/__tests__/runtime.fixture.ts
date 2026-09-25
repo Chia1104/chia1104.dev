@@ -12,11 +12,13 @@ import { InMemorySessionTree } from "../src/session/tree.ts";
 import { defineTool } from "../src/tools.ts";
 import type { ToolResult } from "../src/tools.ts";
 import { runTurn } from "../src/turn.ts";
-import type { RunTurnOptions } from "../src/turn.ts";
+import type { RunTurnBase } from "../src/turn.ts";
 import type {
   AgentPolicy,
   AgentTurnBudget,
-  ApprovalRequest,
+  AgentTurnMessage,
+  AgentTurnResume,
+  ApprovalBatch,
 } from "../src/types.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
@@ -136,12 +138,13 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
   const session = new InMemorySessionTree("session-1");
   const events: AgentWireEvent[] = [];
   const calls: string[] = [];
-  const persistApproval = vi.fn(
-    async (_approval: ApprovalRequest): Promise<void> => undefined
+  const persistApprovals = vi.fn(
+    async (_batch: ApprovalBatch): Promise<void> => undefined
   );
 
-  const options: RunTurnOptions = {
+  const options: RunTurnBase = {
     agentSessionId: "session-1",
+    agentRunId: "run-1",
     session,
     settings: {
       providerId: "faux",
@@ -156,9 +159,8 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
     systemPrompt: "You are a test.",
     policy,
     budget,
-    message: { text: "Hello" },
     onEvent: (event) => events.push(event),
-    persistApproval,
+    persistApprovals,
   };
 
   return {
@@ -166,15 +168,24 @@ export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
     session,
     events,
     calls,
-    persistApproval,
+    persistApprovals,
     options,
     types: () =>
       events
         .map((event) => event.type)
         .filter((type) => type !== "assistant:delta"),
     branch: () => session.getBranch(),
-    run: (overrides: Partial<RunTurnOptions> = {}) =>
-      runTurn({ ...options, ...overrides }),
+    run: (
+      overrides: Partial<RunTurnBase> & { message?: AgentTurnMessage } = {}
+    ) =>
+      runTurn({
+        ...options,
+        ...overrides,
+        message: overrides.message ?? { text: "Hello" },
+      }),
+    /** Resumes the calls the run `interruptedRunId` stopped on, as the next run. */
+    resume: (resume: AgentTurnResume, overrides: Partial<RunTurnBase> = {}) =>
+      runTurn({ ...options, agentRunId: "run-2", ...overrides, resume }),
   };
 };
 
