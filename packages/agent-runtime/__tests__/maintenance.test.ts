@@ -1,18 +1,18 @@
-import { createModels } from "@earendil-works/pi-ai";
-import type { Context } from "@earendil-works/pi-ai";
-import {
-  fauxAssistantMessage,
-  fauxProvider,
-} from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
 import { AgentUsageSource } from "@chia/db/schema";
 
-import { compactPiSession, navigatePiSession } from "../src/pi/maintenance.ts";
-import type { PiSessionOperationOptions } from "../src/pi/maintenance.ts";
+import { compactSession } from "../src/compaction.ts";
+import { CompletionError } from "../src/complete.ts";
+import { navigateSession } from "../src/maintenance.ts";
+import type { SessionOperationOptions } from "../src/maintenance.ts";
 import type { NewSessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
+import { bindingOf, scriptedAdapter } from "../src/testing.ts";
+import type { ScriptedReply } from "../src/testing.ts";
 import type { AgentUsageReport } from "../src/types.ts";
+
+import { assistantMessage } from "./runtime.fixture.ts";
 
 const user = (
   id: string,
@@ -35,16 +35,11 @@ const assistant = (
   id,
   parentId,
   timestamp: 2,
-  message: fauxAssistantMessage(text, { timestamp: 2 }),
+  message: assistantMessage(text, 2),
 });
 
-const build = async () => {
-  const faux = fauxProvider({
-    provider: "faux",
-    models: [{ id: "test-model", contextWindow: 100_000 }],
-  });
-  const models = createModels();
-  models.setProvider(faux.provider);
+const build = async (replies: readonly ScriptedReply[] = []) => {
+  const script = scriptedAdapter(replies);
   const session = new InMemorySessionTree("session-1");
   for (const entry of [
     user("u1", null, "First question"),
@@ -54,42 +49,35 @@ const build = async () => {
   ]) {
     await session.appendEntry(entry);
   }
-  const options: PiSessionOperationOptions = {
+  const options: SessionOperationOptions = {
     session,
-    models,
-    model: faux.getModel(),
-    settings: {
-      providerId: "faux",
-      modelId: "test-model",
-      thinkingLevel: "off",
-      activeToolNames: null,
-      autoApprove: [],
-    },
+    binding: bindingOf(script),
   };
-  return { faux, session, options };
+  return { script, session, options };
 };
 
+/** The text the summariser was asked to read on request `index`. */
+const promptOf = (
+  script: ReturnType<typeof scriptedAdapter>,
+  index: number
+): string => JSON.stringify(script.requests[index]?.messages);
+
 /**
- * Pi keeps the newest ~20k tokens whole and summarises what lies before them, so a compaction
- * only has work once the tail alone crosses that: one oversized prompt after the seeded turns
- * pushes those turns into the summarised part.
+ * The newest ~20k tokens are kept whole and only what lies before them is summarised, so a
+ * compaction only has work once the tail alone crosses that: one oversized prompt after the
+ * seeded turns pushes those turns into the summarised part.
  */
 const growPastRetainedTail = async (session: InMemorySessionTree) => {
   await session.appendEntry(user("u3", "a2", "x".repeat(100_000)));
   await session.appendEntry(assistant("a3", "u3", "Noted."));
 };
 
-/**
- * The faux provider estimates usage from the text it streams, so what is pinned is that the
- * report carries exactly the usage the tree persisted, under that entry's id.
- */
 describe("usage reporting", () => {
   it("reports the branch summary's usage under its entry", async () => {
-    const { faux, session, options } = await build();
+    const { session, options } = await build([{ text: "They asked twice." }]);
     const reports: AgentUsageReport[] = [];
-    faux.setResponses([fauxAssistantMessage("They asked twice.")]);
 
-    await navigatePiSession(
+    await navigateSession(
       { ...options, onUsage: (report) => void reports.push(report) },
       "u2",
       { summarize: true }
@@ -100,7 +88,7 @@ describe("usage reporting", () => {
     expect(reports).toEqual([
       {
         source: AgentUsageSource.BranchSummary,
-        providerId: "faux",
+        providerId: "scripted",
         modelId: "test-model",
         entryId: summary?.id,
         usage: summary?.type === "branch_summary" ? summary.usage : undefined,
@@ -110,12 +98,11 @@ describe("usage reporting", () => {
   });
 
   it("reports a manual compaction's usage under its entry", async () => {
-    const { faux, session, options } = await build();
+    const { session, options } = await build([{ text: "Condensed." }]);
     await growPastRetainedTail(session);
     const reports: AgentUsageReport[] = [];
-    faux.setResponses([fauxAssistantMessage("Condensed.")]);
 
-    await compactPiSession({
+    await compactSession({
       ...options,
       onUsage: (report) => void reports.push(report),
     });
@@ -125,7 +112,7 @@ describe("usage reporting", () => {
     expect(reports).toEqual([
       {
         source: AgentUsageSource.Compaction,
-        providerId: "faux",
+        providerId: "scripted",
         modelId: "test-model",
         entryId: compaction?.id,
         usage: compaction?.type === "compaction" ? compaction.usage : undefined,
@@ -135,11 +122,11 @@ describe("usage reporting", () => {
   });
 });
 
-describe("navigatePiSession", () => {
+describe("navigateSession", () => {
   it("rewinds to a user message by making its parent the leaf", async () => {
     const { session, options } = await build();
 
-    const result = await navigatePiSession(options, "u2", {});
+    const result = await navigateSession(options, "u2", {});
 
     expect(result).toEqual({ cancelled: false });
     await expect(session.getLeafId()).resolves.toBe("a1");
@@ -149,7 +136,7 @@ describe("navigatePiSession", () => {
   it("rewinds to an assistant message by making it the leaf", async () => {
     const { session, options } = await build();
 
-    await navigatePiSession(options, "a1", {});
+    await navigateSession(options, "a1", {});
 
     await expect(session.getLeafId()).resolves.toBe("a1");
   });
@@ -157,42 +144,51 @@ describe("navigatePiSession", () => {
   it("is a no-op when already at the target", async () => {
     const { session, options } = await build();
 
-    await navigatePiSession(options, "a2", {});
+    await navigateSession(options, "a2", {});
 
     await expect(session.getLeafId()).resolves.toBe("a2");
     expect(await session.getEntries()).toHaveLength(4);
   });
 
   it("summarises the branch left behind under the new leaf", async () => {
-    const { faux, session, options } = await build();
-    faux.setResponses([fauxAssistantMessage("They asked twice.")]);
+    const { script, session, options } = await build([
+      { text: "They asked twice." },
+    ]);
 
-    await navigatePiSession(options, "u2", { summarize: true });
+    await navigateSession(options, "u2", { summarize: true });
 
     const branch = await session.getBranch();
     const summary = branch.at(-1);
     expect(summary).toMatchObject({
       type: "branch_summary",
       parentId: "a1",
-      // Pi frames the generated text as a branch that was explored and left.
+      fromId: "a1",
+      // The generated text is framed as a branch that was explored and left.
       summary: expect.stringContaining("They asked twice."),
     });
     await expect(session.getLeafId()).resolves.toBe(summary?.id);
-    expect(faux.getPendingResponseCount()).toBe(0);
+    expect(script.pending()).toBe(0);
+    // Only what the rewind left behind is summarised.
+    expect(promptOf(script, 0)).toContain("Second answer");
+    expect(promptOf(script, 0)).not.toContain("First answer");
   });
 
-  it("persists nothing when cancelled after the summary was generated", async () => {
-    const { faux, session, options } = await build();
+  it("moves the leaf without asking the model when not summarising", async () => {
+    const { script, options } = await build([{ text: "Never asked for." }]);
+
+    await navigateSession(options, "u2", {});
+
+    expect(script.requests).toHaveLength(0);
+  });
+
+  it("persists nothing when cancelled while the summary is generating", async () => {
     const controller = new AbortController();
-    faux.setResponses([
-      () => {
-        // The caller cancels while the summary request is in flight.
-        controller.abort();
-        return fauxAssistantMessage("Too late.");
-      },
+    const { session, options } = await build([
+      // The caller cancels while the summary request is in flight.
+      { text: "Too late.", onRequest: () => controller.abort() },
     ]);
 
-    const result = await navigatePiSession(
+    const result = await navigateSession(
       { ...options, signal: controller.signal },
       "u2",
       { summarize: true }
@@ -204,9 +200,11 @@ describe("navigatePiSession", () => {
   });
 
   it("finds the common ancestor across a compaction so shared history is not summarised", async () => {
-    const { faux, session, options } = await build();
+    const { script, session, options } = await build([
+      { text: "They went past the compaction." },
+    ]);
     // u1 → a1 → c1 (compaction) → u3 → a3, then rewind to u1 with a summary.
-    await navigatePiSession(options, "a1", {});
+    await navigateSession(options, "a1", {});
     await session.appendEntry({
       type: "compaction",
       id: "c1",
@@ -218,17 +216,10 @@ describe("navigatePiSession", () => {
     });
     await session.appendEntry(user("u3", "c1", "Third question"));
     await session.appendEntry(assistant("a3", "u3", "Third answer"));
-    const seen: Context[] = [];
-    faux.setResponses([
-      (context) => {
-        seen.push(context);
-        return fauxAssistantMessage("They went past the compaction.");
-      },
-    ]);
 
-    await navigatePiSession(options, "u1", { summarize: true });
+    await navigateSession(options, "u1", { summarize: true });
 
-    const summarised = JSON.stringify(seen[0]?.messages);
+    const summarised = promptOf(script, 0);
     expect(summarised).toContain("Third answer");
     expect(summarised).toContain("The first exchange, condensed.");
     // u1 is the target's own entry, an ancestor of both paths, and must not be summarised.
@@ -244,28 +235,54 @@ describe("navigatePiSession", () => {
   it("rejects an unknown target", async () => {
     const { options } = await build();
 
-    await expect(navigatePiSession(options, "nope", {})).rejects.toThrow(
+    await expect(navigateSession(options, "nope", {})).rejects.toThrow(
       "Entry nope not found"
     );
   });
 });
 
-describe("compactPiSession", () => {
+describe("compactSession", () => {
   it("appends a compaction entry as the new leaf", async () => {
-    const { faux, session, options } = await build();
+    const { script, session, options } = await build([
+      { text: "Two questions, two answers." },
+    ]);
     await growPastRetainedTail(session);
-    faux.setResponses([fauxAssistantMessage("Two questions, two answers.")]);
 
-    const result = await compactPiSession(options);
+    const result = await compactSession(options);
 
     expect(result).toMatchObject({ summary: "Two questions, two answers." });
     const leaf = (await session.getBranch()).at(-1);
     expect(leaf).toMatchObject({
       type: "compaction",
+      parentId: "a3",
       summary: "Two questions, two answers.",
-      retainedTail: expect.any(Array),
+      retainedTail: [
+        { role: "assistant", content: [{ type: "text", text: "Noted." }] },
+      ],
     });
     await expect(session.getLeafId()).resolves.toBe(leaf?.id);
+    // The summariser reads the part the tail does not keep.
+    expect(promptOf(script, 0)).toContain("Second answer");
+    expect(promptOf(script, 0)).not.toContain("Noted.");
+  });
+
+  it("folds the previous summary into the next one", async () => {
+    const { script, session, options } = await build([
+      { text: "First summary." },
+      { text: "Second summary." },
+    ]);
+    await growPastRetainedTail(session);
+    await compactSession(options);
+    const compaction = await session.getLeafId();
+    await session.appendEntry(user("u4", compaction, "y".repeat(100_000)));
+    await session.appendEntry(assistant("a4", "u4", "Again."));
+
+    await expect(compactSession(options)).resolves.toMatchObject({
+      summary: "Second summary.",
+    });
+    expect(promptOf(script, 1)).toContain(
+      "<previous-summary>\\nFirst summary.\\n</previous-summary>"
+    );
   });
 
   it("answers null for an empty session", async () => {
@@ -273,37 +290,42 @@ describe("compactPiSession", () => {
     const empty = new InMemorySessionTree("empty");
 
     await expect(
-      compactPiSession({ ...options, session: empty })
+      compactSession({ ...options, session: empty })
     ).resolves.toBeNull();
   });
 
   it("persists nothing when cancelled while the summary is generating", async () => {
-    const { faux, session, options } = await build();
-    await growPastRetainedTail(session);
     const controller = new AbortController();
-    faux.setResponses([
-      () => {
-        controller.abort();
-        return fauxAssistantMessage("Too late.");
-      },
+    const { session, options } = await build([
+      { text: "Too late.", onRequest: () => controller.abort() },
     ]);
+    await growPastRetainedTail(session);
 
-    await expect(
-      compactPiSession({ ...options, signal: controller.signal })
-    ).rejects.toMatchObject({ code: "aborted" });
+    const pending = compactSession({ ...options, signal: controller.signal });
 
+    await expect(pending).rejects.toBeInstanceOf(CompletionError);
+    await expect(pending).rejects.toMatchObject({ aborted: true });
     await expect(session.getLeafId()).resolves.toBe("a3");
     expect(await session.getEntries()).toHaveLength(6);
   });
 
+  it("fails without persisting when the summariser replies with nothing", async () => {
+    const { session, options } = await build([{ text: "   " }]);
+    await growPastRetainedTail(session);
+
+    await expect(compactSession(options)).rejects.toThrow(/empty summary/);
+    expect(await session.getEntries()).toHaveLength(6);
+  });
+
   it("answers null without calling the model when the branch fits in the retained tail", async () => {
-    const { faux, session, options } = await build();
-    faux.setResponses([fauxAssistantMessage("Never asked for.")]);
+    const { script, session, options } = await build([
+      { text: "Never asked for." },
+    ]);
     const before = await session.getLeafId();
 
-    await expect(compactPiSession(options)).resolves.toBeNull();
+    await expect(compactSession(options)).resolves.toBeNull();
 
     await expect(session.getLeafId()).resolves.toBe(before);
-    expect(faux.getPendingResponseCount()).toBe(1);
+    expect(script.requests).toHaveLength(0);
   });
 });

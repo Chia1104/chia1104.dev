@@ -12,40 +12,39 @@ import type { AgentTurnMarker } from "@chia/agent-host/execution";
 import type { AgentKindExecutor } from "@chia/agent-host/kind";
 import { AgentTaskId, resolveAgentTask } from "@chia/agent-host/tasks";
 import { recordAgentUsage, sessionUsageListener } from "@chia/agent-host/usage";
-import type { AgentModel } from "@chia/agent-runtime/models";
+import type { AgentModelBinding } from "@chia/agent-runtime/models";
 import { AgentErrorKind } from "@chia/agent-runtime/types";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
 } from "@chia/agent-runtime/types";
-import type { OperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
-import type {
-  AgentAttachment,
-  AgentWireEvent,
-} from "@chia/agent-runtime/wire/schema";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
 import {
   claimAgentRunTurn,
   completeAgentRun,
-  consumeAgentApproval,
+  getAgentApprovalBatch,
   getAgentSession,
   getAgentSessionLastSeq,
-  listUnspentAgentApprovalKeys,
   patchAgentRunMetadata,
-  recordAgentApprovalRequest,
+  recordAgentApprovalBatch,
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import type { AgentRunStatus } from "@chia/db/schema";
-import { AgentCredentialSource, AgentUsageSource } from "@chia/db/schema";
+import {
+  AgentApprovalStatus,
+  AgentCredentialSource,
+  AgentUsageSource,
+} from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 import { signalAgentAbort } from "@chia/services/agent/abort";
 import { messageOf } from "@chia/utils/error-helper";
-import type { JsonObject } from "@chia/utils/json";
+import { asJsonObject } from "@chia/utils/json";
 import type {
   AgentAbortControllerRef,
-  EncryptedAgentCredentials,
+  AgentMessagePayload,
 } from "@chia/workflow-control/agent-schema";
 
 import { agentFactory } from "../agents/factory";
@@ -66,14 +65,10 @@ export interface AgentTurnRequest {
   runId: string;
   /** Verified at the transport boundary before the run started. */
   userId: string;
-  /** Subscribed for the harness `AbortSignal`. */
+  /** Subscribed for the turn's `AbortSignal`. */
   abortController: AgentAbortControllerRef;
-  text: string;
-  template?: { name: string; args?: string[] };
-  attachments?: AgentAttachment[];
-  decision?: OperatorDecision;
-  /** Encrypted operator keys; omitted means the house gateway. */
-  credentials?: EncryptedAgentCredentials;
+  /** A prompt, or the answers that resume a stopped turn; credentials omitted run on the house gateway. */
+  message: AgentMessagePayload;
 }
 
 export interface AgentTurnOutcome {
@@ -86,7 +81,7 @@ type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
 const SESSION_TITLE_TIMEOUT_MS = 8_000;
 
 const needsTitle = (row: AgentSessionRow, request: AgentTurnRequest) =>
-  row.title === null && request.decision === undefined;
+  row.title === null && "text" in request.message;
 
 /**
  * Names the session from its first prompt, started before the turn and awaited before `run:end`.
@@ -98,14 +93,15 @@ const titleSession = async (
   row: AgentSessionRow,
   request: AgentTurnRequest
 ): Promise<void> => {
+  if (!("text" in request.message)) return;
+  const { text } = request.message;
   try {
     const { fallbackSessionTitle, generateSessionTitle } =
-      await import("@chia/agent-runtime/pi/title");
+      await import("@chia/agent-runtime/title");
     const task = await resolveAgentTask(db, AgentTaskId.SessionTitle);
     const generated = await generateSessionTitle({
-      models: task.models,
-      model: task.model,
-      text: request.text,
+      binding: task.binding,
+      text,
       systemPrompt: task.systemPrompt,
       ...task.params,
       signal: AbortSignal.timeout(SESSION_TITLE_TIMEOUT_MS),
@@ -120,7 +116,7 @@ const titleSession = async (
           ...usage,
         }),
     });
-    const title = generated ?? fallbackSessionTitle(request.text);
+    const title = generated ?? fallbackSessionTitle(text);
     if (title) await setAgentSessionTitleIfUnset(db, row.id, title);
   } catch (error) {
     // Cosmetic; the turn must not fail for it.
@@ -242,21 +238,27 @@ async function runKindTurn(
   writer: EventWriter
 ): Promise<AgentTurnOutcome> {
   const [
-    { accessOf, createAgentModels, UnknownAgentModelError },
+    { accessOf, bindModel, loadAgentCatalog, UnknownAgentModelError },
     { PgSessionRepo, settingsFromRow },
-    { runPiTurn },
+    { runTurn },
   ] = await Promise.all([
     import("@chia/agent-runtime/models"),
     import("@chia/agent-runtime/session/pg-repo"),
-    import("@chia/agent-runtime/pi/turn"),
+    import("@chia/agent-runtime/turn"),
   ]);
 
+  const { message } = request;
+  const resume = "resume" in message ? message.resume : undefined;
+
   // Independent reads on the pooled client, not a lock transaction, so they go out together.
-  const [state, { config, defaults }, unspentApprovalKeys] = await Promise.all([
+  const [state, { config, defaults }, batch, catalog] = await Promise.all([
     definition.state.load(db, request.sessionId),
     // Read per turn, not per session: an edit in the dashboard reaches the next turn.
     loadKindConfig(db, definition),
-    listUnspentAgentApprovalKeys(db, request.sessionId),
+    resume
+      ? getAgentApprovalBatch(db, request.sessionId, resume.interruptedRunId)
+      : Promise.resolve([]),
+    loadAgentCatalog(),
   ]);
   if (state === null) {
     throw new FatalError(
@@ -274,23 +276,26 @@ async function runKindTurn(
   }
 
   /**
-   * Per turn: closes over this operator's keys. Not a process singleton.
-   * Providers without a credential are unregistered, so a missing key fails as "unknown model"
-   * instead of billing the house gateway.
+   * Per turn: closes over this operator's keys. Not a process singleton. A native model the
+   * caller holds no key for cannot be bound, so a missing key fails as "unknown model" instead
+   * of billing the house gateway.
    */
   const credentials = decryptAgentCredentials(
-    request.credentials,
+    message.credentials,
     env.AI_AUTH_PRIVATE_KEY
   );
-  const models = createAgentModels(credentials);
   // Before the kind prepares the turn: a model the caller may not run costs no further query.
-  let model: AgentModel;
+  let binding: AgentModelBinding;
   try {
-    model = definition.models.resolve(
-      settings,
-      models,
-      accessOf(credentials),
-      defaults
+    binding = bindModel(
+      definition.models.resolve(
+        settings,
+        catalog,
+        accessOf(credentials),
+        defaults
+      ),
+      credentials,
+      settings.thinkingLevel
     );
   } catch (error) {
     if (!(error instanceof UnknownAgentModelError)) throw error;
@@ -312,11 +317,11 @@ async function runKindTurn(
   }
   // The compaction task may be pinned to a house model; the session's own is its default.
   const compaction = await resolveAgentTask(db, AgentTaskId.SessionCompaction, {
-    session: () => ({ model, models, credentials }),
+    catalog,
+    session: () => ({ binding, credentials }),
   });
 
   const session = new PgSessionRepo(db, definition.kind).open(row);
-  const approvedApprovalKeys = new Set(unspentApprovalKeys);
 
   const { settle, ...plan } = await definition.prepareTurn({
     db,
@@ -324,26 +329,32 @@ async function runKindTurn(
     state,
     config,
     settings,
+    approvedCalls: batch
+      .filter((approval) => approval.status === AgentApprovalStatus.Approved)
+      .map((approval) => ({
+        toolCallId: approval.toolCallId,
+        key: approval.approvalKey,
+      })),
   });
-  const execution = await runPiTurn({
+  const execution = await runTurn({
     ...plan,
+    ...("resume" in message
+      ? { resume: message.resume }
+      : {
+          message: {
+            text: message.text,
+            template: message.template,
+            attachments: message.attachments,
+          },
+        }),
     agentSessionId: row.id,
     agentRunId: request.runId,
     session,
     settings,
-    model,
-    models,
-    compaction: { model: compaction.model, models: compaction.models },
+    binding,
+    compaction: compaction.binding,
     policy: definition.policy,
-    message: {
-      text: request.text,
-      template: request.template,
-      attachments: request.attachments,
-      decision: request.decision,
-    },
     signal,
-    approvedApprovalKeys,
-    consumeApproval: (key) => consumeAgentApproval(db, request.sessionId, key),
     onEvent: writer.push,
     flushEvents: writer.flush,
     onUsage: sessionUsageListener(db, {
@@ -356,14 +367,24 @@ async function runKindTurn(
           ? compaction.credentials
           : credentials,
     }),
-    persistApproval: (approval) =>
-      recordAgentApprovalRequest(db, {
+    persistApprovals: (approvals) =>
+      recordAgentApprovalBatch(db, {
         sessionId: request.sessionId,
-        toolCallId: approval.toolCallId,
-        toolName: approval.toolName,
-        approvalKey: approval.key,
-        // SAFETY: tool arguments passed their registered TypeBox schema before execution.
-        args: approval.args as JsonObject | undefined,
+        runId: request.runId,
+        requests: approvals.requests.map((approval) => ({
+          toolCallId: approval.toolCallId,
+          toolName: approval.toolName,
+          approvalKey: approval.key,
+          args: asJsonObject(approval.args),
+        })),
+        settled: approvals.settled.map((call) => ({
+          toolCallId: call.toolCallId,
+          toolName: call.toolName,
+          approvalKey: call.key,
+          args: asJsonObject(call.args),
+          approved: call.approved,
+          reason: call.reason,
+        })),
       }),
   });
   await settle?.(execution);
@@ -372,7 +393,7 @@ async function runKindTurn(
 
 /**
  * A turn is not replayable: it may already have written the draft, session tree, or DB.
- * pi retries the provider request internally.
+ * The provider SDK retries a failed request internally.
  */
 runAgentTurnStep.maxRetries = 0;
 

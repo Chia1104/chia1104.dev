@@ -14,7 +14,7 @@ import { writeAgentAbortStep } from "../steps/agent-abort.step";
  * a stop has to reach the executing step through this run's stream.
  *
  * Parks on `agentAbortHook`; on resume writes one message. The turn step subscribes and
- * hands the `AbortSignal` to the harness. Started by `prompt` before the session run;
+ * hands the `AbortSignal` to the turn. Started by `prompt` before the session run;
  * `{ id, runId }` travel in the session request so there is one controller, no lookup race.
  *
  * TTL is a safety net for runs that never close their controller. Expired writes

@@ -113,14 +113,14 @@ export const agentTaskAdminSchema = z.object({
     override: agentModelRefSchema.nullable(),
     effective: taskModelDefaultSchema,
   }),
-  /** `null` for a task whose prompt is not the operator's to write (compaction uses Pi's own). */
+  /** `null` for a task whose prompt is not the operator's to write (compaction carries its own). */
   prompt: z
     .object({
       default: z.string(),
       override: z.string().nullable(),
     })
     .nullable(),
-  /** `null` for a task whose call Pi shapes itself (compaction, branch summary). */
+  /** `null` for a task whose call the runtime shapes itself (compaction, branch summary). */
   params: z
     .object({
       default: agentTaskParamsSchema,

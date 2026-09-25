@@ -1,23 +1,16 @@
 import { randomUUID } from "node:crypto";
 
-import type { AgentTool } from "@earendil-works/pi-agent-core";
-import { StringEnum } from "@earendil-works/pi-ai";
-import { Type } from "typebox";
+import * as z from "zod";
 
 import { WebSearchRecency } from "@chia/agent-content/types";
 import type { WebPort, WebSearchResult } from "@chia/agent-content/types";
-import {
-  defineTool,
-  optional,
-  textResult,
-  truncate,
-} from "@chia/agent-runtime/tools";
-import type { ToolSpec } from "@chia/agent-runtime/tools";
+import { defineTool, truncate } from "@chia/agent-runtime/tools";
+import type { AgentTool, ToolSpec } from "@chia/agent-runtime/tools";
 import { GUARD_THRESHOLD } from "@chia/ai/guard/provider";
 import type { GuardProvider } from "@chia/ai/guard/provider";
 import { logger } from "@chia/observability/logger";
 
-import { WEB_TOOL_INFO_BY_NAME, WebToolName } from "./registry.ts";
+import { WebToolName } from "./registry.ts";
 
 /**
  * Outbound web for a visitor's turn. Everything that comes back is text a stranger wrote, so it
@@ -109,36 +102,28 @@ const formatResult = (result: WebSearchResult, index: number): string => {
 
 export const webSearchSpec = {
   name: WebToolName.WebSearch,
-  label: WEB_TOOL_INFO_BY_NAME[WebToolName.WebSearch].label,
   description:
     "Search the web. Use it only after the blog's own posts did not settle the question, to " +
     "check whether something a post says is still current or to fill a gap the posts leave. " +
     `At most ${MAX_SEARCHES} searches per turn. Results are titles and snippets; read a page ` +
     "with `fetch_url` before relying on it.",
-  parameters: Type.Object({
-    query: Type.String({ description: "The search query.", minLength: 1 }),
-    recency: optional(
-      StringEnum(Object.values(WebSearchRecency), {
-        description: "Only results from the last day, week, month or year.",
-      })
-    ),
+  parameters: z.object({
+    query: z.string().min(1).describe("The search query."),
+    recency: z
+      .enum(WebSearchRecency)
+      .describe("Only results from the last day, week, month or year.")
+      .optional(),
   }),
-  executionMode: "sequential",
 } satisfies ToolSpec;
 
 export const fetchUrlSpec = {
   name: WebToolName.FetchUrl,
-  label: WEB_TOOL_INFO_BY_NAME[WebToolName.FetchUrl].label,
   description:
     "Read one page that `web_search` returned in this turn, as markdown. Any other URL is " +
     `refused, including one the visitor typed. At most ${MAX_FETCHES} pages per turn.`,
-  parameters: Type.Object({
-    url: Type.String({
-      description: "A result URL from `web_search`, exactly as given.",
-      format: "uri",
-    }),
+  parameters: z.object({
+    url: z.url().describe("A result URL from `web_search`, exactly as given."),
   }),
-  executionMode: "sequential",
 } satisfies ToolSpec;
 
 export const publicWebToolSpecs = [webSearchSpec, fetchUrlSpec] as const;
@@ -147,87 +132,96 @@ type WebToolContext = PublicWebContext & { state: WebTurnState };
 
 export const webSearchTool = defineTool(
   webSearchSpec,
-  (context: WebToolContext) => async (_toolCallId, params, signal) => {
-    const { state } = context;
-    if (state.searches >= MAX_SEARCHES) {
-      throw new Error(
-        `This turn already ran ${MAX_SEARCHES} web searches. Answer from what you have.`
+  (context: WebToolContext) =>
+    async (params, { signal }) => {
+      const { state } = context;
+      if (state.searches >= MAX_SEARCHES) {
+        throw new Error(
+          `This turn already ran ${MAX_SEARCHES} web searches. Answer from what you have.`
+        );
+      }
+      state.searches += 1;
+
+      const results = await context.web.search(
+        {
+          query: params.query,
+          limit: MAX_SEARCH_RESULTS,
+          recency: params.recency,
+        },
+        signal
       );
-    }
-    state.searches += 1;
+      if (results.length === 0) {
+        return {
+          text: `No web results for "${params.query}".`,
+          details: {
+            query: params.query,
+            count: 0,
+            results,
+          },
+        };
+      }
 
-    const results = await context.web.search(
-      {
-        query: params.query,
-        limit: MAX_SEARCH_RESULTS,
-        recency: params.recency,
-      },
-      signal
-    );
-    if (results.length === 0) {
-      return textResult(`No web results for "${params.query}".`, {
-        query: params.query,
-        count: 0,
-        results,
-      });
-    }
+      const listing = results.map(formatResult).join("\n\n");
+      await assertClean(
+        context,
+        listing,
+        `The results for "${params.query}"`,
+        signal
+      );
+      for (const result of results) {
+        const url = URL.parse(result.url);
+        if (url) state.found.add(pageKey(url));
+      }
 
-    const listing = results.map(formatResult).join("\n\n");
-    await assertClean(
-      context,
-      listing,
-      `The results for "${params.query}"`,
-      signal
-    );
-    for (const result of results) {
-      const url = URL.parse(result.url);
-      if (url) state.found.add(pageKey(url));
+      return {
+        text: quoteUntrusted(
+          `${results.length} web result(s) for "${params.query}"`,
+          listing
+        ),
+        details: { query: params.query, count: results.length, results },
+      };
     }
-
-    return textResult(
-      quoteUntrusted(
-        `${results.length} web result(s) for "${params.query}"`,
-        listing
-      ),
-      { query: params.query, count: results.length, results }
-    );
-  }
 );
 
 export const fetchUrlTool = defineTool(
   fetchUrlSpec,
-  (context: WebToolContext) => async (_toolCallId, params, signal) => {
-    const { state } = context;
-    const url = URL.parse(params.url);
-    if (!url || !state.found.has(pageKey(url))) {
-      throw new Error(
-        "Only a URL that `web_search` returned in this turn can be read. Search first, then pass a result's URL exactly as given."
-      );
-    }
-    if (state.fetches >= MAX_FETCHES) {
-      throw new Error(
-        `This turn already read ${MAX_FETCHES} pages. Answer from what you have.`
-      );
-    }
-    state.fetches += 1;
+  (context: WebToolContext) =>
+    async (params, { signal }) => {
+      const { state } = context;
+      const url = URL.parse(params.url);
+      if (!url || !state.found.has(pageKey(url))) {
+        throw new Error(
+          "Only a URL that `web_search` returned in this turn can be read. Search first, then pass a result's URL exactly as given."
+        );
+      }
+      if (state.fetches >= MAX_FETCHES) {
+        throw new Error(
+          `This turn already read ${MAX_FETCHES} pages. Answer from what you have.`
+        );
+      }
+      state.fetches += 1;
 
-    const page = await context.web.fetchPage(url.toString(), signal);
-    const body = truncate(page.text, MAX_PAGE_CHARS);
-    await assertClean(
-      context,
-      body.text,
-      `The page at ${url.hostname}`,
-      signal
-    );
+      const page = await context.web.fetchPage(url.toString(), signal);
+      const body = truncate(page.text, MAX_PAGE_CHARS);
+      await assertClean(
+        context,
+        body.text,
+        `The page at ${url.hostname}`,
+        signal
+      );
 
-    return textResult(
-      quoteUntrusted(
-        `Page "${page.title ?? url.hostname}" at <${page.url}>`,
-        body.text
-      ),
-      { url: page.url, title: page.title, truncated: body.truncated }
-    );
-  }
+      return {
+        text: quoteUntrusted(
+          `Page "${page.title ?? url.hostname}" at <${page.url}>`,
+          body.text
+        ),
+        details: {
+          url: page.url,
+          title: page.title,
+          truncated: body.truncated,
+        },
+      };
+    }
 );
 
 /** One state per call, so the limits and the found URLs belong to one turn. */

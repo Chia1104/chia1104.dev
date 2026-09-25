@@ -3,12 +3,16 @@ import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { assertWithinAgentQuota } from "@chia/agent-host/quota";
 import { AgentTaskId, resolveAgentTask } from "@chia/agent-host/tasks";
 import { sessionUsageListener } from "@chia/agent-host/usage";
-import { accessOf, createAgentModels } from "@chia/agent-runtime/models";
-import { canCompactBranch } from "@chia/agent-runtime/pi/compaction";
 import {
-  compactPiSession,
-  navigatePiSession,
-} from "@chia/agent-runtime/pi/maintenance";
+  canCompactBranch,
+  compactSession,
+} from "@chia/agent-runtime/compaction";
+import { navigateSession } from "@chia/agent-runtime/maintenance";
+import {
+  accessOf,
+  bindModel,
+  loadAgentCatalog,
+} from "@chia/agent-runtime/models";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import { settingsFromRow } from "@chia/agent-runtime/session/pg-repo";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
@@ -125,21 +129,23 @@ export const createAgentMaintenanceOperations = <
     const credentials = host.credentials.decrypt(
       host.credentials.read(caller.context.headers)
     );
-    const models = createAgentModels(credentials);
     const access = accessOf(credentials);
+    const catalog = await loadAgentCatalog();
     const operationFor = async (taskId: string) => {
       const task = await resolveAgentTask(db, taskId, {
+        catalog,
         session: () => ({
-          model: definition.models.resolve(settings, models, access, house),
-          models,
+          binding: bindModel(
+            definition.models.resolve(settings, catalog, access, house),
+            credentials,
+            settings.thinkingLevel
+          ),
           credentials,
         }),
       });
       return {
         session,
-        settings,
-        model: task.model,
-        models: task.models,
+        binding: task.binding,
         signal,
         onUsage: sessionUsageListener(ledger, {
           userId: caller.userId,
@@ -152,12 +158,12 @@ export const createAgentMaintenanceOperations = <
     return {
       session,
       compact: async (customInstructions?: string) =>
-        compactPiSession(
-          await operationFor(AgentTaskId.SessionCompaction),
-          customInstructions
-        ),
+        compactSession({
+          ...(await operationFor(AgentTaskId.SessionCompaction)),
+          customInstructions,
+        }),
       navigate: async (entryId: string, options: AgentNavigationOptions) =>
-        navigatePiSession(
+        navigateSession(
           await operationFor(AgentTaskId.SessionBranchSummary),
           entryId,
           options

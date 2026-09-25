@@ -1,12 +1,6 @@
-import { Type } from "typebox";
 import * as z from "zod";
 
-import {
-  defineTool,
-  jsonBlock,
-  optional,
-  textResult,
-} from "@chia/agent-runtime/tools";
+import { defineTool, jsonBlock } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 import type {
   ToolCallRefusal,
@@ -20,14 +14,10 @@ import {
 } from "../draft/operations.ts";
 import type { FeedDraft, WritingToolContext } from "../types.ts";
 
-import { TOOL_INFO_BY_NAME, ToolName } from "./registry.ts";
+import { ToolName } from "./registry.ts";
 import { DraftIdSchema } from "./schema.ts";
 
-/**
- * The only tools that touch published data. Sequential: applying and publishing in the same
- * batch would race, and the model must see `feedId` before it can publish. No delete or image
- * upload.
- */
+/** The only tools that touch published data. No delete or image upload. */
 
 /** Why a draft cannot be applied yet; the apply service rejects the same cases. */
 const commitBlocker = (draft: FeedDraft): string | undefined => {
@@ -88,18 +78,17 @@ export const commitPreflight =
       draft = await context.draft.get(args.data.draftId);
     } catch (error) {
       if (error instanceof DraftNotFoundError) {
-        return { block: true, reason: error.message };
+        return { reason: error.message };
       }
       throw error;
     }
 
     const blocker = commitBlocker(draft);
-    if (blocker) return { block: true, reason: blocker };
+    if (blocker) return { reason: blocker };
 
     const gaps = metadataGapsOf(draft);
     if (gaps.length > 0 && !args.data.allowEmptyMetadata) {
       return {
-        block: true,
         reason:
           `Metadata still empty — ${gaps.join("; ")}. Fill it with write_draft, or pass ` +
           "`allowEmptyMetadata: true` and name the empty fields in `confirmation` so the " +
@@ -111,101 +100,101 @@ export const commitPreflight =
 
 export const commitDraftSpec = {
   name: ToolName.CommitDraft,
-  label: TOOL_INFO_BY_NAME[ToolName.CommitDraft].label,
   description:
     "Apply a draft to the database as an UNPUBLISHED post (or update the post the draft is " +
     "already bound to). Requires human approval. This does NOT publish; use `set_published` " +
     "for that. Refused before approval while excerpt or description is empty for any " +
     "locale, unless `allowEmptyMetadata` is set.",
-  parameters: Type.Object({
+  parameters: z.object({
     draftId: DraftIdSchema,
-    confirmation: Type.String({
-      description:
+    confirmation: z
+      .string()
+      .min(1)
+      .describe(
         "One sentence stating what you are committing, shown to the operator in the approval prompt. " +
-        "When committing with empty metadata, name the empty fields here.",
-      minLength: 1,
-    }),
-    allowEmptyMetadata: optional(
-      Type.Boolean({
-        description:
-          "Commit even though excerpt or description is empty for some locale. The " +
-          "operator sees this flag in the approval prompt.",
-      })
-    ),
+          "When committing with empty metadata, name the empty fields here."
+      ),
+    allowEmptyMetadata: z
+      .boolean()
+      .describe(
+        "Commit even though excerpt or description is empty for some locale. The " +
+          "operator sees this flag in the approval prompt."
+      )
+      .optional(),
   }),
-  executionMode: "sequential",
 } satisfies ToolSpec;
 
 export const commitDraftTool = defineTool(
   commitDraftSpec,
-  (context: WritingToolContext) => async (toolCallId, params) => {
-    const draft = await context.draft.get(params.draftId);
-    // The approved content when the operator decided on this call; otherwise what was just read.
-    const expectedHash =
-      context.approvedDraftHashes.get(toolCallId) ?? draft.contentHash;
+  (context: WritingToolContext) =>
+    async (params, { toolCallId }) => {
+      const draft = await context.draft.get(params.draftId);
+      // The approved content when the operator decided on this call; otherwise what was just read.
+      const expectedHash =
+        context.approvedDraftHashes.get(toolCallId) ?? draft.contentHash;
 
-    // The preflight ran before approval; the draft may have moved since, and the apply service
-    // rejects these too. Checking again keeps the error readable rather than an apply failure.
-    const blocker = commitBlocker(draft);
-    if (blocker) throw new Error(blocker);
-    const metadataGaps = metadataGapsOf(draft);
+      // The preflight ran before approval; the draft may have moved since, and the apply service
+      // rejects these too. Checking again keeps the error readable rather than an apply failure.
+      const blocker = commitBlocker(draft);
+      if (blocker) throw new Error(blocker);
+      const metadataGaps = metadataGapsOf(draft);
 
-    const result = await context.content.applyDraft({
-      draftId: draft.id,
-      expectedHash,
-      message: params.confirmation,
-    });
-
-    return textResult(
-      `${result.created ? "Created" : "Updated"} feed ${result.feedId} at slug \`${result.slug}\`, ` +
-        `still unpublished.${metadataGaps.length > 0 ? `\n\nMetadata still empty — ${metadataGaps.join("; ")}.` : ""}\n\n${jsonBlock(result)}`,
-      {
-        ...result,
+      const result = await context.content.applyDraft({
         draftId: draft.id,
-        confirmation: params.confirmation,
-        metadataGaps,
-      }
-    );
-  }
+        expectedHash,
+        message: params.confirmation,
+      });
+
+      return {
+        text:
+          `${result.created ? "Created" : "Updated"} feed ${result.feedId} at slug \`${result.slug}\`, ` +
+          `still unpublished.${metadataGaps.length > 0 ? `\n\nMetadata still empty — ${metadataGaps.join("; ")}.` : ""}\n\n${jsonBlock(result)}`,
+        details: {
+          ...result,
+          draftId: draft.id,
+          confirmation: params.confirmation,
+          metadataGaps,
+        },
+      };
+    }
 );
 
 export const setPublishedSpec = {
   name: ToolName.SetPublished,
-  label: TOOL_INFO_BY_NAME[ToolName.SetPublished].label,
   description:
     "Publish or unpublish a post. Requires human approval. Publishing makes the post publicly " +
     "visible and triggers reading-time, search-index and embedding jobs. A draft has to be " +
     "committed first; `commit_draft` returns the post's feedId.",
-  parameters: Type.Object({
-    feedId: Type.Integer({
-      description: "The post, as `commit_draft` or `list_posts` reported it.",
-    }),
-    published: Type.Boolean({
-      description: "`true` to publish, `false` to withdraw.",
-    }),
-    confirmation: Type.String({
-      description:
-        "One sentence stating which post and why, shown to the operator in the approval prompt.",
-      minLength: 1,
-    }),
+  parameters: z.object({
+    feedId: z
+      .number()
+      .int()
+      .describe("The post, as `commit_draft` or `list_posts` reported it."),
+    published: z.boolean().describe("`true` to publish, `false` to withdraw."),
+    confirmation: z
+      .string()
+      .min(1)
+      .describe(
+        "One sentence stating which post and why, shown to the operator in the approval prompt."
+      ),
   }),
-  executionMode: "sequential",
 } satisfies ToolSpec;
 
 export const setPublishedTool = defineTool(
   setPublishedSpec,
-  (context: WritingToolContext) => async (_toolCallId, params) => {
+  (context: WritingToolContext) => async (params) => {
     const result = await context.content.setPublished({
       feedId: params.feedId,
       published: params.published,
     });
 
-    return textResult(
-      `Feed ${result.feedId} is now ${result.published ? "published" : "unpublished"}.` +
+    return {
+      text:
+        `Feed ${result.feedId} is now ${result.published ? "published" : "unpublished"}.` +
         (result.published
           ? " Indexing (reading time, search, embeddings) runs in the background."
           : ""),
-      { ...result, confirmation: params.confirmation }
-    );
+      details: { ...result, confirmation: params.confirmation },
+    };
   }
 );

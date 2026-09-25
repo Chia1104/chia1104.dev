@@ -1,8 +1,8 @@
 import { structuredPatch } from "diff";
 import * as z from "zod";
 
+import { xmlBlock } from "@chia/agent-runtime/prompts";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
-import { isOperatorDecisionText } from "@chia/agent-runtime/wire/operator-decision";
 import { FeedDraftAuthor } from "@chia/db/schema";
 import type { FeedDraftSnapshot } from "@chia/db/schema";
 import { Locale } from "@chia/db/types";
@@ -93,10 +93,10 @@ const textOf = (
 };
 
 /**
- * Only the operator's own messages and the assistant's prose. Tool results, thinking and tool
- * calls are dropped, so nothing a web page said can become a lesson; so is the rendered
- * attachment block, which quotes drafts and reader reports rather than the operator. Approval
- * relay turns are kept: they carry the operator's rejection comments.
+ * Only the operator's own messages, their comments on the calls they declined, and the
+ * assistant's prose. Tool results, thinking and tool calls are dropped, so nothing a web page
+ * said can become a lesson; so is the rendered attachment block, which quotes drafts and reader
+ * reports rather than the operator.
  */
 export const collectOperatorExchange = (
   entries: readonly SessionEntry[]
@@ -106,7 +106,7 @@ export const collectOperatorExchange = (
     if (entry.type !== "message") continue;
     const message = entry.message;
     if (message.role === "user") {
-      // The runtime's `attachedPrompt` persists the rendered block as the first content part.
+      // The runtime persists the rendered attachment block as the first content part.
       const attached =
         (entry.attachments?.length ?? 0) > 0 && Array.isArray(message.content);
       const text = textOf(
@@ -116,19 +116,18 @@ export const collectOperatorExchange = (
     } else if (message.role === "assistant") {
       const text = textOf(message.content).trim();
       if (text) turns.push({ role: "assistant", text });
+    } else if (message.declined?.comment) {
+      turns.push({
+        role: "operator",
+        text: `Declined \`${message.toolName}\`: ${message.declined.comment}`,
+      });
     }
   }
   return turns;
 };
 
-/** A decision relay counts as input only when the operator wrote a comment on it. */
-const isOperatorInput = (text: string) =>
-  !isOperatorDecisionText(text) || text.includes(" They said: ");
-
 const hasOperatorInput = (exchange: readonly OperatorExchangeTurn[]) =>
-  exchange.some(
-    (turn) => turn.role === "operator" && isOperatorInput(turn.text)
-  );
+  exchange.some((turn) => turn.role === "operator");
 
 /** What the operator changed by hand, one entry per field of one revision. */
 export interface OperatorEdit {
@@ -285,7 +284,11 @@ const renderEdits = (groups: readonly DraftOperatorEdits[]): string => {
     for (const edit of group.edits) {
       const where = edit.locale ? `${edit.locale}.${edit.field}` : edit.field;
       blocks.push(
-        `<edit draft="${group.draftId}" revision="${edit.revision}" field="${where}">\n${edit.diff}\n</edit>`
+        xmlBlock("edit", edit.diff, {
+          draft: group.draftId,
+          revision: edit.revision,
+          field: where,
+        })
       );
     }
   }
@@ -319,16 +322,19 @@ export const buildLessonExtractionPrompt = (
     lessons.length === 0
       ? "(none)"
       : lessons
-          .map(
-            (lesson) =>
-              `<lesson id="${lesson.id}">\n${lesson.title}\n${oneLine(lesson.content, LESSON_CONTENT_SHOWN_MAX_CHARS)}\n</lesson>`
+          .map((lesson) =>
+            xmlBlock(
+              "lesson",
+              `${lesson.title}\n${oneLine(lesson.content, LESSON_CONTENT_SHOWN_MAX_CHARS)}`,
+              { id: lesson.id }
+            )
           )
           .join("\n");
   const active = renderLessons(input.activeLessons);
   const pending = renderLessons(input.pendingLessons);
 
   const rendered = input.exchange
-    .map((turn) => `<${turn.role}>\n${turn.text}\n</${turn.role}>`)
+    .map((turn) => xmlBlock(turn.role, turn.text))
     .join("\n\n");
   const conversation =
     rendered.length > EXCHANGE_MAX_CHARS
@@ -338,10 +344,13 @@ export const buildLessonExtractionPrompt = (
   return {
     systemPrompt: input.systemPrompt ?? LESSON_EXTRACTION_SYSTEM_PROMPT,
     text: [
-      `<active_lessons>\n${active}\n</active_lessons>`,
-      `<pending_lessons>\n${pending}\n</pending_lessons>`,
-      `<operator_edits>\n${edits.length === 0 ? "(none)" : renderEdits(edits)}\n</operator_edits>`,
-      `<conversation>\n${conversation || "(none)"}\n</conversation>`,
+      xmlBlock("active_lessons", active),
+      xmlBlock("pending_lessons", pending),
+      xmlBlock(
+        "operator_edits",
+        edits.length === 0 ? "(none)" : renderEdits(edits)
+      ),
+      xmlBlock("conversation", conversation || "(none)"),
     ].join("\n\n"),
   };
 };

@@ -1,7 +1,9 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
-
 import { contentReadTools } from "@chia/agent-content/tools/read";
-import type { ToolFactory, ToolSpec } from "@chia/agent-runtime/tools";
+import type {
+  AgentTool,
+  ToolFactory,
+  ToolSpec,
+} from "@chia/agent-runtime/tools";
 
 import type { WritingToolContext } from "../types.ts";
 
@@ -29,7 +31,7 @@ import {
 import { fetchUrlTool, webSearchTool } from "./retrieval.tool.ts";
 import { readSkillTool } from "./skill.tool.ts";
 
-/** Full tool set. Order is the order pi lists tools to the model. */
+/** Full tool set. Order is the order the model sees the tools in. */
 const writingTools: readonly ToolFactory<WritingToolContext>[] = [
   readSkillTool,
   ...contentReadTools,

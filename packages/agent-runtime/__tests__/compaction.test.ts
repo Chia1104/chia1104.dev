@@ -1,20 +1,20 @@
-import type { AgentMessage } from "@earendil-works/pi-agent-core";
-import type { AssistantMessage, Usage } from "@earendil-works/pi-ai";
-import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
 import {
   canCompactBranch,
   compactionContextWindow,
+  serializeConversation,
   shouldCompactBranch,
-} from "../src/pi/compaction.ts";
+} from "../src/compaction.ts";
+import type { AgentMessage, AssistantMessage, Usage } from "../src/messages.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { estimateBranchContextTokens } from "../src/session/usage.ts";
 
+import { assistantMessage } from "./runtime.fixture.ts";
+
 /**
- * The threshold is pi's: compact once context exceeds `contextWindow - reserveTokens`, where
- * the default reserve is 16,384. These tests pick a 100k window so the boundary sits at
- * ~83,616.
+ * Compaction runs once context exceeds `contextWindow - 16_384`. These tests pick a 100k window
+ * so the boundary sits at 83,616.
  */
 const CONTEXT_WINDOW = 100_000;
 
@@ -45,16 +45,23 @@ const entry = (message: AgentMessage): SessionEntry => {
 const userEntry = (text: string) =>
   entry({ role: "user", content: text, timestamp: TIMESTAMP });
 
-const assistantMessage = (
-  text: string,
-  totalTokens?: number
-): AssistantMessage => ({
-  ...fauxAssistantMessage(text, { timestamp: TIMESTAMP }),
+const reply = (text: string, totalTokens?: number): AssistantMessage => ({
+  ...assistantMessage(text, TIMESTAMP),
   ...(totalTokens !== undefined && { usage: usage(totalTokens) }),
 });
 
 const assistantEntry = (text: string, totalTokens?: number) =>
-  entry(assistantMessage(text, totalTokens));
+  entry(reply(text, totalTokens));
+
+const toolResultEntry = (text: string) =>
+  entry({
+    role: "toolResult",
+    toolCallId: "call-1",
+    toolName: "search",
+    content: [{ type: "text", text }],
+    isError: false,
+    timestamp: TIMESTAMP,
+  });
 
 const compactionEntry = (retainedUsage?: number): SessionEntry => {
   seq += 1;
@@ -69,7 +76,7 @@ const compactionEntry = (retainedUsage?: number): SessionEntry => {
     retainedTail:
       retainedUsage === undefined
         ? []
-        : [assistantMessage("Recent answer", retainedUsage)],
+        : [reply("Recent answer", retainedUsage)],
   };
 };
 
@@ -95,12 +102,24 @@ describe("estimateBranchContextTokens", () => {
     ];
     expect(estimateBranchContextTokens(branch)).toBe(9_000);
   });
+
+  it("does not trust the usage of a reply the provider never completed", () => {
+    const failed: AssistantMessage = {
+      ...reply("", 90_000),
+      stopReason: "error",
+    };
+    const branch = [
+      userEntry("Go"),
+      assistantEntry("Working", 5_000),
+      entry(failed),
+    ];
+    expect(estimateBranchContextTokens(branch)).toBe(5_000);
+  });
 });
 
 /**
- * Pi keeps the newest ~20k tokens (`keepRecentTokens`) whole; only what lies before them is
- * summarised. An oversized message therefore lands in the kept tail and pushes everything
- * before it into the summarised part.
+ * The newest ~20k tokens are kept whole and only what lies before them is summarised. A message
+ * that alone overflows that tail is summarised with everything older.
  */
 describe("canCompactBranch", () => {
   it("declines an empty branch", () => {
@@ -112,9 +131,18 @@ describe("canCompactBranch", () => {
     expect(canCompactBranch(branch)).toBe(false);
   });
 
-  it("declines when the oversized message is the oldest — the tail is the whole branch", () => {
-    const branch = [userEntry("x".repeat(100_000)), assistantEntry("Sure")];
+  it("declines when the newest message alone overflows the tail: nothing newer could be kept", () => {
+    const branch = [
+      userEntry("Old question"),
+      assistantEntry("Old answer"),
+      userEntry("x".repeat(100_000)),
+    ];
     expect(canCompactBranch(branch)).toBe(false);
+  });
+
+  it("summarises an oversized oldest message that cannot fit the tail", () => {
+    const branch = [userEntry("x".repeat(100_000)), assistantEntry("Sure")];
+    expect(canCompactBranch(branch)).toBe(true);
   });
 
   it("accepts once older turns lie before the retained tail", () => {
@@ -125,6 +153,27 @@ describe("canCompactBranch", () => {
       assistantEntry("Noted"),
     ];
     expect(canCompactBranch(branch)).toBe(true);
+  });
+
+  it("never starts the tail at a tool result, which would lose the call it answers", () => {
+    // The tail could hold the result alone, but the reply that made the call overflows it, so
+    // there is nothing to keep.
+    const call: AssistantMessage = {
+      ...reply(""),
+      content: [
+        { type: "text", text: "x".repeat(100_000) },
+        { type: "toolCall", id: "call-1", name: "search", arguments: {} },
+      ],
+      stopReason: "toolUse",
+    };
+    const branch = [
+      userEntry("Old question"),
+      assistantEntry("Old answer"),
+      userEntry("Look it up"),
+      entry(call),
+      toolResultEntry("results"),
+    ];
+    expect(canCompactBranch(branch)).toBe(false);
   });
 
   it("declines a branch that already ends in a compaction", () => {
@@ -165,10 +214,9 @@ describe("shouldCompactBranch", () => {
   });
 
   /**
-   * Workflow-retry hazard: `runAgentTurnStep` is a durable step, so a retry can re-run a turn
-   * whose compaction already landed. The branch it sees starts at the compaction entry, and the
-   * assistant usage after it reflects the post-compaction context, so the threshold says no and
-   * the second compaction never happens.
+   * Workflow-retry hazard: a retried step can re-run a turn whose compaction already landed. The
+   * branch it sees starts at the compaction entry, and the reply usage after it reflects the
+   * post-compaction context, so the threshold says no and the second compaction never happens.
    */
   it("does not compact again right after a compaction", () => {
     const branch = [
@@ -180,8 +228,8 @@ describe("shouldCompactBranch", () => {
   });
 
   it("counts messages that landed after the last reported usage", () => {
-    // Post-turn, tool results and user text sit past the newest assistant usage block.
-    const trailing = "x".repeat(40_000); // ~10k tokens on pi's chars/4 heuristic
+    // Post-turn, tool results and user text sit past the newest reply's usage.
+    const trailing = "x".repeat(40_000); // ~10k tokens at four characters a token
     const branch = [
       userEntry("Go"),
       assistantEntry("Working", 80_000),
@@ -190,7 +238,7 @@ describe("shouldCompactBranch", () => {
     expect(shouldCompactBranch(branch, CONTEXT_WINDOW)).toBe(true);
   });
 
-  it("falls back to estimation before any assistant usage exists", () => {
+  it("falls back to estimation before any reply usage exists", () => {
     const branch = [userEntry("hi")];
     expect(shouldCompactBranch(branch, CONTEXT_WINDOW)).toBe(false);
 
@@ -222,5 +270,45 @@ describe("compactionContextWindow", () => {
         { contextWindow: 200_000 }
       )
     ).toBe(200_000);
+  });
+});
+
+describe("serializeConversation", () => {
+  it("renders the conversation as labelled text for a summariser to read, not continue", () => {
+    const call: AssistantMessage = {
+      ...reply("Let me look."),
+      content: [
+        { type: "thinking", thinking: "Private reasoning." },
+        { type: "text", text: "Let me look." },
+        {
+          type: "toolCall",
+          id: "call-1",
+          name: "search",
+          arguments: { q: "hono" },
+        },
+      ],
+    };
+
+    expect(
+      serializeConversation([
+        { role: "user", content: "Find hono posts", timestamp: TIMESTAMP },
+        call,
+        {
+          role: "toolResult",
+          toolCallId: "call-1",
+          toolName: "search",
+          content: [{ type: "text", text: "not found" }],
+          isError: true,
+          timestamp: TIMESTAMP,
+        },
+      ])
+    ).toBe(
+      [
+        "[User]: Find hono posts",
+        "[Assistant]: Let me look.",
+        '[Assistant tool call]: search({"q":"hono"})',
+        "[Tool result (error)]: not found",
+      ].join("\n\n")
+    );
   });
 });

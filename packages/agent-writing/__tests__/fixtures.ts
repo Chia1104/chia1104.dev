@@ -9,8 +9,11 @@ import type {
   WebSearchInput,
   WebSearchResult,
 } from "@chia/agent-content/types";
+import { AgentProvider } from "@chia/agent-runtime/models";
+import type { AgentCatalog, AgentModel } from "@chia/agent-runtime/models";
 import { createFakeContentReadPort } from "@chia/test/fixtures/content-read-port";
 
+import { DEFAULT_WRITING_MODEL } from "../src/models.ts";
 import type { ContentPort, GitHubPort } from "../src/ports.ts";
 import type {
   CommitDraftResult,
@@ -182,4 +185,34 @@ export const createFakeGitHubPort = (
       });
     },
   };
+};
+
+/** A catalogue row with no prices; only identity and capabilities matter to policy. */
+export const catalogModel = (
+  providerId: string,
+  modelId: string,
+  overrides: Partial<AgentModel> = {}
+): AgentModel => ({
+  providerId,
+  modelId,
+  name: modelId,
+  contextWindow: 200_000,
+  reasoningEfforts: null,
+  supportsTemperature: true,
+  input: ["text"],
+  pricing: { input: [], output: [], cacheRead: [], cacheWrite: [] },
+  ...overrides,
+});
+
+/** Both admitted gateway vendors, one the writing policy refuses, and both native providers. */
+export const WRITING_CATALOG: AgentCatalog = {
+  models: [
+    catalogModel(AgentProvider.Gateway, DEFAULT_WRITING_MODEL.modelId),
+    catalogModel(AgentProvider.Gateway, "anthropic/claude-sonnet-5"),
+    catalogModel(AgentProvider.Gateway, "openai/gpt-5.4"),
+    catalogModel(AgentProvider.Gateway, "google/gemini-3.1-pro"),
+    catalogModel(AgentProvider.OpenAI, "gpt-5.2"),
+    catalogModel(AgentProvider.Anthropic, "claude-sonnet-5"),
+    catalogModel(AgentProvider.Anthropic, "claude-opus-5"),
+  ],
 };

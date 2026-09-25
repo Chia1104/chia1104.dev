@@ -1,4 +1,4 @@
-import type { MessageRefusal } from "@chia/agent-runtime/pi/turn";
+import type { MessageRefusal } from "@chia/agent-runtime/turn";
 import type { AgentTurnMessage } from "@chia/agent-runtime/types";
 import { GUARD_THRESHOLD } from "@chia/ai/guard/provider";
 import type { GuardProvider } from "@chia/ai/guard/provider";

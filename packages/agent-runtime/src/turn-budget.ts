@@ -4,30 +4,27 @@ import type {
   AgentTurnBudget,
   ToolCallRefusal,
   ToolCallRequest,
-} from "../types.ts";
+} from "./types.ts";
 
 /**
- * Per-turn tool-call budget, composed into the same Pi `beforeToolCall` hook as the approval
- * gate.
- *
- * Pi's loop is `while (true)` over "the assistant message still carries tool calls"; it has no
- * step limit of its own. This is the only place a runaway turn can be stopped from inside. Two
+ * Per-turn tool-call budget: the only bound on a turn whose model keeps emitting tool calls. Two
  * registers: a refusal (a tool error the model reads) and, when the model keeps going through
  * the refusals, an exhaustion the host turns into an abort.
  *
- * The budget must run before the gate: a call the budget refuses must never raise an approval.
+ * The budget runs before the approval gate: a call the budget refuses must never reach the
+ * operator.
  */
 
-export interface PiTurnBudgetOptions {
+export interface TurnBudgetOptions {
   budget: AgentTurnBudget;
   /**
    * Called once, the first time the hard limit is crossed. The host is expected to abort the
-   * harness; the budget itself can only refuse the call.
+   * turn; the budget itself can only refuse the call.
    */
   onExhausted: () => void;
 }
 
-export interface PiTurnBudget {
+export interface TurnBudget {
   handle: (event: ToolCallRequest) => ToolCallRefusal | undefined;
   /** Tool calls the model has emitted this turn, refused ones included. */
   readonly toolCalls: number;
@@ -71,9 +68,7 @@ export const assertTurnBudget = (budget: AgentTurnBudget): void => {
   }
 };
 
-export const createPiTurnBudget = (
-  options: PiTurnBudgetOptions
-): PiTurnBudget => {
+export const createTurnBudget = (options: TurnBudgetOptions): TurnBudget => {
   const { budget } = options;
   assertTurnBudget(budget);
 
@@ -95,15 +90,12 @@ export const createPiTurnBudget = (
           options.onExhausted();
         }
         return {
-          block: true,
           reason: "This turn has been stopped: its tool budget is exhausted.",
-          terminate: true,
         };
       }
 
       if (toolCalls > budget.maxToolCalls) {
         return {
-          block: true,
           reason:
             `This turn's tool budget (${budget.maxToolCalls} calls) is used up. ` +
             "Do not call any more tools. Answer now from what you already have, " +
@@ -120,7 +112,6 @@ export const createPiTurnBudget = (
       }
       if (repeats > budget.maxRepeats) {
         return {
-          block: true,
           reason:
             `\`${event.toolName}\` was already called ${budget.maxRepeats} times in a row with ` +
             "these exact arguments and the result will not change. Do not call it again with " +

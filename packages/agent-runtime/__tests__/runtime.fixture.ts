@@ -1,70 +1,62 @@
-import type { AgentToolResult } from "@earendil-works/pi-agent-core";
-import { createModels } from "@earendil-works/pi-ai";
-import {
-  fauxAssistantMessage,
-  fauxProvider,
-  fauxToolCall,
-} from "@earendil-works/pi-ai/providers/faux";
-import { Type } from "typebox";
+import type { ModelMessage } from "@tanstack/ai";
 import { vi } from "vitest";
+import * as z from "zod";
 
-import { runPiTurn } from "../src/pi/turn.ts";
-import type { RunPiTurnOptions } from "../src/pi/turn.ts";
+import type { JsonObject } from "@chia/utils/json";
+
+import type { AssistantMessage } from "../src/messages.ts";
+import { emptyUsage } from "../src/messages.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
-import { defineTool, textResult } from "../src/tools.ts";
-import type {
-  AgentPolicy,
-  AgentTurnBudget,
-  ApprovalRequest,
-} from "../src/types.ts";
+import { bindingOf, scriptedAdapter } from "../src/testing.ts";
+import type { ScriptedReply } from "../src/testing.ts";
+import { defineTool } from "../src/tools.ts";
+import { runTurn } from "../src/turn.ts";
+import type { ApprovalBatch, RunTurnOptions } from "../src/turn.ts";
+import type { AgentPolicy, AgentTurnBudget } from "../src/types.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 /**
- * `runPiTurn` against the real `Agent`, scripted through pi-ai's faux provider, over an
- * in-memory session tree.
- * Pins the host's side of the turn: hook composition, persistence order, abort semantics,
- * approval and compaction gating, and the wire lifecycle.
+ * `runTurn` against the real engine, scripted through an adapter that plays back replies, over an
+ * in-memory session tree. Pins the host's side of the turn: hook composition, persistence order,
+ * abort semantics, approval and compaction gating, and the wire lifecycle.
  */
 
 export const createTools = (calls: string[]) => [
   defineTool(
     {
       name: "search",
-      label: "Search",
       description: "Search posts.",
-      parameters: Type.Object({ q: Type.String() }),
+      parameters: z.object({ q: z.string() }),
     },
-    () => async (_toolCallId, params) => {
+    () => async (params) => {
       calls.push(params.q);
-      return textResult(`results for ${params.q}`, { q: params.q });
+      return { text: `results for ${params.q}`, details: { q: params.q } };
     }
   )({}),
   defineTool(
     {
       name: "publish",
-      label: "Publish",
       description: "Publish a post.",
-      parameters: Type.Object({ slug: Type.Optional(Type.String()) }),
+      parameters: z.object({ slug: z.string().optional() }),
     },
-    () => async () => {
-      calls.push("publish");
-      return textResult("published", {});
+    () => async (params) => {
+      calls.push(`publish:${params.slug ?? ""}`);
+      return { text: "published", details: {} };
     }
   )({}),
-  /** Blocks until the run is aborted, so a deadline can fire mid-tool. */
+  /** Blocks until the turn is aborted, so a deadline can fire mid-tool. */
   defineTool(
     {
       name: "wait",
-      label: "Wait",
       description: "Wait forever.",
-      parameters: Type.Object({}),
+      parameters: z.object({}),
     },
-    () => (_toolCallId, _params, signal) =>
-      new Promise<AgentToolResult<unknown>>((_resolve, reject) => {
+    () => (_params, call) =>
+      new Promise((_resolve, reject) => {
         const fail = () => reject(new Error("aborted"));
-        if (signal?.aborted) fail();
-        signal?.addEventListener("abort", fail, { once: true });
+        if (call.signal?.aborted) fail();
+        call.signal?.addEventListener("abort", fail, { once: true });
       })
   )({}),
 ];
@@ -85,23 +77,33 @@ export const budget: AgentTurnBudget = {
   maxDurationMs: 60_000,
 };
 
-export const toolCallTurn = (
+export const toolCall = (
   name: string,
-  args: Parameters<typeof fauxToolCall>[1],
+  args: JsonObject,
   id: string
-) =>
-  fauxAssistantMessage([fauxToolCall(name, args, { id })], {
-    stopReason: "toolUse",
-  });
+): ScriptedReply => ({ toolCalls: [{ id, name, args }] });
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
+export const assistantMessage = (
+  text: string,
+  timestamp = 1
+): AssistantMessage => ({
+  role: "assistant",
+  content: [{ type: "text", text }],
+  api: "scripted",
+  provider: "scripted",
+  model: "test-model",
+  usage: emptyUsage(),
+  stopReason: "stop",
+  timestamp,
+});
+
 /**
- * A branch already at the compaction threshold: ~100k tokens on a 100k window. The oversized
- * message sits behind one older turn: Pi keeps the newest ~20k tokens whole, so that turn is
- * what a compaction has to summarise. An oversized message alone would be the whole retained
- * tail.
+ * A branch already at the compaction threshold: ~100k tokens on a 100k window. A turn run on it
+ * leaves the oversized message and the older turn behind it outside the newest ~20k tokens, so a
+ * compaction has something to summarise.
  */
 export const seedOversizedBranch = async (session: InMemorySessionTree) => {
   await session.appendEntry({
@@ -116,7 +118,7 @@ export const seedOversizedBranch = async (session: InMemorySessionTree) => {
     id: "entry-0-reply",
     parentId: "entry-0",
     timestamp: 1,
-    message: fauxAssistantMessage("Old answer", { timestamp: 1 }),
+    message: assistantMessage("Old answer"),
   });
   await session.appendEntry({
     type: "message",
@@ -127,56 +129,55 @@ export const seedOversizedBranch = async (session: InMemorySessionTree) => {
   });
 };
 
-export const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
-  const faux = fauxProvider({
-    provider: "faux",
-    models: [{ id: "test-model", contextWindow: 100_000 }],
-    ...fauxOptions,
-  });
-  const models = createModels();
-  models.setProvider(faux.provider);
+export const build = (replies: readonly ScriptedReply[] = []) => {
+  const script = scriptedAdapter(replies);
   const session = new InMemorySessionTree("session-1");
   const events: AgentWireEvent[] = [];
   const calls: string[] = [];
-  const persistApproval = vi.fn(
-    async (_approval: ApprovalRequest): Promise<void> => undefined
+  const persistApprovals = vi.fn(
+    async (_batch: ApprovalBatch): Promise<void> => undefined
   );
 
-  const options: RunPiTurnOptions = {
+  const options = {
     agentSessionId: "session-1",
+    agentRunId: "run-1",
     session,
     settings: {
-      providerId: "faux",
+      providerId: "scripted",
       modelId: "test-model",
       thinkingLevel: "off",
       activeToolNames: null,
       autoApprove: [],
     },
-    model: faux.getModel(),
-    models,
+    binding: bindingOf(script),
     tools: createTools(calls),
     systemPrompt: "You are a test.",
     policy,
     budget,
     message: { text: "Hello" },
-    onEvent: (event) => events.push(event),
-    persistApproval,
-  };
+    onEvent: (event: AgentWireEvent) => events.push(event),
+    persistApprovals,
+  } satisfies RunTurnOptions;
 
   return {
-    faux,
+    script,
     session,
     events,
     calls,
-    persistApproval,
+    persistApprovals,
     options,
     types: () =>
       events
         .map((event) => event.type)
         .filter((type) => type !== "assistant:delta"),
     branch: () => session.getBranch(),
-    run: (overrides: Partial<RunPiTurnOptions> = {}) =>
-      runPiTurn({ ...options, ...overrides }),
+    run: (overrides: Partial<RunTurnOptions> = {}) =>
+      // SAFETY: an override replaces the message with a resume or keeps the base message; the
+      // union is re-established by whichever the caller passed.
+      runTurn({ ...options, ...overrides } as RunTurnOptions),
+    /** The provider messages the engine sent on request `index`. */
+    sent: (index: number): ModelMessage[] =>
+      script.requests[index]?.messages ?? [],
   };
 };
 

@@ -1,17 +1,9 @@
-import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
-import { errorOfAssistantMessage, errorOfThrown } from "../src/pi/errors.ts";
+import { errorOfProviderMessage, errorOfThrown } from "../src/errors.ts";
 import { AgentErrorKind } from "../src/types.ts";
 
-const failed = (errorMessage: string) => {
-  const message = fauxAssistantMessage("", { timestamp: 1 });
-  message.stopReason = "error";
-  message.errorMessage = errorMessage;
-  return message;
-};
-
-describe("errorOfAssistantMessage", () => {
+describe("errorOfProviderMessage", () => {
   it.each([
     ["401 Unauthorized: invalid x-api-key", AgentErrorKind.Auth],
     ["403 permission denied for this key", AgentErrorKind.Auth],
@@ -26,20 +18,27 @@ describe("errorOfAssistantMessage", () => {
       "prompt is too long: 250000 tokens > 200000 maximum",
       AgentErrorKind.ContextOverflow,
     ],
+    [
+      "400 This model's maximum context length is 128000 tokens",
+      AgentErrorKind.ContextOverflow,
+    ],
     ["502 Bad Gateway", AgentErrorKind.Provider],
     ["fetch failed", AgentErrorKind.Provider],
   ] as const)("classifies %j as %s", (text, kind) => {
-    expect(errorOfAssistantMessage(failed(text))).toEqual({
-      kind,
-      message: text,
-    });
+    expect(errorOfProviderMessage(text)).toEqual({ kind, message: text });
   });
 
-  it("falls back to a generic message when the provider gave none", () => {
-    const message = fauxAssistantMessage("", { timestamp: 1 });
-    message.stopReason = "error";
-    expect(errorOfAssistantMessage(message).kind).toBe(AgentErrorKind.Provider);
-    expect(errorOfAssistantMessage(message).message).not.toBe("");
+  it("reads a context overflow as that, not as the 400 it arrives with", () => {
+    expect(
+      errorOfProviderMessage("400 invalid_request: input is too long").kind
+    ).toBe(AgentErrorKind.ContextOverflow);
+  });
+
+  it("reads a failure with no text as the provider's", () => {
+    expect(errorOfProviderMessage("")).toEqual({
+      kind: AgentErrorKind.Provider,
+      message: "",
+    });
   });
 });
 

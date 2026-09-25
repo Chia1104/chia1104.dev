@@ -252,7 +252,7 @@ describe("createWritingAgentExecutor", () => {
     config: {},
   });
 
-  /** Prepares the turn, lets `turn` stand in for Pi using the ports the kind built, then settles. */
+  /** Prepares the turn, lets `turn` stand in for the engine using the ports the kind built, then settles. */
   const runTurn = async (
     execution: AgentTurnExecution,
     turn?: (options: PrepareWritingTurnOptions) => Promise<void>

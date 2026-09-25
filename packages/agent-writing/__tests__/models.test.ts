@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   accessOf,
   AgentProvider,
-  createAgentModels,
+  bindModel,
   HOUSE_ACCESS,
   NO_ACCESS,
   UnknownAgentModelError,
@@ -17,6 +17,8 @@ import {
   resolveWritingModel,
   WRITING_SESSION_DEFAULTS,
 } from "../src/models.ts";
+
+import { WRITING_CATALOG } from "./fixtures.ts";
 
 /**
  * Pins the filter shape: a predicate that is too generous exposes every gateway vendor to an
@@ -84,58 +86,57 @@ describe("isWritingModel", () => {
 
 describe("resolveWritingModel", () => {
   it("resolves the session default without any caller-supplied key", () => {
-    const model = resolveWritingModel(DEFAULT_WRITING_MODEL);
+    const model = resolveWritingModel(
+      DEFAULT_WRITING_MODEL,
+      WRITING_CATALOG,
+      NO_ACCESS
+    );
 
-    expect(model.id).toBe(DEFAULT_WRITING_MODEL.modelId);
+    expect(model).toMatchObject(DEFAULT_WRITING_MODEL);
   });
 
   it("resolves the same vendor through either provider", () => {
-    const credentials = { anthropic: "sk-test" };
-    const viaGateway = resolveWritingModel({
-      providerId: AgentProvider.Gateway,
-      modelId: "anthropic/claude-sonnet-5",
-    });
+    const access = accessOf({ anthropic: "sk-test" });
+    const viaGateway = resolveWritingModel(
+      {
+        providerId: AgentProvider.Gateway,
+        modelId: "anthropic/claude-sonnet-5",
+      },
+      WRITING_CATALOG,
+      access
+    );
     const native = resolveWritingModel(
       { providerId: AgentProvider.Anthropic, modelId: "claude-sonnet-5" },
-      createAgentModels(credentials),
-      accessOf(credentials)
+      WRITING_CATALOG,
+      access
     );
 
-    expect(viaGateway.provider).toBe(AgentProvider.Gateway);
-    expect(native.provider).toBe(AgentProvider.Anthropic);
-  });
-
-  it("runs the gateway on the caller's own gateway key when they brought one", async () => {
-    const credentials = { gateway: "vck-test" };
-    const models = createAgentModels(credentials);
-    const model = resolveWritingModel(
-      DEFAULT_WRITING_MODEL,
-      models,
-      accessOf(credentials)
-    );
-
-    expect(model.provider).toBe(AgentProvider.Gateway);
-    expect((await models.getAuth(AgentProvider.Gateway))?.auth.apiKey).toBe(
-      "vck-test"
-    );
+    expect(viaGateway.providerId).toBe(AgentProvider.Gateway);
+    expect(native.providerId).toBe(AgentProvider.Anthropic);
   });
 
   it("refuses a gateway model outside the two admitted vendors", () => {
     expect(() =>
-      resolveWritingModel({
-        providerId: AgentProvider.Gateway,
-        modelId: "google/gemini-3.1-pro",
-      })
+      resolveWritingModel(
+        {
+          providerId: AgentProvider.Gateway,
+          modelId: "google/gemini-3.1-pro",
+        },
+        WRITING_CATALOG,
+        HOUSE_ACCESS
+      )
     ).toThrow(UnknownAgentModelError);
   });
 
-  it("refuses a native model when the caller supplied no key for it", () => {
-    expect(() =>
-      resolveWritingModel({
-        providerId: AgentProvider.OpenAI,
-        modelId: "gpt-5.2",
-      })
-    ).toThrow(UnknownAgentModelError);
+  /** Whether a model exists never depends on the caller's keys; binding it does. */
+  it("resolves a native model without its key, which then cannot be bound", () => {
+    const model = resolveWritingModel(
+      { providerId: AgentProvider.OpenAI, modelId: "gpt-5.2" },
+      WRITING_CATALOG,
+      NO_ACCESS
+    );
+
+    expect(() => bindModel(model, {}, "off")).toThrow(UnknownAgentModelError);
   });
 });
 
@@ -145,11 +146,12 @@ describe("resolveWritingModel", () => {
 describe("assertWritingModel", () => {
   it("accepts a pair that exists in the catalogue", () => {
     expect(() =>
-      assertWritingModel(DEFAULT_WRITING_MODEL, NO_ACCESS)
+      assertWritingModel(DEFAULT_WRITING_MODEL, WRITING_CATALOG, NO_ACCESS)
     ).not.toThrow();
     expect(() =>
       assertWritingModel(
         { providerId: AgentProvider.OpenAI, modelId: "gpt-5.2" },
+        WRITING_CATALOG,
         HOUSE_ACCESS
       )
     ).not.toThrow();
@@ -159,6 +161,7 @@ describe("assertWritingModel", () => {
     expect(() =>
       assertWritingModel(
         { providerId: AgentProvider.OpenAI, modelId: "gpt-does-not-exist" },
+        WRITING_CATALOG,
         HOUSE_ACCESS
       )
     ).toThrow(UnknownAgentModelError);
@@ -171,6 +174,7 @@ describe("assertWritingModel", () => {
           providerId: AgentProvider.Gateway,
           modelId: "google/gemini-3.1-pro",
         },
+        WRITING_CATALOG,
         HOUSE_ACCESS
       )
     ).toThrow(UnknownAgentModelError);
@@ -180,6 +184,7 @@ describe("assertWritingModel", () => {
     expect(() =>
       assertWritingModel(
         { providerId: AgentProvider.Anthropic, modelId: "claude-opus-5" },
+        WRITING_CATALOG,
         NO_ACCESS
       )
     ).not.toThrow();
@@ -188,7 +193,7 @@ describe("assertWritingModel", () => {
 
 describe("listWritingModels", () => {
   it("offers both vendors through the gateway and nothing else from it", () => {
-    const gateway = listWritingModels(NO_ACCESS).filter(
+    const gateway = listWritingModels(WRITING_CATALOG, NO_ACCESS).filter(
       (model) => model.providerId === AgentProvider.Gateway
     );
     const usable = gateway.filter((model) => !model.requiresApiKey);
@@ -209,14 +214,20 @@ describe("listWritingModels", () => {
   });
 
   it("includes both native providers, flagged until that key is registered", () => {
-    const native = listWritingModels(NO_ACCESS).filter(
-      (model) => model.providerId !== AgentProvider.Gateway
-    );
+    const nativeOf = (access = NO_ACCESS) =>
+      listWritingModels(WRITING_CATALOG, access).filter(
+        (model) => model.providerId !== AgentProvider.Gateway
+      );
 
-    expect(new Set(native.map((model) => model.providerId))).toEqual(
+    expect(new Set(nativeOf().map((model) => model.providerId))).toEqual(
       new Set([AgentProvider.OpenAI, AgentProvider.Anthropic])
     );
-    expect(native.every((model) => model.requiresApiKey)).toBe(true);
+    expect(nativeOf().every((model) => model.requiresApiKey)).toBe(true);
+    expect(
+      nativeOf(accessOf({ anthropic: "sk-test" }))
+        .filter((model) => !model.requiresApiKey)
+        .map((model) => model.providerId)
+    ).toEqual([AgentProvider.Anthropic, AgentProvider.Anthropic]);
   });
 });
 

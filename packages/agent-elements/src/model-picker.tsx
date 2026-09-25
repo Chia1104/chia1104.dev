@@ -91,12 +91,7 @@ export const ModelPicker = ({
     providerLabels?.[id] ?? providerLabelOf(id) ?? id;
 
   const providers = useMemo(() => {
-    const groups = new Map<string, AgentModel[]>();
-    for (const model of models ?? []) {
-      const list = groups.get(model.providerId) ?? [];
-      list.push(model);
-      groups.set(model.providerId, list);
-    }
+    const groups = Map.groupBy(models ?? [], (model) => model.providerId);
     const rank = (id: string) => {
       const index = providerOrder.indexOf(id);
       return index === -1 ? providerOrder.length : index;

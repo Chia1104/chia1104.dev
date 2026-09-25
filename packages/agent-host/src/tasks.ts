@@ -1,18 +1,19 @@
 import {
   AgentProvider,
-  createAgentCatalog,
-  createAgentModels,
+  bindModel,
   HOUSE_ACCESS,
   houseModel,
   listModels,
+  loadAgentCatalog,
   modelRefOf,
   NO_ACCESS,
   resolveModel,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
 import type {
+  AgentCatalog,
   AgentCredentials,
-  AgentModel,
+  AgentModelBinding,
   AgentModelInfo,
   AgentModelPredicate,
   AgentModelRef,
@@ -20,7 +21,8 @@ import type {
 import {
   SESSION_TITLE_PARAMS,
   SESSION_TITLE_SYSTEM_PROMPT,
-} from "@chia/agent-runtime/pi/title";
+} from "@chia/agent-runtime/title";
+import { ThinkingLevel } from "@chia/agent-runtime/types";
 import {
   LESSON_EXTRACTION_PARAMS,
   LESSON_EXTRACTION_SYSTEM_PROMPT,
@@ -35,7 +37,6 @@ import {
   FEED_SUMMARY_PARAMS,
   FEED_SUMMARY_SYSTEM_PROMPT,
 } from "./feed-summary";
-import type { AgentModels } from "./kind";
 import {
   REPORT_TRIAGE_PARAMS,
   REPORT_TRIAGE_SYSTEM_PROMPT,
@@ -65,9 +66,9 @@ export interface AgentTaskDefinition {
    * run in a workflow that has no caller credentials.
    */
   readonly defaultModel: AgentModelRef | "session";
-  /** Absent when the call's prompt is not the operator's to write (Pi's compaction carries its own). */
+  /** Absent when the call's prompt is not the operator's to write (compaction carries its own). */
   readonly prompt?: { readonly default: string };
-  /** Absent when the call's sampling is not exposed (Pi shapes its own compaction call). */
+  /** Absent when the call's sampling is not exposed (compaction shapes its own call). */
   readonly params?: AgentTaskParamsResolved;
 }
 
@@ -152,17 +153,19 @@ export const isAgentTaskModel: AgentModelPredicate = (ref) =>
   ref.providerId === AgentProvider.Gateway;
 
 /** Throws `UnknownAgentModelError` when the pair is off the house catalogue. */
-export const assertAgentTaskModel = (ref: AgentModelRef): void => {
-  resolveModel(ref, isAgentTaskModel, createAgentCatalog(), HOUSE_ACCESS);
+export const assertAgentTaskModel = (
+  ref: AgentModelRef,
+  catalog: AgentCatalog
+): void => {
+  resolveModel(ref, isAgentTaskModel, catalog, HOUSE_ACCESS);
 };
 
-export const listAgentTaskModels = (): AgentModelInfo[] =>
-  listModels(isAgentTaskModel, { access: HOUSE_ACCESS });
+export const listAgentTaskModels = (catalog: AgentCatalog): AgentModelInfo[] =>
+  listModels(isAgentTaskModel, catalog, HOUSE_ACCESS);
 
 export interface ResolvedAgentTask {
-  model: AgentModel;
-  models: AgentModels;
-  /** The keys `models` carries, for the usage ledger; none when the task runs on the house. */
+  binding: AgentModelBinding;
+  /** The keys `binding` runs on, for the usage ledger; none when the task runs on the house. */
   credentials: AgentCredentials;
   systemPrompt?: string;
   params?: AgentTaskParamsResolved;
@@ -175,10 +178,11 @@ export interface ResolveAgentTaskOptions {
    * the request does not carry.
    */
   session?: () => {
-    model: AgentModel;
-    models: AgentModels;
+    binding: AgentModelBinding;
     credentials: AgentCredentials;
   };
+  /** The request's catalogue, when it already loaded one. */
+  catalog?: AgentCatalog;
 }
 
 /** Only the parameters the operator set; the rest come from the definition. */
@@ -194,7 +198,7 @@ export const definedTaskParams = (
 /**
  * The model, prompt and parameters a task runs with: the operator's row over the definition.
  * A pinned model the catalogue no longer carries falls back to the definition's default with a
- * warning, so a pi-ai upgrade that retires a model id degrades the task rather than the work
+ * warning, so a catalogue change that retires a model id degrades the task rather than the work
  * it rides alongside.
  */
 export const resolveAgentTask = async (
@@ -205,12 +209,13 @@ export const resolveAgentTask = async (
   const definition = getAgentTaskDefinition(taskId);
   if (!definition) throw new Error(`Unknown agent task: ${taskId}`);
   const row = await getAgentTaskConfig(db, taskId);
+  const catalog = options.catalog ?? (await loadAgentCatalog());
 
   const pinned = modelRefOf(row);
   const resolved =
-    (pinned && resolveFixed(pinned)) ??
+    (pinned && resolveFixed(pinned, catalog)) ??
     (pinned && warnStale(taskId, pinned)) ??
-    resolveDefault(definition, options);
+    resolveDefault(definition, catalog, options);
 
   return {
     ...resolved,
@@ -223,14 +228,15 @@ export const resolveAgentTask = async (
   };
 };
 
+/** On the house key: a fixed task model never rides a caller's credentials. */
 const resolveFixed = (
-  ref: AgentModelRef
-): Pick<ResolvedAgentTask, "model" | "models" | "credentials"> | null => {
-  const models = createAgentModels();
+  ref: AgentModelRef,
+  catalog: AgentCatalog
+): Pick<ResolvedAgentTask, "binding" | "credentials"> | null => {
   try {
+    const model = resolveModel(ref, isAgentTaskModel, catalog, NO_ACCESS);
     return {
-      model: resolveModel(ref, isAgentTaskModel, models, NO_ACCESS),
-      models,
+      binding: bindModel(model, {}, ThinkingLevel.Off),
       credentials: {},
     };
   } catch (error) {
@@ -249,8 +255,9 @@ const warnStale = (taskId: string, ref: AgentModelRef): null => {
 
 const resolveDefault = (
   definition: AgentTaskDefinition,
+  catalog: AgentCatalog,
   options: ResolveAgentTaskOptions
-): Pick<ResolvedAgentTask, "model" | "models" | "credentials"> => {
+): Pick<ResolvedAgentTask, "binding" | "credentials"> => {
   if (definition.defaultModel === "session") {
     if (!options.session) {
       throw new Error(
@@ -259,7 +266,7 @@ const resolveDefault = (
     }
     return options.session();
   }
-  const fixed = resolveFixed(definition.defaultModel);
+  const fixed = resolveFixed(definition.defaultModel, catalog);
   if (!fixed) throw new UnknownAgentModelError(definition.defaultModel);
   return fixed;
 };

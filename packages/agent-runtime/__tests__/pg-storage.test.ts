@@ -1,4 +1,3 @@
-import type { Usage } from "@earendil-works/pi-ai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
@@ -10,6 +9,7 @@ import {
 import type { AgentSession } from "@chia/db/schema";
 import type { JsonObject } from "@chia/utils/json";
 
+import type { Usage } from "../src/messages.ts";
 import { buildBranchContext } from "../src/session/context.ts";
 import { computeSessionStats } from "../src/session/entries.ts";
 import type { NewSessionEntry } from "../src/session/entries.ts";
@@ -180,7 +180,7 @@ describe("PgSessionStorage", () => {
       row(1, "u1", null, "message", {
         message: { role: "user", content: "Hi" },
       }),
-      // A label this runtime no longer writes, then rows only earlier Pi releases wrote.
+      // Rows of types this runtime never writes.
       row(2, "l1", "u1", "label", { targetId: "u1", label: "start" }),
       row(3, "s1", "l1", "session_info", { name: "old" }),
       row(4, "t1", "s1", "active_tools_change", {
@@ -204,10 +204,11 @@ describe("PgSessionStorage", () => {
       "t1",
       "a1",
     ]);
-    expect(buildBranchContext(branch).map((message) => message.role)).toEqual([
-      "user",
-      "assistant",
-    ]);
+    expect(
+      buildBranchContext(branch, { api: "scripted" }).map(
+        (message) => message.role
+      )
+    ).toEqual(["user", "assistant"]);
   });
 
   it("counts cached, written and compaction tokens as total processed", async () => {

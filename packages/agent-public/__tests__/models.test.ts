@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   accessOf,
   AgentProvider,
-  createAgentModels,
+  bindModel,
   HOUSE_ACCESS,
   NO_ACCESS,
   UnknownAgentModelError,
@@ -17,6 +17,8 @@ import {
   publicModelPolicy,
   resolvePublicModel,
 } from "../src/models.ts";
+
+import { PUBLIC_CATALOG } from "./catalog.fixture.ts";
 
 /**
  * The cost boundary of the public kind. The house pays for a gateway call on its key, so a
@@ -72,63 +74,67 @@ describe("publicModelPolicy", () => {
 
 describe("resolvePublicModel", () => {
   it("resolves the session default without any caller-supplied key", () => {
-    expect(resolvePublicModel(HOUSE).id).toBe(HOUSE.modelId);
+    expect(
+      resolvePublicModel(HOUSE, PUBLIC_CATALOG, NO_ACCESS, HOUSE)
+    ).toMatchObject(HOUSE);
   });
 
   it("refuses any other gateway model to a visitor without a gateway key", () => {
-    expect(() => resolvePublicModel(GATEWAY_SONNET)).toThrow(
-      UnknownAgentModelError
-    );
+    expect(() =>
+      resolvePublicModel(GATEWAY_SONNET, PUBLIC_CATALOG, NO_ACCESS, HOUSE)
+    ).toThrow(UnknownAgentModelError);
   });
 
   it("runs an expensive gateway model on the visitor's own gateway key", () => {
     const credentials = { gateway: "vck" };
     const model = resolvePublicModel(
       GATEWAY_SONNET,
-      createAgentModels(credentials),
-      accessOf(credentials)
+      PUBLIC_CATALOG,
+      accessOf(credentials),
+      HOUSE
     );
 
-    expect(model.provider).toBe(AgentProvider.Gateway);
-    expect(model.id).toBe(GATEWAY_SONNET.modelId);
+    expect(model).toMatchObject(GATEWAY_SONNET);
   });
 
-  it("resolves a native model only on a collection that carries its key", () => {
-    expect(() => resolvePublicModel(NATIVE_SONNET)).toThrow(
-      UnknownAgentModelError
+  /** Whether a model exists never depends on the visitor's keys; binding it does. */
+  it("resolves a native model without its key, which then cannot be bound", () => {
+    const model = resolvePublicModel(
+      NATIVE_SONNET,
+      PUBLIC_CATALOG,
+      NO_ACCESS,
+      HOUSE
     );
-    const credentials = { anthropic: "sk-test" };
-    expect(
-      resolvePublicModel(
-        NATIVE_SONNET,
-        createAgentModels(credentials),
-        accessOf(credentials)
-      ).provider
-    ).toBe(AgentProvider.Anthropic);
+
+    expect(model).toMatchObject(NATIVE_SONNET);
+    expect(() => bindModel(model, {}, "off")).toThrow(UnknownAgentModelError);
   });
 });
 
 describe("assertPublicModel", () => {
   it("accepts the pinned model with no key, any gateway model for the operator, and a native model", () => {
-    expect(() => assertPublicModel(HOUSE, NO_ACCESS, HOUSE)).not.toThrow();
     expect(() =>
-      assertPublicModel(GATEWAY_SONNET, HOUSE_ACCESS, HOUSE)
+      assertPublicModel(HOUSE, PUBLIC_CATALOG, NO_ACCESS, HOUSE)
     ).not.toThrow();
     expect(() =>
-      assertPublicModel(NATIVE_SONNET, NO_ACCESS, HOUSE)
+      assertPublicModel(GATEWAY_SONNET, PUBLIC_CATALOG, HOUSE_ACCESS, HOUSE)
+    ).not.toThrow();
+    expect(() =>
+      assertPublicModel(NATIVE_SONNET, PUBLIC_CATALOG, NO_ACCESS, HOUSE)
     ).not.toThrow();
   });
 
   it("rejects a gateway model the visitor's keys do not reach", () => {
-    expect(() => assertPublicModel(GATEWAY_SONNET, NO_ACCESS, HOUSE)).toThrow(
-      UnknownAgentModelError
-    );
+    expect(() =>
+      assertPublicModel(GATEWAY_SONNET, PUBLIC_CATALOG, NO_ACCESS, HOUSE)
+    ).toThrow(UnknownAgentModelError);
   });
 
   it("rejects an id policy admits but the catalogue has never heard of", () => {
     expect(() =>
       assertPublicModel(
         { providerId: AgentProvider.OpenAI, modelId: "gpt-does-not-exist" },
+        PUBLIC_CATALOG,
         HOUSE_ACCESS,
         HOUSE
       )
@@ -138,7 +144,7 @@ describe("assertPublicModel", () => {
 
 describe("listPublicModels", () => {
   it("lists the gateway with only the pinned model usable for a keyless visitor", () => {
-    const gateway = listPublicModels(NO_ACCESS, HOUSE).filter(
+    const gateway = listPublicModels(PUBLIC_CATALOG, NO_ACCESS, HOUSE).filter(
       (model) => model.providerId === AgentProvider.Gateway
     );
     const usable = gateway.filter((model) => !model.requiresApiKey);
@@ -149,9 +155,11 @@ describe("listPublicModels", () => {
   });
 
   it("marks every gateway model usable with house access, so the operator can pin any of them", () => {
-    const gateway = listPublicModels(HOUSE_ACCESS, HOUSE).filter(
-      (model) => model.providerId === AgentProvider.Gateway
-    );
+    const gateway = listPublicModels(
+      PUBLIC_CATALOG,
+      HOUSE_ACCESS,
+      HOUSE
+    ).filter((model) => model.providerId === AgentProvider.Gateway);
 
     expect(gateway.length).toBeGreaterThan(1);
     expect(gateway.every((model) => !model.requiresApiKey)).toBe(true);
@@ -159,6 +167,7 @@ describe("listPublicModels", () => {
 
   it("marks every gateway model usable for a visitor with a gateway key", () => {
     const gateway = listPublicModels(
+      PUBLIC_CATALOG,
       accessOf({ gateway: "vck" }),
       HOUSE
     ).filter((model) => model.providerId === AgentProvider.Gateway);
@@ -167,7 +176,7 @@ describe("listPublicModels", () => {
   });
 
   it("includes both native providers, flagged until the visitor registers that key", () => {
-    const keyless = listPublicModels(NO_ACCESS, HOUSE).filter(
+    const keyless = listPublicModels(PUBLIC_CATALOG, NO_ACCESS, HOUSE).filter(
       (model) => model.providerId !== AgentProvider.Gateway
     );
     expect(new Set(keyless.map((model) => model.providerId))).toEqual(
@@ -175,7 +184,11 @@ describe("listPublicModels", () => {
     );
     expect(keyless.every((model) => model.requiresApiKey)).toBe(true);
 
-    const withOpenAI = listPublicModels(accessOf({ openai: "sk" }), HOUSE);
+    const withOpenAI = listPublicModels(
+      PUBLIC_CATALOG,
+      accessOf({ openai: "sk" }),
+      HOUSE
+    );
     expect(
       withOpenAI
         .filter((model) => model.providerId === AgentProvider.OpenAI)

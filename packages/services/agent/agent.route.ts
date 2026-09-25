@@ -106,6 +106,13 @@ export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
  * The durable stream stays open for the run's whole life; a chat request ends at that turn's
  * `run:end`, which `runPiTurn` always emits after any `error`.
  */
+const stillAwaiting = async function* (
+  resolved: Extract<AgentWireEvent, { type: "approval:resolved" }>
+): AsyncGenerator<AgentWireEvent, void, void> {
+  yield resolved;
+  yield { type: "run:end", reason: "awaiting_approval" };
+};
+
 const oneTurn = async function* (
   events: AsyncIterable<AgentWireEvent>
 ): AsyncGenerator<AgentWireEvent, void, void> {
@@ -149,7 +156,7 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
         })
       );
     } else if (action.type === "approve") {
-      cursor = await withORPCErrors(() =>
+      const approval = await withORPCErrors(() =>
         service.approve(caller, {
           sessionId: opts.input.sessionId,
           toolCallId: action.toolCallId,
@@ -157,6 +164,18 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
           comment: action.comment,
         })
       );
+      if (!approval) throw opts.errors.NOT_FOUND();
+      // Other calls of the batch still wait: the decision is recorded, no turn runs, and the
+      // session is still awaiting the operator.
+      if (!approval.cursor) {
+        return stillAwaiting({
+          type: "approval:resolved",
+          toolCallId: action.toolCallId,
+          approved: action.approved,
+          comment: action.comment,
+        });
+      }
+      cursor = approval.cursor;
     } else {
       cursor = await service.attach(caller, {
         sessionId: opts.input.sessionId,
@@ -187,10 +206,10 @@ export const approveAgentToolRoute = contractOS.agent.sessions.approve
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
-    const cursor = await withORPCErrors(() =>
+    const approval = await withORPCErrors(() =>
       service.approve(caller, opts.input)
     );
-    if (!cursor) throw opts.errors.NOT_FOUND();
+    if (!approval) throw opts.errors.NOT_FOUND();
     return {
       toolCallId: opts.input.toolCallId,
       approved: opts.input.approved,

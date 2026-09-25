@@ -1,15 +1,15 @@
 import type * as z from "zod";
 
 import type { PostFeedType } from "@chia/agent-content/types";
-import type { createAgentModels } from "@chia/agent-runtime/models";
 import type {
+  AgentCatalog,
   AgentModel,
   AgentModelAccess,
   AgentModelInfo,
   AgentModelRef,
 } from "@chia/agent-runtime/models";
-import type { AgentTurnPlan } from "@chia/agent-runtime/pi/turn";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
+import type { AgentTurnPlan } from "@chia/agent-runtime/turn";
 import type {
   AgentPolicy,
   AgentSessionDefaults,
@@ -45,20 +45,26 @@ export interface AgentKindDefinition<TState, TConfig extends object> {
   readonly policy: AgentPolicy;
   /**
    * `access` is which keys the caller holds; `house` is the kind's effective default model,
-   * the one the house pays for when the caller holds none.
+   * the one the house pays for when the caller holds none. Whether the caller holds a native
+   * model's key is decided when the model is bound for a turn.
    */
   readonly models: {
     /** Throws `UnknownAgentModelError` when the kind does not admit the pair for this caller or it does not exist. */
     assert(
       ref: AgentModelRef,
+      catalog: AgentCatalog,
       access: AgentModelAccess,
       house: AgentModelRef
     ): void;
-    list(access: AgentModelAccess, house: AgentModelRef): AgentModelInfo[];
-    /** Resolves an admitted pair on the caller's credential-bearing collection; throws like `assert`. */
+    list(
+      catalog: AgentCatalog,
+      access: AgentModelAccess,
+      house: AgentModelRef
+    ): AgentModelInfo[];
+    /** Resolves an admitted pair; throws like `assert`. */
     resolve(
       ref: AgentModelRef,
-      models: AgentModels,
+      catalog: AgentCatalog,
       access: AgentModelAccess,
       house: AgentModelRef
     ): AgentModel;
@@ -107,12 +113,10 @@ export const toolCapabilities = (
   specs: readonly ToolSpec[],
   policy: AgentPolicy
 ): AgentKindCapabilities["tools"] =>
-  specs.map((spec) => ({
-    name: spec.name,
-    label: spec.label,
-    tier: policy.toolInfo(spec.name).tier,
-    description: spec.description,
-  }));
+  specs.map((spec) => {
+    const { label, tier } = policy.toolInfo(spec.name);
+    return { name: spec.name, label, tier, description: spec.description };
+  });
 
 export interface AgentKindCaller extends Caller {
   userId: string;
@@ -195,8 +199,6 @@ export interface AgentKindState<TState> {
   ): Promise<void>;
 }
 
-export type AgentModels = ReturnType<typeof createAgentModels>;
-
 /** What the turn step has resolved before the kind prepares the turn. */
 export interface AgentTurnContext<TState, TConfig extends object> {
   db: DB;
@@ -204,6 +206,11 @@ export interface AgentTurnContext<TState, TConfig extends object> {
   state: TState;
   config: TConfig;
   settings: AgentSessionSettings;
+  /**
+   * The gated calls the operator approved that this turn runs, with the keys they were recorded
+   * under; empty for a turn started by a message.
+   */
+  approvedCalls: readonly { toolCallId: string; key: string }[];
 }
 
 export interface AgentPreparedTurn extends AgentTurnPlan {

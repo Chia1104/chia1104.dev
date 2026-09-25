@@ -14,7 +14,6 @@ import {
   assertBelowRunningTurnCap,
   assertWithinAgentQuota,
 } from "@chia/agent-host/quota";
-import { formatOperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
 import type { DB } from "@chia/db/client";
 import {
   bindAgentRunExternalId,
@@ -22,6 +21,7 @@ import {
   createAgentRun,
   decideAgentApproval,
   getAgentApproval,
+  getAgentApprovalBatch,
   getAgentRun,
   getAgentSessionLastSeq,
   setAgentApprovalRelayRun,
@@ -33,10 +33,8 @@ import { reportError } from "@chia/observability/report";
 import { AppError, AppErrorCode, isAppError } from "@chia/service-kit/errors";
 import type { JsonObject } from "@chia/utils/json";
 import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-schema";
-import type {
-  AgentMessagePayload,
-  WorkflowControlClient,
-} from "@chia/workflow-control/client";
+import type { AgentMessagePayload } from "@chia/workflow-control/agent-schema";
+import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import {
   AGENT_ABORT_CONTROLLER_KEY,
@@ -89,12 +87,6 @@ interface AcceptedTurn {
   staleWorkflowRunId: string | null;
 }
 
-/** An operator's decision as the approval row records it. */
-interface RecordedDecision {
-  approved: boolean;
-  comment?: string;
-}
-
 type AdmitTurn<TState, TConfig extends object> = (
   tx: DB,
   caller: AgentServiceCaller,
@@ -105,7 +97,7 @@ type AdmitTurn<TState, TConfig extends object> = (
 } | null>;
 
 /**
- * A relay run that never reached the model: closed without the executor ever claiming it,
+ * A resuming run that never reached the model: closed without the executor ever claiming it,
  * whether refused by the workflow service or closed by reconciliation or the operator first.
  * A turn that ran and then failed or was aborted carries the claim; a lease whose fate is
  * unknown is still `active`.
@@ -253,7 +245,6 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         await createAgentRun(tx, {
           id: runId,
           sessionId,
-          harnessKind: "workflow",
           externalRunId: runId,
           metadata: {
             agentKind: definition.kind,
@@ -483,62 +474,82 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
     },
 
     /**
-     * Records the decision on the pending request and starts the run that relays it. A
-     * decision is written once. A request already decided is delivered again only when its
-     * relay run never executed: the recorded decision, whatever this call says. A relay run
-     * that ran, or whose fate is still unknown, starts nothing.
+     * Records the decision on a pending request. Once every call of its batch is decided, starts
+     * the run that resumes them: the approved calls run as requested and the model reads the
+     * refusals. A decision is written once. A decided batch is delivered again only when its
+     * resuming run never executed; a run that ran, or whose fate is still unknown, starts nothing.
      */
-    approve: (outer, input) =>
-      startTurn(outer, input.sessionId, async (tx, caller) => {
-        const existing = await getAgentApproval(
-          tx,
-          input.sessionId,
-          input.toolCallId
-        );
-        if (!existing) return null;
+    async approve(outer, input) {
+      /** Set once the request exists and this call recorded or re-read its decision. */
+      let recorded = false;
+      const cursor = await startTurn(
+        outer,
+        input.sessionId,
+        async (tx, caller) => {
+          const existing = await getAgentApproval(
+            tx,
+            input.sessionId,
+            input.toolCallId
+          );
+          // A request from before turns became resumable has no run to resume.
+          if (!existing?.runId) return null;
+          const interruptedRunId = existing.runId;
 
-        let decision: RecordedDecision;
-        if (existing.status === AgentApprovalStatus.Pending) {
-          await assertCanStartTurn(tx, caller);
-          const decided = await decideAgentApproval(tx, {
-            sessionId: input.sessionId,
-            toolCallId: input.toolCallId,
-            approved: input.approved,
-            comment: input.comment,
-            decidedBy: caller.userId,
-          });
-          if (!decided) return null;
-          decision = { approved: input.approved, comment: input.comment };
-        } else {
-          const relay = existing.relayRunId
-            ? await getAgentRun(tx, existing.relayRunId)
-            : null;
-          if (!relay || !relayNeverRan(relay)) return null;
-          await assertCanStartTurn(tx, caller);
-          decision = {
-            approved: existing.status === AgentApprovalStatus.Approved,
-            comment: existing.comment ?? undefined,
-          };
-        }
-
-        const relayed = {
-          toolCallId: existing.toolCallId,
-          toolName: existing.toolName,
-          ...decision,
-        };
-        return {
-          message: {
-            text: formatOperatorDecision(relayed),
-            decision: relayed,
-            credentials: host.credentials.read(caller.context.headers),
-          },
-          bind: (db, runId) =>
-            setAgentApprovalRelayRun(db, {
+          if (existing.status === AgentApprovalStatus.Pending) {
+            const decided = await decideAgentApproval(tx, {
               sessionId: input.sessionId,
               toolCallId: input.toolCallId,
-              relayRunId: runId,
-            }),
-        };
-      }),
+              approved: input.approved,
+              comment: input.comment,
+              decidedBy: caller.userId,
+            });
+            if (!decided) return null;
+          } else {
+            const relay = existing.relayRunId
+              ? await getAgentRun(tx, existing.relayRunId)
+              : null;
+            if (!relay || !relayNeverRan(relay)) return null;
+          }
+          recorded = true;
+
+          const batch = await getAgentApprovalBatch(
+            tx,
+            input.sessionId,
+            interruptedRunId
+          );
+          if (batch.some((row) => row.status === AgentApprovalStatus.Pending)) {
+            return null;
+          }
+          // Refused here the decision rolls back with the transaction, so it can be made again.
+          await assertCanStartTurn(tx, caller);
+
+          return {
+            message: {
+              resume: {
+                interruptedRunId,
+                decisions: batch.map((row) => ({
+                  toolCallId: row.toolCallId,
+                  approved: row.status === AgentApprovalStatus.Approved,
+                  ...(row.comment !== null && { comment: row.comment }),
+                  // Refused by the turn's own checks, not by the operator.
+                  ...(row.decidedBy === null &&
+                    row.status === AgentApprovalStatus.Rejected && {
+                      refused: true as const,
+                    }),
+                })),
+              },
+              credentials: host.credentials.read(caller.context.headers),
+            },
+            bind: (db, runId) =>
+              setAgentApprovalRelayRun(db, {
+                sessionId: input.sessionId,
+                runId: interruptedRunId,
+                relayRunId: runId,
+              }),
+          };
+        }
+      );
+      return cursor ? { cursor } : recorded ? { cursor: null } : null;
+    },
   };
 };

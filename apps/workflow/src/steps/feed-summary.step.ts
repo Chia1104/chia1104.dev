@@ -50,7 +50,7 @@ export const summarizeFeedStep = async (
   });
   const refs = feed.translations.map(refOf);
 
-  const { completeText } = await import("@chia/agent-runtime/pi/complete");
+  const { completeText } = await import("@chia/agent-runtime/complete");
   let task: Awaited<ReturnType<typeof resolveAgentTask>>;
   try {
     task = await resolveAgentTask(db, AgentTaskId.FeedSummary);
@@ -67,11 +67,10 @@ export const summarizeFeedStep = async (
         if (!content) return { ...ref, status: "skipped: no body" };
 
         const reply = await completeText({
-          models: task.models,
-          model: task.model,
+          binding: task.binding,
           // SAFETY: the definition carries a prompt, so `resolveAgentTask` always returns one.
           systemPrompt: task.systemPrompt!,
-          text: buildFeedSummaryPrompt({
+          prompt: buildFeedSummaryPrompt({
             locale: translation.locale,
             title: translation.title,
             content,

@@ -20,7 +20,7 @@ const MICROS_PER_USD = 1_000_000;
 /** The ledger's `kind` for a one-shot task on a post (summary, report triage); it belongs to no agent kind. */
 export const FEED_TASK_USAGE_KIND = "feed";
 
-/** pi reports cost in dollars as a float; the ledger keeps an integer so a running sum cannot drift. */
+/** Usage prices cost in dollars as a float; the ledger keeps an integer so a running sum cannot drift. */
 export const costToMicros = (usd: number): number => {
   if (!Number.isFinite(usd) || usd < 0) {
     throw new RangeError("USD cost must be finite and non-negative");
@@ -35,7 +35,7 @@ export const costToMicros = (usd: number): number => {
 export const microsToUsd = (micros: number): number => micros / MICROS_PER_USD;
 
 /**
- * Whose key a call ran on. `providerId` is the provider pi reported; a native provider is
+ * Whose key a call ran on. `providerId` is the binding's provider; a native provider is
  * registered only with the caller's key, and a gateway call is theirs only if they brought a
  * gateway key.
  */

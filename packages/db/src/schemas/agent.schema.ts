@@ -28,7 +28,7 @@ import { user } from "./user.schema.ts";
  */
 
 /**
- * Application-generated uuidv7; ids travel through model context and the event stream, so they must be opaque.
+ * Application-generated UUID; ids travel through model context and the event stream, so they must be opaque.
  */
 export const agentSessions = agentSchema.table(
   "session",
@@ -87,7 +87,7 @@ export type AgentRunStatus =
   (typeof AgentRunStatus)[keyof typeof AgentRunStatus];
 
 /**
- * One harness execution. Separate from the session so retries and sub-runs do not share a row.
+ * One turn's durable workflow run. Separate from the session so retries do not share a row.
  */
 export const agentRuns = agentSchema.table(
   "run",
@@ -96,8 +96,6 @@ export const agentRuns = agentSchema.table(
     sessionId: text("session_id")
       .notNull()
       .references(() => agentSessions.id, { onDelete: "cascade" }),
-    harnessKind: text("harness_kind").notNull(),
-    harnessVersion: integer("harness_version").notNull().default(1),
     status: text("status")
       .$type<AgentRunStatus>()
       .notNull()
@@ -122,7 +120,7 @@ export const agentRuns = agentSchema.table(
 export type AgentRun = InferSelectModel<typeof agentRuns>;
 
 /**
- * One tree node. `type`/`payload` stay opaque so harnesses can add entry types without a migration.
+ * One tree node. `type`/`payload` stay opaque so the runtime can add entry types without a migration.
  * `seq` is a table-wide `bigserial` taken at insert; under one writer per session, `seq <= n` is everything persisted before this point.
  */
 export const agentSessionEntries = agentSchema.table(
@@ -350,9 +348,10 @@ export type AgentApprovalStatus =
   (typeof AgentApprovalStatus)[keyof typeof AgentApprovalStatus];
 
 /**
- * Durable commit-tier approval, keyed by the call that raised it. Survives process restart so
- * reconnects and audit still see the decision. An approval is spent by exactly one later call
- * whose `approvalKey` matches; the re-issued call carries a new `toolCallId`.
+ * A gated call a turn stopped on, keyed by the call. The rows of one run form a batch: the run
+ * that resumes them starts once every row is decided, and runs each approved call exactly as it
+ * was requested. A call the turn answered itself (its tier pre-approved, or refused by the turn's
+ * own checks) is recorded decided, with no `decided_by`.
  */
 export const agentToolApprovals = agentSchema.table(
   "tool_approval",
@@ -362,23 +361,26 @@ export const agentToolApprovals = agentSchema.table(
       .references(() => agentSessions.id, { onDelete: "cascade" }),
     toolCallId: text("tool_call_id").notNull(),
     toolName: text("tool_name").notNull(),
-    /** The kind's identity for the call: tool, target and the state the operator saw. */
+    /** The kind's identity for the call: tool, target and the state the operator was shown. */
     approvalKey: text("approval_key").notNull(),
     args: jsonb("args").$type<JsonObject>(),
     status: text("status")
       .$type<AgentApprovalStatus>()
       .notNull()
       .default(AgentApprovalStatus.Pending),
+    /** The operator's words, or the check's reason for a call the turn refused. */
     comment: text("comment"),
     decidedBy: text("decided_by").references(() => user.id, {
       onDelete: "set null",
     }),
     decidedAt: timestamp("decided_at", { withTimezone: true, mode: "date" }),
-    /** When an approved call ran on this approval; set before the call executes. */
-    consumedAt: timestamp("consumed_at", { withTimezone: true, mode: "date" }),
+    /** The run whose turn stopped on the call; `null` for requests from before resumable turns. */
+    runId: text("run_id").references(() => agentRuns.id, {
+      onDelete: "set null",
+    }),
     /**
-     * The run that relays this decision to the model, written with the decision. A decided
-     * request whose relay run never executed may be delivered again; one that did may not.
+     * The run that resumes the batch, written with the decision that completed it. A batch whose
+     * resuming run never executed may be delivered again; one that did may not.
      */
     relayRunId: text("relay_run_id").references(() => agentRuns.id, {
       onDelete: "set null",
@@ -387,7 +389,10 @@ export const agentToolApprovals = agentSchema.table(
       .defaultNow()
       .notNull(),
   },
-  (table) => [primaryKey({ columns: [table.sessionId, table.toolCallId] })]
+  (table) => [
+    primaryKey({ columns: [table.sessionId, table.toolCallId] }),
+    index("agent_tool_approval_run_idx").on(table.runId),
+  ]
 );
 
 export type AgentToolApproval = InferSelectModel<typeof agentToolApprovals>;
@@ -421,7 +426,7 @@ export type AgentCredentialSource =
 
 /**
  * One billed provider call, attributed to the user. Entries cascade with the session, so usage lives here; `session_id` is SET NULL when the session goes.
- * `cost_micros` is pi's `usage.cost.total` in micro-dollars; token columns are breakdown, not metering.
+ * `cost_micros` is the call's catalogue-priced `usage.cost.total` in micro-dollars; token columns are breakdown, not metering.
  */
 export const agentUsageLedger = agentSchema.table(
   "usage_ledger",

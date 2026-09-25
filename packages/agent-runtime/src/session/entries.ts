@@ -1,18 +1,7 @@
-import type {
-  AgentMessage,
-  Entry,
-  JsonValue,
-} from "@earendil-works/pi-agent-core";
-import type { Usage } from "@earendil-works/pi-ai";
-
+import type { AgentMessage, Usage } from "../messages.ts";
 import type { AgentAttachment } from "../wire/schema.ts";
 
-/**
- * The persisted session tree, owned here rather than imported from Pi.
- *
- * Discriminants and payload fields follow Pi's entry union, so Pi's compaction helpers read
- * these entries once `toPiEntries` adds the fields only Pi's own harness writes.
- */
+/** The persisted session tree; one shape for every row it holds. */
 
 export interface SessionEntryBase {
   id: string;
@@ -44,7 +33,6 @@ export interface CompactionEntry extends SessionEntryBase {
   tokensBefore: number;
   /** Recent messages kept verbatim after the summary. Always an array once persisted. */
   retainedTail: AgentMessage[];
-  details?: JsonValue;
   usage?: Usage;
 }
 
@@ -53,7 +41,6 @@ export interface BranchSummaryEntry extends SessionEntryBase {
   /** The leaf the session moved to when the branch was left; `null` at the root. */
   fromId: string | null;
   summary: string;
-  details?: JsonValue;
   usage?: Usage;
 }
 
@@ -74,7 +61,7 @@ const SESSION_ENTRY_TYPES: ReadonlySet<string> = new Set<SessionEntry["type"]>([
 
 /**
  * Rows of types this runtime never writes (`label`, `custom`, and `session_info`, `leaf`,
- * `model_change`, `thinking_level_change`, `active_tools_change` from earlier Pi releases) stay
+ * `model_change`, `thinking_level_change`, `active_tools_change` from earlier engines) stay
  * in the tree walk, since entries may hang off them, and are skipped by everything that reads
  * content.
  */
@@ -82,12 +69,6 @@ export const contextEntries = (
   entries: readonly SessionEntry[]
 ): SessionEntry[] =>
   entries.filter((entry) => SESSION_ENTRY_TYPES.has(entry.type));
-
-/** Pi's helpers take its harness's entries, which also record whether a hook wrote one; none did here. */
-export const toPiEntries = (entries: readonly SessionEntry[]): Entry[] =>
-  contextEntries(entries).map((entry) =>
-    entry.type === "message" ? entry : { ...entry, fromHook: false }
-  );
 
 /** The entries persisted up to and including `seq`, on whichever branch they sit. */
 export const entriesUpToSeq = <TEntry extends SessionEntry>(

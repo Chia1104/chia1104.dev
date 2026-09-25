@@ -253,7 +253,7 @@ export const useNavigateSession = () => {
 };
 
 export interface CompactSessionInput {
-  /** Extra focus for the summariser, appended to Pi's compaction prompt. */
+  /** Extra focus for the summariser, appended to the compaction prompt. */
   customInstructions?: string;
 }
 

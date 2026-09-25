@@ -1,17 +1,17 @@
-import { createAssistantMessageEventStream } from "@earendil-works/pi-ai";
-import type {
-  Api,
-  AssistantMessage,
-  AssistantMessageEventStream,
-  Model,
-  Models,
-} from "@earendil-works/pi-ai";
-import { context, SpanKind, SpanStatusCode, trace } from "@opentelemetry/api";
+import { SpanKind, SpanStatusCode, trace } from "@opentelemetry/api";
 import type { Span } from "@opentelemetry/api";
+import type { ChatMiddleware } from "@tanstack/ai";
 
-import { messageOf } from "@chia/utils/error-helper";
-
+import type { AgentModelBinding, AgentModelRef } from "./models.ts";
+import { tokenUsageOf, usageOf } from "./models.ts";
 import type { AgentTurnError } from "./types.ts";
+
+/**
+ * GenAI spans for agent work: `invoke_agent` per turn, and beneath it a `chat` span per provider
+ * request and an `execute_tool` span per tool call. Spans carry identifiers, models, usage and
+ * outcome, never prompts, outputs, tool arguments or error text, so the engine's own span
+ * middleware, which records error messages, is not used.
+ */
 
 /**
  * OpenTelemetry GenAI semantic convention keys, copied rather than imported: the package marks
@@ -22,8 +22,6 @@ const GenAI = {
   provider: "gen_ai.provider.name",
   conversationId: "gen_ai.conversation.id",
   requestModel: "gen_ai.request.model",
-  responseModel: "gen_ai.response.model",
-  responseId: "gen_ai.response.id",
   finishReasons: "gen_ai.response.finish_reasons",
   timeToFirstChunk: "gen_ai.response.time_to_first_chunk",
   inputTokens: "gen_ai.usage.input_tokens",
@@ -49,122 +47,93 @@ const failSpan = (span: Span, cause: unknown) => {
   span.setStatus({ code: SpanStatusCode.ERROR });
 };
 
-const endModelSpan = (
-  span: Span,
-  message: AssistantMessage,
-  timeToFirstChunkMs: number | undefined
-) => {
-  span.setAttributes({
-    [GenAI.responseModel]: message.responseModel ?? message.model,
-    [GenAI.responseId]: message.responseId,
-    [GenAI.finishReasons]: [message.stopReason],
-    [GenAI.timeToFirstChunk]:
-      timeToFirstChunkMs === undefined ? undefined : timeToFirstChunkMs / 1000,
-    // Pi counts cache reads and writes apart from `input`; the convention's total includes them.
-    [GenAI.inputTokens]:
-      message.usage.input + message.usage.cacheRead + message.usage.cacheWrite,
-    [GenAI.outputTokens]: message.usage.output,
-    [GenAI.cacheReadTokens]: message.usage.cacheRead,
-    [GenAI.cacheCreationTokens]: message.usage.cacheWrite,
-    [GenAI.reasoningTokens]: message.usage.reasoning,
-    "gen_ai.usage.cost": message.usage.cost.total,
-  });
-  // The provider's error text stays out of the span; the turn logs it with its kind.
-  if (message.stopReason === "error") {
-    span.setStatus({ code: SpanStatusCode.ERROR });
-  }
-  span.end();
-};
-
-/** Pi reports a setup failure as an error message rather than a throw; so does this. */
-const errorMessageOf = (
-  model: Model<Api>,
-  cause: unknown
-): AssistantMessage => ({
-  role: "assistant",
-  content: [],
-  api: model.api,
-  provider: model.provider,
-  model: model.id,
-  usage: {
-    input: 0,
-    output: 0,
-    cacheRead: 0,
-    cacheWrite: 0,
-    totalTokens: 0,
-    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
-  },
-  stopReason: "error",
-  errorMessage: messageOf(cause),
-  timestamp: Date.now(),
-});
-
 /**
- * Wraps one provider request in a `chat` client span that stays open until the stream settles,
- * so the HTTP spans beneath it and the usage it reports belong to that request.
+ * A `chat` client span for each provider request of one engine run, under the active span.
+ * Input tokens are the whole prompt, cache included, whichever way the adapter counts them.
  */
-export const traceModelStream = (
-  model: Model<Api>,
-  open: () => AssistantMessageEventStream
-): AssistantMessageEventStream => {
-  const span = tracer.startSpan(`chat ${model.id}`, {
-    kind: SpanKind.CLIENT,
-    attributes: {
-      [GenAI.operation]: "chat",
-      [GenAI.provider]: model.provider,
-      [GenAI.requestModel]: model.id,
-      "pi.ai.api": model.api,
-    },
-  });
-  const spanContext = trace.setSpan(context.active(), span);
-  const startedAt = performance.now();
-  const source = context.with(spanContext, open);
-  const target = createAssistantMessageEventStream();
+export const modelSpans = (
+  binding: Pick<AgentModelBinding, "model" | "promptTokensIncludeCache">
+): ChatMiddleware => {
+  let span: Span | undefined;
+  let startedAt = 0;
+  let firstChunkAt: number | undefined;
 
-  const forward = async () => {
-    let firstChunkAt: number | undefined;
-    try {
-      for await (const event of source) {
-        if (firstChunkAt === undefined && event.type !== "start") {
-          firstChunkAt = performance.now();
-        }
-        target.push(event);
-      }
-      const message = await source.result();
-      endModelSpan(
-        span,
-        message,
-        firstChunkAt === undefined ? undefined : firstChunkAt - startedAt
-      );
-      target.end(message);
-    } catch (cause) {
-      failSpan(span, cause);
-      span.end();
-      const message = errorMessageOf(model, cause);
-      target.push({ type: "error", reason: "error", error: message });
-      target.end(message);
-    }
+  const end = () => {
+    span?.end();
+    span = undefined;
   };
-  void context.with(spanContext, forward);
 
-  return target;
-};
-
-/**
- * Records every provider request made through `models`, completions included, which Pi routes
- * through `streamSimple`.
- */
-export const withModelSpans = (models: Models): Models => {
-  const streamSimple = models.streamSimple.bind(models);
-  models.streamSimple = (model, llmContext, options) =>
-    traceModelStream(model, () => streamSimple(model, llmContext, options));
-  return models;
+  return {
+    name: "model-spans",
+    onIteration: () => {
+      end();
+      span = tracer.startSpan(`chat ${binding.model.modelId}`, {
+        kind: SpanKind.CLIENT,
+        attributes: {
+          [GenAI.operation]: "chat",
+          [GenAI.provider]: binding.model.providerId,
+          [GenAI.requestModel]: binding.model.modelId,
+        },
+      });
+      startedAt = performance.now();
+      firstChunkAt = undefined;
+    },
+    onChunk: (_ctx, chunk) => {
+      if (!span) return;
+      if (
+        firstChunkAt === undefined &&
+        (chunk.type === "TEXT_MESSAGE_CONTENT" ||
+          chunk.type === "REASONING_MESSAGE_CONTENT" ||
+          chunk.type === "TOOL_CALL_START")
+      ) {
+        firstChunkAt = performance.now();
+      }
+      if (chunk.type === "RUN_FINISHED") {
+        const reported = tokenUsageOf(chunk);
+        const usage = reported ? usageOf(binding, reported) : undefined;
+        span.setAttributes({
+          [GenAI.finishReasons]: [
+            chunk.finishReason ??
+              chunk.metadata?.tanstack?.finishReason ??
+              "stop",
+          ],
+          [GenAI.timeToFirstChunk]:
+            firstChunkAt === undefined
+              ? undefined
+              : (firstChunkAt - startedAt) / 1000,
+          ...(usage && {
+            [GenAI.inputTokens]:
+              usage.input + usage.cacheRead + usage.cacheWrite,
+            [GenAI.outputTokens]: usage.output,
+            [GenAI.cacheReadTokens]: usage.cacheRead,
+            [GenAI.cacheCreationTokens]: usage.cacheWrite,
+            [GenAI.reasoningTokens]: usage.reasoning,
+            "gen_ai.usage.cost": usage.cost.total,
+          }),
+        });
+        end();
+      } else if (chunk.type === "RUN_ERROR") {
+        span.setAttribute("error.type", "provider_error");
+        span.setStatus({ code: SpanStatusCode.ERROR });
+        end();
+      }
+    },
+    onAbort: () => {
+      span?.setAttribute(GenAI.finishReasons, ["aborted"]);
+      end();
+    },
+    onError: (_ctx, info) => {
+      if (span) failSpan(span, info.error);
+      end();
+    },
+    onFinish: end,
+  };
 };
 
 export interface AgentTurnSpan {
   sessionId: string;
   runId?: string;
-  model: Model<Api>;
+  model: AgentModelRef;
 }
 
 /** Wraps one agent turn in an `invoke_agent` span; model and tool spans nest under it. */
@@ -181,8 +150,8 @@ export const traceAgentTurn = <
         [GenAI.operation]: "invoke_agent",
         [GenAI.conversationId]: turn.sessionId,
         "agent.run_id": turn.runId,
-        [GenAI.provider]: turn.model.provider,
-        [GenAI.requestModel]: turn.model.id,
+        [GenAI.provider]: turn.model.providerId,
+        [GenAI.requestModel]: turn.model.modelId,
       },
     },
     async (span) => {
@@ -205,7 +174,7 @@ export const traceAgentTurn = <
     }
   );
 
-/** Wraps one tool execution in an `execute_tool` span. */
+/** Wraps one tool execution in an `execute_tool` span, active while the tool runs. */
 export const traceToolCall = <TResult>(
   toolName: string,
   toolCallId: string,

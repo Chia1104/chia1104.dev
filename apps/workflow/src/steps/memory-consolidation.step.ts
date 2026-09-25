@@ -89,7 +89,7 @@ export const consolidateSessionMemoryStep = async (request: {
       wholeBranch,
     },
   ] = await Promise.all([
-    import("@chia/agent-runtime/pi/complete"),
+    import("@chia/agent-runtime/complete"),
     import("@chia/agent-runtime/session/pg-repo"),
     import("@chia/agent-writing/memory/lessons"),
   ]);
@@ -174,10 +174,9 @@ export const consolidateSessionMemoryStep = async (request: {
   }
 
   const reply = await completeText({
-    models: task.models,
-    model: task.model,
+    binding: task.binding,
     systemPrompt: prompt.systemPrompt,
-    text: prompt.text,
+    prompt: prompt.text,
     ...task.params,
     signal: AbortSignal.timeout(LESSON_TIMEOUT_MS),
     // The house pays, the session's owner is who it was for.

@@ -15,8 +15,8 @@ import {
 
 /**
  * One durable run per agent turn. Conversation state lives in Postgres, not the run: the
- * next prompt, and the operator's decision on a gated call, each start a run of their own,
- * so nothing parks between turns and a run's journal is one turn long.
+ * next prompt, and the operator's answers to the calls a turn stopped on, each start a run of
+ * their own, so nothing parks between turns and a run's journal is one turn long.
  *
  * Runs in a sandboxed VM: no Node built-ins, no native `fetch`, no `Date.now()`.
  * Side effects live in `../steps/agent-turn.step.ts`; only plain data crosses the boundary.
@@ -55,11 +55,7 @@ export const agentSessionWorkflow = async (request: Request) => {
       runId,
       userId,
       abortController,
-      text: message.text,
-      template: message.template,
-      attachments: message.attachments,
-      decision: message.decision,
-      credentials: message.credentials,
+      message,
     });
     status =
       outcome.status === "error"

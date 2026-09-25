@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import * as z from "zod";
 
+import { xmlBlock, xmlField } from "@chia/agent-runtime/prompts";
 import { extractSections } from "@chia/ai/embeddings/markdown";
 import { FeedReportVerdict } from "@chia/db/schema";
 import type {
@@ -69,12 +70,6 @@ const clip = (text: string): string =>
     ? `${text.slice(0, BODY_MAX_CHARS)}\n[body clipped here]`
     : text;
 
-/**
- * Block tag names carry a per-prompt random suffix, so text in the report or the post cannot
- * close a block and open another.
- */
-const blockTag = (suffix: string, name: string) => `${name}-${suffix}`;
-
 /** The reported section when its heading still exists, so the model looks there first. */
 const reportedSection = async (
   content: string,
@@ -107,36 +102,36 @@ export const buildReportTriagePrompt = async (
     : null;
 
   const reportBlock = [
-    `<category>${report.category}</category>`,
-    `<locale>${report.locale}</locale>`,
-    report.headingPath ? `<section>${report.headingPath}</section>` : null,
-    report.quote ? `<quote>\n${report.quote}\n</quote>` : null,
-    `<claim>\n${report.claim}\n</claim>`,
-    `<assessment>\n${report.assessment}\n</assessment>`,
-    report.suggestion
-      ? `<suggestion>\n${report.suggestion}\n</suggestion>`
-      : null,
+    xmlField("category", report.category),
+    xmlField("locale", report.locale),
+    report.headingPath ? xmlField("section", report.headingPath) : null,
+    report.quote ? xmlBlock("quote", report.quote) : null,
+    xmlBlock("claim", report.claim),
+    xmlBlock("assessment", report.assessment),
+    report.suggestion ? xmlBlock("suggestion", report.suggestion) : null,
   ]
     .filter((line) => line !== null)
     .join("\n");
 
+  // A per-prompt random suffix on the outer tags, so text in the report or the post cannot close
+  // a block and open another.
   const suffix = randomUUID().slice(0, 8);
-  const reportTag = blockTag(suffix, "report");
-  const sectionTag = blockTag(suffix, "reported-section");
-  const postTag = blockTag(suffix, "post");
-  const posts = translations
-    .filter((translation) => translation.content?.trim())
-    .map(
-      (translation) =>
-        `<${postTag} locale="${translation.locale}">\n<title>${translation.title}</title>\n${clip(translation.content ?? "")}\n</${postTag}>`
-    );
+  const tag = (name: string) => `${name}-${suffix}`;
 
   return [
-    `<${reportTag}>\n${reportBlock}\n</${reportTag}>`,
+    xmlBlock(tag("report"), reportBlock),
     section
-      ? `<${sectionTag} locale="${report.locale}">\n${section}\n</${sectionTag}>`
+      ? xmlBlock(tag("reported-section"), section, { locale: report.locale })
       : null,
-    ...posts,
+    ...translations
+      .filter((translation) => translation.content?.trim())
+      .map((translation) =>
+        xmlBlock(
+          tag("post"),
+          `${xmlField("title", translation.title)}\n${clip(translation.content ?? "")}`,
+          { locale: translation.locale }
+        )
+      ),
   ]
     .filter((block) => block !== null)
     .join("\n\n");

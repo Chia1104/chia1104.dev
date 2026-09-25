@@ -1,8 +1,7 @@
 /**
  * The wire contract and its client-side view model (`./fold.ts`), with no runtime dependency on
- * Pi or any provider SDK. These are the modules browsers and SSR bundles import. `./replay.ts`
- * is not among them: rebuilding events from persisted Pi entries classifies provider errors and
- * so needs pi-ai.
+ * the engine or any provider SDK. These are the modules browsers and SSR bundles import;
+ * `./replay.ts` rebuilds events from the persisted tree on the server.
  */
 
 import * as z from "zod";
@@ -92,11 +91,6 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     attachments: z.array(agentAttachmentSchema).optional(),
     /** Epoch ms. Optional only so streams written before it existed still parse. */
     at: z.number().optional(),
-    /**
-     * Set when the turn was synthesised by the session's workflow rather than typed by the
-     * operator. Today only the relayed approval decision. Clients render these as notices.
-     */
-    origin: z.enum(["operator-decision"]).optional(),
   }),
   z.object({ type: z.literal("assistant:start"), messageId: z.string() }),
   z.object({

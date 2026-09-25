@@ -1,15 +1,12 @@
-import type { Api, Model, Models } from "@earendil-works/pi-ai";
-
 import {
   AgentProvider,
-  createAgentCatalog,
-  createAgentModels,
   houseModel,
   listModels,
-  NO_ACCESS,
   resolveModel,
 } from "@chia/agent-runtime/models";
 import type {
+  AgentCatalog,
+  AgentModel,
   AgentModelAccess,
   AgentModelInfo,
   AgentModelPredicate,
@@ -38,30 +35,29 @@ export const isWritingModel: AgentModelPredicate = (ref) => {
 
 export const DEFAULT_WRITING_MODEL: AgentModelRef = houseModel("writing");
 
-/**
- * Resolves a session's model. Defaults to a credential-free collection (gateway only), so a
- * missing native key fails as `UnknownAgentModelError` instead of billing the house account.
- */
+/** Throws `UnknownAgentModelError` when the policy refuses the pair or the catalogue lacks it. */
 export const resolveWritingModel = (
   ref: AgentModelRef,
-  models: Models = createAgentModels(),
-  access: AgentModelAccess = NO_ACCESS
-): Model<Api> => resolveModel(ref, isWritingModel, models, access);
+  catalog: AgentCatalog,
+  access: AgentModelAccess
+): AgentModel => resolveModel(ref, isWritingModel, catalog, access);
 
 /**
- * Validates a selection against the catalogue, not a credential-bearing collection.
- * `isWritingModel` admits any native id, so a typo would persist and then fail inside the
- * workflow step.
+ * Validates a selection against the catalogue. `isWritingModel` admits any native id, so a typo
+ * would otherwise persist and then fail inside the workflow step.
  */
 export const assertWritingModel = (
   ref: AgentModelRef,
+  catalog: AgentCatalog,
   access: AgentModelAccess
 ): void => {
-  resolveModel(ref, isWritingModel, createAgentCatalog(), access);
+  resolveWritingModel(ref, catalog, access);
 };
 
-export const listWritingModels = (access: AgentModelAccess): AgentModelInfo[] =>
-  listModels(isWritingModel, { access });
+export const listWritingModels = (
+  catalog: AgentCatalog,
+  access: AgentModelAccess
+): AgentModelInfo[] => listModels(isWritingModel, catalog, access);
 
 export const WRITING_SESSION_DEFAULTS: AgentSessionDefaults = {
   providerId: DEFAULT_WRITING_MODEL.providerId,

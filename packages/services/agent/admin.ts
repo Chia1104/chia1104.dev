@@ -24,6 +24,7 @@ import type { AgentTaskDefinition } from "@chia/agent-host/tasks";
 import { costToMicros, microsToUsd } from "@chia/agent-host/usage";
 import {
   HOUSE_ACCESS,
+  loadAgentCatalog,
   modelRefOf,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
@@ -302,9 +303,17 @@ const currentWeek = async (db: DB) => {
 };
 
 /** A model the operator chose is checked by the kind: policy and catalogue membership at once. */
-const assertKindModel = (definition: LoadedKind, ref: AgentModelRef): void => {
+const assertKindModel = async (
+  definition: LoadedKind,
+  ref: AgentModelRef
+): Promise<void> => {
   try {
-    definition.models.assert(ref, HOUSE_ACCESS, definition.defaults);
+    definition.models.assert(
+      ref,
+      await loadAgentCatalog(),
+      HOUSE_ACCESS,
+      definition.defaults
+    );
   } catch (error) {
     throw error instanceof UnknownAgentModelError
       ? badRequest(error.message)
@@ -337,9 +346,9 @@ const parseKindConfig = (
   return jsonObjectSchema.parse(parsed.data);
 };
 
-const assertTaskModel = (ref: AgentModelRef): void => {
+const assertTaskModel = async (ref: AgentModelRef): Promise<void> => {
   try {
-    assertAgentTaskModel(ref);
+    assertAgentTaskModel(ref, await loadAgentCatalog());
   } catch (error) {
     throw error instanceof UnknownAgentModelError
       ? badRequest(
@@ -380,7 +389,7 @@ export const createAgentAdminService = (
     async updateKind({ db }, input) {
       const definition = await kindOrNotFound(source, input.kind);
       if (input.minTier != null) assertKindFloor(definition, input.minTier);
-      if (input.model) assertKindModel(definition, input.model);
+      if (input.model) await assertKindModel(definition, input.model);
       if (input.autoApprove) assertKindTiers(definition, input.autoApprove);
       const config =
         input.config === undefined
@@ -401,14 +410,18 @@ export const createAgentAdminService = (
 
     async listKindModels(input) {
       const definition = await kindOrNotFound(source, input.kind);
-      return definition.models.list(HOUSE_ACCESS, definition.defaults);
+      return definition.models.list(
+        await loadAgentCatalog(),
+        HOUSE_ACCESS,
+        definition.defaults
+      );
     },
 
     listTasks,
 
     async updateTask({ db }, input) {
       const definition = taskOrNotFound(input.id);
-      if (input.model) assertTaskModel(input.model);
+      if (input.model) await assertTaskModel(input.model);
       if (input.systemPrompt !== undefined && !definition.prompt) {
         throw badRequest(`Task "${input.id}" has no prompt to override.`);
       }
@@ -425,7 +438,7 @@ export const createAgentAdminService = (
       return taskView(definition, row);
     },
 
-    listTaskModels: () => Promise.resolve(listAgentTaskModels()),
+    listTaskModels: async () => listAgentTaskModels(await loadAgentCatalog()),
 
     async getQuota({ db }) {
       return quotaView(await getAgentQuotaConfig(db));

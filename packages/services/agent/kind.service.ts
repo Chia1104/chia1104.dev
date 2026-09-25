@@ -1,6 +1,10 @@
 import { loadKindConfig } from "@chia/agent-host/config";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
-import { accessOf, UnknownAgentModelError } from "@chia/agent-runtime/models";
+import {
+  accessOf,
+  loadAgentCatalog,
+  UnknownAgentModelError,
+} from "@chia/agent-runtime/models";
 
 import type { AgentServiceHost } from "./agent.factory";
 import type { AgentKindService } from "./agent.service";
@@ -30,6 +34,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
       try {
         definition.models.assert(
           ref,
+          await loadAgentCatalog(),
           accessOf(host.credentials.read(caller.context.headers)),
           defaults
         );
@@ -44,6 +49,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
       // Listing only needs key presence; plaintext credentials never enter this path.
       const { defaults } = await loadKindConfig(caller.context.db, definition);
       return definition.models.list(
+        await loadAgentCatalog(),
         accessOf(host.credentials.read(caller.context.headers)),
         defaults
       );

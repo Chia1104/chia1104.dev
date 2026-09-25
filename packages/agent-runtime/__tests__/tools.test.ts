@@ -1,82 +1,65 @@
-import { Type } from "typebox";
+import { convertSchemaToJsonSchema } from "@tanstack/ai";
 import { describe, expect, it, vi } from "vitest";
+import * as z from "zod";
 
-import type { JsonValue } from "@chia/utils/json";
+import { defineTool, jsonBlock, truncate } from "../src/tools.ts";
+import type { ToolCall } from "../src/tools.ts";
 
-import { defineTool, optional, textResult } from "../src/tools.ts";
-
-/**
- * A model that fills every field needs `null` on offer, or it invents a value; the tool must
- * then never see that `null`. A hand-written null union keeps its `null`: there it means
- * something.
- */
-
-describe("optional", () => {
-  it("offers null next to the schema and keeps the description where the model reads it", () => {
-    const schema = Type.Object({
-      id: optional(Type.Integer({ description: "An id.", minimum: 1 })),
-      limit: optional(Type.Integer({ default: 5 })),
+describe("optional parameters", () => {
+  it("are offered as not required, with the description on the property the model reads", () => {
+    const schema = z.object({
+      id: z.number().int().min(1).describe("An id.").optional(),
+      name: z.string(),
     });
 
-    expect(JSON.parse(JSON.stringify(schema))).toEqual({
+    // What the engine converts the schema to; strict adapters widen `id` to nullable from here.
+    expect(convertSchemaToJsonSchema(schema)).toMatchObject({
       type: "object",
       properties: {
-        id: {
-          anyOf: [
-            { type: "integer", description: "An id.", minimum: 1 },
-            { type: "null" },
-          ],
-          description: "An id.",
-        },
-        limit: {
-          anyOf: [{ type: "integer", default: 5 }, { type: "null" }],
-          default: 5,
-        },
+        id: { type: "integer", minimum: 1, description: "An id." },
+        name: { type: "string" },
       },
+      required: ["name"],
     });
   });
 });
 
 describe("defineTool", () => {
-  const execute = vi.fn(async (_id: string, params: JsonValue) =>
-    textResult("ok", params)
+  const parameters = z.object({ id: z.number().int().optional() });
+  const run = vi.fn((params: z.output<typeof parameters>, _call: ToolCall) =>
+    Promise.resolve({ text: "ok", details: params })
   );
-  const tool = defineTool(
-    {
-      name: "t",
-      label: "t",
-      description: "d",
-      parameters: Type.Object({
-        id: optional(Type.Integer()),
-        clear: Type.Optional(Type.Union([Type.String(), Type.Null()])),
-        edits: optional(
-          Type.Array(Type.Object({ all: optional(Type.Boolean()) }))
-        ),
-      }),
-    },
-    () => execute
-  )(undefined);
+  const factory = defineTool(
+    { name: "t", description: "d", parameters },
+    () => run
+  );
 
-  it("drops a null on an optional parameter and keeps one on a hand-written null union", async () => {
-    await tool.execute("call-1", { id: null, clear: null });
-    expect(execute).toHaveBeenCalledWith(
-      "call-1",
-      { clear: null },
-      undefined,
-      undefined
-    );
+  it("hands execute the arguments the engine validated", async () => {
+    await factory(undefined).execute({ id: 3 }, { toolCallId: "call-1" });
+    expect(run).toHaveBeenLastCalledWith({ id: 3 }, { toolCallId: "call-1" });
   });
 
-  it("leaves a present value alone and walks into nested items", async () => {
-    await tool.execute("call-2", {
-      id: 3,
-      edits: [{ all: null }, { all: true }],
+  it("exposes its spec without binding a turn", () => {
+    expect(factory.spec).toMatchObject({ name: "t", description: "d" });
+    expect(factory(undefined)).toMatchObject({ name: "t", description: "d" });
+  });
+});
+
+describe("truncate", () => {
+  it("marks a cut so the model knows it saw a prefix", () => {
+    expect(truncate("abcdef", 10)).toEqual({
+      text: "abcdef",
+      truncated: false,
     });
-    expect(execute).toHaveBeenLastCalledWith(
-      "call-2",
-      { id: 3, edits: [{}, { all: true }] },
-      undefined,
-      undefined
-    );
+    expect(truncate("abcdef", 4)).toEqual({
+      text: "abcd\n\n… [truncated 2 more characters]",
+      truncated: true,
+    });
+  });
+});
+
+describe("jsonBlock", () => {
+  it("fences the value as JSON", () => {
+    expect(jsonBlock({ a: 1 })).toBe('```json\n{\n  "a": 1\n}\n```');
   });
 });

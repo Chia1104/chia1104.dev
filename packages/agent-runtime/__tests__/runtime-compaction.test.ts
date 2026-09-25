@@ -1,25 +1,49 @@
-import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
-import { describe, expect, it } from "vitest";
+const { reportError } = vi.hoisted(() => ({ reportError: vi.fn() }));
+
+vi.mock("@chia/observability/report", () => ({ reportError }));
+
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AgentUsageSource } from "@chia/db/schema";
 
+import type { ScriptedReply } from "../src/testing.ts";
 import type { AgentUsageReport } from "../src/types.ts";
 
 import {
   assistantUsageOf,
   build,
   seedOversizedBranch,
-  toolCallTurn,
+  toolCall,
 } from "./runtime.fixture.ts";
 
-describe("runPiTurn compaction", () => {
+/**
+ * The threshold reads the context the provider reported for the newest reply, so a reply on the
+ * seeded branch reports the ~100k tokens it was sent.
+ */
+const FULL_CONTEXT_USAGE = {
+  promptTokens: 100_000,
+  completionTokens: 10,
+  totalTokens: 100_010,
+};
+
+const fullContextReply = (text: string): ScriptedReply => ({
+  text,
+  usage: FULL_CONTEXT_USAGE,
+});
+
+const SUMMARY = "Everything so far, condensed.";
+
+beforeEach(() => {
+  reportError.mockClear();
+});
+
+describe("runTurn compaction", () => {
   it("does not compact a successful turn that requests approval", async () => {
-    const fixture = build();
-    await seedOversizedBranch(fixture.session);
-    fixture.faux.setResponses([
-      toolCallTurn("publish", {}, "call-1"),
-      fauxAssistantMessage("Waiting."),
+    const fixture = build([
+      { ...toolCall("publish", {}, "call-1"), usage: FULL_CONTEXT_USAGE },
+      { text: SUMMARY },
     ]);
+    await seedOversizedBranch(fixture.session);
 
     await expect(fixture.run()).resolves.toMatchObject({
       status: "awaiting_approval",
@@ -27,45 +51,55 @@ describe("runPiTurn compaction", () => {
     expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
       false
     );
+    expect(fixture.script.pending()).toBe(1);
   });
 
   it("compacts a successful, approval-free turn under context pressure and announces it", async () => {
-    const fixture = build();
+    const fixture = build([fullContextReply("Sure."), { text: SUMMARY }]);
     await seedOversizedBranch(fixture.session);
-    fixture.faux.setResponses([
-      fauxAssistantMessage("Sure."),
-      // Consumed by compaction's summary request.
-      fauxAssistantMessage("Everything so far, condensed."),
-    ]);
 
     const result = await fixture.run();
 
-    expect(result.status).toBe("done");
+    expect(result).toEqual({ status: "done" });
     const branch = await fixture.branch();
     const compaction = branch.find((entry) => entry.type === "compaction");
     expect(compaction).toMatchObject({
-      summary: "Everything so far, condensed.",
-      retainedTail: expect.any(Array),
+      summary: SUMMARY,
+      retainedTail: [
+        { role: "user", content: "Hello" },
+        { role: "assistant", content: [{ type: "text", text: "Sure." }] },
+      ],
     });
     // The compaction is the new leaf, so the next turn starts from the summary.
     await expect(fixture.session.getLeafId()).resolves.toBe(compaction?.id);
     expect(fixture.events.slice(-2)).toEqual([
-      expect.objectContaining({
-        type: "session:compacted",
-        summary: "Everything so far, condensed.",
-      }),
+      expect.objectContaining({ type: "session:compacted", summary: SUMMARY }),
       { type: "run:end", reason: "done" },
     ]);
   });
 
+  it("summarises on the compaction binding when the turn names one", async () => {
+    const fixture = build([fullContextReply("Sure.")]);
+    await seedOversizedBranch(fixture.session);
+    const summariser = build([{ text: SUMMARY }]);
+
+    await fixture.run({ compaction: summariser.options.binding });
+
+    expect(summariser.script.requests).toHaveLength(1);
+    expect(fixture.script.requests).toHaveLength(1);
+    const compaction = (await fixture.branch()).find(
+      (entry) => entry.type === "compaction"
+    );
+    expect(compaction).toMatchObject({ summary: SUMMARY });
+  });
+
   it("reports every assistant reply's usage once its entry has landed", async () => {
-    const fixture = build();
+    const fixture = build([
+      toolCall("search", { q: "usage" }, "call-1"),
+      { text: "Found it." },
+    ]);
     const reports: AgentUsageReport[] = [];
     const branchLengthAtReport: number[] = [];
-    fixture.faux.setResponses([
-      toolCallTurn("search", { q: "usage" }, "call-1"),
-      fauxAssistantMessage("Found it."),
-    ]);
 
     await fixture.run({
       onUsage: async (report) => {
@@ -74,21 +108,19 @@ describe("runPiTurn compaction", () => {
       },
     });
 
-    // The faux provider estimates usage from the text it streams, so the figures are whatever
-    // the tree persisted for that reply. The report must be exactly those, under that entry's
-    // id.
+    // The report carries exactly the usage the tree persisted for the reply, under its entry id.
     const branch = await fixture.branch();
     expect(reports).toEqual([
       {
         source: AgentUsageSource.Turn,
-        providerId: "faux",
+        providerId: "scripted",
         modelId: "test-model",
         entryId: branch[1]?.id,
         usage: assistantUsageOf(branch[1]),
       },
       {
         source: AgentUsageSource.Turn,
-        providerId: "faux",
+        providerId: "scripted",
         modelId: "test-model",
         entryId: branch[3]?.id,
         usage: assistantUsageOf(branch[3]),
@@ -99,13 +131,9 @@ describe("runPiTurn compaction", () => {
   });
 
   it("reports the auto-compaction's usage under the compaction entry", async () => {
-    const fixture = build();
+    const fixture = build([fullContextReply("Sure."), { text: SUMMARY }]);
     await seedOversizedBranch(fixture.session);
     const reports: AgentUsageReport[] = [];
-    fixture.faux.setResponses([
-      fauxAssistantMessage("Sure."),
-      fauxAssistantMessage("Everything so far, condensed."),
-    ]);
 
     await fixture.run({ onUsage: (report) => void reports.push(report) });
 
@@ -118,7 +146,7 @@ describe("runPiTurn compaction", () => {
     ]);
     expect(reports[1]).toEqual({
       source: AgentUsageSource.Compaction,
-      providerId: "faux",
+      providerId: "scripted",
       modelId: "test-model",
       entryId: compaction?.id,
       usage: compaction?.type === "compaction" ? compaction.usage : undefined,
@@ -127,29 +155,30 @@ describe("runPiTurn compaction", () => {
   });
 
   it("leaves a branch inside the window alone", async () => {
-    const fixture = build();
-    fixture.faux.setResponses([fauxAssistantMessage("Small talk.")]);
+    const fixture = build([{ text: "Small talk." }, { text: SUMMARY }]);
 
     await fixture.run();
 
     expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
       false
     );
-    expect(fixture.faux.getPendingResponseCount()).toBe(0);
+    expect(fixture.script.pending()).toBe(1);
   });
 
   it("keeps a successful turn successful when compaction fails", async () => {
-    const fixture = build();
+    // No reply is scripted for the summary request: compaction fails, the turn does not.
+    const fixture = build([fullContextReply("Sure.")]);
     await seedOversizedBranch(fixture.session);
-    // No response scripted for the summary request: compaction fails, the turn does not.
-    fixture.faux.setResponses([fauxAssistantMessage("Sure.")]);
 
-    await expect(fixture.run()).resolves.toEqual({
-      status: "done",
-      error: undefined,
-    });
+    await expect(fixture.run()).resolves.toEqual({ status: "done" });
     expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
       false
+    );
+    expect(fixture.types()).not.toContain("session:compacted");
+    expect(reportError).toHaveBeenCalledWith(
+      expect.anything(),
+      "Session compaction failed",
+      expect.objectContaining({ sessionId: "session-1" })
     );
   });
 });

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { JsonObject } from "@chia/utils/json";
 
-import { createPiTurnBudget } from "../src/pi/turn-budget.ts";
+import { createTurnBudget } from "../src/turn-budget.ts";
 import type { AgentTurnBudget, ToolCallRequest } from "../src/types.ts";
 
 /**
@@ -23,23 +23,22 @@ const call = (
   id = "call"
 ): ToolCallRequest => ({ toolCallId: id, toolName, input });
 
-describe("createPiTurnBudget", () => {
+describe("createTurnBudget", () => {
   it("lets distinct calls through until the soft limit, then refuses with a finish-now reason", () => {
-    const turnBudget = createPiTurnBudget({ budget, onExhausted: vi.fn() });
+    const turnBudget = createTurnBudget({ budget, onExhausted: vi.fn() });
 
     for (let index = 0; index < budget.maxToolCalls; index += 1) {
       expect(turnBudget.handle(call({ q: index }))).toBeUndefined();
     }
     const refused = turnBudget.handle(call({ q: "one too many" }));
 
-    expect(refused).toMatchObject({ block: true });
     expect(refused?.reason).toMatch(/do not call any more tools/i);
     expect(turnBudget.toolCalls).toBe(budget.maxToolCalls + 1);
   });
 
   it("fires onExhausted exactly once, the first time the hard limit is crossed", () => {
     const onExhausted = vi.fn();
-    const turnBudget = createPiTurnBudget({ budget, onExhausted });
+    const turnBudget = createTurnBudget({ budget, onExhausted });
 
     for (let index = 0; index < budget.hardMaxToolCalls; index += 1) {
       turnBudget.handle(call({ q: index }));
@@ -47,7 +46,6 @@ describe("createPiTurnBudget", () => {
     expect(onExhausted).not.toHaveBeenCalled();
 
     expect(turnBudget.handle(call({ q: "over" }))).toMatchObject({
-      block: true,
       reason: expect.stringMatching(/stopped/i),
     });
     turnBudget.handle(call({ q: "still over" }));
@@ -56,24 +54,23 @@ describe("createPiTurnBudget", () => {
   });
 
   it("refuses the call after maxRepeats identical consecutive calls", () => {
-    const turnBudget = createPiTurnBudget({ budget, onExhausted: vi.fn() });
+    const turnBudget = createTurnBudget({ budget, onExhausted: vi.fn() });
 
     expect(turnBudget.handle(call({ q: "same" }))).toBeUndefined();
     expect(turnBudget.handle(call({ q: "same" }))).toBeUndefined();
     const refused = turnBudget.handle(call({ q: "same" }));
 
-    expect(refused).toMatchObject({ block: true });
     expect(refused?.reason).toMatch(/same arguments/i);
   });
 
   it("treats argument key order as irrelevant and nested objects as part of the identity", () => {
-    const turnBudget = createPiTurnBudget({ budget, onExhausted: vi.fn() });
+    const turnBudget = createTurnBudget({ budget, onExhausted: vi.fn() });
 
     turnBudget.handle(call({ a: 1, b: { c: 2, d: 3 } }));
     turnBudget.handle(call({ b: { d: 3, c: 2 }, a: 1 }));
 
     expect(turnBudget.handle(call({ a: 1, b: { c: 2, d: 3 } }))).toMatchObject({
-      block: true,
+      reason: expect.stringMatching(/same arguments/i),
     });
     // A differing nested value is a different call.
     expect(
@@ -82,7 +79,7 @@ describe("createPiTurnBudget", () => {
   });
 
   it("resets the repeat count when the tool or its arguments change", () => {
-    const turnBudget = createPiTurnBudget({ budget, onExhausted: vi.fn() });
+    const turnBudget = createTurnBudget({ budget, onExhausted: vi.fn() });
 
     turnBudget.handle(call({ q: "same" }));
     turnBudget.handle(call({ q: "same" }));
@@ -99,7 +96,7 @@ describe("createPiTurnBudget", () => {
     ["duration past the timer range", { maxDurationMs: 2 ** 31 }],
   ])("rejects a budget with a %s", (_label, override) => {
     expect(() =>
-      createPiTurnBudget({
+      createTurnBudget({
         budget: { ...budget, ...override },
         onExhausted: vi.fn(),
       })
@@ -108,7 +105,7 @@ describe("createPiTurnBudget", () => {
 
   it("rejects a budget whose hard limit is below its soft limit", () => {
     expect(() =>
-      createPiTurnBudget({
+      createTurnBudget({
         budget: { ...budget, hardMaxToolCalls: budget.maxToolCalls - 1 },
         onExhausted: vi.fn(),
       })

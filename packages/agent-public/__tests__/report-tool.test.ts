@@ -24,11 +24,7 @@ const reportTool = (port: ReportPort) => {
   const [tool] = createPublicReportTools(port);
   if (!tool) throw new Error("expected the report tool");
   return (params: ReportIssueInput) =>
-    tool
-      .execute("call", params, undefined)
-      .then((result) =>
-        result.content.map((part) => ("text" in part ? part.text : "")).join("")
-      );
+    tool.execute(params, { toolCallId: "call" }).then((result) => result.text);
 };
 
 describe("report_issue", () => {

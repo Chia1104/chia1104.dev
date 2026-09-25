@@ -4,9 +4,9 @@ import type { NewSessionEntry, SessionEntry } from "./entries.ts";
  * One session's tree of entries plus its active leaf.
  *
  * A turn reads the branch under the leaf and appends what the model and tools produced.
- * Compaction, navigation and forks move or copy entries. Pi's `Agent` never sees it: it
- * receives projected messages and hands back events, so the tree can live wherever the host
- * keeps its data.
+ * Compaction, navigation and forks move or copy entries. The engine never sees it: it receives
+ * projected messages and hands back events, so the tree can live wherever the host keeps its
+ * data.
  */
 export interface SessionTree {
   readonly id: string;

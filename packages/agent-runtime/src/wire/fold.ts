@@ -30,7 +30,7 @@ export interface TextMessageView {
 
 export interface NoticeView {
   kind: "notice";
-  variant: "compacted" | "rewound" | "error" | "decision";
+  variant: "compacted" | "rewound" | "error";
   /** Unset on `error` notices, which show only the headline their `code` selects. */
   text?: string;
   code?: AgentErrorKind;
@@ -73,11 +73,6 @@ export const applyEvent = (
       return { ...state, items, runStatus: "running" };
 
     case "user":
-      if (event.origin === "operator-decision") {
-        // Synthesised by the workflow to relay the operator's decision, not typed by them.
-        items.push({ kind: "notice", variant: "decision", text: event.text });
-        return { ...state, items, runStatus: "running" };
-      }
       items.push({
         kind: "user",
         messageId: event.messageId,
@@ -153,40 +148,24 @@ export const applyEvent = (
     case "tool:end": {
       const index = findTool(event.toolCallId);
       const found = items[index];
-      const existing = found?.kind === "tool" ? found : undefined;
-
-      /**
-       * A gated call still produces a `tool:end`: the permission gate refuses it, and pi turns
-       * the refusal into an error tool result. That result is the gate working, not a failure,
-       * so a call already parked on `awaiting_approval` keeps that status and stays in
-       * `pendingApprovals`, otherwise the approval prompt would vanish the instant it appeared.
-       */
-      const blockedPendingApproval = existing?.status === "awaiting_approval";
-
       const next: ToolCallView = {
-        ...(existing ?? {
-          kind: "tool",
-          toolCallId: event.toolCallId,
-          toolName: event.toolName,
-          label: event.toolName,
-          tier: "read",
-          args: undefined,
-          status: "running",
-        }),
-        status: blockedPendingApproval
-          ? "awaiting_approval"
-          : event.aborted
-            ? "aborted"
-            : event.isError
-              ? "error"
-              : "ok",
-        summary: blockedPendingApproval ? existing.summary : event.summary,
-        details: blockedPendingApproval ? existing.details : event.details,
+        ...(found?.kind === "tool"
+          ? found
+          : {
+              kind: "tool",
+              toolCallId: event.toolCallId,
+              toolName: event.toolName,
+              label: event.toolName,
+              tier: "read",
+              args: undefined,
+              status: "running",
+            }),
+        status: event.aborted ? "aborted" : event.isError ? "error" : "ok",
+        summary: event.summary,
+        details: event.details,
       };
       if (index === -1) items.push(next);
       else items[index] = next;
-
-      if (blockedPendingApproval) return { ...state, items };
 
       return {
         ...state,
@@ -216,9 +195,8 @@ export const applyEvent = (
       };
       if (index === -1) items.push(view);
       else items[index] = view;
-      // The request is announced while the turn is still running and before it is persisted;
-      // only `run:end{awaiting_approval}` (or a reloaded pending row) makes it decidable, so
-      // the run status is left to that event and the card stays locked until then.
+      // Announced once the request is recorded, right before `run:end{awaiting_approval}`, which
+      // makes it decidable; the run status is left to that event.
       return {
         ...state,
         items,
@@ -232,15 +210,8 @@ export const applyEvent = (
       if (existing?.kind === "tool") {
         items[index] = {
           ...existing,
-          // The gated call itself never ran. A decision closes the card, and the re-issued call
-          // arrives as its own tool item. Leave `awaiting_approval` or a later `tool:end` would
-          // read as the gate still holding it.
-          status:
-            existing.status === "awaiting_approval"
-              ? event.approved
-                ? "ok"
-                : "error"
-              : existing.status,
+          // Decided, not yet run: the resumed turn runs the call or answers it with the refusal,
+          // and its `tool:end` settles the card.
           approval: { approved: event.approved, comment: event.comment },
         };
       }
@@ -285,10 +256,9 @@ export const applyEvent = (
       if (event.reason === "awaiting_approval") {
         return { ...state, items, runStatus: "awaiting_approval" };
       }
-      // `approval:request` is announced as soon as the gate refuses, before the turn has proven
-      // it can persist the request. A turn that then ends any other way has nothing for the
-      // operator to decide: drop the prompts rather than leave cards nobody can act on. A call
-      // still running has no `tool:end` coming either; the turn is over, so it was stopped.
+      // A turn that ends any way but awaiting approval leaves nothing for the operator to
+      // decide: drop the prompts rather than leave cards nobody can act on. A call still running
+      // has no `tool:end` coming either; the turn is over, so it was stopped.
       return {
         ...state,
         items: items.map((item) =>

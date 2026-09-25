@@ -1,9 +1,8 @@
-import type { AgentAttachmentInput } from "@chia/agent-runtime/wire/schema";
 import { AppError, appErrorCodeFromStatus } from "@chia/service-kit/errors";
 
 import type {
   AgentAbortControllerRef,
-  EncryptedAgentCredentials,
+  AgentMessagePayload,
 } from "./agent.schema";
 import {
   startedRunId,
@@ -40,19 +39,6 @@ export interface AgentSessionStartRequest {
   userId: string;
   abortController: AgentAbortControllerRef;
   message: AgentMessagePayload;
-}
-
-export interface AgentMessagePayload {
-  text: string;
-  template?: { name: string; args?: string[] };
-  attachments?: AgentAttachmentInput[];
-  decision?: {
-    toolCallId: string;
-    toolName: string;
-    approved: boolean;
-    comment?: string;
-  };
-  credentials?: EncryptedAgentCredentials;
 }
 
 const CONTROL_TIMEOUT_MS = 30_000;

@@ -1,17 +1,15 @@
-import type { Skill } from "@earendil-works/pi-agent-core";
+import type { Skill } from "@chia/agent-runtime/prompts";
 
 /**
  * Skills are inline, not `SKILL.md` files: this package is consumed source-only inside a server
  * bundle, and a runtime `fs.readFile` relative to `import.meta.url` would break under nitro's
- * tracing. `filePath` is a synthetic id. The system prompt lists name and description;
- * `read_skill` is the only load path.
+ * tracing. The system prompt lists name and description; `read_skill` is the only load path.
  */
 
 const skill = (name: string, description: string, content: string): Skill => ({
   name,
   description,
   content: content.trim(),
-  filePath: `@chia/agent-writing/skills/${name}`,
 });
 
 export const mdxAuthoringSkill = skill(

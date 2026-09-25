@@ -58,15 +58,14 @@ const runTriage = async (
   report: FeedReport,
   feed: TriageFeed
 ): Promise<ReportTriageStatus> => {
-  const { completeText } = await import("@chia/agent-runtime/pi/complete");
+  const { completeText } = await import("@chia/agent-runtime/complete");
   const task = await resolveAgentTask(db, AgentTaskId.ReportTriage);
 
   const reply = await completeText({
-    models: task.models,
-    model: task.model,
+    binding: task.binding,
     // SAFETY: the definition carries a prompt, so `resolveAgentTask` always returns one.
     systemPrompt: task.systemPrompt!,
-    text: await buildReportTriagePrompt(report, feed.translations),
+    prompt: await buildReportTriagePrompt(report, feed.translations),
     ...task.params,
     signal: AbortSignal.timeout(TRIAGE_TIMEOUT_MS),
     // The house pays; the post's author is who it was for.

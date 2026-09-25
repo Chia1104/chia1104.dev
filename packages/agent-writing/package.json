@@ -64,11 +64,8 @@
     "@chia/db": "workspace:*",
     "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@earendil-works/pi-agent-core": "catalog:agent",
-    "@earendil-works/pi-ai": "catalog:agent",
     "diff": "catalog:",
     "es-toolkit": "catalog:",
-    "typebox": "catalog:agent",
     "zod": "catalog:"
   },
   "devDependencies": {

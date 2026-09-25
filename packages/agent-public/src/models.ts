@@ -1,16 +1,13 @@
-import type { Api, Model, Models } from "@earendil-works/pi-ai";
-
 import {
   AgentProvider,
-  createAgentCatalog,
-  createAgentModels,
   houseModel,
   listModels,
-  NO_ACCESS,
   resolveModel,
   sameModel,
 } from "@chia/agent-runtime/models";
 import type {
+  AgentCatalog,
+  AgentModel,
   AgentModelAccess,
   AgentModelInfo,
   AgentModelPredicate,
@@ -40,33 +37,28 @@ export const publicModelPolicy =
 
 export const DEFAULT_PUBLIC_MODEL: AgentModelRef = houseModel("public");
 
-/**
- * Resolves a session's model. Defaults to a credential-free collection, so a native pair with
- * no key fails as `UnknownAgentModelError` instead of billing the house account.
- */
+/** Throws `UnknownAgentModelError` when the policy refuses the pair or the catalogue lacks it. */
 export const resolvePublicModel = (
   ref: AgentModelRef,
-  models: Models = createAgentModels(),
-  access: AgentModelAccess = NO_ACCESS,
-  house: AgentModelRef = DEFAULT_PUBLIC_MODEL
-): Model<Api> => resolveModel(ref, publicModelPolicy(house), models, access);
+  catalog: AgentCatalog,
+  access: AgentModelAccess,
+  house: AgentModelRef
+): AgentModel => resolveModel(ref, publicModelPolicy(house), catalog, access);
 
-/**
- * Validates a selection against the catalogue, not a credential-bearing collection, so
- * whether a model exists never depends on which keys the caller registered.
- */
 export const assertPublicModel = (
   ref: AgentModelRef,
+  catalog: AgentCatalog,
   access: AgentModelAccess,
   house: AgentModelRef
 ): void => {
-  resolveModel(ref, publicModelPolicy(house), createAgentCatalog(), access);
+  resolvePublicModel(ref, catalog, access, house);
 };
 
 export const listPublicModels = (
+  catalog: AgentCatalog,
   access: AgentModelAccess,
   house: AgentModelRef
-): AgentModelInfo[] => listModels(publicModelPolicy(house), { access });
+): AgentModelInfo[] => listModels(publicModelPolicy(house), catalog, access);
 
 export const PUBLIC_SESSION_DEFAULTS: AgentSessionDefaults = {
   providerId: DEFAULT_PUBLIC_MODEL.providerId,

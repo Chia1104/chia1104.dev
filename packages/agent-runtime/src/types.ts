@@ -1,14 +1,10 @@
-import type { PromptTemplate, Skill } from "@earendil-works/pi-agent-core";
-import type { Usage } from "@earendil-works/pi-ai";
-
 import type { AgentUsageSource } from "@chia/db/schema";
+import type { JsonValue } from "@chia/utils/json";
 
-import type { OperatorDecision } from "./wire/operator-decision.ts";
+import type { Usage } from "./messages.ts";
 import type { AgentAttachment } from "./wire/schema.ts";
 
-export type { PromptTemplate, Skill };
-
-/** Pi's reasoning levels, from none to the most; the compiler checks them wherever a level reaches Pi. */
+/** Reasoning levels, from none to the most; each provider binding maps them onto its own controls. */
 export const ThinkingLevel = {
   Off: "off",
   Minimal: "minimal",
@@ -35,20 +31,17 @@ export interface AgentPolicy {
   /** Resolves unknown names too, to the kind's most restrictive tier. */
   toolInfo: (toolName: string) => AgentToolInfo;
   requiresApproval: (tier: ToolTier) => boolean;
-  summarize: <TResult>(
-    toolName: string,
-    result: TResult,
-    isError: boolean
-  ) => string;
+  /** One transcript line for a call that succeeded, from the `details` it persisted. */
+  summarize: (toolName: string, details: JsonValue | undefined) => string;
 }
 
-/** Presentation policy shared by live Pi events and persisted transcript replay. */
+/** Presentation policy shared by live events and persisted transcript replay. */
 export type AgentEventPresentation = Pick<
   AgentPolicy,
   "toolInfo" | "summarize"
 >;
 
-/** A tool call as the turn's hooks see it before execution. */
+/** A tool call as the turn's checks see it before execution. */
 export interface ToolCallRequest {
   toolCallId: string;
   toolName: string;
@@ -62,16 +55,37 @@ export interface ApprovalRequest {
   toolName: string;
   tier: ToolTier;
   args: unknown;
-  /** What an approval of this request is good for; see `PiToolCallGateOptions.approvalKeyOf`. */
+  /**
+   * The kind's identity for the call: the tool, its target and the state the operator is shown.
+   * Recorded with the request; a kind reads its own pins back from it when the call runs.
+   */
   key: string;
 }
 
 /** Refuses a call. The reason returns to the model as the tool's error result. */
 export interface ToolCallRefusal {
-  block: true;
   reason: string;
-  /** Asks Pi to end the run after this tool batch instead of letting the model continue. */
-  terminate?: true;
+}
+
+/** The answer to one gated call. */
+export interface ApprovalDecision {
+  toolCallId: string;
+  approved: boolean;
+  /** The operator's words, or the check's reason when `refused`. */
+  comment?: string;
+  /** The turn's own checks refused the call; the operator never saw it. */
+  refused?: true;
+}
+
+/**
+ * Continues a turn that stopped on gated calls. Every call the stopped turn left waiting is
+ * answered at once: the engine runs approved calls exactly as requested and hands the model a
+ * refusal for the rest.
+ */
+export interface AgentTurnResume {
+  /** The agent run whose turn stopped on the calls. */
+  interruptedRunId: string;
+  decisions: ApprovalDecision[];
 }
 
 /** What a turn runs with. The model is the session's own or, when it names none, the kind's effective default. */
@@ -108,12 +122,6 @@ export interface AgentTurnMessage {
   text: string;
   template?: { name: string; args?: string[] };
   attachments?: AgentAttachment[];
-  /**
-   * Operator decision this turn relays after an approval.
-   * Announced on the wire before the model runs; the user message is marked as not
-   * operator-typed.
-   */
-  decision?: OperatorDecision;
 }
 
 /**
@@ -167,7 +175,7 @@ export interface AgentTurnBudget {
 export type AgentTurnExecution =
   | { status: "done" }
   | { status: "aborted" }
-  | { status: "awaiting_approval"; approval: ApprovalRequest }
+  | { status: "awaiting_approval"; approvals: ApprovalRequest[] }
   | { status: "error"; error: AgentTurnError };
 
 /** The model that answered and what it charged. */
@@ -186,9 +194,8 @@ export interface AgentUsageReport extends AgentModelUsage {
 
 /**
  * Every provider call on a session's tree, once the entry carrying it has landed.
- * The host meters from here; the runtime never reads usage back.
- * Runs inside Pi's event subscription, so the host handles its own failures rather than letting
- * one surface as a turn error.
+ * The host meters from here; the runtime never reads usage back. The host handles its own
+ * failures rather than letting one surface as a turn error.
  */
 export type AgentUsageListener = (
   report: AgentUsageReport

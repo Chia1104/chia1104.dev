@@ -1,9 +1,7 @@
-import { contentText } from "@earendil-works/pi-ai";
-import type { Api, Model, Models } from "@earendil-works/pi-ai";
-
-import { logger } from "@chia/observability/logger";
-
-import type { AgentModelUsage } from "../types.ts";
+import { completeText } from "./complete.ts";
+import type { AgentModelBinding } from "./models.ts";
+import { xmlBlock } from "./prompts.ts";
+import type { AgentModelUsage } from "./types.ts";
 
 /**
  * A short handle condensed from the operator's first prompt.
@@ -74,9 +72,7 @@ export const fallbackSessionTitle = (text: string): string | null =>
   normalizeSessionTitle(text);
 
 export interface GenerateSessionTitleOptions {
-  /** Only the one-shot call is needed; the turn's credential-bearing `Models` satisfies this. */
-  models: Pick<Models, "completeSimple">;
-  model: Model<Api>;
+  binding: AgentModelBinding;
   text: string;
   /** Replaces {@link SESSION_TITLE_SYSTEM_PROMPT}; the operator's override, when they made one. */
   systemPrompt?: string;
@@ -88,13 +84,12 @@ export interface GenerateSessionTitleOptions {
 }
 
 /**
- * Asks `model` for a title. Resolves `null` on any provider failure, an empty reply, or abort
+ * Asks the model for a title. Resolves `null` on any provider failure, an empty reply, or abort
  * (the caller falls back to {@link fallbackSessionTitle}) because a title is never worth
  * failing the turn it rides alongside.
  */
 export const generateSessionTitle = async ({
-  models,
-  model,
+  binding,
   text,
   systemPrompt = SESSION_TITLE_SYSTEM_PROMPT,
   maxTokens = SESSION_TITLE_PARAMS.maxTokens,
@@ -104,40 +99,14 @@ export const generateSessionTitle = async ({
 }: GenerateSessionTitleOptions): Promise<string | null> => {
   const excerpt = text.trim().slice(0, PROMPT_EXCERPT_LENGTH);
   if (excerpt.length === 0) return null;
-  try {
-    const reply = await models.completeSimple(
-      model,
-      {
-        systemPrompt,
-        messages: [
-          {
-            role: "user",
-            content: `<message>\n${excerpt}\n</message>`,
-            timestamp: Date.now(),
-          },
-        ],
-      },
-      { maxTokens, temperature, signal }
-    );
-    await onUsage?.({
-      providerId: reply.provider,
-      modelId: reply.model,
-      usage: reply.usage,
-    });
-    if (reply.stopReason === "error") {
-      logger.warn(
-        { model: model.id, detail: reply.errorMessage },
-        "Session title request failed"
-      );
-      return null;
-    }
-    if (reply.stopReason === "aborted") return null;
-    return normalizeSessionTitle(contentText(reply.content));
-  } catch (error) {
-    logger.warn(
-      { err: error, model: model.id },
-      "Session title request failed"
-    );
-    return null;
-  }
+  const reply = await completeText({
+    binding,
+    systemPrompt,
+    prompt: xmlBlock("message", excerpt),
+    maxTokens,
+    temperature,
+    signal,
+    onUsage,
+  });
+  return reply === null ? null : normalizeSessionTitle(reply);
 };
