@@ -8,11 +8,7 @@ import {
   compactOnRequest,
   navigateSession,
 } from "@chia/agent-runtime/maintenance";
-import {
-  accessOf,
-  createAgentModels,
-  loadGatewayPrices,
-} from "@chia/agent-runtime/models";
+import { accessOf, createAgentModels } from "@chia/agent-runtime/models";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import { settingsFromRow } from "@chia/agent-runtime/session/pg-repo";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
@@ -129,7 +125,7 @@ export const createAgentMaintenanceOperations = <
     const credentials = host.credentials.decrypt(
       host.credentials.read(caller.context.headers)
     );
-    const models = createAgentModels(credentials, await loadGatewayPrices());
+    const models = createAgentModels(credentials);
     const access = accessOf(credentials);
     const operationFor = async (taskId: string) => {
       const task = await resolveAgentTask(db, taskId, {

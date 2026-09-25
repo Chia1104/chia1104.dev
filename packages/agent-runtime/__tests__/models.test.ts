@@ -1,7 +1,5 @@
-import { calculateCost } from "@earendil-works/pi-ai";
 import { describe, expect, it } from "vitest";
 
-import type { GatewayModelPricing } from "@chia/ai/gateway";
 import { HOUSE_MODELS } from "@chia/ai/house-models";
 
 import {
@@ -15,7 +13,6 @@ import {
   NO_ACCESS,
   resolveModel,
   UnknownAgentModelError,
-  withGatewayPricing,
 } from "../src/models.ts";
 import type { AgentModelPredicate, AgentModelRef } from "../src/models.ts";
 
@@ -224,97 +221,5 @@ describe("listModels", () => {
     );
 
     expect(listed.every((model) => !model.requiresApiKey)).toBe(true);
-  });
-});
-
-/** `openai/gpt-6-luna` as the gateway listed it: the price doubles past 272k prompt tokens. */
-const LUNA_PRICING: GatewayModelPricing = {
-  input: [
-    { perToken: 0.000_000_1, minTokens: 0 },
-    { perToken: 0.000_000_2, minTokens: 272_001 },
-  ],
-  output: [
-    { perToken: 0.000_000_5, minTokens: 0 },
-    { perToken: 0.000_000_75, minTokens: 272_001 },
-  ],
-  cacheRead: [{ perToken: 0.000_000_01, minTokens: 0 }],
-  cacheWrite: [],
-};
-
-describe("withGatewayPricing", () => {
-  const luna = () => {
-    const model = createAgentModels().getModel(
-      AgentProvider.Gateway,
-      "openai/gpt-6-luna"
-    );
-    if (!model) throw new Error("Pi's catalogue has no openai/gpt-6-luna.");
-    return model;
-  };
-
-  it("prices per million tokens and turns the gateway's tiers into Pi's", () => {
-    const priced = withGatewayPricing(luna(), LUNA_PRICING);
-
-    expect(priced.cost).toEqual({
-      input: 0.1,
-      output: 0.5,
-      cacheRead: 0.01,
-      // No gateway price listed: Pi's own stays.
-      cacheWrite: luna().cost.cacheWrite,
-      tiers: [
-        {
-          inputTokensAbove: 272_000,
-          input: 0.2,
-          output: 0.75,
-          cacheRead: 0.01,
-          cacheWrite: luna().cost.cacheWrite,
-        },
-      ],
-    });
-    // Everything but the price is Pi's.
-    expect({ ...priced, cost: undefined }).toEqual({
-      ...luna(),
-      cost: undefined,
-    });
-  });
-
-  it("bills a prompt past the threshold at the higher rate", () => {
-    const priced = withGatewayPricing(luna(), LUNA_PRICING);
-    const usage = (input: number) => ({
-      input,
-      output: 1_000_000,
-      cacheRead: 0,
-      cacheWrite: 0,
-      totalTokens: input + 1_000_000,
-      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
-    });
-
-    expect(calculateCost(priced, usage(100_000)).output).toBeCloseTo(0.5);
-    expect(calculateCost(priced, usage(300_000)).output).toBeCloseTo(0.75);
-  });
-
-  it("keeps Pi's prices when the gateway lists none", () => {
-    expect(withGatewayPricing(luna(), undefined)).toEqual(luna());
-    expect(withGatewayPricing(luna(), { ...LUNA_PRICING, input: [] })).toEqual(
-      luna()
-    );
-  });
-
-  it("reprices only the gateway's models", () => {
-    const models = createAgentModels(
-      { anthropic: "sk" },
-      new Map([["openai/gpt-6-luna", LUNA_PRICING]])
-    );
-
-    expect(
-      models.getModel(AgentProvider.Gateway, "openai/gpt-6-luna")?.cost.tiers
-    ).toHaveLength(1);
-    expect(
-      models.getModel(AgentProvider.Gateway, "anthropic/claude-sonnet-5")
-    ).toEqual(
-      createAgentModels().getModel(
-        AgentProvider.Gateway,
-        "anthropic/claude-sonnet-5"
-      )
-    );
   });
 });

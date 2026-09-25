@@ -3,11 +3,6 @@ const { logger } = vi.hoisted(() => ({
 }));
 
 vi.mock("@chia/observability/logger", () => ({ logger }));
-// The gateway's catalogue is read over the network; a task resolves on Pi's prices without it.
-vi.mock("@chia/ai/gateway", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@chia/ai/gateway")>()),
-  listGatewayModels: () => Promise.resolve([]),
-}));
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

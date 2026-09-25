@@ -25,10 +25,6 @@
       "types": "./src/house-models.ts",
       "default": "./src/house-models.ts"
     },
-    "./gateway": {
-      "types": "./src/gateway.ts",
-      "default": "./src/gateway.ts"
-    },
     "./env": {
       "types": "./src/env.ts",
       "default": "./src/env.ts"

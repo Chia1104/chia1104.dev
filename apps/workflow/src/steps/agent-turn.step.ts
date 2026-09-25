@@ -239,7 +239,7 @@ async function runKindTurn(
   writer: EventWriter
 ): Promise<AgentTurnOutcome> {
   const [
-    { accessOf, createAgentModels, loadGatewayPrices, UnknownAgentModelError },
+    { accessOf, createAgentModels, UnknownAgentModelError },
     { PgSessionRepo, settingsFromRow },
     { runTurn },
   ] = await Promise.all([
@@ -252,14 +252,13 @@ async function runKindTurn(
   const resume = "resume" in input ? input.resume : undefined;
 
   // Independent reads on the pooled client, not a lock transaction, so they go out together.
-  const [state, { config, defaults }, batch, prices] = await Promise.all([
+  const [state, { config, defaults }, batch] = await Promise.all([
     definition.state.load(db, request.sessionId),
     // Read per turn, not per session: an edit in the dashboard reaches the next turn.
     loadKindConfig(db, definition),
     resume
       ? getAgentApprovalBatch(db, request.sessionId, resume.interruptedRunId)
       : Promise.resolve([]),
-    loadGatewayPrices(),
   ]);
   if (state === null) {
     throw new FatalError(
@@ -285,7 +284,7 @@ async function runKindTurn(
     encrypted,
     env.AI_AUTH_PRIVATE_KEY
   );
-  const models = createAgentModels(credentials, prices);
+  const models = createAgentModels(credentials);
   // Before the kind prepares the turn: a model the caller may not run costs no further query.
   let model: AgentModel;
   try {

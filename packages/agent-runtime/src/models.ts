@@ -5,19 +5,15 @@ import type {
   CredentialInfo,
   CredentialStore,
   Model,
-  ModelCostRates,
   Models,
 } from "@earendil-works/pi-ai";
 import { anthropicProvider } from "@earendil-works/pi-ai/providers/anthropic";
 import { openaiProvider } from "@earendil-works/pi-ai/providers/openai";
 import { vercelAIGatewayProvider } from "@earendil-works/pi-ai/providers/vercel-ai-gateway";
 
-import { listGatewayModels, tierPrice } from "@chia/ai/gateway";
-import type { GatewayModelPricing, GatewayPriceTier } from "@chia/ai/gateway";
 import { HOUSE_MODELS } from "@chia/ai/house-models";
 import type { HouseModelRole } from "@chia/ai/house-models";
 import { KeyId, ProviderId } from "@chia/ai/provider";
-import { logger } from "@chia/observability/logger";
 
 import { withModelSpans } from "./telemetry.ts";
 
@@ -160,114 +156,19 @@ const modelsStore = new InMemoryModelsStore();
 const nativeProvider = (providerId: ProviderId) =>
   providerId === ProviderId.OpenAI ? openaiProvider() : anthropicProvider();
 
-/** What the gateway charges, by model id, as its catalogue lists it. */
-export type GatewayPrices = ReadonlyMap<string, GatewayModelPricing>;
-
-/**
- * The gateway's current prices, or `undefined` when its catalogue cannot be read; a turn then
- * prices its calls with Pi's catalogue.
- */
-export const loadGatewayPrices = async (): Promise<
-  GatewayPrices | undefined
-> => {
-  try {
-    const models = await listGatewayModels();
-    return new Map(models.map((model) => [model.id, model.pricing]));
-  } catch (error) {
-    logger.warn(
-      { err: error },
-      "AI Gateway prices unavailable; pricing with Pi's catalogue"
-    );
-    return undefined;
-  }
-};
-
-/** Pi's rates are dollars per million tokens; the gateway lists dollars per token. */
-const perMillion = (
-  tiers: readonly GatewayPriceTier[],
-  promptTokens: number,
-  fallback: number
-): number =>
-  tiers.length === 0
-    ? fallback
-    : Number((tierPrice(tiers, promptTokens) * 1_000_000).toPrecision(12));
-
-/**
- * A gateway model with what the gateway charges for it, tiers included. Pi's catalogue keeps the
- * model's limits and request quirks; only its prices go stale between Pi releases, and it lists
- * no tiers, so a long prompt would otherwise be billed at the base rate.
- */
-export const withGatewayPricing = (
-  model: Model<Api>,
-  pricing: GatewayModelPricing | undefined
-): Model<Api> => {
-  if (!pricing || pricing.input.length === 0 || pricing.output.length === 0) {
-    return model;
-  }
-  const ratesAt = (promptTokens: number): ModelCostRates => ({
-    input: perMillion(pricing.input, promptTokens, model.cost.input),
-    output: perMillion(pricing.output, promptTokens, model.cost.output),
-    cacheRead: perMillion(
-      pricing.cacheRead,
-      promptTokens,
-      model.cost.cacheRead
-    ),
-    cacheWrite: perMillion(
-      pricing.cacheWrite,
-      promptTokens,
-      model.cost.cacheWrite
-    ),
-  });
-  const thresholds = [
-    ...new Set(
-      [
-        ...pricing.input,
-        ...pricing.output,
-        ...pricing.cacheRead,
-        ...pricing.cacheWrite,
-      ].flatMap((tier) => (tier.minTokens > 0 ? [tier.minTokens] : []))
-    ),
-  ].sort((a, b) => a - b);
-  return {
-    ...model,
-    cost: {
-      ...ratesAt(0),
-      ...(thresholds.length > 0 && {
-        // The gateway's tier starts at `minTokens`; Pi's applies above `inputTokensAbove`.
-        tiers: thresholds.map((minTokens) => ({
-          inputTokensAbove: minTokens - 1,
-          ...ratesAt(minTokens),
-        })),
-      }),
-    },
-  };
-};
-
-/** Pi's gateway provider, priced with `prices` when the catalogue was read. */
-const gatewayProvider = (prices: GatewayPrices | undefined) => {
-  const provider = vercelAIGatewayProvider();
-  if (!prices) return provider;
-  const models = provider
-    .getModels()
-    .map((model) => withGatewayPricing(model, prices.get(model.id)));
-  return { ...provider, getModels: () => models };
-};
-
 /**
  * Builds the `Models` an agent turn executes against.
  * Called per turn: credentials are per request. Provider construction is cheap; static
- * catalogues, no I/O at registration. `prices` reprices the gateway's models with what the
- * gateway charges; anything that bills a call should pass them.
+ * catalogues, no I/O at registration.
  */
 export const createAgentModels = (
-  credentials: AgentCredentials = {},
-  prices?: GatewayPrices
+  credentials: AgentCredentials = {}
 ): Models => {
   const models = createModels({
     modelsStore,
     credentials: fixedCredentialStore(credentials),
   });
-  models.setProvider(gatewayProvider(prices));
+  models.setProvider(vercelAIGatewayProvider());
   for (const providerId of Object.values(ProviderId)) {
     if (credentials[providerId]) models.setProvider(nativeProvider(providerId));
   }
