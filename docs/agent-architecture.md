@@ -165,9 +165,9 @@ Host hook failures are recorded as internal errors and abort the turn. The model
 
 ### Prompt layering
 
-The system prompt contains stable rules, skill indexes and approval posture. The public kind also renders the author's published profile into it, one locale under a character cap, because the profile is bounded and changes only when the operator edits it. Turn-specific data such as the clock, draft state and saved memories enters through Pi's context hook as a final volatile user message. It is recomputed for every provider request and never persisted.
+The system prompt contains stable rules, skill indexes and approval posture. The public kind also renders the author's published profile into it, one locale under a character cap, because the profile is bounded and changes only when the operator edits it. Turn-specific data such as the clock, draft state and saved memories enters through Pi's context hook as a volatile user message. It is read once per turn, placed right after the message that started the turn (or before the reply a resumed turn continues), kept there for every provider request of that turn, and never persisted. Changes the turn makes itself reach the model through its tool results.
 
-This keeps the provider's cached prefix stable and prevents changing context from accumulating in the transcript.
+The gateway caches a prompt only as a prefix of the next request: a request hits when the previous request's whole prompt is its prefix, and otherwise reads back no more than the system prompt. A fresh volatile message at the end of every request therefore left only the system prompt cached. With the snapshot fixed in place, every request of a turn after the first extends the one before it. Keeping it out of the transcript prevents changing context from accumulating, at the cost of a cache miss on each turn's first request.
 
 ### Turn budget
 

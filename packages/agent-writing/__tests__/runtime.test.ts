@@ -645,18 +645,18 @@ describe("prepareWritingTurn", () => {
     expect(new Set(assistants.map((item) => item.messageId)).size).toBe(2);
   });
 
-  it("sends the draft state as a volatile last message, not in the system prompt or transcript", async () => {
+  it("sends the draft state once per turn after the operator's message, not in the system prompt or transcript", async () => {
     await fixture.draft.patchFeedMeta(DRAFT_ID, { slug: "hello-world" });
     const seen: TranscriptContext[] = [];
     fixture.setResponses([
       (context) => {
-        seen.push(context);
+        seen.push(structuredClone(context));
         return fauxAssistantMessage([
           fauxToolCall(ToolName.ListTags, {}, { id: "call-tags" }),
         ]);
       },
       (context) => {
-        seen.push(context);
+        seen.push(structuredClone(context));
         return fauxAssistantMessage("Done.");
       },
     ]);
@@ -664,21 +664,21 @@ describe("prepareWritingTurn", () => {
     await fixture.run("What is the draft slug?");
 
     expect(seen).toHaveLength(2);
-    for (const context of seen) {
-      expect(getCurrentSystemPrompt(context.messages)).not.toContain(
+    const [first, second] = seen.map((context) => context.messages);
+    for (const messages of [first ?? [], second ?? []]) {
+      expect(getCurrentSystemPrompt(messages)).not.toContain(
         "# Current session"
       );
-      const last = context.messages.at(-1);
-      expect(last?.role).toBe("user");
-      const text = JSON.stringify(last?.content);
-      expect(text).toContain("# Current session");
-      expect(text).toContain("slug hello-world");
-      expect(text).toMatch(/Current time: \d{4}-\d{2}-\d{2}T/);
     }
-    // Both requests share one system prompt: the cacheable prefix is stable across hops.
-    expect(getCurrentSystemPrompt(seen[0]?.messages ?? [])).toBe(
-      getCurrentSystemPrompt(seen[1]?.messages ?? [])
-    );
+    const snapshot = first?.at(-1);
+    expect(snapshot?.role).toBe("user");
+    const text = JSON.stringify(snapshot?.content);
+    expect(text).toContain("# Current session");
+    expect(text).toContain("slug hello-world");
+    expect(text).toMatch(/Current time: \d{4}-\d{2}-\d{2}T/);
+    // The second request extends the first, snapshot included, so the provider's cache covers it.
+    expect(second?.slice(0, first?.length)).toEqual(first);
+    expect(second?.at(-1)?.role).toBe("toolResult");
 
     const persisted = JSON.stringify(await fixture.session.getBranch());
     expect(persisted).not.toContain("# Current session");

@@ -11,7 +11,7 @@ import type { DraftChange, FeedDraft, MemorySummary } from "../types.ts";
 
 /**
  * Prompt assembly split by churn: `buildSystemPrompt` is the cached prefix for a session;
- * `buildTurnContext` is volatile turn state, refreshed per provider request and never persisted.
+ * `buildTurnContext` is volatile turn state, read once per turn and never persisted.
  */
 
 export interface SystemPromptInput {

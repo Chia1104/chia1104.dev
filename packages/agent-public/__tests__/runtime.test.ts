@@ -258,15 +258,15 @@ describe("preparePublicTurn", () => {
     });
   });
 
-  it("sends the clock as a volatile last message and keeps the system prompt stable", async () => {
+  it("sends the clock once per turn after the visitor's message and keeps the system prompt stable", async () => {
     const seen: TranscriptContext[] = [];
     fixture.setResponses([
       (context) => {
-        seen.push(context);
+        seen.push(structuredClone(context));
         return fauxAssistantMessage([fauxToolCall(ToolName.ListTags, {})]);
       },
       (context) => {
-        seen.push(context);
+        seen.push(structuredClone(context));
         return fauxAssistantMessage("Done.");
       },
     ]);
@@ -274,21 +274,21 @@ describe("preparePublicTurn", () => {
     await fixture.run("What does the blog cover?");
 
     expect(seen).toHaveLength(2);
-    for (const context of seen) {
-      const systemPrompt = getCurrentSystemPrompt(context.messages);
+    const [first, second] = seen.map((context) => context.messages);
+    for (const messages of [first ?? [], second ?? []]) {
+      const systemPrompt = getCurrentSystemPrompt(messages);
       expect(systemPrompt).not.toContain("# Current session");
       expect(systemPrompt).toContain(
         "# About the author\n\n### Frontend engineer"
       );
-      const last = context.messages.at(-1);
-      expect(last?.role).toBe("user");
-      expect(JSON.stringify(last?.content)).toMatch(
-        /Current time: \d{4}-\d{2}-\d{2}T/
-      );
     }
-    expect(getCurrentSystemPrompt(seen[0]?.messages ?? [])).toBe(
-      getCurrentSystemPrompt(seen[1]?.messages ?? [])
+    const snapshot = first?.at(-1);
+    expect(snapshot?.role).toBe("user");
+    expect(JSON.stringify(snapshot?.content)).toMatch(
+      /Current time: \d{4}-\d{2}-\d{2}T/
     );
+    // The second request extends the first, so the provider's cache covers it.
+    expect(second?.slice(0, first?.length)).toEqual(first);
     expect(JSON.stringify(await fixture.session.getBranch())).not.toContain(
       "# Current session"
     );

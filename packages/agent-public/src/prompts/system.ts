@@ -2,7 +2,7 @@ import type { Locale } from "@chia/db/types";
 
 /**
  * Prompt assembly split by churn: `buildSystemPrompt` is the cached prefix for a session;
- * `buildTurnContext` is the volatile block, refreshed per provider request and never persisted.
+ * `buildTurnContext` is the volatile block, read once per turn and never persisted.
  */
 
 export interface SystemPromptInput {

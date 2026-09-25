@@ -167,9 +167,9 @@ Host hook 失敗會記為 internal error 並中止 turn。缺少 volatile contex
 
 ### Prompt 分層
 
-System prompt 只放穩定的規則、skill index 與 approval posture。Public kind 另外把作者已發佈的 profile 以單一 locale、字元上限內渲染進去，因為 profile 有界且只在 operator 編輯時改變。時鐘、draft state 和已存 memory 等 turn-specific 資料，透過 Pi context hook 加在最後一則 volatile user message；每次 provider request 都重新計算，且不持久化。
+System prompt 只放穩定的規則、skill index 與 approval posture。Public kind 另外把作者已發佈的 profile 以單一 locale、字元上限內渲染進去，因為 profile 有界且只在 operator 編輯時改變。時鐘、draft state 和已存 memory 等 turn-specific 資料，透過 Pi context hook 以一則 volatile user message 提供：每個 turn 只讀一次，放在開啟該 turn 的訊息之後（resume 的 turn 則放在它接續的 reply 之前），該 turn 的每次 provider request 都放在同一位置，且不持久化。Turn 自己造成的變化透過 tool 結果讓模型得知。
 
-這能維持 provider cached prefix 穩定，也避免變動資料累積進 transcript。
+Gateway 只把一次 prompt 當作下一次請求的前綴來快取：上一次請求的完整 prompt 是這次的前綴才會命中，否則最多只讀回 system prompt。每次請求都在最後加一則新的 volatile message，因此只有 system prompt 被快取。Snapshot 固定位置後，turn 內第一次之後的每次請求都延伸前一次。不寫進 transcript 可避免變動資料累積，代價是每個 turn 的第一次請求無法命中快取。
 
 ### Turn budget
 

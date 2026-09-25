@@ -71,9 +71,10 @@ export interface RunTurnBase {
    */
   systemPrompt: string;
   /**
-   * Current state the model should see on every provider request: draft status, clock, anything
-   * that would be stale by the next hop.
-   * Appended as the last message of the request and never persisted. Undefined omits it.
+   * Current state the model should see: draft status, clock, anything that changes between
+   * turns. Read once per turn and sent as a message right after the one that started it, on every
+   * provider request of the turn, so each request still extends the previous one's cached
+   * prompt. Never persisted; undefined omits it.
    */
   volatileContext?: () => string | undefined | Promise<string | undefined>;
   /**

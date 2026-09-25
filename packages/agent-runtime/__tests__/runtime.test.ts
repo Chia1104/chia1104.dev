@@ -567,7 +567,7 @@ describe("runTurn", () => {
     expect(fixture.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
   });
 
-  it("appends the volatile context as an ephemeral last message", async () => {
+  it("reads the volatile context once and keeps it after the turn's message, so each request extends the last", async () => {
     const fixture = build();
     const volatileContext = vi.fn(
       async () => "# Current session\n- draft: empty"
@@ -575,7 +575,11 @@ describe("runTurn", () => {
     const seen: TranscriptContext[] = [];
     fixture.faux.setResponses([
       (context) => {
-        seen.push(context);
+        seen.push(structuredClone(context));
+        return toolCallTurn("search", { q: "cache" }, "call-1");
+      },
+      (context) => {
+        seen.push(structuredClone(context));
         return fauxAssistantMessage("Noted.");
       },
     ]);
@@ -583,25 +587,65 @@ describe("runTurn", () => {
     await fixture.run({ volatileContext });
 
     expect(volatileContext).toHaveBeenCalledOnce();
-    expect(seen[0]?.messages.map((message) => message.role)).toEqual([
+    const [first, second] = seen.map((context) => context.messages);
+    expect(first?.map((message) => message.role)).toEqual([
       "system",
       "user",
       "user",
     ]);
-    expect(JSON.stringify(seen[0]?.messages.at(-1)?.content)).toContain(
+    expect(JSON.stringify(first?.at(-1)?.content)).toContain(
       "# Current session"
     );
-    // Nothing about the ephemeral block reaches the wire or the tree.
-    expect(fixture.types()).toEqual([
-      "run:start",
+    // A provider caches a prompt only as a prefix of the next one.
+    expect(second?.slice(0, first?.length)).toEqual(first);
+    expect(second?.map((message) => message.role)).toEqual([
+      "system",
       "user",
-      "assistant:start",
-      "assistant:end",
-      "run:end",
+      "user",
+      "assistant",
+      "toolResult",
     ]);
+    // Nothing about the snapshot reaches the wire or the tree.
+    expect(fixture.types()).not.toContain("error");
+    expect(
+      fixture.events.filter((event) => event.type === "user")
+    ).toHaveLength(1);
     expect(JSON.stringify(await fixture.branch())).not.toContain(
       "# Current session"
     );
+  });
+
+  it("places a resumed turn's volatile context before the reply it resumes", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", { slug: "hello" }, "call-1"),
+    ]);
+    await fixture.run();
+
+    const seen: TranscriptContext[] = [];
+    fixture.faux.setResponses([
+      (context) => {
+        seen.push(structuredClone(context));
+        return fauxAssistantMessage("Published.");
+      },
+    ]);
+    await fixture.resume(
+      {
+        interruptedRunId: "run-1",
+        decisions: [{ toolCallId: "call-1", approved: true }],
+      },
+      { volatileContext: async () => "# Current session" }
+    );
+
+    const messages = seen[0]?.messages ?? [];
+    expect(messages.map((message) => message.role)).toEqual([
+      "system",
+      "user",
+      "user",
+      "assistant",
+      "toolResult",
+    ]);
+    expect(JSON.stringify(messages[2]?.content)).toContain("# Current session");
   });
 
   it("fails the turn as internal when the volatile context cannot be read", async () => {

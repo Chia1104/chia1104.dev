@@ -142,6 +142,13 @@ export const runPiAgent = async (
   );
   let pendingReplay = replay;
   let replaying = false;
+  /**
+   * The turn's volatile context, read once and placed where the turn's first request ended: after
+   * the message that started it, or before a resumed reply. A request hits the provider's cache
+   * only when the previous request's whole prompt is a prefix of it, so a fresh message at the end
+   * of every request would leave only the system prompt cached.
+   */
+  let snapshot: { at: number; message: AgentMessage | undefined } | undefined;
 
   const agent = new Agent({
     initialState: {
@@ -171,13 +178,22 @@ export const runPiAgent = async (
     transformContext: volatileContext
       ? async (current) => {
           try {
-            const text = await volatileContext();
-            return text ? [...current, volatileMessage(text)] : current;
+            if (!snapshot) {
+              const text = await volatileContext();
+              snapshot = {
+                at: current.length,
+                message: text ? volatileMessage(text) : undefined,
+              };
+            }
           } catch (error) {
             // Fail closed: a model that cannot see the current state must not act on it.
             control.fail(errorOfThrown(error), error);
             return current;
           }
+          const { at, message } = snapshot;
+          return message
+            ? [...current.slice(0, at), message, ...current.slice(at)]
+            : current;
         }
       : undefined,
     beforeToolCall: async ({
