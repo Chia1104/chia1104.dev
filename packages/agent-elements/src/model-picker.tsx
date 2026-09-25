@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { Button, ListBox, Popover, SearchField, Tooltip } from "@heroui/react";
+import { groupBy } from "es-toolkit";
 import { ChevronDown } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
@@ -91,12 +92,12 @@ export const ModelPicker = ({
     providerLabels?.[id] ?? providerLabelOf(id) ?? id;
 
   const providers = useMemo(() => {
-    const groups = Map.groupBy(models ?? [], (model) => model.providerId);
+    const groups = groupBy(models ?? [], (model) => model.providerId);
     const rank = (id: string) => {
       const index = providerOrder.indexOf(id);
       return index === -1 ? providerOrder.length : index;
     };
-    return [...groups.entries()]
+    return Object.entries(groups)
       .sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
       .map(([id, list]) => ({
         id,
