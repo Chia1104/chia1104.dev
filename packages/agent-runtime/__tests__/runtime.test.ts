@@ -646,7 +646,9 @@ describe("runTurn", () => {
     await fixture.resume(
       {
         interruptedRunId: "run-1",
-        decisions: [{ toolCallId: "call-1", approved: true }],
+        decisions: [
+          { toolCallId: "call-1", verdict: ApprovalVerdict.Approved },
+        ],
       },
       { volatileContext: async () => "# Current session" }
     );
