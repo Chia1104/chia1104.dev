@@ -32,7 +32,7 @@ import type {
 
 /** The kind default's catalogue name, or its id when the catalogue has no entry for it. */
 const defaultModelNameOf = (
-  settings: AgentSessionDetail["settings"],
+  settings: AgentSessionDetail["settings"] | undefined,
   models: readonly AgentModel[] | undefined
 ) =>
   findAgentModel(models, settings?.defaultModel)?.name ??

@@ -11,6 +11,7 @@ import type {
 import type { AgentAttachment } from "@chia/agent-runtime/wire/schema";
 import type { GuardProvider } from "@chia/ai/guard/provider";
 import { Locale } from "@chia/db/types";
+import { isEnumValue } from "@chia/utils/is";
 
 import { publicTurnBudget } from "./policy.ts";
 import type { ReportPort } from "./ports.ts";
@@ -43,7 +44,7 @@ const readPost = async (
   feedId: number,
   localeName: string
 ) => {
-  const locale = Object.values(Locale).find((value) => value === localeName);
+  const locale = isEnumValue(Locale, localeName) ? localeName : undefined;
   const post = await content.getPost({ feedId, locale });
   const translation =
     post?.translations.find((entry) => entry.locale === localeName) ??

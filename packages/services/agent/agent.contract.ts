@@ -82,26 +82,18 @@ export const agentSessionSummarySchema = z.object({
 
 export const agentSessionDetailSchema = z.object({
   session: agentSessionSummarySchema,
-  /** Common LLM settings. A non-LLM harness can omit this block. */
-  settings: z
-    .object({
-      /** The model the next turn runs on: the session's own when pinned, else `defaultModel`. */
-      providerId: z.string(),
-      modelId: z.string(),
-      /** Whether the session names its own model rather than following the kind default. */
-      modelPinned: z.boolean(),
-      /** The kind's effective default as of this read; an operator may change it at any time. */
-      defaultModel: agentModelRefSchema,
-      thinkingLevel: thinkingLevelSchema,
-      activeToolNames: z.array(z.string()).nullable(),
-      autoApprove: z.array(toolTierSchema),
-    })
-    .optional(),
-  /** Versioned kind-owned configuration persisted on the shared session record. */
-  runtimeConfig: z.record(z.string(), z.json()).optional(),
-  configVersion: z.number().int().positive().optional(),
-  /** Optional runtime-owned state for kinds that do not have a dedicated public contract yet. */
-  state: z.unknown().optional(),
+  settings: z.object({
+    /** The model the next turn runs on: the session's own when pinned, else `defaultModel`. */
+    providerId: z.string(),
+    modelId: z.string(),
+    /** Whether the session names its own model rather than following the kind default. */
+    modelPinned: z.boolean(),
+    /** The kind's effective default as of this read; an operator may change it at any time. */
+    defaultModel: agentModelRefSchema,
+    thinkingLevel: thinkingLevelSchema,
+    activeToolNames: z.array(z.string()).nullable(),
+    autoApprove: z.array(toolTierSchema),
+  }),
   /** Writing-agent state: the shared drafts this session has worked on, most recent first. */
   drafts: z.array(feedDraftSchema).optional(),
   /** Live durable run, or `null`. */

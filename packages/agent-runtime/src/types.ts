@@ -1,12 +1,9 @@
-import type { PromptTemplate, Skill } from "@earendil-works/pi-agent-core";
 import type { Usage } from "@earendil-works/pi-ai";
 
 import type { AgentUsageSource } from "@chia/db/schema";
 
 import type { OperatorDecision } from "./wire/operator-decision.ts";
 import type { AgentAttachment } from "./wire/schema.ts";
-
-export type { PromptTemplate, Skill };
 
 /** Pi's reasoning levels, from none to the most; the compiler checks them wherever a level reaches Pi. */
 export const ThinkingLevel = {

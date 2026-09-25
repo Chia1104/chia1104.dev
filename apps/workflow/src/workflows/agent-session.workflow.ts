@@ -55,11 +55,7 @@ export const agentSessionWorkflow = async (request: Request) => {
       runId,
       userId,
       abortController,
-      text: message.text,
-      template: message.template,
-      attachments: message.attachments,
-      decision: message.decision,
-      credentials: message.credentials,
+      message,
     });
     status =
       outcome.status === "error"

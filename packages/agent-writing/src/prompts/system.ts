@@ -1,5 +1,5 @@
-import type { Skill } from "@earendil-works/pi-agent-core";
-
+import { xmlBlock, xmlField } from "@chia/agent-runtime/prompts";
+import type { Skill } from "@chia/agent-runtime/prompts";
 import type { ToolTier } from "@chia/agent-runtime/types";
 import { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
@@ -58,12 +58,10 @@ const MEMORY_TITLE_MAX_CHARS = 120;
 
 const memoryLabel = (memory: MemorySummary): string => {
   if (memory.kind === AgentMemoryKind.Source && memory.sourceUrl) {
-    try {
-      const url = new URL(memory.sourceUrl);
-      return oneLine(`${url.hostname}${url.pathname}`, MEMORY_TITLE_MAX_CHARS);
-    } catch {
-      return "(page)";
-    }
+    const url = URL.parse(memory.sourceUrl);
+    return url
+      ? oneLine(`${url.hostname}${url.pathname}`, MEMORY_TITLE_MAX_CHARS)
+      : "(page)";
   }
   return oneLine(memory.title, MEMORY_TITLE_MAX_CHARS);
 };
@@ -257,30 +255,27 @@ export const buildTurnContext = (input: TurnContextInput): string => {
   return lines.join("\n");
 };
 
-/**
- * Pi's `formatSkillsForSystemPrompt` tells the model to read a skill file at `filePath`.
- * This agent loads skills through `read_skill`, so the index has to name that path.
- */
-const formatSkillsIndex = (skills: readonly Skill[]): string => {
-  const lines = [
+/** Names `read_skill` as the only way to load a skill. */
+const formatSkillsIndex = (skills: readonly Skill[]): string =>
+  [
     "# Skills",
     "",
     "Skills hold the detailed rules for specific parts of the job. This index is only names and",
     "descriptions — call `read_skill` with the name to load the full instructions whenever a task",
     "matches a description. Do not act on a skill you have not loaded in this session.",
     "",
-    "<available_skills>",
-  ];
-  for (const skill of skills) {
-    if (skill.disableModelInvocation) continue;
-    lines.push("  <skill>");
-    lines.push(`    <name>${skill.name}</name>`);
-    lines.push(`    <description>${skill.description}</description>`);
-    lines.push("  </skill>");
-  }
-  lines.push("</available_skills>");
-  return lines.join("\n");
-};
+    xmlBlock(
+      "available_skills",
+      skills
+        .map((skill) =>
+          xmlBlock(
+            "skill",
+            `${xmlField("name", skill.name)}\n${xmlField("description", skill.description)}`
+          )
+        )
+        .join("\n")
+    ),
+  ].join("\n");
 
 /**
  * Named in the prompt so the model neither probes a repository it cannot read nor asks the

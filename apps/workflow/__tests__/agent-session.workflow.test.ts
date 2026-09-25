@@ -47,11 +47,12 @@ describe("agentSessionWorkflow", () => {
       runId: "run-1",
       userId: "user-1",
       abortController,
-      text: "/translate zh-TW",
-      template: { name: "translate", args: ["zh-TW"] },
-      attachments: [{ type: "draft", id: 7 }],
-      decision: undefined,
-      credentials: { anthropic: "initial" },
+      message: {
+        text: "/translate zh-TW",
+        template: { name: "translate", args: ["zh-TW"] },
+        attachments: [{ type: "draft", id: 7 }],
+        credentials: { anthropic: "initial" },
+      },
     });
     expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
       "run-1",
@@ -108,13 +109,16 @@ describe("agentSessionWorkflow", () => {
     expect(mocks.runTurn).toHaveBeenLastCalledWith(
       expect.objectContaining({
         runId: "run-2",
-        decision: {
-          toolCallId: "call-1",
-          toolName: "commit_draft",
-          approved: true,
-          comment: "go",
+        message: {
+          text: "Operator decision: approved commit_draft",
+          decision: {
+            toolCallId: "call-1",
+            toolName: "commit_draft",
+            approved: true,
+            comment: "go",
+          },
+          credentials: { openai: "fresh" },
         },
-        credentials: { openai: "fresh" },
       })
     );
   });

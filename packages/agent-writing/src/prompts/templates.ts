@@ -1,8 +1,8 @@
-import type { PromptTemplate } from "@earendil-works/pi-agent-core";
+import type { PromptTemplate } from "@chia/agent-runtime/prompts";
 
 /**
- * Dashboard slash commands. `$1`, `$2`, `$ARGUMENTS` are substituted by pi's `substituteArgs`;
- * argument order is the UI contract.
+ * Dashboard slash commands. `$1`, `$2`, `$ARGUMENTS` are substituted by
+ * `formatPromptTemplateInvocation`; argument order is the UI contract.
  */
 
 const template = (
@@ -10,16 +10,12 @@ const template = (
   description: string,
   content: string,
   argumentHint?: string
-): WritingPromptCommand => ({
+): PromptTemplate => ({
   name,
   description,
   content: content.trim(),
   argumentHint,
 });
-
-export interface WritingPromptCommand extends PromptTemplate {
-  argumentHint?: string;
-}
 
 export const newPostTemplate = template(
   "new-post",
@@ -99,7 +95,7 @@ exact correction but do NOT edit the draft until I confirm.
 `
 );
 
-export const writingPromptTemplates: WritingPromptCommand[] = [
+export const writingPromptTemplates: PromptTemplate[] = [
   newPostTemplate,
   translateTemplate,
   seoPassTemplate,

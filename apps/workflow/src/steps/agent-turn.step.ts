@@ -18,11 +18,7 @@ import type {
   AgentSessionSettings,
   AgentTurnExecution,
 } from "@chia/agent-runtime/types";
-import type { OperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
-import type {
-  AgentAttachment,
-  AgentWireEvent,
-} from "@chia/agent-runtime/wire/schema";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
 import {
@@ -42,10 +38,10 @@ import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 import { signalAgentAbort } from "@chia/services/agent/abort";
 import { messageOf } from "@chia/utils/error-helper";
-import type { JsonObject } from "@chia/utils/json";
+import { asJsonObject } from "@chia/utils/json";
 import type {
   AgentAbortControllerRef,
-  EncryptedAgentCredentials,
+  AgentMessagePayload,
 } from "@chia/workflow-control/agent-schema";
 
 import { agentFactory } from "../agents/factory";
@@ -66,14 +62,10 @@ export interface AgentTurnRequest {
   runId: string;
   /** Verified at the transport boundary before the run started. */
   userId: string;
-  /** Subscribed for the harness `AbortSignal`. */
+  /** Subscribed for the turn's `AbortSignal`. */
   abortController: AgentAbortControllerRef;
-  text: string;
-  template?: { name: string; args?: string[] };
-  attachments?: AgentAttachment[];
-  decision?: OperatorDecision;
-  /** Encrypted operator keys; omitted means the house gateway. */
-  credentials?: EncryptedAgentCredentials;
+  /** The turn's input; credentials omitted run on the house gateway. */
+  message: AgentMessagePayload;
 }
 
 export interface AgentTurnOutcome {
@@ -86,7 +78,7 @@ type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
 const SESSION_TITLE_TIMEOUT_MS = 8_000;
 
 const needsTitle = (row: AgentSessionRow, request: AgentTurnRequest) =>
-  row.title === null && request.decision === undefined;
+  row.title === null && request.message.decision === undefined;
 
 /**
  * Names the session from its first prompt, started before the turn and awaited before `run:end`.
@@ -105,7 +97,7 @@ const titleSession = async (
     const generated = await generateSessionTitle({
       models: task.models,
       model: task.model,
-      text: request.text,
+      text: request.message.text,
       systemPrompt: task.systemPrompt,
       ...task.params,
       signal: AbortSignal.timeout(SESSION_TITLE_TIMEOUT_MS),
@@ -120,7 +112,7 @@ const titleSession = async (
           ...usage,
         }),
     });
-    const title = generated ?? fallbackSessionTitle(request.text);
+    const title = generated ?? fallbackSessionTitle(request.message.text);
     if (title) await setAgentSessionTitleIfUnset(db, row.id, title);
   } catch (error) {
     // Cosmetic; the turn must not fail for it.
@@ -278,8 +270,9 @@ async function runKindTurn(
    * Providers without a credential are unregistered, so a missing key fails as "unknown model"
    * instead of billing the house gateway.
    */
+  const { credentials: encrypted, ...message } = request.message;
   const credentials = decryptAgentCredentials(
-    request.credentials,
+    encrypted,
     env.AI_AUTH_PRIVATE_KEY
   );
   const models = createAgentModels(credentials);
@@ -335,12 +328,7 @@ async function runKindTurn(
     models,
     compaction: { model: compaction.model, models: compaction.models },
     policy: definition.policy,
-    message: {
-      text: request.text,
-      template: request.template,
-      attachments: request.attachments,
-      decision: request.decision,
-    },
+    message,
     signal,
     approvedApprovalKeys,
     consumeApproval: (key) => consumeAgentApproval(db, request.sessionId, key),
@@ -362,8 +350,7 @@ async function runKindTurn(
         toolCallId: approval.toolCallId,
         toolName: approval.toolName,
         approvalKey: approval.key,
-        // SAFETY: tool arguments passed their registered TypeBox schema before execution.
-        args: approval.args as JsonObject | undefined,
+        args: asJsonObject(approval.args),
       }),
   });
   await settle?.(execution);

@@ -170,8 +170,6 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
         modelPinned: modelRefOf(row) !== null,
         defaultModel: house,
       },
-      runtimeConfig: row.runtimeConfig,
-      configVersion: row.configVersion,
       ...kindDetail,
       run,
       events: entriesToWireEvents(transcriptEntries, definition.policy),

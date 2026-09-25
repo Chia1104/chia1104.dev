@@ -1,7 +1,7 @@
-import { formatSkillInvocation } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
+import { xmlBlock } from "@chia/agent-runtime/prompts";
 import { defineTool, textResult } from "@chia/agent-runtime/tools";
 import type { ToolSpec } from "@chia/agent-runtime/tools";
 
@@ -10,8 +10,8 @@ import { writingSkills } from "../prompts/skills.ts";
 import { TOOL_INFO_BY_NAME, ToolName } from "./registry.ts";
 
 /**
- * The only path from the skills index to a skill's full text. Pi's file-reading convention
- * has no tool here; going through a tool also records which rules were loaded.
+ * The only path from the skills index to a skill's full text: there is no file-reading tool,
+ * and going through a tool also records which rules were loaded.
  */
 export const readSkillSpec = {
   name: ToolName.ReadSkill,
@@ -41,7 +41,9 @@ export const readSkillTool = defineTool(
       );
     }
     return Promise.resolve(
-      textResult(formatSkillInvocation(skill), { name: skill.name })
+      textResult(xmlBlock("skill", skill.content, { name: skill.name }), {
+        name: skill.name,
+      })
     );
   }
 );

@@ -1,12 +1,5 @@
-import {
-  Agent,
-  formatPromptTemplateInvocation,
-} from "@earendil-works/pi-agent-core";
-import type {
-  AgentMessage,
-  AgentTool,
-  PromptTemplate,
-} from "@earendil-works/pi-agent-core";
+import { Agent } from "@earendil-works/pi-agent-core";
+import type { AgentMessage, AgentTool } from "@earendil-works/pi-agent-core";
 import { uuidv7 } from "@earendil-works/pi-ai";
 import type {
   Api,
@@ -22,6 +15,8 @@ import { reportError } from "@chia/observability/report";
 import { isAbortError } from "@chia/utils/error-helper";
 import { asJsonValue, stableStringify } from "@chia/utils/json";
 
+import { formatPromptTemplateInvocation } from "../prompts.ts";
+import type { PromptTemplate } from "../prompts.ts";
 import { buildBranchContext } from "../session/context.ts";
 import type { MessageEntry, NewSessionEntry } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";

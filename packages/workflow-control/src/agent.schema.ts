@@ -46,6 +46,8 @@ export const agentMessagePayloadSchema = z.object({
   credentials: encryptedAgentCredentialsSchema.optional(),
 });
 
+export type AgentMessagePayload = z.infer<typeof agentMessagePayloadSchema>;
+
 /**
  * Aborts the turn a run is executing. Keyed by the controller's own id,
  * minted by the service when it starts the run.

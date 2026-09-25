@@ -45,8 +45,6 @@ const row = (overrides: {
 }) => ({
   id: overrides.id,
   sessionId: "session-1",
-  harnessKind: "workflow",
-  harnessVersion: 1,
   status: AgentRunStatus.Active,
   externalRunId: overrides.externalRunId,
   metadata: {

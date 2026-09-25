@@ -13,6 +13,10 @@
       "types": "./src/models.ts",
       "default": "./src/models.ts"
     },
+    "./prompts": {
+      "types": "./src/prompts.ts",
+      "default": "./src/prompts.ts"
+    },
     "./tools": {
       "types": "./src/tools.ts",
       "default": "./src/tools.ts"
