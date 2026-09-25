@@ -76,6 +76,18 @@ describe("getPaletteScript", () => {
     expect(styleText()).toBe(":root:not(.dark){--muted:#12345678;}");
   });
 
+  it("cannot close its <script> element through the storage key", () => {
+    const key = "</script><script>alert(1)</script>";
+    const script = getPaletteScript(key);
+    expect(script).not.toContain("</script>");
+    localStorage.setItem(
+      key,
+      JSON.stringify({ state: { palette: { dark: { muted: "#12345678" } } } })
+    );
+    new Function(script)();
+    expect(styleText()).toBe(":root.dark{--muted:#12345678;}");
+  });
+
   it("does nothing when storage is empty or unreadable", () => {
     new Function(getPaletteScript(STORAGE_KEY))();
     localStorage.setItem(STORAGE_KEY, "{not json");

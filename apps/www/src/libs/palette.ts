@@ -64,9 +64,19 @@ export function writePaletteStyle(
   style.textContent = css;
 }
 
+/**
+ * A value written into the inline script as a JS literal. JSON alone can still end the `<script>`
+ * element (`</script>`) or split a line (U+2028/2029), so those characters become `\u` escapes.
+ */
+const toScriptLiteral = (value: string | readonly string[]) =>
+  JSON.stringify(value).replace(
+    /[<>\u2028\u2029]/g,
+    (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`
+  );
+
 /** Applies the stored palette before first paint; the settings store persists under `storageKey`. */
 export const getPaletteScript = (storageKey: string) =>
-  `(function(){try{var s=JSON.parse(localStorage.getItem(${JSON.stringify(storageKey)})||"null");(${writePaletteStyle.toString()})(s&&s.state&&s.state.palette||null,${JSON.stringify(PALETTE_STYLE_ID)},${JSON.stringify(Object.values(PaletteToken))})}catch(e){}})()`;
+  `(function(){try{var s=JSON.parse(localStorage.getItem(${toScriptLiteral(storageKey)})||"null");(${writePaletteStyle.toString()})(s&&s.state&&s.state.palette||null,${toScriptLiteral(PALETTE_STYLE_ID)},${toScriptLiteral(Object.values(PaletteToken))})}catch(e){}})()`;
 
 /** Resolves any CSS colour, `oklch()` included, to `#RRGGBBAA` by painting one sRGB pixel. */
 export const toHexa = (cssColor: string) => {
