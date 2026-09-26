@@ -7,6 +7,7 @@ import {
   useEffect,
   useEffectEvent,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -20,6 +21,16 @@ const OPEN_DELAY = 200;
 const CLOSE_DELAY = 150;
 /** Reopening within this window after a close skips the open delay. */
 const SKIP_DELAY = 300;
+/** HeroUI's `--ease-out-quart`; the size change settles instead of stopping abruptly. */
+const RESIZE_TIMING = {
+  duration: 200,
+  easing: "cubic-bezier(0.165, 0.84, 0.44, 1)",
+} satisfies KeyframeAnimationOptions;
+
+interface Size {
+  width: number;
+  height: number;
+}
 
 const Motion = {
   FromStart: "from-start",
@@ -30,6 +41,8 @@ type Motion = (typeof Motion)[keyof typeof Motion];
 
 interface NavigationMenuContextValue {
   anchorRef: RefObject<HTMLElement | null>;
+  /** Size of the last popover shown, which the next item's popover grows or shrinks from. */
+  lastSize: RefObject<Size | null>;
   value: string | null;
   isOpen: boolean;
   motion: Motion | null;
@@ -71,8 +84,8 @@ const useNavigationMenuItem = () => {
 
 /**
  * Hover menu of HeroUI popovers that all anchor to the menu, so every item opens in the same place.
- * Switching items skips the popovers' own enter and exit animations and slides the new content in
- * from the side it came from instead.
+ * Switching items skips the popovers' own enter and exit animations: the new popover resizes from
+ * the previous one's size while its content slides in from the side it came from.
  */
 const NavigationMenu = ({
   className,
@@ -80,6 +93,7 @@ const NavigationMenu = ({
   ...props
 }: ComponentProps<"nav">) => {
   const anchorRef = useRef<HTMLElement>(null);
+  const lastSize = useRef<Size>(null);
   const triggers = useRef(new Map<string, HTMLElement>());
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const closedAt = useRef(0);
@@ -123,6 +137,7 @@ const NavigationMenu = ({
   const context: NavigationMenuContextValue = {
     ...state,
     anchorRef,
+    lastSize,
     registerTrigger: (value, element) => {
       if (element) triggers.current.set(value, element);
       else triggers.current.delete(value);
@@ -254,6 +269,7 @@ const NavigationMenuContent = ({
   const menu = useNavigationMenu();
   const value = useNavigationMenuItem();
   const ref = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLElement>(null);
   const isActive = menu.isOpen && menu.value === value;
   const focusFirstLink = useEffectEvent(() => {
     if (menu.takeFocusRequest()) {
@@ -264,8 +280,44 @@ const NavigationMenuContent = ({
     if (isActive) focusFirstLink();
   }, [isActive]);
 
+  // Runs before paint, so the new popover never shows a frame at its own size first.
+  const resizeFromPrevious = useEffectEvent(() => {
+    const popover = popoverRef.current;
+    if (!popover) return;
+    const from = menu.lastSize.current;
+    const to = { width: popover.offsetWidth, height: popover.offsetHeight };
+    menu.lastSize.current = to;
+    if (
+      !menu.motion ||
+      !from ||
+      (from.width === to.width && from.height === to.height) ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+    popover.animate(
+      [
+        {
+          width: `${from.width}px`,
+          height: `${from.height}px`,
+          overflow: "hidden",
+        },
+        {
+          width: `${to.width}px`,
+          height: `${to.height}px`,
+          overflow: "hidden",
+        },
+      ],
+      RESIZE_TIMING
+    );
+  });
+  useLayoutEffect(() => {
+    if (isActive) resizeFromPrevious();
+  }, [isActive]);
+
   return (
     <Popover.Content
+      ref={popoverRef}
       triggerRef={menu.anchorRef}
       isNonModal
       placement="bottom start"
