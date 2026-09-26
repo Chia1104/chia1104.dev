@@ -119,10 +119,8 @@ Markdown images are the normal form:
 The renderer measures every image at compile time, so the URL must be publicly reachable now.
 A local path such as \`/images/x.png\` is looked up in the site's public folder, which has no such
 files, and **breaks the whole page**. Use only image URLs the operator supplied or that already
-appear in the draft; never invent one. Allowed hosts: \`storage.chia1104.dev\` (the operator's
-uploads), \`i.imgur.com\`, \`raw.githubusercontent.com\`, \`avatars.githubusercontent.com\`,
-\`opengraph.githubassets.com\`, \`repository-images.githubusercontent.com\`. Alt text describes what
-the image shows.
+appear in the draft; never invent one. The only allowed host is \`storage.chia1104.dev\` (the
+operator's uploads). Alt text describes what the image shows.
 
 ## JSX and raw HTML
 
