@@ -1,8 +1,9 @@
-import "@/env";
 import type { NextConfig } from "next";
 
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs/config";
 import createNextIntlPlugin from "next-intl/plugin";
+
+import { env } from "@/env";
 
 type Plugin = (config: NextConfig) => NextConfig;
 
@@ -54,45 +55,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    localPatterns: [
-      { pathname: "/assets/**" },
-      { pathname: "/*/*/og" },
-      { pathname: "/*/*/*/og" },
-    ],
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "pliosymjzzmsswrxbkih.supabase.co",
-      },
-      {
-        protocol: "https",
-        hostname: "avatars.githubusercontent.com",
-      },
-      {
-        protocol: "https",
-        hostname: "i.scdn.co",
-      },
-      {
-        protocol: "https",
-        hostname: "i.imgur.com",
-      },
-      {
-        protocol: "https",
-        hostname: "raw.githubusercontent.com",
-      },
-      {
-        protocol: "https",
-        hostname: "opengraph.githubassets.com",
-      },
-      {
-        protocol: "https",
-        hostname: "repository-images.githubusercontent.com",
-      },
-      {
-        protocol: "https",
-        hostname: "storage.chia1104.dev",
-      },
-    ],
+    loader: "custom",
+    loaderFile: "./src/libs/image-loader.ts",
+    /** `/cdn-cgi/image` exists only on the Cloudflare-proxied production zone. */
+    unoptimized: env.NEXT_PUBLIC_ENV !== "production",
   },
   async headers() {
     return [

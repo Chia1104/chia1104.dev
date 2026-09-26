@@ -5,5 +5,9 @@ import { routing } from "./libs/i18n/routing";
 export default createMiddleware(routing);
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)", "/(.*)/llm\\.md"],
+  /** Metadata image URLs already carry their locale; the locale redirect and cookie would keep crawlers and caches off them. */
+  matcher: [
+    "/((?!api|_next|_vercel|.*opengraph-image|.*\\..*).*)",
+    "/(.*)/llm\\.md",
+  ],
 };
