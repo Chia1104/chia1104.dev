@@ -25,6 +25,8 @@ export type Glyph = keyof typeof FONT;
 
 const ROWS = 5;
 const UNIT = 32;
+/** Slab height, in cells. */
+const HEIGHT = 0.5;
 const COS30 = Math.cos(Math.PI / 6);
 
 type Vec = readonly [number, number, number];
@@ -34,7 +36,7 @@ const negate = (a: Vec): Vec => [-a[0], -a[1], -a[2]];
 
 /** Isometric projection with +z up; the viewer looks down from +x, +y, +z. */
 const project = ([x, y, z]: Vec) =>
-  [(x - y) * COS30 * UNIT, ((x + y) / 2 - z) * UNIT] as const;
+  [(x - y) * COS30 * UNIT, ((x + y) / 2 - z * HEIGHT) * UNIT] as const;
 
 const point = (vec: Vec) =>
   project(vec)
@@ -43,9 +45,9 @@ const point = (vec: Vec) =>
 
 /** The faces a viewer can see, each spanned by `u` and `v` from the corner at `voxel + normal`. */
 const VISIBLE_FACES = [
-  { normal: [1, 0, 0], u: [0, 1, 0], v: [0, 0, 1], hatched: true },
+  { normal: [1, 0, 0], u: [0, 1, 0], v: [0, 0, 1], hatched: false },
   { normal: [0, 1, 0], u: [1, 0, 0], v: [0, 0, 1], hatched: false },
-  { normal: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0], hatched: false },
+  { normal: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0], hatched: true },
 ] as const satisfies readonly {
   normal: Vec;
   u: Vec;
@@ -60,8 +62,8 @@ interface Face {
 }
 
 /**
- * Stands the glyphs upright, reading up and to the right with their faces toward the viewer, and
- * lists the visible faces far to near so later ones cover what they hide. An edge is drawn only
+ * Lays the glyphs flat on the ground as slabs, reading up and to the right with their tops toward
+ * the viewer, and lists the visible faces far to near so later ones cover what they hide. An edge is drawn only
  * where the surface folds or ends, so a letter reads as one solid rather than a pile of cubes.
  */
 const buildScene = (glyphs: readonly Glyph[]) => {
@@ -71,7 +73,7 @@ const buildScene = (glyphs: readonly Glyph[]) => {
     FONT[glyph].forEach((row, rowIndex) => {
       [...row].forEach((cell, cellIndex) => {
         if (cell === "#") {
-          voxels.push([0, -(column + cellIndex + 1), ROWS - 1 - rowIndex]);
+          voxels.push([rowIndex, -(column + cellIndex + 1), 0]);
         }
       });
     });
@@ -135,7 +137,7 @@ const buildScene = (glyphs: readonly Glyph[]) => {
     viewBox: { x: minX, y: minY, width, height },
     /** Construction lines along the ground: the baseline and the two ends of the word. */
     guides: [
-      guide([1, 16, 0], [1, -columns - 16, 0]),
+      guide([ROWS, 16, 0], [ROWS, -columns - 16, 0]),
       guide([-16, 0, 0], [16, 0, 0]),
       guide([-16, -columns, 0], [16, -columns, 0]),
     ].join(""),
@@ -143,7 +145,7 @@ const buildScene = (glyphs: readonly Glyph[]) => {
 };
 
 /**
- * Block letters drawn as an isometric line figure: hatched faces, blank sides, hairline edges on
+ * Block letters drawn as an isometric line figure: hatched tops, blank sides, hairline edges on
  * dashed construction lines. The edges darken around the pointer.
  */
 export const IsometricMark = ({
