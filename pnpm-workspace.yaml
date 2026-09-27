@@ -36,6 +36,7 @@ catalog:
   dayjs: ^1.11.23
   diff: 9.0.0
   es-toolkit: 1.52.0
+  isbot: ^5.2.2
   ky: ^2.1.0
   server-only: ^0.0.1
   superjson: 2.2.6
