@@ -8,8 +8,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../utils/cn.util";
 import { useClipboard } from "../utils/use-copy-to-clipboard";
 
-interface Props extends Omit<ButtonProps, "onPress" | "onCopy"> {
-  content: string;
+interface BaseProps extends Omit<ButtonProps, "onPress" | "onCopy"> {
   timeout?: number;
   onCopy?: (e: PressEvent) => void;
   iconProps?: React.ComponentPropsWithoutRef<"span">;
@@ -19,15 +18,26 @@ interface Props extends Omit<ButtonProps, "onPress" | "onCopy"> {
   };
 }
 
+type Props = BaseProps &
+  (
+    | { content: string; loadContent?: never }
+    | {
+        content?: never;
+        /** Runs on press, for text too large to ship with the page. */
+        loadContent: () => Promise<string>;
+      }
+  );
+
 export const CopyButton = ({
   content,
+  loadContent,
   onCopy,
   timeout,
   iconProps,
   translations,
   ...props
 }: Props) => {
-  const { copy, copied } = useClipboard({ timeout });
+  const { copy, copyPending, copied } = useClipboard({ timeout });
   return (
     <Tooltip>
       <Tooltip.Trigger className="flex items-center justify-center">
@@ -38,7 +48,11 @@ export const CopyButton = ({
           {...props}
           className={cn("text-muted", props.className)}
           onPress={(e) => {
-            copy(content);
+            if (loadContent) {
+              copyPending(loadContent());
+            } else {
+              copy(content);
+            }
             onCopy?.(e);
           }}>
           <AnimatePresence>
