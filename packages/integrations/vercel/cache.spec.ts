@@ -66,6 +66,16 @@ describe("invalidateCacheTags", () => {
     await expect(failure).rejects.toMatchObject({ status: 403 });
   });
 
+  it("is null when a variable is blank, as `.env.example` leaves them", async () => {
+    const { invalidateCacheTags } = await loadCache({
+      VERCEL_TOKEN: "",
+      VERCEL_TEAM_ID: "",
+      VERCEL_PROJECT_ID: "",
+    });
+
+    expect(invalidateCacheTags).toBeNull();
+  });
+
   it("is null when any of the three variables is unset", async () => {
     const { invalidateCacheTags } = await loadCache({
       ...configured,

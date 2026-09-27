@@ -14,6 +14,8 @@ export const env = createEnv({
     VERCEL_TEAM_ID: process.env.VERCEL_TEAM_ID,
     VERCEL_PROJECT_ID: process.env.VERCEL_PROJECT_ID,
   },
+  // `.env.example` leaves them blank, which means unset rather than invalid.
+  emptyStringAsUndefined: true,
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
