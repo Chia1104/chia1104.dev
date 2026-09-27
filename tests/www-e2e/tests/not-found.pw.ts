@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 
+import { TEST_COPY, TEST_URLS } from "../fixtures/test-data";
 import { HomePage } from "../page-objects/HomePage";
 import { NotFoundPage } from "../page-objects/NotFoundPage";
 import { BASE_URL } from "../playwright.config";
@@ -12,13 +13,24 @@ test.describe("404 錯誤頁面測試", () => {
   });
 
   test("應該顯示 404 頁面當訪問不存在的路徑", async () => {
-    await notFoundPage.navigateToInvalidPage("/this-is-not-found-page");
-    await expect(notFoundPage.title).toHaveText("Not Found");
+    const response = await notFoundPage.navigateToInvalidPage(
+      TEST_URLS.NOT_FOUND
+    );
+    expect(response?.status()).toBe(404);
+    await expect(notFoundPage.title).toHaveText(TEST_COPY.NOT_FOUND_TITLE);
+  });
+
+  test("不存在的文章應該顯示該語系的 404 頁面", async () => {
+    const response = await notFoundPage.navigateToInvalidPage(
+      "/en-US/posts/this-post-does-not-exist"
+    );
+    expect(response?.status()).toBe(404);
+    await expect(notFoundPage.title).toHaveText(TEST_COPY.NOT_FOUND_TITLE_EN);
   });
 
   test("應該能從 404 頁面返回首頁", async ({ page }) => {
-    await notFoundPage.navigateToInvalidPage("/this-is-not-found-page");
-    await expect(notFoundPage.title).toHaveText("Not Found");
+    await notFoundPage.navigateToInvalidPage(TEST_URLS.NOT_FOUND);
+    await expect(notFoundPage.title).toHaveText(TEST_COPY.NOT_FOUND_TITLE);
 
     await notFoundPage.clickBackLink();
 
@@ -28,7 +40,7 @@ test.describe("404 錯誤頁面測試", () => {
 
   test("應該處理雙斜線路徑", async ({ page }) => {
     await page.goto(`${BASE_URL}//test`);
-    await expect(notFoundPage.title).toHaveText("Not Found");
+    await expect(notFoundPage.title).toHaveText(TEST_COPY.NOT_FOUND_TITLE);
   });
 
   test("應該處理特殊字符路徑", async () => {
@@ -36,7 +48,7 @@ test.describe("404 錯誤頁面測試", () => {
 
     for (const path of specialPaths) {
       await notFoundPage.navigateToInvalidPage(path);
-      await expect(notFoundPage.title).toHaveText("Not Found");
+      await expect(notFoundPage.title).toHaveText(TEST_COPY.NOT_FOUND_TITLE);
     }
   });
 
@@ -47,6 +59,6 @@ test.describe("404 錯誤頁面測試", () => {
 
   test("404 頁面應該返回正確的 HTTP 狀態碼", async ({ page }) => {
     const response = await page.goto("/non-existent-page");
-    expect([200, 404]).toContain(response?.status() || 200);
+    expect(response?.status()).toBe(404);
   });
 });
