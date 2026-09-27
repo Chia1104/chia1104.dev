@@ -121,6 +121,8 @@ export const createApiEnv = () => ({
   EMBEDDING_API_KEY: preserve(),
   RERANK_PROVIDER: preserve(),
   RERANK_API_KEY: preserve(),
+  GUARD_PROVIDER: preserve(),
+  GUARD_API_KEY: preserve(),
   NEXT_PUBLIC_CAPTCHA_PROVIDER: preserve(),
   REDIS_URI: preserve(),
   RESEND_API_KEY: preserve(),
