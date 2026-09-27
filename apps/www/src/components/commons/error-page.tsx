@@ -14,7 +14,7 @@ const ErrorContent = ({ reset }: { reset: () => void }) => {
   const t = useTranslations("status");
   return (
     <StatusSheet
-      mark="error"
+      glyphs={["E", "R", "R", "O", "R"]}
       title={t("error.title")}
       description={t("error.description")}>
       <Button onPress={reset}>{t("error.retry")}</Button>

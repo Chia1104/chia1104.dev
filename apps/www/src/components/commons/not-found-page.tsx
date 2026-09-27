@@ -14,7 +14,7 @@ const NotFoundPage = () => {
   const t = useTranslations("status");
   return (
     <StatusSheet
-      mark="404"
+      glyphs={["4", "0", "4"]}
       title={t("notFound.title")}
       description={t("notFound.description")}>
       <Link href="/" className={buttonVariants({ variant: "primary" })}>
