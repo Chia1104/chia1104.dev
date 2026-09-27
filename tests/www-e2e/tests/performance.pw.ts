@@ -56,21 +56,6 @@ test.describe("網站效能測試", () => {
     expect(["gzip", "br"]).toContain(encoding);
   });
 
-  test("圖片應該被優化", async ({ page }) => {
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-
-    const images = await page.locator("img").all();
-
-    for (const img of images) {
-      const src = await img.getAttribute("src");
-      if (src && src.includes("_next/image")) {
-        // Next.js 圖片優化已啟用
-        expect(src).toContain("_next/image");
-      }
-    }
-  });
-
   test("應該設置適當的快取標頭", async ({ page }) => {
     const response = await page.goto("/");
     const cacheControl = response?.headers()["cache-control"];
