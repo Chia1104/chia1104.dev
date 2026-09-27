@@ -46,8 +46,6 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_ENV: AppEnvSchema,
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
-    NEXT_PUBLIC_GTM_ID: z.string().optional(),
-    NEXT_PUBLIC_GA_ID: z.string().optional(),
     NEXT_PUBLIC_DEFAULT_TIME_ZONE: z.string().min(1),
     NEXT_PUBLIC_ENABLE_SENTRY: z.boolean().optional().default(true),
     NEXT_PUBLIC_DEFAULT_LOCALE: z.enum(Locale),
@@ -66,8 +64,6 @@ export const env = createEnv({
     SENTRY_PROJECT: process.env.SENTRY_PROJECT,
     ADMIN_ID: process.env.ADMIN_ID,
     BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,
-    NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
-    NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
     NEXT_PUBLIC_DEFAULT_TIME_ZONE:
       process.env.NEXT_PUBLIC_DEFAULT_TIME_ZONE || "Asia/Taipei",
     NEXT_PUBLIC_DEFAULT_LOCALE:
