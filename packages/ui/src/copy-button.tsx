@@ -1,7 +1,7 @@
 "use client";
 
 import type { ButtonProps, PressEvent } from "@heroui/react";
-import { Button, Tooltip } from "@heroui/react";
+import { Button, Spinner, Tooltip } from "@heroui/react";
 import { Copy, CheckCheck } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -35,6 +35,7 @@ export const CopyButton = ({
   timeout,
   iconProps,
   translations,
+  isPending,
   ...props
 }: Props) => {
   const { copy, copyPending, copied } = useClipboard({ timeout });
@@ -45,6 +46,7 @@ export const CopyButton = ({
           aria-label="copy"
           isIconOnly
           size="sm"
+          isPending={isPending}
           {...props}
           className={cn("text-muted", props.className)}
           onPress={(e) => {
@@ -56,7 +58,19 @@ export const CopyButton = ({
             onCopy?.(e);
           }}>
           <AnimatePresence>
-            {copied ? (
+            {isPending ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}>
+                <Spinner
+                  size="sm"
+                  color="current"
+                  className={cn("size-3", iconProps?.className)}
+                />
+              </motion.div>
+            ) : copied ? (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
