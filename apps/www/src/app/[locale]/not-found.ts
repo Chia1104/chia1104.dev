@@ -1,3 +1,1 @@
-import NotFound from "@chia/ui/features/NotFound";
-
-export default NotFound;
+export { default } from "@/components/commons/not-found-page";

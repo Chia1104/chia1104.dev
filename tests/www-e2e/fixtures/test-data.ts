@@ -39,9 +39,15 @@ export const TEST_SELECTORS = {
     SUBMIT: "[data-testid='contact-submit']",
   },
   NOT_FOUND: {
-    TITLE: "h2",
-    BACK_LINK: "text=cd ../",
+    TITLE: "[data-testid='main-content'] h1",
+    BACK_LINK: "[data-testid='main-content'] a[href='/']",
   },
+} as const;
+
+/** 未帶語系前綴的網址使用預設語系 zh-TW。 */
+export const TEST_COPY = {
+  NOT_FOUND_TITLE: "找不到這個頁面",
+  NOT_FOUND_TITLE_EN: "This page doesn't exist",
 } as const;
 
 export const TEST_METADATA = {

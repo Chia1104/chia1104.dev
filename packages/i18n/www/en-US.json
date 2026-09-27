@@ -188,8 +188,7 @@
     "contact": "Contact"
   },
   "common": {
-    "loading": "Loading...",
-    "error": "Here looks a little boring, I'll prepare it for you soon"
+    "loading": "Loading..."
   },
   "chbot": {
     "title": "Gloss",
@@ -341,6 +340,19 @@
           "description": "Descriptions, dates and labels."
         }
       }
+    }
+  },
+  "status": {
+    "home": "Back to home",
+    "notFound": {
+      "title": "This page doesn't exist",
+      "description": "The link may be out of date, or the address may have a typo.",
+      "posts": "Browse posts"
+    },
+    "error": {
+      "title": "This page failed to load",
+      "description": "The error has been reported. Try again, or come back later.",
+      "retry": "Try again"
     }
   }
 }

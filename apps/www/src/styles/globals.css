@@ -136,16 +136,24 @@
   --header-height: 3.5rem;
   --accent-gradient-from: var(--accent);
   --accent-gradient-to: var(--accent);
+  --accent-ink: var(--accent);
 }
 
 /*
  * The site gradient (scroll progress, playlist shader) derives both stops from `--accent`, so a
  * reader's accent recolours it too. The chroma floor keeps a pale accent from washing it out.
+ * `--accent-ink` is the accent dark enough on the light sheet (and light enough on the dark one) to
+ * draw 1px strokes with.
  */
 @supports (color: oklch(from red l c h)) {
   :root {
     --accent-gradient-from: oklch(from var(--accent) l max(c, 0.15) h);
     --accent-gradient-to: oklch(from var(--accent) l max(c, 0.15) calc(h + 45));
+    --accent-ink: oklch(from var(--accent) min(l, 0.62) max(c, 0.12) h);
+  }
+
+  :root.dark {
+    --accent-ink: oklch(from var(--accent) max(l, 0.62) max(c, 0.12) h);
   }
 }
 

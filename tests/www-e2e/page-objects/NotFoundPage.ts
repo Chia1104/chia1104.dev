@@ -18,7 +18,7 @@ export class NotFoundPage extends BasePage {
   }
 
   get backLink() {
-    return this.page.getByText("cd ../");
+    return this.page.locator(TEST_SELECTORS.NOT_FOUND.BACK_LINK);
   }
 
   // Actions

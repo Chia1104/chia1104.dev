@@ -1,48 +1,38 @@
 "use client";
 
-import { captureException } from "@sentry/nextjs";
+import "@/styles/globals.css";
+import dynamic from "next/dynamic";
+import type { ComponentProps } from "react";
 
-import { withError } from "@chia/ui/hoc/with-error";
-import Image from "@chia/ui/image";
+import { ThemeProvider } from "next-themes";
 
+import { Theme } from "@chia/ui/utils/use-theme";
+
+import type ErrorPage from "@/components/commons/error-page";
 import RootLayout from "@/components/commons/root-layout";
+import { routing } from "@/libs/i18n/routing";
 
-const GlobalError = withError(
-  () => {
-    return (
-      <RootLayout
-        bodyProps={{
-          className:
-            "c-bg-primary scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full",
-        }}>
-        <main className="main prose dark:prose-invert container">
-          <div className="c-bg-third relative flex min-h-[320px] w-full max-w-[700px] flex-col items-center justify-center overflow-hidden rounded-3xl p-3 px-5">
-            <h3 className="my-2">
-              Here looks a little boring, I'll prepare it for you soon
-            </h3>
-            <div>
-              <div className="not-prose relative aspect-square w-[200px]">
-                <Image
-                  src="https://storage.chia1104.dev/memo.png"
-                  alt="memo"
-                  className="object-cover"
-                  fill
-                  loading="lazy"
-                />
-              </div>
-            </div>
-            <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 size-full opacity-50 blur-3xl" />
+/** Next ships this file with every page, so the message catalog loads only once an error renders. */
+const GlobalErrorContent = dynamic(
+  () => import("@/components/commons/global-error-content")
+);
+
+/**
+ * Replaces the document when the root layout itself fails, so it rebuilds only what the error page
+ * needs: the theme, the default locale's messages and the railed column.
+ */
+const GlobalError = (props: ComponentProps<typeof ErrorPage>) => (
+  <RootLayout locale={routing.defaultLocale}>
+    <ThemeProvider defaultTheme={Theme.System} enableSystem attribute="class">
+      <div className="@container/page isolate flex min-h-dvh flex-col">
+        <main className="flex flex-1 flex-col overflow-x-clip px-2">
+          <div className="border-separator mx-auto flex w-full max-w-3xl flex-1 flex-col border-x py-12">
+            <GlobalErrorContent {...props} />
           </div>
         </main>
-      </RootLayout>
-    );
-  },
-  {
-    onError(error) {
-      captureException(error);
-      console.error(error);
-    },
-  }
+      </div>
+    </ThemeProvider>
+  </RootLayout>
 );
 
 export default GlobalError;

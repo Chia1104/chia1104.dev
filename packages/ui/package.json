@@ -37,14 +37,6 @@
       "types": "./features/ComingSoon/index.tsx",
       "default": "./features/ComingSoon/index.tsx"
     },
-    "./features/Error": {
-      "types": "./features/Error/index.tsx",
-      "default": "./features/Error/index.tsx"
-    },
-    "./features/NotFound": {
-      "types": "./features/NotFound/index.tsx",
-      "default": "./features/NotFound/index.tsx"
-    },
     "./features/EmailTemplate": {
       "types": "./features/EmailTemplate/index.tsx",
       "default": "./features/EmailTemplate/index.tsx"
