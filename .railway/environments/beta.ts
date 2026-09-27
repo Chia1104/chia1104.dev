@@ -52,7 +52,7 @@ export const createBetaResources = () => {
       watchPatterns: serviceWatchPatterns,
     },
     replicas: { [region]: 1 },
-    deploy: { sleepApplication: true },
+    deploy: { healthcheckPath: "/api/v1/health", sleepApplication: true },
     env: {
       ...createApiEnv(),
       AUTH_COOKIE_DOMAIN: preserve(),
