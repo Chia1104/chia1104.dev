@@ -33,7 +33,7 @@ export const env = createEnv({
     NODE_ENV: NodeEnvSchema,
     RAILWAY_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
-    SITE_URL: z.string().optional().default("https://www.chia1104.dev"),
+    SITE_URL: z.string().optional().default("https://chia1104.dev"),
     EDGE_CONFIG: z.string().optional(),
     SENTRY_AUTH_TOKEN: z.string().optional(),
     SENTRY_ORG: z.string().optional(),

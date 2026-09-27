@@ -25,7 +25,7 @@
 - Browser requests use the Better Auth session cookie and may access only public or caller-owned procedures.
 - Content rendering belongs to `@chia/contents`, localization to `@chia/i18n` and shared agent UI to `@chia/agent-elements`.
 - Render access from `session.access`; do not infer authorization from failed requests or the raw role column.
-- `next/image` resizes through Cloudflare Image Transformations (`/cdn-cgi/image`) on the proxied production zone and serves originals elsewhere. Allowed image hosts are the zone's transformation origins, not `next.config` patterns; that list must name `www` and `storage` too, because it replaces the same-zone default.
+- `next/image` resizes through Cloudflare Image Transformations (`/cdn-cgi/image`) on the proxied production zone and serves originals elsewhere. Allowed image hosts are the zone's transformation origins, not `next.config` patterns; that list must name the site host (`chia1104.dev`) and `storage` too, because it replaces the same-zone default. `www` 301s to the apex at the Cloudflare edge.
 
 ## `dash`
 

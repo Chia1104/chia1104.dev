@@ -230,7 +230,7 @@ export const IS_TEST = process.env.NODE_ENV === "test";
 
 export const WWW_BASE_URL =
   getEnv() === "production" || getEnv() === "prod"
-    ? "https://www.chia1104.dev"
+    ? "https://chia1104.dev"
     : "http://localhost:3000";
 
 /**
