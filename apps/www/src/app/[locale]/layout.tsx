@@ -27,14 +27,6 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s | ${meta.name}`,
     },
     description: t("bio"),
-    keywords: [
-      "Typescript",
-      "FullStack",
-      "NextJS",
-      "React",
-      "NestJS",
-      "Chia1104",
-    ],
     creator: meta.name,
     icons: {
       icon: "/favicon.ico",

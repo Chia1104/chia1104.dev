@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { getImageProps } from "next/image";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ViewTransition } from "react";
 
 import { Avatar } from "@heroui/react";
 import { safe } from "@orpc/client";
 import { all } from "better-all";
 import { getLocale, getTranslations } from "next-intl/server";
-import type { Blog, WithContext } from "schema-dts";
+import type { Graph } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
 import { getContentProps } from "@chia/contents/services";
 import { FeedOrderBy, FeedType } from "@chia/db/types";
 import Meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";
-import { WWW_BASE_URL, getBaseUrl, wwwFeedCacheTag } from "@chia/utils/config";
+import { WWW_BASE_URL, wwwFeedCacheTag } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 
 import { ArticleAgentContext } from "@/components/agent/article-agent-context";
@@ -29,6 +30,9 @@ import {
   PageTitle,
   Panel,
 } from "@/components/commons/ruled";
+import { localizedMetadata } from "@/libs/i18n/alternates";
+import { getPathname } from "@/libs/i18n/navigation";
+import { routing } from "@/libs/i18n/routing";
 import { client } from "@/libs/orpc/client.rsc";
 import { isServiceNotFound } from "@/libs/orpc/report";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
@@ -48,6 +52,20 @@ export const generateStaticParams = async () => {
   }));
 };
 
+/** The feed with its `locale` translation; `null` when either does not exist. */
+const readFeed = async (slug: string, locale: Locale) => {
+  const { error, data } = await safe(
+    client.feeds["details-by-slug"](
+      { slug, locale: dbLocaleResolver(locale) },
+      { context: { cacheTags: [wwwFeedCacheTag(slug)] } }
+    )
+  );
+  if (isServiceNotFound(error)) return null;
+  if (error) throw error;
+  const [translation] = data.translations;
+  return translation ? { feed: data, translation } : null;
+};
+
 export const generateMetadata = async ({
   params,
 }: {
@@ -56,28 +74,35 @@ export const generateMetadata = async ({
   }>;
 }): Promise<Metadata> => {
   const [{ slug }, locale] = await Promise.all([params, getLocale()]);
-  try {
-    const feed = await client.feeds["details-by-slug"](
-      { slug, locale: dbLocaleResolver(locale) },
-      { context: { cacheTags: [wwwFeedCacheTag(slug)] } }
-    );
-    const tags = feed.tags.map((tag) => tag.name);
-    return {
-      title: feed.translations[0]?.title,
-      description: feed.translations[0]?.description,
-      keywords: tags,
-      openGraph: {
-        type: "article",
-        publishedTime: dayjs(feed.createdAt).toISOString(),
-        modifiedTime: dayjs(feed.updatedAt).toISOString(),
-        authors: [Meta.name],
-        tags,
-      },
-    };
-  } catch (error) {
-    if (isServiceNotFound(error)) notFound();
-    throw error;
-  }
+  const reads = await Promise.all(
+    routing.locales.map(async (l) => ({
+      locale: l,
+      entry: await readFeed(slug, l),
+    }))
+  );
+  const current = reads.find((read) => read.locale === locale)?.entry;
+  if (!current) notFound();
+  const { feed, translation } = current;
+  const tags = feed.tags.map((tag) => tag.name);
+  const localized = localizedMetadata({
+    href: `/${feed.type}s/${slug}`,
+    locale,
+    locales: reads.filter((read) => read.entry).map((read) => read.locale),
+  });
+  return {
+    title: translation.title,
+    description: translation.description,
+    keywords: tags,
+    ...localized,
+    openGraph: {
+      ...localized.openGraph,
+      type: "article",
+      publishedTime: dayjs(feed.createdAt).toISOString(),
+      modifiedTime: dayjs(feed.updatedAt).toISOString(),
+      authors: [Meta.name],
+      tags,
+    },
+  };
 };
 
 const Page = async ({
@@ -90,45 +115,60 @@ const Page = async ({
 }) => {
   const [{ slug, type }, locale] = await Promise.all([params, getLocale()]);
   const dbLocale = dbLocaleResolver(locale);
-  const { feed, t } = await all({
-    feed: async () => {
-      const { error, data } = await safe(
-        client.feeds["details-by-slug"](
-          { slug, locale: dbLocale },
-          { context: { cacheTags: [wwwFeedCacheTag(slug)] } }
-        )
-      );
-      if (isServiceNotFound(error)) return null;
-      if (error) throw error;
-      return data;
-    },
+  const { entry, t } = await all({
+    entry: async () => await readFeed(slug, locale),
     t: async () => await getTranslations("blog"),
   });
 
-  const [translation] = feed?.translations ?? [];
-
-  if (!translation?.content || !feed) {
+  if (!entry?.translation.content) {
     notFound();
   }
+  const { feed, translation } = entry;
+  const href = `/${feed.type}s/${slug}`;
+  if (`${feed.type}s` !== type) {
+    permanentRedirect(getPathname({ href, locale }));
+  }
 
-  const articleUrl = `${getBaseUrl({
-    baseUrl: WWW_BASE_URL,
-    useBaseUrl: true,
-  })}/${locale}/${type}/${slug}/llm.md`;
-
-  const jsonLd: WithContext<Blog> = {
+  const url = `${WWW_BASE_URL}${getPathname({ href, locale })}`;
+  const jsonLd: Graph = {
     "@context": "https://schema.org",
-    "@type": "Blog",
-    headline: feed.translations[0]?.title,
-    datePublished: dayjs(feed.createdAt).format("MMMM D, YYYY"),
-    dateModified: dayjs(feed.updatedAt).format("MMMM D, YYYY"),
-    name: feed.translations[0]?.title,
-    description: feed.translations[0]?.description ?? "",
-    author: {
-      "@type": "Person",
-      name: "Chia1104",
-    },
-    keywords: feed.tags.map((tag) => tag.name),
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        headline: translation.title,
+        description: translation.description ?? undefined,
+        url,
+        mainEntityOfPage: url,
+        datePublished: dayjs(feed.createdAt).toISOString(),
+        dateModified: dayjs(feed.updatedAt).toISOString(),
+        inLanguage: locale,
+        author: {
+          "@type": "Person",
+          "@id": `${WWW_BASE_URL}/#person`,
+          name: Meta.name,
+          url: WWW_BASE_URL,
+        },
+        keywords: feed.tags.map((tag) => tag.name),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: Meta.name,
+            item: `${WWW_BASE_URL}${getPathname({ href: "/", locale })}`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: t(`${feed.type}s.doc-title`),
+            item: `${WWW_BASE_URL}${getPathname({ href: `/${feed.type}s`, locale })}`,
+          },
+          { "@type": "ListItem", position: 3, name: translation.title },
+        ],
+      },
+    ],
   };
 
   return (
@@ -153,7 +193,14 @@ const Page = async ({
           <div className="rule-b page-sm:flex-row flex flex-col">
             <div className="border-separator page-sm:border-b-0 flex items-center gap-2 border-b px-4 py-2">
               <Avatar size="sm">
-                <Avatar.Image src={Meta.avatar} />
+                <Avatar.Image
+                  {...getImageProps({
+                    src: Meta.avatar,
+                    alt: "",
+                    width: 32,
+                    height: 32,
+                  }).props}
+                />
                 <Avatar.Fallback>
                   <span>{Meta.name.charAt(0)}</span>
                 </Avatar.Fallback>
@@ -208,7 +255,7 @@ const Page = async ({
                 slot: {
                   actions: (
                     <ActionGroup
-                      articleUrl={articleUrl}
+                      articleUrl={`${url}/llm.md`}
                       className="mb-5 ml-auto flex justify-self-end"
                     />
                   ),

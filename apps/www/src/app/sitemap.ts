@@ -1,120 +1,121 @@
 import type { MetadataRoute } from "next";
 
-import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
-import { feedUrl, getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
+import { FeedOrderBy, FeedType } from "@chia/db/types";
+import { WWW_BASE_URL } from "@chia/utils/config";
 
+import { getPathname } from "@/libs/i18n/navigation";
+import { routing } from "@/libs/i18n/routing";
 import { client } from "@/libs/orpc/client.rsc";
-import { Locale as ILocale } from "@/libs/utils/i18n";
+import { dbLocaleResolver } from "@/libs/utils/i18n";
 import routes from "@/shared/routes";
 
 export const dynamic = "force-dynamic";
-export const dynamicParams = true;
+
+/** One entry per locale, each naming every locale as an alternate. */
+const localizedEntries = (
+  href: string,
+  locales: readonly Locale[],
+  lastModified?: string
+): MetadataRoute.Sitemap => {
+  const urls = locales.map(
+    (locale) =>
+      [locale, `${WWW_BASE_URL}${getPathname({ href, locale })}`] as const
+  );
+  const languages = Object.fromEntries(urls);
+  return urls.map(([, url]) => ({
+    url,
+    lastModified,
+    alternates: { languages },
+  }));
+};
+
+/** `undefined` when there is nothing to date the page by, which is better than a made-up date. */
+const newest = (dates: readonly (string | Date)[]) => {
+  if (dates.length === 0) return undefined;
+  return new Date(
+    Math.max(...dates.map((date) => new Date(date).getTime()))
+  ).toISOString();
+};
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = getBaseUrl({
-    isServer: true,
-    baseUrl: WWW_BASE_URL,
-    useBaseUrl: true,
-  });
-
-  const staticSitemapData = Object.values(Locale).flatMap((locale) =>
-    Object.entries(routes).map(
-      ([path, { priority }]) =>
-        ({
-          url: `${baseUrl}/${localeResolver(locale)}${path}`,
-          lastModified: new Date().toISOString(),
-          priority: priority,
-          changeFrequency: "monthly",
-        }) satisfies MetadataRoute.Sitemap[0]
-    )
-  );
-
-  const feedsSitemapData = (
-    await Promise.all(
-      Object.values(Locale).map(async (locale) => {
+  const [feedLists, { items: tags }] = await Promise.all([
+    Promise.all(
+      routing.locales.map(async (locale) => {
         const { items } = await client.feeds.list({
           limit: 1000,
           type: FeedType.All,
           orderBy: FeedOrderBy.UpdatedAt,
           sortOrder: "desc",
           withContent: false,
-          locale,
+          locale: dbLocaleResolver(locale),
         });
-
-        return items.map(
-          (feed) =>
-            ({
-              url: feedUrl({ type: feed.type, slug: feed.slug, locale }),
-              lastModified: feed.updatedAt,
-              priority: 0.8,
-              changeFrequency: "weekly",
-            }) satisfies MetadataRoute.Sitemap[0]
-        );
+        // The list carries every feed; one without this locale's translation has no page in it.
+        return items
+          .filter((feed) => feed.translations.length > 0)
+          .map((feed) => ({ feed, locale }));
       })
-    )
-  ).flat();
-
-  const { items: tags } = await client.tags.list();
-  const tagsSitemapData = Object.values(Locale).flatMap((locale) => [
-    {
-      url: `${baseUrl}/${localeResolver(locale)}/tags`,
-      lastModified: new Date().toISOString(),
-      priority: 0.6,
-      changeFrequency: "weekly",
-    } satisfies MetadataRoute.Sitemap[0],
-    ...tags
-      .filter((tag) => tag.feedCount > 0)
-      .map(
-        (tag) =>
-          ({
-            url: `${baseUrl}/${localeResolver(locale)}/tags/${tag.slug}`,
-            lastModified: tag.updatedAt,
-            priority: 0.6,
-            changeFrequency: "weekly",
-          }) satisfies MetadataRoute.Sitemap[0]
-      ),
+    ),
+    client.tags.list(),
   ]);
+  const listed = feedLists.flat();
+
+  const feeds = new Map<
+    string,
+    { href: string; updatedAt: string; locales: Locale[] }
+  >();
+  for (const { feed, locale } of listed) {
+    const entry = feeds.get(feed.slug) ?? {
+      href: `/${feed.type}s/${feed.slug}`,
+      updatedAt: feed.updatedAt,
+      locales: [],
+    };
+    entry.locales.push(locale);
+    feeds.set(feed.slug, entry);
+  }
+
+  const updatedWhere = (matches: (href: string) => boolean) =>
+    newest(
+      [...feeds.values()]
+        .filter((feed) => matches(feed.href))
+        .map((feed) => feed.updatedAt)
+    );
+  const liveTags = tags.filter((tag) => tag.feedCount > 0);
 
   return [
-    {
-      url: `${baseUrl}/${localeResolver(Locale.En)}`,
-      lastModified: new Date().toISOString(),
-      priority: 0.7,
-      changeFrequency: "monthly",
-    },
-    {
-      url: `${baseUrl}/${localeResolver(Locale.ZhTW)}`,
-      lastModified: new Date().toISOString(),
-      priority: 0.7,
-      changeFrequency: "monthly",
-    },
-    {
-      url: `${baseUrl}/${localeResolver(Locale.En)}/notes`,
-      lastModified: new Date().toISOString(),
-      priority: 0.8,
-      changeFrequency: "weekly",
-    },
-    {
-      url: `${baseUrl}/${localeResolver(Locale.ZhTW)}/notes`,
-      lastModified: new Date().toISOString(),
-      priority: 0.8,
-      changeFrequency: "weekly",
-    },
-    ...staticSitemapData,
-    ...feedsSitemapData,
-    ...tagsSitemapData,
+    ...localizedEntries(
+      "/",
+      routing.locales,
+      updatedWhere(() => true)
+    ),
+    ...Object.keys(routes).flatMap((path) =>
+      localizedEntries(
+        path,
+        routing.locales,
+        updatedWhere((href) => href.startsWith(`${path}/`))
+      )
+    ),
+    ...[...feeds.values()].flatMap((feed) =>
+      localizedEntries(feed.href, feed.locales, feed.updatedAt)
+    ),
+    ...localizedEntries(
+      "/tags",
+      routing.locales,
+      newest([
+        ...liveTags.map((tag) => tag.updatedAt),
+        ...listed.map(({ feed }) => feed.updatedAt),
+      ])
+    ),
+    ...liveTags.flatMap((tag) =>
+      localizedEntries(
+        `/tags/${tag.slug}`,
+        routing.locales,
+        newest([
+          tag.updatedAt,
+          ...listed
+            .filter(({ feed }) => feed.tags.some((t) => t.slug === tag.slug))
+            .map(({ feed }) => feed.updatedAt),
+        ])
+      )
+    ),
   ];
-}
-
-function localeResolver(locale: Locale) {
-  switch (locale) {
-    case Locale.En:
-      return ILocale.En;
-    case Locale.ZhTW:
-      return ILocale.ZhTW;
-    default: {
-      const _exhaustive: never = locale;
-      return _exhaustive;
-    }
-  }
 }

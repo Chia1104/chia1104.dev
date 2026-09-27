@@ -1,5 +1,7 @@
 "use client";
 
+import { getImageProps } from "next/image";
+
 import { Avatar, AvatarImage, AvatarFallback } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
@@ -18,7 +20,15 @@ export function AboutMe() {
     <Panel data-testid="hero-section">
       <div className="rule-b flex">
         <Avatar className="page-sm:size-28 border-separator size-20 shrink-0 rounded-none border-r">
-          <AvatarImage src={meta.avatar} />
+          <AvatarImage
+            {...getImageProps({
+              src: meta.avatar,
+              alt: meta.name,
+              width: 112,
+              height: 112,
+              loading: "eager",
+            }).props}
+          />
           <AvatarFallback className="rounded-none">
             <span className="text-2xl">{meta.name.charAt(0)}</span>
           </AvatarFallback>

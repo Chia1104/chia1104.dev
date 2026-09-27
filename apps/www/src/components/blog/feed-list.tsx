@@ -12,6 +12,7 @@ import ImageZoom from "@chia/ui/image-zoom";
 import Timeline from "@chia/ui/timeline";
 import type { TimelineItemData } from "@chia/ui/timeline/types";
 
+import { getPathname } from "@/libs/i18n/navigation";
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs } from "@/libs/orpc/types";
 
@@ -64,7 +65,7 @@ const FeedList: FC<Props> = ({ nextCursor, query = {} }) => {
           },
           startDate: createdAt ?? null,
           description: translations[0]?.description,
-          link: `/${item.type}s/${slug}`,
+          link: getPathname({ href: `/${item.type}s/${slug}`, locale }),
         } satisfies TimelineItemData;
       })
     );

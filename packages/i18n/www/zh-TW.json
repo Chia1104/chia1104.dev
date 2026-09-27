@@ -23,7 +23,11 @@
     "section3": "我具備快速學習解決問題的能力，並展現高度韌性。我勇於走出舒適圈，擁抱新挑戰。我熱衷於學習新興技術知識，並從中獲得成就感。此外，我也樂於與他人分享我的技能。",
     "working-at": "任職於",
     "full-name": "全名",
-    "email": "電子信箱"
+    "email": "電子信箱",
+    "latest": {
+      "title": "最新文章",
+      "description": "最近發佈的文章與筆記。"
+    }
   },
   "about": {
     "title": "關於我",
@@ -84,11 +88,13 @@
     "written-by-user": "撰寫者：{user}",
     "posts": {
       "doc-title": "文章",
+      "description": "關於前端、全端與 AI 工程的技術文章，整理實作細節、實測數據與踩過的坑。",
       "no-content": "尚無文章。",
       "view-all": "查看全部文章"
     },
     "notes": {
       "doc-title": "筆記",
+      "description": "開發時記下的短篇筆記：錯誤排除、工具技巧與小型實作。",
       "no-content": "尚無筆記。",
       "view-all": "查看全部筆記"
     },
@@ -97,7 +103,8 @@
       "description": "依主題瀏覽文章。",
       "no-content": "尚無標籤。",
       "view-all": "查看全部標籤",
-      "count": "{count} 篇文章"
+      "count": "{count} 篇文章",
+      "fallback-description": "{count} 篇關於 {name} 的文章與筆記。"
     },
     "read-with-minutes": "{minutes} 分鐘閱讀",
     "open-in-chat-query": "我想詢問關於這篇文章的問題：{url}",
@@ -184,6 +191,7 @@
   "routes": {
     "about": "關於",
     "blog": "部落格",
+    "notes": "筆記",
     "projects": "專案",
     "contact": "聯絡"
   },
