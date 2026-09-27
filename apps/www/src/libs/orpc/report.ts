@@ -18,3 +18,10 @@ export const reportServiceError = (cause: unknown) => {
   }
   captureException(cause);
 };
+
+/**
+ * Whether `service` answered that the resource does not exist. Only this is a 404: any other
+ * failure rendered as one would be cached as one.
+ */
+export const isServiceNotFound = (cause: unknown): boolean =>
+  cause instanceof ORPCError && cause.code === "NOT_FOUND";
