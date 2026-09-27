@@ -9,5 +9,7 @@ export const config = {
   matcher: [
     "/((?!api|_next|_vercel|.*opengraph-image|.*\\..*).*)",
     "/(.*)/llm\\.md",
+    "/rss\\.xml",
+    "/(.*)/rss\\.xml",
   ],
 };
