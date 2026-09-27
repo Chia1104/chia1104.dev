@@ -86,6 +86,7 @@ export const getFeedsRoute = contractOS.feeds.list
       cursor: opts.input.nextCursor,
       withContent: opts.input.withContent,
       locale: opts.input.locale,
+      translated: opts.input.translated,
       ...toFeedListScope(visibility),
     });
 

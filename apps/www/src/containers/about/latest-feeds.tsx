@@ -33,8 +33,8 @@ export async function LatestFeeds() {
     sortOrder: "desc",
     withContent: false,
     locale: dbLocaleResolver(locale),
+    translated: true,
   });
-  // The list carries every feed; one without this locale's translation has no page in it.
   const feeds = items.flatMap((feed) => {
     const [translation] = feed.translations;
     return translation ? [{ ...feed, translation }] : [];

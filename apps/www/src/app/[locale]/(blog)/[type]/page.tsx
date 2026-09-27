@@ -58,6 +58,7 @@ const CacheFeeds = async ({
         sortOrder: "desc",
         type: formattedType,
         locale: dbLocaleResolver(locale),
+        translated: true,
       }),
       initialPageParam: null,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -74,6 +75,7 @@ const CacheFeeds = async ({
           sortOrder: "desc",
           type: formattedType,
           locale: dbLocaleResolver(locale),
+          translated: true,
         }}
       />
     </HydrationBoundary>
