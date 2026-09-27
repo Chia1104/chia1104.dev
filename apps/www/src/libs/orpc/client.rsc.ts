@@ -1,6 +1,8 @@
 import "server-only";
-import { createORPCClient } from "@orpc/client";
+import { ORPCError, createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
+import { RetryLinkPlugin } from "@orpc/client/plugins";
+import type { RetryLinkPluginContext } from "@orpc/client/plugins";
 import type { RouterContractClient } from "@orpc/contract";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
@@ -19,7 +21,7 @@ const endpoint = new URL(
 );
 
 /** Per call: cache tags for the page making it, beyond the ones its procedure implies. */
-export interface RSCClientContext {
+export interface RSCClientContext extends RetryLinkPluginContext {
   cacheTags?: readonly string[];
 }
 
@@ -39,6 +41,19 @@ export const link = new RPCLink<RSCClientContext>({
     [X_CF_BYPASS_TOKEN]: env.CF_BYPASS_TOKEN ?? "",
     "x-ch-api-key": env.CH_API_KEY ?? "",
   },
+  plugins: [
+    // Retries only what `service` never answered: a network failure, or a proxy response (502
+    // while it swaps containers) that oRPC reads as malformed. Every call here is a read.
+    new RetryLinkPlugin({
+      default: {
+        retry: 3,
+        retryDelay: ({ attempt }) => 1000 * 2 ** (attempt - 1),
+        shouldRetry: ({ error }) =>
+          !(error instanceof ORPCError) ||
+          error.code === "MALFORMED_ORPC_RESPONSE",
+      },
+    }),
+  ],
   /** The tags land on the prerendered page, not on this uncached POST. */
   fetch: (url, init, options, path) =>
     fetch(url, {
