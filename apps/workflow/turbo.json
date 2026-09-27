@@ -29,6 +29,9 @@
         "FIRECRAWL_API_KEY",
         "GH_AGENT_TOKEN",
         "RESEND_API_KEY",
+        "VERCEL_TOKEN",
+        "VERCEL_TEAM_ID",
+        "VERCEL_PROJECT_ID",
         "SENTRY_DSN"
       ],
       "passThroughEnv": [
@@ -55,6 +58,9 @@
         "FIRECRAWL_API_KEY",
         "GH_AGENT_TOKEN",
         "RESEND_API_KEY",
+        "VERCEL_TOKEN",
+        "VERCEL_TEAM_ID",
+        "VERCEL_PROJECT_ID",
         "SENTRY_DSN"
       ]
     }

@@ -1,7 +1,10 @@
+"use client";
+
 import { ViewTransition } from "react";
 
 import { Skeleton } from "@heroui/react";
-import { getTranslations } from "next-intl/server";
+import { useQuery } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
 
 import { FeedType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
@@ -17,18 +20,13 @@ import {
   PanelTitle,
 } from "@/components/commons/ruled";
 import { Link } from "@/libs/i18n/navigation";
-import { client } from "@/libs/orpc/client.rsc";
+import { orpc } from "@/libs/orpc/client";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
-
-interface RelatedFeedsProps {
-  locale: Locale;
-  slug: string;
-}
 
 const ROW_CLASS_NAME =
   "page-sm:grid-cols-[minmax(0,1fr)_auto] page-sm:gap-x-8 grid gap-y-1 px-4 py-3";
 
-export function RelatedFeedsSkeleton() {
+function RelatedFeedsSkeleton() {
   return (
     <>
       <Panel aria-busy="true" aria-label="Loading related articles">
@@ -52,17 +50,24 @@ export function RelatedFeedsSkeleton() {
   );
 }
 
-/** Renders its trailing band itself, so an article without related posts leaves no empty break. */
-export async function RelatedFeeds({ locale, slug }: RelatedFeedsProps) {
-  const t = await getTranslations("blog");
+/**
+ * Loaded in the browser: the list names other posts, so rendering it into the article would
+ * make every article's cached page stale whenever any post's title changed. Renders its
+ * trailing band itself, so an article without related posts leaves no empty break.
+ */
+export function RelatedFeeds({ slug }: { slug: string }) {
+  const locale = useLocale();
+  const t = useTranslations("blog");
+  const { data: feeds, isPending } = useQuery(
+    orpc.feeds.related.queryOptions({
+      input: { slug, locale: dbLocaleResolver(locale), limit: 3 },
+    })
+  );
 
-  const feeds = await client.feeds.related({
-    slug,
-    locale: dbLocaleResolver(locale),
-    limit: 3,
-  });
-
-  if (feeds.items.length === 0) {
+  if (isPending) {
+    return <RelatedFeedsSkeleton />;
+  }
+  if (!feeds || feeds.items.length === 0) {
     return null;
   }
 

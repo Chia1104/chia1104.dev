@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Suspense, ViewTransition } from "react";
+import { ViewTransition } from "react";
 
 import { Avatar } from "@heroui/react";
 import { safe } from "@orpc/client";
-import { ErrorBoundary } from "@sentry/nextjs";
 import { all } from "better-all";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { Blog, WithContext } from "schema-dts";
@@ -14,17 +13,14 @@ import { getContentProps } from "@chia/contents/services";
 import { FeedOrderBy, FeedType } from "@chia/db/types";
 import Meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";
-import { WWW_BASE_URL, getBaseUrl } from "@chia/utils/config";
+import { WWW_BASE_URL, getBaseUrl, wwwFeedCacheTag } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 
 import { ArticleAgentContext } from "@/components/agent/article-agent-context";
 import { ActionGroup } from "@/components/blog/action-group";
 import { FeedSummary } from "@/components/blog/feed-summary";
 import { FeedTags } from "@/components/blog/feed-tags";
-import {
-  RelatedFeeds,
-  RelatedFeedsSkeleton,
-} from "@/components/blog/related-feeds";
+import { RelatedFeeds } from "@/components/blog/related-feeds";
 import { Tweet } from "@/components/blog/tweet";
 import WrittenBy from "@/components/blog/written-by";
 import {
@@ -36,8 +32,6 @@ import {
 import { client } from "@/libs/orpc/client.rsc";
 import { reportServiceError } from "@/libs/orpc/report";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
-
-export const revalidate = 300;
 
 export const generateStaticParams = async () => {
   const feeds = await client.feeds.list({
@@ -63,10 +57,10 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const [{ slug }, locale] = await Promise.all([params, getLocale()]);
   try {
-    const feed = await client.feeds["details-by-slug"]({
-      slug,
-      locale: dbLocaleResolver(locale),
-    });
+    const feed = await client.feeds["details-by-slug"](
+      { slug, locale: dbLocaleResolver(locale) },
+      { context: { cacheTags: [wwwFeedCacheTag(slug)] } }
+    );
     const tags = feed.tags.map((tag) => tag.name);
     return {
       title: feed.translations[0]?.title,
@@ -99,7 +93,10 @@ const Page = async ({
   const { feed, t } = await all({
     feed: async () => {
       const { error, data } = await safe(
-        client.feeds["details-by-slug"]({ slug, locale: dbLocale })
+        client.feeds["details-by-slug"](
+          { slug, locale: dbLocale },
+          { context: { cacheTags: [wwwFeedCacheTag(slug)] } }
+        )
       );
       if (error) {
         reportServiceError(error);
@@ -213,7 +210,6 @@ const Page = async ({
                 slot: {
                   actions: (
                     <ActionGroup
-                      content={translation.content}
                       articleUrl={articleUrl}
                       className="mb-5 ml-auto flex justify-self-end"
                     />
@@ -224,11 +220,7 @@ const Page = async ({
           </ArticleAgentContext>
         </div>
         <Band />
-        <ErrorBoundary>
-          <Suspense fallback={<RelatedFeedsSkeleton />}>
-            <RelatedFeeds locale={locale} slug={slug} />
-          </Suspense>
-        </ErrorBoundary>
+        <RelatedFeeds slug={slug} />
         <Panel className="px-4 py-6">
           <WrittenBy
             className="relative flex w-full justify-start self-start"

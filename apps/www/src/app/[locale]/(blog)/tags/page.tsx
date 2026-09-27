@@ -17,8 +17,6 @@ import { Link } from "@/libs/i18n/navigation";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
-export const revalidate = 300;
-
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("blog.tags");
   return {

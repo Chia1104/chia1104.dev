@@ -24,7 +24,10 @@ import {
 import { FeedDraftAuthor } from "@chia/db/schema";
 import { reportError } from "@chia/observability/report";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
-import { feedSummaryOutputSchema } from "@chia/workflow-control/contract";
+import {
+  FeedChangeScope,
+  feedSummaryOutputSchema,
+} from "@chia/workflow-control/contract";
 
 import { ResourceSearchMode } from "../rag/resource-types";
 import { contractOS } from "../shared/context";
@@ -132,7 +135,7 @@ export const getFeedByIdRoute = contractOS.feeds["details-by-id"]
   });
 
 export const getRelatedFeedsRoute = contractOS.feeds.related
-  .use(keyedReadGuard)
+  .use(publicReadGuard)
   .use(readRateLimit)
   .handler(async (opts) => {
     const items = await getRelatedFeedsService({
@@ -228,7 +231,7 @@ export const restoreFeedRoute = contractOS.feeds.restore
     if (!data) {
       throw opts.errors.NOT_FOUND();
     }
-    await opts.context.hooks?.onFeedChanged?.(data.id);
+    await opts.context.hooks?.onFeedChanged?.(data.id, FeedChangeScope.Listing);
   });
 
 export const summarizeFeedRoute = contractOS.feeds.summarize

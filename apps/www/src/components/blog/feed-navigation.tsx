@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import type { FC } from "react";
-import { use } from "react";
+import type { FC, ReactNode } from "react";
 
-import { useTranslations } from "next-intl";
+import { Skeleton } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
 
-import { FeedType } from "@chia/db/types";
+import { FeedOrderBy, FeedType } from "@chia/db/types";
 import {
   NavigationMenuContent,
   NavigationMenuItem,
@@ -16,16 +17,55 @@ import { cn } from "@chia/ui/utils/cn.util";
 
 import ListItem from "@/components/blog/list-item";
 import { useRouter } from "@/libs/i18n/navigation";
+import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
+import { dbLocaleResolver } from "@/libs/utils/i18n";
+
+type ListedFeed = RouterOutputs["feeds"]["list"]["items"][number];
+
+/**
+ * Mounted only while its menu is open, so the list is fetched on first open. It stays out of
+ * the cached page: every page shows it, and a new post would otherwise make them all stale.
+ */
+const LatestFeeds = ({
+  type,
+  children,
+}: {
+  type: FeedType;
+  children: (feeds: ListedFeed[]) => ReactNode;
+}) => {
+  const locale = useLocale();
+  const { data, isPending } = useQuery(
+    orpc.feeds.list.queryOptions({
+      input: {
+        limit: 4,
+        withContent: false,
+        orderBy: FeedOrderBy.CreatedAt,
+        sortOrder: "desc",
+        locale: dbLocaleResolver(locale),
+        type,
+      },
+    })
+  );
+  if (isPending) {
+    return (
+      <ul className="grid w-[300px] gap-3 p-4 pb-0 md:w-[500px] lg:w-[600px]">
+        {["feed-1", "feed-2", "feed-3"].map((key) => (
+          <li key={key}>
+            <Skeleton className="h-14 w-full rounded-lg" />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  return children(data?.items ?? []);
+};
 
 interface Props {
-  feeds: Promise<RouterOutputs["feeds"]["list"]>;
   type: FeedType;
 }
 
-const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
-  const feeds = use(promisedFeeds).items;
-  const hasFeeds = !!feeds && Array.isArray(feeds) && feeds.length > 0;
+const FeedNavigation: FC<Props> = ({ type }) => {
   const router = useRouter();
   const tn = useTranslations("blog.notes");
   const tp = useTranslations("blog.posts");
@@ -87,42 +127,46 @@ const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
         {getTranslations().title}
       </NavigationMenuTrigger>
       <NavigationMenuContent>
-        <ul
-          className={cn(
-            "grid w-[300px] gap-3 p-4 pb-0 md:w-[500px] lg:w-[600px]",
-            hasFeeds ? getStyles().ul : "max-w-[300px]"
-          )}>
-          {hasFeeds ? (
-            feeds.map((feed, index) => {
-              if (type === FeedType.Post && index === 0) {
-                return (
-                  <li key={feed.id} className="row-span-3">
-                    <Link
-                      className="from-default/50 to-default text-default-foreground flex size-full flex-col justify-end rounded-2xl bg-linear-to-b p-6 no-underline outline-none select-none focus:shadow-md"
+        <LatestFeeds type={type}>
+          {(feeds) => (
+            <ul
+              className={cn(
+                "grid w-[300px] gap-3 p-4 pb-0 md:w-[500px] lg:w-[600px]",
+                feeds.length > 0 ? getStyles().ul : "max-w-[300px]"
+              )}>
+              {feeds.length > 0 ? (
+                feeds.map((feed, index) => {
+                  if (type === FeedType.Post && index === 0) {
+                    return (
+                      <li key={feed.id} className="row-span-3">
+                        <Link
+                          className="from-default/50 to-default text-default-foreground flex size-full flex-col justify-end rounded-2xl bg-linear-to-b p-6 no-underline outline-none select-none focus:shadow-md"
+                          href={`${getLinkPrefix()}/${feed.slug}`}>
+                          <div className="mt-4 mb-2 line-clamp-2 text-base font-semibold">
+                            {feed.translations[0]?.title}
+                          </div>
+                          <p className="text-muted line-clamp-3 text-sm leading-snug">
+                            {feed.translations[0]?.description}
+                          </p>
+                        </Link>
+                      </li>
+                    );
+                  }
+                  return (
+                    <ListItem
+                      key={feed.id}
+                      title={feed.translations[0]?.title}
                       href={`${getLinkPrefix()}/${feed.slug}`}>
-                      <div className="mt-4 mb-2 line-clamp-2 text-base font-semibold">
-                        {feed.translations[0]?.title}
-                      </div>
-                      <p className="text-muted line-clamp-3 text-sm leading-snug">
-                        {feed.translations[0]?.description}
-                      </p>
-                    </Link>
-                  </li>
-                );
-              }
-              return (
-                <ListItem
-                  key={feed.id}
-                  title={feed.translations[0]?.title}
-                  href={`${getLinkPrefix()}/${feed.slug}`}>
-                  {feed.translations[0]?.description}
-                </ListItem>
-              );
-            })
-          ) : (
-            <ListItem href="">{getTranslations().noContent}</ListItem>
+                      {feed.translations[0]?.description}
+                    </ListItem>
+                  );
+                })
+              ) : (
+                <ListItem href="">{getTranslations().noContent}</ListItem>
+              )}
+            </ul>
           )}
-        </ul>
+        </LatestFeeds>
         <span className="flex w-full items-center justify-end gap-1 py-2 pr-5 pb-5 text-sm font-medium">
           <Link href={getLinkPrefix()} className="w-fit">
             {getTranslations().viewAll}

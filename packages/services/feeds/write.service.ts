@@ -1,6 +1,7 @@
 import type { DB } from "@chia/db/client";
 import {
   createFeed,
+  getFeedForIndexing,
   updateFeed,
   upsertContent,
   upsertFeedTranslation,
@@ -10,6 +11,7 @@ import { Locale } from "@chia/db/types";
 import type { FeedType } from "@chia/db/types";
 import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
+import { FeedChangeScope } from "@chia/workflow-control/contract";
 
 import type { FeedHooks } from "../shared/context";
 
@@ -94,7 +96,7 @@ export const createFeedService = async (
 
   // reading-time, BM25 and embedding indexing
   if (data) {
-    await hooks.onFeedChanged?.(data.id);
+    await hooks.onFeedChanged?.(data.id, FeedChangeScope.Listing);
   }
 
   return data;
@@ -113,11 +115,38 @@ export interface UpdateFeedServiceInput {
   translations?: Partial<Record<Locale, UpdateFeedTranslationInput>>;
 }
 
+/**
+ * What list and tag pages show of a feed, as one comparable value. An apply sends every
+ * title whether or not it changed, so the write's input cannot tell.
+ */
+const readListing = async (db: DB, feedId: number) => {
+  const feed = await getFeedForIndexing(db, { feedId });
+  if (!feed) return null;
+  return JSON.stringify({
+    type: feed.type,
+    published: feed.published,
+    createdAt: feed.createdAt,
+    deletedAt: feed.deletedAt,
+    defaultLocale: feed.defaultLocale,
+    tags: feed.tags.map((tag) => `${tag.locale}:${tag.name}`).toSorted(),
+    translations: feed.translations
+      .map((translation) =>
+        [translation.locale, translation.title, translation.description].join(
+          "\u0000"
+        )
+      )
+      .toSorted(),
+  });
+};
+
 export const updateFeedService = async (
   db: DB,
   input: UpdateFeedServiceInput,
   hooks: FeedHooks
 ) => {
+  const listingBefore = hooks.onFeedChanged
+    ? await readListing(db, input.feedId)
+    : null;
   const feedData = await updateFeed(db, {
     feedId: input.feedId,
     type: input.type,
@@ -179,7 +208,15 @@ export const updateFeedService = async (
     contents: contentsData,
   };
 
-  await hooks.onFeedChanged?.(updatedFeed.id);
+  if (hooks.onFeedChanged) {
+    const listingAfter = await readListing(db, updatedFeed.id);
+    await hooks.onFeedChanged(
+      updatedFeed.id,
+      listingBefore === listingAfter
+        ? FeedChangeScope.Article
+        : FeedChangeScope.Listing
+    );
+  }
 
   return updatedFeed;
 };

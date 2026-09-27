@@ -19,6 +19,8 @@
 ## `www`
 
 - `src/libs/orpc/client.rsc.ts` is server-only and may attach `CH_API_KEY`; the browser client must never receive an API key.
+- Content pages have no revalidate timer. `src/libs/orpc/client.rsc.ts` tags each server read with `WwwCacheTag` or `wwwFeedCacheTag`, and `workflow` invalidates those tags through the Vercel API, one five-minute window per tag; nothing calls into www. A write that changes what www renders must end in `scheduleFeedRevalidationStep` (in a workflow) or `workflow.startSiteRevalidation(tag)`.
+- The blog navigation and related posts load in the browser, so no cached page depends on a post other than its own. Home and projects keep a timer because Spotify and GitHub send no change event.
 - Browser requests use the Better Auth session cookie and may access only public or caller-owned procedures.
 - Content rendering belongs to `@chia/contents`, localization to `@chia/i18n` and shared agent UI to `@chia/agent-elements`.
 - Render access from `session.access`; do not infer authorization from failed requests or the raw role column.

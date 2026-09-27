@@ -1,13 +1,9 @@
-import { Suspense } from "react";
-
 import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { FeedType } from "@chia/db/types";
 import { NavigationMenu } from "@chia/ui/navigation-menu";
-
-import type { RouterOutputs } from "@/libs/orpc/types";
 
 import { renderWithProviders } from "../../utils";
 
@@ -22,34 +18,28 @@ vi.mock("@/libs/i18n/navigation", () => ({
   }),
 }));
 
+// The list loads only once a menu opens; these tests stay on the trigger.
+vi.mock("@/libs/orpc/client", () => ({
+  orpc: {
+    feeds: {
+      list: {
+        queryOptions: () => ({
+          queryKey: ["feeds.list"],
+          queryFn: async () => ({ items: [], nextCursor: null }),
+        }),
+      },
+    },
+  },
+}));
+
 import FeedNavigation from "@/components/blog/feed-navigation";
 
-type FeedsList = RouterOutputs["feeds"]["list"];
-
-/**
- * Pre-mark fulfilled so `React.use` skips Suspense.
- */
-const createFeedsPromise = (
-  items: FeedsList["items"] = []
-): Promise<FeedsList> => {
-  const value: FeedsList = { items, nextCursor: null };
-  return Object.assign(Promise.resolve(value), {
-    status: "fulfilled" as const,
-    value,
-  });
-};
-
-const renderFeedNavigation = async (
-  type: FeedType,
-  feeds: Promise<FeedsList> = createFeedsPromise()
-) => {
+const renderFeedNavigation = async (type: FeedType) => {
   await act(async () => {
     renderWithProviders(
-      <Suspense fallback={null}>
-        <NavigationMenu>
-          <FeedNavigation type={type} feeds={feeds} />
-        </NavigationMenu>
-      </Suspense>
+      <NavigationMenu>
+        <FeedNavigation type={type} />
+      </NavigationMenu>
     );
   });
 };
@@ -59,90 +49,29 @@ describe("FeedNavigation Component", () => {
     vi.clearAllMocks();
   });
 
-  const mockFeeds: FeedsList["items"] = [
-    {
-      id: 1,
-      slug: "test-post-1",
-      userId: "1",
-      type: "post",
-      published: true,
-      createdAt: "2024-01-01T00:00:00.000Z",
-      updatedAt: "2024-01-01T00:00:00.000Z",
-      deletedAt: null,
-      tags: [],
-      mainImage: null,
-      defaultLocale: "zh-TW",
-      translations: [
-        {
-          id: 1,
-          feedId: 1,
-          locale: "zh-TW",
-          title: "測試文章 1",
-          description: "這是測試文章 1 的描述",
-          excerpt: null,
-          summary: null,
-          readTime: null,
-          createdAt: "2024-01-01T00:00:00.000Z",
-          updatedAt: "2024-01-01T00:00:00.000Z",
-          content: null,
-          hasEmbedding: false,
-        },
-      ],
-    },
-    {
-      id: 2,
-      slug: "test-post-2",
-      userId: "1",
-      type: "post",
-      published: true,
-      createdAt: "2024-01-01T00:00:00.000Z",
-      updatedAt: "2024-01-01T00:00:00.000Z",
-      deletedAt: null,
-      tags: [],
-      mainImage: null,
-      defaultLocale: "zh-TW",
-      translations: [
-        {
-          id: 2,
-          feedId: 2,
-          locale: "zh-TW",
-          title: "測試文章 2",
-          description: "這是測試文章 2 的描述",
-          excerpt: null,
-          summary: null,
-          readTime: null,
-          createdAt: "2024-01-01T00:00:00.000Z",
-          updatedAt: "2024-01-01T00:00:00.000Z",
-          content: null,
-          hasEmbedding: false,
-        },
-      ],
-    },
-  ];
-
   it("應該渲染 Post 類型的導航", async () => {
-    await renderFeedNavigation(FeedType.Post, createFeedsPromise(mockFeeds));
+    await renderFeedNavigation(FeedType.Post);
 
     const trigger = screen.getByRole("button");
     expect(trigger).toBeInTheDocument();
   });
 
   it("應該渲染 Note 類型的導航", async () => {
-    await renderFeedNavigation(FeedType.Note, createFeedsPromise(mockFeeds));
+    await renderFeedNavigation(FeedType.Note);
 
     const trigger = screen.getByRole("button");
     expect(trigger).toBeInTheDocument();
   });
 
   it("應該在沒有 feeds 時顯示無內容訊息", async () => {
-    await renderFeedNavigation(FeedType.Post, createFeedsPromise([]));
+    await renderFeedNavigation(FeedType.Post);
 
     const trigger = screen.getByRole("button");
     expect(trigger).toBeInTheDocument();
   });
 
   it("應該渲染 feeds 列表", async () => {
-    await renderFeedNavigation(FeedType.Post, createFeedsPromise(mockFeeds));
+    await renderFeedNavigation(FeedType.Post);
 
     const trigger = screen.getByRole("button");
     expect(trigger).toBeInTheDocument();
@@ -150,7 +79,7 @@ describe("FeedNavigation Component", () => {
 
   it("應該處理點擊觸發器", async () => {
     const user = userEvent.setup();
-    await renderFeedNavigation(FeedType.Post, createFeedsPromise(mockFeeds));
+    await renderFeedNavigation(FeedType.Post);
 
     const trigger = screen.getByRole("button");
     await user.click(trigger);
@@ -160,7 +89,7 @@ describe("FeedNavigation Component", () => {
 
   it("應該為 Note 類型使用正確的路徑前綴", async () => {
     const user = userEvent.setup();
-    await renderFeedNavigation(FeedType.Note, createFeedsPromise(mockFeeds));
+    await renderFeedNavigation(FeedType.Note);
 
     const trigger = screen.getByRole("button");
     await user.click(trigger);
@@ -169,14 +98,14 @@ describe("FeedNavigation Component", () => {
   });
 
   it("應該處理空 feeds 的情況", async () => {
-    await renderFeedNavigation(FeedType.Post, createFeedsPromise());
+    await renderFeedNavigation(FeedType.Post);
 
     const trigger = screen.getByRole("button");
     expect(trigger).toBeInTheDocument();
   });
 
   it("應該為 Post 類型的第一個項目使用特殊樣式", async () => {
-    await renderFeedNavigation(FeedType.Post, createFeedsPromise(mockFeeds));
+    await renderFeedNavigation(FeedType.Post);
 
     const trigger = screen.getByRole("button");
     expect(trigger).toBeInTheDocument();

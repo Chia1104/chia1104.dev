@@ -57,6 +57,8 @@ WORKFLOW_POSTGRES_MAX_POOL_SIZE=12
 
 Steps receive their database, provider and service credentials through `apps/workflow/.env.example`.
 
+`apps/workflow` invalidates www's cache tags through the Vercel REST API with `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT_ID`. An environment without them, such as beta, skips the call.
+
 ## 3. Why the runner is single-replica
 
 The installed `@workflow/world-postgres` adapter has process-local coordination:

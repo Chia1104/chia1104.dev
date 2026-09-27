@@ -37,7 +37,7 @@ export interface FeedSummaryTranslation {
  */
 export const summarizeFeedStep = async (
   feedID: number
-): Promise<FeedSummaryTranslation[] | null> => {
+): Promise<{ slug: string; translations: FeedSummaryTranslation[] } | null> => {
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
@@ -56,7 +56,13 @@ export const summarizeFeedStep = async (
     task = await resolveAgentTask(db, AgentTaskId.FeedSummary);
   } catch (error) {
     reportError(error, "Post summary task could not be resolved", { feedID });
-    return refs.map((ref) => ({ ...ref, status: "failed: model unavailable" }));
+    return {
+      slug: feed.slug,
+      translations: refs.map((ref) => ({
+        ...ref,
+        status: "failed: model unavailable",
+      })),
+    };
   }
 
   const results = await Promise.all(
@@ -107,7 +113,7 @@ export const summarizeFeedStep = async (
   if (results.some((translation) => translation.status === "ok")) {
     await invalidateCache([feedTranslations]);
   }
-  return results;
+  return { slug: feed.slug, translations: results };
 };
 
 /** A retry would bill the model calls again; a failed language is re-run from the editor. */
