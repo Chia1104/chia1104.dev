@@ -1,6 +1,6 @@
 "use client";
 
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
 import { CopyButton } from "@chia/ui/copy-button";
@@ -9,25 +9,6 @@ import { cn } from "@chia/ui/utils/cn.util";
 import LocaleSelector from "@/components/commons/locale-selector";
 
 import { OpenInChat } from "./open-in-chat";
-
-/**
- * The article's markdown from its `llm.md`, kept out of the page so the body is not
- * serialized twice. Nothing fetches it on mount: `llm.md` is a function call per request.
- */
-const articleMarkdownOptions = (articleUrl: string) => {
-  const path = new URL(articleUrl).pathname;
-  return queryOptions({
-    queryKey: ["article-markdown", path],
-    queryFn: async ({ signal }) => {
-      const response = await fetch(path, { signal });
-      if (!response.ok) {
-        throw new Error(`Article markdown failed with HTTP ${response.status}`);
-      }
-      return response.text();
-    },
-    staleTime: Infinity,
-  });
-};
 
 export const ActionGroup = ({
   articleUrl,
@@ -38,21 +19,23 @@ export const ActionGroup = ({
   className?: string;
 }) => {
   const tAction = useTranslations("action");
-  const queryClient = useQueryClient();
-  const markdown = articleMarkdownOptions(articleUrl);
-  // Observes the fetch that hover or press starts.
-  const { data, isFetching } = useQuery({ ...markdown, enabled: false });
+  // Fetched on press, so the article body is not serialized into the page twice.
+  const markdown = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(new URL(articleUrl).pathname);
+      if (!response.ok) {
+        throw new Error(`Article markdown failed with HTTP ${response.status}`);
+      }
+      return response.text();
+    },
+  });
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <LocaleSelector />
       <CopyButton
-        // Prefetched on hover, a press usually finds the text and copies it synchronously.
-        {...(data === undefined
-          ? { loadContent: () => queryClient.fetchQuery(markdown) }
-          : { content: data })}
-        onHoverStart={() => queryClient.prefetchQuery(markdown)}
-        isPending={isFetching}
+        loadContent={() => markdown.mutateAsync()}
+        isPending={markdown.isPending}
         iconProps={{
           className: "size-4",
         }}

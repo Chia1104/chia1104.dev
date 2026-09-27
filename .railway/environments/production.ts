@@ -49,6 +49,8 @@ export const createProductionResources = () => {
     },
     replicas: { [region]: 1 },
     deploy: {
+      // Traffic moves to a new container only once it answers; www's build reads through here.
+      healthcheckPath: "/api/v1/health",
       restartPolicyMaxRetries: 10,
       restartPolicyType: "ON_FAILURE",
       sleepApplication: false,

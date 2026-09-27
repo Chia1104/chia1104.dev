@@ -30,7 +30,7 @@ import {
   Panel,
 } from "@/components/commons/ruled";
 import { client } from "@/libs/orpc/client.rsc";
-import { reportServiceError } from "@/libs/orpc/report";
+import { isServiceNotFound } from "@/libs/orpc/report";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
 export const generateStaticParams = async () => {
@@ -75,8 +75,8 @@ export const generateMetadata = async ({
       },
     };
   } catch (error) {
-    reportServiceError(error);
-    notFound();
+    if (isServiceNotFound(error)) notFound();
+    throw error;
   }
 };
 
@@ -98,10 +98,8 @@ const Page = async ({
           { context: { cacheTags: [wwwFeedCacheTag(slug)] } }
         )
       );
-      if (error) {
-        reportServiceError(error);
-        return null;
-      }
+      if (isServiceNotFound(error)) return null;
+      if (error) throw error;
       return data;
     },
     t: async () => await getTranslations("blog"),
