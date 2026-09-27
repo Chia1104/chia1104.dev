@@ -72,6 +72,7 @@ const First: FC<{
           href={data.track.external_urls.spotify}
           target="_blank"
           rel="noopener noreferrer"
+          aria-label={`${data.track.name} - ${data.track.artists[0]?.name ?? ""}`}
           className="absolute inset-0 z-10"
         />
         <PlayIcon className="absolute right-5 bottom-1 opacity-0 transition-all duration-300 ease-in-out group-hover:bottom-5 group-hover:opacity-100" />
@@ -103,6 +104,7 @@ const Item: FC<{
         className="absolute inset-0"
         target="_blank"
         rel="noopener noreferrer"
+        aria-label={`${data.track.name} - ${data.track.artists[0]?.name ?? ""}`}
       />
     </div>
   );

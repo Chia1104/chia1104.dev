@@ -116,6 +116,7 @@ catalogs:
     "@monaco-editor/react": ^4.7.0
     monaco-editor: ^0.56.0
   next:
+    "@astrojs/rss": ^4.0.19
     "@next/third-parties": 16.3.5
     next: 16.3.5
     next-intl: ^4.14.6

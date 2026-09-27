@@ -58,6 +58,37 @@ test.describe("網站 Metadata 與 SEO 測試", () => {
 
       expect(text).toContain("<lastmod>");
     });
+
+    test("sitemap 不應該列出會轉址的預設語系前綴", async ({ page }) => {
+      const response = await page.request.get("/sitemap.xml");
+      const locs = (await response.text()).match(/<loc>[^<]*<\/loc>/g) ?? [];
+
+      expect(locs.length).toBeGreaterThan(0);
+      for (const loc of locs) {
+        expect(loc).not.toContain("/zh-TW");
+      }
+    });
+
+    test("sitemap 應該標示語系替代網址", async ({ page }) => {
+      const response = await page.request.get("/sitemap.xml");
+      const text = await response.text();
+
+      expect(text).toContain('hreflang="en-US"');
+      expect(text).toContain('hreflang="zh-TW"');
+    });
+  });
+
+  test.describe("RSS", () => {
+    test("應該成功載入預設語系與英文的 RSS", async ({ page }) => {
+      for (const path of ["/rss.xml", "/en-US/rss.xml"]) {
+        const response = await page.request.get(path, { maxRedirects: 0 });
+        expect(response.status()).toBe(200);
+        expect(response.headers()["content-type"]).toContain(
+          "application/rss+xml"
+        );
+        expect(await response.text()).toContain("<rss");
+      }
+    });
   });
 
   test.describe("robots.txt", () => {
@@ -110,6 +141,26 @@ test.describe("網站 Metadata 與 SEO 測試", () => {
       expect(ogDescription).toBeTruthy();
     });
 
+    test("canonical 與 hreflang 應該指向不帶預設語系前綴的網址", async ({
+      page,
+    }) => {
+      await page.goto("/en-US/posts");
+
+      const canonical = await page
+        .locator('link[rel="canonical"]')
+        .getAttribute("href");
+      expect(new URL(canonical ?? "").pathname).toBe("/en-US/posts");
+
+      const zhTW = await page
+        .locator('link[rel="alternate"][hreflang="zh-TW"]')
+        .getAttribute("href");
+      expect(new URL(zhTW ?? "").pathname).toBe("/posts");
+
+      await expect(
+        page.locator('link[rel="alternate"][hreflang="x-default"]')
+      ).toHaveCount(1);
+    });
+
     test("應該有正確的 viewport meta tag", async ({ page }) => {
       await page.goto("/");
       const viewport = await page
@@ -128,14 +179,15 @@ test.describe("網站 Metadata 與 SEO 測試", () => {
   });
 
   test.describe("結構化資料", () => {
-    test("應該包含 JSON-LD 結構化資料", async ({ page }) => {
+    test("首頁應該以 JSON-LD 描述網站與作者", async ({ page }) => {
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
       const jsonLd = await page
         .locator('script[type="application/ld+json"]')
-        .count();
-      // 結構化資料可能存在也可能不存在，這是可選的
-      expect(jsonLd).toBeGreaterThanOrEqual(0);
+        .first()
+        .textContent();
+
+      expect(jsonLd).toContain('"@type":"WebSite"');
+      expect(jsonLd).toContain('"@type":"Person"');
     });
   });
 });

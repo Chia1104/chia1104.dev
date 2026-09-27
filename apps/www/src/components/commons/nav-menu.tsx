@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import { useState } from "react";
 import type { FC } from "react";
@@ -23,7 +22,7 @@ import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 
 import { ChatLauncher } from "@/components/agent/chat-launcher";
 import { FeedSearch } from "@/components/commons/feed-search";
-import { useRouter } from "@/libs/i18n/navigation";
+import { Link, useRouter } from "@/libs/i18n/navigation";
 import { Locale } from "@/libs/utils/i18n";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
@@ -175,7 +174,9 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
             className="w-fit"
             selectedKey={
               selectedLayoutSegments[0] === "(blog)"
-                ? "posts"
+                ? selectedLayoutSegments[1] === "notes"
+                  ? "notes"
+                  : "posts"
                 : (selectedLayoutSegments[0] ?? "/")
             }>
             <Tabs.ListContainer className="bg-transparent">
@@ -193,6 +194,7 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
                         <Link
                           key={path}
                           href={path}
+                          aria-label={tRoutes(nameKey)}
                           data-testid={`nav-link-${pathKey}`}>
                           <span className="relative px-[10px] py-[5px]">
                             <p className="page-md:block hidden">

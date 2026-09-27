@@ -10,9 +10,11 @@ import { getQueryClient } from "@chia/utils/query-client";
 
 import FeedList from "@/components/blog/feed-list";
 import AppLoading from "@/components/commons/app-loading";
-import { PageTitle } from "@/components/commons/ruled";
+import { PageDescription, PageTitle } from "@/components/commons/ruled";
+import { localizedMetadata } from "@/libs/i18n/alternates";
 import { orpc } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
+import { FEED_PAGE_SIZE } from "@/shared/feeds";
 
 export const generateStaticParams = () => {
   return [{ type: "posts" }, { type: "notes" }];
@@ -24,19 +26,21 @@ export const dynamicParams = false;
 export async function generateMetadata({
   params,
 }: PagePropsWithLocale<{ type: "posts" | "notes" }>): Promise<Metadata> {
-  const { type } = await params;
+  const [{ type }, locale] = await Promise.all([params, getLocale()]);
   if (!["posts", "notes"].includes(type)) {
     notFound();
   }
   const t = await getTranslations(`blog.${type}`);
   return {
     title: t("doc-title"),
+    description: t("description"),
+    ...localizedMetadata({ href: `/${type}`, locale }),
   };
 }
 
 const CacheFeeds = async ({
   type,
-  limit = 10,
+  limit = FEED_PAGE_SIZE,
   locale,
 }: {
   type: "posts" | "notes";
@@ -90,9 +94,10 @@ const Page = async (
     <ViewTransition>
       <div className="flex w-full flex-col">
         <PageTitle>{t("doc-title")}</PageTitle>
+        <PageDescription>{t("description")}</PageDescription>
         <ErrorBoundary>
           <Suspense fallback={<AppLoading className="py-12" spinnerOnly />}>
-            <CacheFeeds type={type} limit={10} locale={locale} />
+            <CacheFeeds type={type} locale={locale} />
           </Suspense>
         </ErrorBoundary>
       </div>

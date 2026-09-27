@@ -8,4 +8,7 @@ export const routing = defineRouting({
   defaultLocale: Locale.ZhTW,
 
   localePrefix: "as-needed",
+
+  /** Pages declare hreflang in their metadata, which knows the translations a feed has. */
+  alternateLinks: false,
 });

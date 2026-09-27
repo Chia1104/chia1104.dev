@@ -30,6 +30,7 @@
     "env:check": "tsx ./src/env.ts"
   },
   "dependencies": {
+    "@astrojs/rss": "catalog:next",
     "@chia/agent-elements": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/auth": "workspace:*",

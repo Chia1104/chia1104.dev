@@ -13,10 +13,12 @@ import { getQueryClient } from "@chia/utils/query-client";
 import FeedList from "@/components/blog/feed-list";
 import AppLoading from "@/components/commons/app-loading";
 import { PageDescription } from "@/components/commons/ruled";
+import { localizedMetadata } from "@/libs/i18n/alternates";
 import { Link } from "@/libs/i18n/navigation";
 import { client, orpc } from "@/libs/orpc/client.rsc";
 import type { RouterInputs } from "@/libs/orpc/types";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
+import { FEED_PAGE_SIZE } from "@/shared/feeds";
 
 export const generateStaticParams = async () => {
   const { items } = await client.tags.list();
@@ -40,17 +42,22 @@ export const generateMetadata = async ({
 }: {
   params: PageParamsWithLocale<{ slug: string }>;
 }): Promise<Metadata> => {
-  const [{ slug }, locale] = await Promise.all([params, getLocale()]);
+  const [{ slug }, locale, t] = await Promise.all([
+    params,
+    getLocale(),
+    getTranslations("blog.tags"),
+  ]);
   const tag = await findTag(slug, dbLocaleResolver(locale));
   if (!tag) notFound();
   return {
     title: tag.name,
-    description: tag.description ?? undefined,
+    description:
+      tag.description ??
+      t("fallback-description", { count: tag.feedCount, name: tag.name }),
     keywords: [tag.name],
+    ...localizedMetadata({ href: `/tags/${slug}`, locale }),
   };
 };
-
-const LIMIT = 10;
 
 const CacheFeeds = async ({
   query,
@@ -96,14 +103,15 @@ const Page = async ({
             {t("view-all")}
           </Link>
         </div>
-        {tag.description ? (
-          <PageDescription>{tag.description}</PageDescription>
-        ) : null}
+        <PageDescription>
+          {tag.description ??
+            t("fallback-description", { count: tag.feedCount, name: tag.name })}
+        </PageDescription>
         <ErrorBoundary>
           <Suspense fallback={<AppLoading className="py-12" spinnerOnly />}>
             <CacheFeeds
               query={{
-                limit: LIMIT,
+                limit: FEED_PAGE_SIZE,
                 orderBy: "createdAt",
                 sortOrder: "desc",
                 type: FeedType.All,

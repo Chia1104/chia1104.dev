@@ -13,15 +13,20 @@ import {
   RULED_CELL_CLASS_NAME,
   RuledGridFiller,
 } from "@/components/commons/ruled";
+import { localizedMetadata } from "@/libs/i18n/alternates";
 import { Link } from "@/libs/i18n/navigation";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("blog.tags");
+  const [locale, t] = await Promise.all([
+    getLocale(),
+    getTranslations("blog.tags"),
+  ]);
   return {
     title: t("doc-title"),
     description: t("description"),
+    ...localizedMetadata({ href: "/tags", locale }),
   };
 }
 
