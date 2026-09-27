@@ -17,7 +17,7 @@ export const StatusSheet = ({
   children: ReactNode;
 }) => (
   <>
-    <figure className="overflow-hidden px-4 pt-8 pb-6">
+    <figure className="overflow-hidden px-4 py-8">
       <IsometricMark glyphs={glyphs} className="block h-auto max-h-88 w-full" />
     </figure>
     <PageTitle>{title}</PageTitle>

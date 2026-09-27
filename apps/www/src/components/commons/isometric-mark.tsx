@@ -204,7 +204,7 @@ export const IsometricMark = ({
         className
       )}
       viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
-      preserveAspectRatio="xMinYMax meet"
+      preserveAspectRatio="xMidYMid meet"
       fill="none"
       overflow="visible"
       xmlns="http://www.w3.org/2000/svg">
