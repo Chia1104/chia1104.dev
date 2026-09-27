@@ -143,6 +143,7 @@ export const getRelatedFeedsRoute = contractOS.feeds.related
       kv: opts.context.kv,
       slug: opts.input.slug,
       locale: opts.input.locale,
+      visibility: resolveFeedVisibility(opts.context.caller),
       limit: opts.input.limit,
     });
 

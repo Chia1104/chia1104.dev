@@ -16,6 +16,8 @@ import type {
   ResourceSearchResult,
 } from "../rag/search.service";
 
+import { toFeedDetailScope } from "./access";
+import type { FeedVisibility } from "./access";
 import type { PublicFeedSearchItem } from "./validator";
 
 export type SearchFeedsProvider = ResourceSearchMode;
@@ -169,21 +171,24 @@ type RelatedFeedItems = Awaited<ReturnType<typeof getRelatedFeeds>>;
 
 const RELATED_FEEDS_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
-/** Cached: a post's related list barely changes between publishes. */
+/** Cached per visibility: a post's related list barely changes between publishes. */
 export async function getRelatedFeedsService({
   db,
   kv,
   slug,
   locale,
+  visibility,
   limit = 3,
 }: {
   db: DB;
   kv: Keyv;
   slug: string;
   locale: Locale;
+  visibility: FeedVisibility;
   limit?: number;
 }): Promise<RelatedFeedItems> {
-  const cacheKey = `feeds:related:${locale}:${slug}:${limit}`;
+  const scope = toFeedDetailScope(visibility);
+  const cacheKey = `feeds:related:${scope.userId}:${scope.published ? "published" : "all"}:${scope.enableDeleted ? "deleted" : "live"}:${locale}:${slug}:${limit}`;
   const cached = await kv.get<RelatedFeedItems>(cacheKey);
   if (cached) {
     return cached;
@@ -192,6 +197,7 @@ export async function getRelatedFeedsService({
   const items = await getRelatedFeeds(db, {
     slug,
     locale,
+    scope,
     limit,
     model: resolveEmbeddingProvider().id,
   });

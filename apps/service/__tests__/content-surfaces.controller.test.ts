@@ -70,13 +70,26 @@ describe("feeds reads scale with the caller's tier", () => {
       expect(errorCode(error)).toBe("UNAUTHORIZED");
     });
 
-    /** The browser renders an article's related posts, outside the cached page. */
-    it("reaches related", async () => {
-      const { error } = await safe(
-        client.feeds.related({ slug: "test-feed-1" })
-      );
+    /**
+     * The browser renders an article's related posts, outside the cached page. Only the admin's
+     * published, live feeds may be the source or a result.
+     */
+    it("reads related within the published scope", async () => {
+      dbMocks.getRelatedFeeds.mockResolvedValue([]);
 
-      expect(errorCode(error)).not.toBe("UNAUTHORIZED");
+      await client.feeds.related({ slug: "test-feed-1" });
+
+      expect(dbMocks.getRelatedFeeds).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          slug: "test-feed-1",
+          scope: {
+            userId: guardMocks.TEST_ADMIN_ID,
+            published: true,
+            enableDeleted: false,
+          },
+        })
+      );
     });
   });
 
