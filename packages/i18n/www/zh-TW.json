@@ -188,8 +188,7 @@
     "contact": "聯絡"
   },
   "common": {
-    "loading": "載入中...",
-    "error": "這裡看起來有點無聊，我會盡快為你準備好"
+    "loading": "載入中..."
   },
   "chbot": {
     "title": "Gloss",
@@ -341,6 +340,19 @@
           "description": "描述、日期與標籤。"
         }
       }
+    }
+  },
+  "status": {
+    "home": "回到首頁",
+    "notFound": {
+      "title": "找不到這個頁面",
+      "description": "連結可能已經過期，或網址打錯了。",
+      "posts": "瀏覽文章"
+    },
+    "error": {
+      "title": "這個頁面載入失敗",
+      "description": "錯誤已經回報，請重試或稍後再回來。",
+      "retry": "重試"
     }
   }
 }

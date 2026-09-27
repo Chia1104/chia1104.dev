@@ -9,7 +9,7 @@ The site reads like **a drafting sheet printed on tinted paper**. A single colum
 The paper is not white. Light mode is a **warm blush sheet** and dark mode a **violet night sheet**: every neutral, from the page to the rules, carries a trace of the mode's hue. The accent is soft (a pale rose by day, a lilac violet by night) and is spent on _moments of attention_: a hovered link cell fills with accent hatching, bold words get a highlighter band, the scroll bar and the playlist glow run an accent gradient, and the footer wordmark inks up in accent as the pointer crosses it.
 
 - **Ruled, ledger-like framing.** Panels, page titles and grids are drawn by hairlines; empty grid slots are hatched rather than left blank.
-- **Hatching carries meaning.** Neutral hatching is a section break; accent hatching means "this whole cell is a link and you are on it"; a hatched cell is an empty slot.
+- **Hatching carries meaning.** Neutral hatching is a section break; accent hatching means "this whole cell is a link and you are on it"; a hatched cell is an empty slot; on the status figure, hatching marks the letter tops of a drawn solid.
 - **Personal marks.** A pixel-grid "Chia1104" wordmark rises out of the last rule of the footer, a hand-drawn signature path closes each article, and the home page keeps a live globe and a Spotify panel lit by a soft noise shader, the only glowing surface on the site.
 - **Density.** Calm but compact: compact controls, 16px inner padding, hairlines instead of whitespace doing the separating.
 
@@ -61,7 +61,7 @@ Colours are HeroUI theme tokens authored in OKLCH in `@chia/themes/default.css` 
 
 - **Derived from the accent, not hard-coded.** The gradient stops are computed in CSS from `--accent` (chroma floor 0.15, second stop +45° hue), and the highlighter band is `--accent-highlight`. Anything accent-coloured therefore follows a reader's custom accent.
 - **Reader palette.** Readers can recolour six tokens per mode (accent, background, text, surface, lines, muted text) with HeroUI's colour picker, opacity included. Overrides are stored as `#RRGGBBAA` and applied before first paint; resetting returns to the values above.
-- **Hatching.** 1px strokes on a 10px repeat at 315°, drawn in `separator` for section breaks and in `accent` for hovered link cells.
+- **Hatching.** 1px strokes on a 10px repeat at 315°, drawn in `separator` for section breaks and in `accent` for hovered link cells. The status figure hatches its letter tops at 45° in foreground mixed 14% into the page.
 - **Spotify green (`#1DB954`)** appears only on the Spotify glyph, as a brand mark.
 
 ## 3. Typography Rules
@@ -94,6 +94,7 @@ Colours are HeroUI theme tokens authored in OKLCH in `@chia/themes/default.css` 
 - **Article page.** Title, description and tags each sit on ruled rows; author, date, type and reading time form a strip of hairline-divided cells. The table of contents is a column of short marks hanging 1rem outside the right rail once the page is wide enough.
 - **Footer.** Laid out as a drawing's title block: Pages, Contact and Theme cells, a "now playing" strip and the copyright, closed by a pixel-grid "Chia1104" wordmark whose cells are outlined in `separator`, cropped by the final rule and inked from foreground through accent as the pointer moves.
 - **Images.** Gallery photos fill their ruled cells edge to edge with square corners and zoom to full resolution.
+- **Status pages.** Not-found and error pages open with a figure: `404` or `ERROR` in 3×5 block letters drawn as an isometric line figure, lying flat as half-height slabs and reading up and to the right over dashed `separator` construction lines. Letter tops are hatched, sides are left blank, and hairline edges (foreground mixed 22%) are drawn only where the surface folds or ends; around the pointer they darken to foreground mixed 70%. Below the figure sit the ruled title, a muted explanation and the ways out as HeroUI buttons. The figure is decorative (`aria-hidden`); the title carries the meaning. Unmatched URLs render the same page in the default locale.
 
 ## 5. Layout Principles
 
@@ -102,6 +103,6 @@ Colours are HeroUI theme tokens authored in OKLCH in `@chia/themes/default.css` 
 - **Rhythm from lines, not margins.** Each page opens with 48px of blank sheet under the header and closes with 48px before the footer; between them, panels follow each other separated only by hatch bands.
 - **Breakpoints follow the page, not the viewport.** Layout switches at 640, 768 and 992px of _page_ width (container queries), because the Gloss chat dock takes a column from the right on wide screens and the page narrows exactly as if the window had shrunk.
 - **Sticky chrome.** The header stays pinned; anchored headings keep clear of it through scroll padding; the timeline's year stays pinned inside its group.
-- **Flat depth.** There are no shadows inside the column. Depth appears only in floating layers (translucent surface, blur, soft shadow) and in the single lit surface, the playlist's noise shader.
+- **Flat depth.** There are no shadows inside the column. Depth appears only in floating layers (translucent surface, blur, soft shadow), in the single lit surface, the playlist's noise shader, and in the status figure, an isometric line drawing whose depth comes from projection and hatching, never shading.
 - **Restrained motion.** No scroll-triggered entrances. Motion answers the reader: hover hatching fades in, the scroll progress bar and the footer wordmark follow springs, and every animated piece respects reduced motion.
 - **Both modes are first-class.** Every rule, hatch and derived colour has a deliberate light and dark value, and a reader's custom palette is kept separately per mode.

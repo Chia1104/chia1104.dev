@@ -1,72 +1,31 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("圖片載入與優化測試", () => {
-  test("應該成功載入優化後的圖片", async ({ page }) => {
+test.describe("圖片載入測試", () => {
+  test("Next.js 內建圖片優化 API 應該停用", async ({ page }) => {
     const response = await page.request.get(
       "/_next/image?url=%2Fassets%2Ffumadocs.png&w=640&q=75"
     );
+    expect(response.status()).toBe(404);
+  });
+
+  test("public 靜態圖片應該直接提供", async ({ page }) => {
+    const response = await page.request.get("/assets/fumadocs.png");
     expect(response.status()).toBe(200);
-    expect(response.headers()["content-type"]).toMatch(
-      /image\/(png|webp|jpeg)/
-    );
+    expect(response.headers()["content-type"]).toBe("image/png");
   });
 
-  test("應該支援不同的圖片尺寸", async ({ page }) => {
-    const sizes = [640, 750, 828, 1080, 1200];
-
-    for (const size of sizes) {
-      const response = await page.request.get(
-        `/_next/image?url=%2Fassets%2Ffumadocs.png&w=${size}&q=75`
-      );
-      expect(response.status()).toBe(200);
-    }
-  });
-
-  test("應該支援不同的圖片質量", async ({ page }) => {
-    const qualities = [75]; // 只測試預設質量
-
-    for (const quality of qualities) {
-      const response = await page.request.get(
-        `/_next/image?url=%2Fassets%2Ffumadocs.png&w=640&q=${quality}`
-      );
-      expect(response.status()).toBe(200);
-    }
-  });
-
-  test("應該返回適當的 Cache-Control header", async ({ page }) => {
-    const response = await page.request.get(
-      "/_next/image?url=%2Fassets%2Ffumadocs.png&w=640&q=75"
-    );
-    expect(response.status()).toBe(200);
-    const cacheControl = response.headers()["cache-control"];
-    expect(cacheControl).toBeDefined();
-  });
-
-  test("首頁圖片應該正確載入", async ({ page }) => {
+  // /cdn-cgi/image 只存在於 Cloudflare 代理的 production zone，e2e 的建置不是 production。
+  test("next/image 在非 production 環境應該直接使用原圖", async ({ page }) => {
     await page.goto("/");
 
-    await page.waitForLoadState("networkidle");
+    const images = page.locator("img[data-nimg]");
+    await expect(images.first()).toBeAttached();
 
-    const images = await page.locator("img").count();
-    expect(images).toBeGreaterThan(0);
-  });
-
-  test("圖片應該有 alt 屬性", async ({ page }) => {
-    await page.goto("/");
-
-    const images = page.locator("img");
-    const count = await images.count();
-
-    for (let i = 0; i < count; i++) {
-      const alt = await images.nth(i).getAttribute("alt");
-      expect(alt).toBeDefined();
+    for (const image of await images.all()) {
+      const src = await image.getAttribute("src");
+      expect(src).toBeTruthy();
+      expect(src).not.toMatch(/\/_next\/image|\/cdn-cgi\/image/);
+      expect(await image.getAttribute("srcset")).toBeNull();
     }
-  });
-
-  test("應該處理無效的圖片 URL", async ({ page }) => {
-    const response = await page.request.get(
-      "/_next/image?url=%2Finvalid-image.png&w=640&q=75"
-    );
-    expect(response.status()).toBe(400);
   });
 });

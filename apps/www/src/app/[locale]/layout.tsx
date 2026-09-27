@@ -1,27 +1,13 @@
-import "@total-typescript/ts-reset";
-import "katex/dist/katex.css";
-import "@/styles/globals.css";
-import "react-medium-image-zoom/dist/styles.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
-import {
-  getLocale,
-  getMessages,
-  getTimeZone,
-  getTranslations,
-} from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import meta from "@chia/meta";
 import { WWW_BASE_URL } from "@chia/utils/config";
 
-import AppLayout from "@/components/commons/app-layout";
-import AppPlugins from "@/components/commons/app-plugins";
-import { PaletteScript } from "@/components/commons/palette-script";
-import RootLayout from "@/components/commons/root-layout";
-import RootProvider from "@/components/commons/root-provider";
+import SiteShell from "@/components/commons/site-shell";
 import { routing } from "@/libs/i18n/routing";
-import { initDayjs } from "@/libs/utils/dayjs";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -68,22 +54,8 @@ const Layout = async ({
   children: ReactNode;
   modal?: ReactNode;
 }) => {
-  const [locale, messages, timeZone] = await Promise.all([
-    getLocale(),
-    getMessages(),
-    getTimeZone(),
-  ]);
-  initDayjs(locale, timeZone);
-
-  return (
-    <RootLayout locale={locale}>
-      <PaletteScript />
-      <RootProvider messages={messages} timeZone={timeZone} locale={locale}>
-        <AppLayout locale={locale}>{children}</AppLayout>
-        <AppPlugins />
-      </RootProvider>
-    </RootLayout>
-  );
+  const locale = await getLocale();
+  return <SiteShell locale={locale}>{children}</SiteShell>;
 };
 
 export default Layout;

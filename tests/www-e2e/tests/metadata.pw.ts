@@ -15,16 +15,24 @@ test.describe("網站 Metadata 與 SEO 測試", () => {
   });
 
   test.describe("Open Graph 圖片", () => {
-    test("應該成功載入首頁 OG 圖片", async ({ page }) => {
-      const response = await page.request.get("/opengraph-image");
+    test("首頁 og:image 應該可以直接載入", async ({ page }) => {
+      await page.goto("/");
+      const content = await page
+        .locator('meta[property="og:image"]')
+        .first()
+        .getAttribute("content");
+      expect(content).toBeTruthy();
+
+      // metadataBase 可能是正式站網址，只取路徑打測試中的 server。
+      const { pathname, search } = new URL(content ?? "");
+      const response = await page.request.get(`${pathname}${search}`, {
+        maxRedirects: 0,
+      });
       expect(response.status()).toBe(200);
       expect(response.headers()["content-type"]).toContain("image");
-    });
-
-    test("OG 圖片應該有合適的尺寸", async ({ page }) => {
-      const response = await page.request.get("/opengraph-image");
-      const buffer = await response.body();
-      expect(buffer.length).toBeGreaterThan(1000); // 確保不是空圖片
+      // 帶 NEXT_LOCALE cookie 的回應無法被 Cloudflare edge cache。
+      expect(response.headers()["set-cookie"]).toBeUndefined();
+      expect((await response.body()).length).toBeGreaterThan(1000);
     });
   });
 
