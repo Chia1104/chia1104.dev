@@ -249,17 +249,22 @@ export type WwwCacheTag = (typeof WwwCacheTag)[keyof typeof WwwCacheTag];
 /** One post or note's article pages, in every locale. Slugs never change once created. */
 export const wwwFeedCacheTag = (slug: string): string => `feed:${slug}`;
 
-/** The site serves `en` under `en-US`; every other locale keeps its own segment. */
-const wwwLocaleSegment = (locale: string): string =>
-  locale === "en" ? "en-US" : locale;
+/**
+ * The site serves its default locale, `zh-TW`, without a prefix (a prefixed URL redirects) and
+ * `en` under `/en-US`.
+ */
+const wwwLocalePrefix = (locale: string): string => {
+  if (locale === "zh-TW") return "";
+  return `/${locale === "en" ? "en-US" : locale}`;
+};
 
-/** The page of a post or note on the public site, in one locale, as the sitemap lists it. */
+/** The canonical page of a post or note on the public site, in one locale. */
 export const feedUrl = (feed: {
   type: string;
   slug: string;
   locale: string;
 }): string =>
-  `${WWW_BASE_URL}/${wwwLocaleSegment(feed.locale)}/${feed.type}s/${feed.slug}`;
+  `${WWW_BASE_URL}${wwwLocalePrefix(feed.locale)}/${feed.type}s/${feed.slug}`;
 
 export const DASH_BASE_URL =
   getEnv() === "production" || getEnv() === "prod"

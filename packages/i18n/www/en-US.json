@@ -23,7 +23,11 @@
     "section3": "I possess a knack for rapid learning to solve problems and exhibit a high level of resilience. I dare to step out of my comfort zone and embrace new endeavors. I am passionate about acquiring knowledge in emerging technologies and finding fulfillment in their achievements. Furthermore, I take pleasure in sharing my skills with others.",
     "working-at": "Working at",
     "full-name": "Full Name",
-    "email": "Email"
+    "email": "Email",
+    "latest": {
+      "title": "Latest writing",
+      "description": "Recently published posts and notes."
+    }
   },
   "about": {
     "title": "About Me",
@@ -84,11 +88,13 @@
     "written-by-user": "Written by: {user}",
     "posts": {
       "doc-title": "Posts",
+      "description": "Articles on frontend, full-stack and AI engineering: implementation details, measurements and lessons learned.",
       "no-content": "No posts yet.",
       "view-all": "View all posts"
     },
     "notes": {
       "doc-title": "Notes",
+      "description": "Short notes from day-to-day development: error fixes, tooling tips and small implementations.",
       "no-content": "No notes yet.",
       "view-all": "View all notes"
     },
@@ -97,7 +103,8 @@
       "description": "Articles by topic.",
       "no-content": "No tags yet.",
       "view-all": "View all tags",
-      "count": "{count, plural, =1 {1 article} other {# articles}}"
+      "count": "{count, plural, =1 {1 article} other {# articles}}",
+      "fallback-description": "{count, plural, =1 {1 article} other {# articles}} about {name}."
     },
     "read-with-minutes": "{minutes} minutes read",
     "open-in-chat-query": "I have a question about this article: {url}",
@@ -184,6 +191,7 @@
   "routes": {
     "about": "About",
     "blog": "Blog",
+    "notes": "Notes",
     "projects": "Projects",
     "contact": "Contact"
   },

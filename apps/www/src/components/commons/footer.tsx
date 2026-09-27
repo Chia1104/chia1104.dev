@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import type { FC, ReactNode } from "react";
 
 import type { Locale } from "next-intl";
@@ -18,6 +17,7 @@ import { LoadingSkeleton } from "@/components/commons/current-playing";
 import { FooterLogotype } from "@/components/commons/footer-logotype";
 import LocaleSelector from "@/components/commons/locale-selector";
 import { Settings } from "@/components/commons/settings";
+import { Link } from "@/libs/i18n/navigation";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
 
