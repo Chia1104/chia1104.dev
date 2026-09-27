@@ -15,8 +15,9 @@ type PlaylistItem = PlayList["tracks"]["items"][number];
 const ImageItem: FC<{
   src: string;
   alt: string;
+  sizes: string;
   className?: string;
-}> = ({ src, alt, className }) => (
+}> = ({ src, alt, sizes, className }) => (
   <div
     className={cn(
       "not-prose relative w-full overflow-hidden rounded-2xl shadow-md",
@@ -27,6 +28,7 @@ const ImageItem: FC<{
       alt={alt}
       className="w-full object-cover"
       fill
+      sizes={sizes}
       loading="lazy"
     />
   </div>
@@ -66,6 +68,7 @@ const First: FC<{
         <ImageItem
           src={data.track.album.images[0]?.url ?? ""}
           alt={data.track.album.name}
+          sizes="(min-width: 640px) 256px, 67vw"
           className="aspect-square"
         />
         <Link
@@ -93,6 +96,7 @@ const Item: FC<{
         <ImageItem
           src={data.track.album.images[0]?.url ?? ""}
           alt={data.track.album.name}
+          sizes="(min-width: 640px) 128px, 33vw"
           className="aspect-square"
         />
       </span>

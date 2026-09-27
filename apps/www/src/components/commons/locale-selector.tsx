@@ -17,7 +17,12 @@ const LocaleSelector = (props: ButtonProps) => {
   };
   return (
     <Dropdown className="not-prose" data-testid="locale-selector">
-      <Button size="sm" variant="tertiary" isIconOnly {...props}>
+      <Button
+        size="sm"
+        variant="tertiary"
+        aria-label={t("label")}
+        isIconOnly
+        {...props}>
         <span className="i-mdi-translate size-3" />
       </Button>
       <Dropdown.Popover className="min-w-40">
