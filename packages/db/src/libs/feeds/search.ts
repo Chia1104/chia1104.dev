@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 
 import type { Locale } from "../../schemas/enums.ts";
 import * as schema from "../../schemas/schema.ts";
@@ -10,7 +10,11 @@ const f = schema.feeds;
 
 const FEED_TRANSLATION_SOURCE_TYPE = "feed_translation";
 
-/** Posts related to one feed, by card-vector similarity. */
+/**
+ * Posts related to one feed, by card-vector similarity. `scope` bounds both the source and the
+ * results: the query is addressable by slug and the vectors cover drafts, so a public caller
+ * passing an unpublished slug or matching a draft would otherwise read it.
+ */
 export const getRelatedFeeds = withDTO(
   async (
     db,
@@ -18,15 +22,24 @@ export const getRelatedFeeds = withDTO(
       slug: string;
       locale: Locale;
       model: string;
+      scope: { userId: string; published?: boolean; enableDeleted: boolean };
       limit?: number;
       threshold?: number;
     }
   ) => {
+    const visible = and(
+      eq(f.userId, dto.scope.userId),
+      dto.scope.published === undefined
+        ? undefined
+        : eq(f.published, dto.scope.published),
+      dto.scope.enableDeleted ? undefined : isNull(f.deletedAt)
+    );
+
     const [source] = await db
       .select({ translationId: t.id, feedId: t.feedId })
       .from(t)
       .innerJoin(f, eq(f.id, t.feedId))
-      .where(and(eq(f.slug, dto.slug), eq(t.locale, dto.locale)))
+      .where(and(eq(f.slug, dto.slug), eq(t.locale, dto.locale), visible))
       .limit(1);
 
     if (!source) {
@@ -64,7 +77,7 @@ export const getRelatedFeeds = withDTO(
       })
       .from(t)
       .innerJoin(f, eq(f.id, t.feedId))
-      .where(inArray(t.id, translationIds));
+      .where(and(inArray(t.id, translationIds), visible));
 
     const byTranslation = new Map(rows.map((row) => [row.translationId, row]));
 

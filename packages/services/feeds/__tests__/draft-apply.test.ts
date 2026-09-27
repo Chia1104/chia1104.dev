@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DB } from "@chia/db/client";
 import { FeedType, Locale } from "@chia/db/types";
 import { AppErrorCode } from "@chia/service-kit/errors";
+import { FeedChangeScope } from "@chia/workflow-control/contract";
 
 import type { FeedHooks } from "../../shared/context";
 import type { UpdateFeedServiceInput } from "../write.service";
@@ -113,7 +114,7 @@ describe("applyFeedDraftService", () => {
     write.updateFeedService.mockImplementation(
       async (_db: DB, _input: UpdateFeedServiceInput, hooks: FeedHooks) => {
         expect(inTransaction).toBe(true);
-        await hooks.onFeedChanged?.(5);
+        await hooks.onFeedChanged?.(5, FeedChangeScope.Article);
         return { id: 5, slug: "a-post" };
       }
     );
@@ -141,7 +142,10 @@ describe("applyFeedDraftService", () => {
       feedId: 5,
       message: "Tighten the intro",
     });
-    expect(onFeedChanged).toHaveBeenCalledExactlyOnceWith(5);
+    expect(onFeedChanged).toHaveBeenCalledExactlyOnceWith(
+      5,
+      FeedChangeScope.Article
+    );
     expect(reports.resolveFeedReports).toHaveBeenCalledExactlyOnceWith(db, 5);
   });
 
@@ -152,7 +156,7 @@ describe("applyFeedDraftService", () => {
     });
     write.updateFeedService.mockImplementation(
       async (_db: DB, _input: UpdateFeedServiceInput, hooks: FeedHooks) => {
-        await hooks.onFeedChanged?.(5);
+        await hooks.onFeedChanged?.(5, FeedChangeScope.Article);
         return { id: 5, slug: "a-post" };
       }
     );

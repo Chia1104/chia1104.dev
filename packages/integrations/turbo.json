@@ -25,7 +25,10 @@
         "S3_SECRET_ACCESS_KEY",
         "S3_REGION",
         "S3_BUCKET_NAME",
-        "S3_ENDPOINT"
+        "S3_ENDPOINT",
+        "VERCEL_TOKEN",
+        "VERCEL_TEAM_ID",
+        "VERCEL_PROJECT_ID"
       ],
       "env": [
         "BS_UPTIME_TOKEN",
@@ -48,7 +51,10 @@
         "S3_SECRET_ACCESS_KEY",
         "S3_REGION",
         "S3_BUCKET_NAME",
-        "S3_ENDPOINT"
+        "S3_ENDPOINT",
+        "VERCEL_TOKEN",
+        "VERCEL_TEAM_ID",
+        "VERCEL_PROJECT_ID"
       ]
     }
   }

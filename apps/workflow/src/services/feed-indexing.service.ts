@@ -3,8 +3,8 @@ import type { FeedHooks } from "@chia/services/shared/context";
 import { workflowControl } from "./workflow-control";
 
 export const feedHooks: FeedHooks = {
-  async onFeedChanged(feedID) {
-    await workflowControl.startFeedIndex(feedID);
+  async onFeedChanged(feedID, scope) {
+    await workflowControl.startFeedIndex(feedID, scope);
   },
   async onFeedRemoved(translationIDs) {
     if (translationIDs.length === 0) return;

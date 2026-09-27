@@ -10,6 +10,7 @@ import {
   workflowControlResultSchema,
 } from "./control.contract";
 import type {
+  FeedChangeScope,
   WorkflowControlCommand,
   WorkflowControlResult,
   WorkflowRunState,
@@ -92,9 +93,9 @@ export const createWorkflowControlClient = ({
         payload: { reason },
       });
     },
-    async startFeedIndex(feedID: number) {
+    async startFeedIndex(feedID: number, scope?: FeedChangeScope) {
       return startedRunId(
-        await execute({ type: "feed-index:start", request: { feedID } })
+        await execute({ type: "feed-index:start", request: { feedID, scope } })
       );
     },
     async startFeedSummary(feedID: number) {
@@ -129,6 +130,11 @@ export const createWorkflowControlClient = ({
     async startResourceReindex(request: { onlyMissing?: boolean }) {
       return startedRunId(
         await execute({ type: "resource-reindex:start", request })
+      );
+    },
+    async startSiteRevalidation(tag: string) {
+      return startedRunId(
+        await execute({ type: "site-revalidate:start", request: { tag } })
       );
     },
     async startMemoryConsolidation(sessionId: string) {

@@ -33,6 +33,7 @@ import { AppError, AppErrorCode } from "@chia/service-kit/errors";
 import { normalizeAsciiSlug } from "@chia/utils/slug";
 import { excerptAround } from "@chia/utils/text";
 import type { MatchMode } from "@chia/utils/text";
+import type { FeedChangeScope } from "@chia/workflow-control/contract";
 
 import type { FeedHooks } from "../shared/context";
 
@@ -357,10 +358,10 @@ export const applyFeedDraftService = async (
   },
   hooks: FeedHooks
 ): Promise<ApplyFeedDraftResult> => {
-  const changed: number[] = [];
+  const changed: [feedID: number, scope: FeedChangeScope][] = [];
   const deferred: FeedHooks = {
-    onFeedChanged: async (feedID) => {
-      changed.push(feedID);
+    onFeedChanged: async (feedID, scope) => {
+      changed.push([feedID, scope]);
     },
   };
   const result = await db.transaction(async (tx) => {
@@ -382,9 +383,9 @@ export const applyFeedDraftService = async (
   });
   // The feed is committed; a hook that cannot start indexing does not unmake that, so the
   // caller hears the truth and the index catches up on the next apply or publish.
-  for (const feedID of changed) {
+  for (const [feedID, scope] of changed) {
     try {
-      await hooks.onFeedChanged?.(feedID);
+      await hooks.onFeedChanged?.(feedID, scope);
     } catch (error) {
       reportError(
         error,

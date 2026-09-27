@@ -6,9 +6,11 @@ import {
   listTags,
   updateTag,
 } from "@chia/db/repos/tags";
+import { WwwCacheTag } from "@chia/utils/config";
 
 import { resolveFeedVisibility } from "../feeds/access";
 import { contractOS } from "../shared/context";
+import type { BaseOSContext } from "../shared/context";
 import { adminGuard } from "../shared/guards/admin.guard";
 import { callerGuard } from "../shared/guards/caller.guard";
 import { rateLimitGuard } from "../shared/guards/rate-limit.guard";
@@ -26,6 +28,14 @@ export const listTagsRoute = contractOS.tags.list
     }),
   }));
 
+/** Tag names show on listings and on the chips of every tagged article. */
+const revalidateTaggedPages = (workflow: BaseOSContext["workflow"]) =>
+  Promise.all([
+    workflow.startSiteRevalidation(WwwCacheTag.Listings),
+    workflow.startSiteRevalidation(WwwCacheTag.Articles),
+  ]);
+
+// A tag edit starts no feed workflow, so each write below revalidates the site itself.
 export const createTagRoute = contractOS.tags.create
   .use(adminGuard())
   .handler(async (opts) => {
@@ -34,7 +44,9 @@ export const createTagRoute = contractOS.tags.create
         message: `A tag with slug "${opts.input.slug}" already exists`,
       });
     }
-    return { tag: await createTag(opts.context.db, opts.input) };
+    const tag = await createTag(opts.context.db, opts.input);
+    await revalidateTaggedPages(opts.context.workflow);
+    return { tag };
   });
 
 export const updateTagRoute = contractOS.tags.update
@@ -51,6 +63,7 @@ export const updateTagRoute = contractOS.tags.update
     if (!tag) {
       throw opts.errors.NOT_FOUND();
     }
+    await revalidateTaggedPages(opts.context.workflow);
     return { tag };
   });
 
@@ -60,6 +73,7 @@ export const removeTagRoute = contractOS.tags.remove
     if (!(await deleteTag(opts.context.db, opts.input.id))) {
       throw opts.errors.NOT_FOUND();
     }
+    await revalidateTaggedPages(opts.context.workflow);
     return { id: opts.input.id };
   });
 

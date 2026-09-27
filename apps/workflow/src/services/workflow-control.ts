@@ -10,6 +10,7 @@ import {
   startedRunId,
 } from "@chia/workflow-control/contract";
 import type {
+  FeedChangeScope,
   WorkflowControlCommand,
   WorkflowControlResult,
 } from "@chia/workflow-control/contract";
@@ -75,6 +76,12 @@ export const executeLocalWorkflowCommand = async (
       const run = await start(resourceReindexWorkflow, [command.request]);
       return { type: "started", runId: run.runId };
     }
+    case "site-revalidate:start": {
+      const { siteRevalidationWorkflow } =
+        await import("../workflows/site-revalidation.workflow");
+      const run = await start(siteRevalidationWorkflow, [command.request]);
+      return { type: "started", runId: run.runId };
+    }
     case "memory-consolidation:start": {
       const { memoryConsolidationWorkflow } =
         await import("../workflows/memory-consolidation.workflow");
@@ -114,12 +121,14 @@ const startRun = async (command: WorkflowControlCommand) =>
   startedRunId(await executeLocalWorkflowCommand(command));
 
 export const workflowControl = {
-  startFeedIndex: (feedID: number) =>
-    startRun({ type: "feed-index:start", request: { feedID } }),
+  startFeedIndex: (feedID: number, scope?: FeedChangeScope) =>
+    startRun({ type: "feed-index:start", request: { feedID, scope } }),
   startResourceIndex: (request: { sourceType: string; sourceId: number }) =>
     startRun({ type: "resource-index:start", request }),
   startReportTriage: (reportId: number) =>
     startRun({ type: "report-triage:start", request: { reportId } }),
+  startSiteRevalidation: (tag: string) =>
+    startRun({ type: "site-revalidate:start", request: { tag } }),
   startMemoryConsolidation: (request: {
     sessionId: string;
     delayMs?: number;

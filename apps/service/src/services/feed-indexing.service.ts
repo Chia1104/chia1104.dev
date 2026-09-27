@@ -4,8 +4,8 @@ import { workflowControl } from "../repos/workflow-control.repo";
 
 /** Fire-and-forget indexing; the workflow logs its own failures so the handle is dropped. */
 export const feedHooks: FeedHooks = {
-  async onFeedChanged(feedID) {
-    await workflowControl.startFeedIndex(feedID);
+  async onFeedChanged(feedID, scope) {
+    await workflowControl.startFeedIndex(feedID, scope);
   },
 
   /**

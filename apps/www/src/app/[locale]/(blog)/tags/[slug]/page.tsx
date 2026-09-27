@@ -18,8 +18,6 @@ import { client, orpc } from "@/libs/orpc/client.rsc";
 import type { RouterInputs } from "@/libs/orpc/types";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
-export const revalidate = 300;
-
 export const generateStaticParams = async () => {
   const { items } = await client.tags.list();
   return items.map((tag) => ({ slug: tag.slug }));
