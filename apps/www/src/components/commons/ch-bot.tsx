@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-import { motion, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 import { useIdle } from "@chia/ui/utils/use-idle";
@@ -21,17 +21,11 @@ export const CHBot = ({
   const { isDarkMode } = useDarkMode();
   const reducedMotion = useReducedMotion();
   const isIdle = useIdle();
-  const breathe = !resting && !reducedMotion;
 
   return (
-    <motion.span
-      animate={{ scale: breathe ? [1, 1.04, 1] : 1 }}
-      transition={{
-        duration: reducedMotion ? 0 : breathe ? 2.5 : 0.2,
-        repeat: breathe ? Infinity : 0,
-        ease: "easeInOut",
-      }}
-      className="inline-flex">
+    // CSS keeps the breathing on the compositor instead of the main thread.
+    <span
+      className={cn("inline-flex", !resting && "motion-safe:animate-breathe")}>
       {isIdle ? (
         <Bot
           solidColorProps={{ color: isDarkMode ? "#08071a" : "#ffffff" }}
@@ -63,6 +57,6 @@ export const CHBot = ({
       ) : (
         <span className={cn("bg-default size-25", props.className)} />
       )}
-    </motion.span>
+    </span>
   );
 };

@@ -35,8 +35,12 @@ const images = [
 const ImageItem: FC<{
   src: string;
   alt: string;
+  /** The rendered width; `page-sm` splits the 768px column from 640px up. */
+  sizes: string;
+  /** The first photo is the desktop LCP element, so it must not wait for layout. */
+  eager?: boolean;
   className?: string;
-}> = ({ src, alt, className }) => (
+}> = ({ src, alt, sizes, eager = false, className }) => (
   <ImageZoom>
     <div className={cn("relative w-full overflow-hidden", className)}>
       <Image
@@ -44,7 +48,8 @@ const ImageItem: FC<{
         alt={alt}
         className="w-full object-cover"
         fill
-        loading="lazy"
+        sizes={sizes}
+        loading={eager ? "eager" : "lazy"}
       />
     </div>
   </ImageZoom>
@@ -58,6 +63,8 @@ const Gallery = () => {
         <ImageItem
           src={images[4].src}
           alt={images[4].alt}
+          sizes="(min-width: 640px) 384px, 100vw"
+          eager
           className="page-sm:aspect-square aspect-2/1"
         />
       </span>
@@ -66,6 +73,7 @@ const Gallery = () => {
           <ImageItem
             src={images[0].src}
             alt={images[0].alt}
+            sizes="(min-width: 640px) 192px, 50vw"
             className="aspect-square"
           />
         </span>
@@ -73,6 +81,7 @@ const Gallery = () => {
           <ImageItem
             src={images[1].src}
             alt={images[1].alt}
+            sizes="(min-width: 640px) 192px, 50vw"
             className="aspect-square"
           />
         </span>
@@ -80,6 +89,7 @@ const Gallery = () => {
           <ImageItem
             src={images[3].src}
             alt={images[3].alt}
+            sizes="(min-width: 640px) 384px, 100vw"
             className="aspect-2/1"
           />
         </span>
