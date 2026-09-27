@@ -70,6 +70,18 @@ const hasTag = (feedId: SQL | typeof feeds.id, tagSlug: string): SQL =>
     where ${feedsToTags.feedId} = ${feedId} and ${tags.slug} = ${tagSlug}
   )`;
 
+/** Whether the feed has a `locale` translation with a body, which is what an article page renders. */
+const hasTranslationBody = (
+  feedId: SQL | typeof feeds.id,
+  locale: Locale
+): SQL =>
+  sql`exists (
+    select 1 from ${feedTranslations}
+    where ${feedTranslations.feedId} = ${feedId}
+      and ${feedTranslations.locale} = ${locale}
+      and coalesce(${feedTranslations.content}, '') <> ''
+  )`;
+
 export interface FeedTag {
   id: number;
   slug: string;
@@ -107,6 +119,8 @@ type InfiniteFeedParams = InfiniteDTO & {
   /** Only feeds carrying this tag. */
   tagSlug?: string;
   locale?: Locale;
+  /** Only feeds whose `locale` translation has a body. */
+  translated?: boolean;
   enableDeleted?: boolean;
   userId?: string;
 };
@@ -141,6 +155,7 @@ const queryInfiniteFeeds = async (
     sortOrder = "desc",
     type = FeedType.Post,
     locale,
+    translated = false,
     whereAnd = {},
     tagSlug,
     withContent = false,
@@ -152,6 +167,9 @@ const queryInfiniteFeeds = async (
 
   if (tagSlug !== undefined) {
     filters.push({ RAW: (feed) => hasTag(feed.id, tagSlug) });
+  }
+  if (translated && locale !== undefined) {
+    filters.push({ RAW: (feed) => hasTranslationBody(feed.id, locale) });
   }
   if (userId !== undefined) {
     filters.push({ userId });

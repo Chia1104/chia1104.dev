@@ -117,7 +117,6 @@ catalogs:
     monaco-editor: ^0.56.0
   next:
     "@astrojs/rss": ^4.0.19
-    "@next/third-parties": 16.3.5
     next: 16.3.5
     next-intl: ^4.14.6
     next-safe-action: 8.7.3
@@ -260,9 +259,6 @@ catalogs:
     remark-stringify: ^11.0.0
     unified: ^11.0.5
     unist-util-visit: ^5.1.0
-  vercel:
-    "@vercel/analytics": 2.0.1
-    "@vercel/speed-insights": ^2.0.0
   workflow:
     "@workflow-worlds/redis": ^0.2.2
     "@workflow/world-postgres": 4.3.7

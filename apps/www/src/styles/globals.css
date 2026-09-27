@@ -37,6 +37,13 @@
   --color-bgPurple: rgba(111, 66, 193, 0.65);
   --color-bgPink: rgba(255, 107, 237, 0.35);
   --color-bgBlue: rgba(117, 149, 255, 0.3);
+
+  --animate-breathe: breathe 2.5s ease-in-out infinite;
+  @keyframes breathe {
+    50% {
+      transform: scale(1.04);
+    }
+  }
 }
 
 /*
