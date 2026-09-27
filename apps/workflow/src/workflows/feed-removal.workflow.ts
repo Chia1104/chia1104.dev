@@ -4,13 +4,15 @@ import * as z from "zod";
 import { ResourceType } from "@chia/services/rag/resource-types";
 
 import { clearResourceChunksStep } from "../steps/resource-index.step";
+import { scheduleRemovalRevalidationStep } from "../steps/site-revalidation.step";
 
 const requestSchema = z.object({
   translationIDs: z.array(z.number()),
 });
 
 /**
- * Soft delete leaves the rows, so chunks stay searchable without this.
+ * Soft delete leaves the rows, so chunks stay searchable without this; www also keeps serving
+ * the page until it re-renders.
  * A workflow so a failure retries rather than leaving deleted content findable.
  */
 export const removeFeedFromSearchIndexWorkflow = async (
@@ -29,6 +31,8 @@ export const removeFeedFromSearchIndexWorkflow = async (
       return { translationID, deletedCount };
     })
   );
+
+  await scheduleRemovalRevalidationStep();
 
   return { success: true as const, results };
 };

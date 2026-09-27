@@ -56,8 +56,7 @@ describe("feeds reads scale with the caller's tier", () => {
     });
 
     /**
-     * Detail and `related` require the API key (`apps/www` server client);
-     * anonymous cannot reach them.
+     * Detail requires the API key (`apps/www` server client); anonymous cannot reach it.
      */
     it.each<[string, () => Promise<unknown>]>([
       [
@@ -65,11 +64,32 @@ describe("feeds reads scale with the caller's tier", () => {
         () => client.feeds["details-by-slug"]({ slug: "test-feed-1" }),
       ],
       ["details-by-id", () => client.feeds["details-by-id"]({ feedId: 1 })],
-      ["related", () => client.feeds.related({ slug: "test-feed-1" })],
     ])("cannot reach %s at all", async (_procedure, call) => {
       const { error } = await safe(call());
 
       expect(errorCode(error)).toBe("UNAUTHORIZED");
+    });
+
+    /**
+     * The browser renders an article's related posts, outside the cached page. Only the admin's
+     * published, live feeds may be the source or a result.
+     */
+    it("reads related within the published scope", async () => {
+      dbMocks.getRelatedFeeds.mockResolvedValue([]);
+
+      await client.feeds.related({ slug: "test-feed-1" });
+
+      expect(dbMocks.getRelatedFeeds).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          slug: "test-feed-1",
+          scope: {
+            userId: guardMocks.TEST_ADMIN_ID,
+            published: true,
+            enableDeleted: false,
+          },
+        })
+      );
     });
   });
 

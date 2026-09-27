@@ -233,6 +233,22 @@ export const WWW_BASE_URL =
     ? "https://www.chia1104.dev"
     : "http://localhost:3000";
 
+/**
+ * Cache tags on www pages. Pages have no revalidate timer; `apps/workflow` invalidates the
+ * tags a write reaches.
+ */
+export const WwwCacheTag = {
+  /** Feed list and tag pages: every read of `feeds.list` and `tags.list`. */
+  Listings: "listings",
+  /** Every article page. */
+  Articles: "articles",
+} as const;
+
+export type WwwCacheTag = (typeof WwwCacheTag)[keyof typeof WwwCacheTag];
+
+/** One post or note's article pages, in every locale. Slugs never change once created. */
+export const wwwFeedCacheTag = (slug: string): string => `feed:${slug}`;
+
 /** The site serves `en` under `en-US`; every other locale keeps its own segment. */
 const wwwLocaleSegment = (locale: string): string =>
   locale === "en" ? "en-US" : locale;

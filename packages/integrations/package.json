@@ -97,6 +97,14 @@
       "types": "./email/env.ts",
       "default": "./email/env.ts"
     },
+    "./vercel/cache": {
+      "types": "./vercel/cache.ts",
+      "default": "./vercel/cache.ts"
+    },
+    "./vercel/env": {
+      "types": "./vercel/env.ts",
+      "default": "./vercel/env.ts"
+    },
     "./x": {
       "types": "./x/index.ts",
       "default": "./x/index.ts"

@@ -5,6 +5,15 @@ import {
   agentMessagePayloadSchema,
 } from "./agent.schema";
 
+/** Which www pages a feed write changes: its own article, or every listing as well. */
+export const FeedChangeScope = {
+  Article: "article",
+  Listing: "listing",
+} as const;
+
+export type FeedChangeScope =
+  (typeof FeedChangeScope)[keyof typeof FeedChangeScope];
+
 const agentSessionRequestSchema = z.object({
   sessionId: z.string(),
   runId: z.string(),
@@ -29,7 +38,11 @@ export const workflowControlCommandSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("feed-index:start"),
-    request: z.object({ feedID: z.number() }),
+    request: z.object({
+      feedID: z.number(),
+      /** Absent for a reindex that changed nothing www renders. */
+      scope: z.enum(FeedChangeScope).optional(),
+    }),
   }),
   z.object({
     type: z.literal("feed-summary:start"),
@@ -57,6 +70,11 @@ export const workflowControlCommandSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("resource-reindex:start"),
     request: z.object({ onlyMissing: z.boolean().optional() }),
+  }),
+  z.object({
+    type: z.literal("site-revalidate:start"),
+    /** One www cache tag; each tag has its own window. */
+    request: z.object({ tag: z.string().min(1) }),
   }),
   z.object({
     type: z.literal("memory-consolidation:start"),

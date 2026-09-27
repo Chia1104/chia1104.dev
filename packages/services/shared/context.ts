@@ -3,6 +3,7 @@ import { os } from "@orpc/server";
 
 import type { ServiceContext } from "@chia/service-kit/context";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
+import type { FeedChangeScope } from "@chia/workflow-control/contract";
 
 import type { AgentFactory } from "../agent/agent.factory";
 import type { FeedDraftBus } from "../feeds/draft-bus";
@@ -19,10 +20,11 @@ export interface ORPCConfig {
 
 /**
  * Feed lifecycle hooks. Fired by content write paths; the host that owns search indexing
- * supplies them. Absent means the write still happens, nothing is scheduled.
+ * supplies them. Absent means the write still happens, nothing is scheduled. `scope` names
+ * the www pages the write changed.
  */
 export interface FeedHooks {
-  onFeedChanged?: (feedID: number) => Promise<void>;
+  onFeedChanged?: (feedID: number, scope: FeedChangeScope) => Promise<void>;
   onFeedRemoved?: (translationIDs: readonly number[]) => Promise<void>;
 }
 

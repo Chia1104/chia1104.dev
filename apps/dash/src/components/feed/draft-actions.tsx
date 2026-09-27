@@ -18,6 +18,7 @@ import {
   Tooltip,
 } from "@heroui/react";
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
+import { useDebouncer } from "@tanstack/react-pacer";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { History, RotateCcw, Trash, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -73,6 +74,9 @@ const FeedEmbedding = ({ feedId }: { feedId: number }) => {
   );
 };
 
+/** Each feed write re-indexes the post; picking several tags in a row writes the set once. */
+const TAG_WRITE_DELAY_MS = 1500;
+
 /**
  * Feed-level fields that are not part of the draft: visibility, the publication date and the
  * tag set write straight to the feed, so they only exist once the draft has been applied.
@@ -80,8 +84,8 @@ const FeedEmbedding = ({ feedId }: { feedId: number }) => {
 const PostSettings = ({ feedId }: { feedId: number }) => {
   const queryClient = useQueryClient();
   const feedQuery = useQuery(feedDetailsOptions(feedId));
-  const update = useMutation(
-    orpc.feeds.update.mutationOptions({
+  const update = useMutation({
+    ...orpc.feeds.update.mutationOptions({
       onSuccess: async () => {
         await Promise.all([
           queryClient.invalidateQueries({
@@ -92,7 +96,25 @@ const PostSettings = ({ feedId }: { feedId: number }) => {
       },
       onError: (error) =>
         toast.error(messageOf(error, "Something went wrong.")),
-    })
+    }),
+    // A delayed tag write can overlap the next one; each sends the whole set, so order matters.
+    scope: { id: `feed-settings:${feedId}` },
+  });
+  /** Shown until the delayed write settles; `null` follows the feed. */
+  const [tagDraft, setTagDraft] = useState<number[] | null>(null);
+  const tagWriter = useDebouncer(
+    (tagIds: number[]) =>
+      update.mutate(
+        { feedId, tagIds },
+        {
+          onSettled: () =>
+            setTagDraft((draft) => (draft === tagIds ? null : draft)),
+        }
+      ),
+    {
+      wait: TAG_WRITE_DELAY_MS,
+      onUnmount: (debouncer) => debouncer.flush(),
+    }
   );
   const feed = feedQuery.data;
   if (!feed) return null;
@@ -166,9 +188,11 @@ const PostSettings = ({ feedId }: { feedId: number }) => {
         </DatePicker.Popover>
       </DatePicker>
       <PostTags
-        isDisabled={update.isPending}
-        onChange={(tagIds) => update.mutate({ feedId, tagIds })}
-        selected={feed.tags}
+        onChange={(tagIds) => {
+          setTagDraft(tagIds);
+          tagWriter.maybeExecute(tagIds);
+        }}
+        selected={tagDraft ?? feed.tags.map((tag) => tag.id)}
       />
       <div className="page-sm:ml-auto justify-self-center">
         <DeleteButton

@@ -1,6 +1,6 @@
 # `@chia/integrations`
 
-Clients for third-party services: GitHub, Spotify, X, Better Stack, captcha providers, Resend and S3.
+Clients for third-party services: GitHub, Spotify, X, Better Stack, captcha providers, Resend, S3 and the Vercel cache API.
 
 - One directory per provider. Each parses its own env with `@t3-oss/env-core` and exports only what a caller needs.
 - GitHub is one Octokit per token: `github/client` is the factory, `github/client.public` binds the site token, and a caller holding its own token builds its own instance. GraphQL and REST failures both surface as `GitHubApiError`.

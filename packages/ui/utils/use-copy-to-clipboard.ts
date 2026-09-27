@@ -35,13 +35,10 @@ export function useClipboard({ timeout = 2000 }: UseClipboardProps = {}) {
     [onClearTimeout, timeout]
   );
 
-  const copy = useCallback(
-    (valueToCopy: string) => {
+  const write = useCallback(
+    (writeTo: (clipboard: Clipboard) => Promise<void>) => {
       if ("clipboard" in navigator) {
-        const transformedValue = transformValue(valueToCopy);
-
-        navigator.clipboard
-          .writeText(transformedValue)
+        writeTo(navigator.clipboard)
           .then(() => handleCopyResult(true))
           .catch((err) => {
             if (err instanceof Error) {
@@ -57,13 +54,34 @@ export function useClipboard({ timeout = 2000 }: UseClipboardProps = {}) {
     [handleCopyResult]
   );
 
+  const copy = useCallback(
+    (valueToCopy: string) =>
+      write((clipboard) => clipboard.writeText(transformValue(valueToCopy))),
+    [write]
+  );
+
+  /** Text still loading at the click. Safari drops the click's user activation across an await; a pending `ClipboardItem` keeps it. */
+  const copyPending = useCallback(
+    (pending: Promise<string>) =>
+      write((clipboard) =>
+        clipboard.write([
+          new ClipboardItem({
+            "text/plain": pending.then(
+              (text) => new Blob([transformValue(text)], { type: "text/plain" })
+            ),
+          }),
+        ])
+      ),
+    [write]
+  );
+
   const reset = useCallback(() => {
     setCopied(false);
     setError(null);
     onClearTimeout();
   }, [onClearTimeout]);
 
-  return { copy, reset, error, copied };
+  return { copy, copyPending, reset, error, copied };
 }
 
 export type UseClipboardReturn = ReturnType<typeof useClipboard>;

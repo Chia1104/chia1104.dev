@@ -18,6 +18,9 @@ export const generateStaticParams = () => {
   return [{ type: "posts" }, { type: "notes" }];
 };
 
+/** Any other first segment is a 404 served without rendering, so a scanner leaves no cache entry. */
+export const dynamicParams = false;
+
 export async function generateMetadata({
   params,
 }: PagePropsWithLocale<{ type: "posts" | "notes" }>): Promise<Metadata> {
