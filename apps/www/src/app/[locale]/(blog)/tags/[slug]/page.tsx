@@ -117,6 +117,7 @@ const Page = async ({
                 type: FeedType.All,
                 tag: slug,
                 locale: dbLocale,
+                translated: true,
               }}
             />
           </Suspense>

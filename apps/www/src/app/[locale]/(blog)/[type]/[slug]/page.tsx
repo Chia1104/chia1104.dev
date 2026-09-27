@@ -52,7 +52,7 @@ export const generateStaticParams = async () => {
   }));
 };
 
-/** The feed with its `locale` translation; `null` when either does not exist. */
+/** The feed with its `locale` translation; `null` unless both exist and the translation has a body. */
 const readFeed = async (slug: string, locale: Locale) => {
   const { error, data } = await safe(
     client.feeds["details-by-slug"](
@@ -63,7 +63,7 @@ const readFeed = async (slug: string, locale: Locale) => {
   if (isServiceNotFound(error)) return null;
   if (error) throw error;
   const [translation] = data.translations;
-  return translation ? { feed: data, translation } : null;
+  return translation?.content ? { feed: data, translation } : null;
 };
 
 export const generateMetadata = async ({

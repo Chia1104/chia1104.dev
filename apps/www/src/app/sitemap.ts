@@ -48,11 +48,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           sortOrder: "desc",
           withContent: false,
           locale: dbLocaleResolver(locale),
+          translated: true,
         });
-        // The list carries every feed; one without this locale's translation has no page in it.
-        return items
-          .filter((feed) => feed.translations.length > 0)
-          .map((feed) => ({ feed, locale }));
+        return items.map((feed) => ({ feed, locale }));
       })
     ),
     client.tags.list(),

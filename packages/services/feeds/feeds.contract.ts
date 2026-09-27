@@ -81,6 +81,8 @@ export const feedsInfiniteSchema = z.object({
   type: z.enum(FeedType).optional(),
   /** Only feeds carrying this tag. */
   tag: tagSlugSchema.optional(),
+  /** Only feeds whose `locale` translation has a body, i.e. the ones the public site renders. */
+  translated: flexibleBoolean.optional().default(false),
   ...localeQueryFields,
   ...feedVisibilityFields,
 });
