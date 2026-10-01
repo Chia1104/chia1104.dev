@@ -59,6 +59,16 @@ import {
 
 const db = {} as DB;
 
+const store = new Map<string, unknown>();
+const kv = {
+  get: vi.fn((key: string) => store.get(key)),
+  set: vi.fn((key: string, value: unknown) => {
+    store.set(key, value);
+    return true;
+  }),
+  delete: vi.fn((key: string) => store.delete(key)),
+} as unknown as Keyv;
+
 const createCredential = (expiresAt: Date) => ({
   userId: "admin-id",
   spotifyUserId: "spotify-id",
@@ -165,9 +175,91 @@ describe("Spotify now playing service", () => {
     );
   };
   const unauthorizedError = createHTTPError(401, "Unauthorized");
+  const spotifyTrack = (progressMs: number) => ({
+    is_playing: true,
+    progress_ms: progressMs,
+    item: {
+      name: "Song",
+      duration_ms: 200_000,
+      external_urls: { spotify: "https://open.spotify.com/track/1" },
+      artists: [{ name: "Artist" }, { name: "Featured" }],
+      album: { name: "Album", images: [{ url: "https://i.scdn.co/image/1" }] },
+    },
+  });
 
   beforeEach(() => {
+    store.clear();
     vi.clearAllMocks();
+    vi.useRealTimers();
+    mocks.getActiveSpotifyCredential.mockResolvedValue(
+      createCredential(new Date(Date.now() + 10 * 60 * 1000))
+    );
+  });
+
+  it("returns the track and when its progress was read", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    mocks.getNowPlaying.mockResolvedValueOnce(spotifyTrack(60_000));
+
+    await expect(getSpotifyNowPlayingService(db, kv)).resolves.toEqual({
+      track: {
+        name: "Song",
+        url: "https://open.spotify.com/track/1",
+        artists: ["Artist", "Featured"],
+        album: "Album",
+        imageUrl: "https://i.scdn.co/image/1",
+        durationMs: 200_000,
+      },
+      isPlaying: true,
+      progressMs: 60_000,
+      observedAt: 1_000_000,
+    });
+  });
+
+  it("returns null while an ad plays", async () => {
+    mocks.getNowPlaying.mockResolvedValueOnce({
+      is_playing: true,
+      progress_ms: 0,
+      item: null,
+    });
+
+    await expect(getSpotifyNowPlayingService(db, kv)).resolves.toBeNull();
+  });
+
+  it("shares one Spotify call within the cache window", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    mocks.getNowPlaying.mockResolvedValueOnce(spotifyTrack(60_000));
+
+    await getSpotifyNowPlayingService(db, kv);
+    vi.advanceTimersByTime(5000);
+
+    await expect(getSpotifyNowPlayingService(db, kv)).resolves.toMatchObject({
+      progressMs: 60_000,
+      observedAt: 1_000_000,
+    });
+    expect(mocks.getNowPlaying).toHaveBeenCalledTimes(1);
+  });
+
+  it("asks Spotify again once the cached track would have ended", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    mocks.getNowPlaying
+      .mockResolvedValueOnce(spotifyTrack(198_000))
+      .mockResolvedValueOnce(spotifyTrack(1000));
+
+    await getSpotifyNowPlayingService(db, kv);
+    vi.advanceTimersByTime(3000);
+
+    await expect(getSpotifyNowPlayingService(db, kv)).resolves.toMatchObject({
+      progressMs: 1000,
+    });
+    expect(mocks.getNowPlaying).toHaveBeenCalledTimes(2);
+  });
+
+  it("caches an idle player", async () => {
+    mocks.getNowPlaying.mockResolvedValueOnce(null);
+
+    await expect(getSpotifyNowPlayingService(db, kv)).resolves.toBeNull();
+    await expect(getSpotifyNowPlayingService(db, kv)).resolves.toBeNull();
+    expect(mocks.getNowPlaying).toHaveBeenCalledTimes(1);
   });
 
   it("forces a refresh and retries when the stored token was revoked", async () => {
@@ -187,10 +279,10 @@ describe("Spotify now playing service", () => {
     });
     mocks.getNowPlaying
       .mockRejectedValueOnce(unauthorizedError)
-      .mockResolvedValueOnce({ is_playing: true });
+      .mockResolvedValueOnce(spotifyTrack(1000));
 
-    await expect(getSpotifyNowPlayingService(db)).resolves.toEqual({
-      is_playing: true,
+    await expect(getSpotifyNowPlayingService(db, kv)).resolves.toMatchObject({
+      progressMs: 1000,
     });
     expect(mocks.getNowPlaying).toHaveBeenNthCalledWith(1, {
       accessToken: "stored-access-token",
@@ -216,7 +308,7 @@ describe("Spotify now playing service", () => {
     );
     mocks.getNowPlaying.mockRejectedValueOnce(unauthorizedError);
 
-    await expect(getSpotifyNowPlayingService(db)).rejects.toBeInstanceOf(
+    await expect(getSpotifyNowPlayingService(db, kv)).rejects.toBeInstanceOf(
       SpotifyCredentialUnavailableError
     );
   });
@@ -228,7 +320,7 @@ describe("Spotify now playing service", () => {
       createHTTPError(500, "Internal Server Error")
     );
 
-    await expect(getSpotifyNowPlayingService(db)).rejects.toThrow(
+    await expect(getSpotifyNowPlayingService(db, kv)).rejects.toThrow(
       "500 Internal Server Error"
     );
     expect(mocks.refreshSpotifyAccessToken).not.toHaveBeenCalled();
@@ -236,16 +328,6 @@ describe("Spotify now playing service", () => {
 });
 
 describe("Spotify authorization service", () => {
-  const store = new Map<string, unknown>();
-  const kv = {
-    get: vi.fn((key: string) => store.get(key)),
-    set: vi.fn((key: string, value: unknown) => {
-      store.set(key, value);
-      return true;
-    }),
-    delete: vi.fn((key: string) => store.delete(key)),
-  } as unknown as Keyv;
-
   beforeEach(() => {
     store.clear();
     vi.clearAllMocks();

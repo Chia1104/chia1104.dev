@@ -1,10 +1,7 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
-import type {
-  CurrentPlaying,
-  PlayList,
-} from "@chia/integrations/spotify/types";
+import type { PlayList } from "@chia/integrations/spotify/types";
 import { spotifyCredentialUserSchema } from "@chia/integrations/spotify/validator";
 
 /**
@@ -13,7 +10,26 @@ import { spotifyCredentialUserSchema } from "@chia/integrations/spotify/validato
 
 /** Spotify owns the payload shape; `z.custom` keeps types exact with no runtime validation. */
 const spotifyPlaylistSchema = z.custom<PlayList>();
-const spotifyNowPlayingSchema = z.custom<CurrentPlaying | null>();
+
+/** Null when nothing a visitor can open is playing, such as an ad or a podcast. */
+const spotifyNowPlayingSchema = z
+  .object({
+    track: z.object({
+      name: z.string(),
+      url: z.string(),
+      artists: z.array(z.string()),
+      album: z.string(),
+      imageUrl: z.string().nullable(),
+      durationMs: z.number(),
+    }),
+    isPlaying: z.boolean(),
+    progressMs: z.number(),
+    /** Epoch ms `progressMs` was read at; while playing, readers advance it from here. */
+    observedAt: z.number(),
+  })
+  .nullable();
+
+export type SpotifyNowPlaying = z.infer<typeof spotifyNowPlayingSchema>;
 
 const spotifyAccountSchema = z.object({
   userId: z.string(),
@@ -54,7 +70,7 @@ export const getSpotifyPlaylistContract = oc
   .input(z.object({ playlistId: z.string().min(1) }))
   .output(spotifyPlaylistSchema);
 
-/** Reached from the browser, so it stays public. */
+/** Reached from the browser, so it stays public; a shared read, see `shared/shared-reads.ts`. */
 export const getSpotifyNowPlayingContract = oc
   .errors({
     SERVICE_UNAVAILABLE: {},

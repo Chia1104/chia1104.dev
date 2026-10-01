@@ -22,7 +22,7 @@
 - Content pages have no revalidate timer. `src/libs/orpc/client.rsc.ts` tags each server read with `WwwCacheTag` or `wwwFeedCacheTag`, and `workflow` invalidates those tags through the Vercel API, one five-minute window per tag; nothing calls into www. A write that changes what www renders must end in `scheduleFeedRevalidationStep` (in a workflow) or `workflow.startSiteRevalidation(tag)`.
 - The blog navigation and related posts load in the browser, so no cached page depends on a post other than its own. Home and projects keep a timer because Spotify and GitHub send no change event.
 - Pages set canonical, hreflang and `og:url` through `localizedMetadata` in `src/libs/i18n/alternates.ts`; the middleware sends no alternate links. Every URL the site emits (links, sitemap, RSS, `feedUrl`) leaves the default locale unprefixed, because `/zh-TW/…` redirects.
-- Browser requests use the Better Auth session cookie and may access only public or caller-owned procedures.
+- Browser requests use the Better Auth session cookie and may access only public or caller-owned procedures. Shared reads (`@chia/services/shared/shared-reads`) go without credentials so a CDN can serve them.
 - Content rendering belongs to `@chia/contents`, localization to `@chia/i18n` and shared agent UI to `@chia/agent-elements`.
 - Render access from `session.access`; do not infer authorization from failed requests or the raw role column.
 - `next/image` resizes through Cloudflare Image Transformations (`/cdn-cgi/image`) on the proxied production zone and serves originals elsewhere. Allowed image hosts are the zone's transformation origins, not `next.config` patterns; that list must name the site host (`chia1104.dev`) and `storage` too, because it replaces the same-zone default. `www` 301s to the apex at the Cloudflare edge.
@@ -41,6 +41,7 @@
 - Business logic belongs in packages. Database access goes through `@chia/db/repos/*`.
 - The service starts, resumes and cancels workflows but never executes them.
 - Keep heavy provider and agent dependencies behind dynamic imports so route imports stay lightweight.
+- A Cloudflare cache rule makes GETs under `/api/v1/rpc/` cacheable, honoring the response's cache headers and bypassing the cache when there are none.
 
 ## `workflow`
 
