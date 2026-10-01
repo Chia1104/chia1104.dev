@@ -52,7 +52,16 @@ export async function getConnection(
     kv && DrizzleCache ? new DrizzleCache(kv, cacheOptions) : undefined;
 
   const connection = (async () => {
-    const db = drizzle(url, {
+    const db = drizzle({
+      connection: {
+        connectionString: url,
+        // pg's 10s default closes the pool between most requests at this traffic, and each
+        // reconnect costs ~25ms.
+        idleTimeoutMillis: 5 * 60_000,
+        // Idle clients must not hold the process open, or one-shot scripts like `migrate.ts`
+        // wait out the timeout.
+        allowExitOnIdle: true,
+      },
       relations,
       cache,
       codecs: storableCodecs,

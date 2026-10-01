@@ -33,6 +33,10 @@
       "types": "./shared/guards/rate-limit.guard.ts",
       "default": "./shared/guards/rate-limit.guard.ts"
     },
+    "./shared/shared-reads": {
+      "types": "./shared/shared-reads.ts",
+      "default": "./shared/shared-reads.ts"
+    },
     "./agent/agent.contract": {
       "types": "./agent/agent.contract.ts",
       "default": "./agent/agent.contract.ts"

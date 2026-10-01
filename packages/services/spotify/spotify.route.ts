@@ -36,7 +36,10 @@ export const getSpotifyNowPlayingRoute = contractOS.spotify.playing
   .use(rateLimitGuard("spotify"))
   .handler(async (opts) => {
     try {
-      return await getSpotifyNowPlayingService(opts.context.db);
+      return await getSpotifyNowPlayingService(
+        opts.context.db,
+        opts.context.kv
+      );
     } catch (error) {
       // Unconfigured (no account, no fallback refresh token) is 503, not a crash.
       if (error instanceof SpotifyCredentialUnavailableError) {

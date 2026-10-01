@@ -121,6 +121,9 @@ export const bootstrap = <
       cors({
         origin: options.cors.origin,
         credentials: options.cors.credentials,
+        // Every oRPC call is a JSON POST and so preflighted; without this, browsers re-ask after 5s.
+        // Chromium caps the cache at 7200.
+        maxAge: 7200,
       })
     );
   }
