@@ -73,3 +73,9 @@ vitest.config.mts.timestamp-*.mjs
 .swc
 
 .codebase-memory
+
+# Terraform
+.terraform
+*.tfstate
+*.tfstate.*
+*.tfvars

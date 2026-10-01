@@ -43,4 +43,5 @@ Both frontends call `service` through the contract-first oRPC client. `service` 
 - Resolve service URLs with `withServiceEndpoint` from `@chia/utils/config`.
 - Scope validation to affected workspaces with `pnpm turbo run <task> --filter <name>...` when practical.
 - CI selects work from Turbo's dependency graph with `--affected`; do not add path filters or per-app workflows. A workspace with a `Dockerfile` gets an image build, except `www`, which deploys on Vercel.
+- Railway services are configured in `.railway/` and the Cloudflare zone (DNS, rulesets, non-default zone settings) in `.cloudflare/` (Terraform). Change them there, not in a dashboard, which the next apply overwrites.
 - Branch from and open pull requests into `develop`.
