@@ -1,9 +1,11 @@
 import { trace } from "@opentelemetry/api";
 import { RPCHandler } from "@orpc/server/fetch";
+import { RPC_DEFAULT_ALLOW_METHODS } from "@orpc/server/standard";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 
 import { router } from "@chia/services/router";
+import { SHARED_READS } from "@chia/services/shared/shared-reads";
 
 import { env } from "../env";
 import {
@@ -32,6 +34,11 @@ const isUntimedProcedure = (path: string): boolean =>
 /** Built once per process; holds no per-request state. */
 const handler = new RPCHandler(router, {
   errorStatusMap,
+  // GET is CSRF-safe only for reads that change nothing and ignore the caller's cookies.
+  allowMethods: (method, _procedure, path) =>
+    method === "GET"
+      ? SHARED_READS.has(path.join("."))
+      : RPC_DEFAULT_ALLOW_METHODS.includes(method),
   // Around the procedure call only: a body that fails to decode is oRPC's own BAD_REQUEST.
   clientInterceptors: [
     (options) => withErrorReporting(options.context, () => options.next()),
@@ -59,6 +66,16 @@ const api = new Hono<HonoContext>()
       if (procedure) {
         c.set("rpcProcedure", procedure);
         trace.getActiveSpan()?.setAttribute("rpc.method", procedure);
+      }
+      const cdnCacheControl = procedure && SHARED_READS.get(procedure);
+      // Through `c.header`: Hono copies the CORS headers set earlier onto whatever is returned.
+      if (c.req.method === "GET" && response.ok && cdnCacheControl) {
+        c.header("CDN-Cache-Control", cdnCacheControl);
+        // Browsers ask again on every poll; the page decides when to.
+        c.header("Cache-Control", "no-cache");
+        // A CDN stores one copy for every origin and ignores `Vary: Origin`.
+        c.header("Access-Control-Allow-Origin", "*");
+        c.header("Access-Control-Allow-Credentials", undefined);
       }
       return c.newResponse(response.body, response);
     }

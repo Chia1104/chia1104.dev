@@ -13,6 +13,7 @@ Contract-first oRPC API and the domain services behind it. Third-party clients l
 
 - Guards bind transport input to policies from `@chia/service-kit`; do not duplicate authorization logic in handlers.
 - Procedure rate-limit budgets belong in `shared/rate-limits.ts`. Mount-level budgets belong to the hosting app.
+- A procedure in `shared/shared-reads.ts` must answer every caller alike and change nothing. `service` accepts GET only for those and marks a success with the listed `CDN-Cache-Control` and `Access-Control-Allow-Origin: *`; browser links call them as credential-less GETs. The module imports nothing so links can load it.
 
 ## Domain boundary
 

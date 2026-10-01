@@ -49,7 +49,17 @@ describe("Spotify Controller", () => {
       id: "playlist-id",
     });
     mocks.getSpotifyNowPlayingService.mockResolvedValue({
-      is_playing: true,
+      track: {
+        name: "Song",
+        url: "https://open.spotify.com/track/1",
+        artists: ["Artist"],
+        album: "Album",
+        imageUrl: null,
+        durationMs: 200_000,
+      },
+      isPlaying: true,
+      progressMs: 60_000,
+      observedAt: 1_000_000,
     });
     mocks.completeSpotifyAuthorizationService.mockResolvedValue("connected");
   });
@@ -67,8 +77,39 @@ describe("Spotify Controller", () => {
 
       expect(res.status).toBe(200);
       expect(mocks.getSpotifyNowPlayingService).toHaveBeenCalledWith(
+        expect.anything(),
         expect.anything()
       );
+    });
+
+    it("serves GET as a shared read any origin may cache", async () => {
+      const res = await app.request("/api/v1/rpc/spotify/playing", {
+        headers: { Origin: "http://localhost:3000" },
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get("cdn-cache-control")).toContain("max-age=");
+      expect(res.headers.get("cache-control")).toBe("no-cache");
+      expect(res.headers.get("access-control-allow-origin")).toBe("*");
+      expect(res.headers.get("access-control-allow-credentials")).toBeNull();
+    });
+
+    it("leaves POST responses uncached", async () => {
+      const res = await playing();
+
+      expect(res.headers.get("cdn-cache-control")).toBeNull();
+    });
+
+    it("does not cache a failed GET", async () => {
+      mocks.getSpotifyNowPlayingService.mockRejectedValueOnce(
+        new mocks.SpotifyCredentialUnavailableError()
+      );
+
+      const res = await app.request("/api/v1/rpc/spotify/playing");
+
+      expect(res.status).toBe(503);
+      expect(res.headers.get("cdn-cache-control")).toBeNull();
+      expect(res.headers.get("cache-control")).toBeNull();
     });
 
     it("returns 503 when no active or fallback credential exists", async () => {
@@ -84,6 +125,17 @@ describe("Spotify Controller", () => {
 
   describe("spotify.playlist", () => {
     beforeEach(() => guardMocks.setCallerTier(CallerTier.ApiKey));
+
+    it("does not answer GET, which only shared reads accept", async () => {
+      const res = await app.request(
+        `/api/v1/rpc/spotify/playlist?data=${encodeURIComponent(
+          JSON.stringify({ json: { playlistId: "default" } })
+        )}`
+      );
+
+      expect(res.status).toBe(404);
+      expect(mocks.getSpotifyPlaylistService).not.toHaveBeenCalled();
+    });
 
     it("returns the default playlist", async () => {
       const res = await playlist("default");

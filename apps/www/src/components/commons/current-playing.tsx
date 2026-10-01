@@ -1,15 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode, Dispatch, SetStateAction } from "react";
-import {
-  useState,
-  useEffect,
-  createContext,
-  use,
-  useCallback,
-  useTransition,
-} from "react";
+import type { ReactNode } from "react";
+import { useState, useCallback, useTransition } from "react";
 
 import { ProgressBar, Tooltip } from "@heroui/react";
 import type { UseQueryResult } from "@tanstack/react-query";
@@ -46,65 +39,34 @@ interface Props extends ExtendsProps {
   >[0];
 }
 
-/** Local progress advances between polls; the next poll corrects any drift. */
+type NowPlaying = NonNullable<CurrentPlayingResponse>;
+
 const PROGRESS_TICK_MS = 1000;
+const IDLE_REFETCH_MS = 60_000;
+/** The next track needs a moment to register with Spotify after the last one ends. */
+const TRACK_CHANGE_GRACE_MS = 2000;
+/** A shared cache may still hold a track that has ended; this keeps refetches from spinning. */
+const MIN_REFETCH_MS = 5000;
 
-const ProgressContext = createContext<
-  [number, Dispatch<SetStateAction<number>>] | undefined
->(undefined);
+const progressAt = (nowPlaying: NowPlaying, now: number) =>
+  nowPlaying.isPlaying
+    ? Math.min(
+        nowPlaying.progressMs + now - nowPlaying.observedAt,
+        nowPlaying.track.durationMs
+      )
+    : nowPlaying.progressMs;
 
-const useProgressContext = () => {
-  const context = use(ProgressContext);
-  if (!context) {
-    throw new Error(
-      "useProgressContext must be used within a ProgressProvider"
-    );
+/** Refetch as the track should end; the idle cap still catches a skip or pause. */
+const refetchIntervalFor = (nowPlaying: CurrentPlayingResponse | undefined) => {
+  if (!nowPlaying?.isPlaying) {
+    return IDLE_REFETCH_MS;
   }
-  return context;
-};
 
-const ProgressProvider = ({
-  children,
-  initialProgress,
-}: {
-  children: ReactNode;
-  initialProgress: number;
-}) => {
-  const [progress, setProgress] = useState(initialProgress);
-  return (
-    <ProgressContext value={[progress, setProgress]}>
-      {children}
-    </ProgressContext>
-  );
-};
-
-const useProgressTracking = (
-  isPlaying: boolean,
-  durationMs: number,
-  progressMs: number,
-  isFetching: boolean,
-  isSuccess: boolean,
-  refetch: () => Promise<UseQueryResult<CurrentPlayingResponse, Error>>
-) => {
-  const [, setProgress] = useProgressContext();
-
-  useEffect(() => {
-    if (!isFetching && isSuccess && isPlaying) {
-      setProgress(progressMs);
-    }
-  }, [isPlaying, isFetching, isSuccess, progressMs, setProgress]);
-
-  useInterval(
-    () => {
-      setProgress((prev) => {
-        if (prev < durationMs) {
-          return prev + PROGRESS_TICK_MS;
-        }
-        void refetch();
-        return 0;
-      });
-    },
-    isPlaying ? PROGRESS_TICK_MS : null
+  const remaining =
+    nowPlaying.track.durationMs - progressAt(nowPlaying, Date.now());
+  return Math.min(
+    Math.max(remaining + TRACK_CHANGE_GRACE_MS, MIN_REFETCH_MS),
+    IDLE_REFETCH_MS
   );
 };
 
@@ -142,9 +104,14 @@ const getTextColorClass = (
   return isLight ? "text-dark" : "text-light";
 };
 
-const TrackProgress = ({ durationMs }: { durationMs: number }) => {
-  const [progress] = useProgressContext();
-  const percentage = (progress / (durationMs || 1)) * 100;
+const TrackProgress = ({ nowPlaying }: { nowPlaying: NowPlaying }) => {
+  const [now, setNow] = useState(Date.now);
+  useInterval(
+    () => setNow(Date.now()),
+    nowPlaying.isPlaying ? PROGRESS_TICK_MS : null
+  );
+  const percentage =
+    (progressAt(nowPlaying, now) / (nowPlaying.track.durationMs || 1)) * 100;
 
   return (
     <ProgressBar aria-label="Playback progress" size="sm" value={percentage}>
@@ -159,7 +126,7 @@ const AlbumImage = ({
   data,
   onLoad,
 }: {
-  data: CurrentPlayingResponse;
+  data: NowPlaying;
   onLoad: (img: HTMLImageElement) => void;
 }) => (
   <Image
@@ -168,8 +135,8 @@ const AlbumImage = ({
     height={80}
     sizes="80px"
     onLoad={(e) => onLoad(e.currentTarget)}
-    src={data?.item.album.images[0]?.url ?? ""}
-    alt={data?.item.album.name ?? ""}
+    src={data.track.imageUrl ?? ""}
+    alt={data.track.album}
     className="m-0 size-20 rounded-2xl bg-gray-400 object-cover"
   />
 );
@@ -227,11 +194,11 @@ const PlayingLink = ({
     <Marquee className="w-[85%] p-0" repeat={2} pauseOnHover>
       <Link
         className="m-0 text-sm"
-        href={data.item.external_urls.spotify}
+        href={data.track.url}
         target="_blank"
         rel="noopener noreferrer">
         <TextShimmer className="m-0 flex w-full p-0">
-          {data.item.name} - {data.item.artists[0]?.name}
+          {data.track.name} - {data.track.artists[0]}
         </TextShimmer>
       </Link>
     </Marquee>
@@ -242,8 +209,6 @@ const Card = ({
   data,
   isLoading,
   isSuccess,
-  isFetching,
-  refetch,
   className,
   tooltipContentClassName,
   experimental,
@@ -251,18 +216,9 @@ const Card = ({
   const enableColorExtraction =
     experimental?.displayBackgroundColorFromImage ?? false;
 
-  useProgressTracking(
-    data?.is_playing ?? false,
-    data?.item.duration_ms ?? 0,
-    data?.progress_ms ?? 0,
-    isFetching,
-    isSuccess,
-    refetch
-  );
-
   const { bgRGB, isLight, isPending, handleImageLoad } =
     useImageColorExtraction(
-      data?.item.album.images[0]?.url,
+      data?.track.imageUrl ?? undefined,
       enableColorExtraction
     );
 
@@ -319,17 +275,17 @@ const Card = ({
                   : "prose dark:prose-invert"
               )}>
               <SongTitle
-                name={data.item.name}
+                name={data.track.name}
                 enableColorExtraction={enableColorExtraction}
                 isPending={isPending}
                 isLight={isLight}
               />
               <p className={cn("mt-0 line-clamp-1 text-sm", textColorClass)}>
-                {data.item.artists[0]?.name}
+                {data.track.artists[0]}
               </p>
             </div>
           </div>
-          {isSuccess && <TrackProgress durationMs={data.item.duration_ms} />}
+          {isSuccess && <TrackProgress nowPlaying={data} />}
         </Tooltip.Content>
       )}
     </Tooltip>
@@ -347,19 +303,6 @@ export const LoadingSkeleton = ({ className }: { className?: string }) => (
   </div>
 );
 
-const calculateRefetchInterval = (
-  data: CurrentPlayingResponse | undefined
-): number => {
-  if (!data?.is_playing || !data.item.duration_ms || !data.progress_ms) {
-    return 60_000;
-  }
-
-  const remainingTime = data.item.duration_ms - data.progress_ms;
-  const delta = remainingTime / 2;
-
-  return delta > 30_000 ? delta : 30_000;
-};
-
 export const CurrentPlaying = ({
   children,
   queryOptions,
@@ -370,7 +313,7 @@ export const CurrentPlaying = ({
   const result = useQuery(
     orpc.spotify.playing.queryOptions({
       ...queryOptions,
-      refetchInterval: (ctx) => calculateRefetchInterval(ctx.state.data),
+      refetchInterval: (ctx) => refetchIntervalFor(ctx.state.data),
       refetchOnWindowFocus: "always",
     })
   );
@@ -384,13 +327,11 @@ export const CurrentPlaying = ({
   }
 
   return (
-    <ProgressProvider initialProgress={result.data?.progress_ms ?? 0}>
-      <Card
-        {...result}
-        className={className}
-        tooltipContentClassName={tooltipContentClassName}
-        experimental={experimental}
-      />
-    </ProgressProvider>
+    <Card
+      {...result}
+      className={className}
+      tooltipContentClassName={tooltipContentClassName}
+      experimental={experimental}
+    />
   );
 };

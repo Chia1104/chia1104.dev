@@ -1,3 +1,4 @@
+import type Keyv from "keyv";
 import { HTTPError } from "ky";
 
 import type { DB } from "@chia/db/client";
@@ -13,11 +14,20 @@ import {
   refreshSpotifyAccessToken,
 } from "@chia/integrations/spotify";
 import { env } from "@chia/integrations/spotify/env";
+import type { CurrentPlaying } from "@chia/integrations/spotify/types";
 import { logger } from "@chia/observability/logger";
 
 import { SpotifyCredentialUnavailableError } from "./account.service";
+import type { SpotifyNowPlaying } from "./spotify.contract";
 
 const ACCESS_TOKEN_EXPIRY_BUFFER_MS = 60_000;
+
+const NOW_PLAYING_CACHE_KEY = "spotify:now-playing";
+const NOW_PLAYING_CACHE_TTL_MS = 10_000;
+
+interface CachedNowPlaying {
+  nowPlaying: SpotifyNowPlaying;
+}
 
 const isAccessTokenUsable = (expiresAt: Date) => {
   return expiresAt.getTime() - ACCESS_TOKEN_EXPIRY_BUFFER_MS > Date.now();
@@ -104,7 +114,7 @@ export const getSpotifyPlaylistService = (playlistId: string) => {
   });
 };
 
-export const getSpotifyNowPlayingService = async (db: DB) => {
+const fetchNowPlaying = async (db: DB) => {
   const accessToken = await resolveSpotifyAccessToken(db);
   if (!accessToken) {
     throw new SpotifyCredentialUnavailableError();
@@ -132,4 +142,54 @@ export const getSpotifyNowPlayingService = async (db: DB) => {
 
     return getNowPlaying({ accessToken: refreshedAccessToken });
   }
+};
+
+const toNowPlaying = (
+  playing: CurrentPlaying | null,
+  observedAt: number
+): SpotifyNowPlaying => {
+  // Spotify sends a null `item` for ads and podcasts, which the payload type does not model.
+  if (!playing?.item) {
+    return null;
+  }
+
+  const { item } = playing;
+  return {
+    track: {
+      name: item.name,
+      url: item.external_urls.spotify,
+      artists: item.artists.map((artist) => artist.name),
+      album: item.album.name,
+      imageUrl: item.album.images[0]?.url ?? null,
+      durationMs: item.duration_ms,
+    },
+    isPlaying: playing.is_playing,
+    progressMs: playing.progress_ms,
+    observedAt,
+  };
+};
+
+/** Stale even inside the TTL, or the reader's end-of-track refetch would get the same track back. */
+const hasEnded = (nowPlaying: SpotifyNowPlaying) =>
+  !!nowPlaying?.isPlaying &&
+  nowPlaying.observedAt - nowPlaying.progressMs + nowPlaying.track.durationMs <=
+    Date.now();
+
+/** Visitors share one Spotify call per cache window. */
+export const getSpotifyNowPlayingService = async (
+  db: DB,
+  kv: Keyv
+): Promise<SpotifyNowPlaying> => {
+  const cached = await kv.get<CachedNowPlaying>(NOW_PLAYING_CACHE_KEY);
+  if (cached && !hasEnded(cached.nowPlaying)) {
+    return cached.nowPlaying;
+  }
+
+  const nowPlaying = toNowPlaying(await fetchNowPlaying(db), Date.now());
+  await kv.set<CachedNowPlaying>(
+    NOW_PLAYING_CACHE_KEY,
+    { nowPlaying },
+    NOW_PLAYING_CACHE_TTL_MS
+  );
+  return nowPlaying;
 };
