@@ -11,6 +11,7 @@ import { ragRouter } from "./rag/rag.route";
 import { reportsRouter } from "./reports/reports.route";
 import { contractOS } from "./shared/context";
 import { spotifyRouter } from "./spotify/spotify.route";
+import { statsRouter } from "./stats/stats.route";
 import { tagsRouter } from "./tags/tags.route";
 import { toolingsRouter } from "./toolings/toolings.route";
 import { userRouter } from "./user/user.route";
@@ -31,4 +32,5 @@ export const router = contractOS.router({
   spotify: spotifyRouter,
   reports: reportsRouter,
   tags: tagsRouter,
+  stats: statsRouter,
 });
