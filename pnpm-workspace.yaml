@@ -52,7 +52,7 @@ catalogs:
     "@ai-sdk/gateway": 4.0.88
     "@ai-sdk/google": 4.0.74
     "@ai-sdk/openai": 4.0.72
-    "@ai-sdk/react": 4.0.111
+    "@ai-sdk/react": 4.0.130
     "@anthropic-ai/sdk": 0.127.0
     "@google/genai": 2.19.0
     "@typesafe-ai/sdk": 0.6.0
