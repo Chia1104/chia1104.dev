@@ -65,7 +65,7 @@ catalogs:
     "@aws-sdk/client-s3": ^3.1137.0
     "@aws-sdk/s3-request-presigner": ^3.1137.0
   better-auth:
-    "@better-auth/api-key": 1.7.5
+    "@better-auth/api-key": 1.7.7
     "@better-auth/passkey": 1.7.5
     better-auth: 1.7.5
   chiastack:
