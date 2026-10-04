@@ -56,7 +56,7 @@ catalogs:
     "@anthropic-ai/sdk": 0.127.0
     "@google/genai": 2.19.0
     "@typesafe-ai/sdk": 0.6.0
-    ai: 7.0.108
+    ai: 7.0.127
     firecrawl: 4.41.0
     js-tiktoken: ^1.0.21
     ollama: 0.6.3
