@@ -163,7 +163,7 @@ catalogs:
     "@sentry/nextjs": ^10.75.1
     "@sentry/node-core": 10.75.1
   streamdown:
-    "@streamdown/cjk": 1.0.3
+    "@streamdown/cjk": 1.0.4
     streamdown: 2.6.0
   tailwindcss:
     "@egoist/tailwindcss-icons": ^1.9.2
