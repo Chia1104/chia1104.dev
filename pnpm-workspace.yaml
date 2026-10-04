@@ -261,7 +261,7 @@ catalogs:
     unist-util-visit: ^5.1.0
   workflow:
     "@workflow-worlds/redis": ^0.2.2
-    "@workflow/world-postgres": 4.3.7
+    "@workflow/world-postgres": 4.3.9
     workflow: 4.8.9
 
 linkWorkspacePackages: true
