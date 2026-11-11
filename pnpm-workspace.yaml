@@ -194,7 +194,7 @@ catalogs:
     start-server-and-test: ^3.0.12
     vitest: 5.0.1
   three:
-    "@react-three/drei": ^10.7.8
+    "@react-three/drei": ^10.7.9
     "@react-three/fiber": ^9.7.0
     "@types/three": ^0.186.0
     leva: ^0.10.1
