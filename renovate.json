@@ -1,17 +1,41 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
+  "timezone": "Asia/Taipei",
+  "schedule": ["* 0-5 * * 1"],
+  "prHourlyLimit": 0,
   "labels": ["dependencies", "renovate"],
   "rebaseWhen": "conflicted",
   "rangeStrategy": "bump",
-  "ignorePaths": [
-    "legacy/service/package.json",
-    "legacy/cache/package.json",
-    "legacy/dash/package.json",
-    "legacy/trigger/package.json",
-    "legacy/auth/package.json"
-  ],
+  "ignorePaths": ["legacy/**"],
   "packageRules": [
+    {
+      "description": "Workspace packages are never published. The Node version is set by hand.",
+      "matchPackageNames": ["@chia/**", "node"],
+      "enabled": false
+    },
+    {
+      "description": "pnpm refuses a release younger than a day, and a patch is often replaced within days.",
+      "matchDatasources": ["npm"],
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Everything without a group of its own lands in one weekly PR.",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "non-major dependencies",
+      "groupSlug": "non-major"
+    },
+    {
+      "description": "A 0.x minor may break, so it gets its own PR.",
+      "matchCurrentVersion": "<1.0.0",
+      "matchUpdateTypes": ["minor"],
+      "groupName": null
+    },
+    {
+      "description": "Reviewed on their own.",
+      "matchPackageNames": ["next", "typescript", "pnpm"],
+      "groupName": null
+    },
     {
       "groupName": "react",
       "matchPackageNames": [
@@ -22,76 +46,113 @@
       ]
     },
     {
+      "groupName": "ai-sdk",
+      "matchPackageNames": ["ai", "@ai-sdk/**"]
+    },
+    {
+      "groupName": "pi",
+      "matchPackageNames": ["@earendil-works/**", "typebox"]
+    },
+    {
       "groupName": "orpc",
-      "matchPackageNames": ["/@orpc/*/"]
+      "matchPackageNames": ["@orpc/**"]
     },
     {
-      "groupName": "fumadocs",
-      "matchPackageNames": ["/@fumadocs/*/", "/fumadocs-*/"]
+      "groupName": "hono",
+      "matchPackageNames": ["hono", "@hono/**"]
     },
     {
-      "enabled": false,
-      "matchPackageNames": [
-        "/^@chia/*/",
-        "/@chia/ui/",
-        "/@chia/utils/",
-        "/@chia/services/",
-        "/@chia/integrations/",
-        "/@chia/db/",
-        "/@chia/auth/",
-        "/tsconfig/",
-        "/node/",
-        "/go/"
-      ]
+      "groupName": "nitro",
+      "matchPackageNames": ["nitro", "srvx"]
     },
     {
-      "groupName": "playwright",
-      "matchPackageNames": [
-        "/^@playwright//",
-        "/^mcr.microsoft.com/playwright/"
-      ]
-    },
-    {
-      "groupName": "heroui",
-      "matchPackageNames": ["@heroui/react", "@heroui/styles"]
+      "groupName": "workflow",
+      "matchPackageNames": ["workflow", "@workflow/**", "@workflow-worlds/**"]
     },
     {
       "groupName": "drizzle",
-      "matchPackageNames": ["drizzle-orm", "drizzle-kit", "drizzle-zod"]
-    },
-    {
-      "groupName": "ai-sdk",
       "matchPackageNames": [
-        "@ai-sdk/anthropic",
-        "@ai-sdk/google",
-        "@ai-sdk/openai"
+        "drizzle-orm",
+        "drizzle-kit",
+        "@paradedb/drizzle-paradedb"
       ]
     },
     {
-      "groupName": "Hono",
-      "groupSlug": "hono",
-      "matchPackageNames": ["hono", "honox", "@hono{/,}**"]
-    },
-    {
-      "groupName": "oxc",
-      "matchPackageNames": ["oxfmt", "oxlint"]
-    },
-    {
-      "groupName": "tanstack",
-      "matchPackageNames": [
-        "@tanstack/react-pacer",
-        "@tanstack/react-query",
-        "@tanstack/react-query-devtools"
-      ]
+      "groupName": "keyv",
+      "matchPackageNames": ["keyv", "@keyv/**"]
     },
     {
       "groupName": "better-auth",
-      "matchPackageNames": ["@better-auth/passkey", "better-auth"]
+      "matchPackageNames": ["better-auth", "@better-auth/**"]
+    },
+    {
+      "groupName": "opentelemetry",
+      "matchPackageNames": ["@opentelemetry/**", "import-in-the-middle"]
+    },
+    {
+      "groupName": "sentry",
+      "matchPackageNames": ["@sentry/**"]
+    },
+    {
+      "description": "HeroUI peers on a specific react-aria-components minor.",
+      "groupName": "heroui",
+      "matchPackageNames": ["@heroui/**", "react-aria-components"]
+    },
+    {
+      "groupName": "fumadocs",
+      "matchPackageNames": ["fumadocs-*", "@fumadocs/**"]
+    },
+    {
+      "groupName": "tanstack",
+      "matchPackageNames": ["@tanstack/**"]
+    },
+    {
+      "description": "@oxlint/plugins has to match the oxlint version.",
+      "groupName": "oxc",
+      "matchPackageNames": ["oxlint", "oxfmt", "@oxlint/**"]
+    },
+    {
+      "groupName": "playwright",
+      "matchPackageNames": ["@playwright/**", "mcr.microsoft.com/playwright"]
+    },
+    {
+      "groupName": "bun",
+      "matchPackageNames": ["bun", "bun-types", "oven/bun"]
     },
     {
       "groupName": "chiastack",
-      "matchPackageNames": ["@chiastack/tsconfig"]
+      "matchPackageNames": ["@chiastack/**"]
+    },
+    {
+      "description": "The next major needs a migration that waits for the backend move. Tick the box on the Dependency Dashboard to open the PR.",
+      "matchPackageNames": [
+        "workflow",
+        "@workflow/**",
+        "keyv",
+        "@keyv/**",
+        "@sentry/**"
+      ],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "@sentry/node-core 10 caps OpenTelemetry below 0.300 and the API below 1.10, so only patches open unasked.",
+      "matchPackageNames": ["@opentelemetry/**"],
+      "matchUpdateTypes": ["major", "minor"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Pinned on purpose: the Nitro rc answers every request with 200, drizzle rc.5 changes query behaviour, Pi is held. Tick the box on the Dependency Dashboard to open the PR.",
+      "matchPackageNames": [
+        "nitro",
+        "srvx",
+        "drizzle-orm",
+        "drizzle-kit",
+        "@paradedb/drizzle-paradedb",
+        "@earendil-works/**",
+        "typebox"
+      ],
+      "dependencyDashboardApproval": true
     }
-  ],
-  "updateInternalDeps": true
+  ]
 }
