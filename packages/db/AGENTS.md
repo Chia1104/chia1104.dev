@@ -10,4 +10,3 @@ Drizzle schemas, database connection management and repository implementations.
 - Pass text and JSON parameters through `storableCodecs` before writing them to Postgres.
 - Repositories enforce ownership on the row being read or locked and return `not_found` for another user's record.
 - `feed_draft_revision` rows are immutable except `pinned` and the name given with it. `hashFeedDraftSnapshot` has a SQL twin in the migrations; a change to its layout rehashes both draft tables in the same migration.
-- `@chia/db/schema` is the only allowed aggregate package export.
