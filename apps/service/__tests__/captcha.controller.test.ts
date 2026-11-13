@@ -57,7 +57,7 @@ describe("email.send captcha enforcement", () => {
     // The contract declares this data, so the client narrows it with `isDefinedError`.
     expect(await res.json()).toMatchObject({
       json: {
-        inferable: true,
+        defined: true,
         code: "BAD_REQUEST",
         data: { errors: [{ field: "captcha", message: "CAPTCHA_FAILED" }] },
       },

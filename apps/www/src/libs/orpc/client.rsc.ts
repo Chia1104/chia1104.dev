@@ -48,9 +48,7 @@ export const link = new RPCLink<RSCClientContext>({
       default: {
         retry: 3,
         retryDelay: ({ attempt }) => 1000 * 2 ** (attempt - 1),
-        shouldRetry: ({ error }) =>
-          !(error instanceof ORPCError) ||
-          error.code === "MALFORMED_ORPC_RESPONSE",
+        shouldRetry: ({ error }) => !(error instanceof ORPCError),
       },
     }),
   ],
