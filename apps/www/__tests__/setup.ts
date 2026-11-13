@@ -40,7 +40,7 @@ vi.mock("next-intl", async (importOriginal) => {
 export const server = setupServer(...handlers);
 
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: "warn" });
+  server.listen({ onUnhandledFrame: "warn" });
 });
 
 afterEach(() => {

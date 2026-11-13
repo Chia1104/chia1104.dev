@@ -89,7 +89,7 @@ const startOpenTelemetry = (serviceName: string) => {
       new RedisInstrumentation({ requireParentSpan: true }),
       new RuntimeNodeInstrumentation(),
       new PinoInstrumentation(),
-      new ORPCInstrumentation({ propagationEnabled: false }),
+      new ORPCInstrumentation({ propagation: false }),
     ],
   });
   sdk.start();

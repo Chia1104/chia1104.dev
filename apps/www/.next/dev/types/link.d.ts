@@ -34,14 +34,22 @@ declare namespace __next_route_internal_types__ {
   type StaticRoutes = 
     | `/about` // /about
     | `/api/v1/health` // ../../../src/app/api/(v1)/v1/health/route.ts
+    | `/favicon.ico` // ../../../src/app/favicon.ico
+    | `/icon.png` // ../../../src/app/icon.png
+    | `/robots.txt` // ../../../src/app/robots.ts
+    | `/sitemap.xml` // ../../../src/app/sitemap.ts
   type DynamicRoutes<T extends string = string> = 
     | `/${SafeSlug<T>}` // ../../../src/app/[locale]/page.tsx
     | `/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(blog)/[type]/page.tsx
     | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(blog)/[type]/[slug]/page.tsx
     | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}/llm.md` // ../../../src/app/[locale]/(blog)/[type]/[slug]/llm.md/route.ts
+    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}/opengraph-image-1qxa2a` // ../../../src/app/[locale]/(blog)/[type]/[slug]/opengraph-image.tsx
+    | `/${SafeSlug<T>}/${SafeSlug<T>}/opengraph-image-1oaw56` // ../../../src/app/[locale]/(blog)/[type]/opengraph-image.tsx
     | `/${SafeSlug<T>}/about` // /[locale]/about
     | `/${SafeSlug<T>}/contact` // ../../../src/app/[locale]/contact/page.tsx
+    | `/${SafeSlug<T>}/contact/opengraph-image` // ../../../src/app/[locale]/contact/opengraph-image.tsx
     | `/${SafeSlug<T>}/note/${SafeSlug<T>}` // /[locale]/note/[slug]
+    | `/${SafeSlug<T>}/opengraph-image` // ../../../src/app/[locale]/opengraph-image.tsx
     | `/${SafeSlug<T>}/post/${SafeSlug<T>}` // /[locale]/post/[slug]
     | `/${SafeSlug<T>}/projects` // ../../../src/app/[locale]/projects/page.tsx
     | `/${SafeSlug<T>}/rss.xml` // ../../../src/app/[locale]/rss.xml/route.ts

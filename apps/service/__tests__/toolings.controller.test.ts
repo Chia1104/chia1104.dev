@@ -20,7 +20,6 @@ describe("toolings.link-preview", () => {
         "INTERNAL_SERVER_ERROR",
         "TIMEOUT",
         "GATEWAY_TIMEOUT",
-        "MALFORMED_ORPC_RESPONSE",
       ]).toContain(errorCode(error));
     } else {
       expect(data).toBeDefined();
