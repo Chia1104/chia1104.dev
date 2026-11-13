@@ -120,7 +120,7 @@ catalogs:
     next: 16.3.5
     next-intl: ^4.14.6
     next-safe-action: 8.7.3
-    sharp: 0.35.4
+    sharp: 0.35.5
     takumi-js: ^2.14.0
   nitro:
     nitro: 3.0.260903-beta
