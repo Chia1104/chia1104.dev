@@ -39,10 +39,12 @@ declare namespace __next_route_internal_types__ {
     | `/assets` // ../../../src/app/(workspace)/(operator)/assets/page.tsx
     | `/auth/callback/sent-success` // ../../../src/app/(auth)/auth/callback/sent-success/page.tsx
     | `/auth/login` // ../../../src/app/(auth)/auth/login/page.tsx
+    | `/favicon.ico` // ../../../src/app/favicon.ico
     | `/feed` // ../../../src/app/(workspace)/(operator)/feed/page.tsx
     | `/feed/drafts` // ../../../src/app/(workspace)/(operator)/feed/(manage)/drafts/page.tsx
     | `/feed/notes` // ../../../src/app/(workspace)/(operator)/feed/(manage)/notes/page.tsx
     | `/feed/posts` // ../../../src/app/(workspace)/(operator)/feed/(manage)/posts/page.tsx
+    | `/icon.png` // ../../../src/app/icon.png
     | `/memory` // ../../../src/app/(workspace)/(operator)/memory/page.tsx
     | `/profile` // ../../../src/app/(workspace)/(operator)/profile/page.tsx
     | `/rag` // ../../../src/app/(workspace)/(operator)/rag/page.tsx
@@ -50,6 +52,7 @@ declare namespace __next_route_internal_types__ {
     | `/rag/maintenance` // ../../../src/app/(workspace)/(operator)/rag/maintenance/page.tsx
     | `/rag/runs` // ../../../src/app/(workspace)/(operator)/rag/runs/page.tsx
     | `/reports` // ../../../src/app/(workspace)/(operator)/reports/page.tsx
+    | `/robots.txt` // ../../../src/app/robots.ts
     | `/settings` // ../../../src/app/(workspace)/settings/page.tsx
     | `/settings/spotify` // ../../../src/app/(workspace)/(operator)/settings/spotify/page.tsx
     | `/tags` // ../../../src/app/(workspace)/(operator)/tags/page.tsx

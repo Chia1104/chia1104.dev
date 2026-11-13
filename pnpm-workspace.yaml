@@ -24,23 +24,23 @@ allowBuilds:
 # Shared primitives used across apps and packages.
 catalog:
   "@types/express": ^5.0.6
-  "@types/node": 26.6.2
-  "@modelcontextprotocol/sdk": 1.30.0
+  "@types/node": 26.6.6
+  "@modelcontextprotocol/sdk": 1.32.2
   "@octokit/core": ^7.0.8
   "@octokit/graphql": ^9.0.5
   "@octokit/request-error": ^7.1.2
   "@octokit/types": ^18.0.0
   better-all: 0.0.9
-  bun-types: ^1.4.1
+  bun-types: ^1.4.4
   client-only: ^0.0.1
   dayjs: ^1.11.23
   diff: 9.0.0
-  es-toolkit: 1.52.0
-  ky: ^2.1.0
+  es-toolkit: 1.53.2
+  ky: ^2.2.0
   server-only: ^0.0.1
   superjson: 2.2.6
   typescript: 7.0.2
-  zod: 4.6.5
+  zod: 4.6.7
 
 catalogs:
   agent:
@@ -48,26 +48,26 @@ catalogs:
     "@earendil-works/pi-ai": 0.87.1
     typebox: 1.3.34
   ai:
-    "@ai-sdk/anthropic": 4.0.58
-    "@ai-sdk/gateway": 4.0.88
-    "@ai-sdk/google": 4.0.74
-    "@ai-sdk/openai": 4.0.72
-    "@ai-sdk/react": 4.0.111
-    "@anthropic-ai/sdk": 0.127.0
+    "@ai-sdk/anthropic": 4.0.102
+    "@ai-sdk/gateway": 4.0.143
+    "@ai-sdk/google": 4.0.120
+    "@ai-sdk/openai": 4.0.115
+    "@ai-sdk/react": 4.0.174
+    "@anthropic-ai/sdk": 1.8.0
     "@google/genai": 2.19.0
-    "@typesafe-ai/sdk": 0.6.0
-    ai: 7.0.108
-    firecrawl: 4.41.0
+    "@typesafe-ai/sdk": 0.7.0
+    ai: 7.0.170
+    firecrawl: 4.52.0
     js-tiktoken: ^1.0.21
-    ollama: 0.6.3
-    openai: 7.21.0
+    ollama: 0.6.4
+    openai: 7.55.0
   aws:
-    "@aws-sdk/client-s3": ^3.1137.0
-    "@aws-sdk/s3-request-presigner": ^3.1137.0
+    "@aws-sdk/client-s3": ^3.1167.0
+    "@aws-sdk/s3-request-presigner": ^3.1167.0
   better-auth:
-    "@better-auth/api-key": 1.7.5
-    "@better-auth/passkey": 1.7.5
-    better-auth: 1.7.5
+    "@better-auth/api-key": 1.7.21
+    "@better-auth/passkey": 1.7.21
+    better-auth: 1.7.21
   chiastack:
     "@chiastack/oxlint": 1.1.0
     "@chiastack/tsconfig": 2.1.2
@@ -77,179 +77,181 @@ catalogs:
     "@types/pg": ^8.23.1
     drizzle-kit: 1.0.0-rc.4
     drizzle-orm: 1.0.0-rc.4
-    pg: ^8.23.0
+    pg: ^8.23.1
   email:
-    "@react-email/ui": ^6.9.5
-    react-email: ^6.9.5
-    resend: ^6.28.1
+    "@react-email/ui": ^6.11.11
+    react-email: ^6.11.11
+    resend: ^6.38.0
   env:
     "@t3-oss/env-core": ^0.13.11
     "@t3-oss/env-nextjs": ^0.13.11
   forms:
-    "@hookform/resolvers": ^5.9.1
-    react-hook-form: ^7.88.0
+    "@hookform/resolvers": ^7.0.6
+    react-hook-form: ^7.92.0
   fumadocs:
-    "@fumadocs/mdx-remote": 1.5.2
+    "@fumadocs/mdx-remote": 1.5.3
     "@mdx-js/react": ^3.1.1
     "@types/mdx": ^2.0.14
-    fumadocs-core: 16.15.12
-    fumadocs-mdx: 15.4.3
-    fumadocs-ui: 16.15.12
-    mermaid: ^12.0.0
+    fumadocs-core: 16.19.0
+    fumadocs-mdx: 15.6.0
+    fumadocs-ui: 16.19.0
+    mermaid: ^12.3.0
   heroui-v3:
-    "@heroui/react": 3.2.6
-    "@heroui/styles": 3.2.6
-    react-aria-components: 1.21.1
+    "@heroui/react": 3.2.7
+    "@heroui/styles": 3.2.7
+    react-aria-components: 1.22.1
   hono:
     "@hono/react-renderer": 1.0.1
-    "@hono/mcp": 0.3.2
-    "@hono/otel": 1.1.2
+    "@hono/mcp": 0.3.5
+    "@hono/otel": 1.3.0
     "@hono/zod-validator": 0.9.1
-    hono: 4.13.8
+    hono: 4.13.18
   kv:
     "@keyv/postgres": ^2.2.3
     "@keyv/redis": ^5.1.6
     "@keyv/valkey": ^1.0.11
-    "@upstash/redis": 1.39.0
+    "@upstash/redis": 1.41.0
     keyv: ^5.6.0
   monaco:
     "@monaco-editor/react": ^4.7.0
-    monaco-editor: ^0.56.0
+    monaco-editor: ^0.57.0
   next:
     "@astrojs/rss": ^4.0.19
-    next: 16.3.5
-    next-intl: ^4.14.6
+    next: 16.4.6
+    next-intl: ^4.15.0
     next-safe-action: 8.7.3
-    sharp: 0.35.4
-    takumi-js: ^2.14.0
+    sharp: 0.35.5
+    takumi-js: ^2.20.0
   nitro:
+    # The rc swaps the global Response for srvx FastResponse on Node presets, and service then
+    # answers every request with 200. Moving needs `features: { fastResponse: false }`.
     nitro: 3.0.260903-beta
     srvx: 1.0.5
   orpc:
-    "@orpc/client": 2.0.0-beta.32
-    "@orpc/contract": 2.0.0-beta.32
-    "@orpc/opentelemetry": 2.0.0-beta.32
-    "@orpc/server": 2.0.0-beta.32
-    "@orpc/tanstack-query": 2.0.0-beta.32
+    "@orpc/client": 2.0.0-beta.50
+    "@orpc/contract": 2.0.0-beta.50
+    "@orpc/opentelemetry": 2.0.0-beta.50
+    "@orpc/server": 2.0.0-beta.50
+    "@orpc/tanstack-query": 2.0.0-beta.50
   otel:
     "@opentelemetry/api": 1.9.1
-    "@opentelemetry/context-async-hooks": 2.11.0
-    "@opentelemetry/exporter-trace-otlp-http": 0.222.0
-    "@opentelemetry/exporter-trace-otlp-proto": 0.222.0
-    "@opentelemetry/instrumentation": 0.222.0
-    "@opentelemetry/instrumentation-http": 0.222.0
-    "@opentelemetry/instrumentation-pg": 0.74.0
-    "@opentelemetry/instrumentation-pino": 0.68.0
-    "@opentelemetry/instrumentation-redis": 0.70.0
-    "@opentelemetry/instrumentation-runtime-node": 0.35.0
-    "@opentelemetry/instrumentation-undici": 0.32.0
-    "@opentelemetry/resources": 2.11.0
-    "@opentelemetry/sdk-node": 0.222.0
-    "@opentelemetry/sdk-trace-base": 2.11.0
-    "@opentelemetry/semantic-conventions": 1.43.0
-    import-in-the-middle: 3.5.1
-    pino: 10.3.1
+    "@opentelemetry/context-async-hooks": 2.12.1
+    "@opentelemetry/exporter-trace-otlp-http": 0.223.2
+    "@opentelemetry/exporter-trace-otlp-proto": 0.223.2
+    "@opentelemetry/instrumentation": 0.223.2
+    "@opentelemetry/instrumentation-http": 0.223.2
+    "@opentelemetry/instrumentation-pg": 0.76.0
+    "@opentelemetry/instrumentation-pino": 0.69.0
+    "@opentelemetry/instrumentation-redis": 0.71.0
+    "@opentelemetry/instrumentation-runtime-node": 0.36.0
+    "@opentelemetry/instrumentation-undici": 0.33.0
+    "@opentelemetry/resources": 2.12.1
+    "@opentelemetry/sdk-node": 0.223.2
+    "@opentelemetry/sdk-trace-base": 2.12.1
+    "@opentelemetry/semantic-conventions": 1.45.0
+    import-in-the-middle: 3.6.0
+    pino: 10.4.0
   oxc:
-    "@oxlint/plugins": 1.85.0
-    oxfmt: 0.70.0
-    oxlint: 1.85.0
+    "@oxlint/plugins": 1.93.0
+    oxfmt: 0.78.0
+    oxlint: 1.93.0
   react-is:
     "@types/react": ^19.3.0
     "@types/react-dom": ^19.3.0
     babel-plugin-react-compiler: 1.0.0
-    react: ^19.3.0
-    react-dom: ^19.3.0
+    react: ^19.3.1
+    react-dom: ^19.3.1
   sentry:
-    "@sentry/nextjs": ^10.75.1
-    "@sentry/node-core": 10.75.1
+    "@sentry/nextjs": ^10.78.0
+    "@sentry/node-core": 10.78.0
   streamdown:
-    "@streamdown/cjk": 1.0.3
-    streamdown: 2.6.0
+    "@streamdown/cjk": 1.0.4
+    streamdown: 2.7.1
   tailwindcss:
     "@egoist/tailwindcss-icons": ^1.9.2
-    "@iconify/json": ^2.2.531
-    "@tailwindcss/postcss": 4.3.3
+    "@iconify/json": ^2.2.555
+    "@tailwindcss/postcss": 4.3.5
     "@tailwindcss/typography": ^0.5.20
-    postcss: 8.5.28
+    postcss: 8.5.32
     tailwind-scrollbar: ^4.0.2
-    tailwindcss: 4.3.3
+    tailwindcss: 4.3.5
     tw-animate-css: ^1.4.0
   tanstack:
-    "@tanstack/react-hotkeys": 0.11.0
-    "@tanstack/react-pacer": 0.23.0
-    "@tanstack/react-query": 5.103.2
-    "@tanstack/react-query-devtools": 5.103.2
-    "@tanstack/react-virtual": 3.14.13
+    "@tanstack/react-hotkeys": 0.23.1
+    "@tanstack/react-pacer": 0.24.1
+    "@tanstack/react-query": 5.107.1
+    "@tanstack/react-query-devtools": 5.107.1
+    "@tanstack/react-virtual": 3.14.26
   testing-library:
     "@faker-js/faker": ^10.6.0
-    "@playwright/test": ^1.63.0
+    "@playwright/test": ^1.65.0
     "@testing-library/jest-dom": 7.0.1
     "@testing-library/react": 16.3.3
-    "@testing-library/user-event": 14.6.7
+    "@testing-library/user-event": 14.6.10
     "@vitejs/plugin-react-swc": 4.3.3
-    "@vitest/coverage-v8": 5.0.1
-    "@vitest/ui": 5.0.1
-    happy-dom: ^20.14.5
-    msw: ^2.15.0
-    start-server-and-test: ^3.0.12
-    vitest: 5.0.1
+    "@vitest/coverage-v8": 5.1.0
+    "@vitest/ui": 5.1.0
+    happy-dom: ^21.0.4
+    msw: ^3.0.5
+    start-server-and-test: ^3.0.13
+    vitest: 5.1.0
   three:
-    "@react-three/drei": ^10.7.8
-    "@react-three/fiber": ^9.7.0
-    "@types/three": ^0.186.0
+    "@react-three/drei": ^10.7.9
+    "@react-three/fiber": ^9.8.2
+    "@types/three": ^0.187.0
     leva: ^0.10.1
     maath: ^0.10.8
     r3f-perf: ^7.2.3
-    shaders: ^3.2.470
-    three: ^0.186.0
+    shaders: ^4.0.7
+    three: ^0.187.0
   tooling:
     "@manypkg/cli": ^0.25.1
     "@total-typescript/ts-reset": 0.6.1
-    "@turbo/gen": ^2.11.2
+    "@turbo/gen": ^2.11.11
     cross-env: 10.1.0
-    eslint-plugin-turbo: ^2.11.2
+    eslint-plugin-turbo: ^2.11.11
     husky: ^9.1.7
-    lint-staged: ^17.5.1
-    nx: ^23.2.1
-    railway: 3.11.0
-    tsdown: 0.23.0
+    lint-staged: ^17.6.0
+    nx: ^24.0.6
+    railway: 3.16.0
+    tsdown: 0.23.7
     tsx: ^4.23.15
-    turbo: 2.11.2
+    turbo: 2.11.11
   ui:
-    "@iconify/react": ^6.0.2
+    "@iconify/react": ^6.0.4
     "@internationalized/date": ^3.12.4
-    "@marsidev/react-turnstile": ^1.6.1
-    "@shikijs/stream": ^4.4.3
+    "@marsidev/react-turnstile": ^1.6.3
+    "@shikijs/stream": ^4.6.0
     "@types/react-google-recaptcha": ^2.1.9
-    border-beam: 1.3.0
+    border-beam: 1.4.1
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     cobe: ^2.0.1
     immer: ^11.1.18
-    katex: ^0.18.7
-    lucide-react: ^1.47.0
-    motion: ^13.4.0
+    katex: ^0.19.1
+    lucide-react: ^1.72.0
+    motion: ^14.12.0
     next-themes: ^0.4.6
-    nuqs: ^2.10.1
+    nuqs: ^2.10.3
     react-activity-calendar: ^3.2.1
     react-google-recaptcha: ^3.1.0
     react-medium-image-zoom: ^5.4.9
     react-tweet: ^3.3.1
-    schema-dts: 2.0.0
-    shiki: ^4.4.3
+    schema-dts: 2.1.0
+    shiki: ^4.6.0
     sonner: 2.0.8
     tailwind-merge: ^3.7.0
-    thinking-orbs: 0.3.1
+    thinking-orbs: 0.3.2
     usehooks-ts: ^3.1.1
     vaul: ^1.1.2
-    zustand: 5.0.15
+    zustand: 5.1.0
   unified:
     "@types/mdast": ^4.0.4
     github-slugger: ^2.0.0
-    hast-util-from-html: ^2.0.3
-    hast-util-to-text: ^4.0.2
+    hast-util-from-html: ^2.1.0
+    hast-util-to-text: ^4.0.3
     mdast-util-to-string: ^4.0.0
-    node-html-parser: ^9.0.4
+    node-html-parser: ^9.0.7
     reading-time-estimator: ^2.15.0
     rehype-katex: ^7.0.1
     remark-gfm: ^4.0.1
@@ -258,11 +260,11 @@ catalogs:
     remark-parse: ^11.0.0
     remark-stringify: ^11.0.0
     unified: ^11.0.5
-    unist-util-visit: ^5.1.0
+    unist-util-visit: ^5.2.0
   workflow:
     "@workflow-worlds/redis": ^0.2.2
-    "@workflow/world-postgres": 4.3.7
-    workflow: 4.8.9
+    "@workflow/world-postgres": 4.4.0
+    workflow: 4.8.16
 
 linkWorkspacePackages: true
 
@@ -293,6 +295,25 @@ minimumReleaseAgeExclude:
   - bun-types@1.4.0
   - '@earendil-works/pi-telemetry@0.85.1 || 0.87.1'
   - '@earendil-works/chord@0.85.1 || 0.87.1'
+  - '@opentelemetry/api-logs@0.223.2'
+  - '@opentelemetry/configuration@0.223.2'
+  - '@opentelemetry/exporter-logs-otlp-grpc@0.223.2'
+  - '@opentelemetry/exporter-logs-otlp-http@0.223.2'
+  - '@opentelemetry/exporter-logs-otlp-proto@0.223.2'
+  - '@opentelemetry/exporter-metrics-otlp-grpc@0.223.2'
+  - '@opentelemetry/exporter-metrics-otlp-http@0.223.2'
+  - '@opentelemetry/exporter-metrics-otlp-proto@0.223.2'
+  - '@opentelemetry/exporter-prometheus@0.223.2'
+  - '@opentelemetry/exporter-trace-otlp-grpc@0.223.2'
+  - '@opentelemetry/exporter-trace-otlp-http@0.223.2'
+  - '@opentelemetry/exporter-trace-otlp-proto@0.223.2'
+  - '@opentelemetry/instrumentation-http@0.223.2'
+  - '@opentelemetry/instrumentation@0.223.2'
+  - '@opentelemetry/otlp-exporter-base@0.223.2'
+  - '@opentelemetry/otlp-grpc-exporter-base@0.223.2'
+  - '@opentelemetry/otlp-transformer@0.223.2'
+  - '@opentelemetry/sdk-logs@0.223.2'
+  - '@opentelemetry/sdk-node@0.223.2'
 
 strictPeerDependencies: false
 
