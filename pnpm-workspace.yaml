@@ -117,7 +117,7 @@ catalogs:
     monaco-editor: ^0.56.0
   next:
     "@astrojs/rss": ^4.0.19
-    next: 16.3.5
+    next: 16.4.1
     next-intl: ^4.14.6
     next-safe-action: 8.7.3
     sharp: 0.35.4
