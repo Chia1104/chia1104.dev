@@ -188,7 +188,7 @@ catalogs:
     "@testing-library/user-event": 14.6.7
     "@vitejs/plugin-react-swc": 4.3.3
     "@vitest/coverage-v8": 5.0.1
-    "@vitest/ui": 5.0.1
+    "@vitest/ui": 5.0.5
     happy-dom: ^20.14.5
     msw: ^2.15.0
     start-server-and-test: ^3.0.12
