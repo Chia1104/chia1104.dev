@@ -216,7 +216,7 @@ catalogs:
     tsx: ^4.23.15
     turbo: 2.11.2
   ui:
-    "@iconify/react": ^6.0.2
+    "@iconify/react": ^6.0.4
     "@internationalized/date": ^3.12.4
     "@marsidev/react-turnstile": ^1.6.1
     "@shikijs/stream": ^4.4.3
