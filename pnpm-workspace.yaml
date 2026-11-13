@@ -105,7 +105,7 @@ catalogs:
     "@hono/mcp": 0.3.2
     "@hono/otel": 1.1.2
     "@hono/zod-validator": 0.9.1
-    hono: 4.13.8
+    hono: 4.13.16
   kv:
     "@keyv/postgres": ^2.2.3
     "@keyv/redis": ^5.1.6
