@@ -15,6 +15,7 @@
 - Browsers use `NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT`; server runtimes may use internal endpoints.
 - Frontends import the oRPC contract type and call `service` directly. Do not add a Next.js API proxy, tRPC or cross-app imports.
 - `service` reaches `workflow` through the authenticated `@chia/workflow-control` boundary.
+- Public traffic to `service` and `dash` must pass Cloudflare, which adds `x-origin-secret`. Where `ORIGIN_SECRET` is set, a request that arrives through Railway's public edge without it is refused; private networking and health checks never pass the edge.
 
 ## `www`
 

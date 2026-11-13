@@ -32,6 +32,8 @@ export const env = createEnv({
     RAILWAY_URL: z.string().optional(),
     VERCEL_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
+    /** Set where Cloudflare fronts dash; requests through Railway's edge must carry it. */
+    ORIGIN_SECRET: z.string().min(32).optional(),
   },
 
   client: {
@@ -44,6 +46,7 @@ export const env = createEnv({
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
     VERCEL_URL: process.env.VERCEL_URL,
     ZEABUR_URL: process.env.ZEABUR_URL,
+    ORIGIN_SECRET: process.env.ORIGIN_SECRET,
   },
 
   skipValidation:

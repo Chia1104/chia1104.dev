@@ -57,6 +57,10 @@
       "types": "./src/server/index.ts",
       "default": "./src/server/index.ts"
     },
+    "./server/origin": {
+      "types": "./src/server/origin.ts",
+      "default": "./src/server/origin.ts"
+    },
     "./schema": {
       "types": "./src/schema/index.ts",
       "default": "./src/schema/index.ts"

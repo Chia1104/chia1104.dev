@@ -27,6 +27,8 @@ export const env = createEnv({
     IP_ALLOW_LIST: z.string().optional(),
     MAINTENANCE_MODE: z.string().optional().default("false"),
     MAINTENANCE_BYPASS_TOKEN: z.string().optional(),
+    /** Set where Cloudflare fronts the service; requests through Railway's edge must carry it. */
+    ORIGIN_SECRET: z.string().min(32).optional(),
     TIMEOUT_MS: NumericStringSchema,
     TRIGGER_SECRET_KEY: z.string().optional(),
     AI_GATEWAY_API_KEY: z.string().optional(),
@@ -56,6 +58,7 @@ export const env = createEnv({
         ? "true"
         : "false",
     MAINTENANCE_BYPASS_TOKEN: process.env.MAINTENANCE_BYPASS_TOKEN,
+    ORIGIN_SECRET: process.env.ORIGIN_SECRET,
     TIMEOUT_MS: process.env.TIMEOUT_MS || "10000",
     TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,

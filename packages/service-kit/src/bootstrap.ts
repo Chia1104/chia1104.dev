@@ -16,6 +16,7 @@ import { isAppError, toErrorResponse } from "./errors";
 import { bodyLimit } from "./middlewares/body-limit";
 import type { MaintenanceOptions } from "./middlewares/maintenance";
 import { maintenance } from "./middlewares/maintenance";
+import { originSecret } from "./middlewares/origin-secret";
 
 export const parseAllowedOrigins = (value?: string): string[] | string => {
   if (!value) return "*";
@@ -45,9 +46,11 @@ export interface BootstrapOptions<TEnv extends Env = Env> {
    * @default 5 MB
    */
   maxBodySize?: number;
+  /** Secret Cloudflare adds to the requests it forwards; unset leaves the origin open, as in local and beta. */
+  originSecret?: string;
 }
 
-/** Shared middleware: server span, request id, request log, errors, body cap, CORS, maintenance. */
+/** Shared middleware: server span, request id, request log, errors, origin secret, body cap, CORS, maintenance. */
 export const bootstrap = <
   TEnv extends Env,
   TSchema extends Schema,
@@ -112,6 +115,7 @@ export const bootstrap = <
     return c.json(errorGenerator(500), 500);
   });
 
+  app.use(originSecret(options?.originSecret));
   app.use(bodyLimit(options?.maxBodySize ?? 5 * 1024 * 1024));
 
   // CORS before maintenance: a maintenance 503 (including the preflight answer) must

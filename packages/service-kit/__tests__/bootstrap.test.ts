@@ -74,3 +74,35 @@ describe("policy denials", () => {
     );
   });
 });
+
+describe("origin secret", () => {
+  const secret = "s".repeat(64);
+  const createGuardedApp = () =>
+    bootstrap(new Hono(), { logger: false, originSecret: secret }).get(
+      "/ok",
+      (c) => c.json({ ok: true })
+    );
+
+  it("refuses a request from Railway's edge without the secret", async () => {
+    const res = await createGuardedApp().request("/ok", {
+      headers: { "x-railway-edge": "sin1" },
+    });
+
+    expect(res.status).toBe(403);
+    expect(reportError).not.toHaveBeenCalled();
+  });
+
+  it("passes a request that carries the secret Cloudflare adds", async () => {
+    const res = await createGuardedApp().request("/ok", {
+      headers: { "x-railway-edge": "sin1", "x-origin-secret": secret },
+    });
+
+    expect(res.status).toBe(200);
+  });
+
+  it("passes private network and health check requests, which skip the edge", async () => {
+    const res = await createGuardedApp().request("/ok");
+
+    expect(res.status).toBe(200);
+  });
+});

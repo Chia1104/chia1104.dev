@@ -28,6 +28,7 @@ const bootstrap = <
       allowedPaths: ["/api/v1/health"],
       bypassToken: env.MAINTENANCE_BYPASS_TOKEN,
     },
+    originSecret: env.ORIGIN_SECRET,
     // `caller` is unset on routes that never resolve one, such as health.
     requestLogFields: (c) => ({
       procedure: c.var.rpcProcedure,

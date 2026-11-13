@@ -1,0 +1,21 @@
+[mcp_servers.chia1104-local]
+url = "http://localhost:3005/api/v1/mcp"
+
+[mcp_servers.chia1104-local.http_headers]
+x-ch-api-key = "ch_llUvYSxTqnXEKuRzoKVrmVFSZToAjrijembylffVgMIDatnfuabiqErjNNmjdySP"
+
+[mcp_servers.chia1104-personal-site]
+url = "https:/service.chia1104.dev/api/v1/mcp"
+
+[mcp_servers.chia1104-personal-site.http_headers]
+x-cf-bypass-token = "36899702"
+x-ch-api-key = "ch_QXgeECILuOMGqgTxqQqcDaVbekqClnIFqFXrUfowkrZctHsxnspuDrLxfDkfYHsg"
+
+[mcp_servers.firecrawl]
+url = "https://mcp.firecrawl.dev/v2/mcp-oauth"
+
+[mcp_servers.grafana]
+url = "https://mcp.grafana.com/mcp"
+
+[mcp_servers.shaders]
+url = "https://shaders.com/mcp"
