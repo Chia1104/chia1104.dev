@@ -64,6 +64,8 @@ export {
 
 export { profileEntries, type ProfileEntry } from "./profile.schema.ts";
 
+export { pageViews, type PageView } from "./stats.schema.ts";
+
 export type {
   ProfileEntryContent,
   ProfileEntryContentInput,

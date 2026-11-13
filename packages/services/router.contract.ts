@@ -10,6 +10,7 @@ import { profileContract } from "./profile/profile.contract";
 import { ragContract } from "./rag/rag.contract";
 import { reportsContract } from "./reports/reports.contract";
 import { spotifyContract } from "./spotify/spotify.contract";
+import { statsContract } from "./stats/stats.contract";
 import { tagsContract } from "./tags/tags.contract";
 import { toolingsContract } from "./toolings/toolings.contract";
 import { userContract } from "./user/user.contract";
@@ -30,4 +31,5 @@ export const routerContract = {
   spotify: spotifyContract,
   reports: reportsContract,
   tags: tagsContract,
+  stats: statsContract,
 };

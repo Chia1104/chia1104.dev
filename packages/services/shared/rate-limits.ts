@@ -38,6 +38,15 @@ export const RATE_LIMITS = {
       [CallerTier.Session]: 300,
     },
   },
+  /** One call per page a reader opens. */
+  stats: {
+    windowMs: MINUTE,
+    limit: {
+      [CallerTier.Anonymous]: 60,
+      [CallerTier.Guest]: 60,
+      [CallerTier.Session]: 120,
+    },
+  },
   email: {
     windowMs: HOUR,
     limit: {

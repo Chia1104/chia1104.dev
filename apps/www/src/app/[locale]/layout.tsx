@@ -6,6 +6,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import meta from "@chia/meta";
 import { WWW_BASE_URL } from "@chia/utils/config";
 
+import { PageViewTracker } from "@/components/commons/page-view-tracker";
 import SiteShell from "@/components/commons/site-shell";
 import { routing } from "@/libs/i18n/routing";
 
@@ -47,7 +48,12 @@ const Layout = async ({
   modal?: ReactNode;
 }) => {
   const locale = await getLocale();
-  return <SiteShell locale={locale}>{children}</SiteShell>;
+  return (
+    <SiteShell locale={locale}>
+      <PageViewTracker />
+      {children}
+    </SiteShell>
+  );
 };
 
 export default Layout;

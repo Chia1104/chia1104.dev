@@ -61,6 +61,10 @@
       "types": "./src/libs/resources/index-run.ts",
       "default": "./src/libs/resources/index-run.ts"
     },
+    "./repos/stats": {
+      "types": "./src/libs/stats/index.ts",
+      "default": "./src/libs/stats/index.ts"
+    },
     "./repos/users": {
       "types": "./src/libs/users/index.ts",
       "default": "./src/libs/users/index.ts"
