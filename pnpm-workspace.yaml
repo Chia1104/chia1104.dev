@@ -169,7 +169,7 @@ catalogs:
     streamdown: 2.7.1
   tailwindcss:
     "@egoist/tailwindcss-icons": ^1.9.2
-    "@iconify/json": ^2.2.555
+    "@iconify/json": ^2.2.556
     "@tailwindcss/postcss": 4.3.5
     "@tailwindcss/typography": ^0.5.20
     postcss: 8.5.32

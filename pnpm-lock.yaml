@@ -536,8 +536,8 @@ catalogs:
       specifier: ^1.9.2
       version: 1.9.2
     '@iconify/json':
-      specifier: ^2.2.555
-      version: 2.2.555
+      specifier: ^2.2.556
+      version: 2.2.556
     '@tailwindcss/postcss':
       specifier: 4.3.5
       version: 4.3.5
@@ -2688,7 +2688,7 @@ importers:
         version: 1.9.2(tailwindcss@4.3.5)
       '@iconify/json':
         specifier: catalog:tailwindcss
-        version: 2.2.555
+        version: 2.2.556
       tailwindcss:
         specifier: catalog:tailwindcss
         version: 4.3.5
@@ -4136,8 +4136,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@iconify/json@2.2.555':
-    resolution: {integrity: sha512-ZUDnGWRayaBwXW8YuzxWFrvbBy620zjWqMAp4aPwb3mwsjO9gyWiTX0knK3spKZCFOpOfuWc8KXlCmU27LogNw==}
+  '@iconify/json@2.2.556':
+    resolution: {integrity: sha512-qSG9FGaQHdlt5qEwctDiFToYMmVCl5hN0BGju0aAyyRe75j9Nw49tmb1xLglkUi8GfInBrHj5PJ2W8Cko9yJ3Q==}
 
   '@iconify/react@6.0.4':
     resolution: {integrity: sha512-7nKd1eF52E1QGIl46eDWfMNPuTQHUxsXoK2Evgtu5jr386jCWTuWFLHM9vfsTNbUcKp+uq6ao+3skNUalDhH/w==}
@@ -15979,7 +15979,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@iconify/json@2.2.555':
+  '@iconify/json@2.2.556':
     dependencies:
       '@iconify/types': 2.0.0
       pathe: 2.0.3
