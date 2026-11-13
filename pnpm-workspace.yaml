@@ -40,7 +40,7 @@ catalog:
   server-only: ^0.0.1
   superjson: 2.2.6
   typescript: 7.0.2
-  zod: 4.6.5
+  zod: 4.6.6
 
 catalogs:
   agent:
