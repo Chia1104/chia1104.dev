@@ -24,6 +24,9 @@ export const mediaTranslationsSchema = z
 
 export const mediaRatingSchema = z.number().int().min(1).max(MEDIA_RATING_MAX);
 
+/** `#rrggbb`, lower or upper case. */
+export const mediaColorSchema = z.string().regex(/^#[0-9a-f]{6}$/i);
+
 /** `YYYY-MM-DD`: a calendar day, not an instant. */
 export const mediaDateSchema = z.iso.date();
 

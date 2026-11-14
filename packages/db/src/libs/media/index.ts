@@ -73,6 +73,8 @@ export interface InsertMediaEntryDTO extends MediaEntryLog {
   originalTitle: string | null;
   releaseYear: number | null;
   poster: string | null;
+  backdrop: string | null;
+  color: string | null;
 }
 
 export const createMediaEntry = async (
@@ -88,6 +90,7 @@ export interface UpdateMediaEntryDTO extends MediaEntryLog {
   translations: MediaTranslations;
   originalTitle: string | null;
   releaseYear: number | null;
+  color: string | null;
 }
 
 /** Replaces every editable column. Returns the row, or undefined when there is none. */

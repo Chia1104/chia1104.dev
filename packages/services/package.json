@@ -143,6 +143,7 @@
     "keyv": "catalog:kv",
     "ky": "catalog:",
     "node-html-parser": "catalog:unified",
+    "sharp": "catalog:next",
     "zod": "catalog:"
   },
   "devDependencies": {

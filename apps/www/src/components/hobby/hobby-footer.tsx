@@ -28,37 +28,35 @@ export const HobbyFooter = () => {
   return (
     <footer
       data-testid="footer"
-      className="page-md:px-8 mx-auto w-full max-w-6xl px-4 pt-16 pb-10">
-      <div className="border-separator page-md:flex-row page-md:items-center page-md:justify-between flex flex-col gap-6 border-t pt-6">
-        <div className="flex flex-col gap-3">
-          <CurrentPlaying
-            experimental={{
-              displayBackgroundColorFromImage: true,
-            }}
-          />
-          <Copyright className="text-muted text-sm" />
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <ThemeSelector
-            enableCMD
-            label={t("label")}
-            themeLabel={{
-              [Theme.System]: t("system"),
-              [Theme.Dark]: t("dark"),
-              [Theme.Light]: t("light"),
-            }}
-            buttonProps={{
-              variant: "tertiary",
-            }}
-            dropdownProps={{
-              popover: {
-                className: "min-w-40",
-              },
-            }}
-          />
-          <LocaleSelector />
-          <Settings palette={false} />
-        </div>
+      className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 px-(--hobby-gutter) pt-[clamp(4rem,10vw,8rem)] pb-20">
+      <div className="flex flex-wrap items-center gap-4">
+        <Copyright className="text-muted text-sm" />
+        <CurrentPlaying
+          experimental={{
+            displayBackgroundColorFromImage: true,
+          }}
+        />
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <ThemeSelector
+          enableCMD
+          label={t("label")}
+          themeLabel={{
+            [Theme.System]: t("system"),
+            [Theme.Dark]: t("dark"),
+            [Theme.Light]: t("light"),
+          }}
+          buttonProps={{
+            variant: "tertiary",
+          }}
+          dropdownProps={{
+            popover: {
+              className: "min-w-40",
+            },
+          }}
+        />
+        <LocaleSelector />
+        <Settings palette={false} />
       </div>
     </footer>
   );

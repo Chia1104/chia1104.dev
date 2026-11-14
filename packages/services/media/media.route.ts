@@ -20,8 +20,13 @@ import {
   resolveMediaSnapshot,
   searchMediaCatalogues,
 } from "./catalogue.service";
+import {
+  MediaImageRole,
+  dominantColorOf,
+  removeMediaImage,
+  storeMediaImage,
+} from "./image.service";
 import type { MediaEntryView } from "./media.contract";
-import { removePoster, storePoster } from "./poster.service";
 
 /** Parsing `translations` re-establishes that the stored JSON is the current shape. */
 const entryOf = (row: MediaEntry): MediaEntryView => ({
@@ -33,6 +38,8 @@ const entryOf = (row: MediaEntry): MediaEntryView => ({
   originalTitle: row.originalTitle,
   releaseYear: row.releaseYear,
   posterUrl: row.poster ? `${STORAGE_BASE_URL}/${row.poster}` : null,
+  backdropUrl: row.backdrop ? `${STORAGE_BASE_URL}/${row.backdrop}` : null,
+  color: row.color,
   status: row.status,
   rating: row.rating,
   favorite: row.favorite,
@@ -91,20 +98,32 @@ export const createMediaEntryRoute = contractOS.media.create
       throw opts.errors.NOT_FOUND();
     }
 
-    // A cover that cannot be copied leaves the entry without one rather than refusing the log.
-    let poster: string | null = null;
-    if (snapshot.posterUrl) {
+    // An image that cannot be copied leaves the entry without it rather than refusing the log.
+    const copy = async (role: MediaImageRole, url: string | null) => {
+      if (!url) return null;
       try {
-        poster = await storePoster(
-          source,
-          sourceId,
-          snapshot.posterUrl,
-          opts.signal
+        return await storeMediaImage(source, sourceId, role, url, opts.signal);
+      } catch (error) {
+        logger.warn(
+          { err: error, source, sourceId, role },
+          "Media image copy failed"
         );
+        return null;
+      }
+    };
+    const [poster, backdrop] = await Promise.all([
+      copy(MediaImageRole.Poster, snapshot.posterUrl),
+      copy(MediaImageRole.Backdrop, snapshot.backdropUrl),
+    ]);
+
+    let color = snapshot.color;
+    if (!color && poster) {
+      try {
+        color = await dominantColorOf(poster.body);
       } catch (error) {
         logger.warn(
           { err: error, source, sourceId },
-          "Media cover copy failed"
+          "Media colour extraction failed"
         );
       }
     }
@@ -117,7 +136,9 @@ export const createMediaEntryRoute = contractOS.media.create
       translations: snapshot.translations,
       originalTitle: snapshot.originalTitle,
       releaseYear: snapshot.releaseYear,
-      poster,
+      poster: poster?.key ?? null,
+      backdrop: backdrop?.key ?? null,
+      color,
       ...log,
     });
     await opts.context.workflow.startSiteRevalidation(WwwCacheTag.Media);
@@ -143,14 +164,12 @@ export const removeMediaEntryRoute = contractOS.media.remove
     if (!row) {
       throw opts.errors.NOT_FOUND();
     }
-    if (row.poster) {
+    for (const key of [row.poster, row.backdrop]) {
+      if (!key) continue;
       try {
-        await removePoster(row.poster);
+        await removeMediaImage(key);
       } catch (error) {
-        logger.warn(
-          { err: error, key: row.poster },
-          "Media cover removal failed"
-        );
+        logger.warn({ err: error, key }, "Media image removal failed");
       }
     }
     await opts.context.workflow.startSiteRevalidation(WwwCacheTag.Media);

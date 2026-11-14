@@ -358,6 +358,38 @@ export const EntryForm = ({
           minValue={1870}
           name="releaseYear"
         />
+        <Controller
+          control={control}
+          name="color"
+          render={({ field, fieldState }) => (
+            <TextField
+              className="w-40"
+              isDisabled={isPending}
+              isInvalid={fieldState.invalid}
+              onBlur={field.onBlur}
+              onChange={field.onChange}
+              value={field.value}>
+              <Label className="text-xs">Colour</Label>
+              <div className="flex items-center gap-2">
+                <span
+                  aria-hidden
+                  className="border-separator size-6 shrink-0 rounded-sm border"
+                  style={{ backgroundColor: field.value || "transparent" }}
+                />
+                <Input
+                  className="font-mono text-xs"
+                  placeholder="#rrggbb"
+                  variant={FIELD_VARIANT}
+                />
+              </div>
+              <Description className="text-xs">
+                Tints the site while this work is in focus; taken from the
+                cover.
+              </Description>
+              <FieldError>{fieldState.error?.message}</FieldError>
+            </TextField>
+          )}
+        />
       </div>
 
       <div className="flex gap-2">

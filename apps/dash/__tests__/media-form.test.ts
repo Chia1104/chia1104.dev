@@ -13,6 +13,7 @@ const fields = (overrides: Partial<MediaFormInput> = {}): MediaFormInput => ({
   finishedOn: "2026-11-01",
   originalTitle: " 葬送のフリーレン ",
   releaseYear: 2023,
+  color: " #D6E4A1 ",
   translations: {
     [Locale.ZhTW]: { title: "葬送的芙莉蓮", comment: " 很好看 " },
     [Locale.En]: { title: "", comment: "ignored without a title" },
@@ -30,6 +31,7 @@ describe("mediaFormSchema", () => {
       finishedOn: "2026-11-01",
       originalTitle: "葬送のフリーレン",
       releaseYear: 2023,
+      color: "#D6E4A1",
       translations: {
         [Locale.ZhTW]: { title: "葬送的芙莉蓮", comment: "很好看" },
       },
@@ -46,6 +48,13 @@ describe("mediaFormSchema", () => {
       })
     );
     expect(result.success).toBe(false);
+  });
+
+  it("refuses a colour that is not #rrggbb and accepts a blank one", () => {
+    expect(mediaFormSchema.safeParse(fields({ color: "teal" })).success).toBe(
+      false
+    );
+    expect(mediaFormSchema.parse(fields({ color: "" })).color).toBeNull();
   });
 
   it("refuses a finish date before the start date", () => {

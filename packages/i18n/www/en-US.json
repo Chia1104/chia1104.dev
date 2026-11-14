@@ -370,30 +370,17 @@
       "retry": "Try again"
     }
   },
-  "mode": {
-    "label": "Site mode",
-    "tech": "Tech",
-    "hobby": "Hobby"
-  },
   "hobby": {
     "title": "Hobby",
     "description": "What I watch and play outside of work: films, series, anime and games.",
-    "all": "Overview",
-    "nav": "Categories",
+    "intro": "Outside of work I watch <movies>films</movies>, <series>series</series> and <anime>anime</anime>, and play <games>games</games>.",
     "empty": "Nothing logged here yet.",
-    "favorite": "A favorite",
-    "rating": "{rating} / 10",
     "source": "See “{title}” on {source}",
-    "sections": {
-      "in-progress": "In progress",
-      "recent": "Recently finished",
-      "favorites": "Favorites"
-    },
-    "status": {
-      "in-progress": "In progress",
-      "completed": "Finished",
-      "planned": "On the list",
-      "dropped": "Dropped"
+    "kind": {
+      "movie": "Film",
+      "series": "Series",
+      "anime": "Anime",
+      "game": "Game"
     },
     "kind-description": {
       "movie": "Films I have seen and want to see.",

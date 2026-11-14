@@ -370,30 +370,17 @@
       "retry": "重試"
     }
   },
-  "mode": {
-    "label": "網站模式",
-    "tech": "技術",
-    "hobby": "興趣"
-  },
   "hobby": {
     "title": "興趣",
     "description": "工作以外，我在看的電影、影集、動畫，還有正在玩的遊戲。",
-    "all": "總覽",
-    "nav": "分類",
+    "intro": "工作以外，我在看的<movies>電影</movies>、<series>影集</series>、<anime>動畫</anime>，還有在玩的<games>遊戲</games>。",
     "empty": "這裡還沒有紀錄。",
-    "favorite": "我的最愛",
-    "rating": "{rating} / 10",
     "source": "在 {source} 查看〈{title}〉",
-    "sections": {
-      "in-progress": "進行中",
-      "recent": "最近完成",
-      "favorites": "最愛"
-    },
-    "status": {
-      "in-progress": "進行中",
-      "completed": "已完成",
-      "planned": "口袋名單",
-      "dropped": "中途放棄"
+    "kind": {
+      "movie": "電影",
+      "series": "影集",
+      "anime": "動畫",
+      "game": "遊戲"
     },
     "kind-description": {
       "movie": "看過和想看的電影。",

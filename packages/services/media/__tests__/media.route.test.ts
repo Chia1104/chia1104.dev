@@ -13,9 +13,10 @@ import { createWorkflowControlClient } from "@chia/workflow-control/client";
 
 import type { BaseOSContext } from "../../shared/context";
 import type * as catalogueModule from "../catalogue.service";
+import type * as imageModule from "../image.service";
 import type * as mediaRouteModule from "../media.route";
 
-const { repo, catalogue, poster } = vi.hoisted(() => ({
+const { repo, catalogue, image } = vi.hoisted(() => ({
   repo: {
     listMediaEntries: vi.fn(),
     getMediaEntryBySource: vi.fn(),
@@ -27,14 +28,18 @@ const { repo, catalogue, poster } = vi.hoisted(() => ({
     searchMediaCatalogues: vi.fn(),
     resolveMediaSnapshot: vi.fn(),
   },
-  poster: {
-    storePoster: vi.fn(),
-    removePoster: vi.fn(),
+  image: {
+    storeMediaImage: vi.fn(),
+    dominantColorOf: vi.fn(),
+    removeMediaImage: vi.fn(),
   },
 }));
 
 vi.mock("@chia/db/repos/media", () => repo);
-vi.mock("../poster.service", () => poster);
+vi.mock("../image.service", async (importOriginal) => ({
+  ...(await importOriginal<typeof imageModule>()),
+  ...image,
+}));
 vi.mock("../catalogue.service", async (importOriginal) => ({
   ...(await importOriginal<typeof catalogueModule>()),
   ...catalogue,
@@ -60,7 +65,9 @@ const row = (overrides: Partial<MediaEntry> = {}): MediaEntry => ({
   translations: { en: { title: "Frieren: Beyond Journey’s End" } },
   originalTitle: "葬送のフリーレン",
   releaseYear: 2023,
-  poster: "media/anilist-154587.jpg",
+  poster: "media/anilist-154587-poster.jpg",
+  backdrop: "media/anilist-154587-backdrop.jpg",
+  color: "#d6e4a1",
   status: MediaStatus.Completed,
   rating: 9,
   favorite: true,
@@ -114,10 +121,18 @@ describe("media routes", () => {
       originalTitle: "葬送のフリーレン",
       releaseYear: 2023,
       posterUrl: "https://img.example/frieren.jpg",
+      backdropUrl: "https://img.example/frieren-banner.jpg",
+      color: null,
       sourceUrl: "https://anilist.co/anime/154587",
     });
-    poster.storePoster.mockResolvedValue("media/anilist-154587.jpg");
-    poster.removePoster.mockResolvedValue(undefined);
+    image.storeMediaImage.mockImplementation(
+      async (_source: string, sourceId: string, role: string) => ({
+        key: `media/anilist-${sourceId}-${role}.jpg`,
+        body: new Uint8Array(),
+      })
+    );
+    image.dominantColorOf.mockResolvedValue("#336699");
+    image.removeMediaImage.mockResolvedValue(undefined);
   });
 
   describe("anonymous", () => {
@@ -136,7 +151,10 @@ describe("media routes", () => {
         limit: 12,
       });
       expect(listed.items[0]?.posterUrl).toBe(
-        "https://storage.chia1104.dev/media/anilist-154587.jpg"
+        "https://storage.chia1104.dev/media/anilist-154587-poster.jpg"
+      );
+      expect(listed.items[0]?.backdropUrl).toBe(
+        "https://storage.chia1104.dev/media/anilist-154587-backdrop.jpg"
       );
     });
 
@@ -163,7 +181,7 @@ describe("media routes", () => {
     });
   });
 
-  it("creates from the catalogue snapshot, copies the cover and revalidates", async ({
+  it("creates from the catalogue snapshot, copies both images, takes the cover's colour and revalidates", async ({
     context,
   }) => {
     const created = await call(
@@ -176,10 +194,11 @@ describe("media routes", () => {
       },
       { context }
     );
-    expect(poster.storePoster).toHaveBeenCalledWith(
+    expect(image.storeMediaImage).toHaveBeenCalledWith(
       MediaSource.Anilist,
       "154587",
-      "https://img.example/frieren.jpg",
+      "backdrop",
+      "https://img.example/frieren-banner.jpg",
       undefined
     );
     expect(repo.createMediaEntry).toHaveBeenCalledWith(expect.anything(), {
@@ -190,17 +209,28 @@ describe("media routes", () => {
       translations: { en: { title: "Frieren: Beyond Journey’s End" } },
       originalTitle: "葬送のフリーレン",
       releaseYear: 2023,
-      poster: "media/anilist-154587.jpg",
+      poster: "media/anilist-154587-poster.jpg",
+      backdrop: "media/anilist-154587-backdrop.jpg",
+      color: "#336699",
       ...log,
     });
     expect(created.entry.id).toBe(9);
     expect(startSiteRevalidation).toHaveBeenCalledWith(WwwCacheTag.Media);
   });
 
-  it("logs the work without a cover when the copy fails", async ({
+  it("keeps the catalogue's colour and logs the work without images when the copies fail", async ({
     context,
   }) => {
-    poster.storePoster.mockRejectedValue(new Error("Cover responded 403"));
+    catalogue.resolveMediaSnapshot.mockResolvedValueOnce({
+      translations: { en: { title: "Frieren: Beyond Journey’s End" } },
+      originalTitle: "葬送のフリーレン",
+      releaseYear: 2023,
+      posterUrl: "https://img.example/frieren.jpg",
+      backdropUrl: null,
+      color: "#d6e4a1",
+      sourceUrl: "https://anilist.co/anime/154587",
+    });
+    image.storeMediaImage.mockRejectedValue(new Error("Image responded 403"));
 
     const created = await call(
       routes.createMediaEntryRoute,
@@ -213,6 +243,8 @@ describe("media routes", () => {
       { context }
     );
     expect(created.entry.posterUrl).toBeNull();
+    expect(created.entry.color).toBe("#d6e4a1");
+    expect(image.dominantColorOf).not.toHaveBeenCalled();
   });
 
   it("refuses a catalogue that does not list the kind, a duplicate and an unknown work", async ({
@@ -271,6 +303,7 @@ describe("media routes", () => {
           translations: { "zh-TW": { title: "葬送的芙莉蓮" } },
           originalTitle: null,
           releaseYear: 2023,
+          color: null,
           ...log,
           startedOn: "2024-04-01",
         },
@@ -284,8 +317,11 @@ describe("media routes", () => {
     await expect(
       call(routes.removeMediaEntryRoute, { id: 4 }, { context })
     ).resolves.toEqual({ id: 4 });
-    expect(poster.removePoster).toHaveBeenCalledWith(
-      "media/anilist-154587.jpg"
+    expect(image.removeMediaImage).toHaveBeenCalledWith(
+      "media/anilist-154587-poster.jpg"
+    );
+    expect(image.removeMediaImage).toHaveBeenCalledWith(
+      "media/anilist-154587-backdrop.jpg"
     );
     expect(startSiteRevalidation).toHaveBeenCalledWith(WwwCacheTag.Media);
 

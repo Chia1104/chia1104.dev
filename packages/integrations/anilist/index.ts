@@ -14,6 +14,10 @@ export interface AnilistAnime {
   };
   releaseYear: number | null;
   coverUrl: string | null;
+  /** A wide strip of key art, far shorter than a film backdrop. */
+  bannerUrl: string | null;
+  /** AniList's own pick of the cover's dominant colour, as `#rrggbb`. */
+  color: string | null;
   url: string;
 }
 
@@ -21,7 +25,8 @@ const MEDIA_FIELDS = `
   id
   title { romaji english native }
   startDate { year }
-  coverImage { extraLarge }
+  coverImage { extraLarge color }
+  bannerImage
   siteUrl
 `;
 
@@ -43,7 +48,11 @@ const mediaSchema = z.object({
     native: z.string().nullable(),
   }),
   startDate: z.object({ year: z.number().int().nullable() }),
-  coverImage: z.object({ extraLarge: z.string().nullable() }),
+  coverImage: z.object({
+    extraLarge: z.string().nullable(),
+    color: z.string().nullable(),
+  }),
+  bannerImage: z.string().nullable(),
   siteUrl: z.string(),
 });
 
@@ -60,6 +69,8 @@ const toAnime = (raw: z.infer<typeof mediaSchema>): AnilistAnime => ({
   titles: raw.title,
   releaseYear: raw.startDate.year,
   coverUrl: raw.coverImage.extraLarge,
+  bannerUrl: raw.bannerImage,
+  color: raw.coverImage.color,
   url: raw.siteUrl,
 });
 

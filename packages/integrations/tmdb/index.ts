@@ -6,6 +6,8 @@ const API_BASE_URL = "https://api.themoviedb.org/3";
 const SITE_BASE_URL = "https://www.themoviedb.org";
 /** `w780` is the widest poster rendition short of the original upload. */
 const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w780";
+/** Key art in landscape; `w1280` is the widest rendition short of the original upload. */
+const BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
 const REQUEST_TIMEOUT_MS = 8000;
 
 export const TmdbMediaType = {
@@ -29,6 +31,7 @@ export interface TmdbWork {
   originalTitle: string;
   releaseYear: number | null;
   posterUrl: string | null;
+  backdropUrl: string | null;
   url: string;
 }
 
@@ -42,6 +45,7 @@ const workSchema = z.object({
   release_date: z.string().nullish(),
   first_air_date: z.string().nullish(),
   poster_path: z.string().nullish(),
+  backdrop_path: z.string().nullish(),
 });
 
 const searchSchema = z.object({ results: z.array(workSchema) });
@@ -59,6 +63,9 @@ const toWork = (type: TmdbMediaType, raw: z.infer<typeof workSchema>) => {
     originalTitle: raw.original_title ?? raw.original_name ?? title,
     releaseYear: yearOf(raw.release_date ?? raw.first_air_date),
     posterUrl: raw.poster_path ? `${POSTER_BASE_URL}${raw.poster_path}` : null,
+    backdropUrl: raw.backdrop_path
+      ? `${BACKDROP_BASE_URL}${raw.backdrop_path}`
+      : null,
     url: `${SITE_BASE_URL}/${type}/${raw.id}`,
   } satisfies TmdbWork;
 };

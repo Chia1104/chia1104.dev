@@ -10,7 +10,11 @@ const media = {
     native: "葬送のフリーレン",
   },
   startDate: { year: 2023 },
-  coverImage: { extraLarge: "https://img.example/frieren.jpg" },
+  coverImage: {
+    extraLarge: "https://img.example/frieren.jpg",
+    color: "#d6e4a1",
+  },
+  bannerImage: "https://img.example/frieren-banner.jpg",
   siteUrl: "https://anilist.co/anime/154587",
 };
 
@@ -36,6 +40,8 @@ describe("AniList", () => {
         titles: media.title,
         releaseYear: 2023,
         coverUrl: "https://img.example/frieren.jpg",
+        bannerUrl: "https://img.example/frieren-banner.jpg",
+        color: "#d6e4a1",
         url: "https://anilist.co/anime/154587",
       },
     ]);

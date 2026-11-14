@@ -4,6 +4,7 @@ import * as z from "zod";
 import { MediaKind, MediaSource, MediaStatus } from "@chia/db/types";
 import {
   MEDIA_TITLE_MAX_CHARS,
+  mediaColorSchema,
   mediaDateSchema,
   mediaRatingSchema,
   mediaTranslationsSchema,
@@ -51,6 +52,10 @@ const entrySchema = entryIdSchema.extend({
   releaseYear: z.number().int().nullable(),
   /** Absolute URL of the cover in the site's storage. */
   posterUrl: z.string().nullable(),
+  /** Absolute URL of the landscape key art in the site's storage. */
+  backdropUrl: z.string().nullable(),
+  /** The cover's dominant colour as `#rrggbb`. */
+  color: mediaColorSchema.nullable(),
   ...logFields,
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -106,7 +111,7 @@ export const searchMediaContract = oc
   )
   .output(z.object({ items: z.array(candidateSchema) }));
 
-/** Snapshots the work from its catalogue and copies its cover into storage. */
+/** Snapshots the work from its catalogue and copies its cover and key art into storage. */
 export const createMediaEntryContract = oc
   .errors({ ...adminErrors, CONFLICT: {}, SERVICE_UNAVAILABLE: {} })
   .input(
@@ -139,6 +144,7 @@ export const updateMediaEntryContract = oc
           .min(RELEASE_YEAR_MIN)
           .max(RELEASE_YEAR_MAX)
           .nullable(),
+        color: mediaColorSchema.nullable(),
         ...logFields,
       })
       .refine(endsAfterStart, ENDS_AFTER_START)

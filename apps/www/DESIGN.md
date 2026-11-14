@@ -109,11 +109,13 @@ Colours are HeroUI theme tokens authored in OKLCH in `@chia/themes/default.css` 
 
 ## 6. Hobby mode
 
-Everything above describes the tech mode. Pages under `/hobby` (films, series, anime, games) wear a second frame, and the reader moves between the two with the segmented switch beside the wordmark.
+Everything above describes the tech mode. Pages under `/hobby` (films, series, anime, games) wear a second frame with none of it: no header bar, no column, no rails.
 
-- **Cover art is the structure.** There are no rails, rules or hatching. The page is a wide column (72rem) of 2:3 covers; the artwork brings the colour, so the chrome stays quiet around it.
-- **Petrol and sticker yellow.** Tokens come from `@chia/themes/hobby.css`: a pale mint-grey sheet by day (`#EAF5F6`) and deep petrol by night (`#041319`), neutrals tinted towards hue 200–228. The accent is one yellow (`#F7D22A`) and it means "mine": the underline of the current category and the round sticker on a favorite.
-- **Categories are the headline.** Overview, Movies, Series, Anime and Games are set as the largest type on the page (48px bold on wide pages, 24px on a phone, scrolling sideways) and double as the navigation; the current one is full ink, the rest 60% muted.
-- **Softer corners.** `--radius` is 0.625rem here against 0.15rem in the tech mode, so the same HeroUI controls read rounder.
-- **A work is a card without a box.** Cover, then title (14px semibold, two lines), then year and rating as tabular small print at opposite ends. A kind's page adds the short comment under each card; a work with no cover shows its title on a `default` tile.
-- **Reader palette does not apply.** The palette settings recolour the tech mode only; the hobby frame keeps its authored colours.
+- **One screen of glyphs behind everything.** A fixed field of ASCII characters fills the viewport: noise that drifts, a trail under the pointer, and the key art of whichever work is in focus drawn through the same characters. It is the only image on the page and the one loud thing in the mode. It moves only while the reader does: three seconds after the last pointer move, scroll or key press it holds its frame, and it is drawn at no more than 1.5 pixels per CSS pixel.
+- **The work in focus colours the page.** Every token is derived from one colour, `--media-color`: the cover's dominant colour while a work is in focus, a fixed teal (`#45B0C5`) otherwise. Backgrounds keep its hue at very low chroma, text sits at the far end of the lightness scale, and the accent is the same hue at full strength. On a change of work the page background eases over half a second and the other tokens switch at once.
+- **Type is the layout.** Each work is one line that runs the full width of the viewport, its title set large (28px on a phone up to 84px, bold, tight) with its kind and year as small tabular print at the right edge. Lines are not grouped or ruled; the order is the log's own, newest activity first. While one line is in focus the others drop to 40%.
+- **Focus follows the reader.** The line under the pointer or the keyboard is in focus; on a touch screen it is the line crossing the middle of the viewport.
+- **The sentence is the navigation.** The page opens with one sentence whose nouns (films, series, anime, games) are links that narrow the list to that kind, and widen it again when current.
+- **Chrome stays out of the way.** The wordmark is plain text at the top; the chat launcher and command menu float in the bottom-left corner; theme, language and settings close the page as one row.
+- **Where the shader cannot run** (no WebGPU), the key art itself stands in behind the page at low opacity, and the colour still follows the work. With reduced motion the field holds still.
+- **Reader palette does not apply.** The palette settings recolour the tech mode only.

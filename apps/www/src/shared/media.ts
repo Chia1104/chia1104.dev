@@ -23,11 +23,30 @@ export const MEDIA_SOURCE_NAME = {
 } as const satisfies Record<MediaSource, string>;
 
 /** The reader's locale first, then any other the entry carries. */
-export const mediaTranslationOf = (entry: MediaEntry, locale: DBLocale) =>
-  entry.translations[locale] ??
-  Object.values(DBLocale)
-    .map((other) => entry.translations[other])
-    .find((translation) => translation !== undefined);
-
 export const mediaTitleOf = (entry: MediaEntry, locale: DBLocale) =>
-  mediaTranslationOf(entry, locale)?.title ?? entry.originalTitle ?? "";
+  (
+    entry.translations[locale] ??
+    Object.values(DBLocale)
+      .map((other) => entry.translations[other])
+      .find((translation) => translation !== undefined)
+  )?.title ??
+  entry.originalTitle ??
+  "";
+
+/** The colour the hobby pages wear while no work is in focus; `@chia/themes/hobby.css` starts from the same value. */
+export const HOBBY_IDLE_COLOR = "#45b0c5";
+
+/** One line of the hobby list: what a row shows, and what the stage needs once it is in focus. */
+export interface MediaRow {
+  id: number;
+  title: string;
+  /** Already in the reader's language. */
+  kind: string;
+  year: number | null;
+  /** The work's page in its catalogue. */
+  href: string | null;
+  /** Read aloud for `href`. */
+  hrefLabel: string;
+  color: string | null;
+  backdropUrl: string | null;
+}

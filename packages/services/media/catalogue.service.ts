@@ -15,12 +15,15 @@ export const MEDIA_KIND_SOURCES = {
   [MediaKind.Game]: [MediaSource.Igdb],
 } as const satisfies Record<MediaKind, readonly MediaSource[]>;
 
-/** A work's facts as stored on a row; `posterUrl` is still the catalogue's image. */
+/** A work's facts as stored on a row; the image URLs are still the catalogue's. */
 export interface MediaSnapshot {
   translations: MediaTranslations;
   originalTitle: string | null;
   releaseYear: number | null;
   posterUrl: string | null;
+  backdropUrl: string | null;
+  /** The catalogue's own colour for the cover, when it publishes one. */
+  color: string | null;
   sourceUrl: string;
 }
 
@@ -163,6 +166,8 @@ export const resolveMediaSnapshot = async (
         originalTitle: zh.originalTitle,
         releaseYear: zh.releaseYear,
         posterUrl: zh.posterUrl ?? en.posterUrl,
+        backdropUrl: zh.backdropUrl ?? en.backdropUrl,
+        color: null,
         sourceUrl: zh.url,
       };
     }
@@ -177,6 +182,8 @@ export const resolveMediaSnapshot = async (
         originalTitle: anime.titles.native,
         releaseYear: anime.releaseYear,
         posterUrl: anime.coverUrl,
+        backdropUrl: anime.bannerUrl,
+        color: anime.color,
         sourceUrl: anime.url,
       };
     }
@@ -189,6 +196,8 @@ export const resolveMediaSnapshot = async (
         originalTitle: null,
         releaseYear: game.releaseYear,
         posterUrl: game.coverUrl,
+        backdropUrl: game.artworkUrl,
+        color: null,
         sourceUrl: game.url,
       };
     }

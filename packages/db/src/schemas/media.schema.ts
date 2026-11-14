@@ -36,6 +36,10 @@ export const mediaEntries = pgTable(
     releaseYear: integer("release_year"),
     /** Object key of the cover in the site's storage bucket. */
     poster: text("poster"),
+    /** Object key of the landscape key art. */
+    backdrop: text("backdrop"),
+    /** The cover's dominant colour as `#rrggbb`; the site tints itself with it. */
+    color: text("color"),
     status: text("status").$type<MediaStatus>().notNull(),
     /** 1 to 10. */
     rating: smallint("rating"),

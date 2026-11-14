@@ -30,6 +30,8 @@ export default defineConfig({
     "@workflow/world-postgres",
     "workflow",
     "@better-auth/passkey",
+    "sharp",
+    "@img/*",
   ],
   noPublicDir: true,
   hooks: telemetryEntry(new URL("./server.entry.ts", import.meta.url)),

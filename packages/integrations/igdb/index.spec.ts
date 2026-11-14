@@ -11,6 +11,7 @@ const game = {
   name: "Elden Ring",
   first_release_date: 1645747200,
   cover: { image_id: "co4jni" },
+  screenshots: [{ image_id: "sc8xyz" }],
   url: "https://www.igdb.com/games/elden-ring",
 };
 
@@ -41,6 +42,8 @@ describe("IGDB", () => {
         releaseYear: 2022,
         coverUrl:
           "https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co4jni.jpg",
+        artworkUrl:
+          "https://images.igdb.com/igdb/image/upload/t_1080p/sc8xyz.jpg",
         url: "https://www.igdb.com/games/elden-ring",
       },
     ]);

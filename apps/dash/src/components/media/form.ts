@@ -3,6 +3,7 @@ import * as z from "zod";
 import { Locale, MediaKind, MediaStatus } from "@chia/db/types";
 import {
   MEDIA_RATING_MAX,
+  mediaColorSchema,
   mediaTranslationsSchema,
 } from "@chia/db/validator/media";
 import type {
@@ -98,6 +99,8 @@ export const mediaFormSchema = z
     finishedOn: z.string(),
     originalTitle: z.string(),
     releaseYear: z.number().int().nullable(),
+    /** `#rrggbb`, or empty. */
+    color: z.string(),
     translations: z.object({
       [Locale.ZhTW]: translationFieldsSchema,
       [Locale.En]: translationFieldsSchema,
@@ -111,6 +114,7 @@ export const mediaFormSchema = z
     finishedOn: blankToNull(fields.finishedOn),
     originalTitle: blankToNull(fields.originalTitle),
     releaseYear: fields.releaseYear,
+    color: blankToNull(fields.color),
     translations: translationsOf(fields.translations),
   }))
   .pipe(
@@ -123,6 +127,7 @@ export const mediaFormSchema = z
         finishedOn: z.string().nullable(),
         originalTitle: z.string().nullable(),
         releaseYear: z.number().nullable(),
+        color: mediaColorSchema.nullable(),
         translations: mediaTranslationsSchema,
       })
       .refine(
@@ -145,6 +150,7 @@ export const formValuesOf = (entry: MediaEntryView): MediaFormInput => ({
   finishedOn: entry.finishedOn ?? "",
   originalTitle: entry.originalTitle ?? "",
   releaseYear: entry.releaseYear,
+  color: entry.color ?? "",
   translations: {
     [Locale.ZhTW]: {
       title: entry.translations[Locale.ZhTW]?.title ?? "",

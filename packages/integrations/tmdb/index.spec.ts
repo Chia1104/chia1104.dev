@@ -25,6 +25,7 @@ describe("TMDB", () => {
             original_title: "The Matrix",
             release_date: "1999-03-31",
             poster_path: "/matrix.jpg",
+            backdrop_path: "/matrix-wide.jpg",
           },
         ],
       })
@@ -39,6 +40,7 @@ describe("TMDB", () => {
         originalTitle: "The Matrix",
         releaseYear: 1999,
         posterUrl: "https://image.tmdb.org/t/p/w780/matrix.jpg",
+        backdropUrl: "https://image.tmdb.org/t/p/w1280/matrix-wide.jpg",
         url: "https://www.themoviedb.org/movie/603",
       },
     ]);
@@ -68,6 +70,7 @@ describe("TMDB", () => {
       originalTitle: "Breaking Bad",
       releaseYear: null,
       posterUrl: null,
+      backdropUrl: null,
       url: "https://www.themoviedb.org/tv/1396",
     });
   });

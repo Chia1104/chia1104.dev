@@ -55,6 +55,7 @@
     "react-dom": "catalog:react-is",
     "reading-time-estimator": "catalog:unified",
     "resend": "catalog:email",
+    "sharp": "catalog:next",
     "workflow": "catalog:workflow",
     "zod": "catalog:"
   },
