@@ -51,10 +51,14 @@
     "bio": "Software Engineer passionate about creating exceptional web experiences with modern technologies.",
     "location": "Taipei, Taiwan",
     "timeline": {
-      "work-experience": "Work Experience",
       "education": "Education",
       "hello-world": "Hello World",
       "present": "Present",
+      "job-title": {
+        "senior-software-engineer": "Senior Software Engineer",
+        "frontend-engineer": "Frontend Engineer",
+        "rd-engineer": "R&D Engineer"
+      },
       "leadbest": {
         "description": "Frontend Developer responsible for developing blockchain data analysis platforms and multi-chain wallets.",
         "detail": {

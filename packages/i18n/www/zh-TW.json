@@ -51,10 +51,14 @@
     "bio": "熱衷於使用現代技術打造卓越網頁體驗的軟體工程師。",
     "location": "台北，台灣",
     "timeline": {
-      "work-experience": "工作經歷",
       "education": "教育背景",
       "hello-world": "Hello World",
       "present": "現今",
+      "job-title": {
+        "senior-software-engineer": "資深軟體工程師",
+        "frontend-engineer": "前端工程師",
+        "rd-engineer": "研發工程師"
+      },
       "leadbest": {
         "description": "前端工程師，負責開發區塊鏈數據分析平台和多鏈錢包。",
         "detail": {

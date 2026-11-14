@@ -5,31 +5,77 @@ import { memo } from "react";
 import { useTranslations } from "next-intl";
 
 import meta, { TimelineType, Company } from "@chia/meta";
+import type { Period, Role, TimelineEntry } from "@chia/meta";
 import Timeline from "@chia/ui/timeline";
 import type { TimelineItemData } from "@chia/ui/timeline/types";
+import dayjs from "@chia/utils/day";
 
 import { Panel, PanelHeader, PanelTitle } from "@/components/commons/ruled";
 
 import { getCompanyLogo } from "./company-logo";
 
-const TimelineTitle = memo(
-  ({ type, duration }: { type: TimelineType; duration: string }) => {
-    const t = useTranslations("profile");
-    switch (type) {
-      case TimelineType.Work:
-        return `${t("timeline.work-experience")} (${duration})`;
-      case TimelineType.Education:
-        return `${t("timeline.education")} (${duration})`;
-      case TimelineType.Other:
-        return `${t("timeline.hello-world")} (${duration})`;
-      default: {
-        const _exhaustive: never = type;
-        return _exhaustive;
-      }
+const PERIOD_FORMAT = "YYYY-MM";
+
+const PeriodText = ({ startTime, endTime }: Period) => {
+  const t = useTranslations("profile");
+  const end =
+    endTime === 0
+      ? t("timeline.present")
+      : dayjs(endTime).format(PERIOD_FORMAT);
+  return `${dayjs(startTime).format(PERIOD_FORMAT)} – ${end}`;
+};
+
+/** A single role is shown inline; several roles get `RoleList` and the subtitle shows the whole tenure. */
+const EntrySubtitle = ({ entry }: { entry: TimelineEntry }) => {
+  const t = useTranslations("profile");
+  switch (entry.type) {
+    case TimelineType.Work: {
+      const [role, ...rest] = entry.roles;
+      if (rest.length > 0) return <PeriodText {...entry} />;
+      return (
+        <>
+          {t(`timeline.job-title.${role.title}`)} · <PeriodText {...role} />
+        </>
+      );
     }
-  },
-  (prev, next) => prev.type === next.type && prev.duration === next.duration
-);
+    case TimelineType.Education:
+      return (
+        <>
+          {t("timeline.education")} · <PeriodText {...entry} />
+        </>
+      );
+    case TimelineType.Other:
+      return (
+        <>
+          {t("timeline.hello-world")} · <PeriodText {...entry} />
+        </>
+      );
+    default: {
+      const _exhaustive: never = entry;
+      return _exhaustive;
+    }
+  }
+};
+
+const RoleList = ({ roles }: { roles: Role[] }) => {
+  const t = useTranslations("profile");
+  return (
+    <ol className="border-separator space-y-1 border-l pl-3">
+      {roles.map((role) => (
+        <li
+          key={`${role.title}-${String(role.startTime)}`}
+          className="flex flex-wrap gap-x-2">
+          <span className="font-medium">
+            {t(`timeline.job-title.${role.title}`)}
+          </span>
+          <span className="text-muted">
+            <PeriodText {...role} />
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+};
 
 const DETAILS_CLASS_NAME = "marker:text-muted list-disc space-y-1 pl-5";
 
@@ -84,12 +130,9 @@ export function TimelineHero() {
       id: item.id,
       icon: getCompanyLogo(item.companyKey),
       title: item.company,
-      subtitle: (
-        <TimelineTitle
-          type={item.type}
-          duration={item.duration}
-          key={item.id}
-        />
+      subtitle: <EntrySubtitle entry={item} />,
+      description: item.type === TimelineType.Work && item.roles.length > 1 && (
+        <RoleList roles={item.roles} />
       ),
       startDate: item.startTime,
       content: hasDetails && item.companyKey && (

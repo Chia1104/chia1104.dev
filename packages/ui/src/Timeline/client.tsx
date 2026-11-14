@@ -147,7 +147,9 @@ export const TimelineItem: FC<TimelineItemProps> = memo(
         )}
 
         {description && (
-          <p className="text-sm leading-relaxed text-pretty">{description}</p>
+          <div className="text-sm leading-relaxed text-pretty">
+            {description}
+          </div>
         )}
 
         {content && (
