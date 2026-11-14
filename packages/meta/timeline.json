@@ -1,12 +1,22 @@
 [
   {
+    "id": 4,
+    "type": "work",
+    "company": "Wiwynn",
+    "companyKey": "wiwynn",
+    "duration": "2026-11 - Present",
+    "startTime": "2026-11",
+    "endTime": 0,
+    "link": "https://www.wiwynn.com/"
+  },
+  {
     "id": 3,
     "type": "work",
     "company": "LeadBest",
     "companyKey": "leadbest",
-    "duration": "2023-3 - Present",
+    "duration": "2023-3 - 2026-11",
     "startTime": "2023-3",
-    "endTime": 0,
+    "endTime": "2026-11",
     "work": "TypeScript, React, NextJS, React Native, Vite, TailwindCSS, TradingView, EChart, Docker",
     "link": "https://www.leadbestconsultant.com/"
   },

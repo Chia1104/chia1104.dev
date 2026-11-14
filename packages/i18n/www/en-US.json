@@ -46,9 +46,9 @@
     }
   },
   "profile": {
-    "title": "Frontend Developer",
-    "content": "I am Yu Chia, Yu (俞又嘉), a Frontend Developer specializing in TypeScript, React, NextJS, and modern web technologies. Currently working at LeadBest, developing blockchain data analysis platforms and multi-chain wallets.",
-    "bio": "Frontend Developer passionate about creating exceptional web experiences with modern technologies.",
+    "title": "Software Engineer",
+    "content": "I am Yu Chia, Yu (俞又嘉), a Software Engineer specializing in TypeScript, React, NextJS, and modern web technologies. Currently a Senior Software Engineer at Wiwynn.",
+    "bio": "Software Engineer passionate about creating exceptional web experiences with modern technologies.",
     "location": "Taipei, Taiwan",
     "timeline": {
       "work-experience": "Work Experience",
@@ -58,22 +58,21 @@
       "leadbest": {
         "description": "Frontend Developer responsible for developing blockchain data analysis platforms and multi-chain wallets.",
         "detail": {
-          "1": "Developed a blockchain data analysis platform integrating DEX and DeFi protocols to improve security and user experience.",
-          "2": "Built a multi-chain wallet and successfully integrated Bitcoin L2 Liquid, Ethereum, and Tron modules, expanding the range of supported on-chain assets.",
-          "3": "Designed and implemented highly reusable modules such as TradingView chart components and AI chat interfaces, significantly increasing code reuse across three projects.",
-          "4": "Introduced GitHub Actions to automate CI/CD workflows, reducing manual testing time by 30% and ensuring high-quality deployments.",
-          "5": "Led technical upgrades and refactoring of legacy projects (such as migrating React v16 to v18), greatly improving system maintainability and long-term scalability.",
-          "6": "Coordinated design, PM, and backend teams via Scrum, providing feasibility advice and technical solutions."
+          "1": "Led the architecture and implementation of a multi-chain wallet frontend, integrating asset queries and cross-chain token transfers across Bitcoin L2 Liquid, Ethereum and Tron.",
+          "2": "Designed TradingView chart and AI chat frontend modules shared by three projects, cutting development time for similar features by about 40%.",
+          "3": "Introduced GitHub Actions CI/CD pipelines, reducing manual testing and deployment from 30 to 10 minutes per release and lowering human error.",
+          "4": "Adopted Vite and Expo and incrementally refactored existing projects, improving developer experience, startup speed, stability and maintainability.",
+          "5": "Worked in Scrum with PMs, designers and backend engineers, clarifying requirements and giving feasibility advice to shorten delivery time.",
+          "6": "Led frontend development for several Yulon Group projects (member management, SSO login, payment and vehicle certificate platforms), owning core flows and shared modules for a consistent cross-system experience."
         }
       },
       "wanin": {
         "detail": {
-          "1": "Responsible for code review and mentoring newcomers, significantly improving merge success rate and effectively reducing the number of bug reports.",
-          "2": "Optimized the monorepo architecture with Turborepo and modular design, greatly shortening overall development time.",
-          "3": "Improved operation dashboards for data visualization, reducing manual tracking and reporting time.",
-          "4": "Adopted Hasura with GraphQL to reduce backend logic implementation costs and increase development efficiency.",
-          "5": "Migrated a legacy PHP-based project to Next.js, supported the team with code review, and refactored features according to client requirements.",
-          "6": "Built an interactive ECharts-based dashboard for a multi-tenant event management system, enabling real-time data visualization and activity tracking."
+          "1": "Reviewed frontend code and mentored new hires, establishing coding standards and a review process that raised merge request pass rates and reduced post-release bug reports.",
+          "2": "Introduced a Turborepo monorepo with modular design, consolidating shared components and toolkits to shorten project setup and feature development.",
+          "3": "Adopted Hasura with GraphQL on the existing database, reducing hand-written backend APIs so frontend and backend could ship features together faster.",
+          "4": "Helped migrate a legacy PHP project to Next.js module by module, improving frontend performance and maintainability while refactoring to client requirements.",
+          "5": "Built a multi-tenant admin platform with Vue3 and ECharts, providing interactive dashboards and event tracking so operations could follow event status in real time."
         }
       }
     }

@@ -11,6 +11,7 @@ export const TimelineType = {
 export type TimelineType = (typeof TimelineType)[keyof typeof TimelineType];
 
 export const Company = {
+  Wiwynn: "wiwynn",
   LeadBest: "leadbest",
   Wanin: "wanin",
   CGU: "cgu",
@@ -93,13 +94,23 @@ export default {
   startWork: "2022-7",
   timeline: [
     {
+      id: 4,
+      type: TimelineType.Work,
+      company: "Wiwynn",
+      companyKey: Company.Wiwynn,
+      duration: "2026-11 - Present",
+      startTime: "2026-11",
+      endTime: 0,
+      link: "https://www.wiwynn.com/",
+    },
+    {
       id: 3,
       type: TimelineType.Work,
       company: "LeadBest",
       companyKey: Company.LeadBest,
-      duration: "2023-3 - Present",
+      duration: "2023-3 - 2026-11",
       startTime: "2023-3",
-      endTime: 0,
+      endTime: "2026-11",
       work: "TypeScript, React, NextJS, React Native, Vite, TailwindCSS, TradingView, EChart, Docker",
       link: "https://www.leadbestconsultant.com/",
     },

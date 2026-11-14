@@ -96,6 +96,7 @@ export const TimelineItem: FC<TimelineItemProps> = memo(
   ({ data, className, refTarget, isLastItem, ...props }) => {
     const {
       id,
+      icon,
       title,
       subtitle,
       description,
@@ -112,23 +113,30 @@ export const TimelineItem: FC<TimelineItemProps> = memo(
         ref={isLastItem ? refTarget : undefined}
         className={cn("flex flex-col gap-1 px-4 py-3 text-start", className)}
         {...props}>
-        <span
-          {...titleProps}
-          className={cn(
-            "text-base leading-snug font-semibold",
-            titleProps?.className
-          )}>
-          {link ? (
-            <TimelineItemLink
-              id={id}
-              href={link}
-              title={title}
-              linkProps={linkProps}
-            />
-          ) : (
-            title
+        <div className="flex items-center gap-2">
+          {icon && (
+            <span className="flex size-6 shrink-0 items-center justify-center">
+              {icon}
+            </span>
           )}
-        </span>
+          <span
+            {...titleProps}
+            className={cn(
+              "text-base leading-snug font-semibold",
+              titleProps?.className
+            )}>
+            {link ? (
+              <TimelineItemLink
+                id={id}
+                href={link}
+                title={title}
+                linkProps={linkProps}
+              />
+            ) : (
+              title
+            )}
+          </span>
+        </div>
 
         {subtitle && (
           <span

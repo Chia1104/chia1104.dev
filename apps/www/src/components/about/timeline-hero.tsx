@@ -10,6 +10,8 @@ import type { TimelineItemData } from "@chia/ui/timeline/types";
 
 import { Panel, PanelHeader, PanelTitle } from "@/components/commons/ruled";
 
+import { getCompanyLogo } from "./company-logo";
+
 const TimelineTitle = memo(
   ({ type, duration }: { type: TimelineType; duration: string }) => {
     const t = useTranslations("profile");
@@ -32,9 +34,8 @@ const TimelineTitle = memo(
 const DETAILS_CLASS_NAME = "marker:text-muted list-disc space-y-1 pl-5";
 
 const WorkDetails = memo(
-  ({ company }: { company?: Company }) => {
+  ({ company }: { company: Company }) => {
     const tProfile = useTranslations("profile");
-    if (!company) return null;
 
     switch (company) {
       case Company.LeadBest:
@@ -56,7 +57,6 @@ const WorkDetails = memo(
             <li>{tProfile("timeline.wanin.detail.3")}</li>
             <li>{tProfile("timeline.wanin.detail.4")}</li>
             <li>{tProfile("timeline.wanin.detail.5")}</li>
-            <li>{tProfile("timeline.wanin.detail.6")}</li>
           </ul>
         );
       default:
@@ -66,13 +66,23 @@ const WorkDetails = memo(
   (prev, next) => prev.company === next.company
 );
 
+/** Companies `WorkDetails` renders, so the others get no empty "More" toggle. */
+const COMPANIES_WITH_DETAILS = new Set<Company>([
+  Company.LeadBest,
+  Company.Wanin,
+]);
+
 export function TimelineHero() {
   const t = useTranslations("about");
   const transformData = meta.timeline.map((item) => {
-    const hasDetails = item.type === TimelineType.Work && item.companyKey;
+    const hasDetails =
+      item.type === TimelineType.Work &&
+      item.companyKey &&
+      COMPANIES_WITH_DETAILS.has(item.companyKey);
 
     return {
       id: item.id,
+      icon: getCompanyLogo(item.companyKey),
       title: item.company,
       subtitle: (
         <TimelineTitle
@@ -82,7 +92,7 @@ export function TimelineHero() {
         />
       ),
       startDate: item.startTime,
-      content: hasDetails && (
+      content: hasDetails && item.companyKey && (
         <WorkDetails company={item.companyKey} key={item.id} />
       ),
       link: item.link,
