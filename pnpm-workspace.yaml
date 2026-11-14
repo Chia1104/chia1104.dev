@@ -66,8 +66,8 @@ catalogs:
     "@aws-sdk/s3-request-presigner": ^3.1167.0
   better-auth:
     "@better-auth/api-key": 1.7.21
-    "@better-auth/passkey": 1.7.21
-    better-auth: 1.7.21
+    "@better-auth/passkey": 1.7.22
+    better-auth: 1.7.22
   chiastack:
     "@chiastack/oxlint": 1.1.0
     "@chiastack/tsconfig": 2.1.2
