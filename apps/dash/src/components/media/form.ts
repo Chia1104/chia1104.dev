@@ -19,6 +19,8 @@ export type MediaEntryUpdate = Omit<RouterInputs["media"]["update"], "id">;
 
 export const LOCALES: readonly Locale[] = [Locale.ZhTW, Locale.En];
 
+const MINUTES_PER_HOUR = 60;
+
 export const KINDS = [
   MediaKind.Movie,
   MediaKind.Series,
@@ -101,6 +103,11 @@ export const mediaFormSchema = z
     releaseYear: z.number().int().nullable(),
     /** `#rrggbb`, or empty. */
     color: z.string(),
+    steamAppId: z.number().int().positive().nullable(),
+    /** Hours, as a player reads them; stored as minutes. */
+    playtimeHours: z.number().min(0).nullable(),
+    achievementsUnlocked: z.number().int().min(0).nullable(),
+    achievementsTotal: z.number().int().min(0).nullable(),
     translations: z.object({
       [Locale.ZhTW]: translationFieldsSchema,
       [Locale.En]: translationFieldsSchema,
@@ -115,6 +122,13 @@ export const mediaFormSchema = z
     originalTitle: blankToNull(fields.originalTitle),
     releaseYear: fields.releaseYear,
     color: blankToNull(fields.color),
+    steamAppId: fields.steamAppId,
+    playtimeMinutes:
+      fields.playtimeHours === null
+        ? null
+        : Math.round(fields.playtimeHours * MINUTES_PER_HOUR),
+    achievementsUnlocked: fields.achievementsUnlocked,
+    achievementsTotal: fields.achievementsTotal,
     translations: translationsOf(fields.translations),
   }))
   .pipe(
@@ -128,8 +142,22 @@ export const mediaFormSchema = z
         originalTitle: z.string().nullable(),
         releaseYear: z.number().nullable(),
         color: mediaColorSchema.nullable(),
+        steamAppId: z.number().nullable(),
+        playtimeMinutes: z.number().nullable(),
+        achievementsUnlocked: z.number().nullable(),
+        achievementsTotal: z.number().nullable(),
         translations: mediaTranslationsSchema,
       })
+      .refine(
+        (value) =>
+          value.achievementsUnlocked === null ||
+          value.achievementsTotal === null ||
+          value.achievementsUnlocked <= value.achievementsTotal,
+        {
+          message: "Unlocked must not exceed the total",
+          path: ["achievementsUnlocked"],
+        }
+      )
       .refine(
         (value) =>
           value.startedOn === null ||
@@ -151,6 +179,13 @@ export const formValuesOf = (entry: MediaEntryView): MediaFormInput => ({
   originalTitle: entry.originalTitle ?? "",
   releaseYear: entry.releaseYear,
   color: entry.color ?? "",
+  steamAppId: entry.steamAppId,
+  playtimeHours:
+    entry.playtimeMinutes === null
+      ? null
+      : Math.round((entry.playtimeMinutes / MINUTES_PER_HOUR) * 10) / 10,
+  achievementsUnlocked: entry.achievementsUnlocked,
+  achievementsTotal: entry.achievementsTotal,
   translations: {
     [Locale.ZhTW]: {
       title: entry.translations[Locale.ZhTW]?.title ?? "",

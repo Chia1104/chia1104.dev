@@ -15,6 +15,10 @@ export const MEDIA_KIND_SEGMENT = {
 export const mediaKindOfSegment = (segment: string): MediaKind | undefined =>
   Object.values(MediaKind).find((kind) => MEDIA_KIND_SEGMENT[kind] === segment);
 
+/** A work's own page; opened from the list it shows as a sheet over it. */
+export const mediaHrefOf = (entry: Pick<MediaEntry, "kind" | "slug">) =>
+  `/hobby/${MEDIA_KIND_SEGMENT[entry.kind]}/${entry.slug}` as const;
+
 export const MEDIA_SOURCE_NAME = {
   [MediaSource.TmdbMovie]: "TMDB",
   [MediaSource.TmdbTv]: "TMDB",
@@ -43,10 +47,8 @@ export interface MediaRow {
   /** Already in the reader's language. */
   kind: string;
   year: number | null;
-  /** The work's page in its catalogue. */
-  href: string | null;
-  /** Read aloud for `href`. */
-  hrefLabel: string;
+  /** The work's own page. */
+  href: ReturnType<typeof mediaHrefOf>;
   color: string | null;
   backdropUrl: string | null;
 }

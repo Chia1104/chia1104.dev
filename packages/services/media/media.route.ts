@@ -1,9 +1,12 @@
 import {
   createMediaEntry,
   deleteMediaEntry,
+  getMediaEntry,
+  getMediaEntryBySlug,
   getMediaEntryBySource,
   listMediaEntries,
   updateMediaEntry,
+  updateMediaPlayStats,
 } from "@chia/db/repos/media";
 import type { MediaEntry } from "@chia/db/schema";
 import { mediaTranslationsSchema } from "@chia/db/validator/media";
@@ -27,10 +30,13 @@ import {
   storeMediaImage,
 } from "./image.service";
 import type { MediaEntryView } from "./media.contract";
+import { readSteamPlayStats } from "./play-stats.service";
+import { mediaSlugCandidates } from "./slug";
 
 /** Parsing `translations` re-establishes that the stored JSON is the current shape. */
 const entryOf = (row: MediaEntry): MediaEntryView => ({
   id: row.id,
+  slug: row.slug,
   kind: row.kind,
   source: row.source,
   sourceUrl: row.sourceUrl,
@@ -45,6 +51,11 @@ const entryOf = (row: MediaEntry): MediaEntryView => ({
   favorite: row.favorite,
   startedOn: row.startedOn,
   finishedOn: row.finishedOn,
+  steamAppId: row.steamAppId,
+  playtimeMinutes: row.playtimeMinutes,
+  achievementsUnlocked: row.achievementsUnlocked,
+  achievementsTotal: row.achievementsTotal,
+  lastPlayedAt: row.lastPlayedAt,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,
 });
@@ -56,6 +67,17 @@ export const listMediaEntriesRoute = contractOS.media.list
   .handler(async (opts) => ({
     items: (await listMediaEntries(opts.context.db, opts.input)).map(entryOf),
   }));
+
+export const getMediaEntryRoute = contractOS.media.get
+  .use(callerGuard())
+  .use(rateLimitGuard("feeds"))
+  .handler(async (opts) => {
+    const row = await getMediaEntryBySlug(opts.context.db, opts.input.slug);
+    if (!row) {
+      throw opts.errors.NOT_FOUND();
+    }
+    return { entry: entryOf(row) };
+  });
 
 export const searchMediaRoute = contractOS.media.search
   .use(adminGuard())
@@ -128,7 +150,34 @@ export const createMediaEntryRoute = contractOS.media.create
       }
     }
 
+    let slug: string | undefined;
+    for (const candidate of mediaSlugCandidates(snapshot, source, sourceId)) {
+      if (!(await getMediaEntryBySlug(opts.context.db, candidate))) {
+        slug = candidate;
+        break;
+      }
+    }
+    if (!slug) {
+      throw opts.errors.CONFLICT({ message: "No free slug for this work" });
+    }
+
+    // A game Steam cannot answer for is still logged; its stats can be synced or typed later.
+    let stats = null;
+    if (snapshot.steamAppId !== null) {
+      try {
+        stats = await readSteamPlayStats(snapshot.steamAppId, opts.signal);
+      } catch (error) {
+        logger.warn(
+          { err: error, steamAppId: snapshot.steamAppId },
+          "Steam play stats read failed"
+        );
+      }
+    }
+
     const row = await createMediaEntry(opts.context.db, {
+      slug,
+      steamAppId: snapshot.steamAppId,
+      ...stats,
       kind,
       source,
       sourceId,
@@ -157,6 +206,38 @@ export const updateMediaEntryRoute = contractOS.media.update
     return { entry: entryOf(row) };
   });
 
+export const syncMediaEntryRoute = contractOS.media.sync
+  .use(adminGuard())
+  .handler(async (opts) => {
+    const entry = await getMediaEntry(opts.context.db, opts.input.id);
+    if (!entry) {
+      throw opts.errors.NOT_FOUND();
+    }
+    if (entry.steamAppId === null) {
+      throw opts.errors.BAD_REQUEST({
+        message: "This entry names no Steam app",
+      });
+    }
+    let stats;
+    try {
+      stats = await readSteamPlayStats(entry.steamAppId, opts.signal);
+    } catch (error) {
+      throw opts.errors.SERVICE_UNAVAILABLE({ cause: error });
+    }
+    if (!stats) {
+      throw opts.errors.BAD_REQUEST({
+        message:
+          "Steam lists no such game for the account; check the app id and that game details are public",
+      });
+    }
+    const row = await updateMediaPlayStats(opts.context.db, entry.id, stats);
+    if (!row) {
+      throw opts.errors.NOT_FOUND();
+    }
+    await opts.context.workflow.startSiteRevalidation(WwwCacheTag.Media);
+    return { entry: entryOf(row) };
+  });
+
 export const removeMediaEntryRoute = contractOS.media.remove
   .use(adminGuard())
   .handler(async (opts) => {
@@ -178,8 +259,10 @@ export const removeMediaEntryRoute = contractOS.media.remove
 
 export const mediaRouter = contractOS.media.router({
   list: listMediaEntriesRoute,
+  get: getMediaEntryRoute,
   search: searchMediaRoute,
   create: createMediaEntryRoute,
   update: updateMediaEntryRoute,
+  sync: syncMediaEntryRoute,
   remove: removeMediaEntryRoute,
 });

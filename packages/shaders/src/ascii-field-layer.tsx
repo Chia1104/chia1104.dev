@@ -14,6 +14,7 @@ export interface AsciiFieldLayerProps {
   /** Most canvas pixels drawn per CSS pixel, however dense the screen. */
   maxDensity: number;
   animating: boolean;
+  paused: boolean;
   onReady: () => void;
   onUnavailable: () => void;
 }
@@ -118,6 +119,7 @@ const AsciiFieldLayer = ({
   cellSize,
   maxDensity,
   animating,
+  paused,
   onReady,
   onUnavailable,
 }: AsciiFieldLayerProps) => {
@@ -132,7 +134,7 @@ const AsciiFieldLayer = ({
   /** Runs the field until the reader has been still for `IDLE_MS`, then stops it on its last frame. */
   const wake = useEffectEvent(() => {
     const instance = shader.current;
-    if (!instance || !animating) return;
+    if (!instance || !animating || paused) return;
     instance.resume();
     clearTimeout(idleTimer.current);
     idleTimer.current = setTimeout(() => instance.pause(), IDLE_MS);
@@ -155,6 +157,22 @@ const AsciiFieldLayer = ({
     shader.current.resize(box.clientWidth * scale, box.clientHeight * scale);
     element.style.width = "100%";
     element.style.height = "100%";
+  });
+
+  /**
+   * Runs the field when it may run, and stops its loop when it may not. The library still redraws
+   * a stopped shader when the pointer moves, so the trail is hidden then: drawn only in those
+   * stray frames, it would stutter.
+   */
+  const sync = useEffectEvent(() => {
+    const running = animating && !paused;
+    shader.current?.update(Layer.Trail, { visible: running });
+    if (running) {
+      wake();
+      return;
+    }
+    clearTimeout(idleTimer.current);
+    shader.current?.pause();
   });
 
   /** Brings a shader that was just built up to the props it missed while it compiled. */
@@ -191,8 +209,7 @@ const AsciiFieldLayer = ({
       fit();
       observer.observe(box);
       restore();
-      if (animating) wake();
-      else instance.pause();
+      sync();
     });
 
     return () => {
@@ -215,6 +232,10 @@ const AsciiFieldLayer = ({
       }
     };
   }, []);
+
+  useEffect(() => {
+    sync();
+  }, [paused]);
 
   useEffect(() => {
     shader.current?.update(Layer.Ink, { color });

@@ -43,7 +43,39 @@ const ENDS_AFTER_START = {
 
 const entryIdSchema = z.object({ id: z.number().int().positive() });
 
+const SLUG_MAX_CHARS = 200;
+const PLAYTIME_MAX_MINUTES = 60 * 24 * 365 * 20;
+const ACHIEVEMENTS_MAX = 10_000;
+
+/** A game's play stats as the owner may type them; `lastPlayedAt` only ever comes from Steam. */
+const playStatFields = {
+  steamAppId: z.number().int().positive().nullable(),
+  playtimeMinutes: z.number().int().min(0).max(PLAYTIME_MAX_MINUTES).nullable(),
+  achievementsUnlocked: z
+    .number()
+    .int()
+    .min(0)
+    .max(ACHIEVEMENTS_MAX)
+    .nullable(),
+  achievementsTotal: z.number().int().min(0).max(ACHIEVEMENTS_MAX).nullable(),
+};
+
+const unlockedWithinTotal = (value: {
+  achievementsUnlocked: number | null;
+  achievementsTotal: number | null;
+}) =>
+  value.achievementsUnlocked === null ||
+  value.achievementsTotal === null ||
+  value.achievementsUnlocked <= value.achievementsTotal;
+
+const UNLOCKED_WITHIN_TOTAL = {
+  message: "achievementsUnlocked must not exceed achievementsTotal",
+  path: ["achievementsUnlocked"],
+};
+
 const entrySchema = entryIdSchema.extend({
+  /** Names the work in its public URL. */
+  slug: z.string(),
   kind: mediaKindSchema,
   source: mediaSourceSchema,
   sourceUrl: z.string().nullable(),
@@ -57,6 +89,8 @@ const entrySchema = entryIdSchema.extend({
   /** The cover's dominant colour as `#rrggbb`. */
   color: mediaColorSchema.nullable(),
   ...logFields,
+  ...playStatFields,
+  lastPlayedAt: z.date().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
@@ -99,6 +133,12 @@ export const listMediaEntriesContract = oc
     })
   )
   .output(z.object({ items: z.array(entrySchema) }));
+
+/** Public. One work by the slug in its URL. */
+export const getMediaEntryContract = oc
+  .errors({ ...readErrors, NOT_FOUND: {} })
+  .input(z.object({ slug: z.string().min(1).max(SLUG_MAX_CHARS) }))
+  .output(z.object({ entry: entrySchema }));
 
 /** Searches the catalogues that carry `kind`. */
 export const searchMediaContract = oc
@@ -146,9 +186,17 @@ export const updateMediaEntryContract = oc
           .nullable(),
         color: mediaColorSchema.nullable(),
         ...logFields,
+        ...playStatFields,
       })
       .refine(endsAfterStart, ENDS_AFTER_START)
+      .refine(unlockedWithinTotal, UNLOCKED_WITHIN_TOTAL)
   )
+  .output(z.object({ entry: entrySchema }));
+
+/** Reads a game's play stats from Steam and stores them. The entry must name a Steam app. */
+export const syncMediaEntryContract = oc
+  .errors({ ...adminErrors, SERVICE_UNAVAILABLE: {} })
+  .input(entryIdSchema)
   .output(z.object({ entry: entrySchema }));
 
 export const removeMediaEntryContract = oc
@@ -161,8 +209,10 @@ export type MediaCandidate = z.infer<typeof candidateSchema>;
 
 export const mediaContract = {
   list: listMediaEntriesContract,
+  get: getMediaEntryContract,
   search: searchMediaContract,
   create: createMediaEntryContract,
   update: updateMediaEntryContract,
+  sync: syncMediaEntryContract,
   remove: removeMediaEntryContract,
 };

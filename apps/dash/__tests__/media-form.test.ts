@@ -14,6 +14,10 @@ const fields = (overrides: Partial<MediaFormInput> = {}): MediaFormInput => ({
   originalTitle: " 葬送のフリーレン ",
   releaseYear: 2023,
   color: " #D6E4A1 ",
+  steamAppId: null,
+  playtimeHours: 87.5,
+  achievementsUnlocked: 31,
+  achievementsTotal: 42,
   translations: {
     [Locale.ZhTW]: { title: "葬送的芙莉蓮", comment: " 很好看 " },
     [Locale.En]: { title: "", comment: "ignored without a title" },
@@ -32,6 +36,10 @@ describe("mediaFormSchema", () => {
       originalTitle: "葬送のフリーレン",
       releaseYear: 2023,
       color: "#D6E4A1",
+      steamAppId: null,
+      playtimeMinutes: 5250,
+      achievementsUnlocked: 31,
+      achievementsTotal: 42,
       translations: {
         [Locale.ZhTW]: { title: "葬送的芙莉蓮", comment: "很好看" },
       },
@@ -55,6 +63,13 @@ describe("mediaFormSchema", () => {
       false
     );
     expect(mediaFormSchema.parse(fields({ color: "" })).color).toBeNull();
+  });
+
+  it("refuses more unlocked achievements than the game has", () => {
+    const result = mediaFormSchema.safeParse(
+      fields({ achievementsUnlocked: 43 })
+    );
+    expect(result.error?.issues[0]?.path).toEqual(["achievementsUnlocked"]);
   });
 
   it("refuses a finish date before the start date", () => {

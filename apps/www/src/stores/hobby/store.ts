@@ -10,13 +10,26 @@ export interface HobbyFocus {
   backdropUrl: string | null;
 }
 
-interface HobbyStore {
-  focus: HobbyFocus | null;
-  setFocus: (focus: HobbyFocus | null) => void;
+/** A work whose page or sheet is open. Its own art is on screen, so the stage only takes its colour. */
+export interface HobbyPin {
+  /** `#rrggbb`, or `null` to keep the idle colour. */
+  color: string | null;
+  /** The work's art covers the whole viewport, so nothing of the stage can be seen. */
+  coversStage: boolean;
 }
 
-/** Shared by the list, which names the work in focus, and the stage, which lives in the frame. */
+interface HobbyStore {
+  /** The row under the pointer, the keyboard or the middle of the screen. */
+  focus: HobbyFocus | null;
+  pinned: HobbyPin | null;
+  setFocus: (focus: HobbyFocus | null) => void;
+  setPinned: (pinned: HobbyPin | null) => void;
+}
+
+/** Shared by the list and a work's page, which name the work, and the stage in the frame. */
 export const useHobbyStore = create<HobbyStore>()((set) => ({
   focus: null,
+  pinned: null,
   setFocus: (focus) => set({ focus }),
+  setPinned: (pinned) => set({ pinned }),
 }));

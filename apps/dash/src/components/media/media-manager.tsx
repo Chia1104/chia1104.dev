@@ -93,9 +93,12 @@ const DeleteConfirm = ({
 const EntryDrawer = ({
   entry,
   onClose,
+  onSynced,
 }: {
   entry: MediaEntryView | null;
   onClose: () => void;
+  /** The drawer stays open on the synced entry, so its owner swaps in the fresh row. */
+  onSynced: (entry: MediaEntryView) => void;
 }) => {
   const invalidate = useInvalidateMedia();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -127,7 +130,20 @@ const EntryDrawer = ({
     })
   );
 
-  const busy = update.isPending || remove.isPending;
+  const sync = useMutation(
+    orpc.media.sync.mutationOptions({
+      onSuccess(result) {
+        invalidate();
+        onSynced(result.entry);
+        toast.success("Play stats synced from Steam");
+      },
+      onError(error) {
+        toast.error(error.message);
+      },
+    })
+  );
+
+  const busy = update.isPending || remove.isPending || sync.isPending;
 
   return (
     <Drawer.Backdrop
@@ -141,7 +157,8 @@ const EntryDrawer = ({
         <Drawer.Body>
           {entry ? (
             <EntryForm
-              key={entry.id}
+              // A sync changes the row behind the form; a new key reloads its fields.
+              key={`${entry.id}:${entry.updatedAt.getTime()}`}
               entry={entry}
               isPending={busy}
               onSubmit={(write) => update.mutate({ id: entry.id, ...write })}
@@ -153,13 +170,25 @@ const EntryDrawer = ({
             <span className="text-muted text-xs">
               updated {formatDateTime(entry.updatedAt)}
             </span>
-            <Button
-              isDisabled={busy}
-              size="sm"
-              variant="danger-soft"
-              onPress={() => setConfirmDelete(true)}>
-              Remove
-            </Button>
+            <div className="flex items-center gap-2">
+              {entry.steamAppId === null ? null : (
+                <Button
+                  isDisabled={busy}
+                  isPending={sync.isPending}
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => sync.mutate({ id: entry.id })}>
+                  Sync from Steam
+                </Button>
+              )}
+              <Button
+                isDisabled={busy}
+                size="sm"
+                variant="danger-soft"
+                onPress={() => setConfirmDelete(true)}>
+                Remove
+              </Button>
+            </div>
           </Drawer.Footer>
         ) : null}
       </DrawerPanel>
@@ -317,7 +346,11 @@ export const MediaManager = () => {
         }}
         onClose={() => setAdding(false)}
       />
-      <EntryDrawer entry={editing} onClose={() => setEditing(null)} />
+      <EntryDrawer
+        entry={editing}
+        onClose={() => setEditing(null)}
+        onSynced={setEditing}
+      />
     </div>
   );
 };

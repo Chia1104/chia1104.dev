@@ -8,11 +8,7 @@ import { MediaList } from "@/components/hobby/media-list";
 import { Link } from "@/libs/i18n/navigation";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
-import {
-  MEDIA_KIND_SEGMENT,
-  MEDIA_SOURCE_NAME,
-  mediaTitleOf,
-} from "@/shared/media";
+import { MEDIA_KIND_SEGMENT, mediaHrefOf, mediaTitleOf } from "@/shared/media";
 import type { MediaRow } from "@/shared/media";
 import { SITE_MODE_HOME, SiteMode } from "@/shared/site-mode";
 
@@ -30,23 +26,16 @@ export const HobbyIndex = async ({ kind }: { kind?: MediaKind }) => {
   ]);
   const dbLocale = dbLocaleResolver(locale);
 
-  const rows = items.map((entry): MediaRow => {
-    const title = mediaTitleOf(entry, dbLocale);
-    return {
-      id: entry.id,
-      title,
-      kind: t(`kind.${entry.kind}`),
-      year: entry.releaseYear,
-      href: entry.sourceUrl,
-      hrefLabel: t("source", {
-        title,
-        source: MEDIA_SOURCE_NAME[entry.source],
-      }),
-      color: entry.color,
-      // A cover is portrait, but the field crops it to fill; better than leaving the stage on noise.
-      backdropUrl: entry.backdropUrl ?? entry.posterUrl,
-    };
-  });
+  const rows = items.map((entry): MediaRow => ({
+    id: entry.id,
+    title: mediaTitleOf(entry, dbLocale),
+    kind: t(`kind.${entry.kind}`),
+    year: entry.releaseYear,
+    href: mediaHrefOf(entry),
+    color: entry.color,
+    // A cover is portrait, but the field crops it to fill; better than leaving the stage on noise.
+    backdropUrl: entry.backdropUrl ?? entry.posterUrl,
+  }));
 
   /** A noun in the sentence: it narrows the list to its kind, and widens it again when current. */
   const filter = (target: MediaKind) => (chunks: ReactNode) => (

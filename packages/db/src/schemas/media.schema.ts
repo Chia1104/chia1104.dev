@@ -8,6 +8,7 @@ import {
   serial,
   smallint,
   text,
+  timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
@@ -25,6 +26,8 @@ export const mediaEntries = pgTable(
   "media_entry",
   {
     id: serial("id").primaryKey(),
+    /** Names the work in its public URL; never changes once the row exists. */
+    slug: text("slug").notNull(),
     kind: text("kind").$type<MediaKind>().notNull(),
     source: text("source").$type<MediaSource>().notNull(),
     sourceId: text("source_id").notNull(),
@@ -46,10 +49,20 @@ export const mediaEntries = pgTable(
     favorite: boolean("favorite").notNull().default(false),
     startedOn: date("started_on", { mode: "string" }),
     finishedOn: date("finished_on", { mode: "string" }),
+    /** A game's id on Steam; play stats below are read from there when it is set. */
+    steamAppId: integer("steam_app_id"),
+    playtimeMinutes: integer("playtime_minutes"),
+    achievementsUnlocked: integer("achievements_unlocked"),
+    achievementsTotal: integer("achievements_total"),
+    lastPlayedAt: timestamp("last_played_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
     ...timestamps,
   },
   (table) => [
     uniqueIndex("media_entry_source_idx").on(table.source, table.sourceId),
+    uniqueIndex("media_entry_slug_idx").on(table.slug),
     index("media_entry_kind_status_idx").on(table.kind, table.status),
   ]
 );

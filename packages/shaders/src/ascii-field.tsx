@@ -41,6 +41,8 @@ interface AsciiFieldProps extends ComponentPropsWithoutRef<"div"> {
    * glyphs still read as characters on a high-density screen for about half the pixels of 2.
    */
   maxDensity?: number;
+  /** Stops the field's loop and hides its trail; a new `image` or `color` still redraws it once. */
+  paused?: boolean;
   /** Told once the shader either paints or cannot run here, so the consumer can show a fallback. */
   onStatusChange?: (status: AsciiFieldStatus) => void;
 }
@@ -56,6 +58,7 @@ export const AsciiField = ({
   characters = DEFAULT_CHARACTERS,
   cellSize = 14,
   maxDensity = 1.5,
+  paused = false,
   onStatusChange,
   className,
   ...props
@@ -83,6 +86,7 @@ export const AsciiField = ({
             cellSize={cellSize}
             maxDensity={maxDensity}
             animating={!reduceMotion}
+            paused={paused}
             onReady={() => report(AsciiFieldStatus.Ready)}
             onUnavailable={() => report(AsciiFieldStatus.Unavailable)}
           />

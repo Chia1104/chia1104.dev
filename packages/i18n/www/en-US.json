@@ -202,6 +202,11 @@
     "anime": "Anime",
     "games": "Games"
   },
+  "mode": {
+    "label": "Site mode",
+    "tech": "Tech",
+    "hobby": "Hobby"
+  },
   "common": {
     "loading": "Loading..."
   },
@@ -375,7 +380,6 @@
     "description": "What I watch and play outside of work: films, series, anime and games.",
     "intro": "Outside of work I watch <movies>films</movies>, <series>series</series> and <anime>anime</anime>, and play <games>games</games>.",
     "empty": "Nothing logged here yet.",
-    "source": "See “{title}” on {source}",
     "kind": {
       "movie": "Film",
       "series": "Series",
@@ -387,6 +391,29 @@
       "series": "Series I have followed and am following.",
       "anime": "Anime I have watched and am watching.",
       "game": "Games I have played and am playing."
+    },
+    "status": {
+      "planned": "On the list",
+      "in-progress": "In progress",
+      "completed": "Finished",
+      "dropped": "Dropped"
+    },
+    "detail": {
+      "status": "Status",
+      "released": "Released",
+      "started": "Started",
+      "finished": "Finished",
+      "rating": "Rating",
+      "rating-value": "{rating} / 10",
+      "favorite": "A favorite",
+      "playtime": "Playtime",
+      "playtime-value": "{hours, plural, one {# hour} other {# hours}}",
+      "achievements": "Achievements",
+      "achievements-value": "{unlocked} / {total}",
+      "last-played": "Last played",
+      "source": "See it on {source}",
+      "close": "Close",
+      "back": "Everything logged"
     }
   }
 }

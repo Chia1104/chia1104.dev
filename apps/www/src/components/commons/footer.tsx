@@ -14,6 +14,7 @@ import { Copyright } from "@/components/commons/copyright";
 import { LoadingSkeleton } from "@/components/commons/current-playing";
 import { FooterLogotype } from "@/components/commons/footer-logotype";
 import LocaleSelector from "@/components/commons/locale-selector";
+import { ModeSwitch } from "@/components/commons/mode-switch";
 import { Settings } from "@/components/commons/settings";
 import { Link } from "@/libs/i18n/navigation";
 import contact from "@/shared/contact";
@@ -76,6 +77,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
                 )
               )}
             </ul>
+            <ModeSwitch mode={SiteMode.Tech} className="w-fit" />
           </FooterCell>
           <FooterCell
             label={tNav("contact")}

@@ -90,14 +90,18 @@ const useSettledFocus = () => {
 
 /**
  * The hobby mode's backdrop: one field of glyphs behind the whole page. It draws the key art of
- * the work in focus and hands that work's colour to the theme through `--media-color`, which is
+ * the row in focus and hands that work's colour to the theme through `--media-color`, which is
  * set on `<html>` so layers portalled to `<body>` follow.
+ *
+ * An open work shows its own art, so the stage only takes its colour then: the field holds its
+ * frame behind a sheet, and is not mounted at all under a page whose art covers the viewport.
  */
 export const HobbyStage = () => {
   const { resolvedTheme } = useTheme();
   const focus = useSettledFocus();
-  const color = focus?.color ?? null;
-  const backdrop = useBackdrop(focus?.backdropUrl ?? null);
+  const pinned = useHobbyStore((state) => state.pinned);
+  const color = (pinned ?? focus)?.color ?? null;
+  const backdrop = useBackdrop(pinned ? null : (focus?.backdropUrl ?? null));
   const [status, setStatus] = useState<AsciiFieldStatus>(
     AsciiFieldStatus.Pending
   );
@@ -115,6 +119,8 @@ export const HobbyStage = () => {
     };
   }, [color]);
 
+  if (pinned?.coversStage) return null;
+
   return (
     // The one surface that eases when the work in focus changes; the tokens themselves snap.
     <div
@@ -131,6 +137,7 @@ export const HobbyStage = () => {
         image={backdrop}
         color={toneOf(color ?? HOBBY_IDLE_COLOR, isDark)}
         cellSize={10}
+        paused={pinned !== null}
         onStatusChange={setStatus}
         className={cn(
           "absolute inset-0 transition-opacity duration-700",

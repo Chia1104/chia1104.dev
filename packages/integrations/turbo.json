@@ -29,6 +29,8 @@
         "TMDB_ACCESS_TOKEN",
         "IGDB_CLIENT_ID",
         "IGDB_CLIENT_SECRET",
+        "STEAM_API_KEY",
+        "STEAM_ID",
         "VERCEL_TOKEN",
         "VERCEL_TEAM_ID",
         "VERCEL_PROJECT_ID"
@@ -58,6 +60,8 @@
         "TMDB_ACCESS_TOKEN",
         "IGDB_CLIENT_ID",
         "IGDB_CLIENT_SECRET",
+        "STEAM_API_KEY",
+        "STEAM_ID",
         "VERCEL_TOKEN",
         "VERCEL_TEAM_ID",
         "VERCEL_PROJECT_ID"

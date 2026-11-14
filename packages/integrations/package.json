@@ -120,6 +120,10 @@
     "./igdb": {
       "types": "./igdb/index.ts",
       "default": "./igdb/index.ts"
+    },
+    "./steam": {
+      "types": "./steam/index.ts",
+      "default": "./steam/index.ts"
     }
   },
   "scripts": {

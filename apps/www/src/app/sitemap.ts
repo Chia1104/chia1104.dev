@@ -7,7 +7,7 @@ import { getPathname } from "@/libs/i18n/navigation";
 import { routing } from "@/libs/i18n/routing";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
-import { MEDIA_KIND_SEGMENT } from "@/shared/media";
+import { MEDIA_KIND_SEGMENT, mediaHrefOf } from "@/shared/media";
 import routes from "@/shared/routes";
 import { SITE_MODE_HOME, SiteMode } from "@/shared/site-mode";
 
@@ -109,6 +109,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             .filter((entry) => entry.kind === kind)
             .map((entry) => entry.updatedAt)
         )
+      )
+    ),
+    ...media.flatMap((entry) =>
+      localizedEntries(
+        mediaHrefOf(entry),
+        routing.locales,
+        entry.updatedAt.toISOString()
       )
     ),
     ...[...feeds.values()].flatMap((feed) =>

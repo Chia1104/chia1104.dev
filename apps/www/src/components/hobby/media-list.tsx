@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
+import { Link } from "@/libs/i18n/navigation";
 import type { MediaRow } from "@/shared/media";
 import { useHobbyStore } from "@/stores/hobby/store";
 
@@ -61,39 +62,27 @@ export const MediaList = ({ rows }: { rows: readonly MediaRow[] }) => {
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setFocus(null);
       }}>
-      {rows.map((row) => {
-        const content = (
-          <>
+      {rows.map((row) => (
+        <li
+          key={row.id}
+          data-row={row.id}
+          data-active={focusId === row.id ? "" : undefined}
+          className="transition-opacity duration-300 motion-reduce:transition-none group-has-[[data-active]]/list:[&:not([data-active])]:opacity-40"
+          onPointerEnter={canHover ? () => setFocus(row) : undefined}>
+          {/* Opens over the list as a sheet, so the list keeps its scroll position. */}
+          <Link
+            href={row.href}
+            scroll={false}
+            className={ROW_CLASS_NAME}
+            onFocus={() => setFocus(row)}>
             <span className="line-clamp-2 text-pretty">{row.title}</span>
             <span className="text-muted flex gap-4 text-sm font-medium tracking-normal tabular-nums">
               <span>{row.kind}</span>
               {row.year === null ? null : <span>{row.year}</span>}
             </span>
-          </>
-        );
-        return (
-          <li
-            key={row.id}
-            data-row={row.id}
-            data-active={focusId === row.id ? "" : undefined}
-            className="transition-opacity duration-300 motion-reduce:transition-none group-has-[[data-active]]/list:[&:not([data-active])]:opacity-40"
-            onPointerEnter={canHover ? () => setFocus(row) : undefined}>
-            {row.href ? (
-              <a
-                href={row.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={row.hrefLabel}
-                className={ROW_CLASS_NAME}
-                onFocus={() => setFocus(row)}>
-                {content}
-              </a>
-            ) : (
-              <div className={ROW_CLASS_NAME}>{content}</div>
-            )}
-          </li>
-        );
-      })}
+          </Link>
+        </li>
+      ))}
     </ul>
   );
 };

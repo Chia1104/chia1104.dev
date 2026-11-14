@@ -16,6 +16,7 @@
 @source "../../node_modules/@chia/agent-elements/node_modules/streamdown/dist/*.js";
 @source "../../node_modules/@chia/agent-elements/node_modules/@streamdown/cjk/dist/*.js";
 @source "../../node_modules/@chia/contents/src/**/*.tsx";
+@source "../../node_modules/@chia/shaders/src/**/*.tsx";
 @source "../../node_modules/fumadocs-ui/dist/**/*.js";
 
 @theme {

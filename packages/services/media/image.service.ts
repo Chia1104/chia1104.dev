@@ -4,6 +4,16 @@ const FETCH_TIMEOUT_MS = 15_000;
 /** Key art is a few hundred kilobytes; anything near this is not one. */
 const MAX_BYTES = 12 * 1024 * 1024;
 
+/**
+ * The image CDNs of the catalogues. A URL comes out of a catalogue's API response, so anything
+ * else is refused rather than fetched from inside the service's network.
+ */
+const IMAGE_HOSTS: ReadonlySet<string> = new Set([
+  "image.tmdb.org",
+  "s4.anilist.co",
+  "images.igdb.com",
+]);
+
 const EXTENSIONS = new Map([
   ["image/jpeg", "jpg"],
   ["image/png", "png"],
@@ -29,6 +39,30 @@ export interface StoredMediaImage {
 const getS3Service = async () =>
   (await import("@chia/integrations/s3/service")).s3Service;
 
+/** Reads the body while counting, so an oversized or endless response is dropped mid-stream. */
+const readCapped = async (response: Response) => {
+  if (Number(response.headers.get("content-length")) > MAX_BYTES) {
+    throw new Error("Image is larger than the cap");
+  }
+  if (!response.body) return new Uint8Array();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for await (const chunk of response.body) {
+    size += chunk.byteLength;
+    if (size > MAX_BYTES) {
+      throw new Error("Image is larger than the cap");
+    }
+    chunks.push(chunk);
+  }
+  const body = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return body;
+};
+
 /**
  * Copies a catalogue's image into the site's storage. The key is derived from the work, so
  * adding the same work again overwrites the same object.
@@ -40,8 +74,14 @@ export const storeMediaImage = async (
   url: string,
   signal?: AbortSignal
 ): Promise<StoredMediaImage> => {
+  const target = new URL(url);
+  if (target.protocol !== "https:" || !IMAGE_HOSTS.has(target.hostname)) {
+    throw new Error(`Image host ${target.hostname} is not a catalogue CDN`);
+  }
   const timeout = AbortSignal.timeout(FETCH_TIMEOUT_MS);
-  const response = await fetch(url, {
+  const response = await fetch(target, {
+    // A redirect could leave the allowed hosts.
+    redirect: "error",
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
   if (!response.ok) {
@@ -52,10 +92,7 @@ export const storeMediaImage = async (
   if (!contentType || !extension) {
     throw new Error(`Image has unsupported type ${contentType ?? "unknown"}`);
   }
-  const body = new Uint8Array(await response.arrayBuffer());
-  if (body.byteLength > MAX_BYTES) {
-    throw new Error(`Image is ${body.byteLength} bytes`);
-  }
+  const body = await readCapped(response);
   const key = `media/${source.replace(":", "-")}-${sourceId}-${role}.${extension}`;
   await (await getS3Service()).uploadObject(key, body, contentType);
   return { key, body };

@@ -21,11 +21,13 @@ export interface IgdbGame {
   coverUrl: string | null;
   /** Key art when the game has any, else its first screenshot. */
   artworkUrl: string | null;
+  /** The game's id on Steam, when IGDB links its store page. */
+  steamAppId: number | null;
   url: string;
 }
 
 const GAME_FIELDS =
-  "fields name,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,url;";
+  "fields name,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,websites.url,url;";
 
 const imageSchema = z.object({ image_id: z.string() });
 
@@ -37,6 +39,7 @@ const gameSchema = z.object({
   cover: imageSchema.optional(),
   artworks: z.array(imageSchema).optional(),
   screenshots: z.array(imageSchema).optional(),
+  websites: z.array(z.object({ url: z.string() })).optional(),
   url: z.string(),
 });
 
@@ -45,6 +48,17 @@ const tokenSchema = z.object({
   /** Seconds. */
   expires_in: z.number(),
 });
+
+/** Read from the store URL itself, which names the app whatever IGDB calls the link. */
+const STEAM_STORE_APP = /store\.steampowered\.com\/app\/(\d+)/;
+
+const steamAppIdOf = (websites: readonly { url: string }[]) => {
+  for (const website of websites) {
+    const id = STEAM_STORE_APP.exec(website.url)?.[1];
+    if (id) return Number(id);
+  }
+  return null;
+};
 
 const toGame = (raw: z.infer<typeof gameSchema>): IgdbGame => {
   const artwork = raw.artworks?.[0] ?? raw.screenshots?.[0];
@@ -57,6 +71,7 @@ const toGame = (raw: z.infer<typeof gameSchema>): IgdbGame => {
         : new Date(raw.first_release_date * 1000).getUTCFullYear(),
     coverUrl: raw.cover ? `${COVER_BASE_URL}/${raw.cover.image_id}.jpg` : null,
     artworkUrl: artwork ? `${ARTWORK_BASE_URL}/${artwork.image_id}.jpg` : null,
+    steamAppId: steamAppIdOf(raw.websites ?? []),
     url: raw.url,
   };
 };

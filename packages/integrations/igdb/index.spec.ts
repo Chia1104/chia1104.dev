@@ -12,6 +12,10 @@ const game = {
   first_release_date: 1645747200,
   cover: { image_id: "co4jni" },
   screenshots: [{ image_id: "sc8xyz" }],
+  websites: [
+    { url: "https://eldenring.bn-ent.net/" },
+    { url: "https://store.steampowered.com/app/1245620/ELDEN_RING" },
+  ],
   url: "https://www.igdb.com/games/elden-ring",
 };
 
@@ -44,6 +48,7 @@ describe("IGDB", () => {
           "https://images.igdb.com/igdb/image/upload/t_cover_big_2x/co4jni.jpg",
         artworkUrl:
           "https://images.igdb.com/igdb/image/upload/t_1080p/sc8xyz.jpg",
+        steamAppId: 1245620,
         url: "https://www.igdb.com/games/elden-ring",
       },
     ]);

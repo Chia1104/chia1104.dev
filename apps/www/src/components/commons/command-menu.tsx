@@ -22,9 +22,9 @@ import { useRouter } from "@/libs/i18n/navigation";
 import { Locale } from "@/libs/utils/i18n";
 import contact from "@/shared/contact";
 import routes from "@/shared/routes";
-import type { SiteMode } from "@/shared/site-mode";
+import { SITE_MODE_HOME, SiteMode } from "@/shared/site-mode";
 
-/** The Mod+K palette: the current mode's pages, contact and theme. */
+/** The Mod+K palette: the current mode's pages, the way into the other modes, contact and theme. */
 export const CommandMenu = ({
   mode,
   ...props
@@ -36,6 +36,7 @@ export const CommandMenu = ({
   const router = useRouter();
   const t = useTranslations("nav");
   const tRoutes = useTranslations("routes");
+  const tMode = useTranslations("mode");
   const closeCommand = () => {
     setQuery("");
     setOpen(false);
@@ -96,6 +97,27 @@ export const CommandMenu = ({
                   {tRoutes(nameKey)}
                 </ListBox.Item>
               ))}
+            </ListBox.Section>
+            <ListBox.Section>
+              <Header>{tMode("label")}</Header>
+              {Object.values(SiteMode)
+                .filter((value) => value !== mode)
+                .map((value) => (
+                  <ListBox.Item
+                    key={value}
+                    id={`mode-${value}`}
+                    textValue={tMode(value)}
+                    className="gap-5 px-2 py-2.5 text-sm"
+                    onAction={() => {
+                      router.push(SITE_MODE_HOME[value], {
+                        locale: props.locale,
+                      });
+                      closeCommand();
+                    }}>
+                    <div className="i-mdi-swap-horizontal size-5" />
+                    {tMode(value)}
+                  </ListBox.Item>
+                ))}
             </ListBox.Section>
             <ListBox.Section>
               <Header className="flex items-center justify-between">

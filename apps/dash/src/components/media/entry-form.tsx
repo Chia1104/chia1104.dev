@@ -23,7 +23,7 @@ import { parseDate } from "@internationalized/date";
 import { Controller, useForm } from "react-hook-form";
 import type { Control } from "react-hook-form";
 
-import { Locale, MediaStatus } from "@chia/db/types";
+import { Locale, MediaKind, MediaStatus } from "@chia/db/types";
 import {
   MEDIA_COMMENT_MAX_CHARS,
   MEDIA_RATING_MAX,
@@ -126,6 +126,7 @@ const NullableNumberInput = ({
   maxValue,
   minValue,
   name,
+  step = 1,
 }: {
   control: FormControl;
   description: string;
@@ -133,7 +134,14 @@ const NullableNumberInput = ({
   label: string;
   maxValue: number;
   minValue: number;
-  name: "rating" | "releaseYear";
+  name:
+    | "rating"
+    | "releaseYear"
+    | "steamAppId"
+    | "playtimeHours"
+    | "achievementsUnlocked"
+    | "achievementsTotal";
+  step?: number;
 }) => (
   <Controller
     control={control}
@@ -147,7 +155,7 @@ const NullableNumberInput = ({
         minValue={minValue}
         onBlur={field.onBlur}
         onChange={(next) => field.onChange(Number.isNaN(next) ? null : next)}
-        step={1}
+        step={step}
         value={field.value ?? Number.NaN}
         variant={FIELD_VARIANT}>
         <Label className="text-xs">{label}</Label>
@@ -391,6 +399,53 @@ export const EntryForm = ({
           )}
         />
       </div>
+
+      {entry.kind === MediaKind.Game ? (
+        <fieldset className="border-separator flex flex-col gap-3 rounded-xl border p-3">
+          <legend className="text-muted px-1 text-xs">
+            Play stats. With a Steam app id, “Sync from Steam” fills the rest.
+          </legend>
+          <div className="flex flex-wrap items-start gap-4">
+            <NullableNumberInput
+              control={control}
+              description="The number in the store URL."
+              isDisabled={isPending}
+              label="Steam app id"
+              maxValue={2_147_483_647}
+              minValue={1}
+              name="steamAppId"
+            />
+            <NullableNumberInput
+              control={control}
+              description="Hours played."
+              isDisabled={isPending}
+              label="Playtime"
+              maxValue={175_200}
+              minValue={0}
+              name="playtimeHours"
+              step={0.1}
+            />
+            <NullableNumberInput
+              control={control}
+              description="Achievements unlocked."
+              isDisabled={isPending}
+              label="Unlocked"
+              maxValue={10_000}
+              minValue={0}
+              name="achievementsUnlocked"
+            />
+            <NullableNumberInput
+              control={control}
+              description="Achievements the game has."
+              isDisabled={isPending}
+              label="Total"
+              maxValue={10_000}
+              minValue={0}
+              name="achievementsTotal"
+            />
+          </div>
+        </fieldset>
+      ) : null}
 
       <div className="flex gap-2">
         <Button

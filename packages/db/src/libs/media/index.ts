@@ -48,6 +48,12 @@ export const getMediaEntry = async (
 ): Promise<MediaEntry | undefined> =>
   await db.query.mediaEntries.findFirst({ where: { id } });
 
+export const getMediaEntryBySlug = async (
+  db: DB,
+  slug: string
+): Promise<MediaEntry | undefined> =>
+  await db.query.mediaEntries.findFirst({ where: { slug } });
+
 export const getMediaEntryBySource = async (
   db: DB,
   source: MediaSource,
@@ -64,7 +70,18 @@ export interface MediaEntryLog {
   finishedOn: string | null;
 }
 
-export interface InsertMediaEntryDTO extends MediaEntryLog {
+/** How much a game has been played. Typed by hand, or read from Steam when the row names an app. */
+export interface MediaPlayStats {
+  playtimeMinutes: number | null;
+  achievementsUnlocked: number | null;
+  achievementsTotal: number | null;
+  lastPlayedAt: Date | null;
+}
+
+export interface InsertMediaEntryDTO
+  extends MediaEntryLog, Partial<MediaPlayStats> {
+  slug: string;
+  steamAppId: number | null;
   kind: MediaKind;
   source: MediaSource;
   sourceId: string;
@@ -86,11 +103,13 @@ export const createMediaEntry = async (
   return row;
 };
 
-export interface UpdateMediaEntryDTO extends MediaEntryLog {
+export interface UpdateMediaEntryDTO
+  extends MediaEntryLog, Omit<MediaPlayStats, "lastPlayedAt"> {
   translations: MediaTranslations;
   originalTitle: string | null;
   releaseYear: number | null;
   color: string | null;
+  steamAppId: number | null;
 }
 
 /** Replaces every editable column. Returns the row, or undefined when there is none. */
@@ -107,7 +126,21 @@ export const updateMediaEntry = async (
   return row;
 };
 
-/** Returns the deleted row so its cover can be removed from storage. */
+/** Overwrites the play stats alone; a sync must not touch what the owner typed elsewhere. */
+export const updateMediaPlayStats = async (
+  db: DB,
+  id: number,
+  stats: MediaPlayStats
+): Promise<MediaEntry | undefined> => {
+  const [row] = await db
+    .update(mediaEntries)
+    .set(stats)
+    .where(eq(mediaEntries.id, id))
+    .returning();
+  return row;
+};
+
+/** Returns the deleted row so its images can be removed from storage. */
 export const deleteMediaEntry = async (
   db: DB,
   id: number

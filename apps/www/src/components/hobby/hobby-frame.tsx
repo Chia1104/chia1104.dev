@@ -4,6 +4,7 @@ import type { Locale } from "next-intl";
 
 import { ChatLauncher } from "@/components/agent/chat-launcher";
 import { CommandMenu } from "@/components/commons/command-menu";
+import { ModeSwitch } from "@/components/commons/mode-switch";
 import { HobbyFooter } from "@/components/hobby/hobby-footer";
 import { HobbyStage } from "@/components/hobby/hobby-stage";
 import { Link } from "@/libs/i18n/navigation";
@@ -38,6 +39,7 @@ const HobbyFrame = ({
     <div
       data-testid="nav-menu"
       className="bg-background/85 fixed bottom-4 left-(--hobby-gutter) z-50 flex items-center gap-1 rounded-full p-1">
+      <ModeSwitch mode={SiteMode.Hobby} className="rounded-full" />
       <ChatLauncher />
       <CommandMenu locale={locale} mode={SiteMode.Hobby} />
     </div>

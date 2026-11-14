@@ -40,6 +40,7 @@ declare namespace __next_route_internal_types__ {
     | `/sitemap.xml` // ../../../src/app/sitemap.ts
   type DynamicRoutes<T extends string = string> = 
     | `/${SafeSlug<T>}` // ../../../src/app/[locale]/(tech)/page.tsx
+    | `/${SafeSlug<T>}/${CatchAllSlug<T>}` // ../../../src/app/[locale]/@modal/[...catchAll]/page.ts
     | `/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(tech)/(blog)/[type]/page.tsx
     | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(tech)/(blog)/[type]/[slug]/page.tsx
     | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}/llm.md` // ../../../src/app/[locale]/(tech)/(blog)/[type]/[slug]/llm.md/route.ts
@@ -50,6 +51,7 @@ declare namespace __next_route_internal_types__ {
     | `/${SafeSlug<T>}/contact/opengraph-image-qydb7f` // ../../../src/app/[locale]/(tech)/contact/opengraph-image.tsx
     | `/${SafeSlug<T>}/hobby` // ../../../src/app/[locale]/hobby/page.tsx
     | `/${SafeSlug<T>}/hobby/${SafeSlug<T>}` // ../../../src/app/[locale]/hobby/[kind]/page.tsx
+    | `/${SafeSlug<T>}/hobby/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/hobby/[kind]/[slug]/page.tsx
     | `/${SafeSlug<T>}/note/${SafeSlug<T>}` // /[locale]/note/[slug]
     | `/${SafeSlug<T>}/opengraph-image` // ../../../src/app/[locale]/opengraph-image.tsx
     | `/${SafeSlug<T>}/post/${SafeSlug<T>}` // /[locale]/post/[slug]

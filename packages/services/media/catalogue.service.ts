@@ -1,4 +1,8 @@
 import { Locale, MediaKind, MediaSource } from "@chia/db/types";
+import {
+  MEDIA_TITLE_MAX_CHARS,
+  mediaColorSchema,
+} from "@chia/db/validator/media";
 import type { MediaTranslations } from "@chia/db/validator/media";
 import { logger } from "@chia/observability/logger";
 
@@ -24,8 +28,25 @@ export interface MediaSnapshot {
   backdropUrl: string | null;
   /** The catalogue's own colour for the cover, when it publishes one. */
   color: string | null;
+  /** A game's id on Steam, when the catalogue links its store page. */
+  steamAppId: number | null;
   sourceUrl: string;
 }
+
+/**
+ * A catalogue's titles as the stored translations, or `null` when it has none worth storing.
+ * Stored rows are parsed on every public read, so a blank or oversized title must not get in.
+ */
+const translationsOf = (
+  titles: Partial<Record<Locale, string | null>>
+): MediaTranslations | null => {
+  const translations: MediaTranslations = {};
+  for (const locale of Object.values(Locale)) {
+    const title = titles[locale]?.trim().slice(0, MEDIA_TITLE_MAX_CHARS);
+    if (title) translations[locale] = { title };
+  }
+  return Object.keys(translations).length > 0 ? translations : null;
+};
 
 /**
  * Catalogue clients load on first use: the router imports every route module at boot, and a
@@ -158,32 +179,40 @@ export const resolveMediaSnapshot = async (
         getTmdbWork(type, id, TmdbLanguage.EnUS, signal),
       ]);
       if (!zh || !en) return null;
+      const translations = translationsOf({
+        [Locale.ZhTW]: zh.title,
+        [Locale.En]: en.title,
+      });
+      if (!translations) return null;
       return {
-        translations: {
-          [Locale.ZhTW]: { title: zh.title },
-          [Locale.En]: { title: en.title },
-        },
+        translations,
         originalTitle: zh.originalTitle,
         releaseYear: zh.releaseYear,
         posterUrl: zh.posterUrl ?? en.posterUrl,
         backdropUrl: zh.backdropUrl ?? en.backdropUrl,
         color: null,
+        steamAppId: null,
         sourceUrl: zh.url,
       };
     }
     case MediaSource.Anilist: {
       const { getAnilistAnime } = await loadAnilist();
       const anime = await getAnilistAnime(id, signal);
-      const title =
-        anime?.titles.english ?? anime?.titles.romaji ?? anime?.titles.native;
-      if (!anime || !title) return null;
+      if (!anime) return null;
+      const translations = translationsOf({
+        [Locale.En]:
+          anime.titles.english ?? anime.titles.romaji ?? anime.titles.native,
+      });
+      if (!translations) return null;
       return {
-        translations: { [Locale.En]: { title } },
+        translations,
         originalTitle: anime.titles.native,
         releaseYear: anime.releaseYear,
         posterUrl: anime.coverUrl,
         backdropUrl: anime.bannerUrl,
-        color: anime.color,
+        // AniList documents a hex colour; anything else is dropped and the cover's is used.
+        color: mediaColorSchema.safeParse(anime.color).data ?? null,
+        steamAppId: null,
         sourceUrl: anime.url,
       };
     }
@@ -191,13 +220,16 @@ export const resolveMediaSnapshot = async (
       const { getIgdbGame } = await loadIgdb();
       const game = await getIgdbGame(id, signal);
       if (!game) return null;
+      const translations = translationsOf({ [Locale.En]: game.name });
+      if (!translations) return null;
       return {
-        translations: { [Locale.En]: { title: game.name } },
+        translations,
         originalTitle: null,
         releaseYear: game.releaseYear,
         posterUrl: game.coverUrl,
         backdropUrl: game.artworkUrl,
         color: null,
+        steamAppId: game.steamAppId,
         sourceUrl: game.url,
       };
     }
