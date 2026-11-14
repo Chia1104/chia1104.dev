@@ -15,8 +15,9 @@ import RootProvider from "@/components/commons/root-provider";
 import { initDayjs } from "@/libs/utils/dayjs";
 
 /**
- * The whole document for one locale. The locale is passed explicitly because `global-not-found`
- * renders outside the `[locale]` segment, where no root param resolves it.
+ * The whole document for one locale, without a mode's frame. The locale is passed explicitly
+ * because `global-not-found` renders outside the `[locale]` segment, where no root param resolves
+ * it.
  */
 const SiteShell = async ({
   locale,
@@ -35,7 +36,7 @@ const SiteShell = async ({
     <RootLayout locale={locale}>
       <PaletteScript />
       <RootProvider messages={messages} timeZone={timeZone} locale={locale}>
-        <AppLayout locale={locale}>{children}</AppLayout>
+        <AppLayout>{children}</AppLayout>
         <AppPlugins />
       </RootProvider>
     </RootLayout>

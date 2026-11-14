@@ -1,13 +1,15 @@
 import type { MetadataRoute } from "next";
 
-import { FeedOrderBy, FeedType } from "@chia/db/types";
+import { FeedOrderBy, FeedType, MediaKind } from "@chia/db/types";
 import { WWW_BASE_URL } from "@chia/utils/config";
 
 import { getPathname } from "@/libs/i18n/navigation";
 import { routing } from "@/libs/i18n/routing";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
+import { MEDIA_KIND_SEGMENT } from "@/shared/media";
 import routes from "@/shared/routes";
+import { SITE_MODE_HOME, SiteMode } from "@/shared/site-mode";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +40,7 @@ const newest = (dates: readonly (string | Date)[]) => {
 };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [feedLists, { items: tags }] = await Promise.all([
+  const [feedLists, { items: tags }, { items: media }] = await Promise.all([
     Promise.all(
       routing.locales.map(async (locale) => {
         const { items } = await client.feeds.list({
@@ -54,6 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })
     ),
     client.tags.list(),
+    client.media.list({}),
   ]);
   const listed = feedLists.flat();
 
@@ -85,11 +88,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       routing.locales,
       updatedWhere(() => true)
     ),
-    ...Object.keys(routes).flatMap((path) =>
+    ...Object.keys(routes[SiteMode.Tech]).flatMap((path) =>
       localizedEntries(
         path,
         routing.locales,
         updatedWhere((href) => href.startsWith(`${path}/`))
+      )
+    ),
+    ...localizedEntries(
+      SITE_MODE_HOME[SiteMode.Hobby],
+      routing.locales,
+      newest(media.map((entry) => entry.updatedAt))
+    ),
+    ...Object.values(MediaKind).flatMap((kind) =>
+      localizedEntries(
+        `${SITE_MODE_HOME[SiteMode.Hobby]}/${MEDIA_KIND_SEGMENT[kind]}`,
+        routing.locales,
+        newest(
+          media
+            .filter((entry) => entry.kind === kind)
+            .map((entry) => entry.updatedAt)
+        )
       )
     ),
     ...[...feeds.values()].flatMap((feed) =>

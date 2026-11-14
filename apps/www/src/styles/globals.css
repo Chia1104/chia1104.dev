@@ -5,6 +5,7 @@
 @import "@chia/tailwind/animations.css";
 @import "@chia/themes/base.css";
 @import "@chia/themes/default.css";
+@import "@chia/themes/hobby.css";
 @import "@chia/tailwind/preset.css";
 
 @plugin "tailwind-scrollbar";

@@ -106,3 +106,14 @@ Colours are HeroUI theme tokens authored in OKLCH in `@chia/themes/default.css` 
 - **Flat depth.** There are no shadows inside the column. Depth appears only in floating layers (translucent surface, blur, soft shadow), in the single lit surface, the playlist's noise shader, and in the status figure, an isometric line drawing whose depth comes from projection and hatching, never shading.
 - **Restrained motion.** No scroll-triggered entrances. Motion answers the reader: hover hatching fades in, the scroll progress bar and the footer wordmark follow springs, and every animated piece respects reduced motion.
 - **Both modes are first-class.** Every rule, hatch and derived colour has a deliberate light and dark value, and a reader's custom palette is kept separately per mode.
+
+## 6. Hobby mode
+
+Everything above describes the tech mode. Pages under `/hobby` (films, series, anime, games) wear a second frame, and the reader moves between the two with the segmented switch beside the wordmark.
+
+- **Cover art is the structure.** There are no rails, rules or hatching. The page is a wide column (72rem) of 2:3 covers; the artwork brings the colour, so the chrome stays quiet around it.
+- **Petrol and sticker yellow.** Tokens come from `@chia/themes/hobby.css`: a pale mint-grey sheet by day (`#EAF5F6`) and deep petrol by night (`#041319`), neutrals tinted towards hue 200–228. The accent is one yellow (`#F7D22A`) and it means "mine": the underline of the current category and the round sticker on a favorite.
+- **Categories are the headline.** Overview, Movies, Series, Anime and Games are set as the largest type on the page (48px bold on wide pages, 24px on a phone, scrolling sideways) and double as the navigation; the current one is full ink, the rest 60% muted.
+- **Softer corners.** `--radius` is 0.625rem here against 0.15rem in the tech mode, so the same HeroUI controls read rounder.
+- **A work is a card without a box.** Cover, then title (14px semibold, two lines), then year and rating as tabular small print at opposite ends. A kind's page adds the short comment under each card; a work with no cover shows its title on a `default` tile.
+- **Reader palette does not apply.** The palette settings recolour the tech mode only; the hobby frame keeps its authored colours.

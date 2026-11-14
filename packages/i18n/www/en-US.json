@@ -196,7 +196,11 @@
     "blog": "Blog",
     "notes": "Notes",
     "projects": "Projects",
-    "contact": "Contact"
+    "contact": "Contact",
+    "movies": "Movies",
+    "series": "Series",
+    "anime": "Anime",
+    "games": "Games"
   },
   "common": {
     "loading": "Loading..."
@@ -364,6 +368,38 @@
       "title": "This page failed to load",
       "description": "The error has been reported. Try again, or come back later.",
       "retry": "Try again"
+    }
+  },
+  "mode": {
+    "label": "Site mode",
+    "tech": "Tech",
+    "hobby": "Hobby"
+  },
+  "hobby": {
+    "title": "Hobby",
+    "description": "What I watch and play outside of work: films, series, anime and games.",
+    "all": "Overview",
+    "nav": "Categories",
+    "empty": "Nothing logged here yet.",
+    "favorite": "A favorite",
+    "rating": "{rating} / 10",
+    "source": "See “{title}” on {source}",
+    "sections": {
+      "in-progress": "In progress",
+      "recent": "Recently finished",
+      "favorites": "Favorites"
+    },
+    "status": {
+      "in-progress": "In progress",
+      "completed": "Finished",
+      "planned": "On the list",
+      "dropped": "Dropped"
+    },
+    "kind-description": {
+      "movie": "Films I have seen and want to see.",
+      "series": "Series I have followed and am following.",
+      "anime": "Anime I have watched and am watching.",
+      "game": "Games I have played and am playing."
     }
   }
 }

@@ -39,22 +39,24 @@ declare namespace __next_route_internal_types__ {
     | `/robots.txt` // ../../../src/app/robots.ts
     | `/sitemap.xml` // ../../../src/app/sitemap.ts
   type DynamicRoutes<T extends string = string> = 
-    | `/${SafeSlug<T>}` // ../../../src/app/[locale]/page.tsx
-    | `/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(blog)/[type]/page.tsx
-    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(blog)/[type]/[slug]/page.tsx
-    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}/llm.md` // ../../../src/app/[locale]/(blog)/[type]/[slug]/llm.md/route.ts
-    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}/opengraph-image-1qxa2a` // ../../../src/app/[locale]/(blog)/[type]/[slug]/opengraph-image.tsx
-    | `/${SafeSlug<T>}/${SafeSlug<T>}/opengraph-image-1oaw56` // ../../../src/app/[locale]/(blog)/[type]/opengraph-image.tsx
+    | `/${SafeSlug<T>}` // ../../../src/app/[locale]/(tech)/page.tsx
+    | `/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(tech)/(blog)/[type]/page.tsx
+    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(tech)/(blog)/[type]/[slug]/page.tsx
+    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}/llm.md` // ../../../src/app/[locale]/(tech)/(blog)/[type]/[slug]/llm.md/route.ts
+    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}/opengraph-image-1n3uiv` // ../../../src/app/[locale]/(tech)/(blog)/[type]/[slug]/opengraph-image.tsx
+    | `/${SafeSlug<T>}/${SafeSlug<T>}/opengraph-image-1olvef` // ../../../src/app/[locale]/(tech)/(blog)/[type]/opengraph-image.tsx
     | `/${SafeSlug<T>}/about` // /[locale]/about
-    | `/${SafeSlug<T>}/contact` // ../../../src/app/[locale]/contact/page.tsx
-    | `/${SafeSlug<T>}/contact/opengraph-image` // ../../../src/app/[locale]/contact/opengraph-image.tsx
+    | `/${SafeSlug<T>}/contact` // ../../../src/app/[locale]/(tech)/contact/page.tsx
+    | `/${SafeSlug<T>}/contact/opengraph-image-qydb7f` // ../../../src/app/[locale]/(tech)/contact/opengraph-image.tsx
+    | `/${SafeSlug<T>}/hobby` // ../../../src/app/[locale]/hobby/page.tsx
+    | `/${SafeSlug<T>}/hobby/${SafeSlug<T>}` // ../../../src/app/[locale]/hobby/[kind]/page.tsx
     | `/${SafeSlug<T>}/note/${SafeSlug<T>}` // /[locale]/note/[slug]
     | `/${SafeSlug<T>}/opengraph-image` // ../../../src/app/[locale]/opengraph-image.tsx
     | `/${SafeSlug<T>}/post/${SafeSlug<T>}` // /[locale]/post/[slug]
-    | `/${SafeSlug<T>}/projects` // ../../../src/app/[locale]/projects/page.tsx
+    | `/${SafeSlug<T>}/projects` // ../../../src/app/[locale]/(tech)/projects/page.tsx
     | `/${SafeSlug<T>}/rss.xml` // ../../../src/app/[locale]/rss.xml/route.ts
-    | `/${SafeSlug<T>}/tags` // ../../../src/app/[locale]/(blog)/tags/page.tsx
-    | `/${SafeSlug<T>}/tags/${SafeSlug<T>}` // ../../../src/app/[locale]/(blog)/tags/[slug]/page.tsx
+    | `/${SafeSlug<T>}/tags` // ../../../src/app/[locale]/(tech)/(blog)/tags/page.tsx
+    | `/${SafeSlug<T>}/tags/${SafeSlug<T>}` // ../../../src/app/[locale]/(tech)/(blog)/tags/[slug]/page.tsx
     | `/note/${SafeSlug<T>}` // /note/[slug]
     | `/post/${SafeSlug<T>}` // /post/[slug]
 

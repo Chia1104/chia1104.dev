@@ -30,6 +30,7 @@ export const PALETTE_STYLE_ID = "reader-palette";
 /**
  * Writes the palette into one `<style>` element. Each mode's rule keys off the `<html>` class and
  * outranks the palette file's `:root` / `.dark` rules, so the resolved mode never has to be known.
+ * A frame marked with `data-site-mode` brings its own palette, so the rules step aside there.
  * The pre-paint script inlines this with `toString()`, so it must not reach outside its own body.
  * That script hands over storage the reader can edit without parsing it, so every value is
  * matched against `#RRGGBBAA` here before it reaches CSS.
@@ -40,8 +41,8 @@ export function writePaletteStyle(
   tokens: readonly PaletteToken[]
 ) {
   const rules = [
-    ["light", ":root:not(.dark)"],
-    ["dark", ":root.dark"],
+    ["light", ":root:not(.dark):not(:has([data-site-mode]))"],
+    ["dark", ":root.dark:not(:has([data-site-mode]))"],
   ] as const;
   let css = "";
   for (const [mode, selector] of rules) {

@@ -1,0 +1,56 @@
+/*
+ * The palette of www's hobby mode, layered over `default.css`. It keys off the frame's marker
+ * through `:root:has()` so layers portalled to `<body>` take it too. The dark block must restate
+ * every token the light block sets, because the light selector also outranks `.dark`.
+ */
+:root:has([data-site-mode="hobby"]) {
+  /* HeroUI Theme */
+  --accent: oklch(87% 0.17 95);
+  --accent-foreground: oklch(22% 0.05 95);
+  --background: oklch(96.2% 0.012 200);
+  --border: oklch(86.5% 0.016 200);
+  --default: oklch(92.5% 0.014 200);
+  --default-foreground: oklch(22% 0.03 230);
+  --field-background: oklch(99.2% 0.005 200);
+  --field-foreground: oklch(22% 0.03 230);
+  --field-placeholder: oklch(50% 0.03 225);
+  --focus: oklch(55% 0.13 235);
+  --foreground: oklch(22% 0.03 230);
+  --muted: oklch(50% 0.03 225);
+  --overlay: oklch(99.2% 0.005 200);
+  --overlay-foreground: oklch(22% 0.03 230);
+  --scrollbar: oklch(82% 0.016 200);
+  --segment: oklch(99.5% 0.004 200);
+  --segment-foreground: oklch(22% 0.03 230);
+  --separator: oklch(89.5% 0.014 200);
+  --surface: oklch(99.2% 0.005 200);
+  --surface-foreground: oklch(22% 0.03 230);
+
+  /* Border Radius */
+  --radius: 0.625rem;
+  --field-radius: 0.5rem;
+}
+
+:root.dark:has([data-site-mode="hobby"]) {
+  /* HeroUI Theme */
+  --accent: oklch(88% 0.17 97);
+  --accent-foreground: oklch(20% 0.05 97);
+  --background: oklch(17.5% 0.025 228);
+  --border: oklch(30% 0.028 228);
+  --default: oklch(27% 0.028 228);
+  --default-foreground: oklch(96% 0.012 95);
+  --field-background: oklch(22% 0.028 228);
+  --field-foreground: oklch(96% 0.012 95);
+  --field-placeholder: oklch(72% 0.03 215);
+  --focus: oklch(88% 0.17 97);
+  --foreground: oklch(96% 0.012 95);
+  --muted: oklch(72% 0.03 215);
+  --overlay: oklch(22% 0.028 228);
+  --overlay-foreground: oklch(96% 0.012 95);
+  --scrollbar: oklch(60% 0.02 228);
+  --segment: oklch(36% 0.03 228);
+  --segment-foreground: oklch(96% 0.012 95);
+  --separator: oklch(26% 0.026 228);
+  --surface: oklch(22% 0.028 228);
+  --surface-foreground: oklch(96% 0.012 95);
+}

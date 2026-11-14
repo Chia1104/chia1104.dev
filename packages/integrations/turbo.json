@@ -26,6 +26,9 @@
         "S3_REGION",
         "S3_BUCKET_NAME",
         "S3_ENDPOINT",
+        "TMDB_ACCESS_TOKEN",
+        "IGDB_CLIENT_ID",
+        "IGDB_CLIENT_SECRET",
         "VERCEL_TOKEN",
         "VERCEL_TEAM_ID",
         "VERCEL_PROJECT_ID"
@@ -52,6 +55,9 @@
         "S3_REGION",
         "S3_BUCKET_NAME",
         "S3_ENDPOINT",
+        "TMDB_ACCESS_TOKEN",
+        "IGDB_CLIENT_ID",
+        "IGDB_CLIENT_SECRET",
         "VERCEL_TOKEN",
         "VERCEL_TEAM_ID",
         "VERCEL_PROJECT_ID"

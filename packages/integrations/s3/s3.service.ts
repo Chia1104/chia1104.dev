@@ -190,6 +190,23 @@ export class S3Service {
     );
   }
 
+  /** Writes to the configured bucket under the configured prefix, as the signed uploads do. */
+  public async uploadObject(
+    key: string,
+    body: Uint8Array,
+    contentType: string
+  ) {
+    return await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.getBucket(),
+        Key: this.getKey(key),
+        ACL: this.getACL(),
+        Body: body,
+        ContentType: contentType,
+      })
+    );
+  }
+
   public async deleteObject(bucket: string, key: string) {
     return await this.client.send(
       new DeleteObjectCommand({ Bucket: bucket, Key: key })

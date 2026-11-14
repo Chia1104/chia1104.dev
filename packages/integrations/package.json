@@ -108,6 +108,18 @@
     "./x": {
       "types": "./x/index.ts",
       "default": "./x/index.ts"
+    },
+    "./tmdb": {
+      "types": "./tmdb/index.ts",
+      "default": "./tmdb/index.ts"
+    },
+    "./anilist": {
+      "types": "./anilist/index.ts",
+      "default": "./anilist/index.ts"
+    },
+    "./igdb": {
+      "types": "./igdb/index.ts",
+      "default": "./igdb/index.ts"
     }
   },
   "scripts": {

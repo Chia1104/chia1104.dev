@@ -26,6 +26,7 @@ import {
   tags,
   tagTranslations,
 } from "./contents.schema.ts";
+import { mediaEntries } from "./media.schema.ts";
 import { profileEntries } from "./profile.schema.ts";
 import { resourceChunks, resourceEmbeddings } from "./resources.schema.ts";
 import { spotifyCredential } from "./spotify.schema.ts";
@@ -38,6 +39,7 @@ const schema = {
   passkey,
   apikey,
   profileEntries,
+  mediaEntries,
   resourceChunks,
   resourceEmbeddings,
   spotifyCredential,
