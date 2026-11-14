@@ -11,6 +11,7 @@ export const TimelineType = {
 export type TimelineType = (typeof TimelineType)[keyof typeof TimelineType];
 
 export const Company = {
+  Wiwynn: "wiwynn",
   LeadBest: "leadbest",
   Wanin: "wanin",
   CGU: "cgu",
@@ -18,6 +19,44 @@ export const Company = {
 } as const;
 
 export type Company = (typeof Company)[keyof typeof Company];
+
+export const JobTitle = {
+  SeniorSoftwareEngineer: "senior-software-engineer",
+  FrontendEngineer: "frontend-engineer",
+  RDEngineer: "rd-engineer",
+} as const;
+
+export type JobTitle = (typeof JobTitle)[keyof typeof JobTitle];
+
+/** `endTime: 0` means the period is ongoing. */
+export interface Period {
+  startTime: string | number | Dayjs | null;
+  endTime: string | number | Dayjs | null;
+}
+
+export interface Role extends Period {
+  title: JobTitle;
+}
+
+interface TimelineEntryBase extends Period {
+  id: number;
+  company: string;
+  companyKey?: Company;
+  work?: string;
+  link?: string;
+}
+
+/** Roles are ordered newest first and lie within the entry's period. */
+export interface WorkTimelineEntry extends TimelineEntryBase {
+  type: typeof TimelineType.Work;
+  roles: [Role, ...Role[]];
+}
+
+export interface OtherTimelineEntry extends TimelineEntryBase {
+  type: typeof TimelineType.Education | typeof TimelineType.Other;
+}
+
+export type TimelineEntry = WorkTimelineEntry | OtherTimelineEntry;
 
 export interface Meta {
   name: string;
@@ -30,17 +69,7 @@ export interface Meta {
   birthday: string;
   link: Record<string, string>;
   startWork: string;
-  timeline: {
-    id: number;
-    type: TimelineType;
-    company: string;
-    companyKey?: Company;
-    duration: string;
-    startTime: string | number | Dayjs | null;
-    endTime: string | number | Dayjs | null;
-    work?: string;
-    link?: string;
-  }[];
+  timeline: TimelineEntry[];
 }
 
 export const getLatestWork = (timeline: Meta["timeline"]) => {
@@ -93,33 +122,60 @@ export default {
   startWork: "2022-7",
   timeline: [
     {
+      id: 4,
+      type: TimelineType.Work,
+      company: "Wiwynn",
+      companyKey: Company.Wiwynn,
+      startTime: "2026-11",
+      endTime: 0,
+      link: "https://www.wiwynn.com/",
+      roles: [
+        {
+          title: JobTitle.SeniorSoftwareEngineer,
+          startTime: "2026-11",
+          endTime: 0,
+        },
+      ],
+    },
+    {
       id: 3,
       type: TimelineType.Work,
       company: "LeadBest",
       companyKey: Company.LeadBest,
-      duration: "2023-3 - Present",
       startTime: "2023-3",
-      endTime: 0,
+      endTime: "2026-11",
       work: "TypeScript, React, NextJS, React Native, Vite, TailwindCSS, TradingView, EChart, Docker",
       link: "https://www.leadbestconsultant.com/",
+      roles: [
+        {
+          title: JobTitle.FrontendEngineer,
+          startTime: "2023-3",
+          endTime: "2026-11",
+        },
+      ],
     },
     {
       id: 2,
       type: TimelineType.Work,
       company: "WANIN",
       companyKey: Company.Wanin,
-      duration: "2022-7 - 2023-1",
       startTime: "2022-7",
       endTime: "2023-1",
       work: "TypeScript, Turborepo, React, Vue3, NextJS, Vite, TailwindCSS, EChart, NestJS, TypeORM, PostgreSQL, Docker, GCP",
       link: "https://www.wanin.tw/",
+      roles: [
+        {
+          title: JobTitle.RDEngineer,
+          startTime: "2022-7",
+          endTime: "2023-1",
+        },
+      ],
     },
     {
       id: 1,
       type: TimelineType.Education,
       company: "CGU, IM",
       companyKey: Company.CGU,
-      duration: "2018-6 - 2022-6",
       startTime: "2018-6",
       endTime: "2022-6",
       work: "MIS, Java, Python, MySQL, Computer Science, System Design",
@@ -130,7 +186,6 @@ export default {
       type: TimelineType.Other,
       company: "Chia1104",
       companyKey: Company.Chia1104,
-      duration: "1999-11-04 - Present",
       startTime: "1999-11-04",
       endTime: 0,
     },

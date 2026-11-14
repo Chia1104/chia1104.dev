@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "preCompact": [
+      {
+        "command": "obmem hook pre-compact --agent cursor"
+      }
+    ],
+    "sessionStart": [
+      {
+        "command": "obmem hook session-start --agent cursor"
+      }
+    ],
+    "stop": [
+      {
+        "command": "obmem hook stop --agent cursor"
+      }
+    ]
+  },
+  "version": 1
+}

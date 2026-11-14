@@ -5,6 +5,8 @@ import type { Dayjs } from "dayjs";
 
 export interface TimelineItemData {
   id: number;
+  /** Shown before the title. */
+  icon?: ReactNode;
   title: ReactNode;
   subtitle?: ReactNode;
   /** Always shown under the subtitle. */

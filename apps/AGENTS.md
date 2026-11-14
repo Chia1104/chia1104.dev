@@ -1,20 +1,11 @@
 # Apps
 
-| App        | Port | Deployment           | Responsibility                                 |
-| ---------- | ---- | -------------------- | ---------------------------------------------- |
-| `www`      | 3000 | Vercel               | Public profile, content and reader agent       |
-| `dash`     | 3001 | Railway              | Authenticated administration and writing agent |
-| `service`  | 3005 | Railway              | Auth, data access, oRPC and AI HTTP surfaces   |
-| `workflow` | 3008 | Railway, one replica | Durable workflows, steps and agent turns       |
-
-`apps/functions/pg-dump-cron` is the scheduled Postgres-to-S3 backup job.
+Local ports: `www` 3000, `dash` 3001, `service` 3005, `workflow` 3008. `apps/functions/pg-dump-cron` is the scheduled Postgres-to-S3 backup job.
 
 ## Network boundary
 
-- Vercel cannot reach Railway's private network. Resolve endpoints with `withServiceEndpoint` from `@chia/utils/config`.
-- Browsers use `NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT`; server runtimes may use internal endpoints.
+- Vercel cannot reach Railway's private network: browsers use `NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT`; server runtimes may use internal endpoints.
 - Frontends import the oRPC contract type and call `service` directly. Do not add a Next.js API proxy, tRPC or cross-app imports.
-- `service` reaches `workflow` through the authenticated `@chia/workflow-control` boundary.
 
 ## `www`
 

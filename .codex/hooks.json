@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "obmem hook session-start --agent codex",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "obmem hook stop --agent codex",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}
