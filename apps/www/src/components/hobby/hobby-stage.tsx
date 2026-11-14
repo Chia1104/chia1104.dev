@@ -8,8 +8,7 @@ import { AsciiField, AsciiFieldStatus } from "@chia/shaders/ascii-field";
 import { cn } from "@chia/ui/utils/cn.util";
 import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 
-import { env } from "@/env";
-import cloudflareImageLoader from "@/libs/image-loader";
+import { readableImageSourceOf } from "@/libs/image-source";
 import { HOBBY_IDLE_COLOR } from "@/shared/media";
 import { useHobbyStore } from "@/stores/hobby/store";
 
@@ -34,12 +33,6 @@ const toneOf = (color: string, isDark: boolean) => {
     .toString("hex");
 };
 
-/** `/cdn-cgi/image` exists only on the production zone; elsewhere the storage URL is read as is. */
-const backdropSourceOf = (url: string) =>
-  env.NEXT_PUBLIC_ENV === "production"
-    ? cloudflareImageLoader({ src: url, width: BACKDROP_WIDTH, quality: 70 })
-    : url;
-
 /**
  * The backdrop as a blob URL, or `null` until it has loaded. Fetched here rather than by the
  * shader so the request can drop its referrer, which storage refuses from other origins, and so a
@@ -54,7 +47,7 @@ const useBackdrop = (url: string | null) => {
     if (url === null) return;
     const controller = new AbortController();
     let blob: string | undefined;
-    fetch(backdropSourceOf(url), {
+    fetch(readableImageSourceOf(url, BACKDROP_WIDTH), {
       referrerPolicy: "no-referrer",
       signal: controller.signal,
     })

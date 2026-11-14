@@ -102,7 +102,8 @@ export const getWorkDuration = (timeline: Meta["timeline"]) => {
 export default {
   name: "Chia1104",
   avatar: "https://storage.chia1104.dev/chia1104.png",
-  secondaryAvatar: "https://storage.chia1104.dev/avatar.png",
+  secondaryAvatar:
+    "https://storage.chia1104.dev/global/avatar-second-23d86997-210f-4a59-a575-99dd31e8d094.jpg",
   chineseName: "俞又嘉",
   fullName: "Yu Chia, Yu",
   email: "contact@chia1104.dev",

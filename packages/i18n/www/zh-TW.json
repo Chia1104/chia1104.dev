@@ -205,7 +205,8 @@
   "mode": {
     "label": "網站模式",
     "tech": "技術",
-    "hobby": "興趣"
+    "hobby": "興趣",
+    "switch-to": "切換至{mode}模式"
   },
   "common": {
     "loading": "載入中..."

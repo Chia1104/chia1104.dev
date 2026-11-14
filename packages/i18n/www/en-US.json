@@ -205,7 +205,8 @@
   "mode": {
     "label": "Site mode",
     "tech": "Tech",
-    "hobby": "Hobby"
+    "hobby": "Hobby",
+    "switch-to": "Switch to {mode} mode"
   },
   "common": {
     "loading": "Loading..."

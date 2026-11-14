@@ -8,7 +8,6 @@ import { useTranslations } from "next-intl";
 
 import { ChatLauncher } from "@/components/agent/chat-launcher";
 import { CommandMenu } from "@/components/commons/command-menu";
-import { ModeSwitch } from "@/components/commons/mode-switch";
 import { Link } from "@/libs/i18n/navigation";
 import routes from "@/shared/routes";
 import { SiteMode } from "@/shared/site-mode";
@@ -23,16 +22,12 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
       <nav
         data-testid="nav-menu"
         className="rule-b border-separator mx-auto flex h-(--header-height) w-full max-w-3xl items-center justify-between gap-2 border-x pr-2 pl-4">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            scroll
-            className="hover:c-text-green-to-purple text-lg font-semibold tracking-tight transition ease-in-out">
-            Chia1104
-          </Link>
-          {/* Narrower pages have no room beside the tabs; the footer carries the switch there. */}
-          <ModeSwitch mode={SiteMode.Tech} className="page-sm:flex hidden" />
-        </div>
+        <Link
+          href="/"
+          scroll
+          className="hover:c-text-green-to-purple text-lg font-semibold tracking-tight transition ease-in-out">
+          Chia1104
+        </Link>
         <div className="flex items-center gap-2">
           <Tabs
             aria-label="nav bar"

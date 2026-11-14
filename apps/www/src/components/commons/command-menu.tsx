@@ -18,11 +18,12 @@ import { MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
 import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 
 import { FeedSearch } from "@/components/commons/feed-search";
+import { useModeTransition } from "@/components/commons/mode-transition";
 import { useRouter } from "@/libs/i18n/navigation";
 import { Locale } from "@/libs/utils/i18n";
 import contact from "@/shared/contact";
 import routes from "@/shared/routes";
-import { SITE_MODE_HOME, SiteMode } from "@/shared/site-mode";
+import { SiteMode } from "@/shared/site-mode";
 
 /** The Mod+K palette: the current mode's pages, the way into the other modes, contact and theme. */
 export const CommandMenu = ({
@@ -34,6 +35,7 @@ export const CommandMenu = ({
   useHotkey("Mod+K", () => setOpen((open) => !open));
   const { theme, setTheme } = useTheme();
   const router = useRouter();
+  const { switchTo } = useModeTransition();
   const t = useTranslations("nav");
   const tRoutes = useTranslations("routes");
   const tMode = useTranslations("mode");
@@ -109,9 +111,7 @@ export const CommandMenu = ({
                     textValue={tMode(value)}
                     className="gap-5 px-2 py-2.5 text-sm"
                     onAction={() => {
-                      router.push(SITE_MODE_HOME[value], {
-                        locale: props.locale,
-                      });
+                      switchTo(value);
                       closeCommand();
                     }}>
                     <div className="i-mdi-swap-horizontal size-5" />
