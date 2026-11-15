@@ -4,9 +4,9 @@ import type { ReactNode } from "react";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 
 import { MediaKind } from "@chia/db/types";
-import { ReflectiveCard } from "@chia/shaders/reflective-card";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { MediaCover } from "@/components/hobby/media-cover";
 import { MediaPin } from "@/components/hobby/media-pin";
 import { StarRating } from "@/components/hobby/star-rating";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
@@ -127,19 +127,11 @@ export const MediaDetail = async ({
             : "pt-6 pb-10"
         )}>
         {entry.posterUrl ? (
-          <ReflectiveCard
-            radius={12}
+          <MediaCover
+            src={entry.posterUrl}
             // Capped by the surface's height, so a short window still shows the whole cover.
-            className="aspect-2/3 h-[min(13.5rem,40cqh)] shadow-lg md:h-[min(21rem,42cqh)]">
-            <Image
-              src={entry.posterUrl}
-              alt=""
-              fill
-              sizes="(min-width: 768px) 224px, 144px"
-              referrerPolicy="no-referrer"
-              className="object-cover"
-            />
-          </ReflectiveCard>
+            className="aspect-2/3 h-[min(13.5rem,40cqh)] shadow-lg md:h-[min(21rem,42cqh)]"
+          />
         ) : null}
         <div className="flex min-w-0 flex-col gap-8 [text-shadow:0_1px_16px_var(--background)]">
           <header className="flex flex-col gap-2">

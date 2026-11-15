@@ -1,18 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef } from "react";
 
+import { useCanHover } from "@/hooks/use-can-hover";
 import { Link } from "@/libs/i18n/navigation";
 import type { MediaRow } from "@/shared/media";
 import { useHobbyStore } from "@/stores/hobby/store";
-
-const HOVER_QUERY = "(hover: hover)";
-
-const subscribeHover = (onChange: () => void) => {
-  const query = window.matchMedia(HOVER_QUERY);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-};
 
 /** A row is in focus on a touch screen while it crosses this band in the middle of the viewport. */
 const CENTRE_BAND = "-45% 0px -45% 0px";
@@ -27,11 +20,7 @@ const ROW_CLASS_NAME =
 export const MediaList = ({ rows }: { rows: readonly MediaRow[] }) => {
   const focusId = useHobbyStore((state) => state.focus?.id ?? null);
   const setFocus = useHobbyStore((state) => state.setFocus);
-  const canHover = useSyncExternalStore(
-    subscribeHover,
-    () => window.matchMedia(HOVER_QUERY).matches,
-    () => true
-  );
+  const canHover = useCanHover();
   const list = useRef<HTMLUListElement>(null);
 
   useEffect(() => {

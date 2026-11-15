@@ -325,6 +325,8 @@
     "open": "Open settings",
     "aiEnabled": "Enable AI features",
     "aiEnabledDescription": "Allow AI-powered features on this site.",
+    "reducedEffects": "Reduce motion",
+    "reducedEffectsDescription": "Holds the backdrop and cover effects still, which is lighter on a phone. On by default on touch devices.",
     "done": "Done",
     "palette": {
       "title": "Colors",
