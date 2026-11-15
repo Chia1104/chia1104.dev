@@ -4,6 +4,7 @@ import * as z from "zod";
 import { MediaKind, MediaSource, MediaStatus } from "@chia/db/types";
 import {
   MEDIA_TITLE_MAX_CHARS,
+  mediaAchievementTranslationsSchema,
   mediaColorSchema,
   mediaDateSchema,
   mediaRatingSchema,
@@ -95,6 +96,24 @@ const entrySchema = entryIdSchema.extend({
   updatedAt: z.date(),
 });
 
+/** One achievement of a game: Steam's definition of it and where the owner stands on it. */
+const achievementSchema = z.object({
+  /** Steam's own name for it; unique within a game. */
+  apiName: z.string(),
+  translations: mediaAchievementTranslationsSchema,
+  /** On Steam's CDN. */
+  iconUrl: z.string(),
+  /** The greyed icon Steam shows before the unlock. */
+  lockedIconUrl: z.string(),
+  /** Steam keeps its description back until it is unlocked. */
+  hidden: z.boolean(),
+  /** Share of the game's players who hold it, 0 to 100. */
+  globalPercent: z.number().nullable(),
+  unlocked: z.boolean(),
+  /** `null` while locked, and for an unlock older than Steam's record of the time. */
+  unlockedAt: z.date().nullable(),
+});
+
 /** A work as a catalogue lists it, before it is added. */
 const candidateSchema = z.object({
   source: mediaSourceSchema,
@@ -134,11 +153,13 @@ export const listMediaEntriesContract = oc
   )
   .output(z.object({ items: z.array(entrySchema) }));
 
-/** Public. One work by the slug in its URL. */
+/** Public. One work by the slug in its URL; `achievements` is empty for anything but a synced game. */
 export const getMediaEntryContract = oc
   .errors({ ...readErrors, NOT_FOUND: {} })
   .input(z.object({ slug: z.string().min(1).max(SLUG_MAX_CHARS) }))
-  .output(z.object({ entry: entrySchema }));
+  .output(
+    z.object({ entry: entrySchema, achievements: z.array(achievementSchema) })
+  );
 
 /** Searches the catalogues that carry `kind`. */
 export const searchMediaContract = oc
@@ -193,7 +214,7 @@ export const updateMediaEntryContract = oc
   )
   .output(z.object({ entry: entrySchema }));
 
-/** Reads a game's play stats from Steam and stores them. The entry must name a Steam app. */
+/** Reads a game's play stats and achievements from Steam and stores them. The entry must name a Steam app. */
 export const syncMediaEntryContract = oc
   .errors({ ...adminErrors, SERVICE_UNAVAILABLE: {} })
   .input(entryIdSchema)
@@ -205,6 +226,7 @@ export const removeMediaEntryContract = oc
   .output(entryIdSchema);
 
 export type MediaEntryView = z.infer<typeof entrySchema>;
+export type MediaAchievementView = z.infer<typeof achievementSchema>;
 export type MediaCandidate = z.infer<typeof candidateSchema>;
 
 export const mediaContract = {

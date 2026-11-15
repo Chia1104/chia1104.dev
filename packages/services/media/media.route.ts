@@ -4,12 +4,17 @@ import {
   getMediaEntry,
   getMediaEntryBySlug,
   getMediaEntryBySource,
+  listMediaAchievements,
   listMediaEntries,
+  replaceMediaAchievements,
   updateMediaEntry,
   updateMediaPlayStats,
 } from "@chia/db/repos/media";
-import type { MediaEntry } from "@chia/db/schema";
-import { mediaTranslationsSchema } from "@chia/db/validator/media";
+import type { MediaAchievement, MediaEntry } from "@chia/db/schema";
+import {
+  mediaAchievementTranslationsSchema,
+  mediaTranslationsSchema,
+} from "@chia/db/validator/media";
 import { logger } from "@chia/observability/logger";
 import { STORAGE_BASE_URL, WwwCacheTag } from "@chia/utils/config";
 
@@ -29,8 +34,8 @@ import {
   removeMediaImage,
   storeMediaImage,
 } from "./image.service";
-import type { MediaEntryView } from "./media.contract";
-import { readSteamPlayStats } from "./play-stats.service";
+import type { MediaAchievementView, MediaEntryView } from "./media.contract";
+import { readSteamPlaySync } from "./play-stats.service";
 import { mediaSlugCandidates } from "./slug";
 
 /** Parsing `translations` re-establishes that the stored JSON is the current shape. */
@@ -60,6 +65,17 @@ const entryOf = (row: MediaEntry): MediaEntryView => ({
   updatedAt: row.updatedAt,
 });
 
+const achievementOf = (row: MediaAchievement): MediaAchievementView => ({
+  apiName: row.apiName,
+  translations: mediaAchievementTranslationsSchema.parse(row.translations),
+  iconUrl: row.iconUrl,
+  lockedIconUrl: row.lockedIconUrl,
+  hidden: row.hidden,
+  globalPercent: row.globalPercent,
+  unlocked: row.unlocked,
+  unlockedAt: row.unlockedAt,
+});
+
 /** The log reads like the site's other public listings, so it shares their budget. */
 export const listMediaEntriesRoute = contractOS.media.list
   .use(callerGuard())
@@ -76,7 +92,11 @@ export const getMediaEntryRoute = contractOS.media.get
     if (!row) {
       throw opts.errors.NOT_FOUND();
     }
-    return { entry: entryOf(row) };
+    const achievements = await listMediaAchievements(opts.context.db, row.id);
+    return {
+      entry: entryOf(row),
+      achievements: achievements.map(achievementOf),
+    };
   });
 
 export const searchMediaRoute = contractOS.media.search
@@ -162,10 +182,10 @@ export const createMediaEntryRoute = contractOS.media.create
     }
 
     // A game Steam cannot answer for is still logged; its stats can be synced or typed later.
-    let stats = null;
+    let play = null;
     if (snapshot.steamAppId !== null) {
       try {
-        stats = await readSteamPlayStats(snapshot.steamAppId, opts.signal);
+        play = await readSteamPlaySync(snapshot.steamAppId, opts.signal);
       } catch (error) {
         logger.warn(
           { err: error, steamAppId: snapshot.steamAppId },
@@ -177,7 +197,7 @@ export const createMediaEntryRoute = contractOS.media.create
     const row = await createMediaEntry(opts.context.db, {
       slug,
       steamAppId: snapshot.steamAppId,
-      ...stats,
+      ...play?.stats,
       kind,
       source,
       sourceId,
@@ -190,6 +210,13 @@ export const createMediaEntryRoute = contractOS.media.create
       color,
       ...log,
     });
+    if (play && play.achievements.length > 0) {
+      await replaceMediaAchievements(
+        opts.context.db,
+        row.id,
+        play.achievements
+      );
+    }
     await opts.context.workflow.startSiteRevalidation(WwwCacheTag.Media);
     return { entry: entryOf(row) };
   });
@@ -198,9 +225,14 @@ export const updateMediaEntryRoute = contractOS.media.update
   .use(adminGuard())
   .handler(async (opts) => {
     const { id, ...patch } = opts.input;
+    const before = await getMediaEntry(opts.context.db, id);
     const row = await updateMediaEntry(opts.context.db, id, patch);
-    if (!row) {
+    if (!before || !row) {
       throw opts.errors.NOT_FOUND();
+    }
+    // Achievements belong to the Steam app they were read for; the next sync reads the new one's.
+    if (before.steamAppId !== row.steamAppId) {
+      await replaceMediaAchievements(opts.context.db, id, []);
     }
     await opts.context.workflow.startSiteRevalidation(WwwCacheTag.Media);
     return { entry: entryOf(row) };
@@ -218,22 +250,31 @@ export const syncMediaEntryRoute = contractOS.media.sync
         message: "This entry names no Steam app",
       });
     }
-    let stats;
+    let play;
     try {
-      stats = await readSteamPlayStats(entry.steamAppId, opts.signal);
+      play = await readSteamPlaySync(entry.steamAppId, opts.signal);
     } catch (error) {
       throw opts.errors.SERVICE_UNAVAILABLE({ cause: error });
     }
-    if (!stats) {
+    if (!play) {
       throw opts.errors.BAD_REQUEST({
         message:
           "Steam lists no such game for the account; check the app id and that game details are public",
       });
     }
-    const row = await updateMediaPlayStats(opts.context.db, entry.id, stats);
+    const row = await updateMediaPlayStats(
+      opts.context.db,
+      entry.id,
+      play.stats
+    );
     if (!row) {
       throw opts.errors.NOT_FOUND();
     }
+    await replaceMediaAchievements(
+      opts.context.db,
+      entry.id,
+      play.achievements
+    );
     await opts.context.workflow.startSiteRevalidation(WwwCacheTag.Media);
     return { entry: entryOf(row) };
   });

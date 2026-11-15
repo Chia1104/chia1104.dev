@@ -5,6 +5,7 @@ import {
   index,
   integer,
   jsonb,
+  real,
   serial,
   smallint,
   text,
@@ -13,7 +14,10 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { timestamps } from "../libs/common.schema.ts";
-import type { MediaTranslations } from "../libs/validator/media.ts";
+import type {
+  MediaAchievementTranslations,
+  MediaTranslations,
+} from "../libs/validator/media.ts";
 import type { MediaKind, MediaSource, MediaStatus } from "../types.ts";
 
 import { pgTable } from "./table.ts";
@@ -67,4 +71,43 @@ export const mediaEntries = pgTable(
   ]
 );
 
+/**
+ * One achievement of a game, as Steam defines it and as the owner stands on it. A sync replaces
+ * every row of its entry, so a row never outlives the app id it was read for.
+ */
+export const mediaAchievements = pgTable(
+  "media_achievement",
+  {
+    id: serial("id").primaryKey(),
+    mediaEntryId: integer("media_entry_id")
+      .notNull()
+      .references(() => mediaEntries.id, { onDelete: "cascade" }),
+    /** Steam's own name for it; unique within a game. */
+    apiName: text("api_name").notNull(),
+    /** Shape is `mediaAchievementTranslationsSchema`. */
+    translations: jsonb("translations")
+      .$type<MediaAchievementTranslations>()
+      .notNull(),
+    /** On Steam's CDN; the site links it and keeps no copy. */
+    iconUrl: text("icon_url").notNull(),
+    /** The greyed icon Steam shows before the unlock. */
+    lockedIconUrl: text("locked_icon_url").notNull(),
+    /** Steam keeps its description back until it is unlocked. */
+    hidden: boolean("hidden").notNull(),
+    /** Share of the game's players who hold it, 0 to 100; `null` when Steam reports none. */
+    globalPercent: real("global_percent"),
+    unlocked: boolean("unlocked").notNull(),
+    /** `null` while locked, and for an unlock older than Steam's record of the time. */
+    unlockedAt: timestamp("unlocked_at", { withTimezone: true, mode: "date" }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("media_achievement_entry_api_name_idx").on(
+      table.mediaEntryId,
+      table.apiName
+    ),
+  ]
+);
+
 export type MediaEntry = InferSelectModel<typeof mediaEntries>;
+export type MediaAchievement = InferSelectModel<typeof mediaAchievements>;

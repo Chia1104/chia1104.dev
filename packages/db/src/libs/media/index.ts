@@ -1,10 +1,13 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import type { DB } from "../../client.ts";
-import { mediaEntries } from "../../schemas/schema.ts";
-import type { MediaEntry } from "../../schemas/schema.ts";
+import { mediaAchievements, mediaEntries } from "../../schemas/schema.ts";
+import type { MediaAchievement, MediaEntry } from "../../schemas/schema.ts";
 import type { MediaKind, MediaSource, MediaStatus } from "../../types.ts";
-import type { MediaTranslations } from "../validator/media.ts";
+import type {
+  MediaAchievementTranslations,
+  MediaTranslations,
+} from "../validator/media.ts";
 
 export interface ListMediaEntriesDTO {
   kind?: MediaKind;
@@ -150,4 +153,54 @@ export const deleteMediaEntry = async (
     .where(eq(mediaEntries.id, id))
     .returning();
   return row;
+};
+
+/** In the order the game defines them. */
+export const listMediaAchievements = async (
+  db: DB,
+  mediaEntryId: number
+): Promise<MediaAchievement[]> =>
+  await db.query.mediaAchievements.findMany({
+    where: { mediaEntryId },
+    orderBy: { id: "asc" },
+  });
+
+export interface InsertMediaAchievementDTO {
+  apiName: string;
+  translations: MediaAchievementTranslations;
+  iconUrl: string;
+  lockedIconUrl: string;
+  hidden: boolean;
+  globalPercent: number | null;
+  unlocked: boolean;
+  unlockedAt: Date | null;
+}
+
+/** Stays under Postgres's 65535 bind parameters per statement. */
+const ACHIEVEMENT_INSERT_BATCH = 500;
+
+/** Replaces every achievement of an entry with `items`, kept in their order; none clears them. */
+export const replaceMediaAchievements = async (
+  db: DB,
+  mediaEntryId: number,
+  items: InsertMediaAchievementDTO[]
+): Promise<void> => {
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(mediaAchievements)
+      .where(eq(mediaAchievements.mediaEntryId, mediaEntryId));
+    for (
+      let start = 0;
+      start < items.length;
+      start += ACHIEVEMENT_INSERT_BATCH
+    ) {
+      await tx
+        .insert(mediaAchievements)
+        .values(
+          items
+            .slice(start, start + ACHIEVEMENT_INSERT_BATCH)
+            .map((item) => ({ ...item, mediaEntryId }))
+        );
+    }
+  });
 };
