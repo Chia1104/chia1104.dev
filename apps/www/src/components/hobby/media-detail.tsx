@@ -6,12 +6,13 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { MediaKind } from "@chia/db/types";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { MediaAchievements } from "@/components/hobby/media-achievements";
 import { MediaCover } from "@/components/hobby/media-cover";
 import { MediaPin } from "@/components/hobby/media-pin";
 import { StarRating } from "@/components/hobby/star-rating";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 import { MEDIA_SOURCE_NAME, mediaTitleOf } from "@/shared/media";
-import type { MediaEntry } from "@/shared/media";
+import type { MediaAchievement, MediaEntry } from "@/shared/media";
 
 const MINUTES_PER_HOUR = 60;
 
@@ -39,10 +40,13 @@ const Fact = ({ label, children }: { label: string; children: ReactNode }) => (
  */
 export const MediaDetail = async ({
   entry,
+  achievements,
   title,
   surface,
 }: {
   entry: MediaEntry;
+  /** Empty for anything but a game synced from Steam. */
+  achievements: MediaAchievement[];
   title: (text: string) => ReactNode;
   surface: MediaSurface;
 }) => {
@@ -205,6 +209,10 @@ export const MediaDetail = async ({
                 </Fact>
               ) : null}
             </dl>
+          ) : null}
+
+          {achievements.length > 0 ? (
+            <MediaAchievements achievements={achievements} />
           ) : null}
 
           <p className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">

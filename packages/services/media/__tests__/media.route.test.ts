@@ -2,7 +2,7 @@ import { call } from "@orpc/server";
 import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
-import type { MediaEntry } from "@chia/db/schema";
+import type { MediaAchievement, MediaEntry } from "@chia/db/schema";
 import { MediaKind, MediaSource, MediaStatus } from "@chia/db/types";
 import { contextOf } from "@chia/test/context";
 import { stubTestEnv } from "@chia/test/env";
@@ -19,6 +19,8 @@ import type * as mediaRouteModule from "../media.route";
 const { repo, catalogue, image, playStats } = vi.hoisted(() => ({
   repo: {
     listMediaEntries: vi.fn(),
+    listMediaAchievements: vi.fn(),
+    replaceMediaAchievements: vi.fn(),
     getMediaEntry: vi.fn(),
     getMediaEntryBySlug: vi.fn(),
     getMediaEntryBySource: vi.fn(),
@@ -37,7 +39,7 @@ const { repo, catalogue, image, playStats } = vi.hoisted(() => ({
     removeMediaImage: vi.fn(),
   },
   playStats: {
-    readSteamPlayStats: vi.fn(),
+    readSteamPlaySync: vi.fn(),
   },
 }));
 
@@ -91,6 +93,30 @@ const row = (overrides: Partial<MediaEntry> = {}): MediaEntry => ({
   ...overrides,
 });
 
+const achievement = {
+  apiName: "ACH39",
+  translations: {
+    en: { name: "Elden Lord", description: "Achieved the Elden Lord ending" },
+    "zh-TW": { name: "艾爾登之王" },
+  },
+  iconUrl:
+    "https://shared.fastly.steamstatic.com/community_assets/images/apps/1245620/a.jpg",
+  lockedIconUrl:
+    "https://shared.fastly.steamstatic.com/community_assets/images/apps/1245620/b.jpg",
+  hidden: false,
+  globalPercent: 24.9,
+  unlocked: true,
+  unlockedAt: new Date("2026-10-30T12:00:00Z"),
+};
+
+const achievementRow: MediaAchievement = {
+  id: 1,
+  mediaEntryId: 4,
+  ...achievement,
+  createdAt: new Date("2026-11-01T00:00:00Z"),
+  updatedAt: new Date("2026-11-01T00:00:00Z"),
+};
+
 const log = {
   status: MediaStatus.Completed,
   rating: 9,
@@ -134,11 +160,16 @@ describe("media routes", () => {
       async (_db: DB, id: number, stats: Partial<MediaEntry>) =>
         row({ ...stats, id })
     );
-    playStats.readSteamPlayStats.mockResolvedValue({
-      playtimeMinutes: 5220,
-      achievementsUnlocked: 31,
-      achievementsTotal: 42,
-      lastPlayedAt: new Date("2026-11-01T00:00:00Z"),
+    repo.listMediaAchievements.mockResolvedValue([]);
+    repo.replaceMediaAchievements.mockResolvedValue(undefined);
+    playStats.readSteamPlaySync.mockResolvedValue({
+      stats: {
+        playtimeMinutes: 5220,
+        achievementsUnlocked: 31,
+        achievementsTotal: 42,
+        lastPlayedAt: new Date("2026-11-01T00:00:00Z"),
+      },
+      achievements: [achievement],
     });
     repo.createMediaEntry.mockImplementation(
       async (_db: DB, input: Partial<MediaEntry>) => row({ ...input, id: 9 })
@@ -191,14 +222,20 @@ describe("media routes", () => {
       );
     });
 
-    it("reads one work by its slug and answers NOT_FOUND for an unknown one", async () => {
+    it("reads one work by its slug with its achievements and answers NOT_FOUND for an unknown one", async () => {
       repo.getMediaEntryBySlug.mockResolvedValueOnce(row());
+      repo.listMediaAchievements.mockResolvedValueOnce([achievementRow]);
       const found = await call(
         routes.getMediaEntryRoute,
         { slug: "frieren-beyond-journeys-end" },
         { context }
       );
       expect(found.entry.id).toBe(4);
+      expect(repo.listMediaAchievements).toHaveBeenCalledWith(
+        expect.anything(),
+        4
+      );
+      expect(found.achievements).toEqual([achievement]);
 
       await expect(
         call(routes.getMediaEntryRoute, { slug: "nope" }, { context })
@@ -365,7 +402,7 @@ describe("media routes", () => {
     );
   });
 
-  it("stores a game's Steam stats when it is logged, and logs it without them when Steam fails", async ({
+  it("stores a game's Steam stats and achievements when it is logged, and logs it without them when Steam fails", async ({
     context,
   }) => {
     const game = {
@@ -387,9 +424,14 @@ describe("media routes", () => {
 
     catalogue.resolveMediaSnapshot.mockResolvedValueOnce(game);
     await call(routes.createMediaEntryRoute, input, { context });
-    expect(playStats.readSteamPlayStats).toHaveBeenCalledWith(
+    expect(playStats.readSteamPlaySync).toHaveBeenCalledWith(
       1245620,
       undefined
+    );
+    expect(repo.replaceMediaAchievements).toHaveBeenCalledExactlyOnceWith(
+      expect.anything(),
+      9,
+      [achievement]
     );
     expect(repo.createMediaEntry).toHaveBeenLastCalledWith(
       expect.anything(),
@@ -403,21 +445,22 @@ describe("media routes", () => {
     );
 
     catalogue.resolveMediaSnapshot.mockResolvedValueOnce(game);
-    playStats.readSteamPlayStats.mockRejectedValueOnce(new Error("403"));
+    playStats.readSteamPlaySync.mockRejectedValueOnce(new Error("403"));
     await call(routes.createMediaEntryRoute, input, { context });
     expect(repo.createMediaEntry).toHaveBeenLastCalledWith(
       expect.anything(),
       expect.not.objectContaining({ playtimeMinutes: expect.anything() })
     );
+    expect(repo.replaceMediaAchievements).toHaveBeenCalledOnce();
   });
 
-  it("syncs play stats from Steam, and refuses an entry with no app or one Steam does not list", async ({
+  it("syncs play stats and achievements from Steam, and refuses an entry with no app or one Steam does not list", async ({
     context,
   }) => {
     await expect(
       call(routes.syncMediaEntryRoute, { id: 4 }, { context })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
-    expect(playStats.readSteamPlayStats).not.toHaveBeenCalled();
+    expect(playStats.readSteamPlaySync).not.toHaveBeenCalled();
 
     repo.getMediaEntry.mockResolvedValue(row({ steamAppId: 1245620 }));
     const synced = await call(
@@ -431,12 +474,46 @@ describe("media routes", () => {
       expect.objectContaining({ playtimeMinutes: 5220 })
     );
     expect(synced.entry.achievementsTotal).toBe(42);
+    expect(repo.replaceMediaAchievements).toHaveBeenCalledExactlyOnceWith(
+      expect.anything(),
+      4,
+      [achievement]
+    );
     expect(startSiteRevalidation).toHaveBeenCalledWith(WwwCacheTag.Media);
 
-    playStats.readSteamPlayStats.mockResolvedValueOnce(null);
+    playStats.readSteamPlaySync.mockResolvedValueOnce(null);
     await expect(
       call(routes.syncMediaEntryRoute, { id: 4 }, { context })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("drops a game's achievements when its Steam app changes, and keeps them otherwise", async ({
+    context,
+  }) => {
+    const patch = {
+      id: 4,
+      translations: { en: { title: "Elden Ring" } },
+      originalTitle: null,
+      releaseYear: 2022,
+      color: null,
+      ...log,
+      ...noPlayStats,
+    };
+    repo.getMediaEntry.mockResolvedValue(row({ steamAppId: 1245620 }));
+
+    await call(
+      routes.updateMediaEntryRoute,
+      { ...patch, steamAppId: 1245620 },
+      { context }
+    );
+    expect(repo.replaceMediaAchievements).not.toHaveBeenCalled();
+
+    await call(routes.updateMediaEntryRoute, patch, { context });
+    expect(repo.replaceMediaAchievements).toHaveBeenCalledExactlyOnceWith(
+      expect.anything(),
+      4,
+      []
+    );
   });
 
   it("rejects a finish date before the start date", async ({ context }) => {

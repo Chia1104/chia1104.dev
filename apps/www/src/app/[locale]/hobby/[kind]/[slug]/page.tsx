@@ -7,7 +7,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { MediaDetail, MediaSurface } from "@/components/hobby/media-detail";
 import { localizedMetadata } from "@/libs/i18n/alternates";
 import { Link } from "@/libs/i18n/navigation";
-import { mediaEntryOf } from "@/libs/media.rsc";
+import { mediaWorkOf } from "@/libs/media.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 import { mediaHrefOf, mediaTitleOf } from "@/shared/media";
 
@@ -15,11 +15,12 @@ export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/hobby/[kind]/[slug]">): Promise<Metadata> {
   const { kind, slug } = await params;
-  const [locale, entry] = await Promise.all([
+  const [locale, work] = await Promise.all([
     getLocale(),
-    mediaEntryOf(kind, slug),
+    mediaWorkOf(kind, slug),
   ]);
-  if (!entry) return {};
+  if (!work) return {};
+  const { entry } = work;
   const dbLocale = dbLocaleResolver(locale);
   const image = entry.backdropUrl ?? entry.posterUrl;
   const metadata = localizedMetadata({ href: mediaHrefOf(entry), locale });
@@ -35,11 +36,11 @@ export async function generateMetadata({
 
 const Page = async ({ params }: PageProps<"/[locale]/hobby/[kind]/[slug]">) => {
   const { kind, slug } = await params;
-  const [entry, t] = await Promise.all([
-    mediaEntryOf(kind, slug),
+  const [work, t] = await Promise.all([
+    mediaWorkOf(kind, slug),
     getTranslations("hobby"),
   ]);
-  if (!entry) notFound();
+  if (!work) notFound();
 
   return (
     <ViewTransition>
@@ -47,7 +48,8 @@ const Page = async ({ params }: PageProps<"/[locale]/hobby/[kind]/[slug]">) => {
         {t("detail.back")}
       </Link>
       <MediaDetail
-        entry={entry}
+        entry={work.entry}
+        achievements={work.achievements}
         surface={MediaSurface.Page}
         title={(text) => (
           <h1 className="text-[clamp(2rem,5vw,4.5rem)] leading-[1.05] font-bold tracking-tight text-balance">

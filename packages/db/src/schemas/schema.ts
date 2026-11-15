@@ -64,11 +64,18 @@ export {
 
 export { profileEntries, type ProfileEntry } from "./profile.schema.ts";
 
-export { mediaEntries, type MediaEntry } from "./media.schema.ts";
+export {
+  mediaEntries,
+  mediaAchievements,
+  type MediaEntry,
+  type MediaAchievement,
+} from "./media.schema.ts";
 
 export type {
   MediaTranslation,
   MediaTranslations,
+  MediaAchievementTranslation,
+  MediaAchievementTranslations,
 } from "../libs/validator/media.ts";
 
 export type {

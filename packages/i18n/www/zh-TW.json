@@ -414,6 +414,13 @@
       "achievements": "成就",
       "achievements-value": "{unlocked} / {total}",
       "last-played": "最後遊玩",
+      "achievement-rare": "稀有",
+      "achievement-share": "{share} 玩家解鎖",
+      "achievement-unlocked": "已解鎖",
+      "achievement-unlocked-on": "{date} 解鎖",
+      "achievement-locked": "未解鎖",
+      "achievements-more": "其餘 {count} 個成就",
+      "achievements-hidden": "還有 {count} 個未解鎖的隱藏成就",
       "source": "在 {source} 查看",
       "close": "關閉",
       "back": "所有紀錄"

@@ -414,6 +414,13 @@
       "achievements": "Achievements",
       "achievements-value": "{unlocked} / {total}",
       "last-played": "Last played",
+      "achievement-rare": "Rare",
+      "achievement-share": "{share} of players",
+      "achievement-unlocked": "Unlocked",
+      "achievement-unlocked-on": "Unlocked {date}",
+      "achievement-locked": "Locked",
+      "achievements-more": "{count, plural, one {# more achievement} other {# more achievements}}",
+      "achievements-hidden": "{count, plural, one {# hidden achievement} other {# hidden achievements}} still locked",
       "source": "See it on {source}",
       "close": "Close",
       "back": "Everything logged"
