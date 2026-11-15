@@ -42,12 +42,18 @@ export function generateStaticParams() {
 
 const Layout = async ({
   children,
+  modal,
 }: {
   children: ReactNode;
-  modal?: ReactNode;
+  modal: ReactNode;
 }) => {
   const locale = await getLocale();
-  return <SiteShell locale={locale}>{children}</SiteShell>;
+  return (
+    <SiteShell locale={locale}>
+      {children}
+      {modal}
+    </SiteShell>
+  );
 };
 
 export default Layout;

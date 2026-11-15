@@ -233,6 +233,9 @@ export const WWW_BASE_URL =
     ? "https://chia1104.dev"
     : "http://localhost:3000";
 
+/** Public origin of the site's storage bucket; an object's URL is this plus its key. */
+export const STORAGE_BASE_URL = "https://storage.chia1104.dev";
+
 /**
  * Cache tags on www pages. Pages have no revalidate timer; `apps/workflow` invalidates the
  * tags a write reaches.
@@ -242,6 +245,8 @@ export const WwwCacheTag = {
   Listings: "listings",
   /** Every article page. */
   Articles: "articles",
+  /** Hobby pages: every read of `media.list`. */
+  Media: "media",
 } as const;
 
 export type WwwCacheTag = (typeof WwwCacheTag)[keyof typeof WwwCacheTag];

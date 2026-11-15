@@ -45,6 +45,7 @@ declare namespace __next_route_internal_types__ {
     | `/feed/notes` // ../../../src/app/(workspace)/(operator)/feed/(manage)/notes/page.tsx
     | `/feed/posts` // ../../../src/app/(workspace)/(operator)/feed/(manage)/posts/page.tsx
     | `/icon.png` // ../../../src/app/icon.png
+    | `/media` // ../../../src/app/(workspace)/(operator)/media/page.tsx
     | `/memory` // ../../../src/app/(workspace)/(operator)/memory/page.tsx
     | `/profile` // ../../../src/app/(workspace)/(operator)/profile/page.tsx
     | `/rag` // ../../../src/app/(workspace)/(operator)/rag/page.tsx

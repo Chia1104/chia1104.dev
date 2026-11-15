@@ -40,3 +40,31 @@ export const ProfileEntryKind = {
 
 export type ProfileEntryKind =
   (typeof ProfileEntryKind)[keyof typeof ProfileEntryKind];
+
+export const MediaKind = {
+  Movie: "movie",
+  Series: "series",
+  Anime: "anime",
+  Game: "game",
+} as const;
+
+export type MediaKind = (typeof MediaKind)[keyof typeof MediaKind];
+
+export const MediaStatus = {
+  Planned: "planned",
+  InProgress: "in-progress",
+  Completed: "completed",
+  Dropped: "dropped",
+} as const;
+
+export type MediaStatus = (typeof MediaStatus)[keyof typeof MediaStatus];
+
+/** The catalogue a work was added from; with `sourceId` it names the work there. */
+export const MediaSource = {
+  TmdbMovie: "tmdb:movie",
+  TmdbTv: "tmdb:tv",
+  Anilist: "anilist",
+  Igdb: "igdb",
+} as const;
+
+export type MediaSource = (typeof MediaSource)[keyof typeof MediaSource];

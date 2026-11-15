@@ -8,7 +8,8 @@ import { useTranslations } from "next-intl";
 import { PaletteSettings } from "@/components/commons/palette-settings";
 import { useSettingsStore } from "@/stores/settings/store";
 
-export const Settings = () => {
+/** `palette` is off in a mode that brings its own colours, where the reader palette does not apply. */
+export const Settings = ({ palette = true }: { palette?: boolean }) => {
   const t = useTranslations("settings");
   const aiEnabled = useSettingsStore((s) => s.aiEnabled);
   const setAiEnabled = useSettingsStore((s) => s.setAiEnabled);
@@ -44,9 +45,11 @@ export const Settings = () => {
                   </div>
                 </Switch.Content>
               </Switch>
-              <div className="border-separator border-t pt-4">
-                <PaletteSettings />
-              </div>
+              {palette ? (
+                <div className="border-separator border-t pt-4">
+                  <PaletteSettings />
+                </div>
+              ) : null}
             </Modal.Body>
           </Modal.Dialog>
         </Modal.Container>

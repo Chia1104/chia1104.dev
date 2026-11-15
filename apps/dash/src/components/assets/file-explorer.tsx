@@ -7,6 +7,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FolderOpen, Info } from "lucide-react";
 import { toast } from "sonner";
 
+import { STORAGE_BASE_URL } from "@chia/utils/config";
+
 import { orpc } from "@/libs/orpc/client";
 
 import { DeleteConfirmModal } from "./delete-confirm-modal";
@@ -14,7 +16,6 @@ import { ExplorerToolbar } from "./explorer-toolbar";
 import { FileDetailPanel } from "./file-detail-panel";
 import { FileTreeDrawer } from "./file-tree-drawer";
 import { FileTreePanel } from "./file-tree-panel";
-import { STORAGE_BASE_URL } from "./utils";
 
 export const FileExplorer = () => {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);

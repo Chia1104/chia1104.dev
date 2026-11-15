@@ -1,14 +1,13 @@
 "use client";
 
-import { getImageProps } from "next/image";
-
-import { Avatar, AvatarImage, AvatarFallback } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
 import meta, { getWorkDuration } from "@chia/meta";
 import Age from "@chia/ui/age";
 
+import { ModeSwitch } from "@/components/commons/mode-switch";
 import { Panel } from "@/components/commons/ruled";
+import { SiteMode } from "@/shared/site-mode";
 
 import Gallery from "./gallery";
 
@@ -19,20 +18,10 @@ export function AboutMe() {
   return (
     <Panel data-testid="hero-section">
       <div className="rule-b flex">
-        <Avatar className="page-sm:size-28 border-separator size-20 shrink-0 rounded-none border-r">
-          <AvatarImage
-            {...getImageProps({
-              src: meta.avatar,
-              alt: meta.name,
-              width: 112,
-              height: 112,
-              loading: "eager",
-            }).props}
-          />
-          <AvatarFallback className="rounded-none">
-            <span className="text-2xl">{meta.name.charAt(0)}</span>
-          </AvatarFallback>
-        </Avatar>
+        <ModeSwitch
+          mode={SiteMode.Tech}
+          className="page-sm:size-28 border-separator size-20 border-r"
+        />
         <div className="flex min-w-0 flex-1 flex-col justify-end">
           <h1
             className="page-sm:text-4xl rule-b px-4 pb-1 text-3xl leading-tight font-semibold tracking-tight"

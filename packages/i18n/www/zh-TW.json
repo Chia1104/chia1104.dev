@@ -196,7 +196,17 @@
     "blog": "部落格",
     "notes": "筆記",
     "projects": "專案",
-    "contact": "聯絡"
+    "contact": "聯絡",
+    "movies": "電影",
+    "series": "影集",
+    "anime": "動畫",
+    "games": "遊戲"
+  },
+  "mode": {
+    "label": "網站模式",
+    "tech": "技術",
+    "hobby": "興趣",
+    "switch-to": "切換至{mode}模式"
   },
   "common": {
     "loading": "載入中..."
@@ -364,6 +374,47 @@
       "title": "這個頁面載入失敗",
       "description": "錯誤已經回報，請重試或稍後再回來。",
       "retry": "重試"
+    }
+  },
+  "hobby": {
+    "title": "興趣",
+    "description": "工作以外，我在看的電影、影集、動畫，還有正在玩的遊戲。",
+    "intro": "工作以外，我在看的<movies>電影</movies>、<series>影集</series>、<anime>動畫</anime>，還有在玩的<games>遊戲</games>。",
+    "empty": "這裡還沒有紀錄。",
+    "kind": {
+      "movie": "電影",
+      "series": "影集",
+      "anime": "動畫",
+      "game": "遊戲"
+    },
+    "kind-description": {
+      "movie": "看過和想看的電影。",
+      "series": "追過和正在追的影集。",
+      "anime": "看過和正在看的動畫。",
+      "game": "玩過和正在玩的遊戲。"
+    },
+    "status": {
+      "planned": "口袋名單",
+      "in-progress": "進行中",
+      "completed": "已完成",
+      "dropped": "中途放棄"
+    },
+    "detail": {
+      "status": "狀態",
+      "released": "發行",
+      "started": "開始",
+      "finished": "完成",
+      "rating": "評分",
+      "rating-value": "{rating} / 10",
+      "favorite": "我的最愛",
+      "playtime": "遊玩時數",
+      "playtime-value": "{hours} 小時",
+      "achievements": "成就",
+      "achievements-value": "{unlocked} / {total}",
+      "last-played": "最後遊玩",
+      "source": "在 {source} 查看",
+      "close": "關閉",
+      "back": "所有紀錄"
     }
   }
 }

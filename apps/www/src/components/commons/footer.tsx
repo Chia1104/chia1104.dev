@@ -5,21 +5,20 @@ import type { FC, ReactNode } from "react";
 
 import type { Locale } from "next-intl";
 import { useTranslations } from "next-intl";
-import { useLocale } from "next-intl";
 
-import meta from "@chia/meta";
-import DateFormat from "@chia/ui/date-format";
 import ThemeSelector from "@chia/ui/theme";
 import { cn } from "@chia/ui/utils/cn.util";
 import { Theme } from "@chia/ui/utils/use-theme";
 
+import { Copyright } from "@/components/commons/copyright";
 import { LoadingSkeleton } from "@/components/commons/current-playing";
 import { FooterLogotype } from "@/components/commons/footer-logotype";
 import LocaleSelector from "@/components/commons/locale-selector";
 import { Settings } from "@/components/commons/settings";
 import { Link } from "@/libs/i18n/navigation";
 import contact from "@/shared/contact";
-import navItems from "@/shared/routes";
+import routes from "@/shared/routes";
+import { SiteMode } from "@/shared/site-mode";
 
 import HugeThanks from "./huge-thanks";
 
@@ -33,16 +32,6 @@ const CurrentPlaying = dynamic(
     loading: () => <LoadingSkeleton />,
   }
 );
-
-const Copyright: FC<{ className?: string }> = ({ className }) => {
-  const locale = useLocale();
-  return (
-    <span className={className}>
-      © <DateFormat date={undefined} format="YYYY" locale={locale} />{" "}
-      <span className="font-medium">{meta.name}</span>
-    </span>
-  );
-};
 
 const FooterCell = ({
   label,
@@ -75,15 +64,17 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
             label={tNav("pages")}
             className="page-sm:border-b-0 border-r border-b">
             <ul className="flex flex-col gap-2 text-sm">
-              {Object.entries(navItems).map(([path, { nameKey }]) => (
-                <li key={path}>
-                  <Link
-                    href={path}
-                    className="hover:text-foreground text-muted transition-colors">
-                    {tRoutes(nameKey)}
-                  </Link>
-                </li>
-              ))}
+              {Object.entries(routes[SiteMode.Tech]).map(
+                ([path, { nameKey }]) => (
+                  <li key={path}>
+                    <Link
+                      href={path}
+                      className="hover:text-foreground text-muted transition-colors">
+                      {tRoutes(nameKey)}
+                    </Link>
+                  </li>
+                )
+              )}
             </ul>
           </FooterCell>
           <FooterCell
