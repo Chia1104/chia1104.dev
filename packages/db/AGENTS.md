@@ -9,4 +9,5 @@ Drizzle schemas, database connection management and repository implementations.
 - `connectDatabase(env, { withCache })` is memoized by URL and cache setting. Workflow steps use `withCache: false`; request paths opt into Redis-backed caching explicitly. Only a cached connection invalidates on its own writes, so a step that writes a table a request path caches calls `invalidateCache` afterwards; the process needs `REDIS_URI` for that.
 - Pass text and JSON parameters through `storableCodecs` before writing them to Postgres.
 - Repositories enforce ownership on the row being read or locked and return `not_found` for another user's record.
+- A migration is its `migration.sql`; `snapshot.json` is drizzle-kit's diff baseline and only the newest `KEEP_SNAPSHOTS` stay. `db:generate` prunes the rest, so commit those deletions with the migration.
 - `feed_draft_revision` rows are immutable except `pinned` and the name given with it. `hashFeedDraftSnapshot` has a SQL twin in the migrations; a change to its layout rehashes both draft tables in the same migration.
