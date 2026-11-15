@@ -15,6 +15,11 @@ export interface SettingsState {
   agentSessionId: string | null;
   /** Reader overrides of the theme's colours, one set per mode. */
   palette: Palette;
+  /**
+   * Holds the hobby mode's effects still. `null` until the reader chooses, which follows the
+   * device: see `useReducedEffects`.
+   */
+  reducedEffects: boolean | null;
 }
 
 /** A palette that does not parse is dropped on its own, keeping the rest of the settings. */
@@ -31,6 +36,7 @@ const persistedSettingsSchema = z
       [PaletteMode.Light]: modePaletteSchema,
       [PaletteMode.Dark]: modePaletteSchema,
     }),
+    reducedEffects: z.boolean().nullable(),
   })
   .partial();
 
@@ -44,6 +50,7 @@ export interface SettingsActions {
     color: string | null
   ) => void;
   resetPalette: (mode: PaletteMode) => void;
+  setReducedEffects: (reduced: boolean) => void;
 }
 
 export type SettingsStore = SettingsState & SettingsActions;
@@ -55,6 +62,7 @@ const defaultState: SettingsState = {
     [PaletteMode.Light]: {},
     [PaletteMode.Dark]: {},
   },
+  reducedEffects: null,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -76,6 +84,7 @@ export const useSettingsStore = create<SettingsStore>()(
         }),
       resetPalette: (mode) =>
         set((state) => ({ palette: { ...state.palette, [mode]: {} } })),
+      setReducedEffects: (reduced) => set({ reducedEffects: reduced }),
     }),
     {
       name: SETTINGS_STORAGE_KEY,
@@ -93,6 +102,7 @@ export const useSettingsStore = create<SettingsStore>()(
         aiEnabled: state.aiEnabled,
         agentSessionId: state.agentSessionId,
         palette: state.palette,
+        reducedEffects: state.reducedEffects,
       }),
     }
   )

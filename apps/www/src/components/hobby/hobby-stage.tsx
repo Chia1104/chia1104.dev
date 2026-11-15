@@ -8,6 +8,7 @@ import { AsciiField, AsciiFieldStatus } from "@chia/shaders/ascii-field";
 import { cn } from "@chia/ui/utils/cn.util";
 import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 
+import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { readableImageSourceOf } from "@/libs/image-source";
 import { HOBBY_IDLE_COLOR } from "@/shared/media";
 import { useHobbyStore } from "@/stores/hobby/store";
@@ -94,11 +95,13 @@ export const HobbyStage = () => {
   const focus = useSettledFocus();
   const pinned = useHobbyStore((state) => state.pinned);
   const color = (pinned ?? focus)?.color ?? null;
-  const backdrop = useBackdrop(pinned ? null : (focus?.backdropUrl ?? null));
+  // Kept while a work is open: dropping it would revoke a blob the shader may still be decoding.
+  const backdrop = useBackdrop(focus?.backdropUrl ?? null);
   const [status, setStatus] = useState<AsciiFieldStatus>(
     AsciiFieldStatus.Pending
   );
   const isDark = resolvedTheme === Theme.Dark;
+  const reducedEffects = useReducedEffects();
 
   useEffect(() => {
     const { style } = document.documentElement;
@@ -131,6 +134,7 @@ export const HobbyStage = () => {
         color={toneOf(color ?? HOBBY_IDLE_COLOR, isDark)}
         cellSize={10}
         paused={pinned !== null}
+        reducedMotion={reducedEffects}
         onStatusChange={setStatus}
         className={cn(
           "absolute inset-0 transition-opacity duration-700",

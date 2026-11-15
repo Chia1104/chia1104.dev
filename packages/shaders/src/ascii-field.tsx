@@ -43,6 +43,8 @@ interface AsciiFieldProps extends ComponentPropsWithoutRef<"div"> {
   maxDensity?: number;
   /** Stops the field's loop and hides its trail; a new `image` or `color` still redraws it once. */
   paused?: boolean;
+  /** Renders as it does under the system's reduced-motion setting: no drift, no trail, no fades. */
+  reducedMotion?: boolean;
   /** Told once the shader either paints or cannot run here, so the consumer can show a fallback. */
   onStatusChange?: (status: AsciiFieldStatus) => void;
 }
@@ -59,6 +61,7 @@ export const AsciiField = ({
   cellSize = 14,
   maxDensity = 1.5,
   paused = false,
+  reducedMotion = false,
   onStatusChange,
   className,
   ...props
@@ -85,7 +88,7 @@ export const AsciiField = ({
             characters={characters}
             cellSize={cellSize}
             maxDensity={maxDensity}
-            animating={!reduceMotion}
+            animating={!reduceMotion && !reducedMotion}
             paused={paused}
             onReady={() => report(AsciiFieldStatus.Ready)}
             onUnavailable={() => report(AsciiFieldStatus.Unavailable)}

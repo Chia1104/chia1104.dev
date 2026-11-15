@@ -117,7 +117,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
                 }}
               />
               <LocaleSelector />
-              <Settings />
+              <Settings mode={SiteMode.Tech} />
             </div>
           </FooterCell>
         </div>

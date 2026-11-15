@@ -304,6 +304,8 @@ interface ReflectiveCardProps {
   children: ReactNode;
   /** Corner radius in CSS pixels; the bevel follows it. */
   radius?: number;
+  /** Renders as it does under the system's reduced-motion setting: no tilt, no opening sweep. */
+  reducedMotion?: boolean;
   className?: string;
 }
 
@@ -315,6 +317,7 @@ interface ReflectiveCardProps {
 export const ReflectiveCard = ({
   children,
   radius = 12,
+  reducedMotion = false,
   className,
 }: ReflectiveCardProps) => {
   const root = useRef<HTMLDivElement>(null);
@@ -332,9 +335,9 @@ export const ReflectiveCard = ({
     const renderer = createRenderer(canvasElement);
     if (!renderer) return;
 
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
+    const reduced =
+      reducedMotion ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const tilt = reduced ? 0 : TILT_DEGREES;
     const x: Spring = { position: 0, velocity: 0, target: 0 };
     const y: Spring = { position: 0, velocity: 0, target: 0 };
@@ -526,7 +529,7 @@ export const ReflectiveCard = ({
       bodyElement.style.transform = "";
       renderer.dispose();
     };
-  }, [generation, radius]);
+  }, [generation, radius, reducedMotion]);
 
   return (
     <div

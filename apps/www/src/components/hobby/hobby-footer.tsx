@@ -11,6 +11,7 @@ import { Copyright } from "@/components/commons/copyright";
 import { LoadingSkeleton } from "@/components/commons/current-playing";
 import LocaleSelector from "@/components/commons/locale-selector";
 import { Settings } from "@/components/commons/settings";
+import { SiteMode } from "@/shared/site-mode";
 
 const CurrentPlaying = dynamic(
   () =>
@@ -56,7 +57,7 @@ export const HobbyFooter = () => {
           }}
         />
         <LocaleSelector />
-        <Settings palette={false} />
+        <Settings mode={SiteMode.Hobby} />
       </div>
     </footer>
   );

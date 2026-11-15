@@ -12,6 +12,8 @@ import { DockActions, DockMode, DockShell } from "@chia/ui/dock";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { CHBot } from "@/components/commons/ch-bot";
+import { usePathname } from "@/libs/i18n/navigation";
+import { SiteMode, siteModeOf } from "@/shared/site-mode";
 import { useChatDockStore } from "@/stores/chat-dock/store";
 import { useSettingsStore } from "@/stores/settings/store";
 
@@ -37,6 +39,10 @@ const DEFAULT_WIDTH = 384;
 export const ChatDock = () => {
   const t = useTranslations("chbot");
   const aiEnabled = useSettingsStore((state) => state.aiEnabled);
+  const pathname = usePathname();
+  // The agent is not offered in the hobby mode: no launcher there, and a dock left open in the
+  // tech mode steps aside until the reader is back.
+  const isOffered = aiEnabled && siteModeOf(pathname) !== SiteMode.Hobby;
   const mode = useChatDockStore((state) => state.mode);
   const setMode = useChatDockStore((state) => state.setMode);
   const toggle = useChatDockStore((state) => state.toggle);
@@ -48,9 +54,9 @@ export const ChatDock = () => {
     void useChatDockStore.persist.rehydrate();
   }, []);
 
-  useHotkey("Mod+I", toggle, { enabled: aiEnabled });
+  useHotkey("Mod+I", toggle, { enabled: isOffered });
 
-  if (!aiEnabled) {
+  if (!isOffered) {
     return null;
   }
 

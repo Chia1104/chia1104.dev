@@ -325,6 +325,8 @@
     "open": "開啟設定",
     "aiEnabled": "啟用 AI 功能",
     "aiEnabledDescription": "允許在本站使用 AI 相關功能。",
+    "reducedEffects": "減少動畫",
+    "reducedEffectsDescription": "讓背景與封面的特效保持靜止，在行動裝置上更省資源。觸控裝置預設開啟。",
     "done": "完成",
     "palette": {
       "title": "顏色",

@@ -40,8 +40,8 @@
   --surface-foreground: oklch(from var(--media-color) 0.22 min(c, 0.03) h);
 
   /* Border Radius */
-  --radius: 0.625rem;
-  --field-radius: 0.5rem;
+  --radius: 0.25rem;
+  --field-radius: 0.2rem;
 }
 
 :root.dark:has([data-site-mode="hobby"]) {

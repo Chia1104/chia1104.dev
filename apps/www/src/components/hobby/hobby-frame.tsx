@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 
 import type { Locale } from "next-intl";
 
-import { ChatLauncher } from "@/components/agent/chat-launcher";
 import { CommandMenu } from "@/components/commons/command-menu";
 import { ModeSwitch } from "@/components/commons/mode-switch";
 import { HobbyFooter } from "@/components/hobby/hobby-footer";
@@ -42,8 +41,7 @@ const HobbyFrame = ({
     {/* What a header would hold, kept out of the way. No backdrop blur: the field redraws under it. */}
     <div
       data-testid="nav-menu"
-      className="bg-background/85 fixed bottom-4 left-(--hobby-gutter) z-50 flex items-center gap-1 rounded-full p-1">
-      <ChatLauncher />
+      className="bg-background/85 fixed bottom-4 left-(--hobby-gutter) z-50 flex items-center gap-1 rounded-xl p-1">
       <CommandMenu locale={locale} mode={SiteMode.Hobby} />
     </div>
   </div>
