@@ -54,16 +54,16 @@ catalogs:
     "@ai-sdk/openai": 4.0.115
     "@ai-sdk/react": 4.0.174
     "@anthropic-ai/sdk": 1.8.0
-    "@google/genai": 2.19.0
+    "@google/genai": 2.32.0
     "@typesafe-ai/sdk": 0.7.0
     ai: 7.0.170
-    firecrawl: 4.52.0
+    firecrawl: 4.54.0
     js-tiktoken: ^1.0.21
     ollama: 0.6.4
-    openai: 7.55.0
+    openai: 7.56.0
   aws:
-    "@aws-sdk/client-s3": ^3.1167.0
-    "@aws-sdk/s3-request-presigner": ^3.1167.0
+    "@aws-sdk/client-s3": ^3.1168.0
+    "@aws-sdk/s3-request-presigner": ^3.1168.0
   better-auth:
     "@better-auth/api-key": 1.7.21
     "@better-auth/passkey": 1.7.21
@@ -79,8 +79,8 @@ catalogs:
     drizzle-orm: 1.0.0-rc.4
     pg: ^8.23.1
   email:
-    "@react-email/ui": ^6.11.11
-    react-email: ^6.11.11
+    "@react-email/ui": ^6.11.12
+    react-email: ^6.11.12
     resend: ^6.38.0
   env:
     "@t3-oss/env-core": ^0.13.11
@@ -118,7 +118,7 @@ catalogs:
   next:
     "@astrojs/rss": ^4.0.19
     next: 16.4.6
-    next-intl: ^4.15.0
+    next-intl: ^4.15.1
     next-safe-action: 8.7.3
     sharp: 0.35.5
     takumi-js: ^2.20.0
@@ -169,7 +169,7 @@ catalogs:
     streamdown: 2.7.1
   tailwindcss:
     "@egoist/tailwindcss-icons": ^1.9.2
-    "@iconify/json": ^2.2.555
+    "@iconify/json": ^2.2.556
     "@tailwindcss/postcss": 4.3.5
     "@tailwindcss/typography": ^0.5.20
     postcss: 8.5.32
@@ -213,7 +213,7 @@ catalogs:
     husky: ^9.1.7
     lint-staged: ^17.6.0
     nx: ^24.0.6
-    railway: 3.16.0
+    railway: 3.17.0
     tsdown: 0.23.7
     tsx: ^4.23.15
     turbo: 2.11.11
@@ -227,10 +227,10 @@ catalogs:
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     cobe: ^2.0.1
-    immer: ^11.1.18
+    immer: ^11.2.10
     katex: ^0.19.1
     lucide-react: ^1.72.0
-    motion: ^14.12.0
+    motion: ^14.13.0
     next-themes: ^0.4.6
     nuqs: ^2.10.3
     react-activity-calendar: ^3.2.1
