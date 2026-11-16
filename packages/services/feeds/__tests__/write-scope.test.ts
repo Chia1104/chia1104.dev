@@ -24,19 +24,27 @@ const media = vi.hoisted(() => ({
   ),
 }));
 
-vi.mock("@chia/db/repos/feeds", () => feeds);
-vi.mock("@chia/db/repos/media", () => media);
-vi.mock("@chia/db/repos/tags", () => ({
-  findTagIds: vi.fn(),
+const tags = vi.hoisted(() => ({
+  findTagIds: vi.fn(async (_db: DB, ids: number[]) =>
+    ids.filter((id) => id !== 99)
+  ),
   setFeedTags: vi.fn(),
 }));
+
+vi.mock("@chia/db/repos/feeds", () => feeds);
+vi.mock("@chia/db/repos/media", () => media);
+vi.mock("@chia/db/repos/tags", () => tags);
 
 import { updateFeedService } from "../write.service";
 
 /* SAFETY: the repositories are mocked; the handle is only passed through to them. */
 const db = {} as DB;
 
-const stored = (title: string, mediaEntryId: number | null = null) => ({
+const stored = (
+  title: string,
+  mediaEntryId: number | null = null,
+  content: string | null = "Body"
+) => ({
   mediaEntryId,
   id: 5,
   slug: "a-post",
@@ -54,7 +62,7 @@ const stored = (title: string, mediaEntryId: number | null = null) => ({
       excerpt: null,
       description: "About RAG",
       summary: null,
-      content: "Body",
+      content,
     },
   ],
 });
@@ -127,6 +135,32 @@ describe("updateFeedService scope", () => {
       updateFeedService(db, { feedId: 5, mediaEntryId: 99 }, {})
     ).rejects.toThrow("No logged work has id 99");
     expect(feeds.updateFeed).not.toHaveBeenCalled();
+  });
+
+  it("reports a listing change when a translation gains its first body, since lists only hold feeds with one", async () => {
+    feeds.getFeedForIndexing
+      .mockResolvedValueOnce(stored("RAG", null, null))
+      .mockResolvedValueOnce(stored("RAG"));
+    const onFeedChanged = vi.fn(async () => undefined);
+
+    await updateFeedService(db, applyTitle("RAG"), { onFeedChanged });
+
+    expect(onFeedChanged).toHaveBeenCalledExactlyOnceWith(
+      5,
+      FeedChangeScope.Listing
+    );
+  });
+
+  it("refuses an unknown tag before writing the feed", async () => {
+    await expect(
+      updateFeedService(
+        db,
+        { feedId: 5, published: false, tagIds: [3, 99] },
+        {}
+      )
+    ).rejects.toThrow("No tag has id 99");
+    expect(feeds.updateFeed).not.toHaveBeenCalled();
+    expect(tags.setFeedTags).not.toHaveBeenCalled();
   });
 
   it("skips the listing reads when no hook listens", async () => {

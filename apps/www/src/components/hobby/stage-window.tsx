@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { HobbyPinStage, useHobbyStore } from "@/stores/hobby/store";
+import type { HobbyPin } from "@/stores/hobby/store";
 
 /**
  * The part of a page the stage shows through. The stage draws `backdropUrl` in `color` while any
@@ -23,6 +24,8 @@ export const StageWindow = ({
 }) => {
   const element = useRef<HTMLElement>(null);
   const [onScreen, setOnScreen] = useState(true);
+  /** The pin this window last gave the stage. */
+  const written = useRef<HobbyPin | null>(null);
   const pinned = useHobbyStore((state) => state.pinned);
   const setPinned = useHobbyStore((state) => state.setPinned);
   const pin = useMemo(
@@ -43,16 +46,16 @@ export const StageWindow = ({
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    setPinned(pin);
-  }, [pin, setPinned]);
-
   // A work opened in a sheet over this page pins the stage itself and hands it back on closing.
+  // Until then the pin is the sheet's: this window only replaces one it wrote, or none.
   useEffect(() => {
-    if (pinned === null) setPinned(pin);
+    if (pinned !== null && pinned !== written.current) return;
+    if (pinned === pin) return;
+    written.current = pin;
+    setPinned(pin);
   }, [pinned, pin, setPinned]);
 
-  // Apart from the effects above, so scrolling past never hands the stage back in between.
+  // Apart from the effect above, so scrolling past never hands the stage back in between.
   useEffect(() => () => setPinned(null), [setPinned]);
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import {
   Autocomplete,
@@ -16,6 +17,14 @@ import { orpc } from "@/libs/orpc/client";
 
 import { KIND_LABEL, titleOf } from "../media/form";
 
+/** Stands where the picker would while there is nothing to pick from. */
+const Notice = ({ children }: { children: ReactNode }) => (
+  <div className="flex flex-col gap-2">
+    <Label className="text-sm">About</Label>
+    <span className="text-muted text-xs">{children}</span>
+  </div>
+);
+
 /** The logged work an article is about, or none. Works are logged under Media. */
 export const PostWork = ({
   onChange,
@@ -25,21 +34,33 @@ export const PostWork = ({
   selected: number | null;
 }) => {
   const { contains } = useFilter({ sensitivity: "base" });
-  const { data } = useQuery(orpc.media.list.queryOptions({ input: {} }));
-  const all = data?.items ?? [];
+  const works = useQuery(orpc.media.list.queryOptions({ input: {} }));
 
+  if (works.isPending) return <Notice>Loading works…</Notice>;
+  if (works.isError) {
+    return (
+      <Notice>
+        The logged works could not be loaded.{" "}
+        <button
+          type="button"
+          className="underline"
+          onClick={() => void works.refetch()}>
+          Try again
+        </button>
+        .
+      </Notice>
+    );
+  }
+  const all = works.data.items;
   if (all.length === 0) {
     return (
-      <div className="flex flex-col gap-2">
-        <Label className="text-sm">About</Label>
-        <span className="text-muted text-xs">
-          No works are logged yet.{" "}
-          <Link className="underline" href="/media">
-            Log one
-          </Link>
-          .
-        </span>
-      </div>
+      <Notice>
+        No works are logged yet.{" "}
+        <Link className="underline" href="/media">
+          Log one
+        </Link>
+        .
+      </Notice>
     );
   }
 

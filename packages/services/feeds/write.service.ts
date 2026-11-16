@@ -120,7 +120,8 @@ export interface UpdateFeedServiceInput {
 
 /**
  * What list, tag and work pages show of a feed, as one comparable value. An apply sends every
- * title whether or not it changed, so the write's input cannot tell.
+ * title whether or not it changed, so the write's input cannot tell. Whether a translation has a
+ * body is part of it: the public lists only hold feeds with one in the reader's language.
  */
 const readListing = async (db: DB, feedId: number) => {
   const feed = await getFeedForIndexing(db, { feedId });
@@ -135,9 +136,12 @@ const readListing = async (db: DB, feedId: number) => {
     tags: feed.tags.map((tag) => `${tag.locale}:${tag.name}`).toSorted(),
     translations: feed.translations
       .map((translation) =>
-        [translation.locale, translation.title, translation.description].join(
-          "\u0000"
-        )
+        [
+          translation.locale,
+          translation.title,
+          translation.description,
+          translation.content ? "body" : "",
+        ].join("\u0000")
       )
       .toSorted(),
   });
@@ -160,6 +164,15 @@ export const updateFeedService = async (
       message: `No logged work has id ${input.mediaEntryId}`,
     });
   }
+  if (input.tagIds) {
+    const known = new Set(await findTagIds(db, input.tagIds));
+    const unknown = input.tagIds.filter((id) => !known.has(id));
+    if (unknown.length > 0) {
+      throw new AppError(AppErrorCode.BadRequest, {
+        message: `No tag has id ${unknown.join(", ")}`,
+      });
+    }
+  }
   const feedData = await updateFeed(db, {
     feedId: input.feedId,
     type: input.type,
@@ -178,13 +191,6 @@ export const updateFeedService = async (
   }
 
   if (input.tagIds) {
-    const known = new Set(await findTagIds(db, input.tagIds));
-    const unknown = input.tagIds.filter((id) => !known.has(id));
-    if (unknown.length > 0) {
-      throw new AppError(AppErrorCode.BadRequest, {
-        message: `No tag has id ${unknown.join(", ")}`,
-      });
-    }
     await setFeedTags(db, { feedId: input.feedId, tagIds: input.tagIds });
   }
 
