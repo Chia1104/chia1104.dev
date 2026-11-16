@@ -23,7 +23,10 @@ export const createBetaResources = () => {
     serviceName: "ParadeDB Beta",
     volumeName: "paradedb-volume-beta",
   });
-  const redisResources = createRedisResources();
+  const redisResources = createRedisResources({
+    serviceName: "Redis",
+    volumeName: "redis-volume",
+  });
 
   const workflow = service("workflow-beta", {
     source: repository,

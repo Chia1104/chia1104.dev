@@ -47,8 +47,14 @@ export const createParadeDbResources = ({
   return { database, storage };
 };
 
-export const createRedisResources = () => {
-  const database = redis("Redis", { region });
+export const createRedisResources = ({
+  serviceName,
+  volumeName,
+}: {
+  serviceName: string;
+  volumeName: string;
+}) => {
+  const database = redis(serviceName, { region });
   database.deploy = {
     startCommand:
       '/bin/sh -c "rm -rf $RAILWAY_VOLUME_MOUNT_PATH/lost+found/ && exec docker-entrypoint.sh redis-server --requirepass $REDIS_PASSWORD --save 60 1 --dir $RAILWAY_VOLUME_MOUNT_PATH"',
@@ -56,7 +62,7 @@ export const createRedisResources = () => {
 
   return {
     database,
-    storage: createManagedVolume("redis-volume"),
+    storage: createManagedVolume(volumeName),
   };
 };
 
@@ -111,6 +117,8 @@ export const createApiEnv = () => ({
   GITHUB_CLIENT_SECRET: preserve(),
   GOOGLE_CLIENT_ID: preserve(),
   GOOGLE_CLIENT_SECRET: preserve(),
+  IGDB_CLIENT_ID: preserve(),
+  IGDB_CLIENT_SECRET: preserve(),
   INTERNAL_WORKFLOW_SERVICE_ENDPOINT: preserve(),
   INTERNAL_WORKFLOW_SERVICE_TOKEN: preserve(),
   IP_DENY_LIST: preserve(),
@@ -133,6 +141,9 @@ export const createApiEnv = () => ({
   SPOTIFY_CLIENT_ID: preserve(),
   SPOTIFY_CLIENT_SECRET: preserve(),
   SPOTIFY_REDIRECT_URI: preserve(),
+  STEAM_API_KEY: preserve(),
+  STEAM_ID: preserve(),
+  TMDB_ACCESS_TOKEN: preserve(),
   WORKFLOW_POSTGRES_JOB_PREFIX: preserve(),
   WORKFLOW_POSTGRES_URL: preserve(),
   WORKFLOW_POSTGRES_WORKER_CONCURRENCY: preserve(),
