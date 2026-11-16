@@ -1,6 +1,7 @@
 import { Locale as DBLocale, MediaKind, MediaSource } from "@chia/db/types";
 
 import type { RouterOutputs } from "@/libs/orpc/types";
+import type { hobbyFeedHrefOf } from "@/shared/hobby-feed";
 
 export type MediaEntry = RouterOutputs["media"]["list"]["items"][number];
 /** A work with what only its own page shows. */
@@ -40,18 +41,29 @@ export const mediaTitleOf = (entry: MediaEntry, locale: DBLocale) =>
   entry.originalTitle ??
   "";
 
+const MINUTES_PER_HOUR = 60;
+
+/** Logged play time as the whole hours a page shows. */
+export const playtimeHoursOf = (minutes: number) =>
+  Math.round(minutes / MINUTES_PER_HOUR);
+
 /** The colour the hobby pages wear while no work is in focus; `@chia/themes/hobby.css` starts from the same value. */
 export const HOBBY_IDLE_COLOR = "#45b0c5";
 
-/** One line of the hobby list: what a row shows, and what the stage needs once it is in focus. */
+/** One line of the hobby list, a work or an article: what a row shows, and what the stage needs once it is in focus. */
 export interface MediaRow {
+  /** Unique within one list. */
   id: number;
   title: string;
   /** Already in the reader's language. */
   kind: string;
+  /** The title of the work an article is about. */
+  subject: string | null;
   year: number | null;
-  /** The work's own page. */
-  href: ReturnType<typeof mediaHrefOf>;
+  /** The row's own page. */
+  href: ReturnType<typeof mediaHrefOf> | ReturnType<typeof hobbyFeedHrefOf>;
+  /** A work's page opens as a sheet over the list, which must then keep its scroll position. */
+  sheet: boolean;
   color: string | null;
   backdropUrl: string | null;
 }

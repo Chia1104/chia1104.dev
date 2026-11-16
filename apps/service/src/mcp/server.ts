@@ -27,7 +27,7 @@ export interface McpServerOptions {
 const WRITING_KIND = "writing";
 
 const localeSchema = z.enum(Locale);
-const postTypeSchema = z.enum([FeedType.Post, FeedType.Note]);
+const postTypeSchema = z.enum(FeedType).exclude(["All"]);
 
 const expectedHash = z
   .string()

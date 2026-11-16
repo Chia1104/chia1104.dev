@@ -3,6 +3,7 @@ import { ViewTransition } from "react";
 
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { FeedMode } from "@chia/db/types";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import {
@@ -34,7 +35,7 @@ const Page = async () => {
   const [locale, t, { items }] = await Promise.all([
     getLocale(),
     getTranslations("blog.tags"),
-    client.tags.list(),
+    client.tags.list({ mode: FeedMode.Tech }),
   ]);
   const dbLocale = dbLocaleResolver(locale);
   const tags = items

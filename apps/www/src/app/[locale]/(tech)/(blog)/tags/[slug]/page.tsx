@@ -6,7 +6,7 @@ import { ErrorBoundary } from "@sentry/nextjs";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { FeedType } from "@chia/db/types";
+import { FeedMode, FeedType } from "@chia/db/types";
 import type { Locale as DBLocale } from "@chia/db/types";
 import { getQueryClient } from "@chia/utils/query-client";
 
@@ -21,15 +21,20 @@ import { dbLocaleResolver } from "@/libs/utils/i18n";
 import { FEED_PAGE_SIZE } from "@/shared/feeds";
 
 export const generateStaticParams = async () => {
-  const { items } = await client.tags.list();
-  return items.map((tag) => ({ slug: tag.slug }));
+  const { items } = await client.tags.list({ mode: FeedMode.Tech });
+  return items
+    .filter((tag) => tag.feedCount > 0)
+    .map((tag) => ({ slug: tag.slug }));
 };
 
-/** The tag named for `locale`; `null` when no tag has the slug. */
+/**
+ * The tag named for `locale`; `null` when no tag has the slug, or none of its posts are the tech
+ * site's: tags are shared with the hobby mode, and a tag only used there has no page here.
+ */
 const findTag = async (slug: string, locale: DBLocale) => {
-  const { items } = await client.tags.list();
+  const { items } = await client.tags.list({ mode: FeedMode.Tech });
   const tag = items.find((candidate) => candidate.slug === slug);
-  if (!tag) return null;
+  if (!tag || tag.feedCount === 0) return null;
   return {
     ...tag,
     name: tag.translations[locale]?.name ?? tag.slug,
@@ -115,6 +120,7 @@ const Page = async ({
                 orderBy: "createdAt",
                 sortOrder: "desc",
                 type: FeedType.All,
+                mode: FeedMode.Tech,
                 tag: slug,
                 locale: dbLocale,
                 translated: true,

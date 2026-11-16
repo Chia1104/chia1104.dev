@@ -1,11 +1,11 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "e971d486-a1ab-4516-a707-79028db6ec8d",
-  "prevIds": ["341df8ab-23f7-434d-9abc-c37030c385c4"],
+  "id": "cbfea74f-9f69-4521-8d9f-8b7ae66fadc6",
+  "prevIds": ["a9b719f0-5e66-457c-a046-2b64c38fa8a0"],
   "ddl": [
     {
-      "values": ["post", "note"],
+      "values": ["post", "note", "guide", "review", "journal"],
       "name": "feed_type",
       "entityType": "enums",
       "schema": "public"
@@ -108,6 +108,12 @@
     },
     {
       "isRlsEnabled": false,
+      "name": "chia_feed_report",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
       "name": "chia_feed_translation",
       "entityType": "tables",
       "schema": "public"
@@ -121,6 +127,18 @@
     {
       "isRlsEnabled": false,
       "name": "chia_feeds_to_tags",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "chia_media_achievement",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "chia_media_entry",
       "entityType": "tables",
       "schema": "public"
     },
@@ -740,32 +758,6 @@
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "harness_kind",
-      "entityType": "columns",
-      "schema": "agent",
-      "table": "run"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "1",
-      "generated": null,
-      "identity": null,
-      "name": "harness_version",
-      "entityType": "columns",
-      "schema": "agent",
-      "table": "run"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
       "default": "'active'",
       "generated": null,
       "identity": null,
@@ -1334,14 +1326,14 @@
       "table": "tool_approval"
     },
     {
-      "type": "timestamp with time zone",
+      "type": "text",
       "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "consumed_at",
+      "name": "run_id",
       "entityType": "columns",
       "schema": "agent",
       "table": "tool_approval"
@@ -2121,19 +2113,6 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "summary",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "chia_feed_draft_translation"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
       "name": "content",
       "entityType": "columns",
       "schema": "public",
@@ -2346,6 +2325,201 @@
       "entityType": "columns",
       "schema": "public",
       "table": "chia_feed_draft"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "feed_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "locale",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "locale",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "heading_path",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "quote",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "category",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "claim",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "assessment",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "suggestion",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "reporter_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "session_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'open'",
+      "generated": null,
+      "identity": null,
+      "name": "status",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "triage",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed_report"
     },
     {
       "type": "serial",
@@ -2649,6 +2823,19 @@
     {
       "type": "integer",
       "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "media_entry_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_feed"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
       "default": null,
@@ -2671,6 +2858,474 @@
       "entityType": "columns",
       "schema": "public",
       "table": "chia_feeds_to_tags"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "media_entry_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "api_name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "translations",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "icon_url",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "locked_icon_url",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "hidden",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "real",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "global_percent",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "unlocked",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "unlocked_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "slug",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "kind",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "source",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "source_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "source_url",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "translations",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "original_title",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "release_year",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "poster",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "backdrop",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "color",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "status",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "smallint",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "rating",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "name": "favorite",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "date",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "started_on",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "date",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "finished_on",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "steam_app_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "playtime_minutes",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "achievements_unlocked",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "achievements_total",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "last_played_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "chia_media_entry"
     },
     {
       "type": "text",
@@ -4485,6 +5140,27 @@
       "nameExplicit": true,
       "columns": [
         {
+          "value": "run_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "agent_tool_approval_run_idx",
+      "entityType": "indexes",
+      "schema": "agent",
+      "table": "tool_approval"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
           "value": "user_id",
           "isExpression": false,
           "asc": true,
@@ -4683,6 +5359,83 @@
       "entityType": "indexes",
       "schema": "public",
       "table": "chia_feed_draft"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "status",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "created_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "feed_report_status_created_at_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "feed_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "feed_report_feed_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "reporter_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "created_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "feed_report_reporter_created_at_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "chia_feed_report"
     },
     {
       "nameExplicit": true,
@@ -4905,6 +5658,27 @@
       "nameExplicit": true,
       "columns": [
         {
+          "value": "media_entry_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "feed_media_entry_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "chia_feed"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
           "value": "tag_id",
           "isExpression": false,
           "asc": true,
@@ -4921,6 +5695,111 @@
       "entityType": "indexes",
       "schema": "public",
       "table": "chia_feeds_to_tags"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "media_entry_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "api_name",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "media_achievement_entry_api_name_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "chia_media_achievement"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "source",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "source_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "media_entry_source_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "slug",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "media_entry_slug_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "chia_media_entry"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "kind",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "status",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "media_entry_kind_status_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "chia_media_entry"
     },
     {
       "nameExplicit": true,
@@ -5618,6 +6497,19 @@
     },
     {
       "nameExplicit": false,
+      "columns": ["run_id"],
+      "schemaTo": "agent",
+      "tableTo": "run",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "SET NULL",
+      "name": "tool_approval_run_id_run_id_fkey",
+      "entityType": "fks",
+      "schema": "agent",
+      "table": "tool_approval"
+    },
+    {
+      "nameExplicit": false,
       "columns": ["relay_run_id"],
       "schemaTo": "agent",
       "tableTo": "run",
@@ -5741,6 +6633,32 @@
       "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
+      "name": "chia_feed_report_feed_id_chia_feed_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["reporter_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "SET NULL",
+      "name": "chia_feed_report_reporter_id_chia_user_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "chia_feed_report"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["feed_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_feed",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
       "name": "chia_feed_translation_feed_id_chia_feed_id_fk",
       "entityType": "fks",
       "schema": "public",
@@ -5755,6 +6673,19 @@
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chia_feed_user_id_chia_user_id_fk",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "chia_feed"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["media_entry_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_media_entry",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "SET NULL",
+      "name": "chia_feed_media_entry_id_chia_media_entry_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "chia_feed"
@@ -5784,6 +6715,19 @@
       "entityType": "fks",
       "schema": "public",
       "table": "chia_feeds_to_tags"
+    },
+    {
+      "nameExplicit": false,
+      "columns": ["media_entry_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_media_entry",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "chia_media_achievement_media_entry_id_chia_media_entry_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "chia_media_achievement"
     },
     {
       "nameExplicit": false,
@@ -6093,6 +7037,14 @@
     {
       "columns": ["id"],
       "nameExplicit": false,
+      "name": "chia_feed_report_pkey",
+      "schema": "public",
+      "table": "chia_feed_report",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
       "name": "chia_feed_translation_pkey",
       "schema": "public",
       "table": "chia_feed_translation",
@@ -6104,6 +7056,22 @@
       "name": "chia_feed_pkey",
       "schema": "public",
       "table": "chia_feed",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "chia_media_achievement_pkey",
+      "schema": "public",
+      "table": "chia_media_achievement",
+      "entityType": "pks"
+    },
+    {
+      "columns": ["id"],
+      "nameExplicit": false,
+      "name": "chia_media_entry_pkey",
+      "schema": "public",
+      "table": "chia_media_entry",
       "entityType": "pks"
     },
     {

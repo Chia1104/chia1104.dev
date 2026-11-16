@@ -52,6 +52,10 @@ declare namespace __next_route_internal_types__ {
     | `/${SafeSlug<T>}/hobby` // ../../../src/app/[locale]/hobby/page.tsx
     | `/${SafeSlug<T>}/hobby/${SafeSlug<T>}` // ../../../src/app/[locale]/hobby/[kind]/page.tsx
     | `/${SafeSlug<T>}/hobby/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/hobby/[kind]/[slug]/page.tsx
+    | `/${SafeSlug<T>}/hobby/anime/${SafeSlug<T>}` // ../../../src/app/[locale]/@modal/(.)hobby/anime/[slug]/page.tsx
+    | `/${SafeSlug<T>}/hobby/games/${SafeSlug<T>}` // ../../../src/app/[locale]/@modal/(.)hobby/games/[slug]/page.tsx
+    | `/${SafeSlug<T>}/hobby/movies/${SafeSlug<T>}` // ../../../src/app/[locale]/@modal/(.)hobby/movies/[slug]/page.tsx
+    | `/${SafeSlug<T>}/hobby/series/${SafeSlug<T>}` // ../../../src/app/[locale]/@modal/(.)hobby/series/[slug]/page.tsx
     | `/${SafeSlug<T>}/note/${SafeSlug<T>}` // /[locale]/note/[slug]
     | `/${SafeSlug<T>}/opengraph-image` // ../../../src/app/[locale]/opengraph-image.tsx
     | `/${SafeSlug<T>}/post/${SafeSlug<T>}` // /[locale]/post/[slug]

@@ -18,7 +18,14 @@ const feeds = vi.hoisted(() => ({
   upsertContent: vi.fn(async () => ({ id: 500 })),
 }));
 
+const media = vi.hoisted(() => ({
+  getMediaEntry: vi.fn(async (_db: DB, id: number) =>
+    id === 25 ? { id } : undefined
+  ),
+}));
+
 vi.mock("@chia/db/repos/feeds", () => feeds);
+vi.mock("@chia/db/repos/media", () => media);
 vi.mock("@chia/db/repos/tags", () => ({
   findTagIds: vi.fn(),
   setFeedTags: vi.fn(),
@@ -29,7 +36,8 @@ import { updateFeedService } from "../write.service";
 /* SAFETY: the repositories are mocked; the handle is only passed through to them. */
 const db = {} as DB;
 
-const stored = (title: string) => ({
+const stored = (title: string, mediaEntryId: number | null = null) => ({
+  mediaEntryId,
   id: 5,
   slug: "a-post",
   type: FeedType.Post,
@@ -59,6 +67,7 @@ const applyTitle = (title: string) => ({
 describe("updateFeedService scope", () => {
   beforeEach(() => {
     feeds.getFeedForIndexing.mockReset();
+    feeds.updateFeed.mockClear();
   });
 
   it("reports an article change when listings show the same feed", async () => {
@@ -89,6 +98,35 @@ describe("updateFeedService scope", () => {
       5,
       FeedChangeScope.Listing
     );
+  });
+
+  it("sets the work a feed is about and reports a listing change, since the work's page lists it", async () => {
+    feeds.getFeedForIndexing
+      .mockResolvedValueOnce(stored("RAG"))
+      .mockResolvedValueOnce(stored("RAG", 25));
+    const onFeedChanged = vi.fn(async () => undefined);
+
+    await updateFeedService(
+      db,
+      { feedId: 5, mediaEntryId: 25 },
+      { onFeedChanged }
+    );
+
+    expect(feeds.updateFeed).toHaveBeenCalledExactlyOnceWith(
+      db,
+      expect.objectContaining({ feedId: 5, mediaEntryId: 25 })
+    );
+    expect(onFeedChanged).toHaveBeenCalledExactlyOnceWith(
+      5,
+      FeedChangeScope.Listing
+    );
+  });
+
+  it("refuses a work that is not logged, before writing the feed", async () => {
+    await expect(
+      updateFeedService(db, { feedId: 5, mediaEntryId: 99 }, {})
+    ).rejects.toThrow("No logged work has id 99");
+    expect(feeds.updateFeed).not.toHaveBeenCalled();
   });
 
   it("skips the listing reads when no hook listens", async () => {

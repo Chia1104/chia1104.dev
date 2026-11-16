@@ -15,6 +15,7 @@ import {
   Home,
   KeySquare,
   Music2,
+  Gamepad2,
   Notebook,
   PenSquare,
   Settings,
@@ -93,6 +94,12 @@ export const useRouteItems = (level: AccessLevel) => {
               icon: <Notebook />,
               title: "Notes",
               isActive: segments[0] === "feed" && segments[1] === "notes",
+            },
+            {
+              url: "/feed/hobby",
+              icon: <Gamepad2 />,
+              title: "Hobby",
+              isActive: segments[0] === "feed" && segments[1] === "hobby",
             },
             {
               url: "/feed/drafts",

@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 
 import { safe } from "@orpc/client";
 
+import { FeedMode, feedModeOf } from "@chia/db/types";
 import { WWW_BASE_URL } from "@chia/utils/config";
 import { isEnumValue } from "@chia/utils/is";
 
@@ -27,6 +28,7 @@ export const GET = async (
   );
   if (isServiceNotFound(error)) notFound();
   if (error) throw error;
+  if (feedModeOf(feed.type) !== FeedMode.Tech) notFound();
   const href = `/${feed.type}s/${slug}`;
   if (`${feed.type}s` !== type) {
     permanentRedirect(getPathname({ href: `${href}/llm.md`, locale }));

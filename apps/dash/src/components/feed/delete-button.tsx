@@ -12,6 +12,8 @@ import type { FeedType } from "@chia/db/types";
 
 import { orpc } from "@/libs/orpc/client";
 
+import { feedListHrefOf } from "./constants";
+
 interface FeedActionProps {
   isPending: boolean;
   onConfirm: () => void;
@@ -158,7 +160,7 @@ export const DeleteButton = memo(
       // caller here does not know, so an exact key would match nothing.
       await queryClient.invalidateQueries({ queryKey: orpc.feeds.list.key() });
       if (redirect) {
-        router.push(`/feed/${type}s`);
+        router.push(feedListHrefOf(type));
       }
     };
 

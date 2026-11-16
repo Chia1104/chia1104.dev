@@ -10,11 +10,17 @@ import { MediaAchievements } from "@/components/hobby/media-achievements";
 import { MediaCover } from "@/components/hobby/media-cover";
 import { MediaPin } from "@/components/hobby/media-pin";
 import { StarRating } from "@/components/hobby/star-rating";
+import { Link } from "@/libs/i18n/navigation";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
-import { MEDIA_SOURCE_NAME, mediaTitleOf } from "@/shared/media";
+import { hobbyFeedHrefOf, isHobbyFeedType } from "@/shared/hobby-feed";
+import type { HobbyFeed } from "@/shared/hobby-feed";
+import {
+  MEDIA_SOURCE_NAME,
+  mediaTitleOf,
+  playtimeHoursOf,
+} from "@/shared/media";
 import type { MediaAchievement, MediaEntry } from "@/shared/media";
-
-const MINUTES_PER_HOUR = 60;
+import { HobbyPinStage } from "@/stores/hobby/store";
 
 /** Where a work's detail is shown; it decides what the key art fills. */
 export const MediaSurface = {
@@ -41,12 +47,15 @@ const Fact = ({ label, children }: { label: string; children: ReactNode }) => (
 export const MediaDetail = async ({
   entry,
   achievements,
+  articles,
   title,
   surface,
 }: {
   entry: MediaEntry;
   /** Empty for anything but a game synced from Steam. */
   achievements: MediaAchievement[];
+  /** What the owner wrote about the work, newest first. */
+  articles: HobbyFeed[];
   title: (text: string) => ReactNode;
   surface: MediaSurface;
 }) => {
@@ -86,7 +95,12 @@ export const MediaDetail = async ({
         // frame's wordmark, which stands before it.
         isSheet ? "relative isolate min-h-[100cqh]" : "flex-1"
       )}>
-      <MediaPin color={entry.color} coversStage={!isSheet && art !== null} />
+      <MediaPin
+        color={entry.color}
+        stage={
+          !isSheet && art !== null ? HobbyPinStage.Covered : HobbyPinStage.Held
+        }
+      />
       {art ? (
         <div
           aria-hidden
@@ -180,7 +194,7 @@ export const MediaDetail = async ({
               {entry.playtimeMinutes === null ? null : (
                 <Fact label={t("detail.playtime")}>
                   {t("detail.playtime-value", {
-                    hours: Math.round(entry.playtimeMinutes / MINUTES_PER_HOUR),
+                    hours: playtimeHoursOf(entry.playtimeMinutes),
                   })}
                 </Fact>
               )}
@@ -213,6 +227,40 @@ export const MediaDetail = async ({
 
           {achievements.length > 0 ? (
             <MediaAchievements achievements={achievements} />
+          ) : null}
+
+          {articles.length > 0 ? (
+            <section className="flex flex-col gap-2">
+              <h2 className="text-muted text-xs font-medium">
+                {t("detail.articles")}
+              </h2>
+              <ul className="flex flex-col gap-2">
+                {articles.map((feed) =>
+                  isHobbyFeedType(feed.type) ? (
+                    <li
+                      key={feed.id}
+                      className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                      <Link
+                        href={hobbyFeedHrefOf({
+                          type: feed.type,
+                          slug: feed.slug,
+                        })}
+                        className="link text-lg font-semibold">
+                        {feed.translations[0]?.title ?? feed.slug}
+                      </Link>
+                      <span className="text-muted flex gap-3 text-sm tabular-nums">
+                        <span>{t(`article.${feed.type}`)}</span>
+                        <time dateTime={feed.createdAt}>
+                          {format.dateTime(new Date(feed.createdAt), {
+                            dateStyle: "medium",
+                          })}
+                        </time>
+                      </span>
+                    </li>
+                  ) : null
+                )}
+              </ul>
+            </section>
           ) : null}
 
           <p className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">

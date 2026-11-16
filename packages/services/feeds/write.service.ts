@@ -6,6 +6,7 @@ import {
   upsertContent,
   upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
+import { getMediaEntry } from "@chia/db/repos/media";
 import { findTagIds, setFeedTags } from "@chia/db/repos/tags";
 import { Locale } from "@chia/db/types";
 import type { FeedType } from "@chia/db/types";
@@ -38,7 +39,7 @@ export type UpdateFeedTranslationInput = Partial<CreateFeedTranslationInput>;
 
 /**
  * `FeedType` includes `"all"`, which is a filter value rather than a storable one, so the write
- * services accept only the two real kinds.
+ * services accept only the real kinds.
  */
 export type StorableFeedType = Exclude<FeedType, "all">;
 
@@ -110,19 +111,22 @@ export interface UpdateFeedServiceInput {
   published?: boolean;
   /** The whole tag set; an empty array clears it. */
   tagIds?: number[];
+  /** The logged work the feed is about; `null` clears it. */
+  mediaEntryId?: number | null;
   createdAt?: number;
   updatedAt?: number;
   translations?: Partial<Record<Locale, UpdateFeedTranslationInput>>;
 }
 
 /**
- * What list and tag pages show of a feed, as one comparable value. An apply sends every
+ * What list, tag and work pages show of a feed, as one comparable value. An apply sends every
  * title whether or not it changed, so the write's input cannot tell.
  */
 const readListing = async (db: DB, feedId: number) => {
   const feed = await getFeedForIndexing(db, { feedId });
   if (!feed) return null;
   return JSON.stringify({
+    mediaEntryId: feed.mediaEntryId,
     type: feed.type,
     published: feed.published,
     createdAt: feed.createdAt,
@@ -147,12 +151,22 @@ export const updateFeedService = async (
   const listingBefore = hooks.onFeedChanged
     ? await readListing(db, input.feedId)
     : null;
+  if (
+    input.mediaEntryId !== undefined &&
+    input.mediaEntryId !== null &&
+    !(await getMediaEntry(db, input.mediaEntryId))
+  ) {
+    throw new AppError(AppErrorCode.BadRequest, {
+      message: `No logged work has id ${input.mediaEntryId}`,
+    });
+  }
   const feedData = await updateFeed(db, {
     feedId: input.feedId,
     type: input.type,
     published: input.published,
     defaultLocale: input.defaultLocale,
     mainImage: input.mainImage,
+    mediaEntryId: input.mediaEntryId,
     createdAt: input.createdAt,
     updatedAt: input.updatedAt,
   });

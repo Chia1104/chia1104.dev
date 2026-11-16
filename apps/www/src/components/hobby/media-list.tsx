@@ -58,15 +58,19 @@ export const MediaList = ({ rows }: { rows: readonly MediaRow[] }) => {
           data-active={focusId === row.id ? "" : undefined}
           className="transition-opacity duration-300 motion-reduce:transition-none group-has-[[data-active]]/list:[&:not([data-active])]:opacity-40"
           onPointerEnter={canHover ? () => setFocus(row) : undefined}>
-          {/* Opens over the list as a sheet, so the list keeps its scroll position. */}
           <Link
             href={row.href}
-            scroll={false}
+            scroll={row.sheet ? false : undefined}
             className={ROW_CLASS_NAME}
             onFocus={() => setFocus(row)}>
             <span className="line-clamp-2 text-pretty">{row.title}</span>
             <span className="text-muted flex gap-4 text-sm font-medium tracking-normal tabular-nums">
               <span>{row.kind}</span>
+              {row.subject === null ? null : (
+                <span className="hidden max-w-[20ch] truncate sm:block">
+                  {row.subject}
+                </span>
+              )}
               {row.year === null ? null : <span>{row.year}</span>}
             </span>
           </Link>

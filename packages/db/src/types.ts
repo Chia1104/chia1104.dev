@@ -9,10 +9,51 @@ export type Role = (typeof Role)[keyof typeof Role];
 export const FeedType = {
   Post: "post",
   Note: "note",
+  /** How to get through something, usually a game. */
+  Guide: "guide",
+  /** What the owner made of a work. */
+  Review: "review",
+  /** Life outside of work and of any one title. */
+  Journal: "journal",
+  /** A filter value, never stored: no narrowing by type. */
   All: "all",
 } as const;
 
 export type FeedType = (typeof FeedType)[keyof typeof FeedType];
+
+/** The face of the site a feed is written for. www gives each its own URL space, and neither lists the other's. */
+export const FeedMode = {
+  Tech: "tech",
+  Hobby: "hobby",
+} as const;
+
+export type FeedMode = (typeof FeedMode)[keyof typeof FeedMode];
+
+/** A feed's type decides its mode, so a feed cannot be stored in the wrong one. */
+export const FEED_MODE_TYPES = {
+  [FeedMode.Tech]: [FeedType.Post, FeedType.Note],
+  [FeedMode.Hobby]: [FeedType.Guide, FeedType.Review, FeedType.Journal],
+} as const satisfies Record<
+  FeedMode,
+  readonly Exclude<FeedType, typeof FeedType.All>[]
+>;
+
+export type FeedTypeOf<TMode extends FeedMode> =
+  (typeof FEED_MODE_TYPES)[TMode][number];
+
+/** Narrows a feed's type to the ones `mode` carries. */
+export const isFeedTypeOf = <TMode extends FeedMode>(
+  mode: TMode,
+  type: string
+): type is FeedTypeOf<TMode> =>
+  FEED_MODE_TYPES[mode].some((candidate) => candidate === type);
+
+export const feedModeOf = (
+  type: Exclude<FeedType, typeof FeedType.All>
+): FeedMode =>
+  type === FeedType.Post || type === FeedType.Note
+    ? FeedMode.Tech
+    : FeedMode.Hobby;
 
 export const FeedOrderBy = {
   UpdatedAt: "updatedAt",

@@ -10,12 +10,25 @@ export interface HobbyFocus {
   backdropUrl: string | null;
 }
 
-/** A work whose page or sheet is open. Its own art is on screen, so the stage only takes its colour. */
+/** What the stage does while a page or sheet has pinned it. */
+export const HobbyPinStage = {
+  /** Draws the pin's key art and keeps moving: the page shows no art of its own. */
+  Live: "live",
+  /** Holds its frame: the work's own art is on screen, or the stage has scrolled out of view. */
+  Held: "held",
+  /** Not mounted: the work's art covers the whole viewport. */
+  Covered: "covered",
+} as const;
+
+export type HobbyPinStage = (typeof HobbyPinStage)[keyof typeof HobbyPinStage];
+
+/** A page or sheet about one work, which the stage follows instead of the row in focus. */
 export interface HobbyPin {
   /** `#rrggbb`, or `null` to keep the idle colour. */
   color: string | null;
-  /** The work's art covers the whole viewport, so nothing of the stage can be seen. */
-  coversStage: boolean;
+  /** Key art for the stage to draw; `null` leaves whatever it was drawing. */
+  backdropUrl: string | null;
+  stage: HobbyPinStage;
 }
 
 interface HobbyStore {

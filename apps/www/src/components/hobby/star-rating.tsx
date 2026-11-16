@@ -1,3 +1,5 @@
+import { cn } from "@chia/ui/utils/cn.util";
+
 const STARS = 5;
 /** A stored rating runs from 1 to 10, so each point is half a star. */
 const POINTS_PER_STAR = 2;
@@ -6,9 +8,12 @@ const POINTS_PER_STAR = 2;
 export const StarRating = ({
   rating,
   label,
+  starClassName = "size-5",
 }: {
   rating: number;
   label: string;
+  /** Sizes each star. */
+  starClassName?: string;
 }) => (
   <span
     role="img"
@@ -17,19 +22,29 @@ export const StarRating = ({
     {Array.from({ length: STARS }, (_, index) => {
       const points = rating - index * POINTS_PER_STAR;
       if (points >= POINTS_PER_STAR) {
-        return <span key={index} aria-hidden className="i-mdi-star size-5" />;
+        return (
+          <span
+            key={index}
+            aria-hidden
+            className={cn("i-mdi-star", starClassName)}
+          />
+        );
       }
       if (points > 0) {
         return (
           <span
             key={index}
             aria-hidden
-            className="i-mdi-star-half-full size-5"
+            className={cn("i-mdi-star-half-full", starClassName)}
           />
         );
       }
       return (
-        <span key={index} aria-hidden className="i-mdi-star-outline size-5" />
+        <span
+          key={index}
+          aria-hidden
+          className={cn("i-mdi-star-outline", starClassName)}
+        />
       );
     })}
   </span>

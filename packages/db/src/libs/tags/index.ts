@@ -7,7 +7,8 @@ import {
   tags,
   tagTranslations,
 } from "../../schemas/schema.ts";
-import { Locale } from "../../types.ts";
+import { FEED_MODE_TYPES, Locale } from "../../types.ts";
+import type { FeedMode } from "../../types.ts";
 import type { TagWrite } from "../validator/tags.ts";
 
 export interface TagTranslationView {
@@ -21,13 +22,15 @@ export interface TagRecord {
   createdAt: Date;
   updatedAt: Date;
   translations: Partial<Record<Locale, TagTranslationView>>;
-  /** Live feeds carrying the tag; drafts included unless the scope is published. */
+  /** Live feeds carrying the tag, within the scope it was counted for. */
   feedCount: number;
 }
 
 export interface TagCountScope {
   /** `true` counts published feeds only; `undefined` counts every live feed. */
   published?: true;
+  /** Counts the feeds of one face of the site only. */
+  mode?: FeedMode;
 }
 
 const feedCountOf = (tagId: typeof tags.id, scope: TagCountScope) =>
@@ -36,6 +39,14 @@ const feedCountOf = (tagId: typeof tags.id, scope: TagCountScope) =>
     join ${feeds} f on f.id = ft.feed_id
     where ft.tag_id = ${tagId} and f.deleted_at is null
     ${scope.published ? sql`and f.published` : sql``}
+    ${
+      scope.mode
+        ? sql`and f.type in (${sql.join(
+            FEED_MODE_TYPES[scope.mode].map((type) => sql`${type}`),
+            sql`, `
+          )})`
+        : sql``
+    }
   )::int`;
 
 const toRecord = (row: {

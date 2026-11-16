@@ -17,6 +17,7 @@ import { timestamps, softDelete } from "../libs/common.schema.ts";
 import { FeedType, Locale } from "../types.ts";
 
 import { locale, feedType } from "./enums.ts";
+import { mediaEntries } from "./media.schema.ts";
 import { pgTable } from "./table.ts";
 import { user } from "./user.schema.ts";
 
@@ -55,6 +56,10 @@ const baseFeedsColumns = {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   mainImage: text("main_image"),
+  /** The logged work a hobby article is about. Set through `feeds.update`, never through a draft. */
+  mediaEntryId: integer("media_entry_id").references(() => mediaEntries.id, {
+    onDelete: "set null",
+  }),
 };
 
 export const feeds = pgTable("feed", baseFeedsColumns, (table) => [
@@ -64,6 +69,7 @@ export const feeds = pgTable("feed", baseFeedsColumns, (table) => [
   index("feed_published_idx").on(table.published),
   index("feed_default_locale_idx").on(table.defaultLocale),
   index("feed_deleted_at_idx").on(table.deletedAt),
+  index("feed_media_entry_id_idx").on(table.mediaEntryId),
 ]);
 
 /** Translation prose (MDX). `resource_chunk` mirrors `published` / `deleted` / `locale` from here. */

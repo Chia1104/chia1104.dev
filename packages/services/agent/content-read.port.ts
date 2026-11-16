@@ -18,7 +18,13 @@ import {
   getInfiniteFeeds,
 } from "@chia/db/repos/feeds";
 import { listTags } from "@chia/db/repos/tags";
-import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
+import {
+  FeedMode,
+  feedModeOf,
+  FeedOrderBy,
+  FeedType,
+  Locale,
+} from "@chia/db/types";
 import { feedUrl } from "@chia/utils/config";
 
 import { searchFeedsService } from "../feeds/search.service";
@@ -28,8 +34,8 @@ import { toSearchMatches } from "../rag/search.service";
 /**
  * Reuses `searchFeedsService` and `@chia/db/repos/feeds` so an agent reads exactly what
  * the site reads. Takes a `DB` because it is constructed inside a workflow step where no
- * request exists. Visibility is fixed at construction: `public` never lists drafts even
- * when asked.
+ * request exists. Visibility is fixed at construction: `public` is the tech site's reader, so
+ * it never lists drafts or hobby articles even when asked.
  */
 
 export const ContentVisibility = {
@@ -54,6 +60,8 @@ export const createContentReadPort = (
   /** `undefined` means "any"; the repositories treat it as no filter. */
   const publishedScope =
     visibility === ContentVisibility.Public ? true : undefined;
+  const modeScope =
+    visibility === ContentVisibility.Public ? FeedMode.Tech : undefined;
 
   return {
     async searchPosts(input: SearchPostsInput): Promise<PostSearchResult> {
@@ -106,6 +114,9 @@ export const createContentReadPort = (
             });
 
       if (!feed) return null;
+      if (modeScope !== undefined && feedModeOf(feed.type) !== modeScope) {
+        return null;
+      }
       return toPostSnapshot(feed);
     },
 
@@ -132,6 +143,7 @@ export const createContentReadPort = (
         orderBy: FeedOrderBy.CreatedAt,
         sortOrder: "desc",
         type,
+        mode: modeScope,
         tagSlug: input.tagSlug,
         withContent: false,
         enableDeleted: false,
@@ -148,6 +160,7 @@ export const createContentReadPort = (
         userId: authorId,
         published,
         type,
+        mode: modeScope,
         tagSlug: input.tagSlug,
         createdFrom,
         createdBefore,
