@@ -39,7 +39,6 @@
     "@opentelemetry/api": "catalog:otel",
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:env",
-    "@workflow-worlds/redis": "catalog:workflow",
     "@workflow/world-postgres": "catalog:workflow",
     "ai": "catalog:ai",
     "better-all": "catalog:",
@@ -55,6 +54,7 @@
     "react-dom": "catalog:react-is",
     "reading-time-estimator": "catalog:unified",
     "resend": "catalog:email",
+    "sharp": "catalog:next",
     "workflow": "catalog:workflow",
     "zod": "catalog:"
   },

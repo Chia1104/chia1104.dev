@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getRssString } from "@astrojs/rss";
 import { getTranslations } from "next-intl/server";
 
-import { FeedOrderBy, FeedType } from "@chia/db/types";
+import { FeedMode, FeedOrderBy, FeedType } from "@chia/db/types";
 import meta from "@chia/meta";
 import { WWW_BASE_URL } from "@chia/utils/config";
 import { isEnumValue } from "@chia/utils/is";
@@ -30,6 +30,7 @@ export const GET = async (
     client.feeds.list({
       limit: 20,
       type: FeedType.All,
+      mode: FeedMode.Tech,
       orderBy: FeedOrderBy.CreatedAt,
       sortOrder: "desc",
       withContent: false,

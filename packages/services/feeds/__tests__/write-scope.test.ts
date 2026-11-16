@@ -18,18 +18,34 @@ const feeds = vi.hoisted(() => ({
   upsertContent: vi.fn(async () => ({ id: 500 })),
 }));
 
-vi.mock("@chia/db/repos/feeds", () => feeds);
-vi.mock("@chia/db/repos/tags", () => ({
-  findTagIds: vi.fn(),
+const media = vi.hoisted(() => ({
+  getMediaEntry: vi.fn(async (_db: DB, id: number) =>
+    id === 25 ? { id } : undefined
+  ),
+}));
+
+const tags = vi.hoisted(() => ({
+  findTagIds: vi.fn(async (_db: DB, ids: number[]) =>
+    ids.filter((id) => id !== 99)
+  ),
   setFeedTags: vi.fn(),
 }));
+
+vi.mock("@chia/db/repos/feeds", () => feeds);
+vi.mock("@chia/db/repos/media", () => media);
+vi.mock("@chia/db/repos/tags", () => tags);
 
 import { updateFeedService } from "../write.service";
 
 /* SAFETY: the repositories are mocked; the handle is only passed through to them. */
 const db = {} as DB;
 
-const stored = (title: string) => ({
+const stored = (
+  title: string,
+  mediaEntryId: number | null = null,
+  content: string | null = "Body"
+) => ({
+  mediaEntryId,
   id: 5,
   slug: "a-post",
   type: FeedType.Post,
@@ -46,7 +62,7 @@ const stored = (title: string) => ({
       excerpt: null,
       description: "About RAG",
       summary: null,
-      content: "Body",
+      content,
     },
   ],
 });
@@ -59,6 +75,7 @@ const applyTitle = (title: string) => ({
 describe("updateFeedService scope", () => {
   beforeEach(() => {
     feeds.getFeedForIndexing.mockReset();
+    feeds.updateFeed.mockClear();
   });
 
   it("reports an article change when listings show the same feed", async () => {
@@ -89,6 +106,61 @@ describe("updateFeedService scope", () => {
       5,
       FeedChangeScope.Listing
     );
+  });
+
+  it("sets the work a feed is about and reports a listing change, since the work's page lists it", async () => {
+    feeds.getFeedForIndexing
+      .mockResolvedValueOnce(stored("RAG"))
+      .mockResolvedValueOnce(stored("RAG", 25));
+    const onFeedChanged = vi.fn(async () => undefined);
+
+    await updateFeedService(
+      db,
+      { feedId: 5, mediaEntryId: 25 },
+      { onFeedChanged }
+    );
+
+    expect(feeds.updateFeed).toHaveBeenCalledExactlyOnceWith(
+      db,
+      expect.objectContaining({ feedId: 5, mediaEntryId: 25 })
+    );
+    expect(onFeedChanged).toHaveBeenCalledExactlyOnceWith(
+      5,
+      FeedChangeScope.Listing
+    );
+  });
+
+  it("refuses a work that is not logged, before writing the feed", async () => {
+    await expect(
+      updateFeedService(db, { feedId: 5, mediaEntryId: 99 }, {})
+    ).rejects.toThrow("No logged work has id 99");
+    expect(feeds.updateFeed).not.toHaveBeenCalled();
+  });
+
+  it("reports a listing change when a translation gains its first body, since lists only hold feeds with one", async () => {
+    feeds.getFeedForIndexing
+      .mockResolvedValueOnce(stored("RAG", null, null))
+      .mockResolvedValueOnce(stored("RAG"));
+    const onFeedChanged = vi.fn(async () => undefined);
+
+    await updateFeedService(db, applyTitle("RAG"), { onFeedChanged });
+
+    expect(onFeedChanged).toHaveBeenCalledExactlyOnceWith(
+      5,
+      FeedChangeScope.Listing
+    );
+  });
+
+  it("refuses an unknown tag before writing the feed", async () => {
+    await expect(
+      updateFeedService(
+        db,
+        { feedId: 5, published: false, tagIds: [3, 99] },
+        {}
+      )
+    ).rejects.toThrow("No tag has id 99");
+    expect(feeds.updateFeed).not.toHaveBeenCalled();
+    expect(tags.setFeedTags).not.toHaveBeenCalled();
   });
 
   it("skips the listing reads when no hook listens", async () => {

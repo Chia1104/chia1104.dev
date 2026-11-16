@@ -30,6 +30,8 @@ const PROCEDURE_CACHE_TAGS = new Map([
   ["feeds.list", [WwwCacheTag.Listings]],
   ["tags.list", [WwwCacheTag.Listings]],
   ["feeds.details-by-slug", [WwwCacheTag.Articles]],
+  ["media.list", [WwwCacheTag.Media]],
+  ["media.get", [WwwCacheTag.Media]],
 ]);
 
 export const link = new RPCLink<RSCClientContext>({

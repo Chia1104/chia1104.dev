@@ -196,7 +196,17 @@
     "blog": "部落格",
     "notes": "筆記",
     "projects": "專案",
-    "contact": "聯絡"
+    "contact": "聯絡",
+    "movies": "電影",
+    "series": "影集",
+    "anime": "動畫",
+    "games": "遊戲"
+  },
+  "mode": {
+    "label": "網站模式",
+    "tech": "技術",
+    "hobby": "興趣",
+    "switch-to": "切換至{mode}模式"
   },
   "common": {
     "loading": "載入中..."
@@ -315,6 +325,8 @@
     "open": "開啟設定",
     "aiEnabled": "啟用 AI 功能",
     "aiEnabledDescription": "允許在本站使用 AI 相關功能。",
+    "reducedEffects": "減少動畫",
+    "reducedEffectsDescription": "讓背景與封面的特效保持靜止，在行動裝置上更省資源。觸控裝置預設開啟。",
     "done": "完成",
     "palette": {
       "title": "顏色",
@@ -364,6 +376,67 @@
       "title": "這個頁面載入失敗",
       "description": "錯誤已經回報，請重試或稍後再回來。",
       "retry": "重試"
+    }
+  },
+  "hobby": {
+    "title": "興趣",
+    "description": "工作以外，我在看的電影、影集、動畫，還有正在玩的遊戲。",
+    "intro": "工作以外，我在看的<movies>電影</movies>、<series>影集</series>、<anime>動畫</anime>，還有在玩的<games>遊戲</games>。",
+    "articles-intro": "也寫<guides>攻略</guides>、<reviews>心得</reviews>和<journal>生活記錄</journal>。",
+    "article": {
+      "guide": "攻略",
+      "review": "心得",
+      "journal": "生活記錄",
+      "more": "更多關於《{title}》的文章"
+    },
+    "article-description": {
+      "guide": "遊戲的攻略與筆記。",
+      "review": "看完、玩完之後的心得。",
+      "journal": "工作以外的生活記錄。"
+    },
+    "empty": "這裡還沒有紀錄。",
+    "kind": {
+      "movie": "電影",
+      "series": "影集",
+      "anime": "動畫",
+      "game": "遊戲"
+    },
+    "kind-description": {
+      "movie": "看過和想看的電影。",
+      "series": "追過和正在追的影集。",
+      "anime": "看過和正在看的動畫。",
+      "game": "玩過和正在玩的遊戲。"
+    },
+    "status": {
+      "planned": "口袋名單",
+      "in-progress": "進行中",
+      "completed": "已完成",
+      "dropped": "中途放棄"
+    },
+    "detail": {
+      "status": "狀態",
+      "released": "發行",
+      "started": "開始",
+      "finished": "完成",
+      "rating": "評分",
+      "rating-value": "{rating} / 10",
+      "favorite": "我的最愛",
+      "playtime": "遊玩時數",
+      "playtime-value": "{hours} 小時",
+      "achievements": "成就",
+      "achievements-value": "{unlocked} / {total}",
+      "last-played": "最後遊玩",
+      "achievement-rare": "稀有",
+      "achievement-share": "{share} 玩家解鎖",
+      "achievement-unlocked": "已解鎖",
+      "achievement-unlocked-on": "{date} 解鎖",
+      "achievement-locked": "未解鎖",
+      "achievements-more": "其餘 {count} 個成就",
+      "achievements-hidden": "還有 {count} 個未解鎖的隱藏成就",
+      "articles": "相關文章",
+      "source": "在 {source} 查看",
+      "close": "關閉",
+      "back": "所有紀錄"
     }
   }
 }

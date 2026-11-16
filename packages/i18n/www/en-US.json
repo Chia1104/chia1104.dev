@@ -196,7 +196,17 @@
     "blog": "Blog",
     "notes": "Notes",
     "projects": "Projects",
-    "contact": "Contact"
+    "contact": "Contact",
+    "movies": "Movies",
+    "series": "Series",
+    "anime": "Anime",
+    "games": "Games"
+  },
+  "mode": {
+    "label": "Site mode",
+    "tech": "Tech",
+    "hobby": "Hobby",
+    "switch-to": "Switch to {mode} mode"
   },
   "common": {
     "loading": "Loading..."
@@ -315,6 +325,8 @@
     "open": "Open settings",
     "aiEnabled": "Enable AI features",
     "aiEnabledDescription": "Allow AI-powered features on this site.",
+    "reducedEffects": "Reduce motion",
+    "reducedEffectsDescription": "Holds the backdrop and cover effects still, which is lighter on a phone. On by default on touch devices.",
     "done": "Done",
     "palette": {
       "title": "Colors",
@@ -364,6 +376,67 @@
       "title": "This page failed to load",
       "description": "The error has been reported. Try again, or come back later.",
       "retry": "Try again"
+    }
+  },
+  "hobby": {
+    "title": "Hobby",
+    "description": "What I watch and play outside of work: films, series, anime and games.",
+    "intro": "Outside of work I watch <movies>films</movies>, <series>series</series> and <anime>anime</anime>, and play <games>games</games>.",
+    "articles-intro": "I also write <guides>guides</guides>, <reviews>reviews</reviews> and a <journal>journal</journal>.",
+    "article": {
+      "guide": "Guide",
+      "review": "Review",
+      "journal": "Journal",
+      "more": "More on {title}"
+    },
+    "article-description": {
+      "guide": "Guides and notes for the games I play.",
+      "review": "What I made of what I watched and played.",
+      "journal": "Life outside of work."
+    },
+    "empty": "Nothing logged here yet.",
+    "kind": {
+      "movie": "Film",
+      "series": "Series",
+      "anime": "Anime",
+      "game": "Game"
+    },
+    "kind-description": {
+      "movie": "Films I have seen and want to see.",
+      "series": "Series I have followed and am following.",
+      "anime": "Anime I have watched and am watching.",
+      "game": "Games I have played and am playing."
+    },
+    "status": {
+      "planned": "On the list",
+      "in-progress": "In progress",
+      "completed": "Finished",
+      "dropped": "Dropped"
+    },
+    "detail": {
+      "status": "Status",
+      "released": "Released",
+      "started": "Started",
+      "finished": "Finished",
+      "rating": "Rating",
+      "rating-value": "{rating} / 10",
+      "favorite": "A favorite",
+      "playtime": "Playtime",
+      "playtime-value": "{hours, plural, one {# hour} other {# hours}}",
+      "achievements": "Achievements",
+      "achievements-value": "{unlocked} / {total}",
+      "last-played": "Last played",
+      "achievement-rare": "Rare",
+      "achievement-share": "{share} of players",
+      "achievement-unlocked": "Unlocked",
+      "achievement-unlocked-on": "Unlocked {date}",
+      "achievement-locked": "Locked",
+      "achievements-more": "{count, plural, one {# more achievement} other {# more achievements}}",
+      "achievements-hidden": "{count, plural, one {# hidden achievement} other {# hidden achievements}} still locked",
+      "articles": "Writing about it",
+      "source": "See it on {source}",
+      "close": "Close",
+      "back": "Everything logged"
     }
   }
 }

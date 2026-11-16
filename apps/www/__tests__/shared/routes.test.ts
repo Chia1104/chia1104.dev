@@ -1,8 +1,11 @@
 import { describe, it, expect } from "vitest";
 
-import navItems from "@/shared/routes";
+import routes from "@/shared/routes";
+import { SiteMode } from "@/shared/site-mode";
 
-describe("Navigation Routes", () => {
+describe.each(Object.values(SiteMode))("Navigation Routes (%s)", (mode) => {
+  const navItems = routes[mode];
+
   it("應該定義所有導航項目", () => {
     expect(navItems).toBeDefined();
     expect(navItems).toEqual(expect.any(Object));

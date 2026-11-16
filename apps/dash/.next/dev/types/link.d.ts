@@ -42,9 +42,11 @@ declare namespace __next_route_internal_types__ {
     | `/favicon.ico` // ../../../src/app/favicon.ico
     | `/feed` // ../../../src/app/(workspace)/(operator)/feed/page.tsx
     | `/feed/drafts` // ../../../src/app/(workspace)/(operator)/feed/(manage)/drafts/page.tsx
+    | `/feed/hobby` // ../../../src/app/(workspace)/(operator)/feed/(manage)/hobby/page.tsx
     | `/feed/notes` // ../../../src/app/(workspace)/(operator)/feed/(manage)/notes/page.tsx
     | `/feed/posts` // ../../../src/app/(workspace)/(operator)/feed/(manage)/posts/page.tsx
     | `/icon.png` // ../../../src/app/icon.png
+    | `/media` // ../../../src/app/(workspace)/(operator)/media/page.tsx
     | `/memory` // ../../../src/app/(workspace)/(operator)/memory/page.tsx
     | `/profile` // ../../../src/app/(workspace)/(operator)/profile/page.tsx
     | `/rag` // ../../../src/app/(workspace)/(operator)/rag/page.tsx

@@ -233,6 +233,9 @@ export const WWW_BASE_URL =
     ? "https://chia1104.dev"
     : "http://localhost:3000";
 
+/** Public origin of the site's storage bucket; an object's URL is this plus its key. */
+export const STORAGE_BASE_URL = "https://storage.chia1104.dev";
+
 /**
  * Cache tags on www pages. Pages have no revalidate timer; `apps/workflow` invalidates the
  * tags a write reaches.
@@ -242,6 +245,8 @@ export const WwwCacheTag = {
   Listings: "listings",
   /** Every article page. */
   Articles: "articles",
+  /** Hobby pages: every read of `media.list`. */
+  Media: "media",
 } as const;
 
 export type WwwCacheTag = (typeof WwwCacheTag)[keyof typeof WwwCacheTag];
@@ -258,13 +263,25 @@ const wwwLocalePrefix = (locale: string): string => {
   return `/${locale === "en" ? "en-US" : locale}`;
 };
 
-/** The canonical page of a post or note on the public site, in one locale. */
+/** The section of the public site that lists each feed type; hobby types live in the hobby mode's URL space. */
+const FEED_TYPE_SECTION = new Map([
+  ["post", "/posts"],
+  ["note", "/notes"],
+  ["guide", "/hobby/guides"],
+  ["review", "/hobby/reviews"],
+  ["journal", "/hobby/journal"],
+]);
+
+/** A feed's page on the public site, without the locale prefix. */
+export const feedPath = (feed: { type: string; slug: string }): string =>
+  `${FEED_TYPE_SECTION.get(feed.type) ?? `/${feed.type}s`}/${feed.slug}`;
+
+/** The canonical page of a feed on the public site, in one locale. */
 export const feedUrl = (feed: {
   type: string;
   slug: string;
   locale: string;
-}): string =>
-  `${WWW_BASE_URL}${wwwLocalePrefix(feed.locale)}/${feed.type}s/${feed.slug}`;
+}): string => `${WWW_BASE_URL}${wwwLocalePrefix(feed.locale)}${feedPath(feed)}`;
 
 export const DASH_BASE_URL =
   getEnv() === "production" || getEnv() === "prod"

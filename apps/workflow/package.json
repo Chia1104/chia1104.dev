@@ -32,7 +32,6 @@
     "@keyv/redis": "catalog:kv",
     "@opentelemetry/api": "catalog:otel",
     "@t3-oss/env-core": "catalog:env",
-    "@workflow-worlds/redis": "catalog:workflow",
     "@workflow/world-postgres": "catalog:workflow",
     "ai": "catalog:ai",
     "diff": "catalog:",

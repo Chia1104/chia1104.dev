@@ -7,6 +7,7 @@ import {
 } from "@chia/ai/embeddings/utils";
 import type { DB } from "@chia/db/client";
 import { feeds, feedTranslations, ResourceChunkKind } from "@chia/db/schema";
+import { FEED_MODE_TYPES, FeedMode } from "@chia/db/types";
 import type { Locale } from "@chia/db/types";
 
 import { ResourceType } from "./resource-types";
@@ -16,6 +17,12 @@ import type {
   ResourceChunkSet,
   ResourceSummary,
 } from "./types";
+
+/**
+ * Only the tech face is searchable: site search, related posts and the agents all read these
+ * chunks, and none of them lists a hobby article.
+ */
+const INDEXED_TYPES = [...FEED_MODE_TYPES[FeedMode.Tech]];
 
 interface FeedTranslationSource {
   id: number;
@@ -55,7 +62,9 @@ const loadSource = async (
     })
     .from(feedTranslations)
     .innerJoin(feeds, eq(feeds.id, feedTranslations.feedId))
-    .where(eq(feedTranslations.id, sourceId))
+    .where(
+      and(eq(feedTranslations.id, sourceId), inArray(feeds.type, INDEXED_TYPES))
+    )
     .limit(1);
 
   return row ?? null;
@@ -139,6 +148,7 @@ export const feedTranslationResource: ChunkableResource = {
       .where(
         and(
           inArray(feedTranslations.id, sourceIds),
+          inArray(feeds.type, INDEXED_TYPES),
           // same expression `loadSource` indexes with — reading the mirrored
           // `feed_translation.deleted` here instead would silently drop hits
           // whose chunks were indexed from `feed.deleted_at`

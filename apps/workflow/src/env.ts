@@ -20,7 +20,6 @@ export const env = createEnv({
     WORKFLOW_POSTGRES_JOB_PREFIX: z.string().min(1).optional(),
     WORKFLOW_POSTGRES_WORKER_CONCURRENCY: NumericStringSchema.optional(),
     WORKFLOW_POSTGRES_MAX_POOL_SIZE: NumericStringSchema.optional(),
-    WORKFLOW_REDIS_URI: z.url().optional(),
     ADMIN_ID: z.string().optional(),
     LOCAL_ADMIN_ID: z.string().optional(),
     BETA_ADMIN_ID: z.string().optional(),
@@ -42,7 +41,6 @@ export const env = createEnv({
       process.env.WORKFLOW_POSTGRES_WORKER_CONCURRENCY,
     WORKFLOW_POSTGRES_MAX_POOL_SIZE:
       process.env.WORKFLOW_POSTGRES_MAX_POOL_SIZE,
-    WORKFLOW_REDIS_URI: process.env.WORKFLOW_REDIS_URI,
     ADMIN_ID: process.env.ADMIN_ID,
     LOCAL_ADMIN_ID: process.env.LOCAL_ADMIN_ID,
     BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,

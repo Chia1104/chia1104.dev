@@ -5,6 +5,7 @@ import { emailContract } from "./email/email.contract";
 import { feedsContract } from "./feeds/feeds.contract";
 import { fileContract } from "./file/file.contract";
 import { healthContract } from "./health/health.contract";
+import { mediaContract } from "./media/media.contract";
 import { memoryContract } from "./memory/memory.contract";
 import { profileContract } from "./profile/profile.contract";
 import { ragContract } from "./rag/rag.contract";
@@ -27,6 +28,7 @@ export const routerContract = {
   rag: ragContract,
   memory: memoryContract,
   profile: profileContract,
+  media: mediaContract,
   spotify: spotifyContract,
   reports: reportsContract,
   tags: tagsContract,

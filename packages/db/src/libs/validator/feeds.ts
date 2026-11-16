@@ -6,7 +6,7 @@ import {
 import * as z from "zod";
 
 import { feeds, feedTranslations } from "../../schemas/schema.ts";
-import { FeedOrderBy, FeedType, Locale } from "../../types";
+import { FeedMode, FeedOrderBy, FeedType, Locale } from "../../types";
 
 import {
   dateSchema,
@@ -16,6 +16,7 @@ import {
 export const baseInfiniteSchema = baseInfiniteSchemaShared.extend({
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.UpdatedAt),
   type: z.enum(FeedType).optional(),
+  mode: z.enum(FeedMode).optional(),
   withContent: z.boolean().optional().default(false),
   locale: z.enum(Locale).optional(),
 });

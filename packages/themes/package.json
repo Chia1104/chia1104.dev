@@ -6,12 +6,14 @@
   "files": [
     "base.css",
     "default.css",
-    "cyan.css"
+    "cyan.css",
+    "hobby.css"
   ],
   "exports": {
     "./base.css": "./base.css",
     "./default.css": "./default.css",
-    "./cyan.css": "./cyan.css"
+    "./cyan.css": "./cyan.css",
+    "./hobby.css": "./hobby.css"
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache"

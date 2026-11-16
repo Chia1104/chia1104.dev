@@ -1,0 +1,69 @@
+/*
+ * The palette of www's hobby mode, layered over `default.css`. It keys off the frame's marker
+ * through `:root:has()` so layers portalled to `<body>` take it too.
+ *
+ * Every colour is derived from `--media-color`: the cover colour of the work in focus, which the
+ * hobby stage writes on `<html>`, or the idle colour below. The property is registered for its
+ * initial value only. It is deliberately not transitioned: it is inherited by the whole document,
+ * so easing it restyles every element on every frame. Surfaces that should ease transition their
+ * own colour instead. The dark block must restate every token the light block sets, because the
+ * light selector also outranks `.dark`.
+ */
+@property --media-color {
+  syntax: "<color>";
+  inherits: true;
+  /* Idle colour; `HOBBY_IDLE_COLOR` in www is the same value for the shader. */
+  initial-value: #45b0c5;
+}
+
+:root:has([data-site-mode="hobby"]) {
+  /* HeroUI Theme */
+  --accent: oklch(from var(--media-color) 0.5 max(c, 0.1) h);
+  --accent-foreground: oklch(from var(--media-color) 0.98 min(c, 0.02) h);
+  --background: oklch(from var(--media-color) 0.965 min(c, 0.015) h);
+  --border: oklch(from var(--media-color) 0.865 min(c, 0.02) h);
+  --default: oklch(from var(--media-color) 0.925 min(c, 0.018) h);
+  --default-foreground: oklch(from var(--media-color) 0.22 min(c, 0.03) h);
+  --field-background: oklch(from var(--media-color) 0.992 min(c, 0.006) h);
+  --field-foreground: oklch(from var(--media-color) 0.22 min(c, 0.03) h);
+  --field-placeholder: oklch(from var(--media-color) 0.5 min(c, 0.04) h);
+  --focus: oklch(from var(--media-color) 0.5 max(c, 0.1) h);
+  --foreground: oklch(from var(--media-color) 0.22 min(c, 0.03) h);
+  --muted: oklch(from var(--media-color) 0.5 min(c, 0.04) h);
+  --overlay: oklch(from var(--media-color) 0.992 min(c, 0.006) h);
+  --overlay-foreground: oklch(from var(--media-color) 0.22 min(c, 0.03) h);
+  --scrollbar: oklch(from var(--media-color) 0.82 min(c, 0.02) h);
+  --segment: oklch(from var(--media-color) 0.995 min(c, 0.005) h);
+  --segment-foreground: oklch(from var(--media-color) 0.22 min(c, 0.03) h);
+  --separator: oklch(from var(--media-color) 0.895 min(c, 0.018) h);
+  --surface: oklch(from var(--media-color) 0.992 min(c, 0.006) h);
+  --surface-foreground: oklch(from var(--media-color) 0.22 min(c, 0.03) h);
+
+  /* Border Radius */
+  --radius: 0.25rem;
+  --field-radius: 0.2rem;
+}
+
+:root.dark:has([data-site-mode="hobby"]) {
+  /* HeroUI Theme */
+  --accent: oklch(from var(--media-color) 0.84 max(c, 0.1) h);
+  --accent-foreground: oklch(from var(--media-color) 0.2 min(c, 0.04) h);
+  --background: oklch(from var(--media-color) 0.17 min(c, 0.03) h);
+  --border: oklch(from var(--media-color) 0.3 min(c, 0.035) h);
+  --default: oklch(from var(--media-color) 0.27 min(c, 0.035) h);
+  --default-foreground: oklch(from var(--media-color) 0.96 min(c, 0.015) h);
+  --field-background: oklch(from var(--media-color) 0.22 min(c, 0.035) h);
+  --field-foreground: oklch(from var(--media-color) 0.96 min(c, 0.015) h);
+  --field-placeholder: oklch(from var(--media-color) 0.72 min(c, 0.04) h);
+  --focus: oklch(from var(--media-color) 0.84 max(c, 0.1) h);
+  --foreground: oklch(from var(--media-color) 0.96 min(c, 0.015) h);
+  --muted: oklch(from var(--media-color) 0.72 min(c, 0.04) h);
+  --overlay: oklch(from var(--media-color) 0.22 min(c, 0.035) h);
+  --overlay-foreground: oklch(from var(--media-color) 0.96 min(c, 0.015) h);
+  --scrollbar: oklch(from var(--media-color) 0.6 min(c, 0.03) h);
+  --segment: oklch(from var(--media-color) 0.36 min(c, 0.04) h);
+  --segment-foreground: oklch(from var(--media-color) 0.96 min(c, 0.015) h);
+  --separator: oklch(from var(--media-color) 0.26 min(c, 0.032) h);
+  --surface: oklch(from var(--media-color) 0.22 min(c, 0.035) h);
+  --surface-foreground: oklch(from var(--media-color) 0.96 min(c, 0.015) h);
+}

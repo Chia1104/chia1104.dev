@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { relations } from "@chia/db/schema";
-import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
+import { FeedMode, FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import * as dbMocks from "@chia/test/mocks/db-feeds";
 
 import { ContentVisibility, createContentReadPort } from "../content-read.port";
@@ -85,6 +85,26 @@ describe("createContentReadPort visibility", () => {
           whereAnd: { userId: AUTHOR, published: true },
         })
       );
+    });
+
+    it("lists and counts the tech site's posts only, and does not read a hobby article", async () => {
+      await port.listPosts({ limit: 10 });
+
+      expect(dbMocks.getInfiniteFeeds).toHaveBeenCalledWith(
+        db,
+        expect.objectContaining({ mode: FeedMode.Tech })
+      );
+      expect(dbMocks.countFeeds).toHaveBeenCalledWith(
+        db,
+        expect.objectContaining({ mode: FeedMode.Tech })
+      );
+
+      const [feed] = dbMocks.mockFeeds;
+      dbMocks.getFeedBySlug.mockResolvedValueOnce({
+        ...feed,
+        type: FeedType.Journal,
+      });
+      await expect(port.getPost({ slug: "a-weekend" })).resolves.toBeNull();
     });
 
     it("searches published chunks only, asking for the reranked order", async () => {

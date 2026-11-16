@@ -2,6 +2,7 @@ import { oc } from "@orpc/contract";
 import * as z from "zod";
 
 import { locale } from "@chia/db/schema/enums";
+import { FeedMode } from "@chia/db/types";
 import {
   tagSlugSchema,
   tagTranslationsSchema,
@@ -28,7 +29,7 @@ const tagSchema = tagIdSchema.extend({
     z.enum(locale.enumValues),
     tagTranslationViewSchema
   ),
-  /** Live posts carrying the tag; drafts counted only when `includeUnpublished` was honoured. */
+  /** Live posts carrying the tag, of the asked `mode` when one was given; drafts counted only when `includeUnpublished` was honoured. */
   feedCount: z.number().int(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -57,6 +58,8 @@ export const listTagsContract = oc
       .object({
         /** Count drafts as well. Clamped like `feeds.list`: honoured from an API key up. */
         includeUnpublished: flexibleBoolean.optional().default(false),
+        /** Count the posts of one face of the site only. A tag is shared by both. */
+        mode: z.enum(FeedMode).optional(),
       })
       .optional()
       .default({ includeUnpublished: false })

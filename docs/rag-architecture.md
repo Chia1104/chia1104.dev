@@ -205,6 +205,7 @@ The best chunk dominates the score while other hits add limited breadth. Scoring
 
 ### 5.3 Feed layer
 
+- The feed adapter chunks tech feeds only (`post`, `note`). A hobby article builds no chunk set, which also clears the chunks of a post whose type was changed to a hobby one.
 - `searchFeedsService` converts translation results to feeds and deduplicates by `feedId`.
 - `searchPublicFeedsService` always uses BM25 and returns the fields required by the public site.
 - `getRelatedFeedsService` compares only card embeddings, requires the same locale and published, non-deleted content, and caches results for six hours.

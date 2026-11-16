@@ -33,17 +33,10 @@ import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
 import { AppError, AppErrorCode, isAppError } from "@chia/service-kit/errors";
 import type { JsonObject } from "@chia/utils/json";
-import type {
-  AgentAbortControllerRef,
-  AgentMessagePayload,
-} from "@chia/workflow-control/agent-schema";
+import type { AgentMessagePayload } from "@chia/workflow-control/agent-schema";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
-import {
-  AGENT_ABORT_CONTROLLER_KEY,
-  signalAgentAbort,
-  startAgentAbortController,
-} from "./abort";
+import { signalAgentAbort } from "./abort";
 import { AgentRunState } from "./agent.contract";
 import type { AgentServiceHost } from "./agent.factory";
 import type {
@@ -83,7 +76,6 @@ type OwnedSession<TState, TConfig extends object> = NonNullable<
  */
 interface AcceptedTurn {
   runId: string;
-  abortController: AgentAbortControllerRef;
   position: AgentStreamPosition;
   message: AgentMessagePayload;
   /** A live run of the session that was not executing a turn; cancelled once replaced. */
@@ -155,12 +147,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
     caller: AgentServiceCaller
   ): Promise<void> => {
     await assertWithinAgentQuota(db, caller);
-    await reconcileRunningAgentTurns(
-      db,
-      host.runs,
-      caller.context.workflow,
-      caller.userId
-    );
+    await reconcileRunningAgentTurns(db, host.runs, caller.userId);
     await assertBelowRunningTurnCap(db, caller);
   };
 
@@ -176,12 +163,11 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
     sessionId: string,
     runId: string,
     workflowRunId: string,
-    abortController: AgentAbortControllerRef,
     cause: unknown
   ) => {
     const signalled = await signalAgentAbort(
       workflow,
-      abortController.id,
+      runId,
       "run failed to bind"
     );
     const ended =
@@ -217,7 +203,6 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
   const admitTurn = async (
     outer: AgentServiceCaller,
     sessionId: string,
-    abortController: AgentAbortControllerRef,
     admit: AdmitTurn<TState, TConfig>
   ): Promise<AcceptedTurn | null> =>
     withAgentSessionLock(
@@ -265,16 +250,11 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           metadata: {
             agentKind: definition.kind,
             [AGENT_TURN_KEY]: turn,
-            [AGENT_ABORT_CONTROLLER_KEY]: {
-              id: abortController.id,
-              runId: abortController.runId,
-            },
           },
         });
         await admitted.bind?.(tx, runId);
         return {
           runId,
-          abortController,
           position,
           message,
           staleWorkflowRunId: state ? row.workflowRunId : null,
@@ -294,20 +274,8 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
   ): Promise<AgentStreamCursor | null> => {
     const db = outer.context.db;
     const workflow = outer.context.workflow;
-    // Started before the lock: a remote call must not hold the session's advisory lock and a
-    // pool connection for its timeout. An admission that then refuses closes it again.
-    const abortController = await startAgentAbortController(workflow);
-    let accepted: AcceptedTurn | null;
-    try {
-      accepted = await admitTurn(outer, sessionId, abortController, admit);
-    } catch (error) {
-      await signalAgentAbort(workflow, abortController.id, "admission refused");
-      throw error;
-    }
-    if (!accepted) {
-      await signalAgentAbort(workflow, abortController.id, "nothing to start");
-      return null;
-    }
+    const accepted = await admitTurn(outer, sessionId, admit);
+    if (!accepted) return null;
 
     // The row it drove is closed by `createAgentRun`; the run itself would otherwise sit in
     // the World until it ends on its own.
@@ -331,18 +299,12 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         sessionId,
         runId: accepted.runId,
         userId: outer.userId,
-        abortController: accepted.abortController,
         message: accepted.message,
       });
     } catch (error) {
       const code = isAppError(error) ? error.code : null;
       if (deliveryRefused(code)) {
         await completeAgentRun(db, accepted.runId, AgentRunStatus.Failed);
-        await signalAgentAbort(
-          workflow,
-          accepted.abortController.id,
-          "run failed to start"
-        );
       } else {
         // The workflow may have started. The lease row keeps the session blocked; the turn
         // step binds the real run id onto it, after which abort and reconcile see the run,
@@ -363,7 +325,6 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         sessionId,
         accepted.runId,
         workflowRunId,
-        accepted.abortController,
         error
       );
       throw error;
@@ -461,10 +422,10 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         return false;
       }
 
-      if (row.abortController) {
+      if (row.activeRunId) {
         const signalled = await signalAgentAbort(
           caller.context.workflow,
-          row.abortController.id,
+          row.activeRunId,
           "stopped by the operator"
         );
         if (signalled && row.turn?.running) {

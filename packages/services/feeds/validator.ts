@@ -1,7 +1,6 @@
 import * as z from "zod";
 
-import { locale } from "@chia/db/schema/enums";
-import { FeedType } from "@chia/db/types";
+import { feedType, locale } from "@chia/db/schema/enums";
 
 import { ResourceSearchMode } from "../rag/resource-types";
 
@@ -17,7 +16,7 @@ export const searchFeedsSchema = z.object({
 
 export const publicFeedSearchItemSchema = z.object({
   feedId: z.number(),
-  type: z.enum([FeedType.Post, FeedType.Note]),
+  type: z.enum(feedType.enumValues),
   slug: z.string(),
   locale: z.enum(locale.enumValues),
   title: z.string(),

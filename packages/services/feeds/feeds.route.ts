@@ -79,7 +79,9 @@ export const getFeedsRoute = contractOS.feeds.list
 
     const data = await getInfiniteFeedsByUserId(opts.context.db, {
       type: opts.input.type,
+      mode: opts.input.mode,
       tagSlug: opts.input.tag,
+      mediaSlug: opts.input.media,
       limit: resolveFeedLimit(caller.tier, opts.input.limit),
       orderBy: opts.input.orderBy,
       sortOrder: opts.input.sortOrder,

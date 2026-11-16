@@ -7,7 +7,6 @@ import { Card, Button, Chip, Tooltip } from "@heroui/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
 
-import { FeedType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
 import { cn } from "@chia/ui/utils/cn.util";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
@@ -71,11 +70,7 @@ const FeedItem = memo(
     const title = defaultTranslation?.title ?? "Untitled";
 
     const handleEdit = useCallback(() => {
-      const editPath =
-        feed.type === FeedType.Post
-          ? `/feed/edit/${feed.id}?type=post`
-          : `/feed/edit/${feed.id}?type=note`;
-      router.push(editPath);
+      router.push(`/feed/edit/${feed.id}?type=${feed.type}`);
     }, [feed.id, feed.type, router]);
 
     return (

@@ -3,7 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   closeStreams: vi.fn(),
   completeRun: vi.fn(),
+  createAbortHook: vi.fn(),
   runTurn: vi.fn(),
+}));
+
+vi.mock("@chia/workflow-control/agent-hooks", () => ({
+  agentAbortHook: { create: mocks.createAbortHook },
+  agentAbortToken: (runId: string) => `agent:abort:${runId}`,
 }));
 
 vi.mock("../src/steps/agent-turn.step", () => ({
@@ -15,14 +21,15 @@ vi.mock("../src/steps/agent-turn.step", () => ({
 import { ApprovalVerdict } from "@chia/agent-runtime/types";
 import { AgentRunStatus } from "@chia/db/schema";
 
+import type { AgentTurnRequest } from "../src/steps/agent-turn.step";
 import { agentSessionWorkflow } from "../src/workflows/agent-session.workflow";
-
-const abortController = { id: "abort-1", runId: "abort-run-1" };
 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.closeStreams.mockResolvedValue(undefined);
   mocks.completeRun.mockResolvedValue(undefined);
+  // Never resumed unless a test says so.
+  mocks.createAbortHook.mockReturnValue(new Promise(() => undefined));
   mocks.runTurn.mockResolvedValue({ status: "done", error: undefined });
 });
 
@@ -33,7 +40,6 @@ describe("agentSessionWorkflow", () => {
         sessionId: "session-1",
         runId: "run-1",
         userId: "user-1",
-        abortController,
         message: {
           type: "prompt",
           text: "/translate zh-TW",
@@ -44,22 +50,26 @@ describe("agentSessionWorkflow", () => {
       })
     ).resolves.toEqual({ sessionId: "session-1", status: "done" });
 
-    expect(mocks.runTurn).toHaveBeenCalledExactlyOnceWith({
-      sessionId: "session-1",
-      runId: "run-1",
-      userId: "user-1",
-      abortController,
-      message: {
-        type: "prompt",
-        text: "/translate zh-TW",
-        template: { name: "translate", args: ["zh-TW"] },
-        attachments: [{ type: "draft", id: 7 }],
-        credentials: { anthropic: "initial" },
+    expect(mocks.runTurn).toHaveBeenCalledExactlyOnceWith(
+      {
+        sessionId: "session-1",
+        runId: "run-1",
+        userId: "user-1",
+        message: {
+          type: "prompt",
+          text: "/translate zh-TW",
+          template: { name: "translate", args: ["zh-TW"] },
+          attachments: [{ type: "draft", id: 7 }],
+          credentials: { anthropic: "initial" },
+        },
       },
+      expect.any(AbortSignal)
+    );
+    expect(mocks.createAbortHook).toHaveBeenCalledExactlyOnceWith({
+      token: "agent:abort:run-1",
     });
     expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
       "run-1",
-      abortController,
       AgentRunStatus.Completed
     );
     expect(mocks.closeStreams).toHaveBeenCalledOnce();
@@ -73,13 +83,11 @@ describe("agentSessionWorkflow", () => {
         sessionId: "session-1",
         runId: "run-1",
         userId: "user-1",
-        abortController,
         message: { type: "prompt", text: "commit it" },
       })
     ).resolves.toEqual({ sessionId: "session-1", status: "awaiting_approval" });
     expect(mocks.completeRun).toHaveBeenCalledWith(
       "run-1",
-      abortController,
       AgentRunStatus.Completed
     );
 
@@ -98,7 +106,6 @@ describe("agentSessionWorkflow", () => {
       sessionId: "session-1",
       runId: "run-2",
       userId: "user-1",
-      abortController: { id: "abort-2", runId: "abort-run-2" },
       message: { type: "resume", resume, credentials: { openai: "fresh" } },
     });
 
@@ -106,7 +113,42 @@ describe("agentSessionWorkflow", () => {
       expect.objectContaining({
         runId: "run-2",
         message: { type: "resume", resume, credentials: { openai: "fresh" } },
+      }),
+      expect.any(AbortSignal)
+    );
+  });
+
+  it("aborts the executing turn when its hook is resumed, then records what the turn returned", async () => {
+    let resume: (payload: { reason: string }) => void = () => undefined;
+    mocks.createAbortHook.mockReturnValue(
+      new Promise<{ reason: string }>((resolve) => {
+        resume = resolve;
       })
+    );
+    mocks.runTurn.mockImplementation(
+      (_request: AgentTurnRequest, signal: AbortSignal) =>
+        new Promise((resolve) => {
+          signal.addEventListener("abort", () =>
+            resolve({ status: "aborted" })
+          );
+        })
+    );
+
+    const run = agentSessionWorkflow({
+      sessionId: "session-1",
+      runId: "run-1",
+      userId: "user-1",
+      message: { type: "prompt", text: "first" },
+    });
+    resume({ reason: "stopped by the operator" });
+
+    await expect(run).resolves.toEqual({
+      sessionId: "session-1",
+      status: "aborted",
+    });
+    expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
+      "run-1",
+      AgentRunStatus.Cancelled
     );
   });
 
@@ -125,13 +167,11 @@ describe("agentSessionWorkflow", () => {
         sessionId: "session-1",
         runId: "run-1",
         userId: "user-1",
-        abortController,
         message: { type: "prompt", text: "first" },
       });
 
       expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
         "run-1",
-        abortController,
         status
       );
     }
@@ -145,14 +185,12 @@ describe("agentSessionWorkflow", () => {
         sessionId: "session-1",
         runId: "run-1",
         userId: "user-1",
-        abortController,
         message: { type: "prompt", text: "first" },
       })
     ).rejects.toThrow("process died mid-step");
 
     expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
       "run-1",
-      abortController,
       AgentRunStatus.Failed
     );
     expect(mocks.closeStreams).toHaveBeenCalledOnce();

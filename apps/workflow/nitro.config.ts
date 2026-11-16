@@ -26,7 +26,6 @@ export default defineConfig({
     "pg*",
     "pg-pool*",
     "pino*",
-    "@workflow-worlds/redis",
     "@workflow/world-postgres",
     "workflow",
   ],

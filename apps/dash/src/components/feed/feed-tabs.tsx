@@ -4,7 +4,7 @@ import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 import { useCallback, useMemo } from "react";
 
 import { Tabs } from "@heroui/react";
-import { FileText, StickyNote, FilePenLine } from "lucide-react";
+import { FileText, StickyNote, FilePenLine, Gamepad2 } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
@@ -20,6 +20,12 @@ const FEED_TABS = [
     label: "Notes",
     icon: StickyNote,
     href: "/feed/notes",
+  },
+  {
+    key: "hobby",
+    label: "Hobby",
+    icon: Gamepad2,
+    href: "/feed/hobby",
   },
   {
     key: "drafts",

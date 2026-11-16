@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { FeedOrderBy, FeedType } from "@chia/db/types";
+import { FeedMode, FeedOrderBy, FeedType, isFeedTypeOf } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
 import { cn } from "@chia/ui/utils/cn.util";
 
@@ -29,6 +29,7 @@ export async function LatestFeeds() {
   const { items } = await client.feeds.list({
     limit: 4,
     type: FeedType.All,
+    mode: FeedMode.Tech,
     orderBy: FeedOrderBy.CreatedAt,
     sortOrder: "desc",
     withContent: false,
@@ -37,7 +38,9 @@ export async function LatestFeeds() {
   });
   const feeds = items.flatMap((feed) => {
     const [translation] = feed.translations;
-    return translation ? [{ ...feed, translation }] : [];
+    return translation && isFeedTypeOf(FeedMode.Tech, feed.type)
+      ? [{ ...feed, type: feed.type, translation }]
+      : [];
   });
   if (feeds.length === 0) return null;
 

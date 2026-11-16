@@ -4,24 +4,26 @@ import { useSelectedLayoutSegments } from "next/navigation";
 import { useMemo } from "react";
 
 import {
-  Home,
+  Activity,
   Bookmark,
-  Settings,
+  Boxes,
+  Brain,
+  Clapperboard,
+  Database,
+  File,
+  Flag,
+  Home,
   KeySquare,
+  Music2,
+  Gamepad2,
   Notebook,
   PenSquare,
-  File,
-  Music2,
-  Database,
-  Boxes,
-  Activity,
-  Wrench,
-  Brain,
+  Settings,
   SlidersHorizontal,
   Tags,
-  Flag,
   UserRound,
   Users,
+  Wrench,
 } from "lucide-react";
 
 import type { Session } from "@chia/auth/types";
@@ -94,6 +96,12 @@ export const useRouteItems = (level: AccessLevel) => {
               isActive: segments[0] === "feed" && segments[1] === "notes",
             },
             {
+              url: "/feed/hobby",
+              icon: <Gamepad2 />,
+              title: "Hobby",
+              isActive: segments[0] === "feed" && segments[1] === "hobby",
+            },
+            {
               url: "/feed/drafts",
               icon: <PenSquare />,
               title: "Drafts",
@@ -127,6 +135,13 @@ export const useRouteItems = (level: AccessLevel) => {
           isActive: segments[0] === "profile",
           icon: <UserRound />,
           title: "Profile",
+          operator: true,
+        },
+        {
+          url: "/media",
+          isActive: segments[0] === "media",
+          icon: <Clapperboard />,
+          title: "Media log",
           operator: true,
         },
       ],

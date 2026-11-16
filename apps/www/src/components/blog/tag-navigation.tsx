@@ -6,6 +6,7 @@ import { Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 
+import { FeedMode } from "@chia/db/types";
 import {
   NavigationMenuContent,
   NavigationMenuItem,
@@ -30,7 +31,9 @@ const PublishedTags = ({
 }: {
   children: (tags: ListedTag[]) => ReactNode;
 }) => {
-  const { data, isPending } = useQuery(orpc.tags.list.queryOptions());
+  const { data, isPending } = useQuery(
+    orpc.tags.list.queryOptions({ input: { mode: FeedMode.Tech } })
+  );
   if (isPending) {
     return (
       <ul className="grid w-[300px] gap-3 p-4 pb-0 md:w-[500px] md:grid-cols-2">

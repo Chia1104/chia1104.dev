@@ -5,6 +5,7 @@ import { emailRouter } from "./email/email.route";
 import { feedsRouter } from "./feeds/feeds.route";
 import { fileRouter } from "./file/file.route";
 import { healthRouter } from "./health/health.route";
+import { mediaRouter } from "./media/media.route";
 import { memoryRouter } from "./memory/memory.route";
 import { profileRouter } from "./profile/profile.route";
 import { ragRouter } from "./rag/rag.route";
@@ -28,6 +29,7 @@ export const router = contractOS.router({
   rag: ragRouter,
   memory: memoryRouter,
   profile: profileRouter,
+  media: mediaRouter,
   spotify: spotifyRouter,
   reports: reportsRouter,
   tags: tagsRouter,

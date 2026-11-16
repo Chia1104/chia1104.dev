@@ -26,7 +26,7 @@ describe("writePaletteStyle", () => {
       TOKENS
     );
     expect(styleText()).toBe(
-      ":root:not(.dark){--accent:#FF000080;}:root.dark{--separator:#00FF00FF;}"
+      ":root:not(.dark):not(:has([data-site-mode])){--accent:#FF000080;}:root.dark:not(:has([data-site-mode])){--separator:#00FF00FF;}"
     );
   });
 
@@ -52,7 +52,9 @@ describe("getPaletteScript", () => {
       })
     );
     new Function(getPaletteScript(STORAGE_KEY))();
-    expect(styleText()).toBe(":root.dark{--accent:#0000FFFF;}");
+    expect(styleText()).toBe(
+      ":root.dark:not(:has([data-site-mode])){--accent:#0000FFFF;}"
+    );
   });
 
   it("drops stored values that are not #RRGGBBAA and tokens outside the list", () => {
@@ -73,7 +75,9 @@ describe("getPaletteScript", () => {
       })
     );
     new Function(getPaletteScript(STORAGE_KEY))();
-    expect(styleText()).toBe(":root:not(.dark){--muted:#12345678;}");
+    expect(styleText()).toBe(
+      ":root:not(.dark):not(:has([data-site-mode])){--muted:#12345678;}"
+    );
   });
 
   it("cannot close its <script> element through the storage key", () => {
@@ -85,7 +89,9 @@ describe("getPaletteScript", () => {
       JSON.stringify({ state: { palette: { dark: { muted: "#12345678" } } } })
     );
     new Function(script)();
-    expect(styleText()).toBe(":root.dark{--muted:#12345678;}");
+    expect(styleText()).toBe(
+      ":root.dark:not(:has([data-site-mode])){--muted:#12345678;}"
+    );
   });
 
   it("does nothing when storage is empty or unreadable", () => {
