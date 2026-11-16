@@ -218,9 +218,9 @@ Requests are recorded only after the provider turn succeeds; a failed turn leave
 
 ### Abort path
 
-Cancelling a workflow run does not interrupt a step already executing. Each turn run therefore has a small durable abort-controller workflow parked on a hook. The turn step subscribes to its stream and passes the resulting `AbortSignal` to Pi and host ports.
+Cancelling a workflow run does not interrupt a step already executing. The turn run therefore owns an `AbortController` and races its step against a hook whose token derives from the `agent.run` id. The step receives the controller's `AbortSignal` across the step boundary and passes it to Pi and host ports; the hook is released when the run ends.
 
-Abort resumes the controller, waits for the turn's `run:end` within a deadline, then cancels the run and marks its row. Partial assistant output is persisted as aborted; approvals and compaction do not run.
+Abort resumes the hook, waits for the turn's `run:end` within a deadline, then cancels the run and marks its row. Partial assistant output is persisted as aborted; approvals and compaction do not run.
 
 ## 6. Events, streaming and reconnect
 
@@ -405,7 +405,7 @@ The harness is designed to be host-scheduled. Its lane API reduces to four durab
 | ------------------ | ---------------------------------------------------------- |
 | `accept`           | `agent.run` creation under the lock and the workflow start |
 | `drive`            | `runAgentTurnStep`                                         |
-| `requestAbort`     | The per-run abort-controller workflow                      |
+| `requestAbort`     | The turn run's abort hook                                  |
 | `inspectExecution` | Turn-marker reconciliation against the Workflow World      |
 
 `drive` returns `settled`, `waiting: retry` with `notBefore`, or `waiting: deferred` with a poll interval, so provider retries and deferred responses become workflow sleeps rather than in-process waits.

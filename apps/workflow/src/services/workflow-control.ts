@@ -19,12 +19,6 @@ export const executeLocalWorkflowCommand = async (
   command: WorkflowControlCommand
 ): Promise<WorkflowControlResult> => {
   switch (command.type) {
-    case "agent-abort:start": {
-      const { agentAbortWorkflow } =
-        await import("../workflows/agent-abort.workflow");
-      const run = await start(agentAbortWorkflow, [command.request]);
-      return { type: "started", runId: run.runId };
-    }
     case "agent-session:start": {
       const { agentSessionWorkflow } =
         await import("../workflows/agent-session.workflow");
@@ -33,7 +27,7 @@ export const executeLocalWorkflowCommand = async (
     }
     case "agent-abort:resume": {
       await agentAbortHook.resume(
-        agentAbortToken(command.controllerId),
+        agentAbortToken(command.runId),
         command.payload
       );
       return { type: "completed" };
@@ -135,12 +129,5 @@ export const workflowControl = {
   }) => startRun({ type: "memory-consolidation:start", request }),
   async cancelRun(runId: string) {
     await executeLocalWorkflowCommand({ type: "run:cancel", runId });
-  },
-  async resumeAgentAbort(controllerId: string, reason: string) {
-    await executeLocalWorkflowCommand({
-      type: "agent-abort:resume",
-      controllerId,
-      payload: { reason },
-    });
   },
 };

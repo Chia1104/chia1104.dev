@@ -34,9 +34,3 @@ const agentTurnMarkerSchema = z.object({
 
 export const readAgentTurnMarker = (metadata: JsonObject) =>
   agentTurnMarkerSchema.safeParse(metadata[AGENT_TURN_KEY]).data;
-
-export interface AgentAbortMessage {
-  type: "abort";
-  reason: string;
-  expired: boolean;
-}

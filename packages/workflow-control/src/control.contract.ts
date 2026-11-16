@@ -1,9 +1,6 @@
 import * as z from "zod";
 
-import {
-  agentAbortControllerRefSchema,
-  agentMessagePayloadSchema,
-} from "./agent.schema";
+import { agentMessagePayloadSchema } from "./agent.schema";
 
 /** Which www pages a feed write changes: its own article, or every listing as well. */
 export const FeedChangeScope = {
@@ -18,22 +15,18 @@ const agentSessionRequestSchema = z.object({
   sessionId: z.string(),
   runId: z.string(),
   userId: z.string(),
-  abortController: agentAbortControllerRefSchema,
   message: agentMessagePayloadSchema,
 });
 
 export const workflowControlCommandSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("agent-abort:start"),
-    request: z.object({ id: z.string(), ttlMs: z.number().int().positive() }),
-  }),
   z.object({
     type: z.literal("agent-session:start"),
     request: agentSessionRequestSchema,
   }),
   z.object({
     type: z.literal("agent-abort:resume"),
-    controllerId: z.string(),
+    /** The `agent.run` id, not the workflow run id. */
+    runId: z.string(),
     payload: z.object({ reason: z.string() }),
   }),
   z.object({

@@ -36,13 +36,7 @@ const quota = vi.hoisted(() => ({
   assertWithinAgentQuota: vi.fn(),
 }));
 const abort = vi.hoisted(() => ({
-  AGENT_ABORT_CONTROLLER_KEY: "abortController",
-  readAgentAbortControllerRef: () => undefined,
   signalAgentAbort: vi.fn(async () => true),
-  startAgentAbortController: vi.fn(async () => ({
-    id: "abort-1",
-    runId: "abort-run-1",
-  })),
 }));
 
 vi.mock("@chia/db/repos/agent", () => repo);
@@ -180,26 +174,6 @@ describe("agent turn admission", () => {
     ).rejects.toMatchObject({ code: AppErrorCode.Conflict });
     expect(repo.createAgentRun).not.toHaveBeenCalled();
     expect(startAgentSession).not.toHaveBeenCalled();
-    // The controller was started ahead of the lock; a refusal closes it rather than leaving
-    // it parked until its TTL.
-    expect(abort.signalAgentAbort).toHaveBeenCalledWith(
-      workflow,
-      "abort-1",
-      expect.any(String)
-    );
-  });
-
-  it("starts the abort controller before taking the session lock", async () => {
-    liveRun("completed");
-    loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
-    abort.startAgentAbortController.mockImplementationOnce(async () => {
-      expect(lockHeld).toBe(false);
-      return { id: "abort-1", runId: "abort-run-1" };
-    });
-
-    await turns.prompt(caller, { sessionId: "session-1", text: "first" });
-
-    expect(abort.startAgentAbortController).toHaveBeenCalledOnce();
   });
 
   it("refuses a prompt while an approval is undecided", async () => {
@@ -257,7 +231,7 @@ describe("agent turn admission", () => {
     expect(startAgentSession).toHaveBeenCalledOnce();
   });
 
-  it("fails the lease row and closes its controller when the workflow service refused the start", async () => {
+  it("fails the lease row when the workflow service refused the start", async () => {
     liveRun("completed");
     loadOwnedSession.mockResolvedValue(session({ workflowRunId: null }));
     startAgentSession.mockRejectedValue(
@@ -272,11 +246,6 @@ describe("agent turn admission", () => {
       db,
       createdRunId(),
       AgentRunStatus.Failed
-    );
-    expect(abort.signalAgentAbort).toHaveBeenCalledWith(
-      workflow,
-      "abort-1",
-      expect.any(String)
     );
     expect(repo.bindAgentRunExternalId).not.toHaveBeenCalled();
   });
@@ -307,11 +276,11 @@ describe("agent turn admission", () => {
       turns.prompt(caller, { sessionId: "session-1", text: "first" })
     ).rejects.toThrow("db gone");
 
-    // The row still carries its lease id, so abort could not find the run: stop it on the
-    // id this request holds, wait for the turn to end, then cancel and close the row.
+    // The row still carries its lease id, so `abort` would not see a live run: stop the turn
+    // from here, wait for it to end, then cancel and close the row.
     expect(abort.signalAgentAbort).toHaveBeenCalledWith(
       workflow,
-      "abort-1",
+      createdRunId(),
       expect.any(String)
     );
     expect(cancelRun).toHaveBeenCalledExactlyOnceWith("wf-2");

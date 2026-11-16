@@ -1,9 +1,6 @@
 import { AppError, appErrorCodeFromStatus } from "@chia/service-kit/errors";
 
-import type {
-  AgentAbortControllerRef,
-  AgentMessagePayload,
-} from "./agent.schema";
+import type { AgentMessagePayload } from "./agent.schema";
 import {
   startedRunId,
   workflowControlErrorSchema,
@@ -38,7 +35,6 @@ export interface AgentSessionStartRequest {
   sessionId: string;
   runId: string;
   userId: string;
-  abortController: AgentAbortControllerRef;
   message: AgentMessagePayload;
 }
 
@@ -76,20 +72,15 @@ export const createWorkflowControlClient = ({
   };
 
   return {
-    async startAgentAbort(request: { id: string; ttlMs: number }) {
-      return startedRunId(
-        await execute({ type: "agent-abort:start", request })
-      );
-    },
     async startAgentSession(request: AgentSessionStartRequest) {
       return startedRunId(
         await execute({ type: "agent-session:start", request })
       );
     },
-    async resumeAgentAbort(controllerId: string, reason: string) {
+    async resumeAgentAbort(runId: string, reason: string) {
       await execute({
         type: "agent-abort:resume",
-        controllerId,
+        runId,
         payload: { reason },
       });
     },
