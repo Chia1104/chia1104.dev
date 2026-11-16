@@ -220,9 +220,9 @@ Request 只在 provider turn 成功後記錄；失敗的 turn 不留下 undecide
 
 ### Abort 路徑
 
-取消 workflow run 無法中斷已執行的 step，因此每個 turn run 另有一個停在 hook 上的小型 durable abort-controller workflow。Turn step 訂閱它的 stream，將 `AbortSignal` 傳給 Pi 與 host ports。
+取消 workflow run 無法中斷已執行的 step，因此 turn run 自己持有一個 `AbortController`，讓 step 與一個 hook 競速；hook token 由 `agent.run` id 推導。Step 跨 step 邊界收到 controller 的 `AbortSignal`，再傳給 Pi 與 host ports；run 結束時 hook 隨之釋放。
 
-Abort 先 resume controller，在 deadline 內等待該 turn 的 `run:end`，再取消 run 並更新 row。部分 assistant output 會以 aborted 狀態持久化；approval 與 compaction 不執行。
+Abort 先 resume hook，在 deadline 內等待該 turn 的 `run:end`，再取消 run 並更新 row。部分 assistant output 會以 aborted 狀態持久化；approval 與 compaction 不執行。
 
 ## 6. Events、streaming 與 reconnect
 
@@ -403,7 +403,7 @@ Harness 本身就是為 host 排程設計的。Lane API 收斂成四個 durable 
 | ------------------ | ------------------------------------------ |
 | `accept`           | 在 lock 下建立 `agent.run` 並啟動 workflow |
 | `drive`            | `runAgentTurnStep`                         |
-| `requestAbort`     | 每個 run 的 abort-controller workflow      |
+| `requestAbort`     | Turn run 的 abort hook                     |
 | `inspectExecution` | 對 Workflow World 做 turn-marker reconcile |
 
 `drive` 回傳 `settled`、帶 `notBefore` 的 `waiting: retry`，或帶 poll 間隔的 `waiting: deferred`，因此 provider retry 與 deferred response 會變成 workflow sleep，而不是 process 內的等待。

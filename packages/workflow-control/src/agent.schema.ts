@@ -62,21 +62,5 @@ export const agentMessagePayloadSchema = z.discriminatedUnion("type", [
 
 export type AgentMessagePayload = z.infer<typeof agentMessagePayloadSchema>;
 
-/**
- * Aborts the turn a run is executing. Keyed by the controller's own id,
- * minted by the service when it starts the run.
- */
+/** Aborts the turn a run is executing; `reason` is recorded in the run's event log. */
 export const agentAbortPayloadSchema = z.object({ reason: z.string() });
-
-/**
- * Hook token id and the controller run whose stream turns subscribe to.
- * Carried in the run's request and `agent.run.metadata`.
- */
-export const agentAbortControllerRefSchema = z.object({
-  id: z.string(),
-  runId: z.string(),
-});
-
-export type AgentAbortControllerRef = z.infer<
-  typeof agentAbortControllerRefSchema
->;

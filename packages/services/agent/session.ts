@@ -28,7 +28,6 @@ import {
 import { AgentRunStatus } from "@chia/db/schema";
 import type { AgentSession } from "@chia/db/schema";
 
-import { readAgentAbortControllerRef } from "./abort";
 import { AgentRunState } from "./agent.contract";
 import type { AgentServiceHost } from "./agent.factory";
 import type { AgentKindService, AgentServiceCaller } from "./agent.service";
@@ -81,9 +80,6 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
       workflowRunId: activeRun?.externalRunId ?? null,
       startedAt: activeRun?.startedAt ?? null,
       turn: activeRun ? readAgentTurnMarker(activeRun.metadata) : undefined,
-      abortController: activeRun
-        ? readAgentAbortControllerRef(activeRun.metadata)
-        : undefined,
     };
   };
 

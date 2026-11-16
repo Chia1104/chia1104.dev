@@ -16,12 +16,7 @@ export const createAgentUsageService = (
   runs: AgentRunHost
 ): AgentUsageService => ({
   async standing(caller) {
-    await reconcileRunningAgentTurns(
-      caller.context.db,
-      runs,
-      caller.context.workflow,
-      caller.userId
-    );
+    await reconcileRunningAgentTurns(caller.context.db, runs, caller.userId);
     return readAgentUsageStanding(caller.context.db, caller);
   },
 });

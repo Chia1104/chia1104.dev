@@ -1,44 +1,18 @@
 import { reportError } from "@chia/observability/report";
-import type { JsonObject } from "@chia/utils/json";
-import { agentAbortControllerRefSchema } from "@chia/workflow-control/agent-schema";
-import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-schema";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
-const AGENT_ABORT_TTL_MS = 24 * 60 * 60 * 1000;
-
-export const AGENT_ABORT_CONTROLLER_KEY = "abortController";
-
-export const readAgentAbortControllerRef = (
-  metadata: JsonObject
-): AgentAbortControllerRef | undefined => {
-  const parsed = agentAbortControllerRefSchema.safeParse(
-    metadata[AGENT_ABORT_CONTROLLER_KEY]
-  );
-  return parsed.success ? parsed.data : undefined;
-};
-
-export const startAgentAbortController = async (
-  workflow: WorkflowControlClient
-): Promise<AgentAbortControllerRef> => {
-  const id = crypto.randomUUID();
-  const runId = await workflow.startAgentAbort({
-    id,
-    ttlMs: AGENT_ABORT_TTL_MS,
-  });
-  return { id, runId };
-};
-
+/** Asks the run executing `runId`'s turn to stop it; `false` when the run could not be reached. */
 export const signalAgentAbort = async (
   workflow: Pick<WorkflowControlClient, "resumeAgentAbort">,
-  controllerId: string,
+  runId: string,
   reason: string
 ): Promise<boolean> => {
   try {
-    await workflow.resumeAgentAbort(controllerId, reason);
+    await workflow.resumeAgentAbort(runId, reason);
     return true;
   } catch (error) {
     reportError(error, "Agent abort could not be signalled", {
-      controllerId,
+      runId,
       reason,
     });
     return false;

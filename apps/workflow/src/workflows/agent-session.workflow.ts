@@ -3,9 +3,10 @@ import * as z from "zod";
 
 import type { AgentRunStatus } from "@chia/db/schema";
 import {
-  agentAbortControllerRefSchema,
-  agentMessagePayloadSchema,
-} from "@chia/workflow-control/agent-schema";
+  agentAbortHook,
+  agentAbortToken,
+} from "@chia/workflow-control/agent-hooks";
+import { agentMessagePayloadSchema } from "@chia/workflow-control/agent-schema";
 
 import {
   closeAgentStreamsStep,
@@ -25,12 +26,10 @@ import {
 
 export const requestSchema = z.object({
   sessionId: z.string(),
-  /** Marker writes go here only. */
+  /** Marker writes go here only; also names the run's abort hook. */
   runId: z.string(),
   /** Re-checked against the stored row by the step. */
   userId: z.string(),
-  /** Started by the service before the run; the step subscribes to it. */
-  abortController: agentAbortControllerRefSchema,
   message: agentMessagePayloadSchema,
 });
 
@@ -39,8 +38,7 @@ type Request = z.input<typeof requestSchema>;
 export const agentSessionWorkflow = async (request: Request) => {
   "use workflow";
 
-  const { sessionId, runId, userId, abortController, message } =
-    requestSchema.parse(request);
+  const { sessionId, runId, userId, message } = requestSchema.parse(request);
 
   /**
    * Closed in `finally` whichever way the turn ends. Without it, a thrown step leaves the
@@ -50,13 +48,21 @@ export const agentSessionWorkflow = async (request: Request) => {
    */
   let status: Exclude<AgentRunStatus, typeof AgentRunStatus.Active> = "failed";
   try {
-    const outcome = await runAgentTurnStep({
-      sessionId,
-      runId,
-      userId,
-      abortController,
-      message,
-    });
+    // Cancelling a run only stops rescheduling; a stop reaches the executing step through
+    // this signal. The hook is released when the run ends.
+    const controller = new AbortController();
+    const stop = agentAbortHook.create({ token: agentAbortToken(runId) });
+    const turn = runAgentTurnStep(
+      { sessionId, runId, userId, message },
+      controller.signal
+    );
+    const outcome = await Promise.race([
+      turn,
+      stop.then(() => {
+        controller.abort();
+        return turn;
+      }),
+    ]);
     status =
       outcome.status === "error"
         ? "failed"
@@ -65,7 +71,7 @@ export const agentSessionWorkflow = async (request: Request) => {
           : "completed";
     return { sessionId, status: outcome.status };
   } finally {
-    await completeAgentRunStep(runId, abortController, status);
+    await completeAgentRunStep(runId, status);
     await closeAgentStreamsStep();
   }
 };

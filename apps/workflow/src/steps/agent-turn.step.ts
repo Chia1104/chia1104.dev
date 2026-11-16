@@ -39,18 +39,12 @@ import {
 } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
-import { signalAgentAbort } from "@chia/services/agent/abort";
 import { messageOf } from "@chia/utils/error-helper";
 import { asJsonObject } from "@chia/utils/json";
-import type {
-  AgentAbortControllerRef,
-  AgentMessagePayload,
-} from "@chia/workflow-control/agent-schema";
+import type { AgentMessagePayload } from "@chia/workflow-control/agent-schema";
 
 import { agentFactory } from "../agents/factory";
 import { env } from "../env";
-import { subscribeAgentAbort } from "../services/agent-abort-controller";
-import { workflowControl } from "../services/workflow-control";
 
 /**
  * The engine lives in this step, not the workflow: `"use workflow"` has no Node built-ins
@@ -65,8 +59,6 @@ export interface AgentTurnRequest {
   runId: string;
   /** Verified at the transport boundary before the run started. */
   userId: string;
-  /** Subscribed for the turn's `AbortSignal`. */
-  abortController: AgentAbortControllerRef;
   /** A prompt, or the answers that resume a stopped turn; credentials omitted run on the house gateway. */
   message: AgentMessagePayload;
 }
@@ -129,12 +121,13 @@ const titleSession = async (
 };
 
 export const runAgentTurnStep = async (
-  request: AgentTurnRequest
+  request: AgentTurnRequest,
+  signal: AbortSignal
 ): Promise<AgentTurnOutcome> => {
   "use step";
 
   try {
-    return await executeAgentTurn(request);
+    return await executeAgentTurn(request, signal);
   } catch (error) {
     // The runtime reports the failures it returns; a throw is reported here, the last boundary
     // in Node: the workflow function that records it cannot log.
@@ -147,7 +140,8 @@ export const runAgentTurnStep = async (
 };
 
 const executeAgentTurn = async (
-  request: AgentTurnRequest
+  request: AgentTurnRequest,
+  signal: AbortSignal
 ): Promise<AgentTurnOutcome> => {
   const db = await connectDatabase(undefined, { withCache: false });
 
@@ -202,28 +196,21 @@ const executeAgentTurn = async (
     patchAgentRunMetadata(db, request.runId, {
       [AGENT_TURN_KEY]: { ...marker, running: false },
     });
-  const abort = subscribeAgentAbort(request.abortController.runId);
   const writer = createEventWriter(
     needsTitle(row, request) ? titleSession(db, row, request) : undefined
   );
-  try {
-    const outcome = await runKindTurn(
-      definition,
-      db,
-      row,
-      request,
-      abort.signal,
-      writer
-    );
-    abort.dispose();
-    await clearMarker();
-    return outcome;
-  } catch (error) {
-    abort.dispose();
-    // A thrown step ends the run and `completeAgentRunStep` closes the row. The marker is not
-    // cleared here so the session never reads as idle while the run is still winding down.
-    throw error;
-  }
+  // A thrown step ends the run and `completeAgentRunStep` closes the row. The marker is cleared
+  // only on return, so the session never reads as idle while the run is still winding down.
+  const outcome = await runKindTurn(
+    definition,
+    db,
+    row,
+    request,
+    signal,
+    writer
+  );
+  await clearMarker();
+  return outcome;
 };
 
 /**
@@ -471,10 +458,9 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
   await Promise.allSettled([coarse.close(), deltas.close()]);
 };
 
-/** Marks the run inactive and closes its abort controller so it does not sit parked until TTL. */
+/** Marks the run inactive. */
 export const completeAgentRunStep = async (
   runId: string,
-  abortController: AgentAbortControllerRef,
   status: Exclude<AgentRunStatus, typeof AgentRunStatus.Active>
 ): Promise<void> => {
   "use step";
@@ -482,5 +468,4 @@ export const completeAgentRunStep = async (
   const db = await connectDatabase(undefined, { withCache: false });
   // This run's row only: a run cancelled and replaced must not close its successor.
   await completeAgentRun(db, runId, status);
-  await signalAgentAbort(workflowControl, abortController.id, "run finished");
 };

@@ -10,10 +10,8 @@ import {
 } from "@chia/db/repos/agent";
 import { AgentRunStatus } from "@chia/db/schema";
 import { logger } from "@chia/observability/logger";
-import type { WorkflowControlClient } from "@chia/workflow-control/client";
 import { WorkflowRunStatus } from "@chia/workflow-control/contract";
 
-import { readAgentAbortControllerRef, signalAgentAbort } from "./abort";
 import { AgentRunState } from "./agent.contract";
 import type { AgentRunHost } from "./agent.factory";
 
@@ -95,7 +93,6 @@ export const runStateOf = async (
 export const reconcileRunningAgentTurns = async (
   db: DB,
   runs: AgentRunHost,
-  workflow: WorkflowControlClient,
   userId: string
 ): Promise<number> => {
   const rows = await listRunningAgentRuns(db, {
@@ -119,11 +116,7 @@ export const reconcileRunningAgentTurns = async (
       row.externalRunId,
       AgentRunStatus.Failed
     );
-    if (!wasClosed) continue;
-    // Like `completeAgentRunStep`: a dead run must not leave its controller parked until its TTL.
-    const controller = readAgentAbortControllerRef(row.metadata);
-    if (controller) await signalAgentAbort(workflow, controller.id, "run lost");
-    closed += 1;
+    if (wasClosed) closed += 1;
   }
   return closed;
 };
