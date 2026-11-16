@@ -4,6 +4,21 @@ import { useEffect, useEffectEvent, useRef } from "react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
+import {
+  BLANK_GLYPH,
+  GLYPH_RAMP,
+  GLYPH_TILES,
+  darknessRanksOf,
+  densityOfDarkness,
+  glyphOfDensity,
+  glyphPaletteOf,
+  hash,
+  inkGlyphAtlas,
+  isSameGlyphPalette,
+  unit,
+} from "./utils/ascii-glyphs";
+import type { GlyphPalette } from "./utils/ascii-glyphs";
+
 export const AsciiCurtainPhase = {
   /** Glyphs spread from the origin until they cover the viewport, then hold. */
   Cover: "cover",
@@ -30,11 +45,6 @@ interface AsciiCurtainProps {
   className?: string;
 }
 
-/** Dense to sparse, the ramp `AsciiField` draws with. */
-const RAMP = "80o();:~-.";
-/** A covered cell with no glyph in it. */
-const BLANK = RAMP.length;
-const TILES = RAMP.length + 1;
 const CLEAR = -1;
 /** Forces the next frame to repaint a cell whatever it holds. */
 const STALE = -2;
@@ -53,21 +63,7 @@ const TICK_MS = 64;
 const FRONT_GLYPHS = 5;
 /** Side of the picture as a share of the shorter side of the viewport. */
 const PICTURE_SHARE = 0.92;
-/** Above 1, only the picture's darker half takes the heavy glyphs. */
-const PICTURE_GAMMA = 1.5;
 const MAX_PIXEL_RATIO = 2;
-
-const hash = (a: number, b: number) => {
-  let value =
-    Math.imul(a ^ 0x9e3779b9, 0x85ebca6b) ^
-    Math.imul(b + 0x7f4a7c15, 0xc2b2ae35);
-  value ^= value >>> 15;
-  value = Math.imul(value, 0x2c1b3c6d);
-  value ^= value >>> 12;
-  return value >>> 0;
-};
-
-const unit = (a: number, b: number) => (hash(a, b) % 4096) / 4096;
 
 const easeOutQuad = (progress: number) => 1 - (1 - progress) ** 2;
 const easeInOutQuad = (progress: number) =>
@@ -76,13 +72,6 @@ const easeInOutQuad = (progress: number) =>
 /** Small enough that the picture keeps its features, large enough that a glyph stays a glyph. */
 const cellSizeOf = (width: number, height: number) =>
   Math.min(16, Math.max(8, Math.ceil(Math.max(width, height) / 150)));
-
-interface Palette {
-  ink: string;
-  paper: string;
-  accent: string;
-  font: string;
-}
 
 /**
  * The curtain as plain state over a 2D canvas. Every cell is one opaque tile copied from an atlas,
@@ -96,9 +85,7 @@ const createCurtain = (
 ) => {
   const context = canvas.getContext("2d");
   const atlas = document.createElement("canvas");
-  const atlasContext = atlas.getContext("2d");
   const sampler = document.createElement("canvas");
-  const samplerContext = sampler.getContext("2d");
   const style = getComputedStyle(probe);
 
   let columns = 0;
@@ -107,7 +94,7 @@ const createCurtain = (
   let reach = new Float32Array(0);
   let level = new Uint8Array(0);
   let drawn = new Int16Array(0);
-  let palette: Palette | null = null;
+  let palette: GlyphPalette | null = null;
   let image: ImageBitmap | null = null;
   let origin: AsciiCurtainPoint = { x: 0, y: 0 };
   let phase: AsciiCurtainPhase = AsciiCurtainPhase.Cover;
@@ -116,43 +103,11 @@ const createCurtain = (
   let frame = 0;
 
   /**
-   * How dark the picture is per cell of a `side`-cell square, as each cell's rank among them.
-   * Ranking spreads any picture over the whole ramp, however narrow its own range of tones.
-   */
-  const pictureOf = (side: number) => {
-    if (!image || !samplerContext || side < 4) return null;
-    sampler.width = side;
-    sampler.height = side;
-    samplerContext.drawImage(image, 0, 0, side, side);
-    const { data } = samplerContext.getImageData(0, 0, side, side);
-    const tones = new Uint8Array(side * side);
-    const below = new Float32Array(257);
-    for (let index = 0; index < tones.length; index++) {
-      const tone = Math.round(
-        0.2126 * (data[index * 4] ?? 0) +
-          0.7152 * (data[index * 4 + 1] ?? 0) +
-          0.0722 * (data[index * 4 + 2] ?? 0)
-      );
-      tones[index] = tone;
-      below[tone + 1] = (below[tone + 1] ?? 0) + 1;
-    }
-    for (let tone = 1; tone < below.length; tone++) {
-      below[tone] = (below[tone] ?? 0) + (below[tone - 1] ?? 0);
-    }
-    return Float32Array.from(
-      tones,
-      (tone) => 1 - (below[tone + 1] ?? 0) / tones.length
-    );
-  };
-
-  /**
    * The glyph each covered cell settles on: the picture inside its disc, a sparse field around it.
-   * The picture is drawn by its darks in either theme, the way a pen would: brightness as density
-   * turns a portrait on a light ground into one solid disc.
    */
   const settle = () => {
     const side = Math.floor(Math.min(columns, rows) * PICTURE_SHARE);
-    const picture = pictureOf(side);
+    const picture = image ? darknessRanksOf(sampler, image, side, side) : null;
     const left = Math.floor((columns - side) / 2);
     const top = Math.floor((rows - side) / 2);
     for (let row = 0; row < rows; row++) {
@@ -168,13 +123,10 @@ const createCurtain = (
             Math.hypot(x + 0.5 - side / 2, y + 0.5 - side / 2) / (side / 2);
           // Fades the picture's disc into the field over its outer fifth.
           const inside = Math.min(1, Math.max(0, (1 - radius) / 0.2));
-          const darkness = (picture[y * side + x] ?? 0) ** PICTURE_GAMMA;
-          density = density * (1 - inside) + darkness * inside;
+          const ink = densityOfDarkness(picture[y * side + x] ?? 0);
+          density = density * (1 - inside) + ink * inside;
         }
-        level[index] =
-          density < 0.06
-            ? BLANK
-            : Math.round((1 - density) * (RAMP.length - 1));
+        level[index] = glyphOfDensity(density);
         drawn[index] = drawn[index] === CLEAR ? CLEAR : STALE;
       }
     }
@@ -230,45 +182,12 @@ const createCurtain = (
     settle();
   };
 
-  /** One tile per glyph in each colour, already on the paper, so a cell is a single copy. */
-  const ink = (next: Palette) => {
-    if (!atlasContext) return;
-    atlas.width = TILES * cellPixels;
-    atlas.height = 2 * cellPixels;
-    atlasContext.fillStyle = next.paper;
-    atlasContext.fillRect(0, 0, atlas.width, atlas.height);
-    atlasContext.font = `600 ${Math.round(cellPixels * 0.9)}px ${next.font}`;
-    atlasContext.textAlign = "center";
-    atlasContext.textBaseline = "middle";
-    for (const [row, color] of [next.ink, next.accent].entries()) {
-      atlasContext.fillStyle = color;
-      for (const [tile, glyph] of [...RAMP].entries()) {
-        atlasContext.fillText(
-          glyph,
-          (tile + 0.5) * cellPixels,
-          (row + 0.5) * cellPixels
-        );
-      }
-    }
-  };
-
   /** Follows the probe's colours, which ease when the page under the curtain changes theme. */
   const tint = () => {
-    const next: Palette = {
-      ink: style.color,
-      paper: style.backgroundColor,
-      accent: style.outlineColor,
-      font: style.fontFamily,
-    };
-    if (
-      palette?.ink === next.ink &&
-      palette.paper === next.paper &&
-      palette.accent === next.accent
-    ) {
-      return;
-    }
+    const next = glyphPaletteOf(style);
+    if (isSameGlyphPalette(palette, next)) return;
     palette = next;
-    ink(next);
+    inkGlyphAtlas(atlas, cellPixels, next);
     for (let index = 0; index < drawn.length; index++) {
       if (drawn[index] !== CLEAR) drawn[index] = STALE;
     }
@@ -287,13 +206,13 @@ const createCurtain = (
       const passed = (head - (reach[index] ?? 0)) / FRONT;
       let tile: number;
       if (passed > 0 && passed < 1) {
-        tile = TILES + (hash(index, tick) % FRONT_GLYPHS);
+        tile = GLYPH_TILES + (hash(index, tick) % FRONT_GLYPHS);
       } else if (passed <= 0 === covering) {
         tile = CLEAR;
       } else {
-        tile = level[index] ?? BLANK;
+        tile = level[index] ?? BLANK_GLYPH;
         // Now and then a settled glyph slips one step along the ramp, so a held cover is not a still.
-        if (tile < RAMP.length - 1 && hash(index, tick >> 2) % 37 === 0) {
+        if (tile < GLYPH_RAMP.length - 1 && hash(index, tick >> 2) % 37 === 0) {
           tile += 1;
         }
       }
@@ -306,8 +225,8 @@ const createCurtain = (
       } else {
         context.drawImage(
           atlas,
-          (tile % TILES) * cellPixels,
-          Math.floor(tile / TILES) * cellPixels,
+          (tile % GLYPH_TILES) * cellPixels,
+          Math.floor(tile / GLYPH_TILES) * cellPixels,
           cellPixels,
           cellPixels,
           x,

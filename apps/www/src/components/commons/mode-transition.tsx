@@ -7,8 +7,8 @@ import { AsciiCurtain, AsciiCurtainPhase } from "@chia/shaders/ascii-curtain";
 import type { AsciiCurtainPoint } from "@chia/shaders/ascii-curtain";
 
 import { usePathname, useRouter } from "@/libs/i18n/navigation";
-import { readableImageSourceOf } from "@/libs/image-source";
-import { SITE_MODE_FACE, SITE_MODE_HOME, siteModeOf } from "@/shared/site-mode";
+import { modeFaceOf } from "@/libs/mode-face";
+import { SITE_MODE_HOME, siteModeOf } from "@/shared/site-mode";
 import type { SiteMode } from "@/shared/site-mode";
 
 /** How long the covered screen shows the portrait whole before it opens again. */
@@ -17,14 +17,10 @@ const HOLD_MS = 480;
 const SETTLE_MS = 320;
 /** A navigation that has not landed by now is not coming; the curtain opens on whatever is there. */
 const STUCK_MS = 8000;
-/** The portrait is drawn one glyph per sample, so this is already more than a screen of cells. */
-const FACE_WIDTH = 256;
 /** `ModeSwitch` marks itself with this; the curtain opens from the one on the page it lands on. */
 const MODE_SWITCH_SELECTOR = "[data-mode-switch]";
 
 interface ModeTransition {
-  /** Fetches the portrait of `mode` ahead of a switch the reader seems about to make. */
-  prepare: (mode: SiteMode) => void;
   /** Goes to the home of `mode` behind the curtain, which spreads from `origin` or the middle. */
   switchTo: (mode: SiteMode, origin?: AsciiCurtainPoint) => void;
 }
@@ -38,26 +34,6 @@ interface Run {
 }
 
 const ModeTransitionContext = createContext<ModeTransition | null>(null);
-
-const faces = new Map<SiteMode, Promise<ImageBitmap | null>>();
-
-/** The portrait of `mode` as pixels the curtain can sample; `null` when it cannot be read. */
-const faceOf = (mode: SiteMode) => {
-  const known = faces.get(mode);
-  if (known) return known;
-  const face = fetch(readableImageSourceOf(SITE_MODE_FACE[mode], FACE_WIDTH), {
-    referrerPolicy: "no-referrer",
-  })
-    .then(async (response) =>
-      response.ok ? createImageBitmap(await response.blob()) : null
-    )
-    .catch(() => {
-      faces.delete(mode);
-      return null;
-    });
-  faces.set(mode, face);
-  return face;
-};
 
 const centerOf = (box: DOMRect): AsciiCurtainPoint => ({
   x: box.left + box.width / 2,
@@ -129,9 +105,6 @@ export const ModeTransitionProvider = ({
   }, [isHolding, hasArrived, coveredAt]);
 
   const transition: ModeTransition = {
-    prepare: (mode) => {
-      void faceOf(mode);
-    },
     switchTo: (mode, origin) => {
       if (run !== null) return;
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -144,7 +117,7 @@ export const ModeTransitionProvider = ({
         origin: origin ?? viewportCenter(),
         coveredAt: null,
       });
-      void faceOf(mode).then((bitmap) => {
+      void modeFaceOf(mode).then((bitmap) => {
         if (bitmap) setFace({ mode, bitmap });
       });
     },
