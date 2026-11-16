@@ -22,9 +22,12 @@ export const createProductionResources = () => {
   });
   const paradeDb = createParadeDbResources({
     serviceName: "ParadeDB",
-    volumeName: "paradedb-volume-prod",
+    volumeName: "paradedb-volume",
   });
-  const redisResources = createRedisResources();
+  const redisResources = createRedisResources({
+    serviceName: "Redis-prod",
+    volumeName: "redis-volume-prod",
+  });
   const dbStudioVolume = createManagedVolume("db-studio-volume");
 
   const workflow = service("workflow", {
@@ -61,6 +64,7 @@ export const createProductionResources = () => {
       AI_GATEWAY_API_KEY: preserve(),
       APP_ENV: preserve(),
       CACHE_URI: preserve(),
+      ORIGIN_SECRET: preserve(),
       SPOTIFY_TOKEN_ENCRYPTION_KEY: preserve(),
     },
   });
@@ -85,6 +89,7 @@ export const createProductionResources = () => {
       // The login form's widget must be the provider `service` verifies against.
       NEXT_PUBLIC_CAPTCHA_PROVIDER: ref(api, "NEXT_PUBLIC_CAPTCHA_PROVIDER"),
       NEXT_PUBLIC_CAPTCHA_SITE_KEY: preserve(),
+      ORIGIN_SECRET: preserve(),
     },
   });
 
