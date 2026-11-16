@@ -36,7 +36,6 @@ export const env = createEnv({
     WORKFLOW_POSTGRES_URL: z.url().optional(),
     WORKFLOW_POSTGRES_JOB_PREFIX: z.string().min(1).optional(),
     WORKFLOW_POSTGRES_MAX_POOL_SIZE: NumericStringSchema.optional(),
-    WORKFLOW_REDIS_URI: z.url().optional(),
     /** Authenticates queue mutations sent to `apps/workflow`. */
     INTERNAL_WORKFLOW_SERVICE_TOKEN: z.string().min(32),
   },
@@ -65,7 +64,6 @@ export const env = createEnv({
     WORKFLOW_POSTGRES_JOB_PREFIX: process.env.WORKFLOW_POSTGRES_JOB_PREFIX,
     WORKFLOW_POSTGRES_MAX_POOL_SIZE:
       process.env.WORKFLOW_POSTGRES_MAX_POOL_SIZE,
-    WORKFLOW_REDIS_URI: process.env.WORKFLOW_REDIS_URI,
     INTERNAL_WORKFLOW_SERVICE_TOKEN:
       process.env.INTERNAL_WORKFLOW_SERVICE_TOKEN,
   },

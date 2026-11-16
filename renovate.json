@@ -67,7 +67,7 @@
     },
     {
       "groupName": "workflow",
-      "matchPackageNames": ["workflow", "@workflow/**", "@workflow-worlds/**"]
+      "matchPackageNames": ["workflow", "@workflow/**"]
     },
     {
       "groupName": "drizzle",
@@ -125,13 +125,7 @@
     },
     {
       "description": "The next major needs a migration that waits for the backend move. Tick the box on the Dependency Dashboard to open the PR.",
-      "matchPackageNames": [
-        "workflow",
-        "@workflow/**",
-        "keyv",
-        "@keyv/**",
-        "@sentry/**"
-      ],
+      "matchPackageNames": ["keyv", "@keyv/**", "@sentry/**"],
       "matchUpdateTypes": ["major"],
       "dependencyDashboardApproval": true
     },

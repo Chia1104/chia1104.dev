@@ -26,7 +26,6 @@ export default defineConfig({
     "pg-pool*",
     "pino*",
     "@redis/client*",
-    "@workflow-worlds/redis",
     "@workflow/world-postgres",
     "workflow",
     "@better-auth/passkey",

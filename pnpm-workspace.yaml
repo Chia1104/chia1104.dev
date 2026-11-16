@@ -262,9 +262,8 @@ catalogs:
     unified: ^11.0.5
     unist-util-visit: ^5.2.0
   workflow:
-    "@workflow-worlds/redis": ^0.2.2
-    "@workflow/world-postgres": 4.4.0
-    workflow: 4.8.16
+    "@workflow/world-postgres": 5.2.0
+    workflow: 5.5.0
 
 linkWorkspacePackages: true
 
