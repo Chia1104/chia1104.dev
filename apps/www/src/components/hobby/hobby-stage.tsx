@@ -11,7 +11,7 @@ import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 import { useReducedEffects } from "@/hooks/use-reduced-effects";
 import { readableImageSourceOf } from "@/libs/image-source";
 import { HOBBY_IDLE_COLOR } from "@/shared/media";
-import { useHobbyStore } from "@/stores/hobby/store";
+import { HobbyPinStage, useHobbyStore } from "@/stores/hobby/store";
 
 /** Moving the pointer down the list crosses rows faster than this; only a row it rests on takes the stage. */
 const FOCUS_SETTLE_MS = 140;
@@ -87,16 +87,24 @@ const useSettledFocus = () => {
  * the row in focus and hands that work's colour to the theme through `--media-color`, which is
  * set on `<html>` so layers portalled to `<body>` follow.
  *
- * An open work shows its own art, so the stage only takes its colour then: the field holds its
- * frame behind a sheet, and is not mounted at all under a page whose art covers the viewport.
+ * A page or sheet about one work pins the stage: an article has it draw that work's key art,
+ * an open work shows its own art and only lends its colour. The field then holds its frame
+ * behind a sheet, and is not mounted at all under a page whose art covers the viewport.
  */
 export const HobbyStage = () => {
   const { resolvedTheme } = useTheme();
   const focus = useSettledFocus();
   const pinned = useHobbyStore((state) => state.pinned);
   const color = (pinned ?? focus)?.color ?? null;
-  // Kept while a work is open: dropping it would revoke a blob the shader may still be decoding.
-  const backdrop = useBackdrop(focus?.backdropUrl ?? null);
+  // A pin without art keeps what the stage was drawing: dropping it would revoke a blob the
+  // shader may still be decoding.
+  const [source, setSource] = useState<string | null>(null);
+  const wanted =
+    pinned === null
+      ? (focus?.backdropUrl ?? null)
+      : (pinned.backdropUrl ?? source);
+  if (wanted !== source) setSource(wanted);
+  const backdrop = useBackdrop(source);
   const [status, setStatus] = useState<AsciiFieldStatus>(
     AsciiFieldStatus.Pending
   );
@@ -115,7 +123,7 @@ export const HobbyStage = () => {
     };
   }, [color]);
 
-  if (pinned?.coversStage) return null;
+  if (pinned?.stage === HobbyPinStage.Covered) return null;
 
   return (
     // The one surface that eases when the work in focus changes; the tokens themselves snap.
@@ -133,7 +141,7 @@ export const HobbyStage = () => {
         image={backdrop}
         color={toneOf(color ?? HOBBY_IDLE_COLOR, isDark)}
         cellSize={10}
-        paused={pinned !== null}
+        paused={pinned !== null && pinned.stage !== HobbyPinStage.Live}
         reducedMotion={reducedEffects}
         onStatusChange={setStatus}
         className={cn(

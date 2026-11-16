@@ -382,6 +382,18 @@
     "title": "興趣",
     "description": "工作以外，我在看的電影、影集、動畫，還有正在玩的遊戲。",
     "intro": "工作以外，我在看的<movies>電影</movies>、<series>影集</series>、<anime>動畫</anime>，還有在玩的<games>遊戲</games>。",
+    "articles-intro": "也寫<guides>攻略</guides>、<reviews>心得</reviews>和<journal>生活記錄</journal>。",
+    "article": {
+      "guide": "攻略",
+      "review": "心得",
+      "journal": "生活記錄",
+      "more": "更多關於《{title}》的文章"
+    },
+    "article-description": {
+      "guide": "遊戲的攻略與筆記。",
+      "review": "看完、玩完之後的心得。",
+      "journal": "工作以外的生活記錄。"
+    },
     "empty": "這裡還沒有紀錄。",
     "kind": {
       "movie": "電影",
@@ -421,6 +433,7 @@
       "achievement-locked": "未解鎖",
       "achievements-more": "其餘 {count} 個成就",
       "achievements-hidden": "還有 {count} 個未解鎖的隱藏成就",
+      "articles": "相關文章",
       "source": "在 {source} 查看",
       "close": "關閉",
       "back": "所有紀錄"

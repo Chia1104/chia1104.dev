@@ -30,6 +30,7 @@ const mockFeed = (
   defaultLocale: locale,
   userId,
   mainImage: null,
+  mediaEntryId: null,
   createdAt: new Date("2024-01-01").toISOString(),
   updatedAt: new Date("2024-01-01").toISOString(),
   deletedAt: null,

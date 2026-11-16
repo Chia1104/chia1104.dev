@@ -11,7 +11,7 @@ import type { Graph } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
 import { getContentProps } from "@chia/contents/services";
-import { FeedOrderBy, FeedType } from "@chia/db/types";
+import { FeedMode, FeedOrderBy, FeedType, isFeedTypeOf } from "@chia/db/types";
 import Meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";
 import { WWW_BASE_URL, wwwFeedCacheTag } from "@chia/utils/config";
@@ -41,6 +41,7 @@ export const generateStaticParams = async () => {
   const feeds = await client.feeds.list({
     limit: 100,
     type: FeedType.All,
+    mode: FeedMode.Tech,
     withContent: false,
     orderBy: FeedOrderBy.CreatedAt,
     sortOrder: "desc",
@@ -62,8 +63,12 @@ const readFeed = async (slug: string, locale: Locale) => {
   );
   if (isServiceNotFound(error)) return null;
   if (error) throw error;
+  // A hobby article has its own pages; under a tech path it does not exist.
+  if (!isFeedTypeOf(FeedMode.Tech, data.type)) return null;
   const [translation] = data.translations;
-  return translation?.content ? { feed: data, translation } : null;
+  return translation?.content
+    ? { feed: data, type: data.type, translation }
+    : null;
 };
 
 export const generateMetadata = async ({
@@ -82,10 +87,10 @@ export const generateMetadata = async ({
   );
   const current = reads.find((read) => read.locale === locale)?.entry;
   if (!current) notFound();
-  const { feed, translation } = current;
+  const { feed, type, translation } = current;
   const tags = feed.tags.map((tag) => tag.name);
   const localized = localizedMetadata({
-    href: `/${feed.type}s/${slug}`,
+    href: `/${type}s/${slug}`,
     locale,
     locales: reads.filter((read) => read.entry).map((read) => read.locale),
   });
@@ -123,9 +128,9 @@ const Page = async ({
   if (!entry?.translation.content) {
     notFound();
   }
-  const { feed, translation } = entry;
-  const href = `/${feed.type}s/${slug}`;
-  if (`${feed.type}s` !== type) {
+  const { feed, type: feedType, translation } = entry;
+  const href = `/${feedType}s/${slug}`;
+  if (`${feedType}s` !== type) {
     permanentRedirect(getPathname({ href, locale }));
   }
 
@@ -162,8 +167,8 @@ const Page = async ({
           {
             "@type": "ListItem",
             position: 2,
-            name: t(`${feed.type}s.doc-title`),
-            item: `${WWW_BASE_URL}${getPathname({ href: `/${feed.type}s`, locale })}`,
+            name: t(`${feedType}s.doc-title`),
+            item: `${WWW_BASE_URL}${getPathname({ href: `/${feedType}s`, locale })}`,
           },
           { "@type": "ListItem", position: 3, name: translation.title },
         ],
@@ -220,7 +225,7 @@ const Page = async ({
                 </ViewTransition>
               </li>
               <li className="flex items-center px-4 py-2">
-                {t(`${feed.type}s.doc-title`)}
+                {t(`${feedType}s.doc-title`)}
               </li>
               {translation.readTime ? (
                 <li className="flex items-center px-4 py-2">

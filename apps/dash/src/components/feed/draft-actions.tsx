@@ -23,6 +23,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { History, RotateCcw, Trash, Upload } from "lucide-react";
 import { toast } from "sonner";
 
+import { FeedMode, feedModeOf } from "@chia/db/types";
 import dayjs from "@chia/utils/day";
 import { messageOf } from "@chia/utils/error-helper";
 
@@ -34,6 +35,7 @@ import type { DraftView } from "./draft-values";
 import { MetaChip } from "./meta-chip";
 import { PostSummary } from "./post-summary";
 import { PostTags } from "./post-tags";
+import { PostWork } from "./post-work";
 import { RevisionsDrawer } from "./revisions-drawer";
 
 const feedDetailsOptions = (feedId: number) =>
@@ -78,8 +80,9 @@ const FeedEmbedding = ({ feedId }: { feedId: number }) => {
 const TAG_WRITE_DELAY_MS = 1500;
 
 /**
- * Feed-level fields that are not part of the draft: visibility, the publication date and the
- * tag set write straight to the feed, so they only exist once the draft has been applied.
+ * Feed-level fields that are not part of the draft: visibility, the publication date, the tag
+ * set and, for a hobby article, the work it is about write straight to the feed, so they only
+ * exist once the draft has been applied.
  */
 const PostSettings = ({ feedId }: { feedId: number }) => {
   const queryClient = useQueryClient();
@@ -194,6 +197,16 @@ const PostSettings = ({ feedId }: { feedId: number }) => {
         }}
         selected={tagDraft ?? feed.tags.map((tag) => tag.id)}
       />
+      {feedModeOf(feed.type) === FeedMode.Hobby ? (
+        <PostWork
+          onChange={(mediaEntryId) => update.mutate({ feedId, mediaEntryId })}
+          selected={
+            update.isPending && update.variables.mediaEntryId !== undefined
+              ? update.variables.mediaEntryId
+              : feed.mediaEntryId
+          }
+        />
+      ) : null}
       <div className="page-sm:ml-auto justify-self-center">
         <DeleteButton
           feedId={feedId}

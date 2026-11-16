@@ -25,6 +25,7 @@ export const listTagsRoute = contractOS.tags.list
     items: await listTags(opts.context.db, {
       published: resolveFeedVisibility(opts.context.caller, opts.input)
         .published,
+      mode: opts.input.mode,
     }),
   }));
 

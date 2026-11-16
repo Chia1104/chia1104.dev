@@ -387,8 +387,13 @@ export const writeDraftSpec = {
       )
       .optional(),
     type: z
-      .enum([FeedType.Post, FeedType.Note])
-      .describe("`post` for articles, `note` for short-form entries.")
+      .enum(FeedType)
+      .exclude(["All"])
+      .describe(
+        "On the tech site: `post` for articles, `note` for short-form entries. On the hobby " +
+          "pages: `guide` for a walkthrough, `review` for a take on a work, `journal` for life " +
+          "outside of work."
+      )
       .optional(),
     mainImage: z
       .string()

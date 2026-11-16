@@ -7,10 +7,12 @@ import {
   feeds,
   feedsToTags,
   feedTranslations,
+  mediaEntries,
   tags,
   tagTranslations,
 } from "../../schemas/schema.ts";
-import { FeedOrderBy, FeedType, Locale } from "../../types.ts";
+import { FEED_MODE_TYPES, FeedOrderBy, FeedType, Locale } from "../../types.ts";
+import type { FeedMode } from "../../types.ts";
 import {
   keysetCursorValue,
   keysetWhere,
@@ -70,6 +72,15 @@ const hasTag = (feedId: SQL | typeof feeds.id, tagSlug: string): SQL =>
     where ${feedsToTags.feedId} = ${feedId} and ${tags.slug} = ${tagSlug}
   )`;
 
+const isAboutMedia = (
+  mediaEntryId: SQL | typeof feeds.mediaEntryId,
+  mediaSlug: string
+): SQL =>
+  sql`${mediaEntryId} = (
+    select ${mediaEntries.id} from ${mediaEntries}
+    where ${mediaEntries.slug} = ${mediaSlug}
+  )`;
+
 /** Whether the feed has a `locale` translation with a body, which is what an article page renders. */
 const hasTranslationBody = (
   feedId: SQL | typeof feeds.id,
@@ -118,6 +129,8 @@ type InfiniteFeedParams = InfiniteDTO & {
   whereAnd?: FeedWhereColumns;
   /** Only feeds carrying this tag. */
   tagSlug?: string;
+  /** Only feeds about the work with this slug. */
+  mediaSlug?: string;
   locale?: Locale;
   /** Only feeds whose `locale` translation has a body. */
   translated?: boolean;
@@ -153,11 +166,13 @@ const queryInfiniteFeeds = async (
     cursor,
     orderBy = FeedOrderBy.UpdatedAt,
     sortOrder = "desc",
-    type = FeedType.Post,
+    type,
+    mode,
     locale,
     translated = false,
     whereAnd = {},
     tagSlug,
+    mediaSlug,
     withContent = false,
     enableDeleted = false,
     userId,
@@ -168,14 +183,25 @@ const queryInfiniteFeeds = async (
   if (tagSlug !== undefined) {
     filters.push({ RAW: (feed) => hasTag(feed.id, tagSlug) });
   }
+  if (mediaSlug !== undefined) {
+    filters.push({
+      RAW: (feed) => isAboutMedia(feed.mediaEntryId, mediaSlug),
+    });
+  }
+  if (mode !== undefined) {
+    filters.push({ type: { in: [...FEED_MODE_TYPES[mode]] } });
+  }
   if (translated && locale !== undefined) {
     filters.push({ RAW: (feed) => hasTranslationBody(feed.id, locale) });
   }
   if (userId !== undefined) {
     filters.push({ userId });
   }
-  if (type !== FeedType.All) {
-    filters.push({ type });
+  // Posts are the default only while nothing else narrows the list.
+  const listedType =
+    type ?? (mode === undefined ? FeedType.Post : FeedType.All);
+  if (listedType !== FeedType.All) {
+    filters.push({ type: listedType });
   }
   if (!enableDeleted) {
     filters.push({ deletedAt: { isNull: true } });
@@ -512,6 +538,7 @@ export const countFeeds = withDTO(
       userId: string;
       published?: boolean;
       type?: FeedType;
+      mode?: FeedMode;
       tagSlug?: string;
       /** inclusive */
       createdFrom?: Date;
@@ -532,6 +559,9 @@ export const countFeeds = withDTO(
           dto.type === undefined || dto.type === FeedType.All
             ? undefined
             : eq(feeds.type, dto.type),
+          dto.mode === undefined
+            ? undefined
+            : inArray(feeds.type, [...FEED_MODE_TYPES[dto.mode]]),
           dto.tagSlug === undefined ? undefined : hasTag(feeds.id, dto.tagSlug),
           dto.createdFrom ? gte(feeds.createdAt, dto.createdFrom) : undefined,
           dto.createdBefore ? lt(feeds.createdAt, dto.createdBefore) : undefined
@@ -634,6 +664,7 @@ export const updateFeed = withDTO(
         published: dto.published,
         defaultLocale: dto.defaultLocale,
         mainImage: dto.mainImage,
+        mediaEntryId: dto.mediaEntryId,
         updatedAt: dto.updatedAt ? parseInstant(dto.updatedAt) : new Date(),
       })
       .where(eq(feeds.id, dto.feedId))

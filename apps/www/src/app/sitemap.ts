@@ -1,12 +1,19 @@
 import type { MetadataRoute } from "next";
 
-import { FeedOrderBy, FeedType, MediaKind } from "@chia/db/types";
-import { WWW_BASE_URL } from "@chia/utils/config";
+import {
+  FeedMode,
+  FeedOrderBy,
+  FeedType,
+  MediaKind,
+  feedModeOf,
+} from "@chia/db/types";
+import { feedPath, WWW_BASE_URL } from "@chia/utils/config";
 
 import { getPathname } from "@/libs/i18n/navigation";
 import { routing } from "@/libs/i18n/routing";
 import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
+import { HOBBY_FEED_SEGMENT } from "@/shared/hobby-feed";
 import { MEDIA_KIND_SEGMENT, mediaHrefOf } from "@/shared/media";
 import routes from "@/shared/routes";
 import { SITE_MODE_HOME, SiteMode } from "@/shared/site-mode";
@@ -39,6 +46,8 @@ const newest = (dates: readonly (string | Date)[]) => {
   ).toISOString();
 };
 
+const HOBBY_HOME = SITE_MODE_HOME[SiteMode.Hobby];
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [feedLists, { items: tags }, { items: media }] = await Promise.all([
     Promise.all(
@@ -55,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         return items.map((feed) => ({ feed, locale }));
       })
     ),
-    client.tags.list(),
+    client.tags.list({ mode: FeedMode.Tech }),
     client.media.list({}),
   ]);
   const listed = feedLists.flat();
@@ -66,7 +75,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   >();
   for (const { feed, locale } of listed) {
     const entry = feeds.get(feed.slug) ?? {
-      href: `/${feed.type}s/${feed.slug}`,
+      href: feedPath(feed),
       updatedAt: feed.updatedAt,
       locales: [],
     };
@@ -86,7 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...localizedEntries(
       "/",
       routing.locales,
-      updatedWhere(() => true)
+      updatedWhere((href) => !href.startsWith(`${HOBBY_HOME}/`))
     ),
     ...Object.keys(routes[SiteMode.Tech]).flatMap((path) =>
       localizedEntries(
@@ -96,19 +105,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       )
     ),
     ...localizedEntries(
-      SITE_MODE_HOME[SiteMode.Hobby],
+      HOBBY_HOME,
       routing.locales,
       newest(media.map((entry) => entry.updatedAt))
     ),
     ...Object.values(MediaKind).flatMap((kind) =>
       localizedEntries(
-        `${SITE_MODE_HOME[SiteMode.Hobby]}/${MEDIA_KIND_SEGMENT[kind]}`,
+        `${HOBBY_HOME}/${MEDIA_KIND_SEGMENT[kind]}`,
         routing.locales,
         newest(
           media
             .filter((entry) => entry.kind === kind)
             .map((entry) => entry.updatedAt)
         )
+      )
+    ),
+    ...Object.values(HOBBY_FEED_SEGMENT).flatMap((segment) =>
+      localizedEntries(
+        `${HOBBY_HOME}/${segment}`,
+        routing.locales,
+        updatedWhere((href) => href.startsWith(`${HOBBY_HOME}/${segment}/`))
       )
     ),
     ...media.flatMap((entry) =>
@@ -136,7 +152,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         newest([
           tag.updatedAt,
           ...listed
-            .filter(({ feed }) => feed.tags.some((t) => t.slug === tag.slug))
+            .filter(
+              ({ feed }) =>
+                feedModeOf(feed.type) === FeedMode.Tech &&
+                feed.tags.some((t) => t.slug === tag.slug)
+            )
             .map(({ feed }) => feed.updatedAt),
         ])
       )

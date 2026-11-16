@@ -2,8 +2,8 @@ import { asyncIteratorObject, oc } from "@orpc/contract";
 import * as z from "zod";
 
 import { FeedDraftAuthor, FeedDraftRevisionKind } from "@chia/db/schema";
-import { locale } from "@chia/db/schema/enums";
-import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
+import { feedType, locale } from "@chia/db/schema/enums";
+import { FeedMode, FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import { feedSchema, feedTranslationSchema } from "@chia/db/validator/feeds";
 import { keysetCursorSchema } from "@chia/db/validator/shared";
 import { FEED_TAGS_MAX, tagSlugSchema } from "@chia/db/validator/tags";
@@ -27,14 +27,16 @@ const dateFields = {
 
 /**
  * What may change on a post without going through its draft: whether it is visible, its
- * dates and its tags. Everything a reader sees of its content changes only when a draft is
- * applied.
+ * dates, its tags and the work it is about. Everything a reader sees of its content changes
+ * only when a draft is applied.
  */
 export const updateFeedSchema = z.object({
   feedId: z.number(),
   published: z.boolean().optional(),
   /** The whole tag set; an empty array clears it. */
   tagIds: z.array(z.number().int().positive()).max(FEED_TAGS_MAX).optional(),
+  /** The logged work the feed is about; `null` clears it. */
+  mediaEntryId: z.number().int().positive().nullable().optional(),
   ...dateFields,
 });
 
@@ -78,9 +80,14 @@ export const feedsInfiniteSchema = z.object({
   withContent: flexibleBoolean.optional().default(false),
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.CreatedAt),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
+  /** Posts when neither this nor `mode` is given. */
   type: z.enum(FeedType).optional(),
+  /** Only the types of one face of the site. */
+  mode: z.enum(FeedMode).optional(),
   /** Only feeds carrying this tag. */
   tag: tagSlugSchema.optional(),
+  /** Only feeds about the logged work with this slug. */
+  media: z.string().min(1).max(200).optional(),
   /** Only feeds whose `locale` translation has a body, i.e. the ones the public site renders. */
   translated: flexibleBoolean.optional().default(false),
   ...localeQueryFields,
@@ -294,7 +301,7 @@ export const feedDraftSchema = z.object({
   /** That commit's `contentHash`. The draft has unapplied work while its own differs. */
   appliedHash: z.string().nullable(),
   slug: z.string().nullable(),
-  type: z.enum([FeedType.Post, FeedType.Note]),
+  type: z.enum(feedType.enumValues),
   defaultLocale: z.enum(locale.enumValues),
   mainImage: z.string().nullable(),
   translations: z.partialRecord(
@@ -323,7 +330,7 @@ const feedDraftTranslationPatchSchema = feedDraftTranslationSchema.partial();
 
 const feedDraftFieldsSchema = z.object({
   slug: z.string().nullable().optional(),
-  type: z.enum([FeedType.Post, FeedType.Note]).optional(),
+  type: z.enum(feedType.enumValues).optional(),
   defaultLocale: z.enum(locale.enumValues).optional(),
   mainImage: z.string().nullable().optional(),
   translations: z

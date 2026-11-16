@@ -30,6 +30,15 @@ describe("feeds reads scale with the caller's tier", () => {
       );
     });
 
+    it("narrows the list to one mode and to the feeds about one work", async () => {
+      await client.feeds.list({ mode: "hobby", media: "elden-ring" });
+
+      expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ mode: "hobby", mediaSlug: "elden-ring" })
+      );
+    });
+
     it("ignores a request for drafts and deleted feeds", async () => {
       await client.feeds.list({
         limit: 10,

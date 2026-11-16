@@ -2,8 +2,8 @@ import type { FeedType, Locale } from "@chia/db/types";
 import type { ProfileEntryContent } from "@chia/db/validator/profile";
 
 /**
- * `FeedType` includes `"all"`, which is a filter value rather than a storable one. A real post
- * is only ever `post` or `note`.
+ * `FeedType` includes `"all"`, which is a filter value rather than a storable one; a real post
+ * never carries it.
  */
 export type PostFeedType = Exclude<FeedType, "all">;
 
