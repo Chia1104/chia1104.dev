@@ -54,7 +54,7 @@ catalogs:
     "@ai-sdk/openai": 4.0.115
     "@ai-sdk/react": 4.0.174
     "@anthropic-ai/sdk": 1.8.0
-    "@google/genai": 2.32.0
+    "@google/genai": 3.6.0
     "@typesafe-ai/sdk": 0.7.0
     ai: 7.0.170
     firecrawl: 4.54.0
