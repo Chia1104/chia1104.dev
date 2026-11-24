@@ -6,8 +6,8 @@ import { applyPolicy } from "@chia/service-kit/adapters/hono";
 import { captchaPolicy } from "@chia/service-kit/policies/captcha.policy";
 
 /**
- * Verifies the `x-captcha-response` header. For Hono routes whose body belongs to someone else
- * (better-auth), where the token cannot ride in validated input as it does over oRPC.
+ * Verifies the `x-captcha-response` header, for Hono routes where the token does not ride in
+ * validated input as it does over oRPC.
  */
 export const captchaGuard = () =>
   createMiddleware<HonoContext>(async (c, next) => {

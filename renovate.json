@@ -82,10 +82,6 @@
       "matchPackageNames": ["keyv", "@keyv/**"]
     },
     {
-      "groupName": "better-auth",
-      "matchPackageNames": ["better-auth", "@better-auth/**"]
-    },
-    {
       "groupName": "opentelemetry",
       "matchPackageNames": ["@opentelemetry/**", "import-in-the-middle"]
     },

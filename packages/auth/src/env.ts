@@ -24,33 +24,25 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: z.string().min(1),
     GITHUB_CLIENT_ID: z.string().optional(),
     GITHUB_CLIENT_SECRET: z.string().optional(),
-    AUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string().min(1)
-        : z.string().min(1).optional(),
-    AUTH_URL: z.string().optional(),
+    /** The service's public URL; OAuth callbacks are built on its origin, never on the request host. */
+    AUTH_URL: z.url(),
     AUTH_COOKIE_DOMAIN: z.string().optional(),
-    AUTH_BASE_PATH: z.string().optional(),
-    RESEND_API_KEY: z.string().optional(),
+    /** Comma-separated origins a sign-in may return to and POST from. */
     CORS_ALLOWED_ORIGIN: z.string().optional(),
-    CF_BYPASS_TOKEN: z.string().optional(),
   },
   runtimeEnv: {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
-    AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_URL: process.env.AUTH_URL,
     AUTH_COOKIE_DOMAIN: process.env.AUTH_COOKIE_DOMAIN ?? ".chia1104.dev",
-    AUTH_BASE_PATH: process.env.AUTH_BASE_PATH ?? "/api/v1/auth",
-    RESEND_API_KEY: process.env.RESEND_API_KEY ?? "re_123",
     CORS_ALLOWED_ORIGIN: process.env.CORS_ALLOWED_ORIGIN,
-    CF_BYPASS_TOKEN: process.env.CF_BYPASS_TOKEN,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1" ||
     process.env.APP_CODE !== "service",
+  emptyStringAsUndefined: true,
   extends: [adminEnv],
 });

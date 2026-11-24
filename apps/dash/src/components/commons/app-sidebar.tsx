@@ -1,6 +1,7 @@
 "use client";
 
-import { authClient } from "@chia/auth/client";
+import { useQuery } from "@tanstack/react-query";
+
 import {
   Sidebar,
   SidebarContent,
@@ -9,6 +10,7 @@ import {
   SidebarRail,
 } from "@chia/ui/sidebar";
 
+import { orpc } from "@/libs/orpc/client";
 import { useRouteItems } from "@/shared/routes";
 
 import AuthGuard from "./auth-guard";
@@ -17,7 +19,7 @@ import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const session = authClient.useSession();
+  const session = useQuery(orpc.auth.session.queryOptions());
   // Until the session answers, show the member set so operator links never flash for a member.
   const routeItems = useRouteItems(session.data?.access.dashboard ?? "member");
   const groups = [

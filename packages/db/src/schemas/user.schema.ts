@@ -2,9 +2,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import { boolean, text, index, timestamp } from "drizzle-orm/pg-core";
 
 import { timestamps } from "../libs/common.schema.ts";
-import { Role } from "../types.ts";
 
-import { roles } from "./enums.ts";
 import { pgTable } from "./table.ts";
 
 export const user = pgTable(
@@ -14,12 +12,11 @@ export const user = pgTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     name: text("name").notNull(),
-    email: text("email").unique().notNull(),
-    emailVerified: boolean("email_verified").default(false).notNull(),
+    /** A verified address from the OAuth provider; `null` for a guest. */
+    email: text("email").unique(),
     image: text("image"),
-    role: roles("role").default(Role.User).notNull(),
-    /** Guest minted by better-auth `anonymous()` for a visitor who never signed in. */
-    isAnonymous: boolean("is_anonymous").default(false),
+    /** Guest who passed the captcha but never signed in. */
+    isAnonymous: boolean("is_anonymous").default(false).notNull(),
     ...timestamps,
     banned: boolean("banned").default(false).notNull(),
     banReason: text("ban_reason"),

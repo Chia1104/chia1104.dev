@@ -65,6 +65,10 @@
       "types": "./src/libs/users/index.ts",
       "default": "./src/libs/users/index.ts"
     },
+    "./repos/auth": {
+      "types": "./src/libs/auth/index.ts",
+      "default": "./src/libs/auth/index.ts"
+    },
     "./repos/apikey": {
       "types": "./src/libs/apikey/index.ts",
       "default": "./src/libs/apikey/index.ts"

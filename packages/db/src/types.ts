@@ -1,11 +1,3 @@
-export const Role = {
-  Root: "root",
-  Admin: "admin",
-  User: "user",
-} as const;
-
-export type Role = (typeof Role)[keyof typeof Role];
-
 export const FeedType = {
   Post: "post",
   Note: "note",

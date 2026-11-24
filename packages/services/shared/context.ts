@@ -1,6 +1,7 @@
 import { implement } from "@orpc/server";
 import { os } from "@orpc/server";
 
+import type { CallerTier } from "@chia/auth/tier";
 import type { ServiceContext } from "@chia/service-kit/context";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 import type { FeedChangeScope } from "@chia/workflow-control/contract";
@@ -16,6 +17,8 @@ import { routerContract } from "../router.contract";
 export interface ORPCConfig {
   /** Private half of the keypair the AI provider-key cookies are encrypted with. */
   aiAuthPrivateKey?: string;
+  /** Every hosted agent kind with the floor its definition declares, for `session.access`. */
+  agentKinds: Readonly<Record<string, CallerTier>>;
 }
 
 /**

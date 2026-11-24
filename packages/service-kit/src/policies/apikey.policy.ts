@@ -1,18 +1,22 @@
 import type { ApiKeyScope } from "@chia/auth/apikey";
-import { hasApiKeyScope } from "@chia/auth/apikey";
-import type { Auth } from "@chia/auth/server";
-import { APIError } from "@chia/auth/types";
+import { hashApiKey, toApiKeyScopes } from "@chia/auth/apikey";
 import { X_CH_API_KEY } from "@chia/auth/utils";
+import { findApiKeyByHash, touchApiKey } from "@chia/db/repos/apikey";
+import { reportError } from "@chia/observability/report";
+import { tryCatch } from "@chia/utils/error-helper";
 
-import { AppError, AppErrorCode, appErrorCodeFromStatus } from "../errors";
+import { AppError, AppErrorCode } from "../errors";
 
 import type { Policy } from "./types";
 import { allow, deny } from "./types";
 
-type VerifyApiKeyResult = Awaited<ReturnType<Auth["api"]["verifyApiKey"]>>;
-
-/** The key row better-auth verified, with `permissions` and `metadata` already parsed. */
-export type VerifiedApiKey = NonNullable<VerifyApiKeyResult["key"]>;
+/** A key that passed verification. */
+export interface VerifiedApiKey {
+  id: string;
+  /** The key's owner. */
+  userId: string;
+  scopes: ApiKeyScope[];
+}
 
 export interface ApiKeyPolicyOptions {
   /** Every listed scope must be on the key. */
@@ -28,42 +32,7 @@ const invalidKey = (
     issues: [{ field: "api_key", message, code: keyCode }],
   });
 
-/** Maps better-auth `verifyApiKey` failure codes onto {@link AppError}. */
-const KEY_ERRORS = new Map<string, AppError>([
-  [
-    "KEY_NOT_FOUND",
-    invalidKey(AppErrorCode.NotFound, "API key not found", "KEY_NOT_FOUND"),
-  ],
-  [
-    "KEY_DISABLED",
-    invalidKey(AppErrorCode.Forbidden, "API key is disabled", "KEY_DISABLED"),
-  ],
-  [
-    "KEY_EXPIRED",
-    invalidKey(AppErrorCode.Forbidden, "API key is expired", "KEY_EXPIRED"),
-  ],
-  [
-    "RATE_LIMITED",
-    invalidKey(
-      AppErrorCode.TooManyRequests,
-      "API key is rate limited",
-      "RATE_LIMITED"
-    ),
-  ],
-  [
-    "USAGE_EXCEEDED",
-    invalidKey(
-      AppErrorCode.Forbidden,
-      "API key usage exceeded",
-      "USAGE_EXCEEDED"
-    ),
-  ],
-]);
-
-/**
- * Verifies the `X-CH-API-KEY` header against better-auth's api-key plugin, then checks the
- * key's scopes locally so a missing scope is FORBIDDEN rather than better-auth's NOT_FOUND.
- */
+/** Verifies the `X-CH-API-KEY` header against the stored hashes, then checks its scopes. */
 export const apiKeyPolicy = (
   options: ApiKeyPolicyOptions = {}
 ): Policy<{ apiKey: VerifiedApiKey }> => {
@@ -80,47 +49,43 @@ export const apiKeyPolicy = (
       );
     }
 
-    if (!context.auth) {
-      return deny(new AppError(AppErrorCode.Unauthorized));
-    }
+    const row = await findApiKeyByHash(context.db, await hashApiKey(key));
 
-    let verified: VerifyApiKeyResult;
-
-    try {
-      verified = await context.auth.api.verifyApiKey({
-        headers: context.headers,
-        body: { key },
-      });
-    } catch (error) {
-      if (error instanceof APIError) {
-        return deny(
-          new AppError(appErrorCodeFromStatus(Number(error.statusCode)), {
-            cause: error,
-          })
-        );
-      }
-      // Not the caller's doing: the verifier itself failed, so the edge reports it as a 5xx.
+    if (!row) {
       return deny(
-        new AppError(AppErrorCode.InternalServerError, { cause: error })
+        invalidKey(AppErrorCode.NotFound, "API key not found", "KEY_NOT_FOUND")
+      );
+    }
+    if (!row.enabled) {
+      return deny(
+        invalidKey(
+          AppErrorCode.Forbidden,
+          "API key is disabled",
+          "KEY_DISABLED"
+        )
+      );
+    }
+    if (row.expiresAt && row.expiresAt <= new Date()) {
+      return deny(
+        invalidKey(AppErrorCode.Forbidden, "API key is expired", "KEY_EXPIRED")
       );
     }
 
-    if (verified.error) {
-      const mapped = verified.error.code
-        ? KEY_ERRORS.get(verified.error.code)
-        : undefined;
-      return deny(mapped ?? new AppError(AppErrorCode.Forbidden));
-    }
-
-    const apiKey = verified.key;
-    if (!verified.valid || !apiKey) {
-      return deny(new AppError(AppErrorCode.Forbidden));
-    }
+    const apiKey: VerifiedApiKey = {
+      id: row.id,
+      userId: row.userId,
+      scopes: toApiKeyScopes(row.scopes),
+    };
 
     const missing = missingApiKeyScope(apiKey, options.scopes);
     if (missing) {
       return deny(missing);
     }
+
+    // Bookkeeping only: a failed write must not fail or delay the request it describes.
+    void tryCatch(touchApiKey(context.db, row.id)).then(({ error }) => {
+      if (error) reportError(error, "API key last-used update failed");
+    });
 
     return allow({ apiKey });
   };
@@ -131,9 +96,7 @@ export const missingApiKeyScope = (
   apiKey: VerifiedApiKey,
   scopes: readonly ApiKeyScope[] | undefined
 ): AppError | undefined => {
-  const missing = scopes?.find(
-    (scope) => !hasApiKeyScope(apiKey.permissions, scope)
-  );
+  const missing = scopes?.find((scope) => !apiKey.scopes.includes(scope));
   return missing
     ? invalidKey(
         AppErrorCode.Forbidden,

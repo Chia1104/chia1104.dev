@@ -26,7 +26,7 @@ import {
   Wrench,
 } from "lucide-react";
 
-import type { Session } from "@chia/auth/types";
+import type { Session } from "@chia/services/auth/auth.contract";
 
 import type { NavMainItem } from "@/components/commons/nav-main";
 

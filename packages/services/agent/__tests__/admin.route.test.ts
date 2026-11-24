@@ -95,7 +95,7 @@ describe("agent admin routes", () => {
   });
 
   describe("signed-in non-admin", () => {
-    it.override("session", () => sessionOf("someone-else", "user"));
+    it.override("session", () => sessionOf("someone-else"));
 
     it("refuses every route", async ({ context }) => {
       await expect(

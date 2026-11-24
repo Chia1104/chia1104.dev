@@ -1,52 +1,27 @@
-import type { Session } from "@chia/auth/types";
-import { Role } from "@chia/db/types";
+import type { SessionRecord } from "@chia/db/repos/auth";
 import { getAdminId } from "@chia/utils/config";
 
 import { AppError, AppErrorCode } from "../errors";
 
+import { resolveSession } from "./session.policy";
 import type { Policy } from "./types";
 import { allow, deny } from "./types";
 
-const DEFAULT_ROLES: Role[] = [Role.Admin, Role.Root];
-
-export interface AdminPolicyOptions {
-  /**
-   * Accepted roles.
-   * @default [Role.Admin, Role.Root]
-   */
-  roles?: Role[];
-  /**
-   * Also require the session user to be the configured admin.
-   * @default true
-   */
-  pinToAdminId?: boolean;
-}
-
-/**
- * Requires an authenticated session in `roles`, optionally pinned to the single
- * configured admin id.
- */
-export const adminPolicy = (
-  options: AdminPolicyOptions = {}
-): Policy<{ session: Session; adminId: string }> => {
-  const { roles = DEFAULT_ROLES, pinToAdminId = true } = options;
-
+/** Requires the configured admin's session. */
+export const adminPolicy = (): Policy<{
+  session: SessionRecord;
+  adminId: string;
+}> => {
   return async (context) => {
-    const session =
-      context.session ??
-      (await context.auth?.api.getSession({ headers: context.headers }));
+    const session = await resolveSession(context);
 
-    if (!session?.session || !session.user) {
+    if (!session || session.user.isAnonymous) {
       return deny(new AppError(AppErrorCode.Unauthorized));
     }
 
     const adminId = getAdminId();
 
-    if (!roles.includes(session.user.role)) {
-      return deny(new AppError(AppErrorCode.Forbidden));
-    }
-
-    if (pinToAdminId && session.user.id !== adminId) {
+    if (session.user.id !== adminId) {
       return deny(new AppError(AppErrorCode.Forbidden));
     }
 

@@ -1,13 +1,20 @@
-const { keys, mockGetSession } = vi.hoisted(() => ({
+const { keys, mockFindSession } = vi.hoisted(() => ({
   keys: { public: "", private: "" },
-  mockGetSession: vi.fn(),
+  mockFindSession: vi.fn(),
 }));
 
 // The real guard must run; only the session lookup and the signing keys are stubbed.
 vi.unmock("../src/guards/auth.guard");
 
-vi.mock("@chia/auth/server", () => ({
-  createAuth: () => ({ api: { getSession: mockGetSession } }),
+// Every request presents a session cookie; what it resolves to is the stubbed lookup.
+vi.mock("@chia/auth/session", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@chia/auth/session")>()),
+  readSessionToken: () => "test-session-token",
+}));
+
+vi.mock("@chia/db/repos/auth", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@chia/db/repos/auth")>()),
+  findSession: mockFindSession,
 }));
 
 // The setup stub of `ai.guard` drops `providerCookieName`, which the route needs for real.
@@ -45,8 +52,14 @@ import { generateKeys } from "@chia/ai/utils";
 let app: (typeof import("../src/server"))["app"];
 
 const guest = {
-  session: { id: "guest-session", userId: "guest" },
-  user: { id: "guest", role: "user", isAnonymous: true },
+  session: { id: "guest-session", expiresAt: new Date("2099-01-01") },
+  user: {
+    id: "guest",
+    name: "Guest",
+    email: null,
+    image: null,
+    isAnonymous: true,
+  },
 };
 
 const signKey = () =>
@@ -65,11 +78,11 @@ beforeAll(async () => {
 
 describe("POST /ai/key:signed", () => {
   beforeEach(() => {
-    mockGetSession.mockReset();
+    mockFindSession.mockReset();
   });
 
   it("refuses a visitor with no session at all", async () => {
-    mockGetSession.mockResolvedValue(null);
+    mockFindSession.mockResolvedValue(null);
 
     const res = await signKey();
 
@@ -77,7 +90,7 @@ describe("POST /ai/key:signed", () => {
   });
 
   it("signs a guest's key into their provider cookie", async () => {
-    mockGetSession.mockResolvedValue(guest);
+    mockFindSession.mockResolvedValue(guest);
 
     const res = await signKey();
 
@@ -86,7 +99,7 @@ describe("POST /ai/key:signed", () => {
   });
 
   it("keeps the rest of /ai closed to guests", async () => {
-    mockGetSession.mockResolvedValue(guest);
+    mockFindSession.mockResolvedValue(guest);
 
     const res = await app.request("/api/v1/ai/generate", {
       method: "POST",
@@ -103,11 +116,11 @@ describe("POST /ai/key:signed", () => {
 
 describe("GET /ai/keys", () => {
   beforeEach(() => {
-    mockGetSession.mockReset();
+    mockFindSession.mockReset();
   });
 
   it("lists which keys this browser holds and is not cacheable", async () => {
-    mockGetSession.mockResolvedValue(guest);
+    mockFindSession.mockResolvedValue(guest);
 
     const signed = await signKey();
     const cookie = signed.headers.get("set-cookie")?.split(";")[0] ?? "";

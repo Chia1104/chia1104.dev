@@ -137,7 +137,8 @@ export const summarizeAgentUsage = async (
 export interface AgentUsageByUser extends AgentUsageSummary {
   userId: string;
   name: string;
-  email: string;
+  /** `null` for a guest. */
+  email: string | null;
   image: string | null;
   isAnonymous: boolean;
 }
@@ -181,7 +182,6 @@ export const listTopAgentUsageUsers = async (
     .$withCache({ config: { ex: AGGREGATE_CACHE_SECONDS } });
   return rows.map((row) => ({
     ...row,
-    isAnonymous: row.isAnonymous === true,
     costMicros: Number(row.costMicros ?? 0),
   }));
 };

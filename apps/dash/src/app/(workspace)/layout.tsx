@@ -21,11 +21,11 @@ export default async function Layout({ children }: { children: ReactNode }) {
   const session = await getSession();
 
   // A guest from the public site holds a session cookie but has no dashboard.
-  if (!session.data || session.data.access.dashboard === null) {
+  if (!session || session.access.dashboard === null) {
     unauthorized();
   }
   // The writing agent is the operator's; a member never sees the trigger or the dock.
-  const operator = session.data.access.dashboard === "operator";
+  const operator = session.access.dashboard === "operator";
 
   // Pages provide what they have open (the editor's draft) and the dock sends it.
   return (

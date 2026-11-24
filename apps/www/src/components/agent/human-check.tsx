@@ -4,32 +4,28 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Spinner } from "@heroui/react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
-import { authClient } from "@chia/auth/client";
+import { signInGuest } from "@chia/auth/client";
 import { X_CAPTCHA_RESPONSE } from "@chia/integrations/captcha/constants";
 
 import { SiteCaptcha } from "@/components/commons/captcha";
+import { orpc } from "@/libs/orpc/client";
 
 /** First visit: a challenge, then a guest session. A failed attempt remounts the widget for a fresh token. */
 export const HumanCheck = () => {
   const t = useTranslations("chbot.humanCheck");
   const [attempt, setAttempt] = useState(0);
   const router = useRouter();
+  const queryClient = useQueryClient();
   const startGuest = useMutation({
-    mutationFn: async (token: string) => {
-      const response = await authClient.signIn.anonymous({
-        fetchOptions: { headers: { [X_CAPTCHA_RESPONSE]: token } },
+    mutationFn: (token: string) =>
+      signInGuest({ headers: { [X_CAPTCHA_RESPONSE]: token } }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: orpc.auth.session.key(),
       });
-
-      if (response.error) {
-        throw new Error(response.error.message ?? response.error.statusText);
-      }
-
-      return response.data.user;
-    },
-    onSuccess: () => {
       router.refresh();
     },
   });

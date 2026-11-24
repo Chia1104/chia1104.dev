@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -20,23 +19,12 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { authClient } from "@chia/auth/client";
 import { formatDateTime } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
-import {
-  RoleChip,
-  UserStateChip,
-  formatUsd,
-  useInvalidateUsers,
-} from "./shared";
-
-/**
- * Reads come from oRPC; every write is a better-auth admin endpoint, so ban, revoke and
- * delete semantics are the auth server's, not the dashboard's.
- */
+import { UserStateChip, formatUsd, useInvalidateUsers } from "./shared";
 
 type UserDetail = RouterOutputs["user"]["get"];
 type UserUsage = RouterOutputs["agent"]["admin"]["usage"]["user"];
@@ -51,17 +39,6 @@ const BAN_DURATIONS = [
 ] as const;
 
 type BanDurationId = (typeof BAN_DURATIONS)[number]["id"];
-
-/** better-auth's client reports failure in `error` rather than throwing. */
-const unwrap = async <T,>(
-  request: Promise<{ data: T; error: { message?: string } | null }>
-): Promise<T> => {
-  const result = await request;
-  if (result.error) {
-    throw new Error(result.error.message ?? "The auth server refused");
-  }
-  return result.data;
-};
 
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <>
@@ -258,9 +235,8 @@ const UserDetailView = ({
   detail: UserDetail;
   onClose: () => void;
 }) => {
-  const router = useRouter();
   const invalidate = useInvalidateUsers();
-  const me = authClient.useSession();
+  const me = useQuery(orpc.auth.session.queryOptions());
   const [dialog, setDialog] = useState<"ban" | "revoke" | "delete" | null>(
     null
   );
@@ -274,56 +250,38 @@ const UserDetailView = ({
   };
   const failed = (error: Error) => toast.error(error.message);
 
-  const ban = useMutation({
-    mutationFn: (input: { reason: string; expiresIn?: number }) =>
-      unwrap(
-        authClient.admin.banUser({
-          userId: user.id,
-          banReason: input.reason || undefined,
-          banExpiresIn: input.expiresIn,
-        })
-      ),
-    onSuccess: done("User banned"),
-    onError: failed,
-  });
-  const unban = useMutation({
-    mutationFn: () => unwrap(authClient.admin.unbanUser({ userId: user.id })),
-    onSuccess: done("User unbanned"),
-    onError: failed,
-  });
-  const revoke = useMutation({
-    mutationFn: () =>
-      unwrap(authClient.admin.revokeUserSessions({ userId: user.id })),
-    onSuccess: done("Every session signed out"),
-    onError: failed,
-  });
-  const impersonate = useMutation({
-    mutationFn: () =>
-      unwrap(authClient.admin.impersonateUser({ userId: user.id })),
-    onSuccess() {
-      toast.success(`Browsing as ${user.name}. Stop from the banner.`);
-      onClose();
-      router.refresh();
-    },
-    onError: failed,
-  });
-  const remove = useMutation({
-    mutationFn: () => unwrap(authClient.admin.removeUser({ userId: user.id })),
-    async onSuccess() {
-      await invalidate();
-      setDialog(null);
-      toast.success("User deleted");
-      onClose();
-    },
-    onError: failed,
-  });
+  const ban = useMutation(
+    orpc.user.ban.mutationOptions({
+      onSuccess: done("User banned"),
+      onError: failed,
+    })
+  );
+  const unban = useMutation(
+    orpc.user.unban.mutationOptions({
+      onSuccess: done("User unbanned"),
+      onError: failed,
+    })
+  );
+  const revoke = useMutation(
+    orpc.user.revokeSessions.mutationOptions({
+      onSuccess: done("Every session signed out"),
+      onError: failed,
+    })
+  );
+  const remove = useMutation(
+    orpc.user.remove.mutationOptions({
+      async onSuccess() {
+        await invalidate();
+        setDialog(null);
+        toast.success("User deleted");
+        onClose();
+      },
+      onError: failed,
+    })
+  );
 
   const busy =
-    ban.isPending ||
-    unban.isPending ||
-    revoke.isPending ||
-    impersonate.isPending ||
-    remove.isPending;
+    ban.isPending || unban.isPending || revoke.isPending || remove.isPending;
 
   return (
     <div className="flex flex-col gap-5">
@@ -334,9 +292,10 @@ const UserDetailView = ({
         </Avatar>
         <div className="flex min-w-0 flex-col gap-1">
           <span className="truncate text-base font-semibold">{user.name}</span>
-          <span className="text-muted truncate text-xs">{user.email}</span>
+          <span className="text-muted truncate text-xs">
+            {user.email ?? "Guest"}
+          </span>
           <div className="flex flex-wrap gap-1">
-            <RoleChip role={user.role} />
             <UserStateChip
               banned={user.banned}
               isAnonymous={user.isAnonymous}
@@ -375,10 +334,6 @@ const UserDetailView = ({
               label="Id"
               value={<span className="font-mono">{user.id}</span>}
             />
-            <Field
-              label="Email verified"
-              value={user.emailVerified ? "Yes" : "No"}
-            />
             <Field label="Joined" value={formatDateTime(user.createdAt)} />
             <Field label="Updated" value={formatDateTime(user.updatedAt)} />
             <Field
@@ -389,7 +344,7 @@ const UserDetailView = ({
                   : accounts.map((account) => account.providerId).join(", ")
               }
             />
-            <Field label="Passkeys" value={detail.passkeys} />
+            <Field label="Sessions" value={detail.sessions} />
             <Field label="API keys" value={detail.apiKeys} />
           </dl>
         </Card.Content>
@@ -404,7 +359,7 @@ const UserDetailView = ({
             isPending={unban.isPending}
             size="sm"
             variant="secondary"
-            onPress={() => unban.mutate()}>
+            onPress={() => unban.mutate({ id: user.id })}>
             Unban
           </Button>
         ) : (
@@ -417,19 +372,11 @@ const UserDetailView = ({
           </Button>
         )}
         <Button
-          isDisabled={busy}
+          isDisabled={busy || isSelf}
           size="sm"
           variant="secondary"
           onPress={() => setDialog("revoke")}>
           Sign out everywhere
-        </Button>
-        <Button
-          isDisabled={busy || isSelf}
-          isPending={impersonate.isPending}
-          size="sm"
-          variant="secondary"
-          onPress={() => impersonate.mutate()}>
-          Impersonate
         </Button>
         <Button
           className="ml-auto"
@@ -445,7 +392,13 @@ const UserDetailView = ({
         isOpen={dialog === "ban"}
         isPending={ban.isPending}
         onCancel={() => setDialog(null)}
-        onConfirm={(input) => ban.mutate(input)}
+        onConfirm={(input) =>
+          ban.mutate({
+            id: user.id,
+            reason: input.reason || undefined,
+            expiresIn: input.expiresIn,
+          })
+        }
       />
       <ConfirmDialog
         body="Every device is signed out. They can sign in again right away."
@@ -454,7 +407,7 @@ const UserDetailView = ({
         isPending={revoke.isPending}
         title="Sign this user out everywhere?"
         onCancel={() => setDialog(null)}
-        onConfirm={() => revoke.mutate()}
+        onConfirm={() => revoke.mutate({ id: user.id })}
       />
       <ConfirmDialog
         body="Their sessions, linked providers, agent sessions, usage and any content they authored go with them. There is no undo."
@@ -463,7 +416,7 @@ const UserDetailView = ({
         isPending={remove.isPending}
         title="Delete this user?"
         onCancel={() => setDialog(null)}
-        onConfirm={() => remove.mutate()}
+        onConfirm={() => remove.mutate({ id: user.id })}
       />
     </div>
   );

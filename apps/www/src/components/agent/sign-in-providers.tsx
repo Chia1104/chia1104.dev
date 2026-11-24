@@ -6,7 +6,8 @@ import { Button } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { authClient } from "@chia/auth/client";
+import { signInSocial } from "@chia/auth/client";
+import { OAuthProvider } from "@chia/auth/types";
 import { X_CAPTCHA_RESPONSE } from "@chia/integrations/captcha/constants";
 
 import { SiteCaptcha } from "@/components/commons/captcha";
@@ -48,8 +49,8 @@ const GoogleIcon = () => (
 );
 
 /**
- * Captcha, then a provider. Signing in links the guest's sessions and spend to the account
- * on the server (`onLinkAccount`), so nothing is lost or reset.
+ * Captcha, then a provider. Signing in moves the guest's sessions and spend to the account
+ * on the server, so nothing is lost or reset.
  */
 export const SignInProviders = ({ className }: { className?: string }) => {
   const t = useTranslations("chbot.account");
@@ -58,17 +59,16 @@ export const SignInProviders = ({ className }: { className?: string }) => {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
-  const signIn = (provider: "github" | "google") =>
+  const signIn = (provider: OAuthProvider) =>
     startTransition(async () => {
       if (!captchaToken) return;
-      const result = await authClient.signIn.social(
-        {
+      try {
+        await signInSocial({
           provider,
           callbackURL: `${window.location.origin}${window.location.pathname}`,
-        },
-        { headers: { [X_CAPTCHA_RESPONSE]: captchaToken } }
-      );
-      if (result.error) {
+          headers: { [X_CAPTCHA_RESPONSE]: captchaToken },
+        });
+      } catch {
         // The token was consumed either way; a new widget mints another.
         setCaptchaToken(null);
         setAttempt((count) => count + 1);
@@ -87,7 +87,7 @@ export const SignInProviders = ({ className }: { className?: string }) => {
         fullWidth
         isDisabled={!captchaToken}
         isPending={isPending}
-        onPress={() => signIn("github")}
+        onPress={() => signIn(OAuthProvider.GitHub)}
         size="sm"
         variant="outline">
         <GitHubIcon />
@@ -97,7 +97,7 @@ export const SignInProviders = ({ className }: { className?: string }) => {
         fullWidth
         isDisabled={!captchaToken}
         isPending={isPending}
-        onPress={() => signIn("google")}
+        onPress={() => signIn(OAuthProvider.Google)}
         size="sm"
         variant="outline">
         <GoogleIcon />

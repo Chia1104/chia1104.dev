@@ -1,5 +1,6 @@
 import { agentContract } from "./agent/agent.contract";
 import { apikeyContract } from "./apikey/apikey.contract";
+import { authContract } from "./auth/auth.contract";
 import { dashboardContract } from "./dashboard/dashboard.contract";
 import { emailContract } from "./email/email.contract";
 import { feedsContract } from "./feeds/feeds.contract";
@@ -20,6 +21,7 @@ export const routerContract = {
   dashboard: dashboardContract,
   health: healthContract,
   apikey: apikeyContract,
+  auth: authContract,
   user: userContract,
   feeds: feedsContract,
   file: fileContract,

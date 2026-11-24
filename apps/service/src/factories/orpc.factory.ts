@@ -6,6 +6,7 @@ import { reportError } from "@chia/observability/report";
 import type { BaseOSContext, ORPCConfig } from "@chia/services/shared/context";
 
 import { agentFactory } from "../agents/factory";
+import { agentKindFloors } from "../agents/kinds";
 import { env } from "../env";
 import { workflowControl } from "../repos/workflow-control.repo";
 import { memoryHooks } from "../services/agent-memory-indexing.service";
@@ -15,6 +16,7 @@ import { feedHooks } from "../services/feed-indexing.service";
 /** Guard config from env; built once and reused on every request. */
 const config: ORPCConfig = {
   aiAuthPrivateKey: env.AI_AUTH_PRIVATE_KEY,
+  agentKinds: agentKindFloors,
 };
 
 /** QUOTA_EXCEEDED is the only AppError code outside oRPC's common codes. */

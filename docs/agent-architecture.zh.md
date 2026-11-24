@@ -64,7 +64,7 @@ oRPC context 接收一個由 eager `minTier` 與 dynamic definition loader 建�
 | `writing` | `Root`           | 設定作者的草稿與已發佈內容     | 共用 draft 與 memory |
 | `public`  | `Guest`          | 設定作者的已發佈內容與 profile | 讀者回報             |
 
-Better Auth 的 `get-session` 帶有 `access`：session 自身的 tier、dashboard 等級，以及每個 hosted kind 目前的 floor。前端據此決定要渲染什麼；guards 不讀它，每個請求都重新分級 caller。
+`auth.session` 帶有 `access`：session 自身的 tier、dashboard 等級，以及每個 hosted kind 目前的 floor。前端據此決定要渲染什麼；guards 不讀它，每個請求都重新分級 caller。
 
 Generic 層不攜帶 admin 身分。Writing binding 只在建立 content port 時讀設定作者；public binding 不會收到該身分或任何可寫 port。
 
@@ -282,7 +282,7 @@ Auto-compaction 只在成功且沒有 pending approval 的 turn 後執行。Comp
 
 ### Guest identity
 
-Better Auth anonymous plugin 會替 guest 建立真正的 user row，因此 guest 能擁有 sessions、approvals 與 usage。Guest 登入時，`transferAgentOwnership` 會在 anonymous row 移除前搬移這些資料，登入不會重置 quota。
+通過 captcha 會替 guest 建立真正的 user row（`is_anonymous`、沒有 email），因此 guest 能擁有 sessions、approvals 與 usage。Guest 以 provider 登入時，`adoptGuest` 會先用 `transferAgentOwnership` 搬移這些資料再刪除 guest row，登入不會重置 quota。
 
 一般 session guard 仍要求登入帳號；agent routes 透過 `callerPolicy` 明確接納 guest caller。
 

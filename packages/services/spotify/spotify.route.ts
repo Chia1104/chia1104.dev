@@ -49,8 +49,7 @@ export const getSpotifyNowPlayingRoute = contractOS.spotify.playing
     }
   });
 
-/** Any admin/root may manage connected Spotify accounts; not pinned to the configured admin id. */
-const spotifyManageGuard = adminGuard({ pinToAdminId: false });
+const spotifyManageGuard = adminGuard();
 
 export const getSpotifyAccountsRoute = contractOS.spotify.accounts
   .use(spotifyManageGuard)

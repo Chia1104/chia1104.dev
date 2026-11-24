@@ -3,32 +3,15 @@ import { createMiddleware } from "hono/factory";
 import { vi } from "vitest";
 
 import { CallerTier } from "@chia/auth/tier";
+import type { SessionRecord } from "@chia/db/repos/auth";
 import type { VerifiedApiKey } from "@chia/service-kit/policies/apikey.policy";
 import { baseOS } from "@chia/services/shared/context";
 import type { CallerContext } from "@chia/services/shared/guards/caller.guard";
 
 const FAKE_API_KEY: VerifiedApiKey = {
   id: "test-api-key-id",
-  configId: "default",
-  name: null,
-  start: null,
-  prefix: null,
-  referenceId: "test-user-id",
-  refillInterval: null,
-  refillAmount: null,
-  lastRefillAt: null,
-  enabled: true,
-  rateLimitEnabled: false,
-  rateLimitTimeWindow: null,
-  rateLimitMax: null,
-  requestCount: 0,
-  remaining: null,
-  lastRequest: null,
-  expiresAt: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  metadata: null,
-  permissions: null,
+  userId: "test-user-id",
+  scopes: [],
 };
 
 export const orpcRateLimitGuard = vi.fn(() =>
@@ -40,28 +23,28 @@ export const orpcCallerOS = os.$context<CallerContext>();
 /** Same value as `LOCAL_ADMIN_ID` in `setup.ts` (`getAdminId()` under test). */
 export const TEST_ADMIN_ID = "test-local-admin-id";
 
-const TEST_SESSION = {
-  session: { id: "test-session-id" },
+const SESSION_EXPIRES_AT = new Date("2099-01-01T00:00:00.000Z");
+
+const TEST_SESSION: SessionRecord = {
+  session: { id: "test-session-id", expiresAt: SESSION_EXPIRES_AT },
   user: {
     id: TEST_ADMIN_ID,
     email: "test@example.com",
     name: "Test User",
-    role: "root",
+    image: null,
     isAnonymous: false,
   },
-  access: { tier: 4, dashboard: "operator", agent: { writing: 4, public: 1 } },
 };
 
-const GUEST_SESSION = {
-  session: { id: "test-guest-session-id" },
+const GUEST_SESSION: SessionRecord = {
+  session: { id: "test-guest-session-id", expiresAt: SESSION_EXPIRES_AT },
   user: {
     id: "test-guest-id",
-    email: "temp-guest@example.com",
-    name: "Anonymous",
-    role: "user",
+    email: null,
+    name: "Guest",
+    image: null,
     isAnonymous: true,
   },
-  access: { tier: 1, dashboard: null, agent: { writing: 4, public: 1 } },
 };
 
 let callerTier: CallerTier = CallerTier.Root;
@@ -88,9 +71,9 @@ export const orpcCallerGuard = vi.fn((options: { minTier?: CallerTier } = {}) =>
             adminId: TEST_ADMIN_ID,
             session:
               callerTier >= CallerTier.Session
-                ? (TEST_SESSION as never)
+                ? TEST_SESSION
                 : callerTier === CallerTier.Guest
-                  ? (GUEST_SESSION as never)
+                  ? GUEST_SESSION
                   : undefined,
             apiKey: callerTier === CallerTier.ApiKey ? FAKE_API_KEY : undefined,
           },

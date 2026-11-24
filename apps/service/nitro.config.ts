@@ -28,7 +28,6 @@ export default defineConfig({
     "@redis/client*",
     "@workflow/world-postgres",
     "workflow",
-    "@better-auth/passkey",
     "sharp",
     "@img/*",
   ],

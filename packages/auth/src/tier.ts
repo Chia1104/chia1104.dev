@@ -1,9 +1,7 @@
-import { Role } from "@chia/db/types";
-
 /** How much the caller has proven, ordered so tiers can be compared. */
 export const CallerTier = {
   Anonymous: 0,
-  /** Session cookie for a guest minted by `anonymous()`. Below ApiKey. */
+  /** Session cookie for a guest who passed the captcha but never signed in. Below ApiKey. */
   Guest: 1,
   /** Valid `X-CH-API-KEY`. */
   ApiKey: 2,
@@ -18,19 +16,16 @@ export type CallerTier = (typeof CallerTier)[keyof typeof CallerTier];
 export const isCallerTier = (value: number): value is CallerTier =>
   Object.values<number>(CallerTier).includes(value);
 
-/** What a session proves about its user; the shape both the auth server and the policies read. */
+/** What a session proves about its user; the shape both the auth routes and the policies read. */
 export interface TieredUser {
   id: string;
-  role: string;
-  isAnonymous?: boolean | null;
+  isAnonymous: boolean;
 }
 
+/** The configured admin is the only Root; no column on the user row can grant it. */
 export const tierForUser = (user: TieredUser, adminId: string): CallerTier => {
-  if (user.isAnonymous === true) return CallerTier.Guest;
-  return user.id === adminId &&
-    (user.role === Role.Root || user.role === Role.Admin)
-    ? CallerTier.Root
-    : CallerTier.Session;
+  if (user.isAnonymous) return CallerTier.Guest;
+  return user.id === adminId ? CallerTier.Root : CallerTier.Session;
 };
 
 /**
