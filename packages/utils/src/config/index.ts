@@ -19,11 +19,6 @@ const getInternalEnv = () => {
       ? "railway-prod"
       : "railway-dev";
   }
-  if (process.env.ZEABUR_ENVIRONMENT_NAME) {
-    return process.env.ZEABUR_ENVIRONMENT_NAME === "production"
-      ? "zeabur-prod"
-      : "zeabur-dev";
-  }
 };
 
 export const getEnv = (env?: string) =>
@@ -49,13 +44,11 @@ export const switchEnv = <TResult = unknown>(
 ) => {
   switch (getEnv(env)) {
     case "railway-prod":
-    case "zeabur-prod":
     case "production":
     case "prod": {
       return prod();
     }
     case "railway-dev":
-    case "zeabur-dev":
     case "preview":
     case "beta": {
       return beta();
@@ -120,13 +113,6 @@ export const getBaseUrl = (options?: {
     return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
   }
 
-  /**
-   * @TODO
-   */
-  if (process.env.ZEABUR_URL) {
-    return `https://${process.env.ZEABUR_URL.replace(/\/$/, "")}`;
-  }
-
   return baseUrl?.replace(/\/$/, "");
 };
 
@@ -135,14 +121,6 @@ type ServiceVersion =
   | "NO_PREFIX"
   | "LEGACY"
   | Exclude<Service, typeof Service.LegacyService>;
-
-interface GetServiceEndPointOptions {
-  clientPrefix?: string;
-  proxyEndpoint?: string;
-  version?: ServiceVersion;
-  isInternal?: boolean;
-  removePrefix?: boolean;
-}
 
 function removeEndSlash(url: string) {
   return url.replace(/\/$/, "");
@@ -153,77 +131,10 @@ function switchServiceVersion(version: ServiceVersion, url: string) {
     case "LEGACY":
     case "v1":
       return removeEndSlash(url).replace(/\/api\/v1$/, "") + "/api/v1";
-    case Service.Auth:
-      return removeEndSlash(url).replace(/\/auth$/, "") + "/auth";
     default:
       return removeEndSlash(url);
   }
 }
-
-/**
- * @deprecated Use `withServiceEndpoint` instead
- * @param env
- * @param options {proxyEndpoint, version, isInternal}
- * @default version = "v1"
- */
-export const getServiceEndPoint = (
-  env?: string,
-  options?: GetServiceEndPointOptions
-) => {
-  const isServer = isServerRuntime();
-  const {
-    proxyEndpoint = process.env.NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT,
-    version = "v1",
-    isInternal,
-  } = options ?? {};
-  return switchEnv(env, {
-    prod: () => {
-      if (isServer || isInternal) {
-        if (!process.env.INTERNAL_SERVICE_ENDPOINT)
-          throw new Error("Missing env variables INTERNAL_SERVICE_ENDPOINT");
-        return switchServiceVersion(
-          version,
-          process.env.INTERNAL_SERVICE_ENDPOINT
-        );
-      }
-      if (proxyEndpoint) {
-        return switchServiceVersion(version, proxyEndpoint);
-      }
-      const serviceEndpoint = process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
-      if (!serviceEndpoint)
-        throw new Error(`Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT`);
-      return switchServiceVersion(version, serviceEndpoint);
-    },
-    beta: () => {
-      if (isServer || isInternal) {
-        if (!process.env.INTERNAL_SERVICE_ENDPOINT)
-          throw new Error("Missing env variables INTERNAL_SERVICE_ENDPOINT");
-        return switchServiceVersion(
-          version,
-          process.env.INTERNAL_SERVICE_ENDPOINT
-        );
-      }
-      const serviceEndpoint = process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
-      if (!serviceEndpoint)
-        throw new Error(`Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT`);
-      return switchServiceVersion(version, serviceEndpoint);
-    },
-    local: () => {
-      if (isServer || isInternal) {
-        if (!process.env.INTERNAL_SERVICE_ENDPOINT)
-          throw new Error("Missing env variables INTERNAL_SERVICE_ENDPOINT");
-        return switchServiceVersion(
-          version,
-          process.env.INTERNAL_SERVICE_ENDPOINT
-        );
-      }
-      const serviceEndpoint = process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
-      if (!serviceEndpoint)
-        throw new Error(`Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT`);
-      return switchServiceVersion(version, serviceEndpoint);
-    },
-  });
-};
 
 export const IS_PRODUCTION = process.env.NODE_ENV === "production";
 export const IS_TEST = process.env.NODE_ENV === "test";
@@ -298,7 +209,7 @@ interface WithServiceEndpointOptions {
   isInternal?: boolean;
   /**
    * @default "NO_PREFIX"
-   * `"v1"` / `"LEGACY"` → `/api/v1`; `"auth"` → `/auth`; `"NO_PREFIX"` → `/`.
+   * `"v1"` / `"LEGACY"` → `/api/v1`; `"NO_PREFIX"` → `/`.
    */
   version?: ServiceVersion;
 }
@@ -307,12 +218,6 @@ function serviceNameResolver(service: Service) {
   switch (service) {
     case Service.LegacyService:
       return "SERVICE";
-    case Service.Auth:
-      return "AUTH_SERVICE";
-    case Service.Content:
-      return "CONTENT_SERVICE";
-    case Service.AI:
-      return "AI_SERVICE";
     case Service.Workflow:
       return "WORKFLOW_SERVICE";
     default: {
@@ -344,7 +249,6 @@ export const withServiceEndpoint = <TService extends Service>(
   const isServer = isServerRuntime();
   const {
     isInternal,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     version = !!serviceEnv.INTERNAL_SERVICE_ENDPOINT ||
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     !!serviceEnv.NEXT_PUBLIC_SERVICE_ENDPOINT

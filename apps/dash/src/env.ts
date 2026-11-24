@@ -1,8 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
-import * as z from "zod";
 
-import { adminEnv } from "@chia/auth/env";
-import { env as s3Env } from "@chia/integrations/s3/env";
 import { env as serviceEnv } from "@chia/services/env";
 import { NodeEnvSchema, AppEnvSchema } from "@chia/utils/schema";
 
@@ -18,20 +15,12 @@ export const getClientEnv = () => {
       ? "railway-prod"
       : "railway-dev";
   }
-  if (process.env.ZEABUR_ENVIRONMENT_NAME) {
-    return process.env.ZEABUR_ENVIRONMENT_NAME === "production"
-      ? "zeabur-prod"
-      : "zeabur-dev";
-  }
   return "development";
 };
 
 export const env = createEnv({
   server: {
     NODE_ENV: NodeEnvSchema,
-    RAILWAY_URL: z.string().optional(),
-    VERCEL_URL: z.string().optional(),
-    ZEABUR_URL: z.string().optional(),
   },
 
   client: {
@@ -41,14 +30,11 @@ export const env = createEnv({
   runtimeEnv: {
     NEXT_PUBLIC_APP_ENV: getClientEnv(),
     NODE_ENV: process.env.NODE_ENV,
-    RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
-    VERCEL_URL: process.env.VERCEL_URL,
-    ZEABUR_URL: process.env.ZEABUR_URL,
   },
 
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
 
-  extends: [adminEnv, serviceEnv, s3Env],
+  extends: [serviceEnv],
 });

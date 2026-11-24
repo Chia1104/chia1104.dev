@@ -1,7 +1,7 @@
 import { createEnv } from "@t3-oss/env-core";
 import * as z from "zod";
 
-export const adminEnv = createEnv({
+const adminEnv = createEnv({
   server: {
     ADMIN_ID: z.string().optional(),
     BETA_ADMIN_ID: z.string().optional(),

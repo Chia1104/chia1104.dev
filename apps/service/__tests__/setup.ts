@@ -27,12 +27,6 @@ stubTestEnv({
   SPOTIFY_REFRESH_TOKEN: "test-spotify-refresh-token",
   SPOTIFY_REDIRECT_URI: "http://localhost:3005/api/v1/spotify/oauth/callback",
   SPOTIFY_TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64"),
-  SPOTIFY_NOW_PLAYING_URL:
-    "https://api.spotify.com/v1/me/player/currently-playing",
-  SPOTIFY_TOKEN_URL: "https://accounts.spotify.com/api/token",
-  NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID:
-    process.env.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID ??
-    "test-spotify-favorite-playlist-id",
   S3_ACCESS_KEY_ID: "test-s3-access-key-id",
   S3_SECRET_ACCESS_KEY: "test-s3-secret-access-key",
   S3_REGION: "us-east-1",

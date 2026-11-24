@@ -3,13 +3,7 @@ import * as z from "zod";
 
 export const serviceEnv = createEnv({
   server: {
-    /**
-     * @deprecated Use INTERNAL_AUTH_SERVICE_ENDPOINT, INTERNAL_CONTENT_SERVICE_ENDPOINT, INTERNAL_AI_SERVICE_ENDPOINT, INTERNAL_LEGACY_SERVICE_ENDPOINT instead
-     */
     INTERNAL_SERVICE_ENDPOINT: z.string().optional(),
-    INTERNAL_AUTH_SERVICE_ENDPOINT: z.string().optional(),
-    INTERNAL_CONTENT_SERVICE_ENDPOINT: z.string().optional(),
-    INTERNAL_AI_SERVICE_ENDPOINT: z.string().optional(),
     /** `apps/workflow`; private network only, no public counterpart. */
     INTERNAL_WORKFLOW_SERVICE_ENDPOINT: z.string().optional(),
   },
@@ -22,10 +16,6 @@ export const serviceEnv = createEnv({
   },
   runtimeEnv: {
     INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
-    INTERNAL_AUTH_SERVICE_ENDPOINT: process.env.INTERNAL_AUTH_SERVICE_ENDPOINT,
-    INTERNAL_CONTENT_SERVICE_ENDPOINT:
-      process.env.INTERNAL_CONTENT_SERVICE_ENDPOINT,
-    INTERNAL_AI_SERVICE_ENDPOINT: process.env.INTERNAL_AI_SERVICE_ENDPOINT,
     INTERNAL_WORKFLOW_SERVICE_ENDPOINT:
       process.env.INTERNAL_WORKFLOW_SERVICE_ENDPOINT,
     NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT:

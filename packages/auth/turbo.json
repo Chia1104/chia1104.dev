@@ -13,8 +13,7 @@
         "AUTH_URL",
         "AUTH_COOKIE_DOMAIN",
         "ADMIN_ID",
-        "*_ADMIN_ID",
-        "CH_API_KEY"
+        "*_ADMIN_ID"
       ],
       "env": [
         "GITHUB_CLIENT_ID",
@@ -25,8 +24,7 @@
         "AUTH_URL",
         "AUTH_COOKIE_DOMAIN",
         "ADMIN_ID",
-        "*_ADMIN_ID",
-        "CH_API_KEY"
+        "*_ADMIN_ID"
       ]
     }
   }
