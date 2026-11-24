@@ -30,6 +30,7 @@ Local ports: `www` 3000, `dash` 3001, `service` 3005, `workflow` 3008. `apps/fun
 
 - `src/server.ts` mounts Hono on Nitro and `src/bootstrap.ts` applies `@chia/service-kit/bootstrap`.
 - `routes/auth.route.ts` is the only writer of the session cookie.
+- `src/server.ts` refuses every state-changing request whose `Origin` is outside `CORS_ALLOWED_ORIGIN`; a request with no `Origin` is not a browser's and passes. No mount relies on `SameSite` alone.
 - Keep HTTP mounts in `routes/`, oRPC context construction in `factories/orpc.factory.ts`, host bindings in `agents/`, transport guards in `guards/`, orchestration in `services/` and remote access in `repos/`.
 - Business logic belongs in packages. Database access goes through `@chia/db/repos/*`.
 - The service starts, resumes and cancels workflows but never executes them.

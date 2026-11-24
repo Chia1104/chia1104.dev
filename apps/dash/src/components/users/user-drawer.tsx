@@ -264,7 +264,9 @@ const UserDetailView = ({
   );
   const revoke = useMutation(
     orpc.user.revokeSessions.mutationOptions({
-      onSuccess: done("Every session signed out"),
+      onSuccess: done(
+        isSelf ? "Other sessions signed out" : "Every session signed out"
+      ),
       onError: failed,
     })
   );
@@ -372,11 +374,11 @@ const UserDetailView = ({
           </Button>
         )}
         <Button
-          isDisabled={busy || isSelf}
+          isDisabled={busy}
           size="sm"
           variant="secondary"
           onPress={() => setDialog("revoke")}>
-          Sign out everywhere
+          {isSelf ? "Sign out other sessions" : "Sign out everywhere"}
         </Button>
         <Button
           className="ml-auto"
@@ -401,11 +403,19 @@ const UserDetailView = ({
         }
       />
       <ConfirmDialog
-        body="Every device is signed out. They can sign in again right away."
+        body={
+          isSelf
+            ? "Every other device is signed out. This one stays signed in."
+            : "Every device is signed out. They can sign in again right away."
+        }
         confirmLabel="Sign out"
         isOpen={dialog === "revoke"}
         isPending={revoke.isPending}
-        title="Sign this user out everywhere?"
+        title={
+          isSelf
+            ? "Sign out your other sessions?"
+            : "Sign this user out everywhere?"
+        }
         onCancel={() => setDialog(null)}
         onConfirm={() => revoke.mutate({ id: user.id })}
       />

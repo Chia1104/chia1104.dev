@@ -9,6 +9,7 @@ import {
   adoptGuest,
   createGuestUser,
   createSession,
+  deleteExpiredSessions,
   deleteSession,
   findSession,
   isBanActive,
@@ -42,6 +43,7 @@ const issueSession = async (
 ): Promise<SessionGrant> => {
   const token = createSessionToken();
   const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000);
+  await deleteExpiredSessions(db);
   await createSession(db, {
     tokenHash: await hashSessionToken(token),
     userId,

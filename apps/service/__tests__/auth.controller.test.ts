@@ -1,6 +1,7 @@
-const { mockVerify, service, mockFinish } = vi.hoisted(() => ({
+const { mockVerify, service, mockFinish, mockReport } = vi.hoisted(() => ({
   mockVerify: vi.fn(),
   mockFinish: vi.fn(),
+  mockReport: vi.fn(),
   service: {
     signInWithOAuth: vi.fn(),
     startGuestSession: vi.fn(),
@@ -15,12 +16,16 @@ vi.mock("@chia/integrations/captcha", () => ({
 
 vi.mock("@chia/services/auth/auth.service", () => service);
 
+vi.mock("@chia/observability/report", () => ({ reportError: mockReport }));
+
 vi.mock("@chia/auth/oauth", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@chia/auth/oauth")>()),
   finishOAuthFlow: mockFinish,
 }));
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { OAuthCodeRefusedError } from "@chia/auth/oauth";
 
 import { app } from "../src/server";
 
@@ -138,6 +143,13 @@ describe("auth routes", () => {
       expect(cookie).toMatch(/^chia1104\.dev\.oauth=/);
     });
 
+    it("scopes the flow cookie to the whole host, as `__Host-` requires", async () => {
+      const { res } = await startFlow();
+
+      expect(res.headers.get("set-cookie")).toMatch(/; Path=\/(;|$)/);
+      expect(res.headers.get("set-cookie")).not.toContain("Domain=");
+    });
+
     it("signs in and returns to the callback URL", async () => {
       const { url, cookie } = await startFlow();
       const state = url.searchParams.get("state") ?? "";
@@ -179,6 +191,36 @@ describe("auth routes", () => {
 
       expect(res.status).toBe(400);
       expect(service.signInWithOAuth).not.toHaveBeenCalled();
+    });
+
+    it("answers a code the provider refuses without reporting it", async () => {
+      mockFinish.mockRejectedValue(new OAuthCodeRefusedError());
+      const { url, cookie } = await startFlow();
+
+      const res = await app.request(
+        `/api/v1/auth/callback/google?code=c&state=${url.searchParams.get("state")}`,
+        { headers: { Cookie: cookie } }
+      );
+
+      expect(res.headers.get("location")).toBe(
+        `${SITE}/chat?error=invalid_callback`
+      );
+      expect(mockReport).not.toHaveBeenCalled();
+    });
+
+    it("reports a provider failure that is not the caller's", async () => {
+      mockFinish.mockRejectedValue(new Error("OAuth request failed: 503"));
+      const { url, cookie } = await startFlow();
+
+      const res = await app.request(
+        `/api/v1/auth/callback/google?code=c&state=${url.searchParams.get("state")}`,
+        { headers: { Cookie: cookie } }
+      );
+
+      expect(res.headers.get("location")).toBe(
+        `${SITE}/chat?error=sign_in_failed`
+      );
+      expect(mockReport).toHaveBeenCalledOnce();
     });
 
     it("returns a refused sign-in with its reason", async () => {

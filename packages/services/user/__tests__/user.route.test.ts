@@ -74,6 +74,7 @@ describe("user routes", () => {
     repo.getUserDetail.mockResolvedValue(detail);
     authRepo.banUser.mockResolvedValue(true);
     authRepo.removeUser.mockResolvedValue(true);
+    authRepo.deleteUserSessions.mockResolvedValue(true);
     authRepo.updateUserProfile.mockResolvedValue(true);
   });
 
@@ -141,19 +142,32 @@ describe("user routes", () => {
     });
   });
 
-  it("refuses to ban, sign out or delete the operator", async ({ context }) => {
-    for (const route of [
-      routes.banUserRoute,
-      routes.revokeUserSessionsRoute,
-      routes.removeUserRoute,
-    ]) {
+  it("refuses to ban or delete the operator", async ({ context }) => {
+    for (const route of [routes.banUserRoute, routes.removeUserRoute]) {
       await expect(
         call(route, { id: ADMIN_ID }, { context })
       ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     }
     expect(authRepo.banUser).not.toHaveBeenCalled();
-    expect(authRepo.deleteUserSessions).not.toHaveBeenCalled();
     expect(authRepo.removeUser).not.toHaveBeenCalled();
+  });
+
+  it("signs a user out everywhere, but keeps the operator's own session", async ({
+    context,
+  }) => {
+    await call(routes.revokeUserSessionsRoute, { id: "u1" }, { context });
+    expect(authRepo.deleteUserSessions).toHaveBeenLastCalledWith(
+      expect.anything(),
+      "u1",
+      undefined
+    );
+
+    await call(routes.revokeUserSessionsRoute, { id: ADMIN_ID }, { context });
+    expect(authRepo.deleteUserSessions).toHaveBeenLastCalledWith(
+      expect.anything(),
+      ADMIN_ID,
+      "s1"
+    );
   });
 
   it("answers NOT_FOUND when the user is gone", async ({ context }) => {

@@ -26,6 +26,16 @@ export const MOUNT_RATE_LIMITS = {
       [CallerTier.Session]: 60,
     },
   },
+  /** Bounds forged callbacks, each of which costs a round trip to the provider. */
+  auth: {
+    windowMs: MINUTE,
+    limit: {
+      [CallerTier.Anonymous]: 30,
+      [CallerTier.Guest]: 30,
+      [CallerTier.ApiKey]: 30,
+      [CallerTier.Session]: 30,
+    },
+  },
   /** Only the operator passes `verifyOperator`; this bounds probing before that check. */
   mcp: {
     windowMs: MINUTE,

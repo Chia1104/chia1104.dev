@@ -30,13 +30,29 @@ interface ProviderConfig {
 
 const tokenSchema = z.object({ access_token: z.string().min(1) });
 
-/** NFKC, trim, lowercase, then a strict shape check; anything else is refused rather than stored. */
+const tokenErrorSchema = z.object({ error: z.string() });
+
+/** How a provider names a code it will not redeem: RFC 6749's name, then GitHub's. */
+const REFUSED_CODE_ERRORS = new Set(["invalid_grant", "bad_verification_code"]);
+
+/** The provider would not redeem the code: forged, replayed or expired. The caller's failure. */
+export class OAuthCodeRefusedError extends Error {
+  constructor() {
+    super("OAuth provider refused the authorization code");
+    this.name = "OAuthCodeRefusedError";
+  }
+}
+
+/**
+ * Lowercases a plain ASCII address. The shape is checked before any case folding, so an
+ * address in other characters is refused, never folded into one that already has an account.
+ */
 const canonicalEmail = (raw: string): string | null => {
-  const email = raw.normalize("NFKC").trim().toLowerCase();
-  return /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(
+  const email = raw.trim();
+  return /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(
     email
   ) && email.length <= 254
-    ? email
+    ? email.toLowerCase()
     : null;
 };
 
@@ -56,7 +72,7 @@ const exchangeToken = async (
   url: string,
   body: Record<string, string>
 ): Promise<string> => {
-  const token = await fetchJSON(tokenSchema, url, {
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -64,7 +80,16 @@ const exchangeToken = async (
     },
     body: new URLSearchParams(body),
   });
-  return token.access_token;
+  // Google refuses a code with 400 and GitHub with 200; both name the reason in `error`.
+  const payload: unknown = await response.json().catch(() => null);
+  const refusal = tokenErrorSchema.safeParse(payload);
+  if (refusal.success && REFUSED_CODE_ERRORS.has(refusal.data.error)) {
+    throw new OAuthCodeRefusedError();
+  }
+  if (!response.ok) {
+    throw new Error(`OAuth request failed: ${response.status} ${url}`);
+  }
+  return tokenSchema.parse(payload).access_token;
 };
 
 const googleUserSchema = z.object({

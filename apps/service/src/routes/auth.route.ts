@@ -6,6 +6,7 @@ import { timeout } from "hono/timeout";
 import * as z from "zod";
 
 import {
+  OAuthCodeRefusedError,
   finishOAuthFlow,
   isTrustedOrigin,
   oauthFlowSchema,
@@ -28,15 +29,22 @@ import {
 } from "@chia/services/auth/auth.service";
 
 import { env } from "../env";
+import { resolveCaller } from "../guards/caller.guard";
 import { captchaGuard } from "../guards/captcha.guard";
+import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 import { verifyTrustedOrigin } from "../guards/trusted-origin.guard";
 import { errorResponse } from "../utils/error.util";
 
-/** Holds the PKCE verifier and state between the redirect out and the provider's callback. */
+/**
+ * Holds the PKCE verifier and state between the redirect out and the provider's callback.
+ * `__Host-` pins it to this host: another subdomain cannot plant a flow of its own, which
+ * would sign the visitor in as someone else.
+ */
 const FLOW_COOKIE = useSecureCookies
-  ? "__Secure-chia1104.dev.oauth"
+  ? "__Host-chia1104.dev.oauth"
   : "chia1104.dev.oauth";
-const FLOW_COOKIE_PATH = "/api/v1/auth/callback";
+/** `__Host-` requires `Path=/` and no `Domain`. */
+const FLOW_COOKIE_SCOPE = { path: "/", secure: useSecureCookies };
 const FLOW_MAX_AGE_SECONDS = 600;
 
 const sessionCookieScope = () => ({
@@ -83,10 +91,7 @@ const callbackQuerySchema = z.object({
 
 const readFlow = (c: Context<HonoContext>) => {
   const raw = getCookie(c, FLOW_COOKIE);
-  deleteCookie(c, FLOW_COOKIE, {
-    path: FLOW_COOKIE_PATH,
-    secure: useSecureCookies,
-  });
+  deleteCookie(c, FLOW_COOKIE, FLOW_COOKIE_SCOPE);
   if (!raw) return null;
   try {
     const parsed = oauthFlowSchema.safeParse(
@@ -101,7 +106,9 @@ const readFlow = (c: Context<HonoContext>) => {
 /** The routes that mint a session for an unknown caller go through the captcha. */
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))
-  .use(verifyTrustedOrigin())
+  .use(verifyTrustedOrigin({ requireOrigin: true }))
+  .use(resolveCaller())
+  .use(rateLimiterGuard("auth"))
   .post(
     "/sign-in/social",
     captchaGuard(),
@@ -122,8 +129,7 @@ const api = new Hono<HonoContext>()
         FLOW_COOKIE,
         Buffer.from(JSON.stringify(started.flow)).toString("base64url"),
         {
-          path: FLOW_COOKIE_PATH,
-          secure: useSecureCookies,
+          ...FLOW_COOKIE_SCOPE,
           httpOnly: true,
           sameSite: "Lax",
           maxAge: FLOW_MAX_AGE_SECONDS,
@@ -162,6 +168,9 @@ const api = new Hono<HonoContext>()
       setSessionCookie(c, result.grant);
       return c.redirect(returnTo(flow.callbackURL));
     } catch (error) {
+      if (error instanceof OAuthCodeRefusedError) {
+        return c.redirect(returnTo(flow.callbackURL, "invalid_callback"));
+      }
       reportError(error, "OAuth sign-in failed", {
         provider: flow.provider,
       });

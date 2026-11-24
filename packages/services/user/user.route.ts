@@ -25,7 +25,7 @@ export const getUserRoute = contractOS.user.get
     return detail;
   });
 
-/** The operator cannot ban, sign out or delete themselves from the dashboard. */
+/** The operator cannot ban or delete themselves from the dashboard. */
 export const banUserRoute = contractOS.user.ban
   .use(adminGuard())
   .handler(async (opts) => {
@@ -48,13 +48,18 @@ export const unbanUserRoute = contractOS.user.unban
     }
   });
 
+/** The operator signing themselves out keeps the session the request came from. */
 export const revokeUserSessionsRoute = contractOS.user.revokeSessions
   .use(adminGuard())
   .handler(async (opts) => {
-    if (opts.input.id === opts.context.adminId) throw opts.errors.BAD_REQUEST();
-    if (!(await deleteUserSessions(opts.context.db, opts.input.id))) {
-      throw opts.errors.NOT_FOUND();
-    }
+    const found = await deleteUserSessions(
+      opts.context.db,
+      opts.input.id,
+      opts.input.id === opts.context.adminId
+        ? opts.context.session.session.id
+        : undefined
+    );
+    if (!found) throw opts.errors.NOT_FOUND();
   });
 
 export const removeUserRoute = contractOS.user.remove

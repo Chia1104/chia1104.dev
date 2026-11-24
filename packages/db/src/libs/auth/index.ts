@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, lte, ne } from "drizzle-orm";
 
 import type { DB } from "../../client.ts";
 import { account, session, user } from "../../schemas/schema.ts";
@@ -80,15 +80,31 @@ export const deleteSession = async (db: DB, tokenHash: string) => {
   await db.delete(session).where(eq(session.tokenHash, tokenHash));
 };
 
-/** Returns whether the user exists. */
-export const deleteUserSessions = async (db: DB, userId: string) => {
+/** Nothing reads an expired session, so its row only keeps an address and a user agent. */
+export const deleteExpiredSessions = async (db: DB) => {
+  await db.delete(session).where(lte(session.expiresAt, new Date()));
+};
+
+/** Ends every session of the user but `exceptSessionId`. Returns whether the user exists. */
+export const deleteUserSessions = async (
+  db: DB,
+  userId: string,
+  exceptSessionId?: string
+) => {
   const [row] = await db
     .select({ id: user.id })
     .from(user)
     .where(eq(user.id, userId))
     .limit(1);
   if (!row) return false;
-  await db.delete(session).where(eq(session.userId, userId));
+  await db
+    .delete(session)
+    .where(
+      and(
+        eq(session.userId, userId),
+        exceptSessionId ? ne(session.id, exceptSessionId) : undefined
+      )
+    );
   return true;
 };
 
