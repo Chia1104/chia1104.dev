@@ -1,14 +1,15 @@
 "use client";
 
 import { Spinner } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
 
-import { authClient } from "@chia/auth/client";
+import { orpc } from "@/libs/orpc/client";
 
 import { MemberOverview } from "./member-overview";
 import { DashboardOverview } from "./overview";
 
 export const Overview = () => {
-  const session = authClient.useSession();
+  const session = useQuery(orpc.auth.session.queryOptions());
 
   if (session.error) {
     return <p className="text-danger py-8 text-sm">{session.error.message}</p>;

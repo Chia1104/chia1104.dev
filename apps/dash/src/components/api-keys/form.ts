@@ -1,10 +1,6 @@
 import * as z from "zod";
 
-import {
-  ApiKeyScope,
-  apiKeyScopesSchema,
-  toApiKeyScopes,
-} from "@chia/auth/apikey";
+import { ApiKeyScope, apiKeyScopesSchema } from "@chia/auth/apikey";
 
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 
@@ -40,7 +36,7 @@ export const emptyFormValues = (): ApiKeyFormInput => ({
 
 export const formValuesOf = (item: ApiKeyView): ApiKeyFormInput => ({
   name: item.name ?? "",
-  scopes: toApiKeyScopes(item.permissions),
+  scopes: item.scopes,
 });
 
 export const ApiKeyState = {
@@ -52,7 +48,7 @@ export const ApiKeyState = {
 export type ApiKeyState = (typeof ApiKeyState)[keyof typeof ApiKeyState];
 
 export const stateOf = (item: ApiKeyView, now = Date.now()): ApiKeyState => {
-  if (item.enabled === false) return ApiKeyState.Revoked;
+  if (!item.enabled) return ApiKeyState.Revoked;
   if (item.expiresAt && new Date(item.expiresAt).getTime() <= now) {
     return ApiKeyState.Expired;
   }

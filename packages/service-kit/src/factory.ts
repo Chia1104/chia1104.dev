@@ -1,7 +1,5 @@
 import { createFactory } from "hono/factory";
 
-import type { CreateAuthOptions } from "@chia/auth/server";
-import { createAuth } from "@chia/auth/server";
 import { connectDatabase } from "@chia/db/client";
 import { reportError } from "@chia/observability/report";
 import { tryCatch } from "@chia/utils/error-helper";
@@ -9,12 +7,8 @@ import { errorGenerator, getClientIP } from "@chia/utils/server";
 
 import type { ServiceHonoEnv } from "./hono";
 
-export interface ServiceFactoryOptions {
-  auth: CreateAuthOptions;
-}
-
-/** Attaches db, kv and auth to every request. */
-export const createServiceFactory = (options: ServiceFactoryOptions) =>
+/** Attaches db and kv to every request. */
+export const createServiceFactory = () =>
   createFactory<ServiceHonoEnv>({
     initApp: (app) => {
       app.use(async (c, next) => {
@@ -36,7 +30,6 @@ export const createServiceFactory = (options: ServiceFactoryOptions) =>
         c.set("clientIP", getClientIP(c.req.raw));
         c.set("db", db);
         c.set("kv", kv);
-        c.set("auth", createAuth(db, kv, options.auth));
 
         await next();
       });

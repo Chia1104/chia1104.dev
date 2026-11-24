@@ -4,6 +4,6 @@
     "types": ["vitest/globals"],
     "allowImportingTsExtensions": true
   },
-  "include": ["src", "vitest.config.mts", "scripts"],
-  "exclude": ["node_modules", "dist", "auth-schema.ts"]
+  "include": ["src", "vitest.config.mts"],
+  "exclude": ["node_modules", "dist"]
 }

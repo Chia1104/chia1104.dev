@@ -1,22 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import { CallerTier } from "@chia/auth/tier";
-import type { Session } from "@chia/auth/types";
 import type { Caller } from "@chia/service-kit/policies/caller.policy";
+import { sessionOf } from "@chia/test/session";
 
 import { resolveFeedLimit, resolveFeedVisibility } from "../access";
 
 const ADMIN_ID = "admin-1";
 
-const session = (userId: string) =>
-  /* SAFETY: `resolveFeedVisibility` reads only `session.user.id`. */ ({
-    user: { id: userId },
-  }) as Session;
-
 const caller = (tier: CallerTier, userId?: string): Caller => ({
   tier,
   adminId: ADMIN_ID,
-  session: userId ? session(userId) : undefined,
+  session: userId ? sessionOf(userId) : undefined,
 });
 
 /** Merging audiences made visibility a runtime clamp; these cases pin who may see drafts and deleted rows. */

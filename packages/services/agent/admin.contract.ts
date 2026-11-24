@@ -209,7 +209,8 @@ const usagePeriodSchema = z.object({
 const usageUserSchema = z.object({
   userId: z.string(),
   name: z.string(),
-  email: z.string(),
+  /** `null` for a guest. */
+  email: z.string().nullable(),
   image: z.string().nullable(),
   isAnonymous: z.boolean(),
   houseUsd: z.number(),

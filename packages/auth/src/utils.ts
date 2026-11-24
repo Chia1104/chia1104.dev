@@ -1,12 +1,8 @@
 import type { env as internalEnv } from "./env";
 
 export const useSecureCookies = process.env.NODE_ENV === "production";
-export const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 export const DEFAULT_COOKIE_DOMAIN = ".chia1104.dev";
 export const X_CH_API_KEY = "x-ch-api-key";
-
-export const SESSION_MAX_AGE = 2592000; // 30 days
-export const SESSION_UPDATE_AGE = 86400; // 1 day
 
 export const getCookieDomain = (options?: {
   env?: Partial<typeof internalEnv>;
@@ -27,12 +23,3 @@ export const getCookieDomain = (options?: {
     DEFAULT_COOKIE_DOMAIN
   );
 };
-
-export const sessionCookieOptions = (env?: Partial<typeof internalEnv>) =>
-  ({
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    secure: useSecureCookies,
-    domain: getCookieDomain({ env }),
-  }) as const;

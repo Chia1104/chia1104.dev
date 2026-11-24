@@ -125,9 +125,6 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       APP_CODE: www
       GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
-      REDIS_URL: ${{ secrets.REDIS_URL }}
-      UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
-      CACHE_PROVIDER: upstash
       NEXT_PUBLIC_ENV: beta
       INTERNAL_SERVICE_ENDPOINT: ${{ secrets.BETA_INTERNAL_SERVICE_ENDPOINT }}
       NEXT_PUBLIC_SERVICE_ENDPOINT: ${{ secrets.BETA_NEXT_PUBLIC_SERVICE_ENDPOINT }}

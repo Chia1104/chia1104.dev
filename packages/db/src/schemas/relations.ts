@@ -14,7 +14,7 @@ import {
   writingAgentSessions,
 } from "./agent.schema.ts";
 import { apikey } from "./apikey.schema.ts";
-import { account, passkey, session } from "./auth.schema.ts";
+import { account, session } from "./auth.schema.ts";
 import {
   feedDraftRevisions,
   feedDrafts,
@@ -36,7 +36,6 @@ const schema = {
   user,
   session,
   account,
-  passkey,
   apikey,
   profileEntries,
   mediaEntries,
@@ -70,7 +69,6 @@ export const relations = defineRelations(schema, (r) => ({
   user: {
     sessions: r.many.session({ from: r.user.id, to: r.session.userId }),
     accounts: r.many.account({ from: r.user.id, to: r.account.userId }),
-    passkeys: r.many.passkey({ from: r.user.id, to: r.passkey.userId }),
     spotifyCredential: r.one.spotifyCredential({
       from: r.user.id,
       to: r.spotifyCredential.userId,
@@ -89,9 +87,6 @@ export const relations = defineRelations(schema, (r) => ({
   },
   account: {
     user: r.one.user({ from: r.account.userId, to: r.user.id }),
-  },
-  passkey: {
-    user: r.one.user({ from: r.passkey.userId, to: r.user.id }),
   },
   spotifyCredential: {
     user: r.one.user({
@@ -276,7 +271,6 @@ export const relations = defineRelations(schema, (r) => ({
 export const userRelations = relations.user;
 export const sessionRelations = relations.session;
 export const accountRelations = relations.account;
-export const passkeyRelations = relations.passkey;
 export const spotifyCredentialRelations = relations.spotifyCredential;
 export const tagsRelations = relations.tags;
 export const tagTranslationsRelations = relations.tagTranslations;

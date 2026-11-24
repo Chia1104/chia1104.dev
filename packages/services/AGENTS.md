@@ -18,6 +18,7 @@ Contract-first oRPC API and the domain services behind it. Third-party clients l
 ## Domain boundary
 
 - The oRPC core receives config, workflow control, hooks and agent factories through `BaseOSContext`; `apps/service/src/factories/orpc.factory.ts` is the composition root.
+- Every path that mints a session ends in `auth/auth.service.ts`, which decides whether an identity may sign in, links it to an existing person only by verified email and moves a guest's work to the person who signs in.
 - Handlers use `@chia/db/repos/*`, not raw Drizzle. Domain and policy failures use `AppError`.
 - Shared writes live in `*.service.ts` modules and receive lifecycle hooks explicitly. Host apps supply bindings rather than duplicate services.
 - A post's content changes only when its draft is applied, through `feeds/draft.service.ts`, which is also what commits a version of the draft. `feeds.update` reaches visibility, dates, the tag set and the one logged work a hobby article is about, and nothing a draft owns; there is no route that writes a translation or a body directly. Both start indexing. `tags/` owns the taxonomy itself; a tag reaches a post only through `feeds.update`.

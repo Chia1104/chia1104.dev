@@ -274,7 +274,7 @@ describe("rag routes", () => {
 
   describe("authorization", () => {
     describe("signed-in non-admin", () => {
-      it.override("session", () => sessionOf("someone-else", "user"));
+      it.override("session", () => sessionOf("someone-else"));
 
       it("rejects a trigger with FORBIDDEN", async ({ context }) => {
         await expect(
@@ -321,7 +321,7 @@ describe("rag routes", () => {
    */
   describe("reads are admin-only, not merely signed-in", () => {
     describe("signed-in non-admin", () => {
-      it.override("session", () => sessionOf("someone-else", "user"));
+      it.override("session", () => sessionOf("someone-else"));
 
       it("rejects overview", async ({ context }) => {
         await expect(

@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
 import { listAgentKindConfigs } from "@chia/db/repos/agent/config";
-import { Role } from "@chia/db/types";
 
 import { DashboardAccess, resolveAccess } from "../src/access";
 import { CallerTier, agentKindFloor } from "../src/tier";
@@ -53,7 +52,7 @@ describe("resolveAccess", () => {
   it("grades a guest with no dashboard and the code floors", async () => {
     const access = await resolveAccess(
       db,
-      { id: "g1", role: Role.User, isAnonymous: true },
+      { id: "g1", isAnonymous: true },
       ADMIN_ID,
       options
     );
@@ -68,7 +67,7 @@ describe("resolveAccess", () => {
   it("names a signed-in person a member and the configured admin an operator", async () => {
     const member = await resolveAccess(
       db,
-      { id: "u1", role: Role.User },
+      { id: "u1", isAnonymous: false },
       ADMIN_ID,
       options
     );
@@ -77,23 +76,12 @@ describe("resolveAccess", () => {
 
     const operator = await resolveAccess(
       db,
-      { id: ADMIN_ID, role: Role.Root },
+      { id: ADMIN_ID, isAnonymous: false },
       ADMIN_ID,
       options
     );
     expect(operator.tier).toBe(CallerTier.Root);
     expect(operator.dashboard).toBe(DashboardAccess.Operator);
-  });
-
-  it("a root role without the configured id is still a member", async () => {
-    const access = await resolveAccess(
-      db,
-      { id: "u2", role: Role.Root },
-      ADMIN_ID,
-      options
-    );
-
-    expect(access.dashboard).toBe(DashboardAccess.Member);
   });
 
   it("reports the operator's raised floor for a kind", async () => {
@@ -103,7 +91,7 @@ describe("resolveAccess", () => {
 
     const access = await resolveAccess(
       db,
-      { id: "g1", role: Role.User, isAnonymous: true },
+      { id: "g1", isAnonymous: true },
       ADMIN_ID,
       options
     );

@@ -15,10 +15,8 @@ export const AppEnvSchema = z
     "prod",
     "production",
     "test",
-    "zeabur-prod",
     "vercel-prod",
     "railway-prod",
-    "zeabur-dev",
     "vercel-dev",
     "railway-dev",
   ])
@@ -30,9 +28,6 @@ export const NumericStringSchema = z.string().pipe(z.coerce.number());
 
 export const Service = {
   LegacyService: "legacy-service",
-  Auth: "auth",
-  Content: "content",
-  AI: "ai",
   Workflow: "workflow",
 } as const;
 

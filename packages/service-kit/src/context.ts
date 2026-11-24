@@ -1,8 +1,7 @@
 import type Keyv from "keyv";
 
-import type { Auth } from "@chia/auth/server";
-import type { Session } from "@chia/auth/types";
 import type { DB } from "@chia/db/client";
+import type { SessionRecord } from "@chia/db/repos/auth";
 
 import type { Caller } from "./policies/caller.policy";
 
@@ -21,9 +20,8 @@ export type ServiceContext = {
   requestId?: string;
   db: DB;
   kv: Keyv;
-  auth?: Auth;
-  /** Pre-resolved session; guards skip `getSession` when set. */
-  session?: Session | null;
+  /** Pre-resolved session; guards skip the lookup when set. */
+  session?: SessionRecord | null;
   /** Pre-resolved caller; `callerPolicy` skips credential verification when set. */
   caller?: Caller;
 };

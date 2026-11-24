@@ -6,27 +6,11 @@ export {
   softDelete,
 } from "../libs/common.schema.ts";
 
-export {
-  roles,
-  feedType,
-  locale,
-  type Role,
-  type FeedType,
-  type Locale,
-} from "./enums.ts";
+export { feedType, locale, type FeedType, type Locale } from "./enums.ts";
 
 export { user, type User } from "./user.schema.ts";
 
-export {
-  session,
-  account,
-  verification,
-  passkey,
-  type Session,
-  type Account,
-  type Verification,
-  type Passkey,
-} from "./auth.schema.ts";
+export { session, account, type Session, type Account } from "./auth.schema.ts";
 
 export { apikey, type ApiKey } from "./apikey.schema.ts";
 
@@ -139,7 +123,6 @@ export {
   userRelations,
   sessionRelations,
   accountRelations,
-  passkeyRelations,
   spotifyCredentialRelations,
   tagsRelations,
   tagTranslationsRelations,

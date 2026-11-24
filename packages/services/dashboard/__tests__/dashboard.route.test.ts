@@ -92,7 +92,7 @@ describe("dashboard overview route", () => {
   });
 
   describe("signed-in non-admin", () => {
-    it.override("session", () => sessionOf("someone-else", "user"));
+    it.override("session", () => sessionOf("someone-else"));
 
     it("refuses the read", async ({ context }) => {
       await expect(

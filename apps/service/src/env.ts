@@ -18,17 +18,12 @@ export const env = createEnv({
       .enum(["development", "production", "test"])
       .optional()
       .default("development"),
-    CORS_ALLOWED_ORIGIN: z.string().optional(),
     RESEND_API_KEY: z.string().min(1),
-    ZEABUR_SERVICE_ID: z.string().optional(),
     AI_AUTH_PUBLIC_KEY: z.string().optional(),
     AI_AUTH_PRIVATE_KEY: z.string().optional(),
-    IP_DENY_LIST: z.string().optional(),
-    IP_ALLOW_LIST: z.string().optional(),
     MAINTENANCE_MODE: z.string().optional().default("false"),
     MAINTENANCE_BYPASS_TOKEN: z.string().optional(),
     TIMEOUT_MS: NumericStringSchema,
-    TRIGGER_SECRET_KEY: z.string().optional(),
     AI_GATEWAY_API_KEY: z.string().optional(),
     FIRECRAWL_API_KEY: z.string().min(1),
     /** Without this the SDK silently uses the on-disk local world. */
@@ -42,13 +37,9 @@ export const env = createEnv({
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
     NODE_ENV: process.env.NODE_ENV ?? "development",
-    CORS_ALLOWED_ORIGIN: process.env.CORS_ALLOWED_ORIGIN,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
-    ZEABUR_SERVICE_ID: process.env.ZEABUR_SERVICE_ID,
     AI_AUTH_PUBLIC_KEY: process.env.AI_AUTH_PUBLIC_KEY,
     AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
-    IP_DENY_LIST: process.env.IP_DENY_LIST,
-    IP_ALLOW_LIST: process.env.IP_ALLOW_LIST,
     MAINTENANCE_MODE:
       process.env.MAINTENANCE_MODE === "true" ||
       process.env.MAINTENANCE_MODE === "1"
@@ -56,7 +47,6 @@ export const env = createEnv({
         : "false",
     MAINTENANCE_BYPASS_TOKEN: process.env.MAINTENANCE_BYPASS_TOKEN,
     TIMEOUT_MS: process.env.TIMEOUT_MS || "10000",
-    TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
     FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
     WORKFLOW_TARGET_WORLD: process.env.WORKFLOW_TARGET_WORLD,

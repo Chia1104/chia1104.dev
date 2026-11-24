@@ -1,18 +1,10 @@
-import { APIError } from "better-auth/api";
 import * as z from "zod";
 
-import type { Auth } from "./server.ts";
-
-export const Provider = {
+export const OAuthProvider = {
   Google: "google",
   GitHub: "github",
-  Resend: "resend",
 } as const;
 
-export type Provider = (typeof Provider)[keyof typeof Provider];
+export type OAuthProvider = (typeof OAuthProvider)[keyof typeof OAuthProvider];
 
-export const providerSchema = z.enum(Provider);
-
-export type Session = Auth["$Infer"]["Session"];
-
-export { APIError };
+export const oauthProviderSchema = z.enum(OAuthProvider);

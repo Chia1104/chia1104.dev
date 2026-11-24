@@ -336,7 +336,11 @@ export const ReportDetail = ({ id }: { id: number }) => {
           <span className="text-muted text-xs">
             {formatDateTime(report.createdAt)}
             {report.reporter
-              ? ` · ${report.reporter.name} <${report.reporter.email}>`
+              ? ` · ${report.reporter.name}${
+                  report.reporter.email
+                    ? ` <${report.reporter.email}>`
+                    : " (guest)"
+                }`
               : " · reader account deleted"}
           </span>
         </div>

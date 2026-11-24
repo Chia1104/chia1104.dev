@@ -37,6 +37,10 @@
       "types": "./shared/shared-reads.ts",
       "default": "./shared/shared-reads.ts"
     },
+    "./auth/auth.contract": {
+      "types": "./auth/auth.contract.ts",
+      "default": "./auth/auth.contract.ts"
+    },
     "./agent/agent.contract": {
       "types": "./agent/agent.contract.ts",
       "default": "./agent/agent.contract.ts"
@@ -104,6 +108,10 @@
     "./rag/search.service": {
       "types": "./rag/search.service.ts",
       "default": "./rag/search.service.ts"
+    },
+    "./auth/auth.service": {
+      "types": "./auth/auth.service.ts",
+      "default": "./auth/auth.service.ts"
     },
     "./spotify/account.service": {
       "types": "./spotify/account.service.ts",

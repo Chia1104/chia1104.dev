@@ -9,19 +9,13 @@
         "SENTRY_ORG",
         "SENTRY_PROJECT",
         "SENTRY_AUTH_TOKEN",
-        "EDGE_CONFIG",
-        "SPOTIFY_FAVORITE_PLAYLIST_ID",
-        "ADMIN_ID",
-        "*_ADMIN_ID"
+        "SPOTIFY_FAVORITE_PLAYLIST_ID"
       ],
       "passThroughEnv": [
         "SENTRY_ORG",
         "SENTRY_PROJECT",
         "SENTRY_AUTH_TOKEN",
-        "EDGE_CONFIG",
-        "SPOTIFY_FAVORITE_PLAYLIST_ID",
-        "ADMIN_ID",
-        "*_ADMIN_ID"
+        "SPOTIFY_FAVORITE_PLAYLIST_ID"
       ]
     }
   }

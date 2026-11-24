@@ -1,9 +1,10 @@
 import * as z from "zod";
 
-/**
- * What an API key may do. Persisted in better-auth's `permissions` column as
- * `{ resource: [action] }`; `resource:action` is the wire and UI spelling.
- */
+import { isEnumValue } from "@chia/utils/is";
+
+import { randomToken, sha256 } from "./crypto";
+
+/** What an API key may do; stored as-is in the key's `scopes` column. */
 export const ApiKeyScope = {
   FeedsRead: "feeds:read",
   FeedsWrite: "feeds:write",
@@ -19,41 +20,24 @@ export const apiKeyScopeSchema = z.enum(ApiKeyScope);
 
 export const apiKeyScopesSchema = z.array(apiKeyScopeSchema).min(1);
 
-export type ApiKeyPermissions = Record<string, string[]>;
-
-export const apiKeyPermissionsSchema: z.ZodType<ApiKeyPermissions> = z.record(
-  z.string(),
-  z.array(z.string())
-);
-
-/** Every scope is `resource:action`. */
-const splitScope = (scope: ApiKeyScope): [resource: string, action: string] => {
-  const colon = scope.indexOf(":");
-  return [scope.slice(0, colon), scope.slice(colon + 1)];
-};
-
-export const toApiKeyPermissions = (scopes: readonly ApiKeyScope[]) => {
-  const permissions: ApiKeyPermissions = {};
-  for (const scope of scopes) {
-    const [resource, action] = splitScope(scope);
-    const actions = (permissions[resource] ??= []);
-    if (!actions.includes(action)) actions.push(action);
-  }
-  return permissions;
-};
-
-export const hasApiKeyScope = (
-  permissions: ApiKeyPermissions | null | undefined,
-  scope: ApiKeyScope
-): boolean => {
-  const [resource, action] = splitScope(scope);
-  return permissions?.[resource]?.includes(action) ?? false;
-};
-
-/** Unknown resources or actions are dropped so a stale row cannot surface a scope the UI has no name for. */
-export const toApiKeyScopes = (
-  permissions: ApiKeyPermissions | null | undefined
-): ApiKeyScope[] =>
-  Object.values(ApiKeyScope).filter((scope) =>
-    hasApiKeyScope(permissions, scope)
+/** Unknown values are dropped so a stale row cannot surface a scope the UI has no name for. */
+export const toApiKeyScopes = (stored: readonly string[]): ApiKeyScope[] =>
+  stored.filter((scope): scope is ApiKeyScope =>
+    isEnumValue(ApiKeyScope, scope)
   );
+
+const API_KEY_PREFIX = "ch_";
+/** Characters of the raw key kept in clear so the owner can tell keys apart. */
+const API_KEY_START_LENGTH = 6;
+
+/** The raw key is returned once to its creator; only the hash is stored. */
+export const generateApiKey = async () => {
+  const key = `${API_KEY_PREFIX}${randomToken()}`;
+  return {
+    key,
+    keyHash: await hashApiKey(key),
+    start: key.slice(0, API_KEY_START_LENGTH),
+  };
+};
+
+export const hashApiKey = (key: string) => sha256(key);

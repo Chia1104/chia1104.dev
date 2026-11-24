@@ -22,7 +22,7 @@ const COLUMNS = [
   { uid: "name", name: "Name", minWidth: 200 },
   { uid: "scopes", name: "Scopes", minWidth: 220 },
   { uid: "state", name: "Status", minWidth: 96 },
-  { uid: "lastRequest", name: "Last used", minWidth: 160 },
+  { uid: "lastUsedAt", name: "Last used", minWidth: 160 },
   { uid: "createdAt", name: "Created", minWidth: 160 },
 ] as const;
 
@@ -117,15 +117,15 @@ export const ApiKeysExplorer = () => {
                       </Button>
                     </Table.Cell>
                     <Table.Cell>
-                      <ScopeChips permissions={item.permissions} />
+                      <ScopeChips scopes={item.scopes} />
                     </Table.Cell>
                     <Table.Cell>
                       <KeyStateChip state={stateOf(item)} />
                     </Table.Cell>
                     <Table.Cell>
                       <span className="text-muted text-xs">
-                        {item.lastRequest
-                          ? formatDateTime(item.lastRequest)
+                        {item.lastUsedAt
+                          ? formatDateTime(item.lastUsedAt)
                           : "Never"}
                       </span>
                     </Table.Cell>

@@ -5,8 +5,6 @@ import { useCallback } from "react";
 import { Chip } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { toApiKeyScopes } from "@chia/auth/apikey";
-
 import { orpc } from "@/libs/orpc/client";
 
 import { ApiKeyState } from "./form";
@@ -24,12 +22,7 @@ export const KeyStateChip = ({ state }: { state: ApiKeyState }) => (
   </Chip>
 );
 
-export const ScopeChips = ({
-  permissions,
-}: {
-  permissions: ApiKeyView["permissions"];
-}) => {
-  const scopes = toApiKeyScopes(permissions);
+export const ScopeChips = ({ scopes }: { scopes: ApiKeyView["scopes"] }) => {
   if (scopes.length === 0) {
     return <span className="text-muted text-xs">No scopes</span>;
   }

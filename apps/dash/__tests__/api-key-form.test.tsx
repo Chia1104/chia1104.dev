@@ -11,32 +11,20 @@ import type { ApiKeyView } from "../src/components/api-keys/form";
 
 const key = (overrides: Partial<ApiKeyView> = {}): ApiKeyView => ({
   id: "k1",
-  key: "hashed",
   name: "www",
-  start: "ch_ab12",
-  prefix: "ch_",
-  referenceId: "u1",
-  configId: "default",
-  refillInterval: null,
-  refillAmount: null,
+  start: "ch_ab1",
+  userId: "u1",
+  scopes: [ApiKeyScope.FeedsRead, ApiKeyScope.SpotifyRead],
   enabled: true,
-  rateLimitEnabled: false,
-  rateLimitTimeWindow: null,
-  rateLimitMax: null,
-  requestCount: 3,
-  remaining: null,
-  metadata: null,
-  permissions: { feeds: ["read"], spotify: ["read"] },
-  lastRequest: null,
-  lastRefillAt: null,
   expiresAt: null,
+  lastUsedAt: null,
   createdAt: "2026-09-01T00:00:00.000Z",
   updatedAt: "2026-09-01T00:00:00.000Z",
   ...overrides,
 });
 
 describe("api key form", () => {
-  it("seeds the form from the stored permissions record", () => {
+  it("seeds the form from the stored scopes", () => {
     expect(formValuesOf(key())).toEqual({
       name: "www",
       scopes: [ApiKeyScope.FeedsRead, ApiKeyScope.SpotifyRead],

@@ -2,38 +2,24 @@
 
 import type { ReactNode } from "react";
 
-import { authClient } from "@chia/auth/client";
-import type { Session } from "@chia/auth/types";
-import { Role } from "@chia/db/types";
+import { useQuery } from "@tanstack/react-query";
+
+import type { Session } from "@chia/services/auth/auth.contract";
+
+import { orpc } from "@/libs/orpc/client";
 
 interface Props {
   children: ReactNode | ((session: Session) => ReactNode);
   fallback?: ReactNode;
-  roles?: Role[];
 }
 
-export const useAuthGuard = (
-  roles: Role[] = [Role.User, Role.Admin, Role.Root]
-) => {
-  const { data, isPending } = authClient.useSession();
-
-  if (isPending || !data) {
-    return null;
-  }
-
-  if (roles && !roles.includes(data.user.role)) {
-    return null;
-  }
-
-  return data;
+export const useAuthGuard = () => {
+  const { data } = useQuery(orpc.auth.session.queryOptions());
+  return data ?? null;
 };
 
-const AuthGuard = ({
-  children,
-  fallback,
-  roles = [Role.User, Role.Admin, Role.Root],
-}: Props) => {
-  const data = useAuthGuard(roles);
+const AuthGuard = ({ children, fallback }: Props) => {
+  const data = useAuthGuard();
 
   if (!data) {
     return fallback ?? null;

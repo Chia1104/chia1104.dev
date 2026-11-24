@@ -16,7 +16,6 @@ import { agentQueryKeys } from "@chia/agent-elements/queries";
 import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
 import { SessionTabs } from "@chia/agent-elements/session-tabs";
 import { Thread } from "@chia/agent-elements/thread";
-import { authClient } from "@chia/auth/client";
 import { CallerTier } from "@chia/auth/tier";
 import enUS from "@chia/i18n/agent-elements/en-US.json";
 import zhTW from "@chia/i18n/agent-elements/zh-TW.json";
@@ -53,7 +52,7 @@ interface PublicChatProps {
 
 export const PublicChat = ({ headerActions }: PublicChatProps) => {
   const t = useTranslations("chbot");
-  const session = authClient.useSession();
+  const session = useQuery(orpc.auth.session.queryOptions());
 
   if (session.error) {
     return (
@@ -101,7 +100,7 @@ const PublicChatSessions = ({ headerActions }: PublicChatProps) => {
   const labels = agentLabelsOf(locale);
   const queryClient = useQueryClient();
   const context = useAgentContext((state) => state.items);
-  const session = authClient.useSession();
+  const session = useQuery(orpc.auth.session.queryOptions());
 
   const listOptions = orpc.agent.sessions.list.queryOptions({
     input: { kind: PUBLIC_AGENT_KIND, limit: 20 },

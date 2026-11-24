@@ -3,47 +3,39 @@ import { describe, expect, it } from "vitest";
 import {
   ApiKeyScope,
   apiKeyScopesSchema,
-  hasApiKeyScope,
-  toApiKeyPermissions,
+  generateApiKey,
+  hashApiKey,
   toApiKeyScopes,
 } from "../src/apikey";
 
 describe("api key scopes", () => {
-  it("folds scopes into better-auth's resource to actions record", () => {
+  it("drops stored values that have no scope name", () => {
     expect(
-      toApiKeyPermissions([
-        ApiKeyScope.FeedsRead,
-        ApiKeyScope.FeedsWrite,
-        ApiKeyScope.FeedsRead,
-        ApiKeyScope.SpotifyRead,
-      ])
-    ).toEqual({ feeds: ["read", "write"], spotify: ["read"] });
-  });
-
-  it("round-trips a record back to the scopes the UI knows", () => {
-    expect(toApiKeyScopes({ feeds: ["write"], spotify: ["read"] })).toEqual([
-      ApiKeyScope.FeedsWrite,
-      ApiKeyScope.SpotifyRead,
-    ]);
-  });
-
-  it("drops resources and actions that have no scope name", () => {
-    expect(
-      toApiKeyScopes({ feeds: ["read", "publish"], github: ["read"] })
+      toApiKeyScopes(["feeds:read", "feeds:publish", "github:read"])
     ).toEqual([ApiKeyScope.FeedsRead]);
-  });
-
-  it("treats a key without permissions as having no scope", () => {
-    expect(hasApiKeyScope(null, ApiKeyScope.FeedsRead)).toBe(false);
-    expect(hasApiKeyScope({}, ApiKeyScope.FeedsRead)).toBe(false);
-    expect(hasApiKeyScope({ feeds: ["read"] }, ApiKeyScope.FeedsRead)).toBe(
-      true
-    );
   });
 
   it("requires at least one scope on the wire", () => {
     expect(apiKeyScopesSchema.safeParse([]).success).toBe(false);
     expect(apiKeyScopesSchema.safeParse(["feeds:admin"]).success).toBe(false);
     expect(apiKeyScopesSchema.safeParse(["feeds:read"]).success).toBe(true);
+  });
+});
+
+describe("api key material", () => {
+  it("stores only the hash and a display prefix of the raw key", async () => {
+    const generated = await generateApiKey();
+
+    expect(generated.key.startsWith("ch_")).toBe(true);
+    expect(generated.start).toBe(generated.key.slice(0, 6));
+    expect(generated.keyHash).not.toContain(generated.key);
+    expect(await hashApiKey(generated.key)).toBe(generated.keyHash);
+  });
+
+  it("hashes as SHA-256 base64url without padding", async () => {
+    // Known vector: SHA-256("abc").
+    expect(await hashApiKey("abc")).toBe(
+      "ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0"
+    );
   });
 });

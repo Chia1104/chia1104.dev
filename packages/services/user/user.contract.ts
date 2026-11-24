@@ -11,13 +11,19 @@ const READ_ERRORS = {
   INTERNAL_SERVER_ERROR: {},
 } as const;
 
+const WRITE_ERRORS = {
+  ...READ_ERRORS,
+  NOT_FOUND: {},
+  BAD_REQUEST: {},
+} as const;
+
 export const userSchema = z.object({
   id: z.string(),
   name: z.string(),
-  email: z.string(),
+  /** `null` for a guest. */
+  email: z.string().nullable(),
   image: z.string().nullable(),
-  role: z.string(),
-  /** Guest minted by better-auth `anonymous()`. */
+  /** Guest who passed the captcha but never signed in. */
   isAnonymous: z.boolean(),
   banned: z.boolean(),
   banReason: z.string().nullable(),
@@ -27,13 +33,13 @@ export const userSchema = z.object({
   updatedAt: z.string(),
 });
 
-/** Sessions are absent on purpose: better-auth keeps them in secondary storage, so the `session` table is empty. */
 export const userDetailSchema = z.object({
-  user: userSchema.extend({ emailVerified: z.boolean() }),
+  user: userSchema,
   accounts: z.array(
     z.object({ providerId: z.string(), createdAt: z.string() })
   ),
-  passkeys: z.number().int(),
+  /** Unexpired sign-in sessions. */
+  sessions: z.number().int(),
   apiKeys: z.number().int(),
 });
 
@@ -52,9 +58,42 @@ export const getUserContract = oc
   .input(z.object({ id: z.string().min(1) }))
   .output(userDetailSchema);
 
+const userIdSchema = z.object({ id: z.string().min(1) });
+
+export const banUserContract = oc.errors(WRITE_ERRORS).input(
+  userIdSchema.extend({
+    reason: z.string().trim().max(200).optional(),
+    /** Seconds until the ban lifts; omitted bans for good. */
+    expiresIn: z.number().int().positive().optional(),
+  })
+);
+
+export const unbanUserContract = oc.errors(WRITE_ERRORS).input(userIdSchema);
+
+export const revokeUserSessionsContract = oc
+  .errors(WRITE_ERRORS)
+  .input(userIdSchema);
+
+export const removeUserContract = oc.errors(WRITE_ERRORS).input(userIdSchema);
+
+/** The caller's own profile; a guest has none to edit. */
+export const updateProfileContract = oc
+  .errors({ UNAUTHORIZED: {}, NOT_FOUND: {}, INTERNAL_SERVER_ERROR: {} })
+  .input(
+    z.object({
+      name: z.string().trim().min(1).max(100),
+      image: z.url().max(2048).nullable(),
+    })
+  );
+
 export type UserDetail = z.infer<typeof userDetailSchema>;
 
 export const userContract = {
   list: listUsersContract,
   get: getUserContract,
+  ban: banUserContract,
+  unban: unbanUserContract,
+  revokeSessions: revokeUserSessionsContract,
+  remove: removeUserContract,
+  updateProfile: updateProfileContract,
 };

@@ -14,7 +14,7 @@ export const authGuard = baseOS
 
 export interface SessionGuardInput {
   /**
-   * Escalate the requirement to `Role.Root` for *this* call. Mapped in from the
+   * Escalate the requirement to the configured admin for *this* call. Mapped in from the
    * validated input by the procedure, since a policy never sees the request.
    */
   rootOnly?: boolean;
