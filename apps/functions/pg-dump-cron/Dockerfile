@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.14-debian
+FROM oven/bun:1.4.5-debian
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends curl ca-certificates gnupg \

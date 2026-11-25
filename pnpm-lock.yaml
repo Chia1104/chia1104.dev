@@ -250,8 +250,8 @@ catalogs:
       specifier: 0.0.9
       version: 0.0.9
     bun-types:
-      specifier: ^1.4.4
-      version: 1.4.4
+      specifier: ^1.4.5
+      version: 1.4.5
     client-only:
       specifier: ^0.0.1
       version: 0.0.1
@@ -1096,7 +1096,7 @@ importers:
         version: 26.6.6
       bun-types:
         specifier: 'catalog:'
-        version: 1.4.4
+        version: 1.4.5
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -8999,8 +8999,8 @@ packages:
   bun-types@1.4.2:
     resolution: {integrity: sha512-bxV1FgK7yBIzjRe5zBozIM4Bem11ZJcCXSrjWRG3YWLt8yFDePu4cLjpebO8OvPeIE9trbyPF4fuj3Cia4Fj3w==}
 
-  bun-types@1.4.4:
-    resolution: {integrity: sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ==}
+  bun-types@1.4.5:
+    resolution: {integrity: sha512-ECHn+9dhL3wv0G6u0+7dQvrnaimXiRDxxerYBmhTaLyJEEuvTPWk2Fye3XIf5Y++JIIiHKfQw4Z7V5D8KuiXbg==}
 
   bundle-name@4.1.0:
     resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
@@ -21064,7 +21064,7 @@ snapshots:
       '@types/node': 26.6.6
     optional: true
 
-  bun-types@1.4.4:
+  bun-types@1.4.5:
     dependencies:
       '@types/node': 26.6.6
       undici-types: 8.9.0
