@@ -1,0 +1,45 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "21f050be-7d33-4bd3-a7c7-3a3a5a63c701",
+  "prevIds": ["9c976021-1ee0-4cc2-bdc6-cd5851cc04d8"],
+  "footprints": [
+    {
+      "statementType": "recreate_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_chunk",
+        "resource_chunk_bm25_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_chunk_bm25_idx",
+        "n|idx|public.resource_chunk_bm25_idx",
+        "e|idx|public.resource_chunk_bm25_idx",
+        "n|rel|public.resource_chunk_bm25_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.id",
+        "n|col|public.chia_resource_chunk.source_type",
+        "n|col|public.chia_resource_chunk.kind",
+        "n|col|public.chia_resource_chunk.locale",
+        "n|col|public.chia_resource_chunk.published",
+        "n|col|public.chia_resource_chunk.deleted"
+      ],
+      "sharedWrites": [],
+      "sqlHash": "eaad6315deb5ebb5"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "indexes\u0000[\"public\",\"resource_chunk_bm25_idx\"]",
+      "set": {
+        "with": ""
+      }
+    }
+  ]
+}

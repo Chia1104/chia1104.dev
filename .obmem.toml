@@ -3,6 +3,6 @@ private = true
 name = "chia1104.dev"
 
 [secrets]
-mode = "block"   # or "redact"
+mode = "block" # or "redact"
 env_files = [".env", ".env.local", ".env.development", ".env.production"]
 scan_process_env = true

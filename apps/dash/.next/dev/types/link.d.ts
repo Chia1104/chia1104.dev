@@ -37,7 +37,6 @@ declare namespace __next_route_internal_types__ {
     | `/api-keys` // ../../../src/app/(workspace)/(operator)/api-keys/page.tsx
     | `/api/v1/health` // ../../../src/app/api/v1/health/route.ts
     | `/assets` // ../../../src/app/(workspace)/(operator)/assets/page.tsx
-    | `/auth/callback/sent-success` // ../../../src/app/(auth)/auth/callback/sent-success/page.tsx
     | `/auth/login` // ../../../src/app/(auth)/auth/login/page.tsx
     | `/favicon.ico` // ../../../src/app/favicon.ico
     | `/feed` // ../../../src/app/(workspace)/(operator)/feed/page.tsx

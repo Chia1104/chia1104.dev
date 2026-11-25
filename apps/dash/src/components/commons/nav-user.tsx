@@ -14,25 +14,29 @@ import {
   Button,
   Separator,
 } from "@heroui/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
+import { toast } from "sonner";
 
-import { authClient } from "@chia/auth/client";
+import { signOut } from "@chia/auth/client";
 import { SidebarMenu, SidebarMenuItem, useSidebar } from "@chia/ui/sidebar";
 
 import { useGuardedRouter } from "@/libs/navigation-guard";
+import { orpc } from "@/libs/orpc/client";
 
 export function NavUser({
   user,
 }: {
   user: {
     name: string;
-    email: string;
+    email: string | null;
     avatar: string;
   };
 }) {
   const { open, isMobile } = useSidebar();
   const [isPending, startTransition] = useTransition();
   const router = useGuardedRouter();
+  const queryClient = useQueryClient();
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -84,13 +88,16 @@ export function NavUser({
                   fullWidth
                   onPress={() =>
                     startTransition(async () => {
-                      await authClient.signOut({
-                        fetchOptions: {
-                          onSuccess: () => {
-                            router.push("/auth/login");
-                          },
-                        },
+                      try {
+                        await signOut();
+                      } catch {
+                        toast.error("Could not sign out, please try again");
+                        return;
+                      }
+                      queryClient.removeQueries({
+                        queryKey: orpc.auth.session.key(),
                       });
+                      router.push("/auth/login");
                     })
                   }>
                   <LogOut className="size-4" />

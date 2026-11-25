@@ -21,6 +21,9 @@ export default defineConfig({
     },
   },
   preset: "node-server",
+  // srvx FastResponse drops the status of a response passed as `init`, which Hono does when it
+  // re-wraps a reply, so every response would leave as 200.
+  features: { fastResponse: false },
   traceDeps: [
     "pg*",
     "pg-pool*",
@@ -28,7 +31,6 @@ export default defineConfig({
     "@redis/client*",
     "@workflow/world-postgres",
     "workflow",
-    "@better-auth/passkey",
     "sharp",
     "@img/*",
   ],

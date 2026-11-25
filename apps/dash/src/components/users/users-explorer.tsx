@@ -19,13 +19,12 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { SearchIcon } from "lucide-react";
 import { parseAsString, parseAsStringLiteral, useQueryStates } from "nuqs";
 
-import { Role } from "@chia/db/types";
 import { formatDateTime } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 
-import { RoleChip, UserStateChip } from "./shared";
+import { UserStateChip } from "./shared";
 import { UserDrawer } from "./user-drawer";
 
 /** Client-side oRPC behind `adminGuard()`. `?open=<id>` deep-links a user so the overview can point here. */
@@ -50,16 +49,8 @@ const UserKind = {
 
 type UserKind = (typeof UserKind)[keyof typeof UserKind];
 
-const ROLE_VALUES = [ANY, ...Object.values(Role)] as const;
 const STATE_VALUES = [ANY, ...Object.values(UserState)] as const;
 const KIND_VALUES = [ANY, ...Object.values(UserKind)] as const;
-
-const ROLE_OPTIONS: { id: (typeof ROLE_VALUES)[number]; label: string }[] = [
-  { id: ANY, label: "Any role" },
-  { id: Role.User, label: "User" },
-  { id: Role.Admin, label: "Admin" },
-  { id: Role.Root, label: "Root" },
-];
 
 const STATE_OPTIONS: { id: (typeof STATE_VALUES)[number]; label: string }[] = [
   { id: ANY, label: "Any status" },
@@ -75,7 +66,6 @@ const KIND_OPTIONS: { id: (typeof KIND_VALUES)[number]; label: string }[] = [
 
 const COLUMNS = [
   { uid: "user", name: "User", minWidth: 190 },
-  { uid: "role", name: "Role", minWidth: 96 },
   { uid: "state", name: "Status", minWidth: 96 },
   { uid: "createdAt", name: "Joined", minWidth: 176 },
 ] as const;
@@ -115,7 +105,6 @@ export const UsersExplorer = () => {
   const [params, setParams] = useQueryStates(
     {
       q: parseAsString.withDefault(""),
-      role: parseAsStringLiteral(ROLE_VALUES).withDefault(ANY),
       state: parseAsStringLiteral(STATE_VALUES).withDefault(ANY),
       kind: parseAsStringLiteral(KIND_VALUES).withDefault(ANY),
       open: parseAsString,
@@ -129,13 +118,12 @@ export const UsersExplorer = () => {
   const filters = useMemo<Query>(
     () => ({
       query: debouncedSearch || undefined,
-      role: params.role === ANY ? undefined : params.role,
       banned:
         params.state === ANY ? undefined : params.state === UserState.Banned,
       anonymous:
         params.kind === ANY ? undefined : params.kind === UserKind.Guest,
     }),
-    [debouncedSearch, params.role, params.state, params.kind]
+    [debouncedSearch, params.state, params.kind]
   );
 
   const {
@@ -172,12 +160,6 @@ export const UsersExplorer = () => {
             <Input className="pl-8" placeholder="Search name or email..." />
           </div>
         </TextField>
-        <FilterSelect
-          label="Role"
-          onChange={(role) => void setParams({ role })}
-          options={ROLE_OPTIONS}
-          value={params.role}
-        />
         <FilterSelect
           label="Status"
           onChange={(state) => void setParams({ state })}
@@ -246,13 +228,10 @@ export const UsersExplorer = () => {
                               {user.name}
                             </span>
                             <span className="text-muted truncate text-xs">
-                              {user.email}
+                              {user.email ?? "—"}
                             </span>
                           </div>
                         </Button>
-                      </Table.Cell>
-                      <Table.Cell className="flex items-center">
-                        <RoleChip role={user.role} />
                       </Table.Cell>
                       <Table.Cell className="flex items-center">
                         <UserStateChip

@@ -6,7 +6,6 @@ import { Avatar, Card, Label, ProgressBar, Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 
 import { usageFractionOf } from "@chia/agent-elements/usage";
-import { authClient } from "@chia/auth/client";
 import { formatDateTime } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
@@ -17,7 +16,7 @@ const MICROS_PER_USD = 1_000_000;
 
 /** What a signed-in person who is not the operator sees: themselves and their allowance. */
 export const MemberOverview = () => {
-  const session = authClient.useSession();
+  const session = useQuery(orpc.auth.session.queryOptions());
   const usage = useQuery(orpc.agent.usage.me.queryOptions());
 
   if (session.isPending || usage.isLoading) {

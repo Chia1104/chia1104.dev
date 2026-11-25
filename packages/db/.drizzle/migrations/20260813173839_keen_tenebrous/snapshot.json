@@ -1,0 +1,63 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "5120e37e-9bf8-461a-afd1-aa245a70ca24",
+  "prevIds": ["f1a77b62-fb44-49e8-a179-dfd87cc04214"],
+  "footprints": [
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_agent_pending_message"],
+      "writes": [
+        "s|tbl|public.chia_agent_pending_message",
+        "n|tbl|public.chia_agent_pending_message",
+        "e|tbl|public.chia_agent_pending_message",
+        "n|rel|public.chia_agent_pending_message",
+        "n|type|public.chia_agent_pending_message"
+      ],
+      "reads": ["n|sch|public"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_agent_pending_message\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_agent_pending_message\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_agent_pending_message\",\"session_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_agent_pending_message\",\"kind\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_agent_pending_message\",\"text\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_agent_pending_message\",\"consumed_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_agent_pending_message\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"agent_pending_message_pending_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_agent_pending_message\",\"chia_agent_pending_message_FbnXYYHlwm65_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_agent_pending_message\",\"chia_agent_pending_message_pkey\"]"
+    }
+  ]
+}

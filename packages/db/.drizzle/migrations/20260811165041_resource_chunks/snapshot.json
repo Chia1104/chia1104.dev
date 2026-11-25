@@ -1,0 +1,1181 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "ab0758e3-604d-479b-bd39-741aff4e539f",
+  "prevIds": ["35c7a4f7-a9a6-4282-aec4-b037269913c3"],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_resource_chunk"],
+      "writes": [
+        "s|tbl|public.chia_resource_chunk",
+        "n|tbl|public.chia_resource_chunk",
+        "e|tbl|public.chia_resource_chunk",
+        "n|rel|public.chia_resource_chunk",
+        "n|type|public.chia_resource_chunk",
+        "n|rel|public.chia_resource_chunk_pkey"
+      ],
+      "reads": ["n|sch|public", "n|enum|public.locale"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_resource_embedding"],
+      "writes": [
+        "s|tbl|public.chia_resource_embedding",
+        "n|tbl|public.chia_resource_embedding",
+        "e|tbl|public.chia_resource_embedding",
+        "n|rel|public.chia_resource_embedding",
+        "n|type|public.chia_resource_embedding",
+        "n|rel|public.chia_resource_embedding_pkey"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_content"],
+      "writes": [
+        "s|tbl|public.chia_content",
+        "n|tbl|public.chia_content",
+        "e|tbl|public.chia_content",
+        "n|rel|public.chia_content",
+        "n|type|public.chia_content"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_feed_embedding"],
+      "writes": [
+        "s|tbl|public.chia_feed_embedding",
+        "n|tbl|public.chia_feed_embedding",
+        "e|tbl|public.chia_feed_embedding",
+        "n|rel|public.chia_feed_embedding",
+        "n|type|public.chia_feed_embedding"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_translation",
+        "content"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_translation.content",
+        "n|col|public.chia_feed_translation.content",
+        "e|col|public.chia_feed_translation.content"
+      ],
+      "reads": ["n|tbl|public.chia_feed_translation", "n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_translation",
+        "source"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_translation.source",
+        "n|col|public.chia_feed_translation.source",
+        "e|col|public.chia_feed_translation.source"
+      ],
+      "reads": ["n|tbl|public.chia_feed_translation", "n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_translation",
+        "unstable_serialized_source"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_translation.unstable_serialized_source",
+        "n|col|public.chia_feed_translation.unstable_serialized_source",
+        "e|col|public.chia_feed_translation.unstable_serialized_source"
+      ],
+      "reads": ["n|tbl|public.chia_feed_translation", "n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_translation",
+        "published"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_translation.published",
+        "n|col|public.chia_feed_translation.published",
+        "e|col|public.chia_feed_translation.published"
+      ],
+      "reads": ["n|tbl|public.chia_feed_translation", "n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_translation",
+        "deleted"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_translation.deleted",
+        "n|col|public.chia_feed_translation.deleted",
+        "e|col|public.chia_feed_translation.deleted"
+      ],
+      "reads": ["n|tbl|public.chia_feed_translation", "n|sch|public"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_chunk",
+        "resource_chunk_source_kind_index_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_chunk_source_kind_index_idx",
+        "n|idx|public.resource_chunk_source_kind_index_idx",
+        "e|idx|public.resource_chunk_source_kind_index_idx",
+        "n|rel|public.resource_chunk_source_kind_index_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.source_type",
+        "n|col|public.chia_resource_chunk.source_id",
+        "n|col|public.chia_resource_chunk.kind",
+        "n|col|public.chia_resource_chunk.chunk_index"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_chunk",
+        "resource_chunk_source_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_chunk_source_idx",
+        "n|idx|public.resource_chunk_source_idx",
+        "e|idx|public.resource_chunk_source_idx",
+        "n|rel|public.resource_chunk_source_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.source_type",
+        "n|col|public.chia_resource_chunk.source_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_chunk",
+        "resource_chunk_feed_translation_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_chunk_feed_translation_id_idx",
+        "n|idx|public.resource_chunk_feed_translation_id_idx",
+        "e|idx|public.resource_chunk_feed_translation_id_idx",
+        "n|rel|public.resource_chunk_feed_translation_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.feed_translation_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_chunk",
+        "resource_chunk_bm25_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_chunk_bm25_idx",
+        "n|idx|public.resource_chunk_bm25_idx",
+        "e|idx|public.resource_chunk_bm25_idx",
+        "n|rel|public.resource_chunk_bm25_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.id",
+        "n|col|public.chia_resource_chunk.source_type",
+        "n|col|public.chia_resource_chunk.kind",
+        "n|col|public.chia_resource_chunk.locale",
+        "n|col|public.chia_resource_chunk.published",
+        "n|col|public.chia_resource_chunk.deleted"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_embedding",
+        "resource_embedding_model_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_embedding_model_idx",
+        "n|idx|public.resource_embedding_model_idx",
+        "e|idx|public.resource_embedding_model_idx",
+        "n|rel|public.resource_embedding_model_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_embedding",
+        "n|sch|public",
+        "n|col|public.chia_resource_embedding.model"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_embedding",
+        "resource_embedding_hnsw_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_embedding_hnsw_idx",
+        "n|idx|public.resource_embedding_hnsw_idx",
+        "e|idx|public.resource_embedding_hnsw_idx",
+        "n|rel|public.resource_embedding_hnsw_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_embedding",
+        "n|sch|public",
+        "n|col|public.chia_resource_embedding.embedding"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_resource_chunk"],
+      "writes": [
+        "s|fk|public.chia_resource_chunk.chia_resource_chunk_yDIuddFEqwIc_fkey",
+        "n|fk|public.chia_resource_chunk.chia_resource_chunk_yDIuddFEqwIc_fkey",
+        "e|fk|public.chia_resource_chunk.chia_resource_chunk_yDIuddFEqwIc_fkey",
+        "n|con|public.chia_resource_chunk.chia_resource_chunk_yDIuddFEqwIc_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.feed_translation_id",
+        "n|col|public.chia_feed_translation.id",
+        "e|uniqueness|public.chia_feed_translation.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_resource_embedding"],
+      "writes": [
+        "s|fk|public.chia_resource_embedding.chia_resource_embedding_chunk_id_chia_resource_chunk_id_fkey",
+        "n|fk|public.chia_resource_embedding.chia_resource_embedding_chunk_id_chia_resource_chunk_id_fkey",
+        "e|fk|public.chia_resource_embedding.chia_resource_embedding_chunk_id_chia_resource_chunk_id_fkey",
+        "n|con|public.chia_resource_embedding.chia_resource_embedding_chunk_id_chia_resource_chunk_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_embedding",
+        "n|sch|public",
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_embedding.chunk_id",
+        "n|col|public.chia_resource_chunk.id",
+        "e|uniqueness|public.chia_resource_chunk.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "chia_resource_chunk",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "chia_resource_embedding",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_translation",
+        "name": "content",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_translation",
+        "name": "source",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_translation",
+        "name": "unstable_serialized_source",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_translation",
+        "name": "published",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_translation",
+        "name": "deleted",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "id",
+        "type": "bigserial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "feed_translation_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "source_type",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": {
+          "as": "case when \"feed_translation_id\" is not null then 'feed_translation' end",
+          "type": "stored"
+        },
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "source_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": {
+          "as": "coalesce(\"feed_translation_id\")",
+          "type": "stored"
+        },
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "chunk_index",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "content",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "heading_path",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "token_count",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "metadata",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "content_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "locale",
+        "type": "locale",
+        "typeSchema": "public",
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "published",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "deleted",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "updated_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_embedding",
+        "name": "chunk_id",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_embedding",
+        "name": "model",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_embedding",
+        "name": "index_version",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_embedding",
+        "name": "embedding",
+        "type": "vector(1536)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_embedding",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_embedding",
+        "name": "updated_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "resource_chunk_source_kind_index_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "source_type",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "source_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "kind",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "chunk_index",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "resource_chunk_source_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "source_type",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "source_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "resource_chunk_feed_translation_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "feed_translation_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "resource_chunk_bm25_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "((\"content\")::pdb.icu)",
+            "isExpression": true,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "((\"content\")::pdb.simple('alias=body_sub'))",
+            "isExpression": true,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "source_type",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "kind",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "locale",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "published",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "deleted",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "key_field=id",
+        "method": "paradedb",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_embedding",
+        "name": "resource_embedding_model_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "model",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_embedding",
+        "name": "resource_embedding_hnsw_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "embedding",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": {
+              "name": "vector_cosine_ops",
+              "default": false
+            }
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "hnsw",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "chia_resource_chunk_yDIuddFEqwIc_fkey",
+        "nameExplicit": false,
+        "columns": ["feed_translation_id"],
+        "schemaTo": "public",
+        "tableTo": "chia_feed_translation",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_embedding",
+        "name": "chia_resource_embedding_chunk_id_chia_resource_chunk_id_fkey",
+        "nameExplicit": false,
+        "columns": ["chunk_id"],
+        "schemaTo": "public",
+        "tableTo": "chia_resource_chunk",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_embedding",
+        "name": "chia_resource_embedding_pkey",
+        "columns": ["chunk_id", "model"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "chia_resource_chunk_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "resource_chunk_single_source",
+        "value": "num_nonnulls(\"feed_translation_id\") = 1",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_content\"]"
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_feed_embedding\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_content\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_content\",\"feed_translation_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_content\",\"content\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_content\",\"source\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_content\",\"unstable_serialized_source\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_content\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_content\",\"updated_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"feed_translation_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"model\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"kind\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"chunk_index\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"chunk_text\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"heading_path\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"token_count\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"content_hash\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"index_version\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"embedding_1536\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"embedding_512\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_embedding\",\"updated_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"content_feed_translation_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"feed_embedding_translation_model_kind_chunk_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"feed_embedding_translation_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"feed_embedding_model_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"feed_embedding_kind_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"feed_embedding_1536_hnsw_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"feed_embedding_512_hnsw_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_content\",\"chia_content_feed_translation_id_chia_feed_translation_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_feed_embedding\",\"chia_feed_embedding_oGTNplD9Sxv0_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_content\",\"chia_content_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_feed_embedding\",\"chia_feed_embedding_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "uniques\u0000[\"public\",\"chia_content\",\"chia_content_feed_translation_id_unique\"]"
+    }
+  ]
+}

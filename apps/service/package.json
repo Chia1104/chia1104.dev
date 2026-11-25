@@ -42,7 +42,6 @@
     "@workflow/world-postgres": "catalog:workflow",
     "ai": "catalog:ai",
     "better-all": "catalog:",
-    "better-auth": "catalog:better-auth",
     "drizzle-orm": "catalog:drizzle",
     "es-toolkit": "catalog:",
     "firecrawl": "catalog:ai",
@@ -66,6 +65,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
+    "rolldown": "catalog:nitro",
     "tsdown": "catalog:tooling",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"

@@ -5,9 +5,6 @@ import { useCallback } from "react";
 import { Chip } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { Role } from "@chia/db/types";
-import { isEnumValue } from "@chia/utils/is";
-
 import { orpc } from "@/libs/orpc/client";
 
 const usd = new Intl.NumberFormat("en-US", {
@@ -18,21 +15,6 @@ const usd = new Intl.NumberFormat("en-US", {
 });
 
 export const formatUsd = (value: number) => usd.format(value);
-
-const ROLE_COLOR = {
-  [Role.Root]: "danger",
-  [Role.Admin]: "accent",
-  [Role.User]: "default",
-} as const satisfies Record<Role, string>;
-
-export const RoleChip = ({ role }: { role: string }) => (
-  <Chip
-    color={isEnumValue(Role, role) ? ROLE_COLOR[role] : "default"}
-    size="sm"
-    variant="soft">
-    <Chip.Label>{role}</Chip.Label>
-  </Chip>
-);
 
 export const UserStateChip = ({
   banned,
@@ -55,7 +37,7 @@ export const UserStateChip = ({
     </Chip>
   );
 
-/** A write through better-auth changes what every user read and the overview show. */
+/** A user write changes what every user read and the overview show. */
 export const useInvalidateUsers = () => {
   const queryClient = useQueryClient();
   return useCallback(

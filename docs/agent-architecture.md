@@ -64,7 +64,7 @@ Every agent route resolves a `CallerTier` (`@chia/auth/tier`). Kind and session 
 | `writing` | `Root`           | Configured author's drafts and published content  | Shared draft and memory |
 | `public`  | `Guest`          | Configured author's published content and profile | Reader reports          |
 
-Better Auth's `get-session` carries `access`: the session's own tier, its dashboard level and the floor of every hosted kind. Frontends decide what to render from it; guards never read it and grade the caller on every request.
+`auth.session` carries `access`: the session's own tier, its dashboard level and the floor of every hosted kind. Frontends decide what to render from it; guards never read it and grade the caller on every request.
 
 The generic layer does not carry an admin identity. The writing binding reads the configured author when its content port needs it; the public binding never receives that identity or a write-capable port.
 
@@ -280,7 +280,7 @@ Automatic compaction runs only after a successful turn without pending approvals
 
 ### Guest identity
 
-Better Auth's anonymous plugin creates a real user row for a guest. That row can own sessions, approvals and usage. When the guest signs in, `transferAgentOwnership` moves those records before the anonymous row is removed, so authentication does not reset quota.
+Passing the captcha creates a real user row for a guest (`is_anonymous`, no email). That row can own sessions, approvals and usage. When the guest signs in with a provider, `adoptGuest` moves those records with `transferAgentOwnership` before the guest row is removed, so authentication does not reset quota.
 
 Routes using the normal session guard still require a signed-in account. Agent routes opt into guest callers through `callerPolicy`.
 

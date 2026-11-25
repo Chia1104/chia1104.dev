@@ -159,8 +159,8 @@ const main = async (): Promise<void> => {
   }
 
   const db = options["db-url"]
-    ? await getConnection(options["db-url"], { withCache: false })
-    : await connectDatabase(options.env ?? "local", { withCache: false });
+    ? await getConnection(options["db-url"])
+    : await connectDatabase(options.env ?? "local");
 
   // Whose posts these are. The apps read `ADMIN_ID`; an eval database may be a copy, so ask it.
   const authors = await db.execute<{ user_id: string }>(

@@ -42,7 +42,7 @@ import { KeyStateChip, ScopeChips, useInvalidateApiKeys } from "./shared";
 
 /**
  * The raw key exists only in the create response, so the drawer keeps it on screen until the
- * operator closes it. Revoke is better-auth's `enabled: false`; there is no re-enable.
+ * operator closes it. Revoke sets `enabled: false`; there is no re-enable.
  */
 
 export type Editor =
@@ -239,7 +239,7 @@ const CreateView = ({ onClose }: { onClose: () => void }) => {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
           <span className="text-base font-semibold">{create.data.name}</span>
-          <ScopeChips permissions={create.data.permissions} />
+          <ScopeChips scopes={create.data.scopes} />
         </div>
         <RevealedKey secret={create.data.key} />
         <Button
@@ -321,12 +321,11 @@ const DetailView = ({
               label="Prefix"
               value={<span className="font-mono">{item.start ?? "—"}…</span>}
             />
-            <Field label="Requests" value={item.requestCount ?? 0} />
             <Field label="Created" value={formatDateTime(item.createdAt)} />
             <Field
               label="Last used"
               value={
-                item.lastRequest ? formatDateTime(item.lastRequest) : "Never"
+                item.lastUsedAt ? formatDateTime(item.lastUsedAt) : "Never"
               }
             />
             <Field

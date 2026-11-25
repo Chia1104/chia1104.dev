@@ -114,7 +114,7 @@ export const triageReportStep = async (
   "use step";
 
   try {
-    const db = await connectDatabase(undefined, { withCache: false });
+    const db = await connectDatabase();
     const report = await getFeedReport(db, reportId);
     if (!report) return ReportTriageStatus.ReportGone;
     const feed = await getFeedForIndexing(db, { feedId: report.feedId });
@@ -192,7 +192,7 @@ export const notifyReportStep = async (
     return ReportNotifyStatus.NoEmailKey;
   }
 
-  const db = await connectDatabase(undefined, { withCache: false });
+  const db = await connectDatabase();
   const report = await getFeedReport(db, reportId);
   if (!report) return ReportNotifyStatus.ReportGone;
   const feed = await getFeedForIndexing(db, { feedId: report.feedId });

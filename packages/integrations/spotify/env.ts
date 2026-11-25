@@ -17,50 +17,16 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? encryptionKeySchema
         : encryptionKeySchema.optional(),
-    /**
-     * @deprecated
-     */
-    SPOTIFY_NOW_PLAYING_URL: z
-      .string()
-      .optional()
-      .default("https://api.spotify.com/v1/me/player/currently-playing"),
-    /**
-     * @deprecated
-     */
-    SPOTIFY_TOKEN_URL: z
-      .string()
-      .optional()
-      .default("https://accounts.spotify.com/api/token"),
   },
   runtimeEnv: {
     SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
     SPOTIFY_FAVORITE_PLAYLIST_ID:
-      process.env.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID ??
-      process.env.SPOTIFY_FAVORITE_PLAYLIST_ID ??
-      "4cPPG7mh2a8EZ2jlhJfj9u",
-    NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID:
-      process.env.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID ??
-      "4cPPG7mh2a8EZ2jlhJfj9u",
+      process.env.SPOTIFY_FAVORITE_PLAYLIST_ID ?? "4cPPG7mh2a8EZ2jlhJfj9u",
     SPOTIFY_REFRESH_TOKEN: process.env.SPOTIFY_REFRESH_TOKEN,
     SPOTIFY_REDIRECT_URI: process.env.SPOTIFY_REDIRECT_URI,
     SPOTIFY_TOKEN_ENCRYPTION_KEY: process.env.SPOTIFY_TOKEN_ENCRYPTION_KEY,
-    /**
-     * @deprecated
-     */
-    SPOTIFY_NOW_PLAYING_URL:
-      process.env.SPOTIFY_NOW_PLAYING_URL ??
-      "https://api.spotify.com/v1/me/player/currently-playing",
-    /**
-     * @deprecated
-     */
-    SPOTIFY_TOKEN_URL:
-      process.env.SPOTIFY_TOKEN_URL ?? "https://accounts.spotify.com/api/token",
   },
-  client: {
-    NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID: z.string().optional(),
-  },
-  clientPrefix: "NEXT_PUBLIC_",
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1" ||

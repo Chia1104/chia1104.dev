@@ -1,90 +1,62 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import { useTransition, useCallback, useState } from "react";
 
-import {
-  Button,
-  Description,
-  FieldError,
-  Form,
-  Input,
-  Label,
-  TextField,
-  FieldGroup,
-  Fieldset,
-  Separator,
-} from "@heroui/react";
+import { Button, Description, Form, FieldGroup, Fieldset } from "@heroui/react";
 import type { FormProps } from "@heroui/react";
 import { toast } from "sonner";
 
-import { authClient } from "@chia/auth/client";
-import { Provider } from "@chia/auth/types";
+import { signInSocial } from "@chia/auth/client";
+import { OAuthProvider } from "@chia/auth/types";
 import { X_CAPTCHA_RESPONSE } from "@chia/integrations/captcha/constants";
 import { env as captchaEnv } from "@chia/integrations/captcha/env.client";
-import SubmitForm from "@chia/ui/submit-form";
 import useTheme from "@chia/ui/utils/use-theme";
+import { isEnumValue } from "@chia/utils/is";
 
 const Captcha = dynamic(
   () => import("@chia/ui/captcha").then((module) => module.Captcha),
   { ssr: false }
 );
 
-export function LoginForm(props: FormProps) {
+/** Refusals the service's OAuth callback names in `?error=`; anything else is a generic failure. */
+const SignInError = {
+  Banned: "banned",
+  NoVerifiedEmail: "no_verified_email",
+} as const;
+
+type SignInError = (typeof SignInError)[keyof typeof SignInError];
+
+const SIGN_IN_ERROR_MESSAGE = {
+  [SignInError.Banned]: "This account is banned.",
+  [SignInError.NoVerifiedEmail]: "That account has no verified email address.",
+} satisfies Record<SignInError, string>;
+
+const signInErrorMessage = (error: string) =>
+  isEnumValue(SignInError, error)
+    ? SIGN_IN_ERROR_MESSAGE[error]
+    : "Sign-in failed, please try again.";
+
+export function LoginForm({ error, ...props }: FormProps & { error?: string }) {
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
   const { isDarkMode } = useTheme();
   /** Single-use: the widget remounts on `attempt` after a consumed token. */
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const consumeToken = () => {
-    setCaptchaToken(null);
-    setAttempt((count) => count + 1);
-  };
-
-  const getCurrentDomain = () => {
-    return window.location.origin;
-  };
-
-  const onSubmit = useCallback(
-    (formData: FormData) => {
-      startTransition(async () => {
-        const email = formData.get("email");
-        if (!email || email instanceof File || !captchaToken) return;
-
-        await authClient.signIn.magicLink(
-          {
-            email,
-            callbackURL: getCurrentDomain(),
-          },
-          {
-            headers: { [X_CAPTCHA_RESPONSE]: captchaToken },
-            onSuccess: () => {
-              toast.success("Check your email for the magic link");
-              router.push("/auth/callback/sent-success");
-            },
-            onError: () => {
-              consumeToken();
-              toast.error("An error occurred, please try again");
-            },
-          }
-        );
-      });
-    },
-    [captchaToken, router]
-  );
 
   const handleSocialLogin = useCallback(
-    (provider: Provider) => {
+    (provider: OAuthProvider) => {
       startTransition(async () => {
         if (!captchaToken) return;
-        const result = await authClient.signIn.social(
-          { provider, callbackURL: getCurrentDomain() },
-          { headers: { [X_CAPTCHA_RESPONSE]: captchaToken } }
-        );
-        if (result.error) {
-          consumeToken();
+        try {
+          await signInSocial({
+            provider,
+            callbackURL: window.location.origin,
+            headers: { [X_CAPTCHA_RESPONSE]: captchaToken },
+          });
+        } catch {
+          setCaptchaToken(null);
+          setAttempt((count) => count + 1);
           toast.error("An error occurred, please try again");
         }
       });
@@ -93,18 +65,16 @@ export function LoginForm(props: FormProps) {
   );
 
   return (
-    <Form {...props} action={onSubmit}>
+    <Form {...props}>
       <Fieldset>
         <Fieldset.Legend>Login to your account</Fieldset.Legend>
-        <Description>
-          Enter your email below to login to your account
-        </Description>
+        <Description>Continue with GitHub or Google</Description>
         <FieldGroup>
-          <TextField isRequired name="email" type="email">
-            <Label>Email</Label>
-            <Input placeholder="m@example.com" />
-            <FieldError />
-          </TextField>
+          {error ? (
+            <p className="text-danger text-sm" role="alert">
+              {signInErrorMessage(error)}
+            </p>
+          ) : null}
           <Captcha
             key={attempt}
             className="self-center"
@@ -113,24 +83,12 @@ export function LoginForm(props: FormProps) {
             siteKey={captchaEnv.NEXT_PUBLIC_CAPTCHA_SITE_KEY}
             theme={isDarkMode ? "dark" : "light"}
           />
-          <SubmitForm
-            type="submit"
-            fullWidth
-            isDisabled={isPending || !captchaToken}
-            isPending={isPending}>
-            Send magic link
-          </SubmitForm>
-          <span className="flex items-center gap-2">
-            <Separator className="flex-1" />
-            <span className="text-muted text-sm">Or continue with</span>
-            <Separator className="flex-1" />
-          </span>
           <Fieldset.Actions className="flex flex-col gap-2">
             <Button
               variant="outline"
               type="button"
               fullWidth
-              onPress={() => handleSocialLogin(Provider.GitHub)}
+              onPress={() => handleSocialLogin(OAuthProvider.GitHub)}
               isDisabled={!captchaToken}
               isPending={isPending}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -145,7 +103,7 @@ export function LoginForm(props: FormProps) {
               variant="outline"
               type="button"
               fullWidth
-              onPress={() => handleSocialLogin(Provider.Google)}
+              onPress={() => handleSocialLogin(OAuthProvider.Google)}
               isDisabled={!captchaToken}
               isPending={isPending}>
               <svg

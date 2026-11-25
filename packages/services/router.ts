@@ -1,5 +1,6 @@
 import { agentRouter } from "./agent/agent.route";
 import { apikeyRouter } from "./apikey/apikey.route";
+import { authRouter } from "./auth/auth.route";
 import { dashboardRouter } from "./dashboard/dashboard.route";
 import { emailRouter } from "./email/email.route";
 import { feedsRouter } from "./feeds/feeds.route";
@@ -21,6 +22,7 @@ export const router = contractOS.router({
   dashboard: dashboardRouter,
   health: healthRouter,
   apikey: apikeyRouter,
+  auth: authRouter,
   user: userRouter,
   feeds: feedsRouter,
   file: fileRouter,

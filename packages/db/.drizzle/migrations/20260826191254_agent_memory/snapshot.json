@@ -1,0 +1,628 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "1d0b6c8f-4f3e-42f4-b3ab-10a12787ccb2",
+  "prevIds": ["32869b8a-f40c-49a7-b6b5-3f6a3dbf18f0"],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "agent", "memory"],
+      "writes": [
+        "s|tbl|agent.memory",
+        "n|tbl|agent.memory",
+        "e|tbl|agent.memory",
+        "n|rel|agent.memory",
+        "n|type|agent.memory",
+        "n|rel|agent.memory_pkey"
+      ],
+      "reads": ["n|sch|agent"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_chunk",
+        "agent_memory_id"
+      ],
+      "writes": [
+        "s|col|public.chia_resource_chunk.agent_memory_id",
+        "n|col|public.chia_resource_chunk.agent_memory_id",
+        "e|col|public.chia_resource_chunk.agent_memory_id"
+      ],
+      "reads": ["n|tbl|public.chia_resource_chunk", "n|sch|public"]
+    },
+    {
+      "statementType": "recreate_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_chunk",
+        "source_type"
+      ],
+      "writes": [
+        "s|col|public.chia_resource_chunk.source_type",
+        "n|col|public.chia_resource_chunk.source_type",
+        "e|col|public.chia_resource_chunk.source_type"
+      ],
+      "reads": ["n|tbl|public.chia_resource_chunk", "n|sch|public"],
+      "sqlHash": "c9f1c637dece227f"
+    },
+    {
+      "statementType": "recreate_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_chunk",
+        "source_id"
+      ],
+      "writes": [
+        "s|col|public.chia_resource_chunk.source_id",
+        "n|col|public.chia_resource_chunk.source_id",
+        "e|col|public.chia_resource_chunk.source_id"
+      ],
+      "reads": ["n|tbl|public.chia_resource_chunk", "n|sch|public"],
+      "sqlHash": "5b8cc070919d2f11"
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "agent",
+        "memory",
+        "agent_memory_source_url_idx"
+      ],
+      "writes": [
+        "s|idx|agent.agent_memory_source_url_idx",
+        "n|idx|agent.agent_memory_source_url_idx",
+        "e|idx|agent.agent_memory_source_url_idx",
+        "n|rel|agent.agent_memory_source_url_idx"
+      ],
+      "reads": [
+        "n|tbl|agent.memory",
+        "n|sch|agent",
+        "n|col|agent.memory.source_url"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "agent",
+        "memory",
+        "agent_memory_session_id_idx"
+      ],
+      "writes": [
+        "s|idx|agent.agent_memory_session_id_idx",
+        "n|idx|agent.agent_memory_session_id_idx",
+        "e|idx|agent.agent_memory_session_id_idx",
+        "n|rel|agent.agent_memory_session_id_idx"
+      ],
+      "reads": [
+        "n|tbl|agent.memory",
+        "n|sch|agent",
+        "n|col|agent.memory.session_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "agent",
+        "memory",
+        "agent_memory_kind_status_idx"
+      ],
+      "writes": [
+        "s|idx|agent.agent_memory_kind_status_idx",
+        "n|idx|agent.agent_memory_kind_status_idx",
+        "e|idx|agent.agent_memory_kind_status_idx",
+        "n|rel|agent.agent_memory_kind_status_idx"
+      ],
+      "reads": [
+        "n|tbl|agent.memory",
+        "n|sch|agent",
+        "n|col|agent.memory.kind",
+        "n|col|agent.memory.status"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_chunk",
+        "resource_chunk_agent_memory_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_chunk_agent_memory_id_idx",
+        "n|idx|public.resource_chunk_agent_memory_id_idx",
+        "e|idx|public.resource_chunk_agent_memory_id_idx",
+        "n|rel|public.resource_chunk_agent_memory_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.agent_memory_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_chunk",
+        "resource_chunk_source_kind_index_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_chunk_source_kind_index_idx",
+        "n|idx|public.resource_chunk_source_kind_index_idx",
+        "e|idx|public.resource_chunk_source_kind_index_idx",
+        "n|rel|public.resource_chunk_source_kind_index_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.source_type",
+        "n|col|public.chia_resource_chunk.source_id",
+        "n|col|public.chia_resource_chunk.kind",
+        "n|col|public.chia_resource_chunk.chunk_index"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_chunk",
+        "resource_chunk_source_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_chunk_source_idx",
+        "n|idx|public.resource_chunk_source_idx",
+        "e|idx|public.resource_chunk_source_idx",
+        "n|rel|public.resource_chunk_source_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.source_type",
+        "n|col|public.chia_resource_chunk.source_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_chunk",
+        "resource_chunk_bm25_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_chunk_bm25_idx",
+        "n|idx|public.resource_chunk_bm25_idx",
+        "e|idx|public.resource_chunk_bm25_idx",
+        "n|rel|public.resource_chunk_bm25_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.id",
+        "n|col|public.chia_resource_chunk.source_type",
+        "n|col|public.chia_resource_chunk.kind",
+        "n|col|public.chia_resource_chunk.locale",
+        "n|col|public.chia_resource_chunk.published",
+        "n|col|public.chia_resource_chunk.deleted"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "agent", "memory"],
+      "writes": [
+        "s|fk|agent.memory.memory_session_id_session_id_fkey",
+        "n|fk|agent.memory.memory_session_id_session_id_fkey",
+        "e|fk|agent.memory.memory_session_id_session_id_fkey",
+        "n|con|agent.memory.memory_session_id_session_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|agent.memory",
+        "n|sch|agent",
+        "n|tbl|agent.session",
+        "n|sch|agent",
+        "n|col|agent.memory.session_id",
+        "n|col|agent.session.id",
+        "e|uniqueness|agent.session.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_resource_chunk"],
+      "writes": [
+        "s|fk|public.chia_resource_chunk.chia_resource_chunk_agent_memory_id_memory_id_fkey",
+        "n|fk|public.chia_resource_chunk.chia_resource_chunk_agent_memory_id_memory_id_fkey",
+        "e|fk|public.chia_resource_chunk.chia_resource_chunk_agent_memory_id_memory_id_fkey",
+        "n|con|public.chia_resource_chunk.chia_resource_chunk_agent_memory_id_memory_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|tbl|agent.memory",
+        "n|sch|agent",
+        "n|col|public.chia_resource_chunk.agent_memory_id",
+        "n|col|agent.memory.id",
+        "e|uniqueness|agent.memory.id"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": ["table", "public", "chia_resource_chunk"],
+      "writes": [
+        "s|ck|public.chia_resource_chunk.resource_chunk_single_source"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.feed_translation_id",
+        "n|col|public.chia_resource_chunk.agent_memory_id",
+        "e|col|public.chia_resource_chunk.feed_translation_id"
+      ],
+      "sqlHash": "afda9ae05eef447e"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "name": "memory",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "status",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'active'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "title",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "content",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "source_url",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "session_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "updated_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "deleted_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "agent_memory_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "agent_memory_source_url_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "source_url",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"kind\" = 'source' and \"deleted_at\" is null",
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "agent_memory_session_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "session_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "agent_memory_kind_status_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "kind",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "resource_chunk_agent_memory_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "agent_memory_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "memory_session_id_session_id_fkey",
+        "nameExplicit": false,
+        "columns": ["session_id"],
+        "schemaTo": "agent",
+        "tableTo": "session",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_chunk",
+        "name": "chia_resource_chunk_agent_memory_id_memory_id_fkey",
+        "nameExplicit": false,
+        "columns": ["agent_memory_id"],
+        "schemaTo": "agent",
+        "tableTo": "memory",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "memory_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_resource_chunk\",\"source_type\"]",
+      "set": {
+        "generated": {
+          "as": "case when \"feed_translation_id\" is not null then 'feed_translation' when \"agent_memory_id\" is not null then 'agent_memory' end",
+          "type": "stored"
+        }
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_resource_chunk\",\"source_id\"]",
+      "set": {
+        "generated": {
+          "as": "coalesce(\"feed_translation_id\", \"agent_memory_id\")",
+          "type": "stored"
+        }
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"chia_resource_chunk\",\"resource_chunk_single_source\"]",
+      "set": {
+        "value": "num_nonnulls(\"feed_translation_id\", \"agent_memory_id\") = 1"
+      }
+    }
+  ]
+}

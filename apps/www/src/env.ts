@@ -6,8 +6,6 @@ import { env as githubEnv } from "@chia/integrations/github/env";
 import { externalInfraEnv as serviceEnv } from "@chia/services/env";
 import { NodeEnvSchema, AppEnvSchema } from "@chia/utils/schema";
 
-import { Locale } from "./libs/utils/i18n";
-
 export const getClientEnv = () => {
   if (process.env.NEXT_PUBLIC_ENV) {
     return process.env.NEXT_PUBLIC_ENV;
@@ -20,26 +18,15 @@ export const getClientEnv = () => {
       ? "railway-prod"
       : "railway-dev";
   }
-  if (process.env.ZEABUR_ENVIRONMENT_NAME) {
-    return process.env.ZEABUR_ENVIRONMENT_NAME === "production"
-      ? "zeabur-prod"
-      : "zeabur-dev";
-  }
   return "development";
 };
 
 export const env = createEnv({
   server: {
     NODE_ENV: NodeEnvSchema,
-    RAILWAY_URL: z.string().optional(),
-    ZEABUR_URL: z.string().optional(),
-    SITE_URL: z.string().optional().default("https://chia1104.dev"),
-    EDGE_CONFIG: z.string().optional(),
     SENTRY_AUTH_TOKEN: z.string().optional(),
     SENTRY_ORG: z.string().optional(),
     SENTRY_PROJECT: z.string().optional(),
-    ADMIN_ID: z.string().optional(),
-    BETA_ADMIN_ID: z.string().optional(),
     SPOTIFY_FAVORITE_PLAYLIST_ID: z.string().optional(),
   },
 
@@ -48,26 +35,17 @@ export const env = createEnv({
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
     NEXT_PUBLIC_DEFAULT_TIME_ZONE: z.string().min(1),
     NEXT_PUBLIC_ENABLE_SENTRY: z.boolean().optional().default(true),
-    NEXT_PUBLIC_DEFAULT_LOCALE: z.enum(Locale),
   },
 
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_ENV: getClientEnv(),
-    RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
-    ZEABUR_URL: process.env.ZEABUR_URL,
-    SITE_URL: process.env.SITE_URL,
-    EDGE_CONFIG: process.env.EDGE_CONFIG,
     SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
     SENTRY_ORG: process.env.SENTRY_ORG,
     SENTRY_PROJECT: process.env.SENTRY_PROJECT,
-    ADMIN_ID: process.env.ADMIN_ID,
-    BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,
     NEXT_PUBLIC_DEFAULT_TIME_ZONE:
       process.env.NEXT_PUBLIC_DEFAULT_TIME_ZONE || "Asia/Taipei",
-    NEXT_PUBLIC_DEFAULT_LOCALE:
-      process.env.NEXT_PUBLIC_DEFAULT_LOCALE || Locale.ZhTW,
     SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
     NEXT_PUBLIC_ENABLE_SENTRY:
       process.env.NEXT_PUBLIC_ENABLE_SENTRY === "true" ||

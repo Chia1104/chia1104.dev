@@ -1,0 +1,51 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "43edccf1-adc0-47bb-8467-d5b08bbdf0bf",
+  "prevIds": ["95520e5c-36ee-48cc-83f8-8c7d70204de3"],
+  "footprints": [
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_account",
+        "account_issuer_account_id_uidx"
+      ],
+      "writes": [
+        "s|idx|public.account_issuer_account_id_uidx",
+        "n|idx|public.account_issuer_account_id_uidx",
+        "e|idx|public.account_issuer_account_id_uidx",
+        "n|rel|public.account_issuer_account_id_uidx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_account",
+        "n|sch|public",
+        "e|col|public.chia_account.issuer",
+        "e|col|public.chia_account.account_id"
+      ],
+      "sharedWrites": ["e|uniqueness|public.chia_account.account_id.issuer"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_account", "issuer"],
+      "writes": [
+        "s|col|public.chia_account.issuer",
+        "n|col|public.chia_account.issuer",
+        "e|col|public.chia_account.issuer"
+      ],
+      "reads": ["n|tbl|public.chia_account", "n|sch|public"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"issuer\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"account_issuer_account_id_uidx\"]"
+    }
+  ]
+}

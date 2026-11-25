@@ -1,0 +1,72 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "b6f71274-03e6-4a16-82d5-519fd23d5ddd",
+  "prevIds": ["fa410e60-1860-4383-b3f3-491cd8aeaf61"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "agent", "tool_approval", "relay_run_id"],
+      "writes": [
+        "s|col|agent.tool_approval.relay_run_id",
+        "n|col|agent.tool_approval.relay_run_id",
+        "e|col|agent.tool_approval.relay_run_id"
+      ],
+      "reads": ["n|tbl|agent.tool_approval", "n|sch|agent"]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "agent", "tool_approval"],
+      "writes": [
+        "s|fk|agent.tool_approval.tool_approval_relay_run_id_run_id_fkey",
+        "n|fk|agent.tool_approval.tool_approval_relay_run_id_run_id_fkey",
+        "e|fk|agent.tool_approval.tool_approval_relay_run_id_run_id_fkey",
+        "n|con|agent.tool_approval.tool_approval_relay_run_id_run_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|agent.tool_approval",
+        "n|sch|agent",
+        "n|tbl|agent.run",
+        "n|sch|agent",
+        "n|col|agent.tool_approval.relay_run_id",
+        "n|col|agent.run.id",
+        "e|uniqueness|agent.run.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "tool_approval",
+        "name": "relay_run_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "tool_approval",
+        "name": "tool_approval_relay_run_id_run_id_fkey",
+        "nameExplicit": false,
+        "columns": ["relay_run_id"],
+        "schemaTo": "agent",
+        "tableTo": "run",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    }
+  ]
+}

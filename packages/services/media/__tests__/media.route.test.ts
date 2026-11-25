@@ -251,7 +251,7 @@ describe("media routes", () => {
   });
 
   describe("signed-in non-admin", () => {
-    it.override("session", () => sessionOf("someone-else", "user"));
+    it.override("session", () => sessionOf("someone-else"));
 
     it("cannot search or write", async ({ context }) => {
       await expect(

@@ -51,8 +51,6 @@ services:
     depends_on:
       paradedb:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     healthcheck:
       test:
         [
@@ -84,7 +82,6 @@ services:
       LOCAL_DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@paradedb:5432/${POSTGRES_DB:?}
       WORKFLOW_POSTGRES_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@paradedb:5432/${POSTGRES_DB:?}
       REDIS_URI: redis://redis:6379
-      INTERNAL_AUTH_SERVICE_ENDPOINT: http://host.docker.internal:4001/auth
       INTERNAL_WORKFLOW_SERVICE_ENDPOINT: http://workflow:8080
     extra_hosts:
       - "host.docker.internal:host-gateway"

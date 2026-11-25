@@ -1,0 +1,617 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "f1a77b62-fb44-49e8-a179-dfd87cc04214",
+  "prevIds": ["ab0758e3-604d-479b-bd39-741aff4e539f"],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_resource_index_run"],
+      "writes": [
+        "s|tbl|public.chia_resource_index_run",
+        "n|tbl|public.chia_resource_index_run",
+        "e|tbl|public.chia_resource_index_run",
+        "n|rel|public.chia_resource_index_run",
+        "n|type|public.chia_resource_index_run",
+        "n|rel|public.chia_resource_index_run_pkey"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_index_run",
+        "resource_index_run_source_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_index_run_source_idx",
+        "n|idx|public.resource_index_run_source_idx",
+        "e|idx|public.resource_index_run_source_idx",
+        "n|rel|public.resource_index_run_source_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.source_type",
+        "n|col|public.chia_resource_index_run.source_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_index_run",
+        "resource_index_run_external_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_index_run_external_id_idx",
+        "n|idx|public.resource_index_run_external_id_idx",
+        "e|idx|public.resource_index_run_external_id_idx",
+        "n|rel|public.resource_index_run_external_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.external_run_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_index_run",
+        "resource_index_run_active_resource_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_index_run_active_resource_idx",
+        "n|idx|public.resource_index_run_active_resource_idx",
+        "e|idx|public.resource_index_run_active_resource_idx",
+        "n|rel|public.resource_index_run_active_resource_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.source_type",
+        "n|col|public.chia_resource_index_run.source_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_index_run",
+        "resource_index_run_active_feed_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_index_run_active_feed_idx",
+        "n|idx|public.resource_index_run_active_feed_idx",
+        "e|idx|public.resource_index_run_active_feed_idx",
+        "n|rel|public.resource_index_run_active_feed_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.feed_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_resource_index_run",
+        "resource_index_run_active_all_idx"
+      ],
+      "writes": [
+        "s|idx|public.resource_index_run_active_all_idx",
+        "n|idx|public.resource_index_run_active_all_idx",
+        "e|idx|public.resource_index_run_active_all_idx",
+        "n|rel|public.resource_index_run_active_all_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.scope"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_resource_index_run"],
+      "writes": [
+        "s|fk|public.chia_resource_index_run.chia_resource_index_run_feed_id_chia_feed_id_fkey",
+        "n|fk|public.chia_resource_index_run.chia_resource_index_run_feed_id_chia_feed_id_fkey",
+        "e|fk|public.chia_resource_index_run.chia_resource_index_run_feed_id_chia_feed_id_fkey",
+        "n|con|public.chia_resource_index_run.chia_resource_index_run_feed_id_chia_feed_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.feed_id",
+        "n|col|public.chia_feed.id",
+        "e|uniqueness|public.chia_feed.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_resource_index_run"],
+      "writes": [
+        "s|fk|public.chia_resource_index_run.chia_resource_index_run_triggered_by_chia_user_id_fkey",
+        "n|fk|public.chia_resource_index_run.chia_resource_index_run_triggered_by_chia_user_id_fkey",
+        "e|fk|public.chia_resource_index_run.chia_resource_index_run_triggered_by_chia_user_id_fkey",
+        "n|con|public.chia_resource_index_run.chia_resource_index_run_triggered_by_chia_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.triggered_by",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "chia_resource_index_run",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "id",
+        "type": "bigserial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "external_run_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "scope",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "source_type",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "source_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "feed_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "status",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'pending'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "triggered_by",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "model",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "index_version",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "progress",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "result",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "error",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "started_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "ended_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "updated_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "resource_index_run_source_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "source_type",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "source_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "resource_index_run_external_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "external_run_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "resource_index_run_active_resource_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "source_type",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "source_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"scope\" = 'resource' and \"status\" in ('pending', 'running')",
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "resource_index_run_active_feed_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "feed_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"scope\" = 'feed' and \"status\" in ('pending', 'running')",
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "resource_index_run_active_all_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "scope",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"scope\" = 'all' and \"status\" in ('pending', 'running')",
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "chia_resource_index_run_feed_id_chia_feed_id_fkey",
+        "nameExplicit": false,
+        "columns": ["feed_id"],
+        "schemaTo": "public",
+        "tableTo": "chia_feed",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "chia_resource_index_run_triggered_by_chia_user_id_fkey",
+        "nameExplicit": false,
+        "columns": ["triggered_by"],
+        "schemaTo": "public",
+        "tableTo": "chia_user",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_resource_index_run",
+        "name": "chia_resource_index_run_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

@@ -16,7 +16,7 @@ The source of [chia1104.dev](https://chia1104.dev): a personal site, its admin d
 
 Both frontends call `service` through a contract-first [oRPC](https://orpc.dev) client. `service` sends durable work to `workflow` through `@chia/workflow-control`; both read the same PostgreSQL-backed Workflow World.
 
-The main infrastructure is [Better Auth](https://better-auth.com), Postgres with Drizzle, Redis through Keyv, the [Vercel Workflow SDK](https://github.com/vercel/workflow), and ParadeDB for BM25 plus vector retrieval. Content is authored as MDX and rendered with Fumadocs.
+The main infrastructure is hand-written OAuth sessions, Postgres with Drizzle, Redis through Keyv, the [Vercel Workflow SDK](https://github.com/vercel/workflow), and ParadeDB for BM25 plus vector retrieval. Content is authored as MDX and rendered with Fumadocs.
 
 ## Back-office AI features
 

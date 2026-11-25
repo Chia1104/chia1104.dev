@@ -5,6 +5,7 @@ import {
 } from "@sentry/nextjs";
 
 import { env } from "@/env";
+import { sentryDataCollection } from "@/libs/sentry";
 
 export const onRouterTransitionStart = captureRouterTransitionStart;
 
@@ -18,5 +19,6 @@ init({
     ["production"].includes(env.NEXT_PUBLIC_ENV) &&
     env.NEXT_PUBLIC_ENABLE_SENTRY,
   environment: env.NEXT_PUBLIC_ENV,
+  dataCollection: sentryDataCollection,
   debug: env.NEXT_PUBLIC_ENV === "development",
 });

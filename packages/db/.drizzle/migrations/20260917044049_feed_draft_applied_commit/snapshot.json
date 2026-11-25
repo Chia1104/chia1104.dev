@@ -1,0 +1,96 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "33db25a5-2641-4861-9a38-83c55fdb9af1",
+  "prevIds": ["f2036cf6-594d-4c0b-9956-5925b4255429"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_draft",
+        "applied_revision_id"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_draft.applied_revision_id",
+        "n|col|public.chia_feed_draft.applied_revision_id",
+        "e|col|public.chia_feed_draft.applied_revision_id"
+      ],
+      "reads": ["n|tbl|public.chia_feed_draft", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_draft",
+        "applied_revision"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_draft.applied_revision",
+        "n|col|public.chia_feed_draft.applied_revision",
+        "e|col|public.chia_feed_draft.applied_revision"
+      ],
+      "reads": ["n|tbl|public.chia_feed_draft", "n|sch|public"]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_feed_draft"],
+      "writes": [
+        "s|fk|public.chia_feed_draft.chia_feed_draft_nW8IgPO6tpcH_fkey",
+        "n|fk|public.chia_feed_draft.chia_feed_draft_nW8IgPO6tpcH_fkey",
+        "e|fk|public.chia_feed_draft.chia_feed_draft_nW8IgPO6tpcH_fkey",
+        "n|con|public.chia_feed_draft.chia_feed_draft_nW8IgPO6tpcH_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_draft",
+        "n|sch|public",
+        "n|tbl|public.chia_feed_draft_revision",
+        "n|sch|public",
+        "n|col|public.chia_feed_draft.applied_revision_id",
+        "n|col|public.chia_feed_draft_revision.id",
+        "e|uniqueness|public.chia_feed_draft_revision.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_draft",
+        "name": "applied_revision_id",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_draft",
+        "name": "chia_feed_draft_nW8IgPO6tpcH_fkey",
+        "nameExplicit": false,
+        "columns": ["applied_revision_id"],
+        "schemaTo": "public",
+        "tableTo": "chia_feed_draft_revision",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_draft\",\"applied_revision\"]"
+    }
+  ]
+}

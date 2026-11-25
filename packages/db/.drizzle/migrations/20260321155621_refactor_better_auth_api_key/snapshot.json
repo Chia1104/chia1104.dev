@@ -1,0 +1,146 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "43cb3b88-1aca-4cb5-ba44-d86daf6d53b7",
+  "prevIds": ["7bd57919-7c38-4351-94bc-3dcbe612f013"],
+  "footprints": [
+    {
+      "statementType": "drop_fk",
+      "statementTarget": ["table", "public", "chia_apikey"],
+      "writes": [
+        "s|fk|public.chia_apikey.chia_apikey_user_id_chia_user_id_fk",
+        "n|fk|public.chia_apikey.chia_apikey_user_id_chia_user_id_fk",
+        "e|fk|public.chia_apikey.chia_apikey_user_id_chia_user_id_fk",
+        "n|con|public.chia_apikey.chia_apikey_user_id_chia_user_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "e|col|public.chia_apikey.reference_id"
+      ]
+    },
+    {
+      "statementType": "rename_column",
+      "statementTarget": ["column", "public", "chia_apikey", "user_id"],
+      "writes": [
+        "s|col|public.chia_apikey.user_id",
+        "n|col|public.chia_apikey.user_id",
+        "s|col|public.chia_apikey.reference_id",
+        "n|col|public.chia_apikey.reference_id"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "rename_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_apikey",
+        "apikey_user_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.apikey_user_id_idx",
+        "n|idx|public.apikey_user_id_idx",
+        "n|rel|public.apikey_user_id_idx",
+        "s|idx|public.apikey_referenceId_idx",
+        "n|idx|public.apikey_referenceId_idx",
+        "n|rel|public.apikey_referenceId_idx"
+      ],
+      "reads": [
+        "e|tbl|public.chia_apikey",
+        "n|sch|public",
+        "e|col|public.chia_apikey.reference_id"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "public", "chia_apikey", "config_id"],
+      "writes": [
+        "s|col|public.chia_apikey.config_id",
+        "n|col|public.chia_apikey.config_id",
+        "e|col|public.chia_apikey.config_id"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_apikey",
+        "apikey_configId_idx"
+      ],
+      "writes": [
+        "s|idx|public.apikey_configId_idx",
+        "n|idx|public.apikey_configId_idx",
+        "e|idx|public.apikey_configId_idx",
+        "n|rel|public.apikey_configId_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.config_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "rename",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"user_id\"]",
+      "set": {
+        "name": "reference_id"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "indexes\u0000[\"public\",\"apikey_user_id_idx\"]",
+      "set": {
+        "name": "apikey_referenceId_idx"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_apikey",
+        "name": "config_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'default'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_apikey",
+        "name": "apikey_configId_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "config_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_apikey\",\"chia_apikey_user_id_chia_user_id_fk\"]"
+    }
+  ]
+}

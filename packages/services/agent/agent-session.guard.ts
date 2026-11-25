@@ -125,7 +125,7 @@ export const agentCallerOf = (
   const { caller } = context;
   const userId =
     caller.session?.user.id ??
-    (caller.tier >= CallerTier.Root ? caller.apiKey?.referenceId : undefined);
+    (caller.tier >= CallerTier.Root ? caller.apiKey?.userId : undefined);
   if (userId === undefined || caller.tier < CallerTier.Guest) {
     throw errors.UNAUTHORIZED();
   }

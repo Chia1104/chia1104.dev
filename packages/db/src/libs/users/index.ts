@@ -4,9 +4,9 @@ import {
   count,
   desc,
   eq,
+  gt,
   gte,
   ilike,
-  isNull,
   or,
   sql,
 } from "drizzle-orm";
@@ -28,7 +28,6 @@ const userColumns = {
   name: schema.user.name,
   email: schema.user.email,
   image: schema.user.image,
-  role: schema.user.role,
   isAnonymous: schema.user.isAnonymous,
   banned: schema.user.banned,
   banReason: schema.user.banReason,
@@ -39,7 +38,6 @@ const userColumns = {
 
 const serializeUser = <
   T extends {
-    isAnonymous: boolean | null;
     banExpires: Date | null;
     createdAt: Date;
     updatedAt: Date;
@@ -48,7 +46,6 @@ const serializeUser = <
   row: T
 ) => ({
   ...row,
-  isAnonymous: row.isAnonymous === true,
   banExpires: toISO(row.banExpires),
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
@@ -63,7 +60,6 @@ export const listUsers = withDTO(
       orderBy = FeedOrderBy.CreatedAt,
       sortOrder = "desc",
       query,
-      role,
       banned,
       anonymous,
     }: ListUsersDTO
@@ -86,16 +82,10 @@ export const listUsers = withDTO(
                 ilike(schema.user.email, `%${search}%`)
               )
             : undefined,
-          role ? eq(schema.user.role, role) : undefined,
           banned === undefined ? undefined : eq(schema.user.banned, banned),
           anonymous === undefined
             ? undefined
-            : anonymous
-              ? eq(schema.user.isAnonymous, true)
-              : or(
-                  isNull(schema.user.isAnonymous),
-                  eq(schema.user.isAnonymous, false)
-                )
+            : eq(schema.user.isAnonymous, anonymous)
         )
       )
       .orderBy(direction(column), direction(schema.user.id))
@@ -106,29 +96,26 @@ export const listUsers = withDTO(
   }
 );
 
-/** Whether `id` is a signed-in person rather than a guest minted by `anonymous()`; false for an unknown id. */
+/** Whether `id` is a signed-in person rather than a guest; false for an unknown id. */
 export const isSignedInUser = withDTO(async (db, { id }: { id: string }) => {
   const [row] = await db
     .select({ isAnonymous: schema.user.isAnonymous })
     .from(schema.user)
     .where(eq(schema.user.id, id))
     .limit(1);
-  return row !== undefined && row.isAnonymous !== true;
+  return row !== undefined && !row.isAnonymous;
 });
 
-/**
- * The account as the dashboard shows it: profile, linked providers and credential counts.
- * Sessions live in better-auth's secondary storage, not the `session` table, so none are read here.
- */
+/** The account as the dashboard shows it: profile, linked providers and credential counts. */
 export const getUserDetail = withDTO(async (db, { id }: { id: string }) => {
   const [row] = await db
-    .select({ ...userColumns, emailVerified: schema.user.emailVerified })
+    .select(userColumns)
     .from(schema.user)
     .where(eq(schema.user.id, id))
     .limit(1);
   if (!row) return null;
 
-  const [accounts, [passkeys], [apiKeys]] = await Promise.all([
+  const [accounts, [sessions], [apiKeys]] = await Promise.all([
     db
       .select({
         providerId: schema.account.providerId,
@@ -139,12 +126,17 @@ export const getUserDetail = withDTO(async (db, { id }: { id: string }) => {
       .orderBy(asc(schema.account.createdAt)),
     db
       .select({ total: count() })
-      .from(schema.passkey)
-      .where(eq(schema.passkey.userId, id)),
+      .from(schema.session)
+      .where(
+        and(
+          eq(schema.session.userId, id),
+          gt(schema.session.expiresAt, new Date())
+        )
+      ),
     db
       .select({ total: count() })
       .from(schema.apikey)
-      .where(eq(schema.apikey.referenceId, id)),
+      .where(eq(schema.apikey.userId, id)),
   ]);
 
   return {
@@ -153,13 +145,10 @@ export const getUserDetail = withDTO(async (db, { id }: { id: string }) => {
       ...account,
       createdAt: account.createdAt.toISOString(),
     })),
-    passkeys: passkeys?.total ?? 0,
+    sessions: sessions?.total ?? 0,
     apiKeys: apiKeys?.total ?? 0,
   };
 });
-
-/** Cache life of the overview counts; every `user` write through this process also clears them. */
-const STATS_CACHE_SECONDS = 60;
 
 /** Headline counts for the overview. `since` bounds "new"; guests are `is_anonymous` rows. */
 export const getUserStats = withDTO(async (db, { since }: { since: Date }) => {
@@ -177,8 +166,7 @@ export const getUserStats = withDTO(async (db, { since }: { since: Date }) => {
           Number
         ),
     })
-    .from(schema.user)
-    .$withCache({ config: { ex: STATS_CACHE_SECONDS } });
+    .from(schema.user);
   return {
     total: row?.total ?? 0,
     guests: row?.guests ?? 0,

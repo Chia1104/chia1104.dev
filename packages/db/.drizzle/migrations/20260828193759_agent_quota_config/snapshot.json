@@ -1,0 +1,108 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "83fc9ae8-3668-4bbb-9e82-eee55a8bc1e7",
+  "prevIds": ["351f63b4-97b8-4962-8501-ec6f5b65135b"],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "agent", "quota_config"],
+      "writes": [
+        "s|tbl|agent.quota_config",
+        "n|tbl|agent.quota_config",
+        "e|tbl|agent.quota_config",
+        "n|rel|agent.quota_config",
+        "n|type|agent.quota_config",
+        "n|rel|agent.quota_config_pkey"
+      ],
+      "reads": ["n|sch|agent"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "name": "quota_config",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "quota_config",
+        "name": "id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "quota_config",
+        "name": "weekly_limit_micros",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "quota_config",
+        "name": "reset_time_zone",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "quota_config",
+        "name": "updated_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "quota_config",
+        "name": "quota_config_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

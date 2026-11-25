@@ -21,6 +21,7 @@
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
     "drizzle-orm": "catalog:drizzle",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "zod": "catalog:"
   }
 }

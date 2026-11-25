@@ -1,0 +1,282 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "b2ae3734-e855-46d0-8e71-9727f6aca2c1",
+  "prevIds": ["202dc6a9-af78-4fc9-9863-03f618ce9311"],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_profile_entry"],
+      "writes": [
+        "s|tbl|public.chia_profile_entry",
+        "n|tbl|public.chia_profile_entry",
+        "e|tbl|public.chia_profile_entry",
+        "n|rel|public.chia_profile_entry",
+        "n|type|public.chia_profile_entry",
+        "n|rel|public.chia_profile_entry_pkey"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_profile_entry",
+        "profile_entry_user_kind_sort_idx"
+      ],
+      "writes": [
+        "s|idx|public.profile_entry_user_kind_sort_idx",
+        "n|idx|public.profile_entry_user_kind_sort_idx",
+        "e|idx|public.profile_entry_user_kind_sort_idx",
+        "n|rel|public.profile_entry_user_kind_sort_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_profile_entry",
+        "n|sch|public",
+        "n|col|public.chia_profile_entry.user_id",
+        "n|col|public.chia_profile_entry.kind",
+        "n|col|public.chia_profile_entry.sort_order"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_profile_entry"],
+      "writes": [
+        "s|fk|public.chia_profile_entry.chia_profile_entry_user_id_chia_user_id_fkey",
+        "n|fk|public.chia_profile_entry.chia_profile_entry_user_id_chia_user_id_fkey",
+        "e|fk|public.chia_profile_entry.chia_profile_entry_user_id_chia_user_id_fkey",
+        "n|con|public.chia_profile_entry.chia_profile_entry_user_id_chia_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.chia_profile_entry",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_profile_entry.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "chia_profile_entry",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "published",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "sort_order",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "data",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "user_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "deleted_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "profile_entry_user_kind_sort_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "kind",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "sort_order",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "chia_profile_entry_user_id_chia_user_id_fkey",
+        "nameExplicit": false,
+        "columns": ["user_id"],
+        "schemaTo": "public",
+        "tableTo": "chia_user",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_profile_entry",
+        "name": "chia_profile_entry_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

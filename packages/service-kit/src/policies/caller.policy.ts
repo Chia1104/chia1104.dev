@@ -1,8 +1,9 @@
 import type { ApiKeyScope } from "@chia/auth/apikey";
-import { ApiKeyScope as Scope, hasApiKeyScope } from "@chia/auth/apikey";
+import { ApiKeyScope as Scope } from "@chia/auth/apikey";
+import { readSessionToken } from "@chia/auth/session";
 import { CallerTier, tierForUser } from "@chia/auth/tier";
-import type { Session } from "@chia/auth/types";
 import { X_CH_API_KEY } from "@chia/auth/utils";
+import type { SessionRecord } from "@chia/db/repos/auth";
 import { getAdminId } from "@chia/utils/config";
 
 import { AppError, AppErrorCode } from "../errors";
@@ -16,7 +17,7 @@ import { allow, deny } from "./types";
 export interface Caller {
   tier: CallerTier;
   adminId: string;
-  session?: Session;
+  session?: SessionRecord;
   apiKey?: VerifiedApiKey;
 }
 
@@ -30,13 +31,11 @@ export interface CallerPolicyOptions {
   scopes?: readonly ApiKeyScope[];
 }
 
-/** Both spellings of the better-auth session cookie (`__Secure-` prefixed under TLS). */
-const SESSION_COOKIE_MARKER = "session_token";
-
 /** Skip the session lookup when there is no cookie and no preset. */
-const hasSessionCredential = (headers: Headers, preset?: Session | null) =>
-  preset !== undefined ||
-  (headers.get("Cookie")?.includes(SESSION_COOKIE_MARKER) ?? false);
+const hasSessionCredential = (
+  headers: Headers,
+  preset?: SessionRecord | null
+) => preset !== undefined || readSessionToken(headers) !== null;
 
 /**
  * A key that carries `operator:root` and belongs to the configured admin acts as that admin.
@@ -44,8 +43,7 @@ const hasSessionCredential = (headers: Headers, preset?: Session | null) =>
  * the tier.
  */
 const tierForApiKey = (apiKey: VerifiedApiKey, adminId: string): CallerTier =>
-  apiKey.referenceId === adminId &&
-  hasApiKeyScope(apiKey.permissions, Scope.OperatorRoot)
+  apiKey.userId === adminId && apiKey.scopes.includes(Scope.OperatorRoot)
     ? CallerTier.Root
     : CallerTier.ApiKey;
 
@@ -53,7 +51,7 @@ const tierForApiKey = (apiKey: VerifiedApiKey, adminId: string): CallerTier =>
 const admit = (
   caller: Caller,
   options: CallerPolicyOptions
-): PolicyResult<{ caller: Caller; session?: Session }> => {
+): PolicyResult<{ caller: Caller; session?: SessionRecord }> => {
   const { minTier = CallerTier.Anonymous } = options;
 
   if (caller.apiKey && caller.tier < CallerTier.Root) {
@@ -73,7 +71,7 @@ const admit = (
     );
   }
 
-  // The session rides along so `sessionPolicy` and `adminPolicy` downstream skip `getSession`.
+  // The session rides along so `sessionPolicy` and `adminPolicy` downstream skip the lookup.
   return allow({ caller, session: caller.session });
 };
 
@@ -83,7 +81,7 @@ const admit = (
  */
 export const callerPolicy = (
   options: CallerPolicyOptions = {}
-): Policy<{ caller: Caller; session?: Session }> => {
+): Policy<{ caller: Caller; session?: SessionRecord }> => {
   return async (context) => {
     if (context.caller) {
       return admit(context.caller, options);

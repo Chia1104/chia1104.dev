@@ -1,0 +1,2 @@
+DROP INDEX "resource_chunk_bm25_idx";--> statement-breakpoint
+CREATE INDEX "resource_chunk_bm25_idx" ON "chia_resource_chunk" USING paradedb ("id",(("content")::pdb.icu),(("content")::pdb.simple('alias=body_sub')),"source_type","kind","locale","published","deleted");

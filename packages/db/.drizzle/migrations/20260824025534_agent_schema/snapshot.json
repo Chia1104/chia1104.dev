@@ -1,0 +1,285 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "50d12aae-58d0-4acd-898f-60f447c469a4",
+  "prevIds": ["95e9e61b-6380-4fd6-a543-edab49a79241"],
+  "footprints": [
+    {
+      "statementType": "rename_table",
+      "statementTarget": ["table", "public", "chia_agent_run"],
+      "writes": [
+        "s|tbl|public.chia_agent_run",
+        "n|tbl|public.chia_agent_run",
+        "n|rel|public.chia_agent_run",
+        "n|type|public.chia_agent_run",
+        "s|tbl|public.run",
+        "n|tbl|public.run",
+        "n|rel|public.run",
+        "n|type|public.run"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "rename_table",
+      "statementTarget": ["table", "public", "chia_agent_session_entry"],
+      "writes": [
+        "s|tbl|public.chia_agent_session_entry",
+        "n|tbl|public.chia_agent_session_entry",
+        "n|rel|public.chia_agent_session_entry",
+        "n|type|public.chia_agent_session_entry",
+        "s|tbl|public.session_entry",
+        "n|tbl|public.session_entry",
+        "n|rel|public.session_entry",
+        "n|type|public.session_entry"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "rename_table",
+      "statementTarget": ["table", "public", "chia_agent_session"],
+      "writes": [
+        "s|tbl|public.chia_agent_session",
+        "n|tbl|public.chia_agent_session",
+        "n|rel|public.chia_agent_session",
+        "n|type|public.chia_agent_session",
+        "s|tbl|public.session",
+        "n|tbl|public.session",
+        "n|rel|public.session",
+        "n|type|public.session"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "rename_table",
+      "statementTarget": ["table", "public", "chia_agent_tool_approval"],
+      "writes": [
+        "s|tbl|public.chia_agent_tool_approval",
+        "n|tbl|public.chia_agent_tool_approval",
+        "n|rel|public.chia_agent_tool_approval",
+        "n|type|public.chia_agent_tool_approval",
+        "s|tbl|public.tool_approval",
+        "n|tbl|public.tool_approval",
+        "n|rel|public.tool_approval",
+        "n|type|public.tool_approval"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "rename_table",
+      "statementTarget": ["table", "public", "chia_writing_agent_draft"],
+      "writes": [
+        "s|tbl|public.chia_writing_agent_draft",
+        "n|tbl|public.chia_writing_agent_draft",
+        "n|rel|public.chia_writing_agent_draft",
+        "n|type|public.chia_writing_agent_draft",
+        "s|tbl|public.writing_draft",
+        "n|tbl|public.writing_draft",
+        "n|rel|public.writing_draft",
+        "n|type|public.writing_draft"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "rename_table",
+      "statementTarget": ["table", "public", "chia_writing_agent_session"],
+      "writes": [
+        "s|tbl|public.chia_writing_agent_session",
+        "n|tbl|public.chia_writing_agent_session",
+        "n|rel|public.chia_writing_agent_session",
+        "n|type|public.chia_writing_agent_session",
+        "s|tbl|public.writing_session",
+        "n|tbl|public.writing_session",
+        "n|rel|public.writing_session",
+        "n|type|public.writing_session"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "move_table",
+      "statementTarget": ["table", "public", "run"],
+      "writes": [
+        "s|tbl|public.run",
+        "n|tbl|public.run",
+        "n|rel|public.run",
+        "n|type|public.run",
+        "s|tbl|agent.run",
+        "n|tbl|agent.run",
+        "n|rel|agent.run",
+        "n|type|agent.run",
+        "e|tbl|public.run",
+        "e|tbl|agent.run",
+        "n|rel|public.agent_run_external_id_idx",
+        "n|rel|agent.agent_run_external_id_idx",
+        "n|rel|public.agent_run_one_active_per_session_idx",
+        "n|rel|agent.agent_run_one_active_per_session_idx",
+        "n|rel|public.agent_run_session_status_idx",
+        "n|rel|agent.agent_run_session_status_idx",
+        "n|rel|public.chia_agent_run_pkey",
+        "n|rel|agent.chia_agent_run_pkey"
+      ],
+      "reads": ["n|sch|public", "n|sch|agent"]
+    },
+    {
+      "statementType": "move_table",
+      "statementTarget": ["table", "public", "session_entry"],
+      "writes": [
+        "s|tbl|public.session_entry",
+        "n|tbl|public.session_entry",
+        "n|rel|public.session_entry",
+        "n|type|public.session_entry",
+        "s|tbl|agent.session_entry",
+        "n|tbl|agent.session_entry",
+        "n|rel|agent.session_entry",
+        "n|type|agent.session_entry",
+        "e|tbl|public.session_entry",
+        "e|tbl|agent.session_entry",
+        "n|rel|public.agent_session_entry_parent_idx",
+        "n|rel|agent.agent_session_entry_parent_idx",
+        "n|rel|public.agent_session_entry_seq_idx",
+        "n|rel|agent.agent_session_entry_seq_idx",
+        "n|rel|public.agent_session_entry_type_idx",
+        "n|rel|agent.agent_session_entry_type_idx",
+        "n|rel|public.chia_agent_session_entry_pkey",
+        "n|rel|agent.chia_agent_session_entry_pkey"
+      ],
+      "reads": ["n|sch|public", "n|sch|agent"]
+    },
+    {
+      "statementType": "move_table",
+      "statementTarget": ["table", "public", "session"],
+      "writes": [
+        "s|tbl|public.session",
+        "n|tbl|public.session",
+        "n|rel|public.session",
+        "n|type|public.session",
+        "s|tbl|agent.session",
+        "n|tbl|agent.session",
+        "n|rel|agent.session",
+        "n|type|agent.session",
+        "e|tbl|public.session",
+        "e|tbl|agent.session",
+        "n|rel|public.agent_session_deleted_at_idx",
+        "n|rel|agent.agent_session_deleted_at_idx",
+        "n|rel|public.agent_session_updated_at_idx",
+        "n|rel|agent.agent_session_updated_at_idx",
+        "n|rel|public.agent_session_user_id_idx",
+        "n|rel|agent.agent_session_user_id_idx",
+        "n|rel|public.agent_session_user_kind_idx",
+        "n|rel|agent.agent_session_user_kind_idx",
+        "n|rel|public.chia_agent_session_pkey",
+        "n|rel|agent.chia_agent_session_pkey"
+      ],
+      "reads": ["n|sch|public", "n|sch|agent"]
+    },
+    {
+      "statementType": "move_table",
+      "statementTarget": ["table", "public", "tool_approval"],
+      "writes": [
+        "s|tbl|public.tool_approval",
+        "n|tbl|public.tool_approval",
+        "n|rel|public.tool_approval",
+        "n|type|public.tool_approval",
+        "s|tbl|agent.tool_approval",
+        "n|tbl|agent.tool_approval",
+        "n|rel|agent.tool_approval",
+        "n|type|agent.tool_approval",
+        "e|tbl|public.tool_approval",
+        "e|tbl|agent.tool_approval",
+        "n|rel|public.chia_agent_tool_approval_pkey",
+        "n|rel|agent.chia_agent_tool_approval_pkey"
+      ],
+      "reads": ["n|sch|public", "n|sch|agent"]
+    },
+    {
+      "statementType": "move_table",
+      "statementTarget": ["table", "public", "writing_draft"],
+      "writes": [
+        "s|tbl|public.writing_draft",
+        "n|tbl|public.writing_draft",
+        "n|rel|public.writing_draft",
+        "n|type|public.writing_draft",
+        "s|tbl|agent.writing_draft",
+        "n|tbl|agent.writing_draft",
+        "n|rel|agent.writing_draft",
+        "n|type|agent.writing_draft",
+        "e|tbl|public.writing_draft",
+        "e|tbl|agent.writing_draft",
+        "n|rel|public.chia_writing_agent_draft_pkey",
+        "n|rel|agent.chia_writing_agent_draft_pkey"
+      ],
+      "reads": ["n|sch|public", "n|sch|agent"]
+    },
+    {
+      "statementType": "move_table",
+      "statementTarget": ["table", "public", "writing_session"],
+      "writes": [
+        "s|tbl|public.writing_session",
+        "n|tbl|public.writing_session",
+        "n|rel|public.writing_session",
+        "n|type|public.writing_session",
+        "s|tbl|agent.writing_session",
+        "n|tbl|agent.writing_session",
+        "n|rel|agent.writing_session",
+        "n|type|agent.writing_session",
+        "e|tbl|public.writing_session",
+        "e|tbl|agent.writing_session",
+        "n|rel|public.chia_writing_agent_session_pkey",
+        "n|rel|agent.chia_writing_agent_session_pkey",
+        "n|rel|public.writing_agent_session_target_feed_idx",
+        "n|rel|agent.writing_agent_session_target_feed_idx"
+      ],
+      "reads": ["n|sch|public", "n|sch|agent"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"chia_agent_run\"]",
+      "set": {
+        "name": "run",
+        "schema": "agent"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"chia_agent_session_entry\"]",
+      "set": {
+        "name": "session_entry",
+        "schema": "agent"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"chia_agent_session\"]",
+      "set": {
+        "name": "session",
+        "schema": "agent"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"chia_agent_tool_approval\"]",
+      "set": {
+        "name": "tool_approval",
+        "schema": "agent"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"chia_writing_agent_draft\"]",
+      "set": {
+        "name": "writing_draft",
+        "schema": "agent"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "tables\u0000[\"public\",\"chia_writing_agent_session\"]",
+      "set": {
+        "name": "writing_session",
+        "schema": "agent"
+      }
+    }
+  ]
+}

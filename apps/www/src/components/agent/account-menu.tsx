@@ -7,9 +7,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
 import { agentQueryKeys } from "@chia/agent-elements/queries";
-import { authClient } from "@chia/auth/client";
-import type { Session } from "@chia/auth/types";
+import { signOut } from "@chia/auth/client";
+import type { Session } from "@chia/services/auth/auth.contract";
 
+import { orpc } from "@/libs/orpc/client";
 import { useSettingsStore } from "@/stores/settings/store";
 
 import { ApiKeyDialog } from "./api-key-dialog";
@@ -37,11 +38,19 @@ export const AccountMenu = ({ user }: { user: Session["user"] }) => {
     avatarRef.current?.focus();
   };
 
-  const signOut = () =>
+  const handleSignOut = () =>
     startTransition(async () => {
-      await authClient.signOut();
+      try {
+        await signOut();
+      } catch {
+        // The cookie is still valid, so the menu keeps showing the signed-in person.
+        return;
+      }
       setStoredSessionId(null);
       queryClient.removeQueries({ queryKey: agentQueryKeys.all });
+      await queryClient.invalidateQueries({
+        queryKey: orpc.auth.session.key(),
+      });
     });
 
   return (
@@ -63,7 +72,7 @@ export const AccountMenu = ({ user }: { user: Session["user"] }) => {
                 <span aria-hidden className="i-mdi-account-outline size-4" />
               ) : (
                 user.name.trim().charAt(0).toUpperCase() ||
-                user.email.charAt(0).toUpperCase() ||
+                (user.email ?? "").charAt(0).toUpperCase() ||
                 "?"
               )}
             </Avatar.Fallback>
@@ -118,7 +127,9 @@ export const AccountMenu = ({ user }: { user: Session["user"] }) => {
                 size="sm"
                 className="justify-start gap-2 px-2"
                 isPending={isPending}
-                onPress={user.isAnonymous ? () => openPanel("signIn") : signOut}
+                onPress={
+                  user.isAnonymous ? () => openPanel("signIn") : handleSignOut
+                }
                 variant="ghost">
                 <span
                   aria-hidden

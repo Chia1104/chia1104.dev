@@ -1,0 +1,499 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "351f63b4-97b8-4962-8501-ec6f5b65135b",
+  "prevIds": ["3170d175-90c6-467f-91f3-7b26a1d23d50"],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "agent", "usage_ledger"],
+      "writes": [
+        "s|tbl|agent.usage_ledger",
+        "n|tbl|agent.usage_ledger",
+        "e|tbl|agent.usage_ledger",
+        "n|rel|agent.usage_ledger",
+        "n|type|agent.usage_ledger",
+        "n|rel|agent.usage_ledger_pkey"
+      ],
+      "reads": ["n|sch|agent"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "agent",
+        "usage_ledger",
+        "agent_usage_ledger_user_created_idx"
+      ],
+      "writes": [
+        "s|idx|agent.agent_usage_ledger_user_created_idx",
+        "n|idx|agent.agent_usage_ledger_user_created_idx",
+        "e|idx|agent.agent_usage_ledger_user_created_idx",
+        "n|rel|agent.agent_usage_ledger_user_created_idx"
+      ],
+      "reads": [
+        "n|tbl|agent.usage_ledger",
+        "n|sch|agent",
+        "n|col|agent.usage_ledger.user_id",
+        "n|col|agent.usage_ledger.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "agent",
+        "usage_ledger",
+        "agent_usage_ledger_session_id_idx"
+      ],
+      "writes": [
+        "s|idx|agent.agent_usage_ledger_session_id_idx",
+        "n|idx|agent.agent_usage_ledger_session_id_idx",
+        "e|idx|agent.agent_usage_ledger_session_id_idx",
+        "n|rel|agent.agent_usage_ledger_session_id_idx"
+      ],
+      "reads": [
+        "n|tbl|agent.usage_ledger",
+        "n|sch|agent",
+        "n|col|agent.usage_ledger.session_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "agent", "usage_ledger"],
+      "writes": [
+        "s|fk|agent.usage_ledger.usage_ledger_user_id_chia_user_id_fkey",
+        "n|fk|agent.usage_ledger.usage_ledger_user_id_chia_user_id_fkey",
+        "e|fk|agent.usage_ledger.usage_ledger_user_id_chia_user_id_fkey",
+        "n|con|agent.usage_ledger.usage_ledger_user_id_chia_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|agent.usage_ledger",
+        "n|sch|agent",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|agent.usage_ledger.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "agent", "usage_ledger"],
+      "writes": [
+        "s|fk|agent.usage_ledger.usage_ledger_session_id_session_id_fkey",
+        "n|fk|agent.usage_ledger.usage_ledger_session_id_session_id_fkey",
+        "e|fk|agent.usage_ledger.usage_ledger_session_id_session_id_fkey",
+        "n|con|agent.usage_ledger.usage_ledger_session_id_session_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|agent.usage_ledger",
+        "n|sch|agent",
+        "n|tbl|agent.session",
+        "n|sch|agent",
+        "n|col|agent.usage_ledger.session_id",
+        "n|col|agent.session.id",
+        "e|uniqueness|agent.session.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "agent", "usage_ledger"],
+      "writes": [
+        "s|fk|agent.usage_ledger.usage_ledger_run_id_run_id_fkey",
+        "n|fk|agent.usage_ledger.usage_ledger_run_id_run_id_fkey",
+        "e|fk|agent.usage_ledger.usage_ledger_run_id_run_id_fkey",
+        "n|con|agent.usage_ledger.usage_ledger_run_id_run_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|agent.usage_ledger",
+        "n|sch|agent",
+        "n|tbl|agent.run",
+        "n|sch|agent",
+        "n|col|agent.usage_ledger.run_id",
+        "n|col|agent.run.id",
+        "e|uniqueness|agent.run.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "name": "usage_ledger",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "id",
+        "type": "bigserial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "user_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "session_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "run_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "entry_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "source",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "provider_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "model_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "input",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "output",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "cache_read",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "cache_write",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "reasoning",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "cost_micros",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "agent_usage_ledger_user_created_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "agent_usage_ledger_session_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "session_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "usage_ledger_user_id_chia_user_id_fkey",
+        "nameExplicit": false,
+        "columns": ["user_id"],
+        "schemaTo": "public",
+        "tableTo": "chia_user",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "usage_ledger_session_id_session_id_fkey",
+        "nameExplicit": false,
+        "columns": ["session_id"],
+        "schemaTo": "agent",
+        "tableTo": "session",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "usage_ledger_run_id_run_id_fkey",
+        "nameExplicit": false,
+        "columns": ["run_id"],
+        "schemaTo": "agent",
+        "tableTo": "run",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "usage_ledger_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

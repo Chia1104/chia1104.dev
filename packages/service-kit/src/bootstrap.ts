@@ -1,6 +1,6 @@
 import { httpInstrumentationMiddleware } from "@hono/otel";
 import { trace } from "@opentelemetry/api";
-import { setTag } from "@sentry/node-core/light";
+import { setTag } from "@sentry/node";
 import type { Context, Env, Hono, Schema } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";

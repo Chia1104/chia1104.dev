@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Modal, Button, Chip } from "@heroui/react";
 import { BorderBeam } from "border-beam";
 
-import BetterAuth from "@chia/ui/icons/better-auth";
 import Zeabur from "@chia/ui/icons/zeabur";
 
 const techStack = {
@@ -80,15 +79,6 @@ const techStack = {
     },
   ],
   Techs: [
-    {
-      name: "BetterAuth",
-      icon: <BetterAuth className="size-3" />,
-      link: "https://www.better-auth.com/",
-      classNames: {
-        base: "bg-gradient-to-br from-black to-gray-900",
-        content: "drop-shadow shadow-black text-white",
-      },
-    },
     {
       name: "Drizzle",
       icon: <span className="i-simple-icons-drizzle" />,

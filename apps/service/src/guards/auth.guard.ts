@@ -11,7 +11,7 @@ export interface VerifyAuthOptions {
   rootOnly?:
     | boolean
     | ((c: Context<AuthContext>) => boolean | Promise<boolean>);
-  /** Admit a guest minted by better-auth's `anonymous()`. Off by default. */
+  /** Admit a guest session. Off by default. */
   allowAnonymous?: boolean;
 }
 

@@ -325,7 +325,7 @@ Current constraints:
 - Hybrid mode has no highlighted snippet.
 - `feed_translation.published` and `deleted` are not the visibility source of truth. Search uses the feed-derived values mirrored onto chunks.
 - At the current corpus size, the planner chooses an exact sequential scan. When it starts using HNSW, tune `hnsw.ef_search` to the candidate limit and evaluate iterative scans.
-- The database must already provide the `vector` and ParadeDB `pg_search` extensions; migrations do not create them.
+- The database must already provide the `vector` and ParadeDB `pg_search` 0.27+ extensions; migrations do not create them.
 
 Primary locations:
 

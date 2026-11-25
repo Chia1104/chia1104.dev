@@ -1,0 +1,1400 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "1dbb6294-0336-4f99-98c9-5e99c0fe4f97",
+  "prevIds": ["d99622fd-4b68-4066-ba91-993366c0d10a"],
+  "footprints": [
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_apikey", "last_refill_at"],
+      "writes": [
+        "s|colprop|public.chia_apikey.last_refill_at.type",
+        "s|colprop|public.chia_apikey.last_refill_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.last_refill_at"
+      ],
+      "sqlHash": "61acfe8f85277b64"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_apikey", "last_request"],
+      "writes": [
+        "s|colprop|public.chia_apikey.last_request.type",
+        "s|colprop|public.chia_apikey.last_request.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.last_request"
+      ],
+      "sqlHash": "6f93efbede4e99b6"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_apikey", "expires_at"],
+      "writes": [
+        "s|colprop|public.chia_apikey.expires_at.type",
+        "s|colprop|public.chia_apikey.expires_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.expires_at"
+      ],
+      "sqlHash": "918c3a3b31b98e02"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_apikey", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_apikey.created_at.type",
+        "s|colprop|public.chia_apikey.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.created_at"
+      ],
+      "sqlHash": "3a9c07b953c5e963"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_apikey", "updated_at"],
+      "writes": [
+        "s|colprop|public.chia_apikey.updated_at.type",
+        "s|colprop|public.chia_apikey.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.updated_at"
+      ],
+      "sqlHash": "d7c742cff693c4a4"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_account",
+        "access_token_expires_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_account.access_token_expires_at.type",
+        "s|colprop|public.chia_account.access_token_expires_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_account",
+        "n|sch|public",
+        "n|col|public.chia_account.access_token_expires_at"
+      ],
+      "sqlHash": "744c0f6df883332f"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_account",
+        "refresh_token_expires_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_account.refresh_token_expires_at.type",
+        "s|colprop|public.chia_account.refresh_token_expires_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_account",
+        "n|sch|public",
+        "n|col|public.chia_account.refresh_token_expires_at"
+      ],
+      "sqlHash": "92f429bd6a9333d2"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_account", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_account.created_at.type",
+        "s|colprop|public.chia_account.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_account",
+        "n|sch|public",
+        "n|col|public.chia_account.created_at"
+      ],
+      "sqlHash": "d2459c6776d75224"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_account", "updated_at"],
+      "writes": [
+        "s|colprop|public.chia_account.updated_at.type",
+        "s|colprop|public.chia_account.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_account",
+        "n|sch|public",
+        "n|col|public.chia_account.updated_at"
+      ],
+      "sqlHash": "5e64c2438bc738b4"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_passkey", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_passkey.created_at.type",
+        "s|colprop|public.chia_passkey.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_passkey",
+        "n|sch|public",
+        "n|col|public.chia_passkey.created_at"
+      ],
+      "sqlHash": "c7c618410c5eeb66"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_session", "expires_at"],
+      "writes": [
+        "s|colprop|public.chia_session.expires_at.type",
+        "s|colprop|public.chia_session.expires_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_session",
+        "n|sch|public",
+        "n|col|public.chia_session.expires_at"
+      ],
+      "sqlHash": "a245bcbbbd98fe93"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_session", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_session.created_at.type",
+        "s|colprop|public.chia_session.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_session",
+        "n|sch|public",
+        "n|col|public.chia_session.created_at"
+      ],
+      "sqlHash": "2d645f26b80a87db"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_session", "updated_at"],
+      "writes": [
+        "s|colprop|public.chia_session.updated_at.type",
+        "s|colprop|public.chia_session.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_session",
+        "n|sch|public",
+        "n|col|public.chia_session.updated_at"
+      ],
+      "sqlHash": "7701b83bf392e7a0"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_verification",
+        "expires_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_verification.expires_at.type",
+        "s|colprop|public.chia_verification.expires_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_verification",
+        "n|sch|public",
+        "n|col|public.chia_verification.expires_at"
+      ],
+      "sqlHash": "7940c25f3f416218"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_verification",
+        "created_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_verification.created_at.type",
+        "s|colprop|public.chia_verification.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_verification",
+        "n|sch|public",
+        "n|col|public.chia_verification.created_at"
+      ],
+      "sqlHash": "0d19d502c231aba8"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_verification",
+        "updated_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_verification.updated_at.type",
+        "s|colprop|public.chia_verification.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_verification",
+        "n|sch|public",
+        "n|col|public.chia_verification.updated_at"
+      ],
+      "sqlHash": "4ba5b0d425b75e86"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_asset", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_asset.created_at.type",
+        "s|colprop|public.chia_asset.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_asset",
+        "n|sch|public",
+        "n|col|public.chia_asset.created_at"
+      ],
+      "sqlHash": "41cdb420b2c37de6"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_asset", "updated_at"],
+      "writes": [
+        "s|colprop|public.chia_asset.updated_at.type",
+        "s|colprop|public.chia_asset.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_asset",
+        "n|sch|public",
+        "n|col|public.chia_asset.updated_at"
+      ],
+      "sqlHash": "fb79fc32200b2347"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_translation",
+        "created_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_feed_translation.created_at.type",
+        "s|colprop|public.chia_feed_translation.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|col|public.chia_feed_translation.created_at"
+      ],
+      "sqlHash": "efc9328723197c1a"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_translation",
+        "updated_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_feed_translation.updated_at.type",
+        "s|colprop|public.chia_feed_translation.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|col|public.chia_feed_translation.updated_at"
+      ],
+      "sqlHash": "94ab05992798673b"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_feed", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_feed.created_at.type",
+        "s|colprop|public.chia_feed.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feed.created_at"
+      ],
+      "sqlHash": "15b67c955c61a6ef"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_feed", "updated_at"],
+      "writes": [
+        "s|colprop|public.chia_feed.updated_at.type",
+        "s|colprop|public.chia_feed.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feed.updated_at"
+      ],
+      "sqlHash": "b0fcbda73be6a6bb"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_tag", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_tag.created_at.type",
+        "s|colprop|public.chia_tag.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_tag",
+        "n|sch|public",
+        "n|col|public.chia_tag.created_at"
+      ],
+      "sqlHash": "0bb907296cc17f8e"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_tag", "updated_at"],
+      "writes": [
+        "s|colprop|public.chia_tag.updated_at.type",
+        "s|colprop|public.chia_tag.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_tag",
+        "n|sch|public",
+        "n|col|public.chia_tag.updated_at"
+      ],
+      "sqlHash": "efcd84e12f7f6a4e"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_invitation", "expires_at"],
+      "writes": [
+        "s|colprop|public.chia_invitation.expires_at.type",
+        "s|colprop|public.chia_invitation.expires_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_invitation",
+        "n|sch|public",
+        "n|col|public.chia_invitation.expires_at"
+      ],
+      "sqlHash": "0cc1b59b9c5012f4"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_invitation", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_invitation.created_at.type",
+        "s|colprop|public.chia_invitation.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_invitation",
+        "n|sch|public",
+        "n|col|public.chia_invitation.created_at"
+      ],
+      "sqlHash": "fe556c238e1b8b7e"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_member", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_member.created_at.type",
+        "s|colprop|public.chia_member.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_member",
+        "n|sch|public",
+        "n|col|public.chia_member.created_at"
+      ],
+      "sqlHash": "33e77cfc1acf005b"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_organization",
+        "created_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_organization.created_at.type",
+        "s|colprop|public.chia_organization.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_organization",
+        "n|sch|public",
+        "n|col|public.chia_organization.created_at"
+      ],
+      "sqlHash": "b496a47374b76405"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_project", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_project.created_at.type",
+        "s|colprop|public.chia_project.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_project",
+        "n|sch|public",
+        "n|col|public.chia_project.created_at"
+      ],
+      "sqlHash": "a448554f1dccf511"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_project", "updated_at"],
+      "writes": [
+        "s|colprop|public.chia_project.updated_at.type",
+        "s|colprop|public.chia_project.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_project",
+        "n|sch|public",
+        "n|col|public.chia_project.updated_at"
+      ],
+      "sqlHash": "b755b7145f164307"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_project", "deleted_at"],
+      "writes": [
+        "s|colprop|public.chia_project.deleted_at.type",
+        "s|colprop|public.chia_project.deleted_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_project",
+        "n|sch|public",
+        "n|col|public.chia_project.deleted_at"
+      ],
+      "sqlHash": "719439066abdf4b5"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_user", "created_at"],
+      "writes": [
+        "s|colprop|public.chia_user.created_at.type",
+        "s|colprop|public.chia_user.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_user.created_at"
+      ],
+      "sqlHash": "197c9e79107bf62d"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_user", "updated_at"],
+      "writes": [
+        "s|colprop|public.chia_user.updated_at.type",
+        "s|colprop|public.chia_user.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_user.updated_at"
+      ],
+      "sqlHash": "e52a77f5db8753e9"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_user", "ban_expires"],
+      "writes": [
+        "s|colprop|public.chia_user.ban_expires.type",
+        "s|colprop|public.chia_user.ban_expires.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_user.ban_expires"
+      ],
+      "sqlHash": "427e064fbd8b2db3"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_feed", "deleted_at"],
+      "writes": [
+        "s|colprop|public.chia_feed.deleted_at.type",
+        "s|colprop|public.chia_feed.deleted_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feed.deleted_at"
+      ],
+      "sqlHash": "65923b2eebee2e7e"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_spotify_credential",
+        "access_token_expires_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_spotify_credential.access_token_expires_at.type",
+        "s|colprop|public.chia_spotify_credential.access_token_expires_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_spotify_credential",
+        "n|sch|public",
+        "n|col|public.chia_spotify_credential.access_token_expires_at"
+      ],
+      "sqlHash": "9bba23d47a8bd22d"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_spotify_credential",
+        "created_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_spotify_credential.created_at.type",
+        "s|colprop|public.chia_spotify_credential.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_spotify_credential",
+        "n|sch|public",
+        "n|col|public.chia_spotify_credential.created_at"
+      ],
+      "sqlHash": "683fae461351868c"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_spotify_credential",
+        "updated_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_spotify_credential.updated_at.type",
+        "s|colprop|public.chia_spotify_credential.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_spotify_credential",
+        "n|sch|public",
+        "n|col|public.chia_spotify_credential.updated_at"
+      ],
+      "sqlHash": "c02e47749f270a52"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "run", "started_at"],
+      "writes": [
+        "s|colprop|agent.run.started_at.type",
+        "s|colprop|agent.run.started_at.default"
+      ],
+      "reads": ["n|tbl|agent.run", "n|sch|agent", "n|col|agent.run.started_at"],
+      "sqlHash": "65a59e9a4ef5006d"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "run", "ended_at"],
+      "writes": [
+        "s|colprop|agent.run.ended_at.type",
+        "s|colprop|agent.run.ended_at.default"
+      ],
+      "reads": ["n|tbl|agent.run", "n|sch|agent", "n|col|agent.run.ended_at"],
+      "sqlHash": "0a5ac1a9f935546b"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "session_entry", "timestamp"],
+      "writes": [
+        "s|colprop|agent.session_entry.timestamp.type",
+        "s|colprop|agent.session_entry.timestamp.default"
+      ],
+      "reads": [
+        "n|tbl|agent.session_entry",
+        "n|sch|agent",
+        "n|col|agent.session_entry.timestamp"
+      ],
+      "sqlHash": "afb4ab224724a4dc"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "session", "created_at"],
+      "writes": [
+        "s|colprop|agent.session.created_at.type",
+        "s|colprop|agent.session.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.session",
+        "n|sch|agent",
+        "n|col|agent.session.created_at"
+      ],
+      "sqlHash": "4413b01e9ab3eb50"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "session", "updated_at"],
+      "writes": [
+        "s|colprop|agent.session.updated_at.type",
+        "s|colprop|agent.session.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.session",
+        "n|sch|agent",
+        "n|col|agent.session.updated_at"
+      ],
+      "sqlHash": "28298c23f0c5ed73"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "session", "deleted_at"],
+      "writes": [
+        "s|colprop|agent.session.deleted_at.type",
+        "s|colprop|agent.session.deleted_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.session",
+        "n|sch|agent",
+        "n|col|agent.session.deleted_at"
+      ],
+      "sqlHash": "d58094576105f85a"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "tool_approval", "decided_at"],
+      "writes": [
+        "s|colprop|agent.tool_approval.decided_at.type",
+        "s|colprop|agent.tool_approval.decided_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.tool_approval",
+        "n|sch|agent",
+        "n|col|agent.tool_approval.decided_at"
+      ],
+      "sqlHash": "6782af97b12c145c"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "tool_approval", "created_at"],
+      "writes": [
+        "s|colprop|agent.tool_approval.created_at.type",
+        "s|colprop|agent.tool_approval.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.tool_approval",
+        "n|sch|agent",
+        "n|col|agent.tool_approval.created_at"
+      ],
+      "sqlHash": "68cc3b0184a39058"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "writing_draft", "updated_at"],
+      "writes": [
+        "s|colprop|agent.writing_draft.updated_at.type",
+        "s|colprop|agent.writing_draft.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.writing_draft",
+        "n|sch|agent",
+        "n|col|agent.writing_draft.updated_at"
+      ],
+      "sqlHash": "904bd4ffaf2eab70"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_chunk",
+        "created_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_resource_chunk.created_at.type",
+        "s|colprop|public.chia_resource_chunk.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.created_at"
+      ],
+      "sqlHash": "87795ac350b5ab3e"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_chunk",
+        "updated_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_resource_chunk.updated_at.type",
+        "s|colprop|public.chia_resource_chunk.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_chunk",
+        "n|sch|public",
+        "n|col|public.chia_resource_chunk.updated_at"
+      ],
+      "sqlHash": "332393907ea8c589"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_embedding",
+        "created_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_resource_embedding.created_at.type",
+        "s|colprop|public.chia_resource_embedding.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_embedding",
+        "n|sch|public",
+        "n|col|public.chia_resource_embedding.created_at"
+      ],
+      "sqlHash": "4e46c51093bca17f"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_embedding",
+        "updated_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_resource_embedding.updated_at.type",
+        "s|colprop|public.chia_resource_embedding.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_embedding",
+        "n|sch|public",
+        "n|col|public.chia_resource_embedding.updated_at"
+      ],
+      "sqlHash": "8efb3e7db2cfd3e4"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_index_run",
+        "started_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_resource_index_run.started_at.type",
+        "s|colprop|public.chia_resource_index_run.started_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.started_at"
+      ],
+      "sqlHash": "362ce1b0b5119333"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_index_run",
+        "ended_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_resource_index_run.ended_at.type",
+        "s|colprop|public.chia_resource_index_run.ended_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.ended_at"
+      ],
+      "sqlHash": "8d6c04e05e07d88c"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_index_run",
+        "created_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_resource_index_run.created_at.type",
+        "s|colprop|public.chia_resource_index_run.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.created_at"
+      ],
+      "sqlHash": "f2c6d6399eb4d5a5"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_resource_index_run",
+        "updated_at"
+      ],
+      "writes": [
+        "s|colprop|public.chia_resource_index_run.updated_at.type",
+        "s|colprop|public.chia_resource_index_run.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.chia_resource_index_run",
+        "n|sch|public",
+        "n|col|public.chia_resource_index_run.updated_at"
+      ],
+      "sqlHash": "458499a0ca7a0281"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "memory", "created_at"],
+      "writes": [
+        "s|colprop|agent.memory.created_at.type",
+        "s|colprop|agent.memory.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.memory",
+        "n|sch|agent",
+        "n|col|agent.memory.created_at"
+      ],
+      "sqlHash": "47b4213037ef7c89"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "memory", "updated_at"],
+      "writes": [
+        "s|colprop|agent.memory.updated_at.type",
+        "s|colprop|agent.memory.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.memory",
+        "n|sch|agent",
+        "n|col|agent.memory.updated_at"
+      ],
+      "sqlHash": "4e10dbe66e1f5d62"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "memory", "deleted_at"],
+      "writes": [
+        "s|colprop|agent.memory.deleted_at.type",
+        "s|colprop|agent.memory.deleted_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.memory",
+        "n|sch|agent",
+        "n|col|agent.memory.deleted_at"
+      ],
+      "sqlHash": "889e0912f76b0cb4"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "kind_config", "updated_at"],
+      "writes": [
+        "s|colprop|agent.kind_config.updated_at.type",
+        "s|colprop|agent.kind_config.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.kind_config",
+        "n|sch|agent",
+        "n|col|agent.kind_config.updated_at"
+      ],
+      "sqlHash": "ea63478121b2144d"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "task_config", "updated_at"],
+      "writes": [
+        "s|colprop|agent.task_config.updated_at.type",
+        "s|colprop|agent.task_config.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.task_config",
+        "n|sch|agent",
+        "n|col|agent.task_config.updated_at"
+      ],
+      "sqlHash": "7761abe6d9c45f87"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "usage_ledger", "created_at"],
+      "writes": [
+        "s|colprop|agent.usage_ledger.created_at.type",
+        "s|colprop|agent.usage_ledger.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.usage_ledger",
+        "n|sch|agent",
+        "n|col|agent.usage_ledger.created_at"
+      ],
+      "sqlHash": "2fe15692d66d44c3"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "agent", "quota_config", "updated_at"],
+      "writes": [
+        "s|colprop|agent.quota_config.updated_at.type",
+        "s|colprop|agent.quota_config.updated_at.default"
+      ],
+      "reads": [
+        "n|tbl|agent.quota_config",
+        "n|sch|agent",
+        "n|col|agent.quota_config.updated_at"
+      ],
+      "sqlHash": "413c18086b15b399"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"last_refill_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"last_request\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"expires_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"access_token_expires_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"refresh_token_expires_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_session\",\"expires_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_session\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_session\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_verification\",\"expires_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_verification\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_verification\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_asset\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_asset\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_feed_translation\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_feed_translation\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_feed\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_feed\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_tag\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_tag\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_invitation\",\"expires_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_invitation\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_member\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_organization\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"deleted_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_user\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_user\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_user\",\"ban_expires\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_feed\",\"deleted_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_spotify_credential\",\"access_token_expires_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_spotify_credential\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_spotify_credential\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"run\",\"started_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"run\",\"ended_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"session_entry\",\"timestamp\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"session\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"session\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"session\",\"deleted_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"tool_approval\",\"decided_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"tool_approval\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"writing_draft\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_resource_chunk\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_resource_chunk\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_resource_embedding\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_resource_embedding\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_resource_index_run\",\"started_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_resource_index_run\",\"ended_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_resource_index_run\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_resource_index_run\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"memory\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"memory\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"memory\",\"deleted_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"kind_config\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"task_config\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"usage_ledger\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"agent\",\"quota_config\",\"updated_at\"]",
+      "set": {
+        "type": "timestamp with time zone"
+      }
+    }
+  ]
+}

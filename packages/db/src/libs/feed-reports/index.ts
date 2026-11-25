@@ -97,7 +97,8 @@ export interface FeedReportRecord extends FeedReport {
     /** In the report's locale; `null` when that translation is gone. */
     title: string | null;
   };
-  reporter: { name: string; email: string } | null;
+  /** `email` is `null` when a guest filed the report. */
+  reporter: { name: string; email: string | null } | null;
   /** The post's working draft, when one is open. */
   draftId: number | null;
 }
@@ -132,7 +133,7 @@ const toRecord = (row: SelectedRecord): FeedReportRecord => ({
   ...row.report,
   post: { slug: row.slug, type: row.type, title: row.title },
   reporter:
-    row.reporterName === null || row.reporterEmail === null
+    row.reporterName === null
       ? null
       : { name: row.reporterName, email: row.reporterEmail },
   draftId: row.draftId,

@@ -1,0 +1,341 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "934f4819-3957-4d5b-ad74-f22611ebd1d5",
+  "prevIds": ["90936003-55fb-455a-aa41-0bc03461e6cc"],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_spotify_credential"],
+      "writes": [
+        "s|tbl|public.chia_spotify_credential",
+        "n|tbl|public.chia_spotify_credential",
+        "e|tbl|public.chia_spotify_credential",
+        "n|rel|public.chia_spotify_credential",
+        "n|type|public.chia_spotify_credential",
+        "n|rel|public.chia_spotify_credential_pkey"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_spotify_credential",
+        "spotify_credential_spotify_user_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.spotify_credential_spotify_user_id_idx",
+        "n|idx|public.spotify_credential_spotify_user_id_idx",
+        "e|idx|public.spotify_credential_spotify_user_id_idx",
+        "n|rel|public.spotify_credential_spotify_user_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_spotify_credential",
+        "n|sch|public",
+        "n|col|public.chia_spotify_credential.spotify_user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_spotify_credential",
+        "spotify_credential_active_idx"
+      ],
+      "writes": [
+        "s|idx|public.spotify_credential_active_idx",
+        "n|idx|public.spotify_credential_active_idx",
+        "e|idx|public.spotify_credential_active_idx",
+        "n|rel|public.spotify_credential_active_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_spotify_credential",
+        "n|sch|public",
+        "n|col|public.chia_spotify_credential.is_active"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_spotify_credential"],
+      "writes": [
+        "s|fk|public.chia_spotify_credential.chia_spotify_credential_user_id_chia_user_id_fkey",
+        "n|fk|public.chia_spotify_credential.chia_spotify_credential_user_id_chia_user_id_fkey",
+        "e|fk|public.chia_spotify_credential.chia_spotify_credential_user_id_chia_user_id_fkey",
+        "n|con|public.chia_spotify_credential.chia_spotify_credential_user_id_chia_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.chia_spotify_credential",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_spotify_credential.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "chia_spotify_credential",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "user_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "spotify_user_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "spotify_display_name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "spotify_image_url",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "access_token",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "refresh_token",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "access_token_expires_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "scope",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "is_active",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "updated_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "spotify_credential_spotify_user_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "spotify_user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "spotify_credential_active_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "is_active",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"is_active\" = true",
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "chia_spotify_credential_user_id_chia_user_id_fkey",
+        "nameExplicit": false,
+        "columns": ["user_id"],
+        "schemaTo": "public",
+        "tableTo": "chia_user",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_spotify_credential",
+        "name": "chia_spotify_credential_pkey",
+        "columns": ["user_id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

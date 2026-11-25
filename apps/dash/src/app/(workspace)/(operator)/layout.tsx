@@ -7,11 +7,11 @@ import { getSession } from "@/services/auth/resources.rsc";
 export default async function Layout({ children }: { children: ReactNode }) {
   const session = await getSession();
 
-  if (!session.data) {
+  if (!session) {
     unauthorized();
   }
 
-  if (session.data.access.dashboard !== "operator") {
+  if (session.access.dashboard !== "operator") {
     redirect("/");
   }
 

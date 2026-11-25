@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useId, useTransition } from "react";
+import { useId } from "react";
 
 import {
   Input,
@@ -12,19 +12,21 @@ import {
   Avatar,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { User2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { authClient } from "@chia/auth/client";
-import type { Session } from "@chia/auth/types";
+import type { Session } from "@chia/services/auth/auth.contract";
 import SubmitForm from "@chia/ui/submit-form";
+
+import { orpc } from "@/libs/orpc/client";
 
 const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50),
-  email: z.email().optional(),
+  email: z.email().nullish(),
   image: z.url().nullish(),
 });
 
@@ -35,30 +37,28 @@ interface Props {
 export const ProfileSetting = (props: Props) => {
   const router = useRouter();
   const id = useId();
-  const [isPending, startTransition] = useTransition();
+  const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: props.defaultValues,
   });
+  const update = useMutation(
+    orpc.user.updateProfile.mutationOptions({
+      onError: () => {
+        toast.error("Failed to update profile");
+      },
+      onSuccess: async () => {
+        toast.success("Profile updated");
+        await queryClient.invalidateQueries({
+          queryKey: orpc.auth.session.key(),
+        });
+        router.refresh();
+      },
+    })
+  );
 
   const handleSubmit = form.handleSubmit((values) => {
-    startTransition(async () => {
-      await authClient.updateUser(
-        {
-          name: values.name,
-          image: values.image,
-        },
-        {
-          onError: () => {
-            toast.error("Failed to update profile");
-          },
-          onSuccess: () => {
-            toast.success("Profile updated");
-            router.refresh();
-          },
-        }
-      );
-    });
+    update.mutate({ name: values.name, image: values.image ?? null });
   });
 
   return (
@@ -111,13 +111,17 @@ export const ProfileSetting = (props: Props) => {
                   id={`${id}-email`}
                   placeholder="Enter your email"
                   {...field}
+                  value={field.value ?? ""}
                 />
                 <FieldError>{error?.message}</FieldError>
               </TextField>
             )}
           />
 
-          <SubmitForm className="self-end" isPending={isPending} size="sm">
+          <SubmitForm
+            className="self-end"
+            isPending={update.isPending}
+            size="sm">
             Update Profile
           </SubmitForm>
         </Form>

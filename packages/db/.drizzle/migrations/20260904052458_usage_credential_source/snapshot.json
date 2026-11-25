@@ -1,0 +1,42 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "21d465d8-46f0-476c-b90a-955d57ec2fee",
+  "prevIds": ["b2ae3734-e855-46d0-8e71-9727f6aca2c1"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "agent",
+        "usage_ledger",
+        "credential_source"
+      ],
+      "writes": [
+        "s|col|agent.usage_ledger.credential_source",
+        "n|col|agent.usage_ledger.credential_source",
+        "e|col|agent.usage_ledger.credential_source"
+      ],
+      "reads": ["n|tbl|agent.usage_ledger", "n|sch|agent"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "usage_ledger",
+        "name": "credential_source",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "bea3dc0b-ff7b-4ebd-a042-d0a2a2d703ec",
+  "prevIds": ["f403947b-13b6-41d4-a0ae-2b9fb155d0bb"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_draft_revision",
+        "content_hash"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_draft_revision.content_hash",
+        "n|col|public.chia_feed_draft_revision.content_hash",
+        "e|col|public.chia_feed_draft_revision.content_hash"
+      ],
+      "reads": ["n|tbl|public.chia_feed_draft_revision", "n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_draft",
+        "content_hash"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_draft.content_hash",
+        "n|col|public.chia_feed_draft.content_hash",
+        "e|col|public.chia_feed_draft.content_hash"
+      ],
+      "reads": ["n|tbl|public.chia_feed_draft", "n|sch|public"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_draft_revision",
+        "name": "content_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_draft",
+        "name": "content_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

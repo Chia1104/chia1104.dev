@@ -53,7 +53,9 @@ const feedReportSchema = reportIdSchema.extend({
     /** The post on the public site, in the report's locale. */
     url: z.string(),
   }),
-  reporter: z.object({ name: z.string(), email: z.string() }).nullable(),
+  reporter: z
+    .object({ name: z.string(), email: z.string().nullable() })
+    .nullable(),
   /** The post's working draft, when one is open. */
   draftId: z.number().int().nullable(),
   createdAt: z.date(),

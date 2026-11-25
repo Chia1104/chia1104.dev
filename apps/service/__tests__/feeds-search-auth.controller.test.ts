@@ -1,10 +1,16 @@
-const { mockGetSession } = vi.hoisted(() => ({
-  mockGetSession: vi.fn(),
+const { mockFindSession } = vi.hoisted(() => ({
+  mockFindSession: vi.fn(),
 }));
 
-// Uses real `getSession` so the session requirement actually runs.
-vi.mock("@chia/auth/server", () => ({
-  createAuth: () => ({ api: { getSession: mockGetSession } }),
+// Every request presents a session cookie; what it resolves to is the stubbed lookup.
+vi.mock("@chia/auth/session", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@chia/auth/session")>()),
+  readSessionToken: () => "test-session-token",
+}));
+
+vi.mock("@chia/db/repos/auth", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@chia/db/repos/auth")>()),
+  findSession: mockFindSession,
 }));
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -13,9 +19,18 @@ import * as dbMocks from "@chia/test/mocks/db-feeds";
 
 import { app } from "../src/server";
 
-const session = (role: string) => ({
-  session: { id: "s1", userId: "u1" },
-  user: { id: "u1", role },
+/** `getAdminId()` under test; any other id is a plain signed-in person. */
+const ADMIN_ID = "test-local-admin-id";
+
+const session = (userId: string) => ({
+  session: { id: "s1", expiresAt: new Date("2099-01-01") },
+  user: {
+    id: userId,
+    name: userId,
+    email: `${userId}@example.com`,
+    image: null,
+    isAnonymous: false,
+  },
 });
 
 // Hand-built URL percent-encodes the procedure colon (`%3A`).
@@ -29,11 +44,11 @@ const search = (input: Record<string, unknown>) =>
 describe("feeds.search:advanced authentication", () => {
   beforeEach(() => {
     dbMocks.resetAllDbMocks();
-    mockGetSession.mockReset();
+    mockFindSession.mockReset();
   });
 
   it("rejects an anonymous request even for the default hybrid model", async () => {
-    mockGetSession.mockResolvedValue(null);
+    mockFindSession.mockResolvedValue(null);
 
     const res = await search({ keyword: "kubernetes" });
 
@@ -41,7 +56,7 @@ describe("feeds.search:advanced authentication", () => {
   });
 
   it("allows a non-root session for the lexical-only model", async () => {
-    mockGetSession.mockResolvedValue(session("admin"));
+    mockFindSession.mockResolvedValue(session("u1"));
 
     const res = await search({ keyword: "kubernetes", model: "bm25" });
 
@@ -49,8 +64,8 @@ describe("feeds.search:advanced authentication", () => {
   });
 
   /** Omitted `model` defaults to `hybrid`, which embeds; the guard still requires root. */
-  it("requires Role.Root when the model is omitted", async () => {
-    mockGetSession.mockResolvedValue(session("admin"));
+  it("requires the operator when the model is omitted", async () => {
+    mockFindSession.mockResolvedValue(session("u1"));
 
     const res = await search({ keyword: "kubernetes" });
 
@@ -58,9 +73,9 @@ describe("feeds.search:advanced authentication", () => {
   });
 
   it.each(["hybrid", "semantic"])(
-    "requires Role.Root for %s, which spends embedding credentials",
+    "requires the operator for %s, which spends embedding credentials",
     async (model) => {
-      mockGetSession.mockResolvedValue(session("admin"));
+      mockFindSession.mockResolvedValue(session("u1"));
 
       const res = await search({ keyword: "kubernetes", model });
 
@@ -69,7 +84,7 @@ describe("feeds.search:advanced authentication", () => {
   );
 
   it("rejects a model that is not a supported mode", async () => {
-    mockGetSession.mockResolvedValue(session("root"));
+    mockFindSession.mockResolvedValue(session(ADMIN_ID));
 
     const res = await search({
       keyword: "kubernetes",

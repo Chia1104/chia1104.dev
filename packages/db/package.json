@@ -65,6 +65,10 @@
       "types": "./src/libs/users/index.ts",
       "default": "./src/libs/users/index.ts"
     },
+    "./repos/auth": {
+      "types": "./src/libs/auth/index.ts",
+      "default": "./src/libs/auth/index.ts"
+    },
     "./repos/apikey": {
       "types": "./src/libs/apikey/index.ts",
       "default": "./src/libs/apikey/index.ts"
@@ -154,7 +158,6 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:generate": "drizzle-kit generate",
-    "postdb:generate": "tsx prune-snapshots.ts",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "type:check": "tsc --noEmit",
@@ -166,7 +169,6 @@
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
-    "@chia/kv": "workspace:*",
     "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
     "@paradedb/drizzle-paradedb": "catalog:drizzle",
@@ -182,7 +184,6 @@
     "@types/node": "catalog:",
     "@types/pg": "catalog:drizzle",
     "drizzle-kit": "catalog:drizzle",
-    "keyv": "catalog:kv",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
   }

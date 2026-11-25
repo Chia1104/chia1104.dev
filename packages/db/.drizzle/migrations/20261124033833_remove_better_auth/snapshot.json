@@ -1,0 +1,933 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "9c976021-1ee0-4cc2-bdc6-cd5851cc04d8",
+  "prevIds": ["cbfea74f-9f69-4521-8d9f-8b7ae66fadc6"],
+  "footprints": [
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_passkey"],
+      "writes": [
+        "s|tbl|public.chia_passkey",
+        "n|tbl|public.chia_passkey",
+        "e|tbl|public.chia_passkey",
+        "n|rel|public.chia_passkey",
+        "n|type|public.chia_passkey"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_verification"],
+      "writes": [
+        "s|tbl|public.chia_verification",
+        "n|tbl|public.chia_verification",
+        "e|tbl|public.chia_verification",
+        "n|rel|public.chia_verification",
+        "n|type|public.chia_verification"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "rename_column",
+      "statementTarget": ["column", "public", "chia_apikey", "key"],
+      "writes": [
+        "s|col|public.chia_apikey.key",
+        "n|col|public.chia_apikey.key",
+        "s|col|public.chia_apikey.key_hash",
+        "n|col|public.chia_apikey.key_hash"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "rename_column",
+      "statementTarget": ["column", "public", "chia_apikey", "reference_id"],
+      "writes": [
+        "s|col|public.chia_apikey.reference_id",
+        "n|col|public.chia_apikey.reference_id",
+        "s|col|public.chia_apikey.user_id",
+        "n|col|public.chia_apikey.user_id"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "rename_column",
+      "statementTarget": ["column", "public", "chia_apikey", "last_request"],
+      "writes": [
+        "s|col|public.chia_apikey.last_request",
+        "n|col|public.chia_apikey.last_request",
+        "s|col|public.chia_apikey.last_used_at",
+        "n|col|public.chia_apikey.last_used_at"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_unique",
+      "statementTarget": ["table", "public", "chia_session"],
+      "writes": [
+        "s|uq|public.chia_session.chia_session_token_unique",
+        "n|uq|public.chia_session.chia_session_token_unique",
+        "e|uq|public.chia_session.chia_session_token_unique",
+        "n|con|public.chia_session.chia_session_token_unique",
+        "n|rel|public.chia_session_token_unique"
+      ],
+      "reads": [
+        "n|tbl|public.chia_session",
+        "n|sch|public",
+        "e|col|public.chia_session.token"
+      ],
+      "sharedWrites": ["e|uniqueness|public.chia_session.token"]
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_apikey",
+        "apikey_referenceId_idx"
+      ],
+      "writes": [
+        "s|idx|public.apikey_referenceId_idx",
+        "n|idx|public.apikey_referenceId_idx",
+        "e|idx|public.apikey_referenceId_idx",
+        "n|rel|public.apikey_referenceId_idx"
+      ],
+      "reads": [
+        "e|tbl|public.chia_apikey",
+        "n|sch|public",
+        "e|col|public.chia_apikey.user_id"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": ["index", "public", "chia_apikey", "apikey_key_idx"],
+      "writes": [
+        "s|idx|public.apikey_key_idx",
+        "n|idx|public.apikey_key_idx",
+        "e|idx|public.apikey_key_idx",
+        "n|rel|public.apikey_key_idx"
+      ],
+      "reads": [
+        "e|tbl|public.chia_apikey",
+        "n|sch|public",
+        "e|col|public.chia_apikey.key_hash"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_apikey",
+        "apikey_configId_idx"
+      ],
+      "writes": [
+        "s|idx|public.apikey_configId_idx",
+        "n|idx|public.apikey_configId_idx",
+        "e|idx|public.apikey_configId_idx",
+        "n|rel|public.apikey_configId_idx"
+      ],
+      "reads": [
+        "e|tbl|public.chia_apikey",
+        "n|sch|public",
+        "e|col|public.chia_apikey.config_id"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "public", "chia_apikey", "scopes"],
+      "writes": [
+        "s|col|public.chia_apikey.scopes",
+        "n|col|public.chia_apikey.scopes",
+        "e|col|public.chia_apikey.scopes"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "public", "chia_session", "token_hash"],
+      "writes": [
+        "s|col|public.chia_session.token_hash",
+        "n|col|public.chia_session.token_hash",
+        "e|col|public.chia_session.token_hash"
+      ],
+      "reads": ["n|tbl|public.chia_session", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "prefix"],
+      "writes": [
+        "s|col|public.chia_apikey.prefix",
+        "n|col|public.chia_apikey.prefix",
+        "e|col|public.chia_apikey.prefix"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "refill_interval"],
+      "writes": [
+        "s|col|public.chia_apikey.refill_interval",
+        "n|col|public.chia_apikey.refill_interval",
+        "e|col|public.chia_apikey.refill_interval"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "refill_amount"],
+      "writes": [
+        "s|col|public.chia_apikey.refill_amount",
+        "n|col|public.chia_apikey.refill_amount",
+        "e|col|public.chia_apikey.refill_amount"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "last_refill_at"],
+      "writes": [
+        "s|col|public.chia_apikey.last_refill_at",
+        "n|col|public.chia_apikey.last_refill_at",
+        "e|col|public.chia_apikey.last_refill_at"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_apikey",
+        "rate_limit_enabled"
+      ],
+      "writes": [
+        "s|col|public.chia_apikey.rate_limit_enabled",
+        "n|col|public.chia_apikey.rate_limit_enabled",
+        "e|col|public.chia_apikey.rate_limit_enabled"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_apikey",
+        "rate_limit_time_window"
+      ],
+      "writes": [
+        "s|col|public.chia_apikey.rate_limit_time_window",
+        "n|col|public.chia_apikey.rate_limit_time_window",
+        "e|col|public.chia_apikey.rate_limit_time_window"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "rate_limit_max"],
+      "writes": [
+        "s|col|public.chia_apikey.rate_limit_max",
+        "n|col|public.chia_apikey.rate_limit_max",
+        "e|col|public.chia_apikey.rate_limit_max"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "request_count"],
+      "writes": [
+        "s|col|public.chia_apikey.request_count",
+        "n|col|public.chia_apikey.request_count",
+        "e|col|public.chia_apikey.request_count"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "remaining"],
+      "writes": [
+        "s|col|public.chia_apikey.remaining",
+        "n|col|public.chia_apikey.remaining",
+        "e|col|public.chia_apikey.remaining"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "permissions"],
+      "writes": [
+        "s|col|public.chia_apikey.permissions",
+        "n|col|public.chia_apikey.permissions",
+        "e|col|public.chia_apikey.permissions"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "metadata"],
+      "writes": [
+        "s|col|public.chia_apikey.metadata",
+        "n|col|public.chia_apikey.metadata",
+        "e|col|public.chia_apikey.metadata"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "config_id"],
+      "writes": [
+        "s|col|public.chia_apikey.config_id",
+        "n|col|public.chia_apikey.config_id",
+        "e|col|public.chia_apikey.config_id"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_session", "token"],
+      "writes": [
+        "s|col|public.chia_session.token",
+        "n|col|public.chia_session.token",
+        "e|col|public.chia_session.token"
+      ],
+      "reads": ["n|tbl|public.chia_session", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_session",
+        "impersonated_by"
+      ],
+      "writes": [
+        "s|col|public.chia_session.impersonated_by",
+        "n|col|public.chia_session.impersonated_by",
+        "e|col|public.chia_session.impersonated_by"
+      ],
+      "reads": ["n|tbl|public.chia_session", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_account", "access_token"],
+      "writes": [
+        "s|col|public.chia_account.access_token",
+        "n|col|public.chia_account.access_token",
+        "e|col|public.chia_account.access_token"
+      ],
+      "reads": ["n|tbl|public.chia_account", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_account", "refresh_token"],
+      "writes": [
+        "s|col|public.chia_account.refresh_token",
+        "n|col|public.chia_account.refresh_token",
+        "e|col|public.chia_account.refresh_token"
+      ],
+      "reads": ["n|tbl|public.chia_account", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_account", "id_token"],
+      "writes": [
+        "s|col|public.chia_account.id_token",
+        "n|col|public.chia_account.id_token",
+        "e|col|public.chia_account.id_token"
+      ],
+      "reads": ["n|tbl|public.chia_account", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_account",
+        "access_token_expires_at"
+      ],
+      "writes": [
+        "s|col|public.chia_account.access_token_expires_at",
+        "n|col|public.chia_account.access_token_expires_at",
+        "e|col|public.chia_account.access_token_expires_at"
+      ],
+      "reads": ["n|tbl|public.chia_account", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_account",
+        "refresh_token_expires_at"
+      ],
+      "writes": [
+        "s|col|public.chia_account.refresh_token_expires_at",
+        "n|col|public.chia_account.refresh_token_expires_at",
+        "e|col|public.chia_account.refresh_token_expires_at"
+      ],
+      "reads": ["n|tbl|public.chia_account", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_account", "scope"],
+      "writes": [
+        "s|col|public.chia_account.scope",
+        "n|col|public.chia_account.scope",
+        "e|col|public.chia_account.scope"
+      ],
+      "reads": ["n|tbl|public.chia_account", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_account", "password"],
+      "writes": [
+        "s|col|public.chia_account.password",
+        "n|col|public.chia_account.password",
+        "e|col|public.chia_account.password"
+      ],
+      "reads": ["n|tbl|public.chia_account", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_user", "email_verified"],
+      "writes": [
+        "s|col|public.chia_user.email_verified",
+        "n|col|public.chia_user.email_verified",
+        "e|col|public.chia_user.email_verified"
+      ],
+      "reads": ["n|tbl|public.chia_user", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_user", "role"],
+      "writes": [
+        "s|col|public.chia_user.role",
+        "n|col|public.chia_user.role",
+        "e|col|public.chia_user.role"
+      ],
+      "reads": ["n|tbl|public.chia_user", "n|sch|public"]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_apikey", "enabled"],
+      "writes": ["s|colprop|public.chia_apikey.enabled.notNull"],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.enabled"
+      ],
+      "sqlHash": "ca4db17646856c75"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_user", "email"],
+      "writes": ["s|colprop|public.chia_user.email.notNull"],
+      "reads": [
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_user.email"
+      ],
+      "sqlHash": "25816b17e07d2a9d"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": ["column", "public", "chia_user", "is_anonymous"],
+      "writes": ["s|colprop|public.chia_user.is_anonymous.notNull"],
+      "reads": [
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_user.is_anonymous"
+      ],
+      "sqlHash": "af30b497667bb5dd"
+    },
+    {
+      "statementType": "add_unique",
+      "statementTarget": ["table", "public", "chia_apikey"],
+      "writes": [
+        "s|uq|public.chia_apikey.chia_apikey_key_hash_key",
+        "n|uq|public.chia_apikey.chia_apikey_key_hash_key",
+        "e|uq|public.chia_apikey.chia_apikey_key_hash_key",
+        "n|con|public.chia_apikey.chia_apikey_key_hash_key",
+        "n|rel|public.chia_apikey_key_hash_key"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.key_hash"
+      ]
+    },
+    {
+      "statementType": "add_unique",
+      "statementTarget": ["table", "public", "chia_session"],
+      "writes": [
+        "s|uq|public.chia_session.chia_session_token_hash_key",
+        "n|uq|public.chia_session.chia_session_token_hash_key",
+        "e|uq|public.chia_session.chia_session_token_hash_key",
+        "n|con|public.chia_session.chia_session_token_hash_key",
+        "n|rel|public.chia_session_token_hash_key"
+      ],
+      "reads": [
+        "n|tbl|public.chia_session",
+        "n|sch|public",
+        "n|col|public.chia_session.token_hash"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_account",
+        "account_provider_account_idx"
+      ],
+      "writes": [
+        "s|idx|public.account_provider_account_idx",
+        "n|idx|public.account_provider_account_idx",
+        "e|idx|public.account_provider_account_idx",
+        "n|rel|public.account_provider_account_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_account",
+        "n|sch|public",
+        "n|col|public.chia_account.provider_id",
+        "n|col|public.chia_account.account_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_apikey",
+        "apikey_user_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.apikey_user_id_idx",
+        "n|idx|public.apikey_user_id_idx",
+        "e|idx|public.apikey_user_id_idx",
+        "n|rel|public.apikey_user_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.user_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_apikey"],
+      "writes": [
+        "s|fk|public.chia_apikey.chia_apikey_user_id_chia_user_id_fkey",
+        "n|fk|public.chia_apikey.chia_apikey_user_id_chia_user_id_fkey",
+        "e|fk|public.chia_apikey.chia_apikey_user_id_chia_user_id_fkey",
+        "n|con|public.chia_apikey.chia_apikey_user_id_chia_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_apikey.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    },
+    {
+      "statementType": "drop_enum",
+      "statementTarget": ["enum", "public", "role"],
+      "writes": [
+        "s|enum|public.role",
+        "n|enum|public.role",
+        "e|enum|public.role",
+        "n|type|public.role"
+      ],
+      "reads": ["n|sch|public"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "rename",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"key\"]",
+      "set": {
+        "name": "key_hash"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"reference_id\"]",
+      "set": {
+        "name": "user_id"
+      }
+    },
+    {
+      "op": "rename",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"last_request\"]",
+      "set": {
+        "name": "last_used_at"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_apikey",
+        "name": "scopes",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_session",
+        "name": "token_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_account",
+        "name": "account_provider_account_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "provider_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_apikey",
+        "name": "apikey_user_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_apikey",
+        "name": "chia_apikey_user_id_chia_user_id_fkey",
+        "nameExplicit": false,
+        "columns": ["user_id"],
+        "schemaTo": "public",
+        "tableTo": "chia_user",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_apikey",
+        "name": "chia_apikey_key_hash_key",
+        "nameExplicit": false,
+        "columns": ["key_hash"],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_session",
+        "name": "chia_session_token_hash_key",
+        "nameExplicit": false,
+        "columns": ["token_hash"],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_passkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_verification\"]"
+    },
+    {
+      "op": "drop",
+      "key": "enums\u0000[\"public\",\"role\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"prefix\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"refill_interval\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"refill_amount\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"last_refill_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"rate_limit_enabled\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"rate_limit_time_window\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"rate_limit_max\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"request_count\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"remaining\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"permissions\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"metadata\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"access_token\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"refresh_token\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"id_token\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"access_token_expires_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"refresh_token_expires_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"scope\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_account\",\"password\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"name\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"public_key\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"user_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"credential_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"counter\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"device_type\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"backed_up\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"transports\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_passkey\",\"aaguid\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_session\",\"token\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_session\",\"impersonated_by\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_verification\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_verification\",\"identifier\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_verification\",\"value\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_verification\",\"expires_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_verification\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_verification\",\"updated_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_user\",\"email_verified\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_user\",\"role\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"config_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"apikey_referenceId_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"apikey_key_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"passkey_user_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"passkey_credential_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"verification_identifier_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"apikey_configId_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_passkey\",\"chia_passkey_user_id_chia_user_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_passkey\",\"chia_passkey_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_verification\",\"chia_verification_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "uniques\u0000[\"public\",\"chia_session\",\"chia_session_token_unique\"]"
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"enabled\"]",
+      "set": {
+        "notNull": true
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_user\",\"email\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_user\",\"is_anonymous\"]",
+      "set": {
+        "notNull": true
+      }
+    }
+  ]
+}

@@ -14,9 +14,9 @@ Local ports: `www` 3000, `dash` 3001, `service` 3005, `workflow` 3008. `apps/fun
 - Content pages have no revalidate timer. `src/libs/orpc/client.rsc.ts` tags each server read with `WwwCacheTag` or `wwwFeedCacheTag`, and `workflow` invalidates those tags through the Vercel API, one five-minute window per tag; nothing calls into www. A write that changes what www renders must end in `scheduleFeedRevalidationStep` (in a workflow) or `workflow.startSiteRevalidation(tag)`. Hobby pages read works through `media.list` and `media.get`, tagged `WwwCacheTag.Media`, and articles through the same feed reads as the tech pages.
 - The blog navigation and related posts load in the browser, so no cached page depends on a post other than its own. Home and projects keep a timer because Spotify and GitHub send no change event.
 - Pages set canonical, hreflang and `og:url` through `localizedMetadata` in `src/libs/i18n/alternates.ts`; the middleware sends no alternate links. Every URL the site emits (links, sitemap, RSS, `feedUrl`) leaves the default locale unprefixed, because `/zh-TW/…` redirects.
-- Browser requests use the Better Auth session cookie and may access only public or caller-owned procedures. Shared reads (`@chia/services/shared/shared-reads`) go without credentials so a CDN can serve them.
+- Browser requests use the session cookie `service` sets and may access only public or caller-owned procedures. Shared reads (`@chia/services/shared/shared-reads`) go without credentials so a CDN can serve them.
 - Content rendering belongs to `@chia/contents`, localization to `@chia/i18n` and shared agent UI to `@chia/agent-elements`.
-- Render access from `session.access`; do not infer authorization from failed requests or the raw role column.
+- Render access from `session.access`; do not infer authorization from failed requests.
 - `next/image` resizes through Cloudflare Image Transformations (`/cdn-cgi/image`) on the proxied production zone and serves originals elsewhere. Allowed image hosts are the zone's transformation origins, not `next.config` patterns; that list must name the site host (`chia1104.dev`) and `storage` too, because it replaces the same-zone default. `www` 301s to the apex at the Cloudflare edge.
 
 ## `dash`
@@ -24,11 +24,13 @@ Local ports: `www` 3000, `dash` 3001, `service` 3005, `workflow` 3008. `apps/fun
 - Fetch page data in client components through oRPC query and mutation options. The server client forwards cookies for layout decisions, not page data fetching.
 - `dash` has no database, KV, auth server or in-process oRPC context. Server actions are limited to dashboard-owned concerns.
 - Dashboard authorization comes from `session.access.dashboard`; operator routes also verify the configured admin identity.
-- User administration goes through Better Auth's admin client rather than duplicating its session or ban semantics.
+- User administration goes through the `user` procedures; the dashboard holds no session or ban logic of its own.
 
 ## `service`
 
 - `src/server.ts` mounts Hono on Nitro and `src/bootstrap.ts` applies `@chia/service-kit/bootstrap`.
+- `routes/auth.route.ts` is the only writer of the session cookie.
+- `src/server.ts` refuses every state-changing request whose `Origin` is outside `CORS_ALLOWED_ORIGIN`; a request with no `Origin` is not a browser's and passes. No mount relies on `SameSite` alone.
 - Keep HTTP mounts in `routes/`, oRPC context construction in `factories/orpc.factory.ts`, host bindings in `agents/`, transport guards in `guards/`, orchestration in `services/` and remote access in `repos/`.
 - Business logic belongs in packages. Database access goes through `@chia/db/repos/*`.
 - The service starts, resumes and cancels workflows but never executes them.

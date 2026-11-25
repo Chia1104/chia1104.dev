@@ -1,27 +1,8 @@
-import { createInsertSchema } from "drizzle-orm/zod";
 import * as z from "zod";
 
-import { apikey } from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
 
-import {
-  dateSchema,
-  baseInfiniteSchema as baseInfiniteSchemaShared,
-} from "./shared";
-
-export const insertApiKeySchema = createInsertSchema(apikey)
-  .omit({
-    createdAt: true,
-    updatedAt: true,
-    expiresAt: true,
-  })
-  .extend({
-    createdAt: dateSchema.optional(),
-    updatedAt: dateSchema.optional(),
-    expiresAt: dateSchema.optional(),
-  });
-
-export type InsertApiKeyDTO = z.infer<typeof insertApiKeySchema>;
+import { baseInfiniteSchema as baseInfiniteSchemaShared } from "./shared";
 
 export const baseInfiniteSchema = baseInfiniteSchemaShared.extend({
   orderBy: z

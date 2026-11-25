@@ -10,8 +10,6 @@ import { Toaster as ST } from "sonner";
 import useTheme, { Theme } from "@chia/ui/utils/use-theme";
 import { getQueryClient } from "@chia/utils/query-client";
 
-import { ImpersonationBanner } from "./impersonation-banner";
-
 interface Props {
   children: React.ReactNode;
 }
@@ -31,7 +29,6 @@ const RootProvider = ({ children }: Props) => {
           enableSystem
           attribute="class">
           <Toaster />
-          <ImpersonationBanner />
           {children}
         </ThemeProvider>
       </NuqsAdapter>

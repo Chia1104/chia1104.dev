@@ -547,11 +547,9 @@ const main = async (): Promise<void> => {
     throw new Error("No golden queries match the given filters.");
   }
 
-  // `withCache: false` — a cached read would let one mode serve another's rows
-  // and corrupt the latency numbers
   const db = options["db-url"]
-    ? await getConnection(options["db-url"], { withCache: false })
-    : await connectDatabase(options.env ?? "local", { withCache: false });
+    ? await getConnection(options["db-url"])
+    : await connectDatabase(options.env ?? "local");
   await assertFixtureSlugs(db, queries);
 
   const indexKey = {
