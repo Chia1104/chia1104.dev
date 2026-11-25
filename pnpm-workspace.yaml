@@ -103,11 +103,11 @@ catalogs:
     "@hono/zod-validator": 0.9.1
     hono: 4.13.21
   kv:
-    "@keyv/postgres": ^2.2.3
-    "@keyv/redis": ^5.1.6
-    "@keyv/valkey": ^1.0.11
+    "@keyv/postgres": ^6.1.0
+    "@keyv/redis": ^6.1.0
+    "@keyv/valkey": ^6.1.0
     "@upstash/redis": 1.41.1
-    keyv: ^5.6.0
+    keyv: ^6.1.0
   monaco:
     "@monaco-editor/react": ^4.7.0
     monaco-editor: ^0.58.0

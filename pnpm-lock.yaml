@@ -366,20 +366,20 @@ catalogs:
       version: 4.13.21
   kv:
     '@keyv/postgres':
-      specifier: ^2.2.3
-      version: 2.2.3
+      specifier: ^6.1.0
+      version: 6.1.0
     '@keyv/redis':
-      specifier: ^5.1.6
-      version: 5.1.6
+      specifier: ^6.1.0
+      version: 6.1.0
     '@keyv/valkey':
-      specifier: ^1.0.11
-      version: 1.0.11
+      specifier: ^6.1.0
+      version: 6.1.0
     '@upstash/redis':
       specifier: 1.41.1
       version: 1.41.1
     keyv:
-      specifier: ^5.6.0
-      version: 5.6.0
+      specifier: ^6.1.0
+      version: 6.1.0
   monaco:
     '@monaco-editor/react':
       specifier: ^4.7.0
@@ -1165,7 +1165,7 @@ importers:
         version: 0.9.1(hono@4.13.21)(zod@4.6.7)
       '@keyv/redis':
         specifier: catalog:kv
-        version: 5.1.6(@opentelemetry/api@1.9.1)(keyv@5.6.0)
+        version: 6.1.0(@opentelemetry/api@1.9.1)(keyv@6.1.0)
       '@modelcontextprotocol/sdk':
         specifier: 'catalog:'
         version: 1.32.2(supports-color@8.1.1)(zod@4.6.7)
@@ -1201,7 +1201,7 @@ importers:
         version: 4.13.21
       keyv:
         specifier: catalog:kv
-        version: 5.6.0
+        version: 6.1.0
       ky:
         specifier: 'catalog:'
         version: 2.2.0
@@ -1310,7 +1310,7 @@ importers:
         version: 0.9.1(hono@4.13.21)(zod@4.6.7)
       '@keyv/redis':
         specifier: catalog:kv
-        version: 5.1.6(@opentelemetry/api@1.9.1)(keyv@5.6.0)
+        version: 6.1.0(@opentelemetry/api@1.9.1)(keyv@6.1.0)
       '@opentelemetry/api':
         specifier: catalog:otel
         version: 1.9.1
@@ -2219,7 +2219,7 @@ importers:
         version: 1.0.0-rc.4
       keyv:
         specifier: catalog:kv
-        version: 5.6.0
+        version: 6.1.0
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -2292,18 +2292,21 @@ importers:
 
   packages/kv:
     dependencies:
+      '@chia/observability':
+        specifier: workspace:*
+        version: link:../observability
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
       '@keyv/postgres':
         specifier: catalog:kv
-        version: 2.2.3(keyv@5.6.0)
+        version: 6.1.0(keyv@6.1.0)
       '@keyv/redis':
         specifier: catalog:kv
-        version: 5.1.6(@opentelemetry/api@1.9.1)(keyv@5.6.0)
+        version: 6.1.0(@opentelemetry/api@1.9.1)(keyv@6.1.0)
       '@keyv/valkey':
         specifier: catalog:kv
-        version: 1.0.11(supports-color@10.2.2)
+        version: 6.1.0(keyv@6.1.0)(supports-color@10.2.2)
       '@t3-oss/env-core':
         specifier: catalog:env
         version: 0.13.11(typescript@7.0.2)(zod@4.6.7)
@@ -2318,7 +2321,7 @@ importers:
         version: 1.53.2
       keyv:
         specifier: catalog:kv
-        version: 5.6.0
+        version: 6.1.0
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -2471,7 +2474,7 @@ importers:
         version: 4.13.21
       keyv:
         specifier: catalog:kv
-        version: 5.6.0
+        version: 6.1.0
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -2550,7 +2553,7 @@ importers:
         version: 2.0.0
       keyv:
         specifier: catalog:kv
-        version: 5.6.0
+        version: 6.1.0
       ky:
         specifier: 'catalog:'
         version: 2.2.0
@@ -4562,24 +4565,26 @@ packages:
     peerDependencies:
       keyv: ^5.6.0
 
-  '@keyv/postgres@2.2.3':
-    resolution: {integrity: sha512-dEOw1J4popnmSKESlqer0LrqLeYp686zXyVYEUZxr4XcW2MTAu+OsShdQrUknZ3Jt5sg5aYFsS6aJdEcwC1AiQ==}
-    engines: {node: '>= 18'}
+  '@keyv/postgres@6.1.0':
+    resolution: {integrity: sha512-6QMCTrsSn1geNtjfycQmu0STXUV4vP8vi/pmilo0hjQ2SVXBzkfFR4frzmtgYsxnWOYFT1MO5ce4H/o4RC+NiQ==}
+    engines: {node: '>= 22.19.0'}
     peerDependencies:
-      keyv: ^5.6.0
+      keyv: ^6.1.0
 
-  '@keyv/redis@5.1.6':
-    resolution: {integrity: sha512-eKvW6pspvVaU5dxigaIDZr635/Uw6urTXL3gNbY9WTR8d3QigZQT+r8gxYSEOsw4+1cCBsC4s7T2ptR0WC9LfQ==}
-    engines: {node: '>= 18'}
+  '@keyv/redis@6.1.0':
+    resolution: {integrity: sha512-H1nYM70uS+LtYWLJOqnaFJrFAm3MpEgjOEeFfHd7VaE3RKfEJKr8pnKOfmftBx5KfWuNnKzP1VBViuVHAJR+MA==}
+    engines: {node: '>= 22.19.0'}
     peerDependencies:
-      keyv: ^5.6.0
+      keyv: ^6.1.0
 
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@keyv/valkey@1.0.11':
-    resolution: {integrity: sha512-uXf4TftClagJxquhlo1QFKd7JIcmxVm9vlWkDZGlkLQAIesocKaap2ojJocMDvon6h56L2SczoWkkL5OZs4AfQ==}
-    engines: {node: '>= 18'}
+  '@keyv/valkey@6.1.0':
+    resolution: {integrity: sha512-fQpreY2KcTKE5VRb+y6LtXqPCjDQTL95uQh3t9Rt3FYQeFNd5nzqifXLX0pCNIJlMqOaoBZbiQEfTLomvnn9cA==}
+    engines: {node: '>= 22.19.0'}
+    peerDependencies:
+      keyv: ^6.1.0
 
   '@kobalte/core@0.13.14':
     resolution: {integrity: sha512-SBVB1lnvYbYt2x3t7fG0lo5fGLEbHQ6PII3NDPva8vD5e2v53On84ZVQiuIk0XI/55R4GQhden7Yem+R/XR8uQ==}
@@ -6495,9 +6500,9 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
-  '@redis/client@5.12.1':
-    resolution: {integrity: sha512-7aPGWeqA3uFm43o19umzdl16CEjK/JQGtSXVPevplTaOU3VJA/rseBC1QvYUz9lLDIMBimc4SW/zrW4S89BaCA==}
-    engines: {node: '>= 18.19.0'}
+  '@redis/client@6.4.0':
+    resolution: {integrity: sha512-XEFSX0W1BUVFwtWC41vk5P/U5CqvacBWypFbmYHdF1gJeIYWWmEzsM2R5mPb+65SdODFQk7xuuMPFP6s1t9nhw==}
+    engines: {node: '>= 20.0.0'}
     peerDependencies:
       '@node-rs/xxhash': ^1.1.0
       '@opentelemetry/api': '>=1 <2'
@@ -10870,6 +10875,10 @@ packages:
   hookified@2.2.0:
     resolution: {integrity: sha512-p/LgFzRN5FeoD3DLS6bkUapeye6E4SI6yJs6KetENd18S+FBthqYq2amJUWpt5z0EQwwHemidjY5OqJGEKm5uA==}
 
+  hookified@3.2.0:
+    resolution: {integrity: sha512-l+Obd8gfynRIVdNtvFQiCsJrLaghdaxOEIGK86qynrbHUT+CMff3PF4ANjMChCMOCidNO0BNjq+qVWK8hlnoUA==}
+    engines: {node: '>=22.18.0'}
+
   html-to-text@10.0.1:
     resolution: {integrity: sha512-GiVhRI1BatGARSCmlXWNCjDT0cWrwBWoeduLoV0WSKAgaV/wa+hUWy5LiQLUs4UwiUrE52ZCMfBGiKD87TDPrg==}
     engines: {node: '>=20.19.0'}
@@ -11032,8 +11041,8 @@ packages:
   intl-messageformat@11.2.15:
     resolution: {integrity: sha512-W4VNytsXyWgW5lvVchmsb9xgA5rSKqoflu3/IQ9UCtB0z4R+Bx9MoEkwFT/+30RCl/KzUoH0QGGe9lppF5SuvQ==}
 
-  iovalkey@0.3.3:
-    resolution: {integrity: sha512-4rTJX6Q5wTYEvxboXi8DsEiUo+OvqJGtLYOSGm37KpdRXsG5XJjbVtYKGJpPSWP+QT7rWscA4vsrdmzbEbenpw==}
+  iovalkey@0.4.0:
+    resolution: {integrity: sha512-OSUKxJ+s44CLdUTaicX4+pVrBN/zHKIYwr2oKhRDuczr19FwcSCXEZHzcMUYWZNh1mNSCV9bNJHW/T6cHVm9Aw==}
     engines: {node: '>=18.12.0'}
 
   ip-address@10.7.2:
@@ -11287,6 +11296,10 @@ packages:
 
   keyv@5.6.0:
     resolution: {integrity: sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw==}
+
+  keyv@6.1.0:
+    resolution: {integrity: sha512-0OO64DxKOITdyQljNCcO+vc+iyaPmm3OV5eKOWRxWCp3V0QnXenpqcKfjGjycNILUJNV+erm1ose6Hsgr1fNFA==}
+    engines: {node: '>= 22.19.0'}
 
   khroma@2.1.0:
     resolution: {integrity: sha512-Ls993zuzfayK269Svk9hzpeGUKob/sIgZzyHYdjQoAdQetRKpOLj+k/QQQ/6Qi0Yz65mlROrfd+Ev+1+7dz9Kw==}
@@ -15987,28 +16000,32 @@ snapshots:
       hookified: 1.15.1
       keyv: 5.6.0
 
-  '@keyv/postgres@2.2.3(keyv@5.6.0)':
+  '@keyv/postgres@6.1.0(keyv@6.1.0)':
     dependencies:
-      keyv: 5.6.0
+      hookified: 3.2.0
+      keyv: 6.1.0
       pg: 8.23.1
     transitivePeerDependencies:
       - pg-native
 
-  '@keyv/redis@5.1.6(@opentelemetry/api@1.9.1)(keyv@5.6.0)':
+  '@keyv/redis@6.1.0(@opentelemetry/api@1.9.1)(keyv@6.1.0)':
     dependencies:
-      '@redis/client': 5.12.1(@opentelemetry/api@1.9.1)
+      '@redis/client': 6.4.0(@opentelemetry/api@1.9.1)
       cluster-key-slot: 1.1.2
-      hookified: 1.15.1
-      keyv: 5.6.0
+      hookified: 3.2.0
+      keyv: 6.1.0
     transitivePeerDependencies:
       - '@node-rs/xxhash'
       - '@opentelemetry/api'
 
   '@keyv/serialize@1.1.1': {}
 
-  '@keyv/valkey@1.0.11(supports-color@10.2.2)':
+  '@keyv/valkey@6.1.0(keyv@6.1.0)(supports-color@10.2.2)':
     dependencies:
-      iovalkey: 0.3.3(supports-color@10.2.2)
+      cluster-key-slot: 1.1.2
+      hookified: 3.2.0
+      iovalkey: 0.4.0(supports-color@10.2.2)
+      keyv: 6.1.0
     transitivePeerDependencies:
       - supports-color
 
@@ -18012,9 +18029,7 @@ snapshots:
     dependencies:
       react: 19.3.1
 
-  '@redis/client@5.12.1(@opentelemetry/api@1.9.1)':
-    dependencies:
-      cluster-key-slot: 1.1.2
+  '@redis/client@6.4.0(@opentelemetry/api@1.9.1)':
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
 
@@ -23420,6 +23435,8 @@ snapshots:
 
   hookified@2.2.0: {}
 
+  hookified@3.2.0: {}
+
   html-to-text@10.0.1:
     dependencies:
       '@selderee/plugin-htmlparser2': 0.12.0(selderee@0.12.0)
@@ -23603,7 +23620,7 @@ snapshots:
       '@formatjs/fast-memoize': 3.1.7
       '@formatjs/icu-messageformat-parser': 3.5.18
 
-  iovalkey@0.3.3(supports-color@10.2.2):
+  iovalkey@0.4.0(supports-color@10.2.2):
     dependencies:
       '@iovalkey/commands': 0.1.0
       cluster-key-slot: 1.1.2
@@ -23825,6 +23842,10 @@ snapshots:
   keyv@5.6.0:
     dependencies:
       '@keyv/serialize': 1.1.1
+
+  keyv@6.1.0:
+    dependencies:
+      hookified: 3.2.0
 
   khroma@2.1.0: {}
 

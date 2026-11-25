@@ -46,6 +46,7 @@
     "test": "vitest --run"
   },
   "dependencies": {
+    "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
     "@keyv/postgres": "catalog:kv",
     "@keyv/redis": "catalog:kv",
