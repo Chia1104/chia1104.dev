@@ -88,7 +88,6 @@ export const createWorkflowEnv = () => ({
   WORKFLOW_POSTGRES_MAX_POOL_SIZE: preserve(),
   WORKFLOW_POSTGRES_URL: preserve(),
   WORKFLOW_POSTGRES_WORKER_CONCURRENCY: preserve(),
-  REDIS_URI: preserve(),
   WORKFLOW_TARGET_WORLD: preserve(),
   VERCEL_TOKEN: preserve(),
   VERCEL_TEAM_ID: preserve(),

@@ -1,18 +1,20 @@
 import {
-  BasicTracerProvider,
+  TracerProvider,
   InMemorySpanExporter,
   SimpleSpanProcessor,
-} from "@opentelemetry/sdk-trace-base";
+} from "@opentelemetry/sdk-trace";
 import { describe, expect, it } from "vitest";
 
 import { contentFreeExporter } from "../src/span-export";
 
 const exportOne = (
-  record: (tracer: ReturnType<BasicTracerProvider["getTracer"]>) => void
+  record: (tracer: ReturnType<TracerProvider["getTracer"]>) => void
 ) => {
   const exported = new InMemorySpanExporter();
-  const provider = new BasicTracerProvider({
-    spanProcessors: [new SimpleSpanProcessor(contentFreeExporter(exported))],
+  const provider = new TracerProvider({
+    spanProcessors: [
+      new SimpleSpanProcessor({ exporter: contentFreeExporter(exported) }),
+    ],
   });
   record(provider.getTracer("test"));
   const [span] = exported.getFinishedSpans();

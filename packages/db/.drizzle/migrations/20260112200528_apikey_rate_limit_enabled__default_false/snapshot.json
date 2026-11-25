@@ -1,0 +1,34 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "24832c67-b4e1-499f-82df-8afdff1f9be5",
+  "prevIds": ["ba56ae96-92fc-46bf-bd88-edfb0e6fddf5"],
+  "footprints": [
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_apikey",
+        "rate_limit_enabled"
+      ],
+      "writes": ["s|colprop|public.chia_apikey.rate_limit_enabled.default"],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.rate_limit_enabled"
+      ],
+      "sqlHash": "283b0ff94002203b"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"rate_limit_enabled\"]",
+      "set": {
+        "default": "false"
+      }
+    }
+  ]
+}

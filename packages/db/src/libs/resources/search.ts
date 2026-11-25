@@ -100,7 +100,7 @@ const chunkColumns = {
 };
 
 /**
- * Lexical chunk search. `ORDER BY` must reference `pdb.score(key_field)` directly; a select alias stops ParadeDB pushing top-K into the index.
+ * Lexical chunk search. `ORDER BY` must reference `pdb.score(...)` directly; a select alias stops ParadeDB pushing top-K into the index.
  */
 export const searchChunksLexical = withDTO(
   async (
@@ -250,8 +250,9 @@ export const searchChunksHybrid = withDTO(
         ...chunkColumns,
         snippet: sql<string | null>`null`,
         score: sql<number>`${fused.score}::float8`,
-        lexicalRank: sql<number | null>`${fused.lexicalRank}`,
-        semanticRank: sql<number | null>`${fused.semanticRank}`,
+        // `row_number()` is int8, which node-postgres returns as a string.
+        lexicalRank: sql<number | null>`${fused.lexicalRank}`.mapWith(Number),
+        semanticRank: sql<number | null>`${fused.semanticRank}`.mapWith(Number),
       })
       .from(fused)
       .innerJoin(chunks, eq(chunks.id, fused.id))

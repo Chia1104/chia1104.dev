@@ -104,7 +104,7 @@
     ]
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=22.15",
     "pkl": ">=0.25.2"
   },
   "packageManager": "pnpm@12.5.1",

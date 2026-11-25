@@ -32,35 +32,29 @@
     "./upstash": {
       "types": "./src/upstash/client.ts",
       "default": "./src/upstash/client.ts"
-    },
-    "./drizzle/cache": {
-      "types": "./src/drizzle/cache.ts",
-      "default": "./src/drizzle/cache.ts"
     }
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "type:check": "tsc --noEmit",
-    "test": "vitest --run"
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
+    "@chia/observability": "workspace:*",
     "@chia/utils": "workspace:*",
     "@keyv/postgres": "catalog:kv",
     "@keyv/redis": "catalog:kv",
     "@keyv/valkey": "catalog:kv",
     "@t3-oss/env-core": "catalog:env",
     "@upstash/redis": "catalog:kv",
-    "drizzle-orm": "catalog:drizzle",
     "es-toolkit": "catalog:",
     "keyv": "catalog:kv",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "typescript": "catalog:",
-    "vitest": "catalog:testing-library"
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }

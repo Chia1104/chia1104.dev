@@ -1,0 +1,193 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "f2036cf6-594d-4c0b-9956-5925b4255429",
+  "prevIds": ["bea3dc0b-ff7b-4ebd-a042-d0a2a2d703ec"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_draft_revision",
+        "kind"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_draft_revision.kind",
+        "n|col|public.chia_feed_draft_revision.kind",
+        "e|col|public.chia_feed_draft_revision.kind"
+      ],
+      "reads": ["n|tbl|public.chia_feed_draft_revision", "n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_draft_revision",
+        "message"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_draft_revision.message",
+        "n|col|public.chia_feed_draft_revision.message",
+        "e|col|public.chia_feed_draft_revision.message"
+      ],
+      "reads": ["n|tbl|public.chia_feed_draft_revision", "n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_draft_revision",
+        "pinned"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_draft_revision.pinned",
+        "n|col|public.chia_feed_draft_revision.pinned",
+        "e|col|public.chia_feed_draft_revision.pinned"
+      ],
+      "reads": ["n|tbl|public.chia_feed_draft_revision", "n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "public", "chia_feed_draft", "last_author"],
+      "writes": [
+        "s|col|public.chia_feed_draft.last_author",
+        "n|col|public.chia_feed_draft.last_author",
+        "e|col|public.chia_feed_draft.last_author"
+      ],
+      "reads": ["n|tbl|public.chia_feed_draft", "n|sch|public"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_draft",
+        "last_session_id"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_draft.last_session_id",
+        "n|col|public.chia_feed_draft.last_session_id",
+        "e|col|public.chia_feed_draft.last_session_id"
+      ],
+      "reads": ["n|tbl|public.chia_feed_draft", "n|sch|public"]
+    },
+    {
+      "statementType": "recreate_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feed_draft_revision",
+        "feed_draft_revision_draft_revision_idx"
+      ],
+      "writes": [
+        "s|idx|public.feed_draft_revision_draft_revision_idx",
+        "n|idx|public.feed_draft_revision_draft_revision_idx",
+        "e|idx|public.feed_draft_revision_draft_revision_idx",
+        "n|rel|public.feed_draft_revision_draft_revision_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_draft_revision",
+        "n|sch|public",
+        "n|col|public.chia_feed_draft_revision.draft_id",
+        "n|col|public.chia_feed_draft_revision.revision"
+      ],
+      "sharedWrites": [
+        "e|uniqueness|public.chia_feed_draft_revision.draft_id.revision"
+      ],
+      "sqlHash": "3fe0e59963a37c06"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_draft_revision",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_draft_revision",
+        "name": "message",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_draft_revision",
+        "name": "pinned",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_draft",
+        "name": "last_author",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_draft",
+        "name": "last_session_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "indexes\u0000[\"public\",\"feed_draft_revision_draft_revision_idx\"]",
+      "set": {
+        "isUnique": false
+      }
+    }
+  ]
+}

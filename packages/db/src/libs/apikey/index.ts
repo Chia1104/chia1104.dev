@@ -1,5 +1,6 @@
 import type { SQLWrapper } from "drizzle-orm";
 import { and, eq, isNull, lt, or } from "drizzle-orm";
+import { EmptyFilter } from "drizzle-orm/relations";
 
 import type { DB } from "../../client.ts";
 import { apikey } from "../../schemas/schema.ts";
@@ -79,7 +80,9 @@ export const getInfiniteApiKeys = withDTO(
               },
               ...rawFilters,
             ]
-          : rawFilters,
+          : rawFilters.length > 0
+            ? rawFilters
+            : EmptyFilter,
       },
     });
 

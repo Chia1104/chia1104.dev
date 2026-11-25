@@ -1,0 +1,415 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "202dc6a9-af78-4fc9-9863-03f618ce9311",
+  "prevIds": ["1dbb6294-0336-4f99-98c9-5e99c0fe4f97"],
+  "footprints": [
+    {
+      "statementType": "drop_fk",
+      "statementTarget": ["table", "public", "chia_apikey"],
+      "writes": [
+        "s|fk|public.chia_apikey.chia_apikey_project_id_chia_project_id_fk",
+        "n|fk|public.chia_apikey.chia_apikey_project_id_chia_project_id_fk",
+        "e|fk|public.chia_apikey.chia_apikey_project_id_chia_project_id_fk",
+        "n|con|public.chia_apikey.chia_apikey_project_id_chia_project_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "e|col|public.chia_apikey.project_id"
+      ]
+    },
+    {
+      "statementType": "drop_fk",
+      "statementTarget": ["table", "public", "chia_invitation"],
+      "writes": [
+        "s|fk|public.chia_invitation.chia_invitation_organization_id_chia_organization_id_fk",
+        "n|fk|public.chia_invitation.chia_invitation_organization_id_chia_organization_id_fk",
+        "e|fk|public.chia_invitation.chia_invitation_organization_id_chia_organization_id_fk",
+        "n|con|public.chia_invitation.chia_invitation_organization_id_chia_organization_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_invitation",
+        "n|sch|public",
+        "e|col|public.chia_invitation.organization_id"
+      ]
+    },
+    {
+      "statementType": "drop_fk",
+      "statementTarget": ["table", "public", "chia_member"],
+      "writes": [
+        "s|fk|public.chia_member.chia_member_organization_id_chia_organization_id_fk",
+        "n|fk|public.chia_member.chia_member_organization_id_chia_organization_id_fk",
+        "e|fk|public.chia_member.chia_member_organization_id_chia_organization_id_fk",
+        "n|con|public.chia_member.chia_member_organization_id_chia_organization_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_member",
+        "n|sch|public",
+        "e|col|public.chia_member.organization_id"
+      ]
+    },
+    {
+      "statementType": "drop_fk",
+      "statementTarget": ["table", "public", "chia_project"],
+      "writes": [
+        "s|fk|public.chia_project.chia_project_organization_id_chia_organization_id_fk",
+        "n|fk|public.chia_project.chia_project_organization_id_chia_organization_id_fk",
+        "e|fk|public.chia_project.chia_project_organization_id_chia_organization_id_fk",
+        "n|con|public.chia_project.chia_project_organization_id_chia_organization_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_project",
+        "n|sch|public",
+        "e|col|public.chia_project.organization_id"
+      ]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_invitation"],
+      "writes": [
+        "s|tbl|public.chia_invitation",
+        "n|tbl|public.chia_invitation",
+        "e|tbl|public.chia_invitation",
+        "n|rel|public.chia_invitation",
+        "n|type|public.chia_invitation"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_member"],
+      "writes": [
+        "s|tbl|public.chia_member",
+        "n|tbl|public.chia_member",
+        "e|tbl|public.chia_member",
+        "n|rel|public.chia_member",
+        "n|type|public.chia_member"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_organization"],
+      "writes": [
+        "s|tbl|public.chia_organization",
+        "n|tbl|public.chia_organization",
+        "e|tbl|public.chia_organization",
+        "n|rel|public.chia_organization",
+        "n|type|public.chia_organization"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_project"],
+      "writes": [
+        "s|tbl|public.chia_project",
+        "n|tbl|public.chia_project",
+        "e|tbl|public.chia_project",
+        "n|rel|public.chia_project",
+        "n|type|public.chia_project"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_apikey",
+        "apikey_project_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.apikey_project_id_idx",
+        "n|idx|public.apikey_project_id_idx",
+        "e|idx|public.apikey_project_id_idx",
+        "n|rel|public.apikey_project_id_idx"
+      ],
+      "reads": [
+        "e|tbl|public.chia_apikey",
+        "n|sch|public",
+        "e|col|public.chia_apikey.project_id"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "public", "chia_apikey", "project_id"],
+      "writes": [
+        "s|col|public.chia_apikey.project_id",
+        "n|col|public.chia_apikey.project_id",
+        "e|col|public.chia_apikey.project_id"
+      ],
+      "reads": ["n|tbl|public.chia_apikey", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_session",
+        "active_organization_id"
+      ],
+      "writes": [
+        "s|col|public.chia_session.active_organization_id",
+        "n|col|public.chia_session.active_organization_id",
+        "e|col|public.chia_session.active_organization_id"
+      ],
+      "reads": ["n|tbl|public.chia_session", "n|sch|public"]
+    },
+    {
+      "statementType": "drop_enum",
+      "statementTarget": ["enum", "public", "invitation_status"],
+      "writes": [
+        "s|enum|public.invitation_status",
+        "n|enum|public.invitation_status",
+        "e|enum|public.invitation_status",
+        "n|type|public.invitation_status"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "drop_enum",
+      "statementTarget": ["enum", "public", "member_role"],
+      "writes": [
+        "s|enum|public.member_role",
+        "n|enum|public.member_role",
+        "e|enum|public.member_role",
+        "n|type|public.member_role"
+      ],
+      "reads": ["n|sch|public"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_invitation\"]"
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_member\"]"
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_organization\"]"
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_project\"]"
+    },
+    {
+      "op": "drop",
+      "key": "enums\u0000[\"public\",\"invitation_status\"]"
+    },
+    {
+      "op": "drop",
+      "key": "enums\u0000[\"public\",\"member_role\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_apikey\",\"project_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_session\",\"active_organization_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_invitation\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_invitation\",\"organization_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_invitation\",\"email\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_invitation\",\"role\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_invitation\",\"status\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_invitation\",\"expires_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_invitation\",\"inviter_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_invitation\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_member\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_member\",\"organization_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_member\",\"user_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_member\",\"role\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_member\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_organization\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_organization\",\"name\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_organization\",\"slug\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_organization\",\"logo\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_organization\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_organization\",\"metadata\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"name\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"slug\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"logo\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"updated_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"deleted_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"metadata\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_project\",\"organization_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"apikey_project_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"invitation_organization_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"invitation_email_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"member_organization_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"member_user_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"organization_slug_uidx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"project_slug_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"project_organization_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"project_name_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_apikey\",\"chia_apikey_project_id_chia_project_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_invitation\",\"chia_invitation_organization_id_chia_organization_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_invitation\",\"chia_invitation_inviter_id_chia_user_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_member\",\"chia_member_organization_id_chia_organization_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_member\",\"chia_member_user_id_chia_user_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_project\",\"chia_project_organization_id_chia_organization_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_invitation\",\"chia_invitation_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_member\",\"chia_member_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_organization\",\"chia_organization_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_project\",\"chia_project_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "uniques\u0000[\"public\",\"chia_organization\",\"chia_organization_slug_unique\"]"
+    },
+    {
+      "op": "drop",
+      "key": "uniques\u0000[\"public\",\"chia_project\",\"chia_project_slug_unique\"]"
+    }
+  ]
+}

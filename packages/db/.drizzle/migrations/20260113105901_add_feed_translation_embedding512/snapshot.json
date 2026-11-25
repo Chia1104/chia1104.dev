@@ -1,0 +1,88 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "7bd57919-7c38-4351-94bc-3dcbe612f013",
+  "prevIds": ["24832c67-b4e1-499f-82df-8afdff1f9be5"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_translation",
+        "embedding512"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_translation.embedding512",
+        "n|col|public.chia_feed_translation.embedding512",
+        "e|col|public.chia_feed_translation.embedding512"
+      ],
+      "reads": ["n|tbl|public.chia_feed_translation", "n|sch|public"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feed_translation",
+        "feed_translation_embedding512_idx"
+      ],
+      "writes": [
+        "s|idx|public.feed_translation_embedding512_idx",
+        "n|idx|public.feed_translation_embedding512_idx",
+        "e|idx|public.feed_translation_embedding512_idx",
+        "n|rel|public.feed_translation_embedding512_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|col|public.chia_feed_translation.embedding512"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_translation",
+        "name": "embedding512",
+        "type": "vector(512)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed_translation",
+        "name": "feed_translation_embedding512_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "embedding512",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": {
+              "name": "vector_cosine_ops",
+              "default": false
+            }
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "hnsw",
+        "entityType": "indexes"
+      }
+    }
+  ]
+}

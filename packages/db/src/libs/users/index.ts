@@ -150,9 +150,6 @@ export const getUserDetail = withDTO(async (db, { id }: { id: string }) => {
   };
 });
 
-/** Cache life of the overview counts; every `user` write through this process also clears them. */
-const STATS_CACHE_SECONDS = 60;
-
 /** Headline counts for the overview. `since` bounds "new"; guests are `is_anonymous` rows. */
 export const getUserStats = withDTO(async (db, { since }: { since: Date }) => {
   const guest = eq(schema.user.isAnonymous, true);
@@ -169,8 +166,7 @@ export const getUserStats = withDTO(async (db, { since }: { since: Date }) => {
           Number
         ),
     })
-    .from(schema.user)
-    .$withCache({ config: { ex: STATS_CACHE_SECONDS } });
+    .from(schema.user);
   return {
     total: row?.total ?? 0,
     guests: row?.guests ?? 0,

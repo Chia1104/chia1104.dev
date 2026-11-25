@@ -1,0 +1,4757 @@
+{
+  "type": "base",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "65b05db4-9930-499c-8c0a-7811c32dd9ed",
+  "prevIds": ["00000000-0000-0000-0000-000000000000"],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": ["enum", "public", "content_type"],
+      "writes": [
+        "s|enum|public.content_type",
+        "n|enum|public.content_type",
+        "e|enum|public.content_type",
+        "n|type|public.content_type"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": ["enum", "public", "feed_type"],
+      "writes": [
+        "s|enum|public.feed_type",
+        "n|enum|public.feed_type",
+        "e|enum|public.feed_type",
+        "n|type|public.feed_type"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": ["enum", "public", "invitation_status"],
+      "writes": [
+        "s|enum|public.invitation_status",
+        "n|enum|public.invitation_status",
+        "e|enum|public.invitation_status",
+        "n|type|public.invitation_status"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": ["enum", "public", "locale"],
+      "writes": [
+        "s|enum|public.locale",
+        "n|enum|public.locale",
+        "e|enum|public.locale",
+        "n|type|public.locale"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": ["enum", "public", "member_role"],
+      "writes": [
+        "s|enum|public.member_role",
+        "n|enum|public.member_role",
+        "e|enum|public.member_role",
+        "n|type|public.member_role"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": ["enum", "public", "role"],
+      "writes": [
+        "s|enum|public.role",
+        "n|enum|public.role",
+        "e|enum|public.role",
+        "n|type|public.role"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_apikey"],
+      "writes": [
+        "s|tbl|public.chia_apikey",
+        "n|tbl|public.chia_apikey",
+        "e|tbl|public.chia_apikey",
+        "n|rel|public.chia_apikey",
+        "n|type|public.chia_apikey",
+        "n|rel|public.chia_apikey_pkey"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_account"],
+      "writes": [
+        "s|tbl|public.chia_account",
+        "n|tbl|public.chia_account",
+        "e|tbl|public.chia_account",
+        "n|rel|public.chia_account",
+        "n|type|public.chia_account",
+        "n|rel|public.chia_account_pkey"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_passkey"],
+      "writes": [
+        "s|tbl|public.chia_passkey",
+        "n|tbl|public.chia_passkey",
+        "e|tbl|public.chia_passkey",
+        "n|rel|public.chia_passkey",
+        "n|type|public.chia_passkey",
+        "n|rel|public.chia_passkey_pkey"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_session"],
+      "writes": [
+        "s|tbl|public.chia_session",
+        "n|tbl|public.chia_session",
+        "e|tbl|public.chia_session",
+        "n|rel|public.chia_session",
+        "n|type|public.chia_session",
+        "n|rel|public.chia_session_pkey",
+        "n|rel|public.chia_session_token_unique"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_verification"],
+      "writes": [
+        "s|tbl|public.chia_verification",
+        "n|tbl|public.chia_verification",
+        "e|tbl|public.chia_verification",
+        "n|rel|public.chia_verification",
+        "n|type|public.chia_verification",
+        "n|rel|public.chia_verification_pkey"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_asset"],
+      "writes": [
+        "s|tbl|public.chia_asset",
+        "n|tbl|public.chia_asset",
+        "e|tbl|public.chia_asset",
+        "n|rel|public.chia_asset",
+        "n|type|public.chia_asset",
+        "n|rel|public.chia_asset_pkey"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_assets_to_tags"],
+      "writes": [
+        "s|tbl|public.chia_assets_to_tags",
+        "n|tbl|public.chia_assets_to_tags",
+        "e|tbl|public.chia_assets_to_tags",
+        "n|rel|public.chia_assets_to_tags",
+        "n|type|public.chia_assets_to_tags",
+        "n|rel|public.chia_assets_to_tags_asset_id_tag_id_pk"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_content"],
+      "writes": [
+        "s|tbl|public.chia_content",
+        "n|tbl|public.chia_content",
+        "e|tbl|public.chia_content",
+        "n|rel|public.chia_content",
+        "n|type|public.chia_content",
+        "n|rel|public.chia_content_pkey",
+        "n|rel|public.chia_content_feed_translation_id_unique"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_feed_translation"],
+      "writes": [
+        "s|tbl|public.chia_feed_translation",
+        "n|tbl|public.chia_feed_translation",
+        "e|tbl|public.chia_feed_translation",
+        "n|rel|public.chia_feed_translation",
+        "n|type|public.chia_feed_translation",
+        "n|rel|public.chia_feed_translation_pkey"
+      ],
+      "reads": ["n|sch|public", "n|enum|public.locale"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_feed"],
+      "writes": [
+        "s|tbl|public.chia_feed",
+        "n|tbl|public.chia_feed",
+        "e|tbl|public.chia_feed",
+        "n|rel|public.chia_feed",
+        "n|type|public.chia_feed",
+        "n|rel|public.chia_feed_pkey",
+        "n|rel|public.chia_feed_slug_unique"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.feed_type",
+        "n|enum|public.content_type",
+        "n|enum|public.locale"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_feeds_to_tags"],
+      "writes": [
+        "s|tbl|public.chia_feeds_to_tags",
+        "n|tbl|public.chia_feeds_to_tags",
+        "e|tbl|public.chia_feeds_to_tags",
+        "n|rel|public.chia_feeds_to_tags",
+        "n|type|public.chia_feeds_to_tags",
+        "n|rel|public.chia_feeds_to_tags_feed_id_tag_id_pk"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_tag_translation"],
+      "writes": [
+        "s|tbl|public.chia_tag_translation",
+        "n|tbl|public.chia_tag_translation",
+        "e|tbl|public.chia_tag_translation",
+        "n|rel|public.chia_tag_translation",
+        "n|type|public.chia_tag_translation",
+        "n|rel|public.chia_tag_translation_pkey"
+      ],
+      "reads": ["n|sch|public", "n|enum|public.locale"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_tag"],
+      "writes": [
+        "s|tbl|public.chia_tag",
+        "n|tbl|public.chia_tag",
+        "e|tbl|public.chia_tag",
+        "n|rel|public.chia_tag",
+        "n|type|public.chia_tag",
+        "n|rel|public.chia_tag_pkey",
+        "n|rel|public.chia_tag_slug_unique"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_invitation"],
+      "writes": [
+        "s|tbl|public.chia_invitation",
+        "n|tbl|public.chia_invitation",
+        "e|tbl|public.chia_invitation",
+        "n|rel|public.chia_invitation",
+        "n|type|public.chia_invitation",
+        "n|rel|public.chia_invitation_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.member_role",
+        "n|enum|public.invitation_status"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_member"],
+      "writes": [
+        "s|tbl|public.chia_member",
+        "n|tbl|public.chia_member",
+        "e|tbl|public.chia_member",
+        "n|rel|public.chia_member",
+        "n|type|public.chia_member",
+        "n|rel|public.chia_member_pkey"
+      ],
+      "reads": ["n|sch|public", "n|enum|public.member_role"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_organization"],
+      "writes": [
+        "s|tbl|public.chia_organization",
+        "n|tbl|public.chia_organization",
+        "e|tbl|public.chia_organization",
+        "n|rel|public.chia_organization",
+        "n|type|public.chia_organization",
+        "n|rel|public.chia_organization_pkey",
+        "n|rel|public.chia_organization_slug_unique"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_project"],
+      "writes": [
+        "s|tbl|public.chia_project",
+        "n|tbl|public.chia_project",
+        "e|tbl|public.chia_project",
+        "n|rel|public.chia_project",
+        "n|type|public.chia_project",
+        "n|rel|public.chia_project_pkey",
+        "n|rel|public.chia_project_slug_unique"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "chia_user"],
+      "writes": [
+        "s|tbl|public.chia_user",
+        "n|tbl|public.chia_user",
+        "e|tbl|public.chia_user",
+        "n|rel|public.chia_user",
+        "n|type|public.chia_user",
+        "n|rel|public.chia_user_pkey",
+        "n|rel|public.chia_user_email_unique"
+      ],
+      "reads": ["n|sch|public", "n|enum|public.role"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_apikey",
+        "apikey_user_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.apikey_user_id_idx",
+        "n|idx|public.apikey_user_id_idx",
+        "e|idx|public.apikey_user_id_idx",
+        "n|rel|public.apikey_user_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": ["index", "public", "chia_apikey", "apikey_key_idx"],
+      "writes": [
+        "s|idx|public.apikey_key_idx",
+        "n|idx|public.apikey_key_idx",
+        "e|idx|public.apikey_key_idx",
+        "n|rel|public.apikey_key_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.key"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_apikey",
+        "apikey_project_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.apikey_project_id_idx",
+        "n|idx|public.apikey_project_id_idx",
+        "e|idx|public.apikey_project_id_idx",
+        "n|rel|public.apikey_project_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|col|public.chia_apikey.project_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_account",
+        "account_user_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.account_user_id_idx",
+        "n|idx|public.account_user_id_idx",
+        "e|idx|public.account_user_id_idx",
+        "n|rel|public.account_user_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_account",
+        "n|sch|public",
+        "n|col|public.chia_account.user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_passkey",
+        "passkey_user_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.passkey_user_id_idx",
+        "n|idx|public.passkey_user_id_idx",
+        "e|idx|public.passkey_user_id_idx",
+        "n|rel|public.passkey_user_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_passkey",
+        "n|sch|public",
+        "n|col|public.chia_passkey.user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_passkey",
+        "passkey_credential_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.passkey_credential_id_idx",
+        "n|idx|public.passkey_credential_id_idx",
+        "e|idx|public.passkey_credential_id_idx",
+        "n|rel|public.passkey_credential_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_passkey",
+        "n|sch|public",
+        "n|col|public.chia_passkey.credential_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_session",
+        "session_user_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.session_user_id_idx",
+        "n|idx|public.session_user_id_idx",
+        "e|idx|public.session_user_id_idx",
+        "n|rel|public.session_user_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_session",
+        "n|sch|public",
+        "n|col|public.chia_session.user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_verification",
+        "verification_identifier_idx"
+      ],
+      "writes": [
+        "s|idx|public.verification_identifier_idx",
+        "n|idx|public.verification_identifier_idx",
+        "e|idx|public.verification_identifier_idx",
+        "n|rel|public.verification_identifier_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_verification",
+        "n|sch|public",
+        "n|col|public.chia_verification.identifier"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": ["index", "public", "chia_asset", "asset_user_id_idx"],
+      "writes": [
+        "s|idx|public.asset_user_id_idx",
+        "n|idx|public.asset_user_id_idx",
+        "e|idx|public.asset_user_id_idx",
+        "n|rel|public.asset_user_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_asset",
+        "n|sch|public",
+        "n|col|public.chia_asset.user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": ["index", "public", "chia_asset", "asset_name_idx"],
+      "writes": [
+        "s|idx|public.asset_name_idx",
+        "n|idx|public.asset_name_idx",
+        "e|idx|public.asset_name_idx",
+        "n|rel|public.asset_name_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_asset",
+        "n|sch|public",
+        "n|col|public.chia_asset.name"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_assets_to_tags",
+        "assets_to_tags_asset_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.assets_to_tags_asset_id_idx",
+        "n|idx|public.assets_to_tags_asset_id_idx",
+        "e|idx|public.assets_to_tags_asset_id_idx",
+        "n|rel|public.assets_to_tags_asset_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_assets_to_tags",
+        "n|sch|public",
+        "n|col|public.chia_assets_to_tags.asset_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_assets_to_tags",
+        "assets_to_tags_tag_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.assets_to_tags_tag_id_idx",
+        "n|idx|public.assets_to_tags_tag_id_idx",
+        "e|idx|public.assets_to_tags_tag_id_idx",
+        "n|rel|public.assets_to_tags_tag_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_assets_to_tags",
+        "n|sch|public",
+        "n|col|public.chia_assets_to_tags.tag_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_content",
+        "content_feed_translation_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.content_feed_translation_id_idx",
+        "n|idx|public.content_feed_translation_id_idx",
+        "e|idx|public.content_feed_translation_id_idx",
+        "n|rel|public.content_feed_translation_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_content",
+        "n|sch|public",
+        "n|col|public.chia_content.feed_translation_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feed_translation",
+        "feed_translation_feed_locale_idx"
+      ],
+      "writes": [
+        "s|idx|public.feed_translation_feed_locale_idx",
+        "n|idx|public.feed_translation_feed_locale_idx",
+        "e|idx|public.feed_translation_feed_locale_idx",
+        "n|rel|public.feed_translation_feed_locale_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|col|public.chia_feed_translation.feed_id",
+        "n|col|public.chia_feed_translation.locale"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feed_translation",
+        "feed_translation_feed_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.feed_translation_feed_id_idx",
+        "n|idx|public.feed_translation_feed_id_idx",
+        "e|idx|public.feed_translation_feed_id_idx",
+        "n|rel|public.feed_translation_feed_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|col|public.chia_feed_translation.feed_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feed_translation",
+        "feed_translation_locale_idx"
+      ],
+      "writes": [
+        "s|idx|public.feed_translation_locale_idx",
+        "n|idx|public.feed_translation_locale_idx",
+        "e|idx|public.feed_translation_locale_idx",
+        "n|rel|public.feed_translation_locale_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|col|public.chia_feed_translation.locale"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feed_translation",
+        "feed_translation_title_idx"
+      ],
+      "writes": [
+        "s|idx|public.feed_translation_title_idx",
+        "n|idx|public.feed_translation_title_idx",
+        "e|idx|public.feed_translation_title_idx",
+        "n|rel|public.feed_translation_title_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|col|public.chia_feed_translation.title"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feed_translation",
+        "feed_translation_embedding_idx"
+      ],
+      "writes": [
+        "s|idx|public.feed_translation_embedding_idx",
+        "n|idx|public.feed_translation_embedding_idx",
+        "e|idx|public.feed_translation_embedding_idx",
+        "n|rel|public.feed_translation_embedding_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|col|public.chia_feed_translation.embedding"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": ["index", "public", "chia_feed", "feed_slug_idx"],
+      "writes": [
+        "s|idx|public.feed_slug_idx",
+        "n|idx|public.feed_slug_idx",
+        "e|idx|public.feed_slug_idx",
+        "n|rel|public.feed_slug_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feed.slug"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": ["index", "public", "chia_feed", "feed_user_id_idx"],
+      "writes": [
+        "s|idx|public.feed_user_id_idx",
+        "n|idx|public.feed_user_id_idx",
+        "e|idx|public.feed_user_id_idx",
+        "n|rel|public.feed_user_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feed.user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": ["index", "public", "chia_feed", "feed_type_idx"],
+      "writes": [
+        "s|idx|public.feed_type_idx",
+        "n|idx|public.feed_type_idx",
+        "e|idx|public.feed_type_idx",
+        "n|rel|public.feed_type_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feed.type"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": ["index", "public", "chia_feed", "feed_published_idx"],
+      "writes": [
+        "s|idx|public.feed_published_idx",
+        "n|idx|public.feed_published_idx",
+        "e|idx|public.feed_published_idx",
+        "n|rel|public.feed_published_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feed.published"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feed",
+        "feed_default_locale_idx"
+      ],
+      "writes": [
+        "s|idx|public.feed_default_locale_idx",
+        "n|idx|public.feed_default_locale_idx",
+        "e|idx|public.feed_default_locale_idx",
+        "n|rel|public.feed_default_locale_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feed.default_locale"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feeds_to_tags",
+        "feeds_to_tags_feed_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.feeds_to_tags_feed_id_idx",
+        "n|idx|public.feeds_to_tags_feed_id_idx",
+        "e|idx|public.feeds_to_tags_feed_id_idx",
+        "n|rel|public.feeds_to_tags_feed_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feeds_to_tags",
+        "n|sch|public",
+        "n|col|public.chia_feeds_to_tags.feed_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feeds_to_tags",
+        "feeds_to_tags_tag_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.feeds_to_tags_tag_id_idx",
+        "n|idx|public.feeds_to_tags_tag_id_idx",
+        "e|idx|public.feeds_to_tags_tag_id_idx",
+        "n|rel|public.feeds_to_tags_tag_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feeds_to_tags",
+        "n|sch|public",
+        "n|col|public.chia_feeds_to_tags.tag_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_tag_translation",
+        "tag_translation_tag_locale_idx"
+      ],
+      "writes": [
+        "s|idx|public.tag_translation_tag_locale_idx",
+        "n|idx|public.tag_translation_tag_locale_idx",
+        "e|idx|public.tag_translation_tag_locale_idx",
+        "n|rel|public.tag_translation_tag_locale_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_tag_translation",
+        "n|sch|public",
+        "n|col|public.chia_tag_translation.tag_id",
+        "n|col|public.chia_tag_translation.locale"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_tag_translation",
+        "tag_translation_tag_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.tag_translation_tag_id_idx",
+        "n|idx|public.tag_translation_tag_id_idx",
+        "e|idx|public.tag_translation_tag_id_idx",
+        "n|rel|public.tag_translation_tag_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_tag_translation",
+        "n|sch|public",
+        "n|col|public.chia_tag_translation.tag_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_tag_translation",
+        "tag_translation_locale_idx"
+      ],
+      "writes": [
+        "s|idx|public.tag_translation_locale_idx",
+        "n|idx|public.tag_translation_locale_idx",
+        "e|idx|public.tag_translation_locale_idx",
+        "n|rel|public.tag_translation_locale_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_tag_translation",
+        "n|sch|public",
+        "n|col|public.chia_tag_translation.locale"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_tag_translation",
+        "tag_translation_name_idx"
+      ],
+      "writes": [
+        "s|idx|public.tag_translation_name_idx",
+        "n|idx|public.tag_translation_name_idx",
+        "e|idx|public.tag_translation_name_idx",
+        "n|rel|public.tag_translation_name_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_tag_translation",
+        "n|sch|public",
+        "n|col|public.chia_tag_translation.name"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": ["index", "public", "chia_tag", "tag_slug_idx"],
+      "writes": [
+        "s|idx|public.tag_slug_idx",
+        "n|idx|public.tag_slug_idx",
+        "e|idx|public.tag_slug_idx",
+        "n|rel|public.tag_slug_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_tag",
+        "n|sch|public",
+        "n|col|public.chia_tag.slug"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_invitation",
+        "invitation_organization_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.invitation_organization_id_idx",
+        "n|idx|public.invitation_organization_id_idx",
+        "e|idx|public.invitation_organization_id_idx",
+        "n|rel|public.invitation_organization_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_invitation",
+        "n|sch|public",
+        "n|col|public.chia_invitation.organization_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_invitation",
+        "invitation_email_idx"
+      ],
+      "writes": [
+        "s|idx|public.invitation_email_idx",
+        "n|idx|public.invitation_email_idx",
+        "e|idx|public.invitation_email_idx",
+        "n|rel|public.invitation_email_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_invitation",
+        "n|sch|public",
+        "n|col|public.chia_invitation.email"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_member",
+        "member_organization_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.member_organization_id_idx",
+        "n|idx|public.member_organization_id_idx",
+        "e|idx|public.member_organization_id_idx",
+        "n|rel|public.member_organization_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_member",
+        "n|sch|public",
+        "n|col|public.chia_member.organization_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_member",
+        "member_user_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.member_user_id_idx",
+        "n|idx|public.member_user_id_idx",
+        "e|idx|public.member_user_id_idx",
+        "n|rel|public.member_user_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_member",
+        "n|sch|public",
+        "n|col|public.chia_member.user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_organization",
+        "organization_slug_uidx"
+      ],
+      "writes": [
+        "s|idx|public.organization_slug_uidx",
+        "n|idx|public.organization_slug_uidx",
+        "e|idx|public.organization_slug_uidx",
+        "n|rel|public.organization_slug_uidx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_organization",
+        "n|sch|public",
+        "n|col|public.chia_organization.slug"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_project",
+        "project_slug_idx"
+      ],
+      "writes": [
+        "s|idx|public.project_slug_idx",
+        "n|idx|public.project_slug_idx",
+        "e|idx|public.project_slug_idx",
+        "n|rel|public.project_slug_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_project",
+        "n|sch|public",
+        "n|col|public.chia_project.slug"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_project",
+        "project_organization_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.project_organization_id_idx",
+        "n|idx|public.project_organization_id_idx",
+        "e|idx|public.project_organization_id_idx",
+        "n|rel|public.project_organization_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_project",
+        "n|sch|public",
+        "n|col|public.chia_project.organization_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_project",
+        "project_name_idx"
+      ],
+      "writes": [
+        "s|idx|public.project_name_idx",
+        "n|idx|public.project_name_idx",
+        "e|idx|public.project_name_idx",
+        "n|rel|public.project_name_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_project",
+        "n|sch|public",
+        "n|col|public.chia_project.name"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": ["index", "public", "chia_user", "user_email_idx"],
+      "writes": [
+        "s|idx|public.user_email_idx",
+        "n|idx|public.user_email_idx",
+        "e|idx|public.user_email_idx",
+        "n|rel|public.user_email_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_user.email"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_apikey"],
+      "writes": [
+        "s|fk|public.chia_apikey.chia_apikey_user_id_chia_user_id_fk",
+        "n|fk|public.chia_apikey.chia_apikey_user_id_chia_user_id_fk",
+        "e|fk|public.chia_apikey.chia_apikey_user_id_chia_user_id_fk",
+        "n|con|public.chia_apikey.chia_apikey_user_id_chia_user_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_apikey.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_apikey"],
+      "writes": [
+        "s|fk|public.chia_apikey.chia_apikey_project_id_chia_project_id_fk",
+        "n|fk|public.chia_apikey.chia_apikey_project_id_chia_project_id_fk",
+        "e|fk|public.chia_apikey.chia_apikey_project_id_chia_project_id_fk",
+        "n|con|public.chia_apikey.chia_apikey_project_id_chia_project_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_apikey",
+        "n|sch|public",
+        "n|tbl|public.chia_project",
+        "n|sch|public",
+        "n|col|public.chia_apikey.project_id",
+        "n|col|public.chia_project.id",
+        "e|uniqueness|public.chia_project.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_account"],
+      "writes": [
+        "s|fk|public.chia_account.chia_account_user_id_chia_user_id_fk",
+        "n|fk|public.chia_account.chia_account_user_id_chia_user_id_fk",
+        "e|fk|public.chia_account.chia_account_user_id_chia_user_id_fk",
+        "n|con|public.chia_account.chia_account_user_id_chia_user_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_account",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_account.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_passkey"],
+      "writes": [
+        "s|fk|public.chia_passkey.chia_passkey_user_id_chia_user_id_fk",
+        "n|fk|public.chia_passkey.chia_passkey_user_id_chia_user_id_fk",
+        "e|fk|public.chia_passkey.chia_passkey_user_id_chia_user_id_fk",
+        "n|con|public.chia_passkey.chia_passkey_user_id_chia_user_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_passkey",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_passkey.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_session"],
+      "writes": [
+        "s|fk|public.chia_session.chia_session_user_id_chia_user_id_fk",
+        "n|fk|public.chia_session.chia_session_user_id_chia_user_id_fk",
+        "e|fk|public.chia_session.chia_session_user_id_chia_user_id_fk",
+        "n|con|public.chia_session.chia_session_user_id_chia_user_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_session",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_session.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_asset"],
+      "writes": [
+        "s|fk|public.chia_asset.chia_asset_user_id_chia_user_id_fk",
+        "n|fk|public.chia_asset.chia_asset_user_id_chia_user_id_fk",
+        "e|fk|public.chia_asset.chia_asset_user_id_chia_user_id_fk",
+        "n|con|public.chia_asset.chia_asset_user_id_chia_user_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_asset",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_asset.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_assets_to_tags"],
+      "writes": [
+        "s|fk|public.chia_assets_to_tags.chia_assets_to_tags_asset_id_chia_asset_id_fk",
+        "n|fk|public.chia_assets_to_tags.chia_assets_to_tags_asset_id_chia_asset_id_fk",
+        "e|fk|public.chia_assets_to_tags.chia_assets_to_tags_asset_id_chia_asset_id_fk",
+        "n|con|public.chia_assets_to_tags.chia_assets_to_tags_asset_id_chia_asset_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_assets_to_tags",
+        "n|sch|public",
+        "n|tbl|public.chia_asset",
+        "n|sch|public",
+        "n|col|public.chia_assets_to_tags.asset_id",
+        "n|col|public.chia_asset.id",
+        "e|uniqueness|public.chia_asset.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_assets_to_tags"],
+      "writes": [
+        "s|fk|public.chia_assets_to_tags.chia_assets_to_tags_tag_id_chia_tag_id_fk",
+        "n|fk|public.chia_assets_to_tags.chia_assets_to_tags_tag_id_chia_tag_id_fk",
+        "e|fk|public.chia_assets_to_tags.chia_assets_to_tags_tag_id_chia_tag_id_fk",
+        "n|con|public.chia_assets_to_tags.chia_assets_to_tags_tag_id_chia_tag_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_assets_to_tags",
+        "n|sch|public",
+        "n|tbl|public.chia_tag",
+        "n|sch|public",
+        "n|col|public.chia_assets_to_tags.tag_id",
+        "n|col|public.chia_tag.id",
+        "e|uniqueness|public.chia_tag.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_content"],
+      "writes": [
+        "s|fk|public.chia_content.chia_content_feed_translation_id_chia_feed_translation_id_fk",
+        "n|fk|public.chia_content.chia_content_feed_translation_id_chia_feed_translation_id_fk",
+        "e|fk|public.chia_content.chia_content_feed_translation_id_chia_feed_translation_id_fk",
+        "n|con|public.chia_content.chia_content_feed_translation_id_chia_feed_translation_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_content",
+        "n|sch|public",
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|col|public.chia_content.feed_translation_id",
+        "n|col|public.chia_feed_translation.id",
+        "e|uniqueness|public.chia_feed_translation.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_feed_translation"],
+      "writes": [
+        "s|fk|public.chia_feed_translation.chia_feed_translation_feed_id_chia_feed_id_fk",
+        "n|fk|public.chia_feed_translation.chia_feed_translation_feed_id_chia_feed_id_fk",
+        "e|fk|public.chia_feed_translation.chia_feed_translation_feed_id_chia_feed_id_fk",
+        "n|con|public.chia_feed_translation.chia_feed_translation_feed_id_chia_feed_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed_translation",
+        "n|sch|public",
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feed_translation.feed_id",
+        "n|col|public.chia_feed.id",
+        "e|uniqueness|public.chia_feed.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_feed"],
+      "writes": [
+        "s|fk|public.chia_feed.chia_feed_user_id_chia_user_id_fk",
+        "n|fk|public.chia_feed.chia_feed_user_id_chia_user_id_fk",
+        "e|fk|public.chia_feed.chia_feed_user_id_chia_user_id_fk",
+        "n|con|public.chia_feed.chia_feed_user_id_chia_user_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_feed.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_feeds_to_tags"],
+      "writes": [
+        "s|fk|public.chia_feeds_to_tags.chia_feeds_to_tags_feed_id_chia_feed_id_fk",
+        "n|fk|public.chia_feeds_to_tags.chia_feeds_to_tags_feed_id_chia_feed_id_fk",
+        "e|fk|public.chia_feeds_to_tags.chia_feeds_to_tags_feed_id_chia_feed_id_fk",
+        "n|con|public.chia_feeds_to_tags.chia_feeds_to_tags_feed_id_chia_feed_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feeds_to_tags",
+        "n|sch|public",
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feeds_to_tags.feed_id",
+        "n|col|public.chia_feed.id",
+        "e|uniqueness|public.chia_feed.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_feeds_to_tags"],
+      "writes": [
+        "s|fk|public.chia_feeds_to_tags.chia_feeds_to_tags_tag_id_chia_tag_id_fk",
+        "n|fk|public.chia_feeds_to_tags.chia_feeds_to_tags_tag_id_chia_tag_id_fk",
+        "e|fk|public.chia_feeds_to_tags.chia_feeds_to_tags_tag_id_chia_tag_id_fk",
+        "n|con|public.chia_feeds_to_tags.chia_feeds_to_tags_tag_id_chia_tag_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feeds_to_tags",
+        "n|sch|public",
+        "n|tbl|public.chia_tag",
+        "n|sch|public",
+        "n|col|public.chia_feeds_to_tags.tag_id",
+        "n|col|public.chia_tag.id",
+        "e|uniqueness|public.chia_tag.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_tag_translation"],
+      "writes": [
+        "s|fk|public.chia_tag_translation.chia_tag_translation_tag_id_chia_tag_id_fk",
+        "n|fk|public.chia_tag_translation.chia_tag_translation_tag_id_chia_tag_id_fk",
+        "e|fk|public.chia_tag_translation.chia_tag_translation_tag_id_chia_tag_id_fk",
+        "n|con|public.chia_tag_translation.chia_tag_translation_tag_id_chia_tag_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_tag_translation",
+        "n|sch|public",
+        "n|tbl|public.chia_tag",
+        "n|sch|public",
+        "n|col|public.chia_tag_translation.tag_id",
+        "n|col|public.chia_tag.id",
+        "e|uniqueness|public.chia_tag.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_invitation"],
+      "writes": [
+        "s|fk|public.chia_invitation.chia_invitation_organization_id_chia_organization_id_fk",
+        "n|fk|public.chia_invitation.chia_invitation_organization_id_chia_organization_id_fk",
+        "e|fk|public.chia_invitation.chia_invitation_organization_id_chia_organization_id_fk",
+        "n|con|public.chia_invitation.chia_invitation_organization_id_chia_organization_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_invitation",
+        "n|sch|public",
+        "n|tbl|public.chia_organization",
+        "n|sch|public",
+        "n|col|public.chia_invitation.organization_id",
+        "n|col|public.chia_organization.id",
+        "e|uniqueness|public.chia_organization.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_invitation"],
+      "writes": [
+        "s|fk|public.chia_invitation.chia_invitation_inviter_id_chia_user_id_fk",
+        "n|fk|public.chia_invitation.chia_invitation_inviter_id_chia_user_id_fk",
+        "e|fk|public.chia_invitation.chia_invitation_inviter_id_chia_user_id_fk",
+        "n|con|public.chia_invitation.chia_invitation_inviter_id_chia_user_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_invitation",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_invitation.inviter_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_member"],
+      "writes": [
+        "s|fk|public.chia_member.chia_member_organization_id_chia_organization_id_fk",
+        "n|fk|public.chia_member.chia_member_organization_id_chia_organization_id_fk",
+        "e|fk|public.chia_member.chia_member_organization_id_chia_organization_id_fk",
+        "n|con|public.chia_member.chia_member_organization_id_chia_organization_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_member",
+        "n|sch|public",
+        "n|tbl|public.chia_organization",
+        "n|sch|public",
+        "n|col|public.chia_member.organization_id",
+        "n|col|public.chia_organization.id",
+        "e|uniqueness|public.chia_organization.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_member"],
+      "writes": [
+        "s|fk|public.chia_member.chia_member_user_id_chia_user_id_fk",
+        "n|fk|public.chia_member.chia_member_user_id_chia_user_id_fk",
+        "e|fk|public.chia_member.chia_member_user_id_chia_user_id_fk",
+        "n|con|public.chia_member.chia_member_user_id_chia_user_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_member",
+        "n|sch|public",
+        "n|tbl|public.chia_user",
+        "n|sch|public",
+        "n|col|public.chia_member.user_id",
+        "n|col|public.chia_user.id",
+        "e|uniqueness|public.chia_user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "chia_project"],
+      "writes": [
+        "s|fk|public.chia_project.chia_project_organization_id_chia_organization_id_fk",
+        "n|fk|public.chia_project.chia_project_organization_id_chia_organization_id_fk",
+        "e|fk|public.chia_project.chia_project_organization_id_chia_organization_id_fk",
+        "n|con|public.chia_project.chia_project_organization_id_chia_organization_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_project",
+        "n|sch|public",
+        "n|tbl|public.chia_organization",
+        "n|sch|public",
+        "n|col|public.chia_project.organization_id",
+        "n|col|public.chia_organization.id",
+        "e|uniqueness|public.chia_organization.id"
+      ]
+    }
+  ],
+  "ddl": [
+    {
+      "schema": "public",
+      "name": "chia_apikey",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_account",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_passkey",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_session",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_verification",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_asset",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_assets_to_tags",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_content",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_feed_translation",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_feed",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_feeds_to_tags",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_tag_translation",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_tag",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_invitation",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_member",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_organization",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_project",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "chia_user",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "content_type",
+      "values": ["mdx", "notion", "tiptap", "plate"],
+      "entityType": "enums"
+    },
+    {
+      "schema": "public",
+      "name": "feed_type",
+      "values": ["post", "note"],
+      "entityType": "enums"
+    },
+    {
+      "schema": "public",
+      "name": "invitation_status",
+      "values": ["pending", "accepted", "rejected", "expired"],
+      "entityType": "enums"
+    },
+    {
+      "schema": "public",
+      "name": "locale",
+      "values": ["en", "zh-TW"],
+      "entityType": "enums"
+    },
+    {
+      "schema": "public",
+      "name": "member_role",
+      "values": ["owner", "admin", "member"],
+      "entityType": "enums"
+    },
+    {
+      "schema": "public",
+      "name": "role",
+      "values": ["admin", "user", "root"],
+      "entityType": "enums"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "name",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "start",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "prefix",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "key",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "user_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "refill_interval",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "refill_amount",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "last_refill_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "rate_limit_enabled",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "true",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "rate_limit_time_window",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "86400000",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "rate_limit_max",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "10",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "request_count",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "0",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "remaining",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "last_request",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "enabled",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "true",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "expires_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "permissions",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "metadata",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "project_id",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "account_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "provider_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "user_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "access_token",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "refresh_token",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "id_token",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "access_token_expires_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "refresh_token_expires_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "scope",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "password",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "name",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "public_key",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "user_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "credential_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "counter",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "device_type",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "backed_up",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "transports",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "aaguid",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "expires_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "token",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "ip_address",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "user_agent",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "user_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "impersonated_by",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "active_organization_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_verification",
+      "name": "id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_verification",
+      "name": "identifier",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_verification",
+      "name": "value",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_verification",
+      "name": "expires_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_verification",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_verification",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "id",
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "name",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "extension",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "url",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "user_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_assets_to_tags",
+      "name": "asset_id",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_assets_to_tags",
+      "name": "tag_id",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "id",
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "feed_translation_id",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "content",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "source",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "unstable_serialized_source",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "id",
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "feed_id",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "locale",
+      "type": "locale",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "title",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "excerpt",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "description",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "summary",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "read_time",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "embedding",
+      "type": "vector(1536)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "id",
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "slug",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "type",
+      "type": "feed_type",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "content_type",
+      "type": "content_type",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'mdx'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "published",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "default_locale",
+      "type": "locale",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'zh-TW'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "user_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "main_image",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feeds_to_tags",
+      "name": "feed_id",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feeds_to_tags",
+      "name": "tag_id",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "id",
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "tag_id",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "locale",
+      "type": "locale",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "name",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "description",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag",
+      "name": "id",
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag",
+      "name": "slug",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "organization_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "email",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "role",
+      "type": "member_role",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'member'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "status",
+      "type": "invitation_status",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'pending'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "expires_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "inviter_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_member",
+      "name": "id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_member",
+      "name": "organization_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_member",
+      "name": "user_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_member",
+      "name": "role",
+      "type": "member_role",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'member'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_member",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_organization",
+      "name": "id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_organization",
+      "name": "name",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_organization",
+      "name": "slug",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_organization",
+      "name": "logo",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_organization",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_organization",
+      "name": "metadata",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "id",
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "name",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "slug",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "logo",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "deleted_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "metadata",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "organization_id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "id",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "name",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "email",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "email_verified",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "image",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "role",
+      "type": "role",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'user'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "updated_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "banned",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "ban_reason",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "ban_expires",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "apikey_user_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "apikey_key_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "key",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "apikey_project_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "project_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "account_user_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "passkey_user_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "passkey_credential_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "credential_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "session_user_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_verification",
+      "name": "verification_identifier_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "identifier",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "asset_user_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "asset_name_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "name",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_assets_to_tags",
+      "name": "assets_to_tags_asset_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "asset_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_assets_to_tags",
+      "name": "assets_to_tags_tag_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "tag_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "content_feed_translation_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "feed_translation_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "feed_translation_feed_locale_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "feed_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "locale",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "feed_translation_feed_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "feed_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "feed_translation_locale_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "locale",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "feed_translation_title_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "title",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "feed_translation_embedding_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "embedding",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": {
+            "name": "vector_cosine_ops",
+            "default": false
+          }
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "hnsw",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "feed_slug_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "slug",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "feed_user_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "feed_type_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "type",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "feed_published_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "published",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "feed_default_locale_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "default_locale",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feeds_to_tags",
+      "name": "feeds_to_tags_feed_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "feed_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feeds_to_tags",
+      "name": "feeds_to_tags_tag_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "tag_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "tag_translation_tag_locale_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "tag_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "locale",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "tag_translation_tag_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "tag_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "tag_translation_locale_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "locale",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "tag_translation_name_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "name",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag",
+      "name": "tag_slug_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "slug",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "invitation_organization_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "organization_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "invitation_email_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "email",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_member",
+      "name": "member_organization_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "organization_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_member",
+      "name": "member_user_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_organization",
+      "name": "organization_slug_uidx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "slug",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "project_slug_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "slug",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "project_organization_id_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "organization_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "project_name_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "name",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "user_email_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "email",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "chia_apikey_user_id_chia_user_id_fk",
+      "nameExplicit": false,
+      "columns": ["user_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "chia_apikey_project_id_chia_project_id_fk",
+      "nameExplicit": false,
+      "columns": ["project_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_project",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "chia_account_user_id_chia_user_id_fk",
+      "nameExplicit": false,
+      "columns": ["user_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "chia_passkey_user_id_chia_user_id_fk",
+      "nameExplicit": false,
+      "columns": ["user_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "chia_session_user_id_chia_user_id_fk",
+      "nameExplicit": false,
+      "columns": ["user_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "chia_asset_user_id_chia_user_id_fk",
+      "nameExplicit": false,
+      "columns": ["user_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_assets_to_tags",
+      "name": "chia_assets_to_tags_asset_id_chia_asset_id_fk",
+      "nameExplicit": false,
+      "columns": ["asset_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_asset",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_assets_to_tags",
+      "name": "chia_assets_to_tags_tag_id_chia_tag_id_fk",
+      "nameExplicit": false,
+      "columns": ["tag_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_tag",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "chia_content_feed_translation_id_chia_feed_translation_id_fk",
+      "nameExplicit": false,
+      "columns": ["feed_translation_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_feed_translation",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "chia_feed_translation_feed_id_chia_feed_id_fk",
+      "nameExplicit": false,
+      "columns": ["feed_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_feed",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "chia_feed_user_id_chia_user_id_fk",
+      "nameExplicit": false,
+      "columns": ["user_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feeds_to_tags",
+      "name": "chia_feeds_to_tags_feed_id_chia_feed_id_fk",
+      "nameExplicit": false,
+      "columns": ["feed_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_feed",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feeds_to_tags",
+      "name": "chia_feeds_to_tags_tag_id_chia_tag_id_fk",
+      "nameExplicit": false,
+      "columns": ["tag_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_tag",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "chia_tag_translation_tag_id_chia_tag_id_fk",
+      "nameExplicit": false,
+      "columns": ["tag_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_tag",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "chia_invitation_organization_id_chia_organization_id_fk",
+      "nameExplicit": false,
+      "columns": ["organization_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_organization",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "chia_invitation_inviter_id_chia_user_id_fk",
+      "nameExplicit": false,
+      "columns": ["inviter_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_member",
+      "name": "chia_member_organization_id_chia_organization_id_fk",
+      "nameExplicit": false,
+      "columns": ["organization_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_organization",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_member",
+      "name": "chia_member_user_id_chia_user_id_fk",
+      "nameExplicit": false,
+      "columns": ["user_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_user",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "chia_project_organization_id_chia_organization_id_fk",
+      "nameExplicit": false,
+      "columns": ["organization_id"],
+      "schemaTo": "public",
+      "tableTo": "chia_organization",
+      "columnsTo": ["id"],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_apikey",
+      "name": "chia_apikey_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_account",
+      "name": "chia_account_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_passkey",
+      "name": "chia_passkey_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "chia_session_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_verification",
+      "name": "chia_verification_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_asset",
+      "name": "chia_asset_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_assets_to_tags",
+      "name": "chia_assets_to_tags_asset_id_tag_id_pk",
+      "columns": ["asset_id", "tag_id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "chia_content_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed_translation",
+      "name": "chia_feed_translation_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "chia_feed_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feeds_to_tags",
+      "name": "chia_feeds_to_tags_feed_id_tag_id_pk",
+      "columns": ["feed_id", "tag_id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag_translation",
+      "name": "chia_tag_translation_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag",
+      "name": "chia_tag_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_invitation",
+      "name": "chia_invitation_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_member",
+      "name": "chia_member_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_organization",
+      "name": "chia_organization_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "chia_project_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "chia_user_pkey",
+      "columns": ["id"],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "chia_session",
+      "name": "chia_session_token_unique",
+      "nameExplicit": false,
+      "columns": ["token"],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "chia_content",
+      "name": "chia_content_feed_translation_id_unique",
+      "nameExplicit": false,
+      "columns": ["feed_translation_id"],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "chia_feed",
+      "name": "chia_feed_slug_unique",
+      "nameExplicit": false,
+      "columns": ["slug"],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "chia_tag",
+      "name": "chia_tag_slug_unique",
+      "nameExplicit": false,
+      "columns": ["slug"],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "chia_organization",
+      "name": "chia_organization_slug_unique",
+      "nameExplicit": false,
+      "columns": ["slug"],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "chia_project",
+      "name": "chia_project_slug_unique",
+      "nameExplicit": false,
+      "columns": ["slug"],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "chia_user",
+      "name": "chia_user_email_unique",
+      "nameExplicit": false,
+      "columns": ["email"],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "df1c6060-ed5d-4d92-b057-efc8e95a13e8",
+  "prevIds": ["43cb3b88-1aca-4cb5-ba44-d86daf6d53b7"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "public", "chia_feed", "deleted_at"],
+      "writes": [
+        "s|col|public.chia_feed.deleted_at",
+        "n|col|public.chia_feed.deleted_at",
+        "e|col|public.chia_feed.deleted_at"
+      ],
+      "reads": ["n|tbl|public.chia_feed", "n|sch|public"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feed",
+        "feed_deleted_at_idx"
+      ],
+      "writes": [
+        "s|idx|public.feed_deleted_at_idx",
+        "n|idx|public.feed_deleted_at_idx",
+        "e|idx|public.feed_deleted_at_idx",
+        "n|rel|public.feed_deleted_at_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_feed",
+        "n|sch|public",
+        "n|col|public.chia_feed.deleted_at"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed",
+        "name": "deleted_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_feed",
+        "name": "feed_deleted_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "deleted_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    }
+  ]
+}

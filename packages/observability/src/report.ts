@@ -1,4 +1,4 @@
-import { captureException } from "@sentry/node-core/light";
+import { captureException } from "@sentry/node";
 
 import { logger } from "./logger";
 import type { LogFields } from "./logger";

@@ -29,7 +29,6 @@
     "@chia/utils": "workspace:*",
     "@chia/workflow-control": "workspace:*",
     "@hono/zod-validator": "catalog:hono",
-    "@keyv/redis": "catalog:kv",
     "@opentelemetry/api": "catalog:otel",
     "@t3-oss/env-core": "catalog:env",
     "@workflow/world-postgres": "catalog:workflow",
@@ -51,6 +50,7 @@
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
     "nitro": "catalog:nitro",
+    "rolldown": "catalog:nitro",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
   }

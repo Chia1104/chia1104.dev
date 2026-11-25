@@ -8,7 +8,6 @@ stubTestEnv({
   RESEND_API_KEY: "test-resend-api-key",
   FIRECRAWL_API_KEY: "test-firecrawl-api-key",
   DATABASE_URL: "postgres://postgres:password@localhost:5432/test",
-  DATABASE_URL_REPLICA_1: undefined,
   BETA_DATABASE_URL: "postgres://postgres:password@localhost:5432/test",
   LOCAL_DATABASE_URL: "postgres://postgres:password@localhost:5432/test",
   GOOGLE_CLIENT_ID: "test-google-client-id",

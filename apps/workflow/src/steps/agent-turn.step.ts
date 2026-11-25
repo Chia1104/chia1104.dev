@@ -143,7 +143,7 @@ const executeAgentTurn = async (
   request: AgentTurnRequest,
   signal: AbortSignal
 ): Promise<AgentTurnOutcome> => {
-  const db = await connectDatabase(undefined, { withCache: false });
+  const db = await connectDatabase();
 
   const row = await getAgentSession(db, request.sessionId);
   if (!row || row.deletedAt !== null) {
@@ -465,7 +465,7 @@ export const completeAgentRunStep = async (
 ): Promise<void> => {
   "use step";
 
-  const db = await connectDatabase(undefined, { withCache: false });
+  const db = await connectDatabase();
   // This run's row only: a run cancelled and replaced must not close its successor.
   await completeAgentRun(db, runId, status);
 };

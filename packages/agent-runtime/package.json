@@ -97,7 +97,7 @@
     "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@opentelemetry/context-async-hooks": "catalog:otel",
-    "@opentelemetry/sdk-trace-base": "catalog:otel",
+    "@opentelemetry/sdk-trace": "catalog:otel",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"

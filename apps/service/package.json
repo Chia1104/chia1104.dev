@@ -65,6 +65,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
+    "rolldown": "catalog:nitro",
     "tsdown": "catalog:tooling",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"

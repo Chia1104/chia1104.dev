@@ -44,11 +44,10 @@ describe("storableCodecs", () => {
     ).toEqual(["a", ["�"]]);
   });
 
-  it("scrubs JSON parameters before the driver serialises them", () => {
-    expect(storableCodecs.jsonb?.normalizeParam?.({ text: "a\0b" })).toEqual({
-      text: "ab",
-    });
-    // Arrays are pre-serialised so the driver does not mistake them for a Postgres array.
+  it("scrubs JSON parameters before the base codec serialises them", () => {
+    expect(storableCodecs.jsonb?.normalizeParam?.({ text: "a\0b" })).toBe(
+      nodePgCodecs.jsonb?.normalizeParam?.({ text: "ab" })
+    );
     expect(storableCodecs.jsonb?.normalizeParam?.(["a\0"])).toBe(
       nodePgCodecs.jsonb?.normalizeParam?.(["a"])
     );
