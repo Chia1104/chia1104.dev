@@ -1,0 +1,191 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "4f10d8b7-1f56-403f-8a97-d725f6ddf2c4",
+  "prevIds": ["6dec534c-03e6-4229-b376-d024384cad4f"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "agent", "memory", "supersedes_id"],
+      "writes": [
+        "s|col|agent.memory.supersedes_id",
+        "n|col|agent.memory.supersedes_id",
+        "e|col|agent.memory.supersedes_id"
+      ],
+      "reads": ["n|tbl|agent.memory", "n|sch|agent"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "agent", "memory", "reinforcements"],
+      "writes": [
+        "s|col|agent.memory.reinforcements",
+        "n|col|agent.memory.reinforcements",
+        "e|col|agent.memory.reinforcements"
+      ],
+      "reads": ["n|tbl|agent.memory", "n|sch|agent"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "agent",
+        "writing_session",
+        "consolidated_leaf_id"
+      ],
+      "writes": [
+        "s|col|agent.writing_session.consolidated_leaf_id",
+        "n|col|agent.writing_session.consolidated_leaf_id",
+        "e|col|agent.writing_session.consolidated_leaf_id"
+      ],
+      "reads": ["n|tbl|agent.writing_session", "n|sch|agent"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "agent",
+        "writing_session",
+        "consolidated_at"
+      ],
+      "writes": [
+        "s|col|agent.writing_session.consolidated_at",
+        "n|col|agent.writing_session.consolidated_at",
+        "e|col|agent.writing_session.consolidated_at"
+      ],
+      "reads": ["n|tbl|agent.writing_session", "n|sch|agent"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "agent",
+        "writing_session",
+        "consolidation_run_id"
+      ],
+      "writes": [
+        "s|col|agent.writing_session.consolidation_run_id",
+        "n|col|agent.writing_session.consolidation_run_id",
+        "e|col|agent.writing_session.consolidation_run_id"
+      ],
+      "reads": ["n|tbl|agent.writing_session", "n|sch|agent"]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "agent", "memory"],
+      "writes": [
+        "s|fk|agent.memory.memory_supersedes_id_memory_id_fkey",
+        "n|fk|agent.memory.memory_supersedes_id_memory_id_fkey",
+        "e|fk|agent.memory.memory_supersedes_id_memory_id_fkey",
+        "n|con|agent.memory.memory_supersedes_id_memory_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|agent.memory",
+        "n|sch|agent",
+        "n|tbl|agent.memory",
+        "n|sch|agent",
+        "n|col|agent.memory.supersedes_id",
+        "n|col|agent.memory.id",
+        "e|uniqueness|agent.memory.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "supersedes_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "reinforcements",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session",
+        "name": "consolidated_leaf_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session",
+        "name": "consolidated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session",
+        "name": "consolidation_run_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "memory_supersedes_id_memory_id_fkey",
+        "nameExplicit": false,
+        "columns": ["supersedes_id"],
+        "schemaTo": "agent",
+        "tableTo": "memory",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    }
+  ]
+}

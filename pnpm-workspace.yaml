@@ -69,10 +69,10 @@ catalogs:
     "@chiastack/tsconfig": 2.1.2
     "@chiastack/ui": 1.2.2
   drizzle:
-    "@paradedb/drizzle-paradedb": 0.5.0
+    "@paradedb/drizzle-paradedb": 0.9.0
     "@types/pg": ^8.23.1
-    drizzle-kit: 1.0.0-rc.4
-    drizzle-orm: 1.0.0-rc.4
+    drizzle-kit: 1.0.0-rc.6
+    drizzle-orm: 1.0.0-rc.6
     pg: ^8.23.1
   email:
     "@react-email/ui": ^6.11.16
@@ -315,4 +315,3 @@ overrides:
   # One pg copy: a second version is traced into `.nf3/`, where require-in-the-middle cannot
   # name the module and the pg instrumentation never patches it.
   pg: "catalog:drizzle"
-  "@paradedb/drizzle-paradedb>drizzle-orm": 1.0.0-rc.4

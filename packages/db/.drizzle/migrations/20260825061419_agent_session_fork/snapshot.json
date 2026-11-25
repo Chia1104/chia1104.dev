@@ -1,0 +1,103 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "32869b8a-f40c-49a7-b6b5-3f6a3dbf18f0",
+  "prevIds": ["50d12aae-58d0-4acd-898f-60f447c469a4"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "agent",
+        "session",
+        "forked_from_session_id"
+      ],
+      "writes": [
+        "s|col|agent.session.forked_from_session_id",
+        "n|col|agent.session.forked_from_session_id",
+        "e|col|agent.session.forked_from_session_id"
+      ],
+      "reads": ["n|tbl|agent.session", "n|sch|agent"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "agent", "session", "forked_from_entry_id"],
+      "writes": [
+        "s|col|agent.session.forked_from_entry_id",
+        "n|col|agent.session.forked_from_entry_id",
+        "e|col|agent.session.forked_from_entry_id"
+      ],
+      "reads": ["n|tbl|agent.session", "n|sch|agent"]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "agent", "session"],
+      "writes": [
+        "s|fk|agent.session.session_forked_from_session_id_session_id_fkey",
+        "n|fk|agent.session.session_forked_from_session_id_session_id_fkey",
+        "e|fk|agent.session.session_forked_from_session_id_session_id_fkey",
+        "n|con|agent.session.session_forked_from_session_id_session_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|agent.session",
+        "n|sch|agent",
+        "n|tbl|agent.session",
+        "n|sch|agent",
+        "n|col|agent.session.forked_from_session_id",
+        "n|col|agent.session.id",
+        "e|uniqueness|agent.session.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "session",
+        "name": "forked_from_session_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "session",
+        "name": "forked_from_entry_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "session",
+        "name": "session_forked_from_session_id_session_id_fkey",
+        "nameExplicit": false,
+        "columns": ["forked_from_session_id"],
+        "schemaTo": "agent",
+        "tableTo": "session",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    }
+  ]
+}

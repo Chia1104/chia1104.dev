@@ -1,0 +1,30 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "5557779b-a176-4f64-8e52-5ad47e4d1c88",
+  "prevIds": ["e971d486-a1ab-4516-a707-79028db6ec8d"],
+  "footprints": [
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "chia_feed_draft_translation",
+        "summary"
+      ],
+      "writes": [
+        "s|col|public.chia_feed_draft_translation.summary",
+        "n|col|public.chia_feed_draft_translation.summary",
+        "e|col|public.chia_feed_draft_translation.summary"
+      ],
+      "reads": ["n|tbl|public.chia_feed_draft_translation", "n|sch|public"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_feed_draft_translation\",\"summary\"]"
+    }
+  ]
+}

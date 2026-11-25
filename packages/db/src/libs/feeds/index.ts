@@ -1,5 +1,6 @@
 import type { KnownKeysOnly, RelationsFilterColumns, SQL } from "drizzle-orm";
 import { and, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
+import { EmptyFilter } from "drizzle-orm/relations";
 
 import type { DB } from "../../client.ts";
 import type { relations } from "../../schemas/schema.ts";
@@ -224,7 +225,7 @@ const queryInfiniteFeeds = async (
     with: {
       translations: {
         where: {
-          locale,
+          locale: locale ?? EmptyFilter,
         },
         columns: withContent ? undefined : { content: false },
         extras: {
@@ -298,8 +299,7 @@ const getFeedDetails = async (
           : eq(feeds.published, scope.published)
       )
     )
-    .limit(1)
-    .$withCache({ config: { ex: 300 } });
+    .limit(1);
 
   if (!feed) {
     return null;
@@ -334,8 +334,7 @@ const getFeedDetails = async (
         )`,
       })
       .from(feedTranslations)
-      .where(translationFilter)
-      .$withCache({ config: { ex: 300 } }),
+      .where(translationFilter),
     db
       .select({
         id: tags.id,
@@ -347,8 +346,7 @@ const getFeedDetails = async (
       .from(feedsToTags)
       .innerJoin(tags, eq(feedsToTags.tagId, tags.id))
       .leftJoin(tagTranslations, eq(tagTranslations.tagId, tags.id))
-      .where(eq(feedsToTags.feedId, feed.id))
-      .$withCache({ config: { ex: 300 } }),
+      .where(eq(feedsToTags.feedId, feed.id)),
   ]);
 
   const tagsById = new Map<number, TagWithTranslations>();
@@ -789,9 +787,6 @@ export const deleteFeedTranslation = withDTO(
   }
 );
 
-/** Cache life of the overview counts; a feed write through this process clears them, a workflow's write waits it out. */
-const STATS_CACHE_SECONDS = 60;
-
 /** Live content by state: published posts, published notes and unpublished drafts of either type. */
 export const getFeedStats = async (db: DB) => {
   const live = isNull(feeds.deletedAt);
@@ -811,8 +806,7 @@ export const getFeedStats = async (db: DB) => {
         ),
     })
     .from(feeds)
-    .where(live)
-    .$withCache({ config: { ex: STATS_CACHE_SECONDS } });
+    .where(live);
   return {
     posts: row?.posts ?? 0,
     notes: row?.notes ?? 0,

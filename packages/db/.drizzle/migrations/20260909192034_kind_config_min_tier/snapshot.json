@@ -1,0 +1,37 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "6dec534c-03e6-4229-b376-d024384cad4f",
+  "prevIds": ["b6f71274-03e6-4a16-82d5-519fd23d5ddd"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "agent", "kind_config", "min_tier"],
+      "writes": [
+        "s|col|agent.kind_config.min_tier",
+        "n|col|agent.kind_config.min_tier",
+        "e|col|agent.kind_config.min_tier"
+      ],
+      "reads": ["n|tbl|agent.kind_config", "n|sch|agent"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "kind_config",
+        "name": "min_tier",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

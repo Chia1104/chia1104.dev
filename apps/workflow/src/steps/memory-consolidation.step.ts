@@ -65,7 +65,7 @@ export const consolidateSessionMemoryStep = async (request: {
 }): Promise<MemoryConsolidationResult> => {
   "use step";
 
-  const db = await connectDatabase(undefined, { withCache: false });
+  const db = await connectDatabase();
 
   const row = await getAgentSession(db, request.sessionId);
   if (!row || row.deletedAt !== null) {

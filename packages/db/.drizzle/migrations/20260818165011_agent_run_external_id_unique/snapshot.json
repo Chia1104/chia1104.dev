@@ -1,0 +1,40 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "95e9e61b-6380-4fd6-a543-edab49a79241",
+  "prevIds": ["5120e37e-9bf8-461a-afd1-aa245a70ca24"],
+  "footprints": [
+    {
+      "statementType": "recreate_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_agent_run",
+        "agent_run_external_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.agent_run_external_id_idx",
+        "n|idx|public.agent_run_external_id_idx",
+        "e|idx|public.agent_run_external_id_idx",
+        "n|rel|public.agent_run_external_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_agent_run",
+        "n|sch|public",
+        "n|col|public.chia_agent_run.external_run_id"
+      ],
+      "sharedWrites": [],
+      "sqlHash": "248162e009262bb3"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "indexes\u0000[\"public\",\"agent_run_external_id_idx\"]",
+      "set": {
+        "isUnique": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "ba56ae96-92fc-46bf-bd88-edfb0e6fddf5",
+  "prevIds": ["65b05db4-9930-499c-8c0a-7811c32dd9ed"],
+  "footprints": [
+    {
+      "statementType": "alter_enum",
+      "statementTarget": ["enum", "public", "invitation_status"],
+      "writes": ["s|enum|public.invitation_status"],
+      "reads": ["n|sch|public"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"invitation_status\"]",
+      "set": {
+        "values": ["pending", "accepted", "rejected", "expired", "canceled"]
+      }
+    }
+  ]
+}

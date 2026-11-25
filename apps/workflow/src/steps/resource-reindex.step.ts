@@ -29,7 +29,7 @@ export const listReindexTargetsStep = async (): Promise<
 > => {
   "use step";
 
-  const db = await connectDatabase(undefined, { withCache: false });
+  const db = await connectDatabase();
   const [translationIds, memoryIds] = await Promise.all([
     listFeedTranslationIds(db, {}),
     listAgentMemoryIds(db),
@@ -55,7 +55,7 @@ export const listReindexTargetsStep = async (): Promise<
 export const resolveReindexRunStep = async (): Promise<number> => {
   "use step";
 
-  const db = await connectDatabase(undefined, { withCache: false });
+  const db = await connectDatabase();
   const { workflowRunId } = getWorkflowMetadata();
 
   const row = await getResourceIndexRunByExternalId(db, {
@@ -77,7 +77,7 @@ export const recordReindexProgressStep = async (request: {
 }): Promise<void> => {
   "use step";
 
-  const db = await connectDatabase(undefined, { withCache: false });
+  const db = await connectDatabase();
   await recordResourceIndexRunProgress(db, {
     id: request.recordId,
     progress: request.progress,
@@ -94,7 +94,7 @@ export const finalizeReindexRunStep = async (request: {
 }): Promise<void> => {
   "use step";
 
-  const db = await connectDatabase(undefined, { withCache: false });
+  const db = await connectDatabase();
   const { failed, total } = request.result;
 
   await finalizeResourceIndexRun(db, {

@@ -322,7 +322,7 @@ Generated column expression 無法原地修改，相關 migration 必須人工�
 - Hybrid 模式沒有高亮 snippet。
 - `feed_translation.published` 與 `deleted` 不是可見性的真相來源；搜尋使用 chunk 上由 feed 計算的鏡像。
 - 目前語料量讓 planner 選擇精確的 seq scan。開始使用 HNSW 後，需要依 candidate limit 調整 `hnsw.ef_search`，並評估 iterative scan。
-- 資料庫必須預先提供 `vector` 與 ParadeDB `pg_search` extension；migration 不建立它們。
+- 資料庫必須預先提供 `vector` 與 ParadeDB `pg_search` 0.27+ extension；migration 不建立它們。
 
 主要位置：
 

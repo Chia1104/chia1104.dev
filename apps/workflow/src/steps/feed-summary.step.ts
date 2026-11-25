@@ -5,16 +5,12 @@ import {
 } from "@chia/agent-host/feed-summary";
 import { AgentTaskId, resolveAgentTask } from "@chia/agent-host/tasks";
 import { FEED_TASK_USAGE_KIND, recordAgentUsage } from "@chia/agent-host/usage";
-import { connectDatabase, invalidateCache } from "@chia/db/client";
+import { connectDatabase } from "@chia/db/client";
 import {
   getFeedForIndexing,
   upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
-import {
-  AgentCredentialSource,
-  AgentUsageSource,
-  feedTranslations,
-} from "@chia/db/schema";
+import { AgentCredentialSource, AgentUsageSource } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 import { logger } from "@chia/observability/logger";
 import { reportError } from "@chia/observability/report";
@@ -40,7 +36,7 @@ export const summarizeFeedStep = async (
 ): Promise<{ slug: string; translations: FeedSummaryTranslation[] } | null> => {
   "use step";
 
-  const db = await connectDatabase(undefined, { withCache: false });
+  const db = await connectDatabase();
   const feed = await getFeedForIndexing(db, { feedId: feedID });
   if (!feed) return null;
 
@@ -110,9 +106,6 @@ export const summarizeFeedStep = async (
       }
     )
   );
-  if (results.some((translation) => translation.status === "ok")) {
-    await invalidateCache([feedTranslations]);
-  }
   return { slug: feed.slug, translations: results };
 };
 

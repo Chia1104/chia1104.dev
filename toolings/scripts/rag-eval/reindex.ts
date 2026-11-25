@@ -55,7 +55,7 @@ const main = async (): Promise<void> => {
     );
   }
 
-  const db = await getConnection(url, { withCache: false });
+  const db = await getConnection(url);
   const provider = resolveEmbeddingProvider();
   console.log(
     `Reindexing ${host} — model ${provider.id} · index ${EMBEDDING_INDEX_VERSION}`

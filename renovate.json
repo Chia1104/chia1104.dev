@@ -132,14 +132,8 @@
       "dependencyDashboardApproval": true
     },
     {
-      "description": "Pinned on purpose: drizzle rc.5 changes query behaviour, Pi is held. Tick the box on the Dependency Dashboard to open the PR.",
-      "matchPackageNames": [
-        "drizzle-orm",
-        "drizzle-kit",
-        "@paradedb/drizzle-paradedb",
-        "@earendil-works/**",
-        "typebox"
-      ],
+      "description": "Pi is held. Tick the box on the Dependency Dashboard to open the PR.",
+      "matchPackageNames": ["@earendil-works/**", "typebox"],
       "dependencyDashboardApproval": true
     }
   ]

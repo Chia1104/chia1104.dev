@@ -1,0 +1,298 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "ff5365dc-1ebf-441a-9745-f428ba2992ff",
+  "prevIds": ["4a195494-04ff-4ac9-a6e2-deb41cad0849"],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "agent", "writing_session_draft"],
+      "writes": [
+        "s|tbl|agent.writing_session_draft",
+        "n|tbl|agent.writing_session_draft",
+        "e|tbl|agent.writing_session_draft",
+        "n|rel|agent.writing_session_draft",
+        "n|type|agent.writing_session_draft",
+        "n|rel|agent.writing_session_draft_pkey"
+      ],
+      "reads": ["n|sch|agent"]
+    },
+    {
+      "statementType": "drop_fk",
+      "statementTarget": ["table", "agent", "writing_session"],
+      "writes": [
+        "s|fk|agent.writing_session.writing_session_draft_id_chia_feed_draft_id_fkey",
+        "n|fk|agent.writing_session.writing_session_draft_id_chia_feed_draft_id_fkey",
+        "e|fk|agent.writing_session.writing_session_draft_id_chia_feed_draft_id_fkey",
+        "n|con|agent.writing_session.writing_session_draft_id_chia_feed_draft_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|agent.writing_session",
+        "n|sch|agent",
+        "e|col|agent.writing_session.draft_id"
+      ]
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "agent",
+        "writing_session",
+        "writing_agent_session_draft_idx"
+      ],
+      "writes": [
+        "s|idx|agent.writing_agent_session_draft_idx",
+        "n|idx|agent.writing_agent_session_draft_idx",
+        "e|idx|agent.writing_agent_session_draft_idx",
+        "n|rel|agent.writing_agent_session_draft_idx"
+      ],
+      "reads": [
+        "e|tbl|agent.writing_session",
+        "n|sch|agent",
+        "e|col|agent.writing_session.draft_id"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": ["column", "agent", "writing_session", "draft_id"],
+      "writes": [
+        "s|col|agent.writing_session.draft_id",
+        "n|col|agent.writing_session.draft_id",
+        "e|col|agent.writing_session.draft_id"
+      ],
+      "reads": ["n|tbl|agent.writing_session", "n|sch|agent"]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "agent",
+        "writing_session",
+        "last_seen_revision"
+      ],
+      "writes": [
+        "s|col|agent.writing_session.last_seen_revision",
+        "n|col|agent.writing_session.last_seen_revision",
+        "e|col|agent.writing_session.last_seen_revision"
+      ],
+      "reads": ["n|tbl|agent.writing_session", "n|sch|agent"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "agent",
+        "writing_session_draft",
+        "writing_session_draft_draft_idx"
+      ],
+      "writes": [
+        "s|idx|agent.writing_session_draft_draft_idx",
+        "n|idx|agent.writing_session_draft_draft_idx",
+        "e|idx|agent.writing_session_draft_draft_idx",
+        "n|rel|agent.writing_session_draft_draft_idx"
+      ],
+      "reads": [
+        "n|tbl|agent.writing_session_draft",
+        "n|sch|agent",
+        "n|col|agent.writing_session_draft.draft_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "agent", "writing_session_draft"],
+      "writes": [
+        "s|fk|agent.writing_session_draft.writing_session_draft_YjpXzzCQIvmN_fkey",
+        "n|fk|agent.writing_session_draft.writing_session_draft_YjpXzzCQIvmN_fkey",
+        "e|fk|agent.writing_session_draft.writing_session_draft_YjpXzzCQIvmN_fkey",
+        "n|con|agent.writing_session_draft.writing_session_draft_YjpXzzCQIvmN_fkey"
+      ],
+      "reads": [
+        "n|tbl|agent.writing_session_draft",
+        "n|sch|agent",
+        "n|tbl|agent.writing_session",
+        "n|sch|agent",
+        "n|col|agent.writing_session_draft.session_id",
+        "n|col|agent.writing_session.session_id",
+        "e|uniqueness|agent.writing_session.session_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "agent", "writing_session_draft"],
+      "writes": [
+        "s|fk|agent.writing_session_draft.writing_session_draft_draft_id_chia_feed_draft_id_fkey",
+        "n|fk|agent.writing_session_draft.writing_session_draft_draft_id_chia_feed_draft_id_fkey",
+        "e|fk|agent.writing_session_draft.writing_session_draft_draft_id_chia_feed_draft_id_fkey",
+        "n|con|agent.writing_session_draft.writing_session_draft_draft_id_chia_feed_draft_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|agent.writing_session_draft",
+        "n|sch|agent",
+        "n|tbl|public.chia_feed_draft",
+        "n|sch|public",
+        "n|col|agent.writing_session_draft.draft_id",
+        "n|col|public.chia_feed_draft.id",
+        "e|uniqueness|public.chia_feed_draft.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "name": "writing_session_draft",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session_draft",
+        "name": "session_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session_draft",
+        "name": "draft_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session_draft",
+        "name": "last_seen_revision",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session_draft",
+        "name": "touched_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session_draft",
+        "name": "writing_session_draft_draft_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "draft_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session_draft",
+        "name": "writing_session_draft_YjpXzzCQIvmN_fkey",
+        "nameExplicit": false,
+        "columns": ["session_id"],
+        "schemaTo": "agent",
+        "tableTo": "writing_session",
+        "columnsTo": ["session_id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session_draft",
+        "name": "writing_session_draft_draft_id_chia_feed_draft_id_fkey",
+        "nameExplicit": false,
+        "columns": ["draft_id"],
+        "schemaTo": "public",
+        "tableTo": "chia_feed_draft",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "writing_session_draft",
+        "name": "writing_session_draft_pkey",
+        "columns": ["session_id", "draft_id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"agent\",\"writing_session\",\"draft_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"agent\",\"writing_session\",\"last_seen_revision\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"agent\",\"writing_agent_session_draft_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"agent\",\"writing_session\",\"writing_session_draft_id_chia_feed_draft_id_fkey\"]"
+    }
+  ]
+}

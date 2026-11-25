@@ -14,7 +14,7 @@ export type TransformedDateDTO = z.infer<typeof dateTransformSchema>;
 export const keysetCursorSchema = z.string().regex(/\|[^|]+$/);
 
 export const baseInfiniteSchema = z.object({
-  limit: z.number().max(50).optional().default(10),
+  limit: z.number().int().min(1).max(50).optional().default(10),
   cursor: keysetCursorSchema.nullish(),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
 });

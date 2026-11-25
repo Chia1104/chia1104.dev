@@ -1,0 +1,37 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "95520e5c-36ee-48cc-83f8-8c7d70204de3",
+  "prevIds": ["33db25a5-2641-4861-9a38-83c55fdb9af1"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "agent", "memory", "fetched_at"],
+      "writes": [
+        "s|col|agent.memory.fetched_at",
+        "n|col|agent.memory.fetched_at",
+        "e|col|agent.memory.fetched_at"
+      ],
+      "reads": ["n|tbl|agent.memory", "n|sch|agent"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "memory",
+        "name": "fetched_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

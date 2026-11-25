@@ -1,0 +1,250 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "e971d486-a1ab-4516-a707-79028db6ec8d",
+  "prevIds": ["341df8ab-23f7-434d-9abc-c37030c385c4"],
+  "footprints": [
+    {
+      "statementType": "drop_fk",
+      "statementTarget": ["table", "public", "chia_assets_to_tags"],
+      "writes": [
+        "s|fk|public.chia_assets_to_tags.chia_assets_to_tags_asset_id_chia_asset_id_fk",
+        "n|fk|public.chia_assets_to_tags.chia_assets_to_tags_asset_id_chia_asset_id_fk",
+        "e|fk|public.chia_assets_to_tags.chia_assets_to_tags_asset_id_chia_asset_id_fk",
+        "n|con|public.chia_assets_to_tags.chia_assets_to_tags_asset_id_chia_asset_id_fk"
+      ],
+      "reads": [
+        "n|tbl|public.chia_assets_to_tags",
+        "n|sch|public",
+        "e|col|public.chia_assets_to_tags.asset_id"
+      ]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_asset"],
+      "writes": [
+        "s|tbl|public.chia_asset",
+        "n|tbl|public.chia_asset",
+        "e|tbl|public.chia_asset",
+        "n|rel|public.chia_asset",
+        "n|type|public.chia_asset"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": ["table", "public", "chia_assets_to_tags"],
+      "writes": [
+        "s|tbl|public.chia_assets_to_tags",
+        "n|tbl|public.chia_assets_to_tags",
+        "e|tbl|public.chia_assets_to_tags",
+        "n|rel|public.chia_assets_to_tags",
+        "n|type|public.chia_assets_to_tags"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_feeds_to_tags",
+        "feeds_to_tags_feed_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.feeds_to_tags_feed_id_idx",
+        "n|idx|public.feeds_to_tags_feed_id_idx",
+        "e|idx|public.feeds_to_tags_feed_id_idx",
+        "n|rel|public.feeds_to_tags_feed_id_idx"
+      ],
+      "reads": [
+        "e|tbl|public.chia_feeds_to_tags",
+        "n|sch|public",
+        "e|col|public.chia_feeds_to_tags.feed_id"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_tag_translation",
+        "tag_translation_tag_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.tag_translation_tag_id_idx",
+        "n|idx|public.tag_translation_tag_id_idx",
+        "e|idx|public.tag_translation_tag_id_idx",
+        "n|rel|public.tag_translation_tag_id_idx"
+      ],
+      "reads": [
+        "e|tbl|public.chia_tag_translation",
+        "n|sch|public",
+        "e|col|public.chia_tag_translation.tag_id"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_tag_translation",
+        "tag_translation_locale_idx"
+      ],
+      "writes": [
+        "s|idx|public.tag_translation_locale_idx",
+        "n|idx|public.tag_translation_locale_idx",
+        "e|idx|public.tag_translation_locale_idx",
+        "n|rel|public.tag_translation_locale_idx"
+      ],
+      "reads": [
+        "e|tbl|public.chia_tag_translation",
+        "n|sch|public",
+        "e|col|public.chia_tag_translation.locale"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_tag_translation",
+        "tag_translation_name_idx"
+      ],
+      "writes": [
+        "s|idx|public.tag_translation_name_idx",
+        "n|idx|public.tag_translation_name_idx",
+        "e|idx|public.tag_translation_name_idx",
+        "n|rel|public.tag_translation_name_idx"
+      ],
+      "reads": [
+        "e|tbl|public.chia_tag_translation",
+        "n|sch|public",
+        "e|col|public.chia_tag_translation.name"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": ["index", "public", "chia_tag", "tag_slug_idx"],
+      "writes": [
+        "s|idx|public.tag_slug_idx",
+        "n|idx|public.tag_slug_idx",
+        "e|idx|public.tag_slug_idx",
+        "n|rel|public.tag_slug_idx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_tag",
+        "n|sch|public",
+        "e|col|public.chia_tag.slug"
+      ],
+      "sharedWrites": ["e|uniqueness|public.chia_tag.slug"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_asset\"]"
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"chia_assets_to_tags\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_asset\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_asset\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_asset\",\"updated_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_asset\",\"name\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_asset\",\"extension\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_asset\",\"url\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_asset\",\"user_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_assets_to_tags\",\"asset_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"chia_assets_to_tags\",\"tag_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"asset_user_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"asset_name_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"assets_to_tags_asset_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"assets_to_tags_tag_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"feeds_to_tags_feed_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"tag_translation_tag_id_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"tag_translation_locale_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"tag_translation_name_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"tag_slug_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_asset\",\"chia_asset_user_id_chia_user_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_assets_to_tags\",\"chia_assets_to_tags_asset_id_chia_asset_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"chia_assets_to_tags\",\"chia_assets_to_tags_tag_id_chia_tag_id_fk\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_asset\",\"chia_asset_pkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"chia_assets_to_tags\",\"chia_assets_to_tags_asset_id_tag_id_pk\"]"
+    }
+  ]
+}

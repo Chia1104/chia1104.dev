@@ -1,0 +1,37 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "d99622fd-4b68-4066-ba91-993366c0d10a",
+  "prevIds": ["00d97d72-7be5-4165-9bd4-7856ec8a83f1"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "public", "chia_user", "is_anonymous"],
+      "writes": [
+        "s|col|public.chia_user.is_anonymous",
+        "n|col|public.chia_user.is_anonymous",
+        "e|col|public.chia_user.is_anonymous"
+      ],
+      "reads": ["n|tbl|public.chia_user", "n|sch|public"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_user",
+        "name": "is_anonymous",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

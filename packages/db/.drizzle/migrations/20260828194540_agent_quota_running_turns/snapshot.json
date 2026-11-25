@@ -1,0 +1,42 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "00d97d72-7be5-4165-9bd4-7856ec8a83f1",
+  "prevIds": ["83fc9ae8-3668-4bbb-9e82-eee55a8bc1e7"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "agent",
+        "quota_config",
+        "max_running_turns"
+      ],
+      "writes": [
+        "s|col|agent.quota_config.max_running_turns",
+        "n|col|agent.quota_config.max_running_turns",
+        "e|col|agent.quota_config.max_running_turns"
+      ],
+      "reads": ["n|tbl|agent.quota_config", "n|sch|agent"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "quota_config",
+        "name": "max_running_turns",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

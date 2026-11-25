@@ -1,0 +1,37 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "f403947b-13b6-41d4-a0ae-2b9fb155d0bb",
+  "prevIds": ["4f10d8b7-1f56-403f-8a97-d725f6ddf2c4"],
+  "footprints": [
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "agent",
+        "session_entry",
+        "agent_session_entry_type_idx"
+      ],
+      "writes": [
+        "s|idx|agent.agent_session_entry_type_idx",
+        "n|idx|agent.agent_session_entry_type_idx",
+        "e|idx|agent.agent_session_entry_type_idx",
+        "n|rel|agent.agent_session_entry_type_idx"
+      ],
+      "reads": [
+        "e|tbl|agent.session_entry",
+        "n|sch|agent",
+        "e|col|agent.session_entry.session_id",
+        "e|col|agent.session_entry.type"
+      ],
+      "sharedWrites": []
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"agent\",\"agent_session_entry_type_idx\"]"
+    }
+  ]
+}

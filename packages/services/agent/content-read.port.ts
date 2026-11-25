@@ -1,3 +1,5 @@
+import { EmptyFilter } from "drizzle-orm/relations";
+
 import type {
   ContentReadPort,
   GetPostInput,
@@ -149,11 +151,11 @@ export const createContentReadPort = (
         enableDeleted: false,
         whereAnd: {
           userId: authorId,
-          published,
-          createdAt:
-            createdFrom || createdBefore
-              ? { gte: createdFrom, lt: createdBefore }
-              : undefined,
+          published: published ?? EmptyFilter,
+          createdAt: {
+            gte: createdFrom ?? EmptyFilter,
+            lt: createdBefore ?? EmptyFilter,
+          },
         },
       });
       const total = await countFeeds(db, {

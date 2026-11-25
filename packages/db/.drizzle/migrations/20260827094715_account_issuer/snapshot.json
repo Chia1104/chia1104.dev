@@ -1,0 +1,88 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "33331292-3bcc-44ee-86c9-2fbfb3253049",
+  "prevIds": ["1d0b6c8f-4f3e-42f4-b3ab-10a12787ccb2"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "public", "chia_account", "issuer"],
+      "writes": [
+        "s|col|public.chia_account.issuer",
+        "n|col|public.chia_account.issuer",
+        "e|col|public.chia_account.issuer"
+      ],
+      "reads": ["n|tbl|public.chia_account", "n|sch|public"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "chia_account",
+        "account_issuer_account_id_uidx"
+      ],
+      "writes": [
+        "s|idx|public.account_issuer_account_id_uidx",
+        "n|idx|public.account_issuer_account_id_uidx",
+        "e|idx|public.account_issuer_account_id_uidx",
+        "n|rel|public.account_issuer_account_id_uidx"
+      ],
+      "reads": [
+        "n|tbl|public.chia_account",
+        "n|sch|public",
+        "n|col|public.chia_account.issuer",
+        "n|col|public.chia_account.account_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_account",
+        "name": "issuer",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "chia_account",
+        "name": "account_issuer_account_id_uidx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "issuer",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    }
+  ]
+}

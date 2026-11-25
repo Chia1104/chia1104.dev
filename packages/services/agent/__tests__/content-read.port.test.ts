@@ -1,4 +1,5 @@
 import { drizzle } from "drizzle-orm/node-postgres";
+import { EmptyFilter } from "drizzle-orm/relations";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { relations } from "@chia/db/schema";
@@ -82,7 +83,10 @@ describe("createContentReadPort visibility", () => {
       expect(dbMocks.getInfiniteFeeds).toHaveBeenCalledWith(
         db,
         expect.objectContaining({
-          whereAnd: { userId: AUTHOR, published: true },
+          whereAnd: expect.objectContaining({
+            userId: AUTHOR,
+            published: true,
+          }),
         })
       );
     });
@@ -160,7 +164,10 @@ describe("createContentReadPort visibility", () => {
       expect(dbMocks.getInfiniteFeeds).toHaveBeenCalledWith(
         db,
         expect.objectContaining({
-          whereAnd: { userId: AUTHOR, published: false },
+          whereAnd: expect.objectContaining({
+            userId: AUTHOR,
+            published: false,
+          }),
         })
       );
     });
@@ -212,7 +219,13 @@ describe("createContentReadPort visibility", () => {
 
       expect(dbMocks.getInfiniteFeeds).toHaveBeenCalledWith(
         db,
-        expect.objectContaining({ whereAnd: { userId: AUTHOR } })
+        expect.objectContaining({
+          whereAnd: {
+            userId: AUTHOR,
+            published: EmptyFilter,
+            createdAt: { gte: EmptyFilter, lt: EmptyFilter },
+          },
+        })
       );
     });
   });

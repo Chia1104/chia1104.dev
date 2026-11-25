@@ -1,0 +1,63 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "fa410e60-1860-4383-b3f3-491cd8aeaf61",
+  "prevIds": ["ff5365dc-1ebf-441a-9745-f428ba2992ff"],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "agent", "tool_approval", "approval_key"],
+      "writes": [
+        "s|col|agent.tool_approval.approval_key",
+        "n|col|agent.tool_approval.approval_key",
+        "e|col|agent.tool_approval.approval_key"
+      ],
+      "reads": ["n|tbl|agent.tool_approval", "n|sch|agent"]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": ["column", "agent", "tool_approval", "consumed_at"],
+      "writes": [
+        "s|col|agent.tool_approval.consumed_at",
+        "n|col|agent.tool_approval.consumed_at",
+        "e|col|agent.tool_approval.consumed_at"
+      ],
+      "reads": ["n|tbl|agent.tool_approval", "n|sch|agent"]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "tool_approval",
+        "name": "approval_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "tool_approval",
+        "name": "consumed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

@@ -88,13 +88,6 @@ const periodConditions = (options: {
     : undefined,
 ];
 
-/**
- * Cache life of the site-wide aggregates. The ledger is written by the workflow process,
- * whose connection has no cache, so table invalidation never reaches these; the TTL is the
- * only staleness bound. Per-user reads stay uncached because a quota decision may follow.
- */
-const AGGREGATE_CACHE_SECONDS = 60;
-
 export interface AgentUsageSummary {
   costMicros: number;
   /** Ledger rows whose `source` is the turn itself; side jobs are not turns. */
@@ -111,7 +104,7 @@ export const summarizeAgentUsage = async (
     credentialSources?: readonly AgentCredentialSource[];
   }
 ): Promise<AgentUsageSummary> => {
-  const query = db
+  const [row] = await db
     .select({
       costMicros: sum(agentUsageLedger.costMicros),
       turns:
@@ -128,9 +121,6 @@ export const summarizeAgentUsage = async (
         ...periodConditions(options)
       )
     );
-  const [row] = await (options.userId
-    ? query
-    : query.$withCache({ config: { ex: AGGREGATE_CACHE_SECONDS } }));
   return { costMicros: Number(row?.costMicros ?? 0), turns: row?.turns ?? 0 };
 };
 
@@ -178,8 +168,7 @@ export const listTopAgentUsageUsers = async (
       user.isAnonymous
     )
     .orderBy(desc(costMicros))
-    .limit(options.limit)
-    .$withCache({ config: { ex: AGGREGATE_CACHE_SECONDS } });
+    .limit(options.limit);
   return rows.map((row) => ({
     ...row,
     costMicros: Number(row.costMicros ?? 0),

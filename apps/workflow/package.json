@@ -29,7 +29,6 @@
     "@chia/utils": "workspace:*",
     "@chia/workflow-control": "workspace:*",
     "@hono/zod-validator": "catalog:hono",
-    "@keyv/redis": "catalog:kv",
     "@opentelemetry/api": "catalog:otel",
     "@t3-oss/env-core": "catalog:env",
     "@workflow/world-postgres": "catalog:workflow",
