@@ -90,7 +90,7 @@
     "@hono/otel": "catalog:hono",
     "@opentelemetry/api": "catalog:otel",
     "@orpc/server": "catalog:orpc",
-    "@sentry/node-core": "catalog:sentry",
+    "@sentry/node": "catalog:sentry",
     "es-toolkit": "catalog:",
     "hono": "catalog:hono",
     "keyv": "catalog:kv",

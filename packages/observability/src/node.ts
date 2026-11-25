@@ -13,14 +13,13 @@ import {
   resourceFromAttributes,
 } from "@opentelemetry/resources";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace-base";
+import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace";
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
 import { ORPCInstrumentation } from "@orpc/opentelemetry";
-import { init as initSentry } from "@sentry/node-core/light";
-import { otlpIntegration } from "@sentry/node-core/light/otlp";
+import { init as initSentry, openTelemetryIntegration } from "@sentry/node";
 import { register } from "import-in-the-middle/register-hooks.mjs";
 
 import { env } from "./env";
@@ -30,6 +29,9 @@ import { contentFreeExporter } from "./span-export";
 const ATTR_DEPLOYMENT_ENVIRONMENT_NAME = "deployment.environment.name";
 const ATTR_SERVICE_INSTANCE_ID = "service.instance.id";
 const METRIC_PROCESS_MEMORY_USAGE = "process.memory.usage";
+
+/** Header and query keys that carry the client's address or identity. */
+const CLIENT_IDENTITY_KEYS = ["forwarded", "-ip", "remote-", "via", "-user"];
 
 export interface StartTelemetryOptions {
   serviceName: string;
@@ -46,15 +48,38 @@ export interface StartTelemetryOptions {
 export const startTelemetry = ({ serviceName }: StartTelemetryOptions) => {
   if (env.OTEL_EXPORTER_OTLP_ENDPOINT) startOpenTelemetry(serviceName);
 
-  // After the SDK: the OTLP integration reads the active span through the global API.
+  // After the SDK: `openTelemetryIntegration` reads the active span through the global API.
+  // No `tracesSampleRate`, so Sentry records no spans; the OTel SDK owns tracing.
   initSentry({
     dsn: env.SENTRY_DSN,
     enabled: Boolean(env.SENTRY_DSN) && env.NODE_ENV === "production",
     environment: env.RAILWAY_ENVIRONMENT_NAME,
     release: env.RAILWAY_GIT_COMMIT_SHA,
+    // Keeps request bodies, cookies and user data out of events; an unset category collects everything.
+    dataCollection: {
+      userInfo: false,
+      cookies: false,
+      httpHeaders: {
+        request: { deny: CLIENT_IDENTITY_KEYS },
+        response: { deny: CLIENT_IDENTITY_KEYS },
+      },
+      httpBodies: [],
+      urlQueryParams: { deny: CLIENT_IDENTITY_KEYS },
+      genAI: { inputs: false, outputs: false },
+      databaseQueryData: false,
+      graphQL: { document: false, variables: false },
+    },
     // Trace context travels as W3C `traceparent`; errors join it through the integration.
     tracePropagationTargets: [],
-    integrations: [otlpIntegration({ setupOtlpTracesExporter: false })],
+    // Its module hooks rewrite libraries for Sentry's channel-based tracing and framework error
+    // capture; neither is used, and errors reach Sentry through `reportError`.
+    enableRuntimeChannelInjection: false,
+    integrations: (defaults) => [
+      // It appends `Server-Timing` trace headers to every response once Nitro's tracing channels
+      // are on.
+      ...defaults.filter(({ name }) => name !== "Nitro"),
+      openTelemetryIntegration(),
+    ],
   });
 };
 

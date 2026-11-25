@@ -3,10 +3,10 @@ import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { context, SpanStatusCode, trace } from "@opentelemetry/api";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import {
-  BasicTracerProvider,
+  TracerProvider,
   InMemorySpanExporter,
   SimpleSpanProcessor,
-} from "@opentelemetry/sdk-trace-base";
+} from "@opentelemetry/sdk-trace";
 import {
   afterAll,
   beforeAll,
@@ -30,8 +30,8 @@ beforeAll(() => {
     new AsyncLocalStorageContextManager().enable()
   );
   trace.setGlobalTracerProvider(
-    new BasicTracerProvider({
-      spanProcessors: [new SimpleSpanProcessor(exporter)],
+    new TracerProvider({
+      spanProcessors: [new SimpleSpanProcessor({ exporter })],
     })
   );
 });

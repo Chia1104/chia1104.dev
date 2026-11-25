@@ -1,4 +1,4 @@
-import type { ReadableSpan, SpanExporter } from "@opentelemetry/sdk-trace-base";
+import type { ReadableSpan, SpanExporter } from "@opentelemetry/sdk-trace";
 import * as z from "zod";
 
 /** Exception event keys that carry free text; `exception.type` stays. */

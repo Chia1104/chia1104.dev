@@ -120,18 +120,6 @@
       "matchPackageNames": ["@chiastack/**"]
     },
     {
-      "description": "The next major needs a migration that waits for the backend move. Tick the box on the Dependency Dashboard to open the PR.",
-      "matchPackageNames": ["@sentry/**"],
-      "matchUpdateTypes": ["major"],
-      "dependencyDashboardApproval": true
-    },
-    {
-      "description": "@sentry/node-core 10 caps OpenTelemetry below 0.300 and the API below 1.10, so only patches open unasked.",
-      "matchPackageNames": ["@opentelemetry/**"],
-      "matchUpdateTypes": ["major", "minor"],
-      "dependencyDashboardApproval": true
-    },
-    {
       "description": "Pi is held. Tick the box on the Dependency Dashboard to open the PR.",
       "matchPackageNames": ["@earendil-works/**", "typebox"],
       "dependencyDashboardApproval": true
