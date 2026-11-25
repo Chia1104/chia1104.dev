@@ -63,7 +63,7 @@
     },
     {
       "groupName": "nitro",
-      "matchPackageNames": ["nitro", "srvx"]
+      "matchPackageNames": ["nitro", "srvx", "rolldown"]
     },
     {
       "groupName": "workflow",
@@ -132,10 +132,8 @@
       "dependencyDashboardApproval": true
     },
     {
-      "description": "Pinned on purpose: the Nitro rc answers every request with 200, drizzle rc.5 changes query behaviour, Pi is held. Tick the box on the Dependency Dashboard to open the PR.",
+      "description": "Pinned on purpose: drizzle rc.5 changes query behaviour, Pi is held. Tick the box on the Dependency Dashboard to open the PR.",
       "matchPackageNames": [
-        "nitro",
-        "srvx",
         "drizzle-orm",
         "drizzle-kit",
         "@paradedb/drizzle-paradedb",

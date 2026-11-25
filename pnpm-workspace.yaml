@@ -119,10 +119,9 @@ catalogs:
     sharp: 0.35.5
     takumi-js: ^2.22.1
   nitro:
-    # The rc swaps the global Response for srvx FastResponse on Node presets, and service then
-    # answers every request with 200. Moving needs `features: { fastResponse: false }`.
-    nitro: 3.0.260903-beta
-    srvx: 1.0.5
+    nitro: 3.0.261103-rc
+    rolldown: 1.3.3
+    srvx: 1.0.8
   orpc:
     "@orpc/client": 2.0.0-beta.53
     "@orpc/contract": 2.0.0-beta.53
